@@ -1,10 +1,39 @@
-# Web Component Library Starter Kit
+# Vue Component Library Starter Kit
 
-"Why create components for a specific framework when it can be written to be understood by all — including browsers?"
+This is an opinionated Vue Component Library Starter kit to help kick-start development of your next component library.
 
-## 👋🏼 Introduction
+## 💡 Get Started
 
-Before you get started, it's is important to understand what a Web Component is. Think of it as a (custom) HTML element. That being said, this is an opinionated starter kit to help you expedite the development of your component library.
+It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
+
+```bash
+npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-lib
+cd my-awesome-vue-component-lib
+
+# ensure you also now update your vite.config.ts with your library name
+
+ # if you don't have pnpm installed, run `npm i -g pnpm`
+pnpm i # install all deps
+pnpm dev # starts the local server at http://localhost:3333 & watches for changes
+pnpm build # builds the library for production-ready use
+```
+
+Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
+
+## Usage
+
+```vue
+<script setup lang="ts">
+import { MyButton } from 'my-awesome-vue-component-lib'
+import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
+</script>
+```
+
+### How To Create Releases
+
+In order to automate package releases, this starter kit is setup to use [Semantic Commit Style](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
+
+Lastly, login to your npm account and add your newly created repository.
 
 ### 👩🏽‍💻 Dev Tools
 
@@ -33,39 +62,6 @@ Before you get started, it's is important to understand what a Web Component is.
   - [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 - [Prettier](https://prettier.io/) - required for Tailwind class name sorting
-
-## 💡 Get Started
-
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
-
-```bash
-npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-lib
-cd my-awesome-vue-component-lib
-
-# ensure you also now update your vite.config.ts with your library name
-
- # if you don't have pnpm installed, run `npm i -g pnpm`
-pnpm i # install all deps
-pnpm dev # starts the local server at http://localhost:3333 & watches for changes
-pnpm build # builds the library for production-ready use
-```
-
-Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
-
-### How To Create Releases
-
-In order to automate package releases, this starter kit is setup to use [Semantic Commit Style](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
-
-Lastly, login to your npm account and add your newly created repository.
-
-## How To Use This Library
-
-```vue
-<script setup lang="ts">
-import { MyButton } from 'my-awesome-vue-component-lib'
-import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
-</script>
-```
 
 ## 🧪 Testing
 
