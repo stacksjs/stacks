@@ -54,7 +54,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ### How To Create Releases
 
-In order to automate package releases, this starter kit is setup to use [https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716][semantic-commit-style] & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
+In order to automate package releases, this starter kit is setup to use [Semantic Commit Style](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
 
 Lastly, login to your npm account and add your newly created repository.
 
