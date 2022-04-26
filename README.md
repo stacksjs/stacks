@@ -42,8 +42,11 @@ It's incredibly easy to get your component library started with this slightly op
 npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-library
 cd my-awesome-vue-component-library
 
-pnpm i # if you don't have pnpm installed, run `npm i -g pnpm`
-pnpm dev # starts the local server at http://localhost:3333/ & watches for changes
+# ensure you also now update your vite.config.ts with your library name
+
+ # if you don't have pnpm installed, run `npm i -g pnpm`
+pnpm i # install all deps
+pnpm dev # starts the local server at http://localhost:3333 & watches for changes
 pnpm build # builds the library for production-ready use
 ```
 
