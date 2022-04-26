@@ -1,1 +1,1 @@
-export { default as WalletLogin } from './HelloWorld.vue'
+export { default as HelloWorld } from './HelloWorld.vue'
