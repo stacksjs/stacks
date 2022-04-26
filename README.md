@@ -17,7 +17,7 @@ Before you get started, it's is important to understand what a Web Component is.
 - [GitHub Actions](https://github.com/features/actions) - Commit code style fixes automatically, tag releases, and run the test suite
 - [VS Code Extensions](./.vscode/extensions.json)
   - [Vite](https://marketplace.visualstudio.com/items?itemName=antfu.vite) - Fire up Vite server automatically
-  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
+  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support _(ensure Vetur is turned off)_
   - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Statically analyzes your code to quickly find problems
 
 ### 🧩 Plugins
@@ -32,15 +32,15 @@ Before you get started, it's is important to understand what a Web Component is.
 - Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
   - [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
-- [Prettier](https://prettier.io/) - Opinionated code formatting, like Tailwind class name sorting
+- [Prettier](https://prettier.io/) - required for Tailwind class name sorting
 
 ## 💡 Get Started
 
-It's very easy to get your component library started with this slightly opinionated ", especially if you have designed/developed Vue Single File Components before. Check out the index.html and how the `HelloWorld`-component is defined within this repo. Feel free to create any component.
+It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
 
 ```bash
-npx degit meemalabs/vue-component-library-starter my-vue-component-library
-cd my-vue-component-library
+npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-library
+cd my-awesome-vue-component-library
 
 pnpm i # if you don't have pnpm installed, run `npm i -g pnpm`
 pnpm dev # starts the local server at http://localhost:3333/ & watches for changes
@@ -48,6 +48,12 @@ pnpm build # builds the library for production-ready use
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
+
+### How To Create Releases
+
+In order to automate package releases, this starter kit is setup to use [https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716][semantic-commit-style] & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
+
+Lastly, login to your npm account and add your newly created repository.
 
 ## 🧪 Testing
 

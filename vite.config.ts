@@ -44,7 +44,7 @@ const config = {
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'vue-component-library-starter',
+      name: 'my-awesome-vue-component-library',
     },
 
     rollupOptions: {
