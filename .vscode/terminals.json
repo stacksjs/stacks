@@ -1,0 +1,15 @@
+{
+    "autorun": true,
+    "autokill": true,
+    "terminals": [
+        {
+            "name": "Vite",
+            "description": "Starts the local dev server.",
+            "open": true,
+            "focus": false,
+            "commands": [
+                "pnpm dev"
+            ]
+        }
+    ]
+}

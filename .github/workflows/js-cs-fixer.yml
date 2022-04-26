@@ -1,0 +1,64 @@
+name: JS-CS-Fixer
+
+on: [push, pull_request]
+
+env:
+  PR_NUMBER: '${{ github.event.number }}'
+  SOURCE_BRANCH: $GITHUB_HEAD_REF
+  FIXER_BRANCH: auto-fixed/$GITHUB_HEAD_REF
+  TITLE: Apply fixes from JS-CS-Fixer
+  DESCRIPTION: This merge request applies JS code style fixes from an analysis carried out through GitHub Actions.
+
+jobs:
+  js-cs-fixer:
+    if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
+    runs-on: ubuntu-20.04
+
+    name: Run JS CS Fixer
+
+    strategy:
+      matrix:
+        node-version: [16]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install pnpm
+        uses: npm install -g pnpm
+
+      - name: Install project dependencies
+        run: pnpm install
+
+      - name: Prepare Git User
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "action@github.com"
+          git checkout -B "${{ env.FIXER_BRANCH }}"
+
+      - name: Apply auto-fixers
+        run: pnpm lint:fix
+
+      - name: Create Fixer PR
+        run: |
+          if [[ -z $(git status --porcelain) ]]; then
+            echo "Nothing to fix... Exiting."
+            exit 0
+          fi
+          OPEN_PRS=`curl --silent -H "Accept: application/vnd.github.v3+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls?state=open"`
+          OPEN_FIXER_PRS=`echo ${OPEN_PRS} | grep -o "\"ref\": \"${{ env.FIXER_BRANCH }}\"" | wc -l`
+          git commit -am "${{ env.TITLE }}"
+          git push origin "${{ env.FIXER_BRANCH }}" --force
+          if [ ${OPEN_FIXER_PRS} -eq "0" ]; then
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls" \
+              -d "{ \"head\":\"${{ env.FIXER_BRANCH }}\", \"base\":\"${{ env.SOURCE_BRANCH }}\", \"title\":\"${{ env.TITLE }}\", \"body\":\"${{ env.DESCRIPTION }}\n\nTriggered by #${{ env.PR_NUMBER }}\" }"
+          fi
+          exit 1

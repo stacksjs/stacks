@@ -1,0 +1,10 @@
+name: Support question
+description: Need help with using this package? Ask your question here. Please browse the Discussions for similar questions before.
+labels: [question]
+body:
+  - type: textarea
+    attributes:
+      label: How could we help you?
+      description: Please describe what is happening and what you expect to happen.
+    validations:
+      required: true

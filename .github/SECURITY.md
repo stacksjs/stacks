@@ -1,0 +1,70 @@
+# Security Policy
+
+**PLEASE DON'T DISCLOSE SECURITY-RELATED ISSUES PUBLICLY, [SEE BELOW](#reporting-a-vulnerability).**
+
+## Supported Versions
+
+Only the latest major version receives security fixes.
+
+## Reporting a Vulnerability
+
+If you discover a security vulnerability within this package, please send an email to Chris Breuer at chris@meema.xyz. All security vulnerabilities will be promptly addressed.
+
+### Public PGP Key
+
+```
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: OpenPGP v2.0.8
+Comment: https://sela.io/pgp/
+
+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
+HF/6SiI=
+=le/X
+-----END PGP PUBLIC KEY BLOCK-----
+```

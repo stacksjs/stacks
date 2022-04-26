@@ -1,0 +1,30 @@
+name: 🐛 Bug Report
+description: Report a general library issue.
+labels: [bug]
+body:
+  - type: input
+    attributes:
+      label: Package version
+      description: 'Please provide the full version of table-elements that you''re experiencing the bug with.'
+      placeholder: v1.2.3
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Browser & OS
+      description: Which browser and OS are you experiencing the issue with?
+      placeholder: 'Chrome 88 & macOS Monterey'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: Please describe what is happening and what you expect to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Please provide accurate steps to reproduce the bug.
+    validations:
+      required: true

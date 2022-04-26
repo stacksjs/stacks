@@ -1,0 +1,19 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "types": [
+            "cypress"
+        ],
+        "target": "es6",
+        "lib": [
+            "es5",
+            "es6",
+            "dom",
+            "dom.iterable"
+        ],
+    },
+    "exclude": [],
+    "include": [
+        "**/*.ts"
+    ]
+}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/logo.svg" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // Work-around node polyfills missing in Vite.
+      window.global = window;
+    </script>
+    <script type="module" src="./src/index.ts"></script>
+  </body>
+</html>
