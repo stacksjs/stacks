@@ -39,8 +39,8 @@ Before you get started, it's is important to understand what a Web Component is.
 It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
 
 ```bash
-npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-library
-cd my-awesome-vue-component-library
+npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-lib
+cd my-awesome-vue-component-lib
 
 # ensure you also now update your vite.config.ts with your library name
 
@@ -57,6 +57,15 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 In order to automate package releases, this starter kit is setup to use [Semantic Commit Style](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
 
 Lastly, login to your npm account and add your newly created repository.
+
+## How To Use This Library
+
+```vue
+<script setup lang="ts">
+import { MyButton } from 'my-awesome-vue-component-lib'
+import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
+</script>
+```
 
 ## 🧪 Testing
 

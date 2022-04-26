@@ -13,12 +13,14 @@
   ],
   "license": "MIT",
   "author": "Meema Labs",
+  "main": "./dist/my-awesome-vue-component-lib.umd.js",
+  "module": "./dist/my-awesome-vue-component-lib.es.js",
   "exports": {
     ".": {
-      "import": "./dist/vue-component-library-starter-vue.es.js",
-      "require": "./dist/vue-component-library-starter-vue.umd.js"
+      "import": "./dist/my-awesome-vue-component-lib.es.js",
+      "require": "./dist/my-awesome-vue-component-lib.umd.js"
     },
-    "./styles.css": "./src/styles/index.css",
+    "./styles.css": "./styles.css",
     "./postcss.config.js": "./postcss.config.js"
   },
   "files": [
