@@ -46,14 +46,14 @@
     "typecheck": "vue-tsc --emitDeclarationOnly"
   },
   "dependencies": {
-    "vue": "^3.2.25"
+    "vue": "^3.2.33"
   },
   "devDependencies": {
     "@antfu/eslint-config": "0.21.1",
     "@babel/types": "7.17.0",
     "@tailwindcss/aspect-ratio": "0.4.0",
     "@tailwindcss/forms": "0.5.0",
-    "@tailwindcss/line-clamp": "0.3.1",
+    "@tailwindcss/line-clamp": "0.4.0",
     "@tailwindcss/typography": "0.5.2",
     "@vitebook/client": "0.23.6",
     "@vitebook/core": "0.23.6",
@@ -66,7 +66,7 @@
     "autoprefixer": "10.4.5",
     "eslint": "8.14.0",
     "eslint-plugin-cypress": "2.12.1",
-    "pnpm": "6.32.10",
+    "pnpm": "6.32.11",
     "postcss": "8.4.12",
     "postcss-import": "14.1.0",
     "prettier": "2.6.2",
@@ -81,7 +81,7 @@
     "vue-tsc": "0.34.10"
   },
   "engines": {
-    "node": ">=16.*"
+    "node": ">=v16.15.0"
   },
   "contributors": [
     "Chris Breuer <chris@meema.xyz>"
