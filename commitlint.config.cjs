@@ -1,7 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const composables = fs.readdirSync(path.resolve(__dirname, 'src/composables'));
+const composables = fs.readdirSync(path.resolve(__dirname, 'src/composables'))
+
+composables.map(composable => composable.replace('.ts'))
 
 module.exports = {
   extends: ['@commitlint/config-conventional'],
@@ -12,4 +14,4 @@ module.exports = {
       ['', 'docs', 'example', 'release', 'dx', ...composables],
     ],
   },
-};
+}
