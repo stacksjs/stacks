@@ -17,7 +17,6 @@ specifiers:
   cspell: ^5.19.7
   eslint: ^8.14.0
   eslint-plugin-cypress: ^2.12.1
-  husky: ^7.0.4
   lint-staged: ^12.4.1
   pnpm: ^6.32.11
   postcss: ^8.4.12
@@ -54,7 +53,6 @@ devDependencies:
   cspell: 5.19.7
   eslint: 8.14.0
   eslint-plugin-cypress: 2.12.1_eslint@8.14.0
-  husky: 7.0.4
   lint-staged: 12.4.1
   pnpm: 6.32.11
   postcss: 8.4.12
@@ -3109,12 +3107,6 @@ packages:
   /human-signals/2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
-    dev: true
-
-  /husky/7.0.4:
-    resolution: {integrity: sha512-vbaCKN2QLtP/vD4yvs6iz6hBEo6wkSzs8HpRah1Z6aGmF2KW5PdYuAd7uX5a+OyBZHBhd+TFLqgjUgytQr4RvQ==}
-    engines: {node: '>=12'}
-    hasBin: true
     dev: true
 
   /iconv-lite/0.4.24:

@@ -44,7 +44,6 @@
     "coverage": "vitest run --coverage",
     "typecheck": "vue-tsc --emitDeclarationOnly",
     "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.js",
-    "prepare": "husky install",
     "release:dry": "standard-version --dry-run",
     "release": "standard-version",
     "publish": "standard-version && git push --follow-tags"
@@ -69,7 +68,6 @@
     "cspell": "^5.19.7",
     "eslint": "^8.14.0",
     "eslint-plugin-cypress": "^2.12.1",
-    "husky": "^7.0.4",
     "lint-staged": "^12.4.1",
     "pnpm": "^6.32.11",
     "postcss": "^8.4.12",
