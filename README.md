@@ -4,7 +4,7 @@ This is an opinionated Vue Component Library Starter kit to help kick-start deve
 
 ## 💡 Get Started
 
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
+It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you really far!
 
 ```bash
 # you may use this GitHub template or the following command:
@@ -30,25 +30,30 @@ import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
 </script>
 ```
 
-### How To Create Releases
+### How to manage your library?
 
-In order to automate package releases, this starter kit is setup to use [Semantic Commit Style](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716) & GitHub Actions. Once you are ready to create a new release, simply "create a new tag" (e.g. v1.2.0). The creation of the tag will trigger a `tag-release` GitHub Action.
+```bash
+# how to create a git commit?
+git add . # select the changes you want to commit
+pnpm run commit # and now simply answer the questions
 
-Lastly, login to your npm account and add your newly created repository.
+# after you have successfully committed, you may create "release"
+pnpm run release # automates git commits, versioning, and CHANGELOG generation
+```
 
 ### 👩🏽‍💻 Dev Tools
 
 - [TypeScript 4.6](https://www.typescriptlang.org/)
-- [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
+- [Vue 3.2](https://vuejs.org/) - Write Web Components the same way you would write SFCs
+- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
+- [Tailwind CSS](https://tailwindcss.com/) - Create your own style guide with ease
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
-- [Tailwind CSS](https://tailwindcss.com/) - create your own style guide with ease
 - [Renovate](https://renovatebot.com/) - Automatically PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - Commit code style fixes automatically, tag releases, and run the test suite
 - [VS Code Extensions](./.vscode/extensions.json)
   - [Vite](https://marketplace.visualstudio.com/items?itemName=antfu.vite) - Fire up Vite server automatically
   - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support _(ensure Vetur is turned off)_
-  - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Statically analyzes your code to quickly find problems
 
 ### 🧩 Plugins
 
