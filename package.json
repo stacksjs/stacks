@@ -45,8 +45,7 @@
     "coverage": "vitest run --coverage",
     "typecheck": "vue-tsc --emitDeclarationOnly",
     "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.js",
-    "release": "bumpp package.json --commit --push --tag && pnpm run changelog",
-    "publish": "standard-version && git push --follow-tags"
+    "release": "npx bumpp package.json examples/*/package.json --commit --tag --push && pnpm run changelog"
   },
   "dependencies": {
     "vue": "^3.2.33"
