@@ -5,7 +5,6 @@ specifiers:
   '@babel/types': ^7.17.0
   '@commitlint/cli': ^16.2.3
   '@commitlint/config-conventional': ^16.2.1
-  '@commitlint/prompt-cli': ^16.2.3
   '@tailwindcss/aspect-ratio': ^0.4.0
   '@tailwindcss/forms': ^0.5.0
   '@tailwindcss/line-clamp': ^0.4.0
@@ -14,6 +13,7 @@ specifiers:
   '@vue/compiler-sfc': ^3.2.33
   '@vueuse/core': ^8.3.1
   autoprefixer: ^10.4.5
+  conventional-changelog-cli: ^2.2.2
   cspell: ^5.19.7
   eslint: ^8.14.0
   eslint-plugin-cypress: ^2.12.1
