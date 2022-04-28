@@ -37,10 +37,6 @@ const config = {
     }),
   ],
 
-  define: {
-    'process.env': {},
-  },
-
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

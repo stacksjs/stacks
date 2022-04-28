@@ -18,6 +18,8 @@
     "heroicon",
     "booleanish",
     "composables",
+    "preinstall",
+    "commitlint"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
