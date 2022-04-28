@@ -35,7 +35,7 @@
     "dev": "vite --port 3333 --open",
     "build": "vite build && vue-tsc --emitDeclarationOnly",
     "preview": "vite preview",
-    "commit": "git add . && commit",
+    "commit": "commit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
