@@ -9,7 +9,7 @@ module.exports = {
     'scope-enum': [
       2,
       'always',
-      ['', 'docs', 'example', 'release', 'dx', 'tooling', 'housecleaning', ...composables.map(item => item.replace(/.ts/g, '')).filter(item => item !== 'index')],
+      ['', 'docs', 'example', 'release', 'tooling', 'housecleaning', ...composables.map(item => item.replace(/.ts/g, '')).filter(item => item !== 'index')],
     ],
   },
 }
