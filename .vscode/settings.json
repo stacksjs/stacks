@@ -19,7 +19,9 @@
     "booleanish",
     "composables",
     "preinstall",
-    "commitlint"
+    "commitlint",
+    "commitlintrc",
+    "upath"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
