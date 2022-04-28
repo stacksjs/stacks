@@ -7,6 +7,7 @@ This is an opinionated Vue Component Library Starter kit to help kick-start deve
 It's incredibly easy to get your component library started with this slightly opinionated starter kit. You simply need to know how to design/develop Vue Single File Components.
 
 ```bash
+# you may use this GitHub template or the following command:
 npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-lib
 cd my-awesome-vue-component-lib
 
@@ -54,7 +55,6 @@ Lastly, login to your npm account and add your newly created repository.
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
-- [Vitebook](https://vitebook.dev) - A modern open source Storybook alternative
 
 ### 🥰 Coding Style
 
