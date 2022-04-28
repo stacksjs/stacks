@@ -90,7 +90,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{js,ts,md,json,vue}": "prettier --write",
+    "*.{vue}": "prettier --write",
     "*.{md,ts,vue}": "cspell --no-must-find-files"
   },
   "engines": {
