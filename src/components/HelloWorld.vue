@@ -14,10 +14,10 @@ function increment() {
 }
 
 // lifecycle hooks
-onMounted(() => {
-  // eslint-disable-next-line no-console
-  console.log(`The initial count is ${count}.`)
-})
+// onMounted(() => {
+//   // eslint-disable-next-line no-console
+//   console.log(`The initial count is ${count}.`)
+// })
 </script>
 
 <template>
