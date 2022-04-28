@@ -1,7 +1,7 @@
 {
   "name": "vue-component-library-starter",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The easy way to start your Vue 3 Component Library.",
   "keywords": [
     "component",
