@@ -4,8 +4,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "preinstall": "node ../../.scripts/check-for-pnpm.js && node ../../.scripts/check-node-version.js",
-        "dev": "vite dev --open --port=3333"
+        "dev": "vite dev --open --port=3333",
+        "preinstall": "node ../../.scripts/check-for-pnpm.js && node ../../.scripts/check-node-version.js"
     },
     "dependencies": {
         "vue": "^3.0.0"
