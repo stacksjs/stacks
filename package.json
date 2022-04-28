@@ -67,8 +67,6 @@
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
-    "cspell": "^5.19.7",
-    "cz-conventional-changelog": "3.3.0",
     "eslint": "^8.14.0",
     "eslint-plugin-cypress": "^2.12.1",
     "inquirer": "^8.0.0",
@@ -94,8 +92,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{vue}": "prettier --write ./src",
-    "*.{md,ts,vue}": "cspell --no-must-find-files"
+    "*.{vue}": "prettier --write ./src"
   },
   "engines": {
     "node": ">=v16.15.0",
