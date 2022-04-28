@@ -1,5 +1,7 @@
 {
   "cSpell.words": [
+    "openweblabs",
+    "openweb",
     "meema",
     "meemalabs",
     "pnpm",
@@ -21,7 +23,8 @@
     "preinstall",
     "commitlint",
     "commitlintrc",
-    "upath"
+    "upath",
+    "bumpp"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
