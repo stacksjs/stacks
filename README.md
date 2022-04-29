@@ -25,9 +25,12 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ```vue
 <script setup lang="ts">
-import { MyButton } from 'my-awesome-vue-component-lib'
-import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
+import { HelloWorld } from 'my-awesome-vue-component-lib'
 </script>
+
+<template>
+  <HelloWorld />
+</template>
 ```
 
 ### 👩🏽‍💻 Dev Tools
