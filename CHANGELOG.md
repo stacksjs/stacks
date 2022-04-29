@@ -1,3 +1,26 @@
+# [0.6.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.5.0...v0.6.0) (2022-04-29)
+
+
+### Features
+
+* **tooling:** automatically sort `package.json` ([6c92fa7](https://github.com/openweblabs/vue-component-library-starter/commit/6c92fa7018662fc3d88f5ec074020a19268c27b0))
+
+
+
+# [0.5.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.4.0...v0.5.0) (2022-04-28)
+
+
+### Bug Fixes
+
+* **dx:** ensure the release flow works ([70f333c](https://github.com/openweblabs/vue-component-library-starter/commit/70f333c6d39f08011073ad3e9943506b387e0754))
+
+
+### Features
+
+* **dx:** become a commitizen ([ef15c7f](https://github.com/openweblabs/vue-component-library-starter/commit/ef15c7f19a366532586c9ffe00d52b136a955c35))
+
+
+
 # [0.4.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.3.0...v0.4.0) (2022-04-28)
 
 
