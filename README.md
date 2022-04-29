@@ -64,7 +64,7 @@ import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
 git add . # select the changes you want to commit
 pnpm run commit # and now simply answer the questions
 
-# after you have successfully committed, you may create "release"
+# after you have successfully committed, you may create a "release"
 pnpm run release # automates git commits, versioning, and CHANGELOG generation
 ```
 
