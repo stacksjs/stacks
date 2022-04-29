@@ -1,6 +1,5 @@
 {
   "name": "vue-component-library-starter",
-  "type": "module",
   "version": "0.5.0",
   "description": "The easy way to start your Vue 3 Component Library.",
   "keywords": [
@@ -14,8 +13,10 @@
   ],
   "license": "MIT",
   "author": "Open Web Labs",
-  "main": "./dist/my-awesome-vue-component-lib.umd.js",
-  "module": "./dist/my-awesome-vue-component-lib.es.js",
+  "contributors": [
+    "Chris Breuer <chris@meema.xyz>"
+  ],
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/my-awesome-vue-component-lib.es.js",
@@ -24,28 +25,44 @@
     "./styles.css": "./styles.css",
     "./postcss.config.js": "./postcss.config.js"
   },
+  "main": "./dist/my-awesome-vue-component-lib.umd.js",
+  "module": "./dist/my-awesome-vue-component-lib.es.js",
+  "typings": "./dist/index.d.ts",
   "files": [
     "dist",
     "src",
     "styles.css",
     "postcss.config.js"
   ],
-  "typings": "./dist/index.d.ts",
   "scripts": {
-    "dev": "node .scripts/run-example.js",
     "build": "vite build && vue-tsc --emitDeclarationOnly",
-    "preview": "vite preview",
-    "commit": "git-cz",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "commit": "git-cz",
+    "coverage": "vitest run --coverage",
+    "dev": "node .scripts/run-example.js",
+    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "preview": "vite preview",
+    "release": "npx bumpp package.json examples/*/package.json --commit 'chore(release): %s' --tag --push && pnpm run changelog",
     "test": "vitest",
-    "test:unit": "vitest",
     "test:e2e": "cypress open",
-    "coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc --emitDeclarationOnly",
-    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.js",
-    "release": "npx bumpp package.json examples/*/package.json --commit 'chore(release): %s' --tag --push && pnpm run changelog"
+    "test:unit": "vitest",
+    "typecheck": "vue-tsc --emitDeclarationOnly"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.cjs --edit $1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint --fix",
+    "*.{vue}": "prettier --write ./src",
+    "package.json": "sort-package-json"
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
   },
   "dependencies": {
     "vue": "^3.2.33"
@@ -77,6 +94,7 @@
     "prettier": "^2.6.2",
     "prettier-plugin-tailwindcss": "^0.1.10",
     "simple-git-hooks": "^2.7.0",
+    "sort-package-json": "^1.55.0",
     "tailwindcss": "^3.0.24",
     "typescript": "^4.6.3",
     "unplugin-auto-import": "^0.7.1",
@@ -86,24 +104,8 @@
     "vitest": "^0.10.0",
     "vue-tsc": "^0.34.10"
   },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.cjs --edit $1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{vue}": "prettier --write ./src"
-  },
   "engines": {
     "node": ">=v16.15.0",
     "pnpm": ">=6.32.11"
-  },
-  "config": {
-    "commitizen": {
-      "path": "@commitlint/cz-commitlint"
-    }
-  },
-  "contributors": [
-    "Chris Breuer <chris@meema.xyz>"
-  ]
+  }
 }
