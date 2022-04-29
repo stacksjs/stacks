@@ -21,7 +21,7 @@ pnpm build # builds the library for production-ready use
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
 
-## Usage
+## 🧩 Usage
 
 ```vue
 <script setup lang="ts">
