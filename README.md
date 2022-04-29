@@ -21,24 +21,13 @@ pnpm build # builds the library for production-ready use
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
 
-## 🧩 Usage
+## 🤖 Usage
 
 ```vue
 <script setup lang="ts">
 import { MyButton } from 'my-awesome-vue-component-lib'
 import '/node_modules/my-awesome-vue-component-lib/dist/style.css'
 </script>
-```
-
-### How to manage your library?
-
-```bash
-# how to create a git commit?
-git add . # select the changes you want to commit
-pnpm run commit # and now simply answer the questions
-
-# after you have successfully committed, you may create "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
 ```
 
 ### 👩🏽‍💻 Dev Tools
@@ -67,6 +56,17 @@ pnpm run release # automates git commits, versioning, and CHANGELOG generation
   - [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 - [Prettier](https://prettier.io/) - required for Tailwind class name sorting
+
+### How to manage your library?
+
+```bash
+# how to create a git commit?
+git add . # select the changes you want to commit
+pnpm run commit # and now simply answer the questions
+
+# after you have successfully committed, you may create "release"
+pnpm run release # automates git commits, versioning, and CHANGELOG generation
+```
 
 ## 🧪 Testing
 
