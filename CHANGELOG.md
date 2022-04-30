@@ -1,3 +1,14 @@
+## [0.7.4](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.3...v0.7.4) (2022-04-30)
+
+
+### Bug Fixes
+
+* **tooling:** also commit the changelog ([f9d962e](https://github.com/openweblabs/vue-component-library-starter/commit/f9d962e3e58b8867dfd2b55234fdcd86ee319ba5))
+* **tooling:** do not commit changelog during creation ([0d0d99b](https://github.com/openweblabs/vue-component-library-starter/commit/0d0d99bf910c0f559b12945b8213c8e6abe29024))
+* **tooling:** use the "all" flag properly ([5e0bfec](https://github.com/openweblabs/vue-component-library-starter/commit/5e0bfecf3023cf4a103bbe24b69b1b5d19526b06))
+
+
+
 ## [0.7.3](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.2...v0.7.3) (2022-04-30)
 
 
