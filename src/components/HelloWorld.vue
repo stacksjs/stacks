@@ -33,6 +33,4 @@ function increment() {
   </button>
 </template>
 
-<style scoped>
-@import "../styles/index.css";
-</style>
+<style scoped></style>

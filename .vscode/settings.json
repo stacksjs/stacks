@@ -24,10 +24,13 @@
     "commitlint",
     "commitlintrc",
     "upath",
-    "bumpp"
+    "bumpp",
+    "unocss"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "windicss.sortOnSave": true
 }
