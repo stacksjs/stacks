@@ -17,6 +17,7 @@ specifiers:
   inquirer: ^8.0.0
   lint-staged: ^12.4.1
   minimist: ^1.2.6
+  prompts: ^2.4.2
   simple-git-hooks: ^2.7.0
   sort-package-json: ^1.55.0
   tailwindcss: ^3.0.24
@@ -50,6 +51,7 @@ devDependencies:
   inquirer: 8.2.4
   lint-staged: 12.4.1
   minimist: 1.2.6
+  prompts: 2.4.2
   simple-git-hooks: 2.7.0
   sort-package-json: 1.55.0
   tailwindcss: 3.0.24
