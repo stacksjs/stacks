@@ -1,7 +1,9 @@
+/// <reference types="vitest" />
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
+import Unocss from 'unocss/vite'
 import Components from 'unplugin-vue-components/vite'
 
 /** @type {import('vite').UserConfig} */
@@ -16,6 +18,10 @@ const config = {
   plugins: [
     Vue({
       reactivityTransform: true, // https://vuejs.org/guide/extras/reactivity-transform.html
+    }),
+
+    Unocss({
+      mode: 'vue-scoped',
     }),
 
     // https://github.com/antfu/unplugin-auto-import
