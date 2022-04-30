@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "build": "vite build && vue-tsc --emitDeclarationOnly",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 && git add .",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "commit": "git-cz",
     "coverage": "vitest run --coverage",
     "dev": "node .scripts/run-example.js",
