@@ -1,3 +1,13 @@
+## [0.7.5](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.4...v0.7.5) (2022-04-30)
+
+
+### Bug Fixes
+
+* **deps:** add missing `prompts` ([e1133f9](https://github.com/openweblabs/vue-component-library-starter/commit/e1133f91324c0f5169edd4f5392e8d8bc1e7c574))
+* **tooling:** properly instantiate unocss ([b53a096](https://github.com/openweblabs/vue-component-library-starter/commit/b53a0965ba94d09575cd738d7f9c9106c6a27a24))
+
+
+
 ## [0.7.4](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.3...v0.7.4) (2022-04-30)
 
 
