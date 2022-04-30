@@ -1,3 +1,39 @@
+## [0.7.3](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.2...v0.7.3) (2022-04-30)
+
+
+### Bug Fixes
+
+* **tooling:** release flow ([4cfe2e8](https://github.com/openweblabs/vue-component-library-starter/commit/4cfe2e843bfefe9a9123cfdf447b96ef174a6ffc))
+
+
+
+## [0.7.2](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.1...v0.7.2) (2022-04-30)
+
+
+### Bug Fixes
+
+* **tooling:** also ensure to commit the changelog ([40bb2f7](https://github.com/openweblabs/vue-component-library-starter/commit/40bb2f785e427294a73ca84d5f520c18da3bb35c))
+
+
+
+## [0.7.1](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.0...v0.7.1) (2022-04-30)
+
+
+### Bug Fixes
+
+* **tooling:** release should generate the changelog correctly ([f822954](https://github.com/openweblabs/vue-component-library-starter/commit/f822954d949f4912097a8b2df1f047d63eb87e00))
+
+
+
+# [0.7.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.6.0...v0.7.0) (2022-04-30)
+
+
+### Features
+
+* **tooling:** introduce unocss as styling engine ([e2a16cf](https://github.com/openweblabs/vue-component-library-starter/commit/e2a16cf9f00abbd0bb0d1af88cf290fa867b1d04))
+
+
+
 # [0.6.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.5.0...v0.6.0) (2022-04-29)
 
 
