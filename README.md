@@ -65,7 +65,7 @@ When using this template, feel free to adjust it to your needs. This is simply a
 
 ### Tips
 
-When using VS Code as your code editor, you may want to consider keeping the [vscode.html-data.json](.vscode/vscode.html-data.json) file updated. It provides hints to your code editor and you can find more examples [here](https://github.com/microsoft/vscode-custom-data/blob/main/web-data/html/htmlTags.json).
+This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
 
 ```bash
 # how to create a git commit?
