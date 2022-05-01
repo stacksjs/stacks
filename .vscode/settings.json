@@ -25,7 +25,8 @@
     "commitlintrc",
     "upath",
     "bumpp",
-    "unocss"
+    "unocss",
+    "windi"
   ],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
