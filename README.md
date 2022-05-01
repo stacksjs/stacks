@@ -35,17 +35,17 @@ import { HelloWorld } from 'my-awesome-vue-component-lib'
 
 ### 👩🏽‍💻 Dev Tools
 
+- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
+- [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
+- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [TypeScript 4.6](https://www.typescriptlang.org/)
-- [Vue 3.2](https://vuejs.org/) - Write Web Components the same way you would write SFCs
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
-- [Tailwind CSS](https://tailwindcss.com/) - Create your own style guide with ease
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
-- [Renovate](https://renovatebot.com/) - Automatically PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - Commit code style fixes automatically, tag releases, and run the test suite
+- [Renovate](https://renovatebot.com/) - automatic PR dependency updates
+- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 - [VS Code Extensions](./.vscode/extensions.json)
-  - [Vite](https://marketplace.visualstudio.com/items?itemName=antfu.vite) - Fire up Vite server automatically
-  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support _(ensure Vetur is turned off)_
+  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
 
 ### 🧩 Plugins
 
