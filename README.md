@@ -94,11 +94,11 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/meemalabs/web-components-library-starter/discussions)
+[Discussions on GitHub](https://github.com/openweblabs/web-components-library-starter/discussions)
 
 For casual chit-chat with others using this package:
 
-[Join the Meema Discord Server](https://discord.meema.io)
+[Join the Open Web Discord Server](https://discord.ow3.org)
 
 ## 📄 License
 
