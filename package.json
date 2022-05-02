@@ -52,7 +52,7 @@
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.cjs --edit $1"
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
@@ -72,6 +72,7 @@
     "@commitlint/cli": "^16.2.4",
     "@commitlint/config-conventional": "^16.2.4",
     "@commitlint/cz-commitlint": "^16.2.4",
+    "@commitlint/types": "^16.2.1",
     "@vitejs/plugin-vue": "^2.3.1",
     "@vue/compiler-sfc": "^3.2.33",
     "@vueuse/core": "^8.3.1",

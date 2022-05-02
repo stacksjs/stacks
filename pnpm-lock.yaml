@@ -6,6 +6,7 @@ specifiers:
   '@commitlint/cli': ^16.2.4
   '@commitlint/config-conventional': ^16.2.4
   '@commitlint/cz-commitlint': ^16.2.4
+  '@commitlint/types': ^16.2.1
   '@vitejs/plugin-vue': ^2.3.1
   '@vue/compiler-sfc': ^3.2.33
   '@vueuse/core': ^8.3.1
@@ -40,6 +41,7 @@ devDependencies:
   '@commitlint/cli': 16.2.4
   '@commitlint/config-conventional': 16.2.4
   '@commitlint/cz-commitlint': 16.2.4_nlwf7yf5555jiq2ch63nbqq5xy
+  '@commitlint/types': 16.2.1
   '@vitejs/plugin-vue': 2.3.1_vite@2.9.7+vue@3.2.33
   '@vue/compiler-sfc': 3.2.33
   '@vueuse/core': 8.3.1_vue@3.2.33
