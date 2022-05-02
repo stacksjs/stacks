@@ -36,7 +36,7 @@ import { HelloWorld } from 'my-awesome-vue-component-lib'
 ### 👩🏽‍💻 Dev Tools
 
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
-- [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
+- [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [TypeScript 4.6](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
