@@ -1,4 +1,14 @@
 {
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "prettier.enable": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.formatOnSave": false,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "windicss.sortOnSave": true,
   "cSpell.words": [
     "openweblabs",
     "openweb",
@@ -26,12 +36,7 @@
     "upath",
     "bumpp",
     "unocss",
-    "windi"
-  ],
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "windicss.sortOnSave": true
+    "windi",
+    "typecheck"
+  ]
 }
