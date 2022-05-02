@@ -1,6 +1,6 @@
 {
     "name": "@openweb/vue-example",
-    "version": "0.7.5",
+    "version": "0.8.0",
     "private": true,
     "scripts": {
         "dev": "vite dev --open --port=3333",

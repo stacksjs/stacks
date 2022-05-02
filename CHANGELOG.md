@@ -1,3 +1,18 @@
+# [0.8.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.5...v0.8.0) (2022-05-02)
+
+
+### Bug Fixes
+
+* **tooling:** update volar namespace ([28ed5cb](https://github.com/openweblabs/vue-component-library-starter/commit/28ed5cb998154df452abc0bf95c586acce084454))
+
+
+### Features
+
+* **tooling:** improve vscode settings ([41907d2](https://github.com/openweblabs/vue-component-library-starter/commit/41907d2fe580a09fe1e66baf443cf1e49217528b))
+* **tooling:** setup commitlint via ts ([4d7bbaf](https://github.com/openweblabs/vue-component-library-starter/commit/4d7bbaf79be5658a4d6ee5174ddfa9c4d9c2800d))
+
+
+
 ## [0.7.5](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.4...v0.7.5) (2022-04-30)
 
 
