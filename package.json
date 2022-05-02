@@ -14,25 +14,20 @@
   "license": "MIT",
   "author": "Open Web Labs",
   "contributors": [
-    "Chris Breuer <chris@meema.xyz>"
+    "Chris Breuer <chris@ow3.org>"
   ],
-  "type": "module",
+  "main": "./dist/my-awesome-vue-component-lib.umd.js",
+  "module": "./dist/my-awesome-vue-component-lib.es.js",
   "exports": {
     ".": {
       "import": "./dist/my-awesome-vue-component-lib.es.js",
       "require": "./dist/my-awesome-vue-component-lib.umd.js"
-    },
-    "./styles.css": "./styles.css",
-    "./postcss.config.js": "./postcss.config.js"
+    }
   },
-  "main": "./dist/my-awesome-vue-component-lib.umd.js",
-  "module": "./dist/my-awesome-vue-component-lib.es.js",
   "typings": "./dist/index.d.ts",
   "files": [
     "dist",
-    "src",
-    "styles.css",
-    "postcss.config.js"
+    "src"
   ],
   "scripts": {
     "build": "vite build && vue-tsc --emitDeclarationOnly",
@@ -40,7 +35,7 @@
     "commit": "git-cz",
     "coverage": "vitest run --coverage",
     "dev": "node .scripts/run-example.js",
-    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.js",
+    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
@@ -53,15 +48,6 @@
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",
     "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
-    "package.json": "sort-package-json"
-  },
-  "config": {
-    "commitizen": {
-      "path": "@commitlint/cz-commitlint"
-    }
   },
   "dependencies": {
     "vue": "^3.2.33"
@@ -87,7 +73,6 @@
     "prompts": "^2.4.2",
     "simple-git-hooks": "^2.7.0",
     "sort-package-json": "^1.57.0",
-    "tailwindcss": "^3.0.24",
     "typescript": "^4.6.4",
     "unocss": "^0.32.9",
     "unplugin-auto-import": "^0.7.1",
@@ -96,6 +81,15 @@
     "vite": "^2.9.7",
     "vitest": "^0.10.1",
     "vue-tsc": "^0.34.11"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
+    "package.json": "sort-package-json"
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
   },
   "engines": {
     "node": ">=v16.15.0",
