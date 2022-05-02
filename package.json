@@ -67,7 +67,7 @@
     "vue": "^3.2.33"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.22.0",
+    "@antfu/eslint-config": "^0.23.0",
     "@babel/types": "^7.17.10",
     "@commitlint/cli": "^16.2.4",
     "@commitlint/config-conventional": "^16.2.4",
@@ -85,15 +85,15 @@
     "minimist": "^1.2.6",
     "prompts": "^2.4.2",
     "simple-git-hooks": "^2.7.0",
-    "sort-package-json": "^1.56.1",
+    "sort-package-json": "^1.57.0",
     "tailwindcss": "^3.0.24",
     "typescript": "^4.6.4",
-    "unocss": "^0.32.8",
+    "unocss": "^0.32.9",
     "unplugin-auto-import": "^0.7.1",
     "unplugin-vue-components": "^0.19.3",
     "upath": "^2.0.1",
-    "vite": "^2.9.6",
-    "vitest": "^0.10.0",
+    "vite": "^2.9.7",
+    "vitest": "^0.10.1",
     "vue-tsc": "^0.34.11"
   },
   "engines": {
