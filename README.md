@@ -8,8 +8,8 @@ It's incredibly easy to get your component library started with this slightly op
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit meemalabs/vue-component-library-starter my-awesome-vue-component-lib
-cd my-awesome-vue-component-lib
+npx degit meemalabs/vue-component-library-starter my-lib
+cd my-lib
 
 # ensure you also now update your vite.config.ts with your library name
 
@@ -25,7 +25,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ```vue
 <script setup lang="ts">
-import { HelloWorld } from 'my-awesome-vue-component-lib'
+import { HelloWorld } from 'my-lib'
 </script>
 
 <template>

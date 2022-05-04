@@ -16,15 +16,13 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "main": "./dist/my-awesome-vue-component-lib.umd.js",
-  "module": "./dist/my-awesome-vue-component-lib.es.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/my-awesome-vue-component-lib.es.js",
-      "require": "./dist/my-awesome-vue-component-lib.umd.js"
+      "require": "./dist/my-lib.js",
+      "import": "./dist/my-lib.mjs"
     }
   },
-  "typings": "./dist/index.d.ts",
   "files": [
     "dist",
     "src"
