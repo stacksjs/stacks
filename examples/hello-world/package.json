@@ -10,8 +10,12 @@
         "vue": "^3.0.0"
     },
     "devDependencies": {
+        "@iconify-json/heroicons-outline": "^1.1.1",
+        "@iconify-json/heroicons-solid": "^1.1.1",
+        "@unocss/preset-icons": "^0.32.12",
         "@vitejs/plugin-vue": "^2.3.1",
         "@vue/compiler-sfc": "^3.2.26",
+        "unocss": "^0.32.12",
         "vite": "^2.8.0"
     },
     "engines": {

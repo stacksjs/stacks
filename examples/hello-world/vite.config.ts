@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
+import PresetIcons from '@unocss/preset-icons'
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -17,6 +18,15 @@ const config = {
 
     Unocss({
       mode: 'vue-scoped',
+      presets: [
+        PresetIcons({
+          prefix: 'i-',
+          extraProperties: {
+            'display': 'inline-block',
+            'vertical-align': 'middle',
+          },
+        }),
+      ],
     }),
   ],
 }

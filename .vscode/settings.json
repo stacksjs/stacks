@@ -37,6 +37,8 @@
     "bumpp",
     "unocss",
     "windi",
-    "typecheck"
+    "typecheck",
+    "iconify",
+    "heroicons"
   ]
 }
