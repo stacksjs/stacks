@@ -1,3 +1,12 @@
+# [0.9.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.8.0...v0.9.0) (2022-05-04)
+
+
+### Features
+
+* **tooling:** Icons in Pure CSS ([3644e77](https://github.com/openweblabs/vue-component-library-starter/commit/3644e778325a53c435f7ea34242511a335f95b83))
+
+
+
 # [0.8.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.7.5...v0.8.0) (2022-05-02)
 
 
