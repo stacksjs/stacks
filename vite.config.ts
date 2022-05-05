@@ -69,8 +69,8 @@ const config = {
       },
     },
 
-    sourcemap: true,
-    minify: false,
+    // sourcemap: true,
+    // minify: false,
   },
 
   test: {

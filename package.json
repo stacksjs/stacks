@@ -16,11 +16,14 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "main": "./dist/my-lib.umd.js",
+  "module": "./dist/my-lib.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/my-lib.js",
-      "import": "./dist/my-lib.mjs"
+      "require": "./my-lib.umd.js",
+      "import": "./dist/my-lib.es.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [
@@ -28,20 +31,19 @@
     "src"
   ],
   "scripts": {
-    "build": "vite build && vue-tsc --emitDeclarationOnly",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "commit": "git-cz",
-    "coverage": "vitest run --coverage",
-    "dev": "node .scripts/run-example.mjs",
-    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.mjs",
+    "build": "vite build",
+    "dev": "vite dev --open --port 3333",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "preview": "vite preview",
-    "release": "npx bumpp package.json examples/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "commit": "git-cz",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "coverage": "vitest run --coverage",
     "test": "vitest",
     "test:e2e": "cypress open",
     "test:unit": "vitest",
-    "typecheck": "vue-tsc --emitDeclarationOnly"
+    "typecheck": "vue-tsc --emitDeclarationOnly",
+    "release": "npx bumpp package.json examples/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.mjs"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",
@@ -59,6 +61,7 @@
     "@commitlint/types": "^16.2.1",
     "@iconify-json/heroicons-outline": "^1.1.1",
     "@iconify-json/heroicons-solid": "^1.1.1",
+    "@types/node": "^17.0.31",
     "@unocss/preset-icons": "^0.32.12",
     "@vitejs/plugin-vue": "^2.3.2",
     "@vue/compiler-sfc": "^3.2.33",
