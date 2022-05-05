@@ -1,3 +1,7 @@
+## [0.9.2](https://github.com/openweblabs/vue-component-library-starter/compare/v0.9.1...v0.9.2) (2022-05-05)
+
+
+
 ## [0.9.1](https://github.com/openweblabs/vue-component-library-starter/compare/v0.9.0...v0.9.1) (2022-05-05)
 
 
