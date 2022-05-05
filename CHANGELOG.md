@@ -1,3 +1,12 @@
+## [0.9.1](https://github.com/openweblabs/vue-component-library-starter/compare/v0.9.0...v0.9.1) (2022-05-05)
+
+
+### Features
+
+* **tooling:** add new scopes ([7812bfe](https://github.com/openweblabs/vue-component-library-starter/commit/7812bfe33616e1b6abf5d87387a6674ada8ef082))
+
+
+
 # [0.9.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.8.0...v0.9.0) (2022-05-04)
 
 

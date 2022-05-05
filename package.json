@@ -1,6 +1,6 @@
 {
   "name": "vue-component-library-starter",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "The easy way to start your Vue 3 Component Library.",
   "keywords": [
     "component",
@@ -42,7 +42,7 @@
     "test:e2e": "cypress open",
     "test:unit": "vitest",
     "typecheck": "vue-tsc --emitDeclarationOnly",
-    "release": "npx bumpp package.json examples/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "release": "npx bumpp package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
     "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.mjs"
   },
   "simple-git-hooks": {
