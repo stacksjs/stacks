@@ -74,6 +74,9 @@ pnpm run commit # then simply answer the questions
 
 # after you have successfully committed, you may create a "release"
 pnpm run release # automates git commits, versioning, and CHANGELOG generation
+
+# how to test your library locally?
+pnpm pack # packs the library into a tarball
 ```
 
 ## 🧪 Testing
