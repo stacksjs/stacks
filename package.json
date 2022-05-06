@@ -83,7 +83,7 @@
     "unplugin-vue-components": "^0.19.3",
     "upath": "^2.0.1",
     "vite": "^2.9.8",
-    "vitest": "^0.10.4",
+    "vitest": "^0.10.5",
     "vue-tsc": "^0.34.11"
   },
   "lint-staged": {
