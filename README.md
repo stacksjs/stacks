@@ -8,7 +8,7 @@ It's incredibly easy to get your component library started with this slightly op
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit meemalabs/vue-component-library-starter my-lib
+npx degit openweblabs/vue-component-library-starter my-lib
 cd my-lib
 
 # ensure you also now update your vite.config.ts with your library name
