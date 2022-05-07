@@ -69,7 +69,7 @@
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
-    "eslint": "^8.14.0",
+    "eslint": "^8.15.0",
     "eslint-plugin-cypress": "^2.12.1",
     "inquirer": "^8.2.4",
     "lint-staged": "^12.4.1",
