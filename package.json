@@ -84,7 +84,7 @@
     "upath": "^2.0.1",
     "vite": "^2.9.8",
     "vitest": "^0.12.3",
-    "vue-tsc": "^0.34.11"
+    "vue-tsc": "^0.34.12"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
