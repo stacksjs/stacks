@@ -1,11 +1,11 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@antfu/eslint-config': ^0.23.0
+  '@antfu/eslint-config': ^0.23.1
   '@babel/types': ^7.17.10
-  '@commitlint/cli': ^16.2.4
+  '@commitlint/cli': ^16.3.0
   '@commitlint/config-conventional': ^16.2.4
-  '@commitlint/cz-commitlint': ^16.2.4
+  '@commitlint/cz-commitlint': ^16.3.0
   '@commitlint/types': ^16.2.1
   '@iconify-json/heroicons-outline': ^1.1.1
   '@iconify-json/heroicons-solid': ^1.1.1
@@ -32,7 +32,7 @@ specifiers:
   unplugin-vue-components: ^0.19.5
   upath: ^2.0.1
   vite: ^2.9.9
-  vitest: ^0.12.5
+  vitest: ^0.12.6
   vue: ^3.2.33
   vue-tsc: ^0.34.13
 
