@@ -66,7 +66,7 @@
     "@unocss/preset-icons": "^0.33.4",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.33",
-    "@vueuse/core": "^8.4.2",
+    "@vueuse/core": "^8.5.0",
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
@@ -86,7 +86,7 @@
     "upath": "^2.0.1",
     "vite": "^2.9.9",
     "vitest": "^0.12.6",
-    "vue-tsc": "^0.34.13"
+    "vue-tsc": "^0.34.15"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
