@@ -12,8 +12,16 @@
     "starter",
     "kit"
   ],
+  "homepage": "https://github.com/openweblabs/vue-component-library-starter#readme",
+  "bugs": {
+    "url": "https://github.com/openweblabs/vue-component-library-starter/issues"
+  },
   "license": "MIT",
-  "author": "Open Web Labs",
+  "author": "Chris Breuer <chris@ow3.org>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openweblabs/vue-component-library-starter.git"
+  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
