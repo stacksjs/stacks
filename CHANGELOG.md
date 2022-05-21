@@ -1,3 +1,17 @@
+# [0.11.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.10.0...v0.11.0) (2022-05-21)
+
+
+### Bug Fixes
+
+* **tooling:** add missing cypress dep ([f2a0610](https://github.com/openweblabs/vue-component-library-starter/commit/f2a0610f6890f5539e8fa58ced0979a8dc58f13d))
+
+
+### Features
+
+* added package.json links ([b55a305](https://github.com/openweblabs/vue-component-library-starter/commit/b55a305da0078845de2e2b5b0b294bb96844b6f1))
+
+
+
 # [0.10.0](https://github.com/openweblabs/vue-component-library-starter/compare/v0.9.3...v0.10.0) (2022-05-14)
 
 
