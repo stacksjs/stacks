@@ -1001,7 +1001,6 @@ packages:
     dependencies:
       '@vue/reactivity': 3.2.35
       '@vue/shared': 3.2.35
-    dev: false
 
   /@vue/runtime-dom/3.2.35:
     resolution: {integrity: sha512-M5xrVJ/b0KqssjPQMdpwLp3KwzG1Tn2w/IrOptVqGY5c9fEBluIbm18AeO4Fr3YxfeyaPWm1rY8POrEso0UE3w==}
@@ -1009,7 +1008,6 @@ packages:
       '@vue/runtime-core': 3.2.35
       '@vue/shared': 3.2.35
       csstype: 2.6.20
-    dev: false
 
   /@vue/server-renderer/3.2.35_vue@3.2.35:
     resolution: {integrity: sha512-ZMF8V+bZ0EIjSB7yzPEmDlxRDOIXj04iqG4Rw/H5rIuBCf0b7rNTleiOldlX5haG++zUq6uiL2AVp/A9uyz+cw==}
@@ -1019,7 +1017,6 @@ packages:
       '@vue/compiler-ssr': 3.2.35
       '@vue/shared': 3.2.35
       vue: 3.2.35
-    dev: false
 
   /@vue/shared/3.2.35:
     resolution: {integrity: sha512-/sxDqMcy0MsfQ3LQixKYDxIinDYNy1dXTsF2Am0pv0toImWabymFQ8cFmPJnPt+gh5ElKwwn7KzQcDbLHar60A==}
@@ -1892,7 +1889,6 @@ packages:
 
   /csstype/2.6.20:
     resolution: {integrity: sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA==}
-    dev: false
 
   /cypress/9.6.1:
     resolution: {integrity: sha512-ECzmV7pJSkk+NuAhEw6C3D+RIRATkSb2VAHXDY6qGZbca/F9mv5pPsj2LO6Ty6oIFVBTrwCyL9agl28MtJMe2g==}
@@ -5829,7 +5825,6 @@ packages:
       '@vue/runtime-dom': 3.2.35
       '@vue/server-renderer': 3.2.35_vue@3.2.35
       '@vue/shared': 3.2.35
-    dev: false
 
   /wcwidth/1.0.1:
     resolution: {integrity: sha1-8LDc+RW8X/FSivrbLA4XtTLaL+g=}
