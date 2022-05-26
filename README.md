@@ -1,6 +1,6 @@
-# Vue Component Library Starter Kit
+# Stacks Starter Kit
 
-This is an opinionated Vue Component Library Starter kit to help kick-start development of your next component library.
+This is an opinionated starter kit to help kick-start development of your next monorepo/component library.
 
 ## 💡 Get Started
 
@@ -38,7 +38,7 @@ import HelloWorld from 'my-lib'
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [TypeScript 4.6](https://www.typescriptlang.org/)
+- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
@@ -58,7 +58,6 @@ import HelloWorld from 'my-lib'
 ### 🥰 Coding Style
 
 - Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
-- [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
 When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.
