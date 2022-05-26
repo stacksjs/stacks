@@ -2,15 +2,16 @@
   "name": "hello-world",
   "version": "0.11.0",
   "packageManager": "pnpm@7.1.5",
-  "description": "The easy way to start your Vue 3 Component Library.",
+  "description": "The easy way to start your stack monorepo.",
   "keywords": [
+    "monorepo",
     "component",
     "library",
     "vue",
+    "web components",
     "typescript",
     "javascript",
-    "starter",
-    "kit"
+    "starter kit"
   ],
   "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
   "bugs": {
