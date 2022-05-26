@@ -9,6 +9,7 @@
     "strings": true
   },
   "windicss.sortOnSave": true,
+  "markdownlint.ignore": ["CHANGELOG.md"],
   "cSpell.words": [
     "openweblabs",
     "openweb",
@@ -40,6 +41,7 @@
     "typecheck",
     "iconify",
     "heroicons",
-    "esno"
+    "esno",
+    "openwebstacks"
   ]
 }

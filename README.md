@@ -25,7 +25,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ```vue
 <script setup lang="ts">
-import { HelloWorld } from 'my-lib'
+import HelloWorld from 'my-lib'
 </script>
 
 <template>
