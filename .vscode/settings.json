@@ -39,6 +39,7 @@
     "windi",
     "typecheck",
     "iconify",
-    "heroicons"
+    "heroicons",
+    "esno"
   ]
 }

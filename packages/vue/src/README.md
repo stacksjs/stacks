@@ -1,6 +1,6 @@
-# Vue Component Library Starter Kit
+# Vue Components
 
-This is an opinionated Vue Component Library Starter kit to help kick-start development of your next component library.
+This is the core of your Vue component library.
 
 ## 💡 Get Started
 

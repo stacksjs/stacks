@@ -8,7 +8,7 @@ dist-ssr
 .temp
 
 # Cypress
-cypress/downloads
-cypress/fixtures
-cypress/plugins
-cypress/support
+tests/cypress/downloads
+tests/cypress/fixtures
+tests/cypress/plugins
+tests/cypress/support

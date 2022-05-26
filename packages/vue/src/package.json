@@ -12,49 +12,36 @@
     "starter",
     "kit"
   ],
-  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
   "license": "MIT",
   "author": "Chris Breuer <chris@ow3.org>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "main": "./dist/hello-world.umd.js",
-  "module": "./dist/hello-world.es.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/hello-world.umd.js",
-      "import": "./dist/hello-world.es.js",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
-    "build": "vite build && pnpm run typecheck",
-    "dev": "vite dev --open --port 3333",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "commit": "git-cz",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "coverage": "vitest run --coverage",
-    "test": "vitest",
-    "test:e2e": "cypress open",
-    "test:unit": "vitest",
-    "typecheck": "vue-tsc --noEmit",
-    "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
-    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno ./.scripts/check-node-version.ts",
-    "size": "esno ./.scripts/size.ts",
-    "stub": "pnpm -r --parallel run stub"
+    "build": "unbuild",
+    "stub": "unbuild --stub"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",

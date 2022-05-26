@@ -2,48 +2,37 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "esnext",
+    "lib": [
+      "esnext"
+    ],
     "moduleResolution": "node",
-    "strict": true,
-    "jsx": "preserve",
-    "composite": false,
-    "incremental": false,
-    "declaration": true,
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "importHelpers": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
     "esModuleInterop": true,
-    "noUnusedLocals": true,
+    "strict": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "outDir": "dist",
+    "resolveJsonModule": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
     "types": [
-      "vite/client",
-      "vue/ref-macros",
-      "node"
+      "node",
+      "vite/client"
     ],
     "paths": {
-      "~/*": [
-        "src/*"
+      "@ow3/hello-world-vue": [
+        "./packages/vue/src/index.ts"
+      ],
+      "@ow3/table-composable": [
+        "./packages/composables/src/index.ts"
+      ],
+      "@ow3/table-elements": [
+        "./packages/web-components/src/index.ts"
       ]
-    },
-    "lib": [
-      "esnext",
-      "dom"
-    ]
+    }
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue"
-  ],
   "exclude": [
-    "dist",
-    "node_modules",
-    "cypress"
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/examples/**",
+    "**/tests/dts/**"
   ]
 }
