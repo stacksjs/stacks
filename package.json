@@ -36,8 +36,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "vite build && pnpm run typecheck",
@@ -52,7 +51,7 @@
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
     "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
-    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno ./.scripts/check-node-version.ts",
+    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
     "size": "esno ./.scripts/size.ts",
     "stub": "pnpm -r --parallel run stub"
   },
