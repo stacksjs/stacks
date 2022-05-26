@@ -1,0 +1,68 @@
+{
+  "name": "hello-world",
+  "version": "0.11.0",
+  "packageManager": "pnpm@7.1.5",
+  "description": "The easy way to start your Web Component library.",
+  "keywords": [
+    "component",
+    "library",
+    "vue",
+    "typescript",
+    "javascript",
+    "starter",
+    "kit"
+  ],
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/elements#readme",
+  "license": "MIT",
+  "author": "Chris Breuer <chris@ow3.org>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/elements"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "unpkg": "./hello-world.js",
+  "jsdelivr": "./hello-world.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "stub": "unbuild --stub"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+  },
+  "dependencies": {
+    "@ow3/table-vue": "workspace:*"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
+    "package.json": "sort-package-json"
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
+  },
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  }
+}
