@@ -6,7 +6,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@ow3/hello-world-vue": "link:../../packages/vue",
     "core-js": "^3.22.7",
     "vue": "^3.2.36"
   },
