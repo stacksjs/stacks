@@ -1,9 +1,5 @@
 <script setup lang="ts">
-const {
-  name = 'J. Doe',
-} = defineProps<{
-  name?: string
-}>()
+const {  name = 'J. Doe' } = defineProps<{ name?: string }>()
 
 // reactive state
 let count = ref(0)

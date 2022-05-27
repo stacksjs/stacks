@@ -82,12 +82,6 @@ This starter kit is built for the modern web and avoids bloated polyfills and ou
 
 [caniuse-custom-el-v1]: https://caniuse.com/custom-elementsv1
 
-## 🧪 Testing
-
-```bash
-pnpm run test
-```
-
 ## 📈 Changelog
 
 Please see our [releases](https://github.com/openweblabs/web-components-library-starter/releases) page for more information on what has changed recently.
