@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rimraf packages/*/dist && pnpm -r --filter=!playground run build",
+    "build": "rimraf packages/*/dist && pnpm -r --filter packages/* run build",
     "dev": "pnpm run stub",
     "deploy": "pnpm run stub && npm -C playground run build",
     "lint": "eslint .",

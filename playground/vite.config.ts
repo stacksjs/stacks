@@ -52,7 +52,7 @@ const config = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'my-lib',
-      fileName: format => `my-lib.${format}.js`,
+      fileName: (format: string) => `my-lib.${format}.js`,
     },
 
     rollupOptions: {
