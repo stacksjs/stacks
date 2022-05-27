@@ -116,6 +116,11 @@
       "path": "@commitlint/cz-commitlint"
     }
   },
+  "pnpm": {
+    "overrides": {
+      "vite": "2.9.9"
+    }
+  },
   "engines": {
     "node": ">=v16.15.0",
     "pnpm": ">=7.1.5"
