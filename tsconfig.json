@@ -15,6 +15,7 @@
     "jsx": "preserve",
     "types": [
       "node",
+      "vitest",
       "vite/client"
     ],
     "paths": {
@@ -32,6 +33,6 @@
   "exclude": [
     "**/dist/**",
     "**/node_modules/**",
-    "**/examples/**"
+    "**/playground/**",
   ]
 }

@@ -3,6 +3,10 @@
   "version": "0.11.0",
   "packageManager": "pnpm@7.1.5",
   "description": "The easy way to start your stack monorepo.",
+  "workspaces": [
+    "packages/*",
+    "playground"
+  ],
   "keywords": [
     "monorepo",
     "component",

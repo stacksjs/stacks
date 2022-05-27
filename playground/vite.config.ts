@@ -32,7 +32,7 @@ const config = {
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
       imports: ['vue', '@vueuse/core', {
-        '~/composables/dark': ['isDark', 'toggleDark'],
+        '../packages/composables/src/dark': ['isDark', 'toggleDark'],
       }],
       dts: 'src/auto-imports.d.ts',
       eslintrc: {
@@ -42,7 +42,7 @@ const config = {
 
     // https://github.com/antfu/unplugin-vue-components
     Components({
-      dirs: ['src/components'],
+      dirs: ['../packages/vue/src/components'],
       extensions: ['vue'],
       dts: 'src/components.d.ts',
     }),
