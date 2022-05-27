@@ -7,6 +7,16 @@
     "packages/*",
     "playground"
   ],
+  "author": "Chris Breuer <chris@ow3.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
   "keywords": [
     "monorepo",
     "component",
@@ -17,32 +27,26 @@
     "javascript",
     "starter kit"
   ],
-  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
-  "license": "MIT",
-  "author": "Chris Breuer <chris@ow3.org>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
-  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/hello-world.es.js",
+      "require": "./dist/hello-world.umd.js"
+    }
+  },
   "main": "./dist/hello-world.umd.js",
   "module": "./dist/hello-world.es.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/hello-world.umd.js",
-      "import": "./dist/hello-world.es.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter packages/* run build",
     "dev": "pnpm run stub",
@@ -61,10 +65,6 @@
     "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
     "size": "esno ./.scripts/size.ts",
     "stub": "pnpm -r --parallel run stub"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
   },
   "dependencies": {
     "vue": "^3.2.36"
@@ -111,6 +111,15 @@
     "vitest": "^0.12.9",
     "vue-tsc": "^0.34.16"
   },
+  "pnpm": {
+    "overrides": {
+      "vite": "2.9.9"
+    }
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
     "package.json": "sort-package-json"
@@ -119,14 +128,5 @@
     "commitizen": {
       "path": "@commitlint/cz-commitlint"
     }
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "2.9.9"
-    }
-  },
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
   }
 }
