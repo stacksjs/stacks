@@ -1,5 +1,5 @@
 {
-  "name": "hello-world",
+  "name": "@ow3/hello-world-elements",
   "version": "0.11.0",
   "packageManager": "pnpm@7.1.5",
   "description": "The easy way to start your Web Component library.",

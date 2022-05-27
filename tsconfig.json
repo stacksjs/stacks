@@ -21,10 +21,10 @@
       "@ow3/hello-world-vue": [
         "./packages/vue/src/index.ts"
       ],
-      "@ow3/table-composable": [
+      "@ow3/hello-world-composable": [
         "./packages/composables/src/index.ts"
       ],
-      "@ow3/table-elements": [
+      "@ow3/hello-world-elements": [
         "./packages/web-components/src/index.ts"
       ]
     }

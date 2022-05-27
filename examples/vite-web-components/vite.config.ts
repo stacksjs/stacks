@@ -6,18 +6,16 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import PresetIcons from '@unocss/preset-icons'
+import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
-    alias: {
-      '~': resolve(__dirname, '/src'),
-    },
+    alias
   },
 
   plugins: [
     Vue({
-      reactivityTransform: true, // https://vuejs.org/guide/extras/reactivity-transform.html
       template: {
         compilerOptions: {
           // treat all tags with a dash as custom elements
