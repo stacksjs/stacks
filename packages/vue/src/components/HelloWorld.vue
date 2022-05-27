@@ -6,11 +6,11 @@ const {
 }>()
 
 // reactive state
-let count = $ref(0)
+let count = ref(0)
 
 // functions that mutate state and trigger updates
 function increment() {
-  count++
+  count.value++
 }
 
 // lifecycle hooks
@@ -36,4 +36,6 @@ function increment() {
   </button>
 </template>
 
-<style scoped></style>
+<style scoped>
+@unocss-placeholder
+</style>

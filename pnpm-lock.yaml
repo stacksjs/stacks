@@ -31,6 +31,7 @@ importers:
       lint-staged: ^12.4.2
       minimist: ^1.2.6
       prompts: ^2.4.2
+      rimraf: ^3.0.2
       simple-git-hooks: ^2.7.0
       sort-package-json: ^1.57.0
       terser: ^5.13.1
@@ -74,6 +75,7 @@ importers:
       lint-staged: 12.4.2
       minimist: 1.2.6
       prompts: 2.4.2
+      rimraf: 3.0.2
       simple-git-hooks: 2.7.0
       sort-package-json: 1.57.0
       terser: 5.13.1

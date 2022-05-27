@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rimraf packages/*/dist && esno ./.scripts/copy-files.ts && pnpm -r --filter !playground --filter !interactive run build && pnpm -r run build-post",
+    "build": "rimraf packages/*/dist && pnpm -r --filter !playground run build",
     "dev": "pnpm run stub",
     "deploy": "pnpm run stub && npm -C playground run build",
     "lint": "eslint .",
@@ -93,6 +93,7 @@
     "lint-staged": "^12.4.2",
     "minimist": "^1.2.6",
     "prompts": "^2.4.2",
+    "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.7.0",
     "sort-package-json": "^1.57.0",
     "terser": "^5.13.1",
