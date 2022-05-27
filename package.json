@@ -7,7 +7,7 @@
     "packages/*",
     "playground"
   ],
-  "author": "Chris Breuer <chris@ow3.org>",
+  "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
   "repository": {

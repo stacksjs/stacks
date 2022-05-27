@@ -28,54 +28,7 @@ const config = {
         }),
       ],
     }),
-
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: ['vue', '@vueuse/core', {
-        '../../packages/composables/src/dark': ['isDark', 'toggleDark'],
-      }],
-      dts: 'src/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-      },
-    }),
-
-    // https://github.com/antfu/unplugin-vue-components
-    Components({
-      dirs: ['../../packages/vue/src/components'],
-      extensions: ['vue'],
-      dts: 'src/components.d.ts',
-    }),
   ],
-
-  build: {
-    lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'my-lib',
-      fileName: (format: string) => `my-lib.${format}.js`,
-    },
-
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        // exports: 'named',
-        globals: {
-          vue: 'Vue',
-        },
-      },
-    },
-
-    // sourcemap: true,
-    // minify: false,
-  },
-
-  test: {
-    include: ['tests/**/*.test.ts'],
-    // environment: 'jsdom',
-    deps: {
-      inline: ['@vue', '@vueuse', 'vue-demi'],
-    },
-  },
 }
 
 // https://vitejs.dev/config

@@ -3,7 +3,7 @@
   "version": "0.11.0",
   "packageManager": "pnpm@7.1.5",
   "description": "The easy way to start your Web Component library.",
-  "author": "Chris Breuer <chris@ow3.org>",
+  "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/elements#readme",
   "repository": {
