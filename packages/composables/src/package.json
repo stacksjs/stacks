@@ -2,7 +2,18 @@
   "name": "@ow3/hello-world-composable",
   "version": "0.11.0",
   "packageManager": "pnpm@7.1.5",
-  "description": "The easy way to start your Vue 3 Component Library.",
+  "description": "The easy way to contain your logic within your monorepo.",
+  "author": "Chris Breuer <chris@ow3.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/composables"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
   "keywords": [
     "component",
     "library",
@@ -12,89 +23,31 @@
     "starter",
     "kit"
   ],
-  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
-  "license": "MIT",
-  "author": "Chris Breuer <chris@ow3.org>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
-    "directory": "packages/vue"
-  },
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  },
   "scripts": {
     "build": "unbuild",
     "stub": "unbuild --stub"
   },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
-  },
-  "dependencies": {
-    "vue": "^3.2.36"
-  },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.24.2",
-    "@babel/types": "^7.18.2",
-    "@commitlint/cli": "^17.0.1",
-    "@commitlint/config-conventional": "^17.0.0",
-    "@commitlint/cz-commitlint": "^17.0.0",
-    "@commitlint/types": "^17.0.0",
-    "@iconify-json/heroicons-outline": "^1.1.1",
-    "@iconify-json/heroicons-solid": "^1.1.1",
-    "@types/node": "^17.0.31",
-    "@unocss/preset-icons": "^0.34.1",
-    "@vitejs/plugin-vue": "^2.3.3",
-    "@vue/compiler-sfc": "^3.2.36",
-    "@vueuse/core": "^8.5.0",
-    "brotli-size": "^4.0.0",
-    "bumpp": "^7.1.1",
-    "commitizen": "^4.2.4",
-    "conventional-changelog-cli": "^2.2.2",
-    "cypress": "^9.7.0",
-    "eslint": "^8.16.0",
-    "eslint-plugin-cypress": "^2.12.1",
-    "fast-glob": "^3.2.11",
-    "gzip-size": "^7.0.0",
-    "inquirer": "^8.2.4",
-    "lint-staged": "^12.4.2",
-    "minimist": "^1.2.6",
-    "prompts": "^2.4.2",
-    "simple-git-hooks": "^2.7.0",
-    "sort-package-json": "^1.57.0",
-    "terser": "^5.13.1",
-    "typescript": "^4.7.2",
-    "unocss": "^0.34.1",
-    "unplugin-auto-import": "^0.8.5",
-    "unplugin-vue-components": "^0.19.5",
-    "upath": "^2.0.1",
-    "vite": "^2.9.9",
-    "vitest": "^0.12.9",
-    "vue-tsc": "^0.34.16"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
-    "package.json": "sort-package-json"
-  },
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
+    "@vueuse/core": "^8.5.0"
   }
 }
