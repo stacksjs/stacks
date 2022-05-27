@@ -1,5 +1,8 @@
 lockfileVersion: 5.4
 
+overrides:
+  vite: 2.9.9
+
 importers:
 
   .:
@@ -41,7 +44,7 @@ importers:
       unplugin-auto-import: ^0.8.5
       unplugin-vue-components: ^0.19.5
       upath: ^2.0.1
-      vite: ^2.9.9
+      vite: 2.9.9
       vitest: ^0.12.9
       vue: ^3.2.36
       vue-tsc: ^0.34.16
@@ -88,6 +91,9 @@ importers:
       vite: 2.9.9
       vitest: 0.12.9
       vue-tsc: 0.34.16_typescript@4.7.2
+
+  playground:
+    specifiers: {}
 
 packages:
 
