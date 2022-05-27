@@ -2,7 +2,6 @@
 import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import PresetIcons from '@unocss/preset-icons'
@@ -35,22 +34,6 @@ const config: UserConfig = {
           },
         }),
       ],
-    }),
-
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: ['vue', '@vueuse/core'],
-      dts: 'src/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-      },
-    }),
-
-    // https://github.com/antfu/unplugin-vue-components
-    Components({
-      dirs: ['src/components'],
-      extensions: ['vue'],
-      dts: 'src/components.d.ts',
     }),
   ],
 
