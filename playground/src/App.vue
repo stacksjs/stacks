@@ -5,3 +5,7 @@ import { HelloWorld } from '../../packages/vue/src/index'
 <template>
   <HelloWorld greeting="Hallo" />
 </template>
+
+<style>
+@import '@ow3/table-vue/dist/style.css';
+</style>

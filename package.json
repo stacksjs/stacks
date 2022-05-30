@@ -49,6 +49,7 @@
   },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter packages/* run build",
+    "build:vue": "rimraf packages/*/dist && pnpm -C packages/vue build",
     "dev": "pnpm run stub",
     "deploy": "pnpm run stub && npm -C playground run build",
     "lint": "eslint .",
