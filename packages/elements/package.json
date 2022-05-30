@@ -50,6 +50,6 @@
     "stub": "unbuild --stub"
   },
   "dependencies": {
-    "@ow3/table-vue": "workspace:*"
+    "@ow3/hello-world-vue": "workspace:*"
   }
 }

@@ -7,5 +7,5 @@ import { HelloWorld } from '../../packages/vue/src/index'
 </template>
 
 <style>
-@import '@ow3/table-vue/dist/style.css';
+@import '@ow3/hello-world/dist/style.css';
 </style>
