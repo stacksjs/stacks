@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-composable",
   "version": "0.11.0",
-  "packageManager": "pnpm@7.1.5",
+  "packageManager": "pnpm@7.1.6",
   "description": "The easy way to contain your logic within your monorepo.",
   "author": "Chris Breuer",
   "license": "MIT",

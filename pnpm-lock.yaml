@@ -13,6 +13,12 @@ importers:
       '@vueuse/core': 8.5.0_vue@3.2.36
       unbuild: 0.7.4
 
+  packages/elements:
+    specifiers:
+      '@ow3/hello-world-vue': workspace:*
+    dependencies:
+      '@ow3/hello-world-vue': link:../vue
+
   packages/vue:
     specifiers:
       '@iconify-json/heroicons-outline': ^1.1.1
