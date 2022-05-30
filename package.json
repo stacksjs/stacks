@@ -48,8 +48,10 @@
     "pnpm": ">=7.1.5"
   },
   "scripts": {
-    "build": "rimraf packages/*/dist && pnpm -r --filter packages/* run build",
-    "build:vue": "rimraf packages/*/dist && pnpm -C packages/vue build",
+    "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' build",
+    "build:elements": "rimraf packages/*/dist && pnpm -r --filter './packages/elements' build",
+    "build:composables": "rimraf packages/*/dist && pnpm -r --filter './packages/composables' build",
     "dev": "pnpm run stub",
     "deploy": "pnpm run stub && npm -C playground run build",
     "lint": "eslint .",

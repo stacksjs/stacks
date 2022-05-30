@@ -51,8 +51,6 @@
     "vue": "^3.2.36"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.24.2",
-    "@babel/types": "^7.18.2",
     "@iconify-json/heroicons-outline": "^1.1.1",
     "@iconify-json/heroicons-solid": "^1.1.1",
     "@types/node": "^17.0.31",
@@ -60,7 +58,6 @@
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.36",
     "@vueuse/core": "^8.5.0",
-    "typescript": "^4.7.2",
     "unbuild": "^0.7.4",
     "unocss": "^0.34.1",
     "unplugin-auto-import": "^0.8.5",
