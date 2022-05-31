@@ -1,6 +1,6 @@
 # Contributing
 
-First off, thank you for taking the time to contribute to Meema Labs ❤️
+First off, thank you for taking the time to contribute to the Open Web Foundation ❤️
 
 ## 💭 Knowledge
 
@@ -10,9 +10,9 @@ It's important to note early on that this project is written with [TypeScript][t
 you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight
 roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
 
-### Vue 3.2 & Vite
+### Vue 3.2 & Vite & unbuild
 
-This project uses [Vue][vue] & [Vite][vite] to build [Vue Components][vue-components].
+This project uses [Vue][vue], [Vite][vite] and unbuild to build [Vue][vue-components] & Web Components.
 
 ### Architecture
 
@@ -50,7 +50,7 @@ pull requests from the forked branch.
 
 ```bash
 # Add the original repository as a "remote" called "upstream".
-$: git remote add upstream git@github.com:meemalabs/web3-vue.git
+$: git remote add upstream git@github.com:openwebstacks/stacks-starter.git
 
 # Fetch the git information from the remote.
 $: git fetch upstream
@@ -104,6 +104,6 @@ contribution is appreciated more than you can imagine, and even a failed PR can 
 [vitebook]: https://vitebook.dev/
 [vue]: https://v3.vuejs.org/
 [vue-components]: https://vuejs.org/v2/guide/components.html
-[web3-vue]: https://github.com/meemalabs/web3-vue
+[web3-vue]: https://github.com/openwebstacks/stacks-starter
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [pr-beginner-series]: https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github

@@ -9,4 +9,7 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
   },
+  externals: [
+    '@vueuse/core', 'vue',
+  ],
 })
