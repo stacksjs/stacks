@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v2.2.2
 
       - name: Set node
         uses: actions/setup-node@v3
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v2.2.2
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v2.2.2
 
       - name: Set node
         uses: actions/setup-node@v3
@@ -92,7 +92,7 @@ jobs:
           key: cypress-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v2.2.2
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
