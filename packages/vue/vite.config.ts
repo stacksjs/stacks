@@ -23,7 +23,7 @@ const config = {
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
       imports: ['vue', '@vueuse/core', {
-        '../composables/dark': ['isDark', 'toggleDark'],
+        '@ow3/hello-world-composable': ['isDark', 'toggleDark'],
       }],
       dts: '../auto-imports.d.ts',
       eslintrc: {

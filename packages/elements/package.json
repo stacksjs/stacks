@@ -43,7 +43,7 @@
   ],
   "engines": {
     "node": ">=v16.15.0",
-    "pnpm": ">=7.1.7"
+    "pnpm": ">=7.1.6"
   },
   "scripts": {
     "build": "vite build",
