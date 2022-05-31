@@ -42,8 +42,8 @@ const config = {
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'hello-world-lib',
-      fileName: (format: string) => `hello-world-lib.${format}.js`,
+      name: 'hello-world-vue',
+      fileName: (format: string) => `hello-world-vue.${format}.js`,
     },
 
     rollupOptions: {

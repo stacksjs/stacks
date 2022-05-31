@@ -8,8 +8,8 @@ It's incredibly easy to get your component library started with this slightly op
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit openwebstacks/stacks-starter my-lib
-cd my-lib
+npx degit openwebstacks/stacks-starter hello-world-stack
+cd hello-world-stack
 
 # ensure you also now update your vite.config.ts with your library name
 
@@ -25,7 +25,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ```vue
 <script setup lang="ts">
-import { HelloWorld } from 'my-lib'
+import { HelloWorld } from 'hello-world-stack'
 </script>
 
 <template>
