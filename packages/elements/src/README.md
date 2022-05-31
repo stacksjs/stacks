@@ -40,8 +40,8 @@ When using this template, feel free to adjust it to your needs. This is simply a
 It's very easy to get started, especially if you have designed/developed Vue Single File Components before. Check out the index.html and how the `HelloWorld`-component is defined within this repo. Feel free to create any component.
 
 ```bash
-npx degit openweblabs/web-components-library-starter my-lib
-cd my-lib
+npx degit openweblabs/web-components-library-starter hello-world-stack
+cd hello-world-stack
 pnpm i # if you don't have pnpm installed, run `npm install -g pnpm`
 
 # starts the local server at http://localhost:3333 & watches for changes
