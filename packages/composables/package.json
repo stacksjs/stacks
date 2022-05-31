@@ -21,7 +21,11 @@
     "typescript",
     "javascript",
     "starter",
-    "kit"
+    "kit",
+    "composable",
+    "package",
+    "web components",
+    "sfcs"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
