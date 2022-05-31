@@ -4,14 +4,13 @@ import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
+import { alias } from '../../alias'
 
 /** @type {import('vite').UserConfig} */
 const config = {
   resolve: {
     dedupe: ['vue'],
-    alias: {
-      '~': resolve(__dirname, 'src'),
-    },
+    alias,
   },
 
   plugins: [
@@ -26,7 +25,7 @@ const config = {
       imports: ['vue', '@vueuse/core', {
         '~/composables/dark': ['isDark', 'toggleDark'],
       }],
-      dts: 'src/auto-imports.d.ts',
+      dts: '../auto-imports.d.ts',
       eslintrc: {
         enabled: true,
       },
@@ -36,15 +35,15 @@ const config = {
     Components({
       dirs: ['src/components'],
       extensions: ['vue'],
-      dts: 'src/components.d.ts',
+      dts: '../components.d.ts',
     }),
   ],
 
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'my-lib',
-      fileName: (format: string) => `my-lib.${format}.js`,
+      name: 'hello-world-lib',
+      fileName: (format: string) => `hello-world-lib.${format}.js`,
     },
 
     rollupOptions: {

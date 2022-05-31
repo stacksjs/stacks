@@ -1,12 +1,12 @@
-import type { UserConfig } from 'vite'
+import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import PresetIcons from '@unocss/preset-icons'
 import { alias } from '../../alias'
 
-// https://vitejs.dev/config/
-const config: UserConfig = {
+/** @type {import('vite').UserConfig} */
+const config = {
   resolve: {
+    dedupe: ['vue'],
     alias,
   },
 
@@ -22,17 +22,15 @@ const config: UserConfig = {
 
     Unocss({
       mode: 'shadow-dom',
-      presets: [
-        PresetIcons({
-          prefix: 'i-',
-          extraProperties: {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-          },
-        }),
-      ],
     }),
   ],
 }
 
-export default config
+// https://vitejs.dev/config
+export default defineConfig(({ command }) => {
+  if (command === 'serve')
+    return config
+
+  // command === 'build'
+  return config
+})
