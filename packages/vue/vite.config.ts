@@ -43,7 +43,15 @@ const config = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'hello-world-vue',
-      fileName: (format: string) => `hello-world-vue.${format}.js`,
+      fileName: (format: string) => {
+        if (format === 'es')
+          return 'hello-world-vue.mjs'
+
+        if (format === 'umd')
+          return 'hello-world-vue.cjs'
+
+        return 'hello-world-vue.?.js'
+      },
     },
 
     rollupOptions: {
