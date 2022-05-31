@@ -1,22 +1,7 @@
 {
-  "name": "@hello-world/monorepo",
+  "name": "@ow3/monorepo",
   "version": "0.11.0",
-  "packageManager": "pnpm@7.1.6",
-  "description": "The easy way to start your stack monorepo.",
-  "workspaces": [
-    "packages/*",
-    "playground"
-  ],
-  "author": "Chris Breuer",
-  "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
-  },
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
+  "description": "The easy way to start your monorepo stack.",
   "keywords": [
     "monorepo",
     "component",
@@ -27,6 +12,16 @@
     "javascript",
     "starter kit"
   ],
+  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+  },
+  "license": "MIT",
+  "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -43,31 +38,44 @@
   "files": [
     "dist"
   ],
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
-  },
+  "workspaces": [
+    "packages/*",
+    "playground"
+  ],
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
-    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' build",
-    "build:elements": "rimraf packages/*/dist && pnpm -r --filter './packages/elements' build",
-    "build:composables": "rimraf packages/*/dist && pnpm -r --filter './packages/composables' build",
-    "dev": "pnpm run stub",
+    "build:composables": "rimraf packages/composables/dist && pnpm -r --filter './packages/composables' build",
+    "build:elements": "rimraf packages/elements/dist && pnpm -r --filter './packages/elements' build",
+    "build:vue": "rimraf packages/vue/dist && pnpm -r --filter './packages/vue' build",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "commit": "git-cz",
+    "coverage": "vitest run --coverage",
     "deploy": "pnpm run stub && npm -C playground run build",
+    "dev": "pnpm run stub",
+    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "play": "npm -C playground run dev",
-    "commit": "git-cz",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "coverage": "vitest run --coverage",
+    "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "size": "esno ./.scripts/size.ts",
+    "stub": "pnpm -r --parallel run stub",
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:e2e": "cypress open",
     "test:unit": "vitest",
-    "typecheck": "vue-tsc --noEmit",
-    "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
-    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
-    "size": "esno ./.scripts/size.ts",
-    "stub": "pnpm -r --parallel run stub"
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
+    "package.json": "sort-package-json"
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
   },
   "dependencies": {
     "vue": "^3.2.36"
@@ -114,22 +122,14 @@
     "vitest": "^0.12.9",
     "vue-tsc": "^0.34.16"
   },
+  "packageManager": "pnpm@7.1.6",
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  },
   "pnpm": {
     "overrides": {
       "vite": "2.9.9"
-    }
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
-    "package.json": "sort-package-json"
-  },
-  "config": {
-    "commitizen": {
-      "path": "@commitlint/cz-commitlint"
     }
   }
 }

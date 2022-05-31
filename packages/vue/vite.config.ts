@@ -4,7 +4,6 @@ import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
-import PresetIcons from '@unocss/preset-icons'
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -21,13 +20,6 @@ const config = {
     Unocss({
       mode: 'vue-scoped',
       presets: [
-        PresetIcons({
-          prefix: 'i-',
-          extraProperties: {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-          },
-        }),
       ],
     }),
 
@@ -69,14 +61,6 @@ const config = {
 
     // sourcemap: true,
     // minify: false,
-  },
-
-  test: {
-    include: ['tests/**/*.test.ts'],
-    // environment: 'jsdom',
-    deps: {
-      inline: ['@vue', '@vueuse', 'vue-demi'],
-    },
   },
 }
 

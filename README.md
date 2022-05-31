@@ -4,7 +4,7 @@ This is an opinionated starter kit to help kick-start development of your next m
 
 ## 💡 Get Started
 
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you really far!
+It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you very far!
 
 ```bash
 # you may use this GitHub template or the following command:

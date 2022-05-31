@@ -2,7 +2,7 @@ import fs from 'fs'
 import { resolve } from 'path'
 import type { UserConfig } from '@commitlint/types'
 
-const composables = fs.readdirSync(resolve(__dirname, 'packages/vue/src/composables'))
+const composables = fs.readdirSync(resolve(__dirname, 'packages/composables/src'))
 
 const Configuration: UserConfig = {
   /*
@@ -28,7 +28,7 @@ const Configuration: UserConfig = {
     'scope-enum': [
       2, 'always',
       [
-        '', 'vue', 'elements', 'composable', 'icons', 'build', 'deps', 'release', 'cleanup', 'readme',
+        '', 'vue', 'elements', 'composable', 'examples', 'playground', 'deps', 'release', 'cleanup', 'readme', 'build',
         ...composables.map(item => item.replace(/.ts/g, '')).filter(item => item !== 'index'),
       ],
     ],

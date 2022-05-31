@@ -1,19 +1,7 @@
 {
   "name": "@ow3/hello-world-composable",
   "version": "0.11.0",
-  "packageManager": "pnpm@7.1.6",
   "description": "The easy way to contain your logic within your monorepo.",
-  "author": "Chris Breuer",
-  "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
-    "directory": "packages/composables"
-  },
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
   "keywords": [
     "component",
     "library",
@@ -23,6 +11,17 @@
     "starter",
     "kit"
   ],
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/composables"
+  },
+  "license": "MIT",
+  "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -39,16 +38,16 @@
   "files": [
     "dist"
   ],
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
-  },
   "scripts": {
     "build": "unbuild",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@vueuse/core": "^8.5.0",
-    "unbuild": "^0.7.4"
+    "@vueuse/core": "^8.5.0"
+  },
+  "packageManager": "pnpm@7.1.6",
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
   }
 }
