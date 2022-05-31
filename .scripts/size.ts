@@ -10,9 +10,9 @@ import fg from 'fast-glob'
 import { version } from '../package.json'
 
 const packages = [
-  'vue',
-  'elements',
-  'composables',
+  'hello-world-vue',
+  'hello-world-elements',
+  'hello-world-composables',
 ]
 
 console.log()
@@ -28,7 +28,7 @@ for (const pkg of packages) {
   }
 
   console.log()
-  console.log(`@unocss/${pkg}`)
+  console.log(`@ow3/${pkg}`) // this would be your $orgName/$pkgName as distributed via npm
   console.log(`gzip    ${(gzip(minified) / 1024).toFixed(2)} KiB`)
   console.log(`brotli  ${(brotli(minified) / 1024).toFixed(2)} KiB`)
 }
