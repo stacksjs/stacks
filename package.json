@@ -1,7 +1,18 @@
 {
   "name": "@ow3/monorepo",
   "version": "0.11.0",
+  "packageManager": "pnpm@7.1.6",
   "description": "The easy way to start your monorepo stack.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
   "keywords": [
     "monorepo",
     "component",
@@ -12,24 +23,14 @@
     "javascript",
     "starter kit"
   ],
-  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
-  },
-  "license": "MIT",
-  "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/hello-world.es.js",
-      "require": "./dist/hello-world.umd.js"
+      "require": "./dist/hello-world.umd.js",
+      "import": "./dist/hello-world.es.js"
     }
   },
   "main": "./dist/hello-world.umd.js",
@@ -42,6 +43,10 @@
     "packages/*",
     "playground"
   ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
     "build:composables": "rimraf packages/composables/dist && pnpm -r --filter './packages/composables' build",
@@ -63,19 +68,6 @@
     "test:e2e": "cypress open",
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
-    "package.json": "sort-package-json"
-  },
-  "config": {
-    "commitizen": {
-      "path": "@commitlint/cz-commitlint"
-    }
   },
   "dependencies": {
     "vue": "^3.2.36"
@@ -110,7 +102,6 @@
     "prompts": "^2.4.2",
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.7.0",
-    "sort-package-json": "^1.57.0",
     "terser": "^5.13.1",
     "typescript": "^4.7.2",
     "unbuild": "^0.7.4",
@@ -122,14 +113,21 @@
     "vitest": "^0.12.9",
     "vue-tsc": "^0.34.16"
   },
-  "packageManager": "pnpm@7.1.6",
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
-  },
   "pnpm": {
     "overrides": {
       "vite": "2.9.9"
+    }
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
     }
   }
 }

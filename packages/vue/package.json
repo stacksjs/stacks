@@ -1,7 +1,19 @@
 {
   "name": "@ow3/hello-world-vue",
   "version": "0.11.0",
+  "packageManager": "pnpm@7.1.6",
   "description": "The easy way to start your Vue 3 Component Library.",
+  "author": "Chris Breuer <chris@ow3.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
   "keywords": [
     "component",
     "library",
@@ -11,25 +23,14 @@
     "starter",
     "kit"
   ],
-  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
-  "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
-    "directory": "packages/vue"
-  },
-  "license": "MIT",
-  "author": "Chris Breuer <chris@ow3.org>",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
   "main": "dist/index.cjs",
@@ -38,16 +39,15 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.5"
+  },
   "scripts": {
     "build": "unbuild",
     "stub": "unbuild --stub"
   },
   "dependencies": {
     "vue": "^3.2.36"
-  },
-  "packageManager": "pnpm@7.1.6",
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.5"
   }
 }
