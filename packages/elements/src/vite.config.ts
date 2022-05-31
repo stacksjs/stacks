@@ -1,7 +1,6 @@
 import type { UserConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import PresetIcons from '@unocss/preset-icons'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -17,25 +16,8 @@ const config: UserConfig = {
 
     Unocss({
       mode: 'shadow-dom',
-      presets: [
-        PresetIcons({
-          prefix: 'i-',
-          extraProperties: {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-          },
-        }),
-      ],
     }),
   ],
-
-  test: {
-    include: ['tests/**/*.test.ts'],
-    environment: 'jsdom',
-    deps: {
-      inline: ['@vue', '@vueuse'],
-    },
-  },
 }
 
 export default config

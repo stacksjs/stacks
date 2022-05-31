@@ -19,8 +19,6 @@ const config = {
 
     Unocss({
       mode: 'vue-scoped',
-      presets: [
-      ],
     }),
 
     // https://github.com/antfu/unplugin-auto-import

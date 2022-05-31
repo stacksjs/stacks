@@ -45,17 +45,6 @@
   "dependencies": {
     "vue": "^3.2.36"
   },
-  "devDependencies": {
-    "@iconify-json/heroicons-outline": "^1.1.1",
-    "@iconify-json/heroicons-solid": "^1.1.1",
-    "@unocss/preset-icons": "^0.34.1",
-    "@vitejs/plugin-vue": "^2.3.3",
-    "@vue/compiler-sfc": "^3.2.36",
-    "@vueuse/core": "^8.5.0",
-    "unocss": "^0.34.1",
-    "vite": "^2.9.9",
-    "vue-tsc": "^0.34.16"
-  },
   "packageManager": "pnpm@7.1.6",
   "engines": {
     "node": ">=v16.15.0",
