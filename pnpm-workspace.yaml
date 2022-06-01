@@ -1,5 +1,5 @@
 packages:
+  - 'examples/**'
   - 'packages/*'
   - playground
   - '!**/tests/**'
-  - '!examples/**'

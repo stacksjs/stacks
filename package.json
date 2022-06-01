@@ -57,6 +57,8 @@
     "coverage": "vitest run --coverage",
     "deploy": "pnpm run stub && pnpm --filter './playground' build",
     "dev": "pnpm run stub",
+    "dev:vue-cli": "pnpm --filter './examples/vue-cli' dev",
+    "dev:vite-wcs": "pnpm --filter './examples/vite-wcs' dev",
     "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
