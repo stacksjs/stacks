@@ -44,7 +44,7 @@ importers:
       unplugin-vue-components: ^0.19.6
       upath: ^2.0.1
       vite: 2.9.9
-      vitest: ^0.13.0
+      vitest: ^0.13.1
       vue: ^3.2.36
       vue-tsc: ^0.35.2
     dependencies:
@@ -87,7 +87,7 @@ importers:
       unplugin-vue-components: 0.19.6_vite@2.9.9+vue@3.2.36
       upath: 2.0.1
       vite: 2.9.9
-      vitest: 0.13.0
+      vitest: 0.13.1
       vue-tsc: 0.35.2_typescript@4.7.2
 
   examples/vite-vue:
@@ -137,7 +137,7 @@ importers:
     specifiers:
       '@vueuse/core': ^8.6.0
     devDependencies:
-      '@vueuse/core': 8.6.0_vue@3.2.36
+      '@vueuse/core': 8.6.0
 
   packages/elements:
     specifiers:
@@ -3106,6 +3106,22 @@ packages:
     resolution: {integrity: sha512-Iu8Tbg3f+emIIMmI2ycSI8QcEuAUgPTgHwesDU1eKMLE4YC/c/sFbGc70QgMq31ijRftV0R7vCm9co6rldCeOA==}
     dev: true
 
+  /@vueuse/core/8.6.0:
+    resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      '@vueuse/metadata': 8.6.0
+      '@vueuse/shared': 8.6.0
+      vue-demi: 0.12.5
+    dev: true
+
   /@vueuse/core/8.6.0_vue@3.2.36:
     resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
     peerDependencies:
@@ -3125,6 +3141,20 @@ packages:
 
   /@vueuse/metadata/8.6.0:
     resolution: {integrity: sha512-F+CKPvaExsm7QgRr8y+ZNJFwXasn89rs5wth/HeX9lJ1q8XEt+HJ16Q5Sxh4rfG5YSKXrStveVge8TKvPjMjFA==}
+    dev: true
+
+  /@vueuse/shared/8.6.0:
+    resolution: {integrity: sha512-Y/IVywZo7IfEoSSEtCYpkVEmPV7pU35mEIxV7PbD/D3ly18B3mEsBaPbtDkNM/QP3zAZ5mn4nEkOfddX4uwuIA==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      vue-demi: 0.12.5
     dev: true
 
   /@vueuse/shared/8.6.0_vue@3.2.36:
@@ -10961,8 +10991,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.13.0:
-    resolution: {integrity: sha512-vuYt3+G25MMnANgyMHHG3VK86C9K/VFi/8uH5myQ2v660W4WArv99ElakPlVFxxSXXM1jqQPiPj2ht35Bod9LQ==}
+  /vitest/0.13.1:
+    resolution: {integrity: sha512-CfSBf7YFw/i8HumSUQRtZKs0aV91DC9WU8nAgIJAlawKHaFuPHQohDwOTPIFgrxySiuFYUa0Yohf9gDFfBwjxA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
@@ -10993,6 +11023,19 @@ packages:
       - sass
       - stylus
       - supports-color
+    dev: true
+
+  /vue-demi/0.12.5:
+    resolution: {integrity: sha512-BREuTgTYlUr0zw0EZn3hnhC3I6gPWv+Kwh4MCih6QcAeaTlaIX0DwOVN0wHej7hSvDPecz4jygy/idsgKfW58Q==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
     dev: true
 
   /vue-demi/0.12.5_vue@3.2.36:

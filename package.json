@@ -113,7 +113,7 @@
     "unplugin-vue-components": "^0.19.6",
     "upath": "^2.0.1",
     "vite": "^2.9.9",
-    "vitest": "^0.13.0",
+    "vitest": "^0.13.1",
     "vue-tsc": "^0.35.2"
   },
   "pnpm": {
