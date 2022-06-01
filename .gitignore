@@ -6,9 +6,10 @@ dist-ssr
 .DS_STORE
 .cache
 .temp
+.pnpm-debug.log
 
 # Cypress
-cypress/downloads
-cypress/fixtures
-cypress/plugins
-cypress/support
+tests/cypress/downloads
+tests/cypress/fixtures
+tests/cypress/plugins
+tests/cypress/support

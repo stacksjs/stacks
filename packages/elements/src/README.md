@@ -1,42 +1,15 @@
-# Stacks Starter Kit
+# Web Component Library Starter Kit
 
-This is an opinionated starter kit to help kick-start development of your next monorepo/component library.
+"Why create components for a specific framework when it can be written to be understood by all — including browsers?"
 
-## 💡 Get Started
+## 🤝 Introduction
 
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you very far!
-
-```bash
-# you may use this GitHub template or the following command:
-npx degit openwebstacks/stacks-starter hello-world-stack
-cd hello-world-stack
-
-# ensure you also now update your vite.config.ts with your library name
-
- # if you don't have pnpm installed, run `npm i -g pnpm`
-pnpm i # install all deps
-pnpm dev # starts the local server at http://localhost:3333 & watches for changes
-pnpm build # builds the library for production-ready use
-```
-
-Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
-
-## 🤖 Usage
-
-```vue
-<script setup lang="ts">
-import HelloWorld from 'hello-world-stack'
-</script>
-
-<template>
-  <HelloWorld />
-</template>
-```
+Before you get started, it is important to understand what a Web Component is. Think of it as a (custom) HTML element. This custom element can natively be used within your framework-of-choice. That being said, this is an opinionated starter kit, employing many best-practices, to help you expedite the development of your web component library.
 
 ### 👩🏽‍💻 Dev Tools
 
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
-- [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
+- [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
@@ -53,7 +26,7 @@ import HelloWorld from 'hello-world-stack'
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
-- [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
+- [VueUse](https://github.com/vueuse/vueuse) - Collection of useful composition APIs
 
 ### 🥰 Coding Style
 
@@ -62,9 +35,27 @@ import HelloWorld from 'hello-world-stack'
 
 When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.
 
+## 💡 Get Started
+
+It's very easy to get started, especially if you have designed/developed Vue Single File Components before. Check out the index.html and how the `HelloWorld`-component is defined within this repo. Feel free to create any component.
+
+```bash
+npx degit openweblabs/web-components-library-starter hello-world-stack
+cd hello-world-stack
+pnpm i # if you don't have pnpm installed, run `npm install -g pnpm`
+
+# starts the local server at http://localhost:3333 & watches for changes
+pnpm dev
+
+# builds the component library for production-ready use
+pnpm build
+
+# check out the `package.json` to see the remainder of scripts
+```
+
 ### Tips
 
-This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
+When using VS Code as your code editor, you may want to consider keeping the [vscode.html-data.json](.vscode/vscode.html-data.json) file updated. It provides hints to your code editor and you can find more examples [here](https://github.com/microsoft/vscode-custom-data/blob/main/web-data/html/htmlTags.json).
 
 ```bash
 # how to create a git commit?
@@ -73,20 +64,27 @@ pnpm run commit # then simply answer the questions
 
 # after you have successfully committed, you may create a "release"
 pnpm run release # automates git commits, versioning, and CHANGELOG generation
-
-# how to test your library locally?
-pnpm pack # packs the library into a tarball
 ```
 
-## 🧪 Testing
+## 🖥️ Browsers
 
-```bash
-pnpm test
-```
+This starter kit is built for the modern web and avoids bloated polyfills and outdated environments as much as possible. Currently, it supports all browsers that fully implement the [Custom Elements V1][caniuse-custom-el-v1].
+
+- Edge 79+
+- Firefox 63+
+- Chrome 67+
+- Safari 13.1+
+- Opera 64+
+- iOS Safari 13.7+
+- Android Browser 81+
+- Opera Mobile 59+
+- Chrome for Android 88+
+
+[caniuse-custom-el-v1]: https://caniuse.com/custom-elementsv1
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/meemalabs/web-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openweblabs/web-components-library-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 

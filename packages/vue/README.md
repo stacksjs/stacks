@@ -1,10 +1,10 @@
-# Stacks Starter Kit
+# Vue Components
 
-This is an opinionated starter kit to help kick-start development of your next monorepo/component library.
+This is the core of your component library.
 
 ## 💡 Get Started
 
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you very far!
+It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you really far!
 
 ```bash
 # you may use this GitHub template or the following command:
@@ -25,7 +25,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ```vue
 <script setup lang="ts">
-import HelloWorld from 'hello-world-stack'
+import { HelloWorld } from 'hello-world-stack'
 </script>
 
 <template>
@@ -38,7 +38,7 @@ import HelloWorld from 'hello-world-stack'
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [TypeScript 4.7](https://www.typescriptlang.org/)
+- [TypeScript 4.6](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
@@ -58,6 +58,7 @@ import HelloWorld from 'hello-world-stack'
 ### 🥰 Coding Style
 
 - Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
+- [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
 When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.

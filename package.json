@@ -1,62 +1,73 @@
 {
-  "name": "my-lib",
+  "name": "@ow3/monorepo",
   "version": "0.11.0",
-  "packageManager": "pnpm@7.1.7",
-  "description": "The easy way to start your Vue 3 Component Library.",
+  "packageManager": "pnpm@7.1.6",
+  "description": "The easy way to start your monorepo stack.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
   "keywords": [
+    "monorepo",
     "component",
     "library",
     "vue",
+    "web components",
     "typescript",
     "javascript",
-    "starter",
-    "kit"
+    "starter kit"
   ],
-  "homepage": "https://github.com/openweblabs/vue-component-library-starter#readme",
-  "bugs": {
-    "url": "https://github.com/openweblabs/vue-component-library-starter/issues"
-  },
-  "license": "MIT",
-  "author": "Chris Breuer <chris@ow3.org>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openweblabs/vue-component-library-starter.git"
-  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "main": "./dist/my-lib.umd.js",
-  "module": "./dist/my-lib.es.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/my-lib.umd.js",
-      "import": "./dist/my-lib.es.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/hello-world.umd.js",
+      "import": "./dist/hello-world.es.js"
     }
   },
+  "main": "./dist/hello-world.umd.js",
+  "module": "./dist/hello-world.es.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
+  "workspaces": [
+    "packages/*",
+    "playground"
+  ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.6"
+  },
   "scripts": {
-    "build": "vite build && pnpm run typecheck",
-    "dev": "vite dev --open --port 3333",
+    "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build:composables": "rimraf packages/composables/dist && pnpm -r --filter './packages/composables' build",
+    "build:elements": "rimraf packages/elements/dist && pnpm -r --filter './packages/elements' build",
+    "build:vue": "rimraf packages/vue/dist && pnpm -r --filter './packages/vue' build",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "commit": "git-cz",
+    "coverage": "vitest run --coverage",
+    "deploy": "pnpm run stub && pnpm --filter './playground' build",
+    "dev": "pnpm run stub",
+    "preinstall": "esno ./.scripts/check-for-pnpm.ts && esno .scripts/check-node-version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "commit": "git-cz",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "coverage": "vitest run --coverage",
-    "test": "vitest",
+    "play": "pnpm --filter './playground' build",
+    "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "size": "esno ./.scripts/size.ts",
+    "stub": "pnpm -r --parallel run stub",
+    "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:e2e": "cypress open",
     "test:unit": "vitest",
-    "typecheck": "vue-tsc --emitDeclarationOnly",
-    "release": "npx bumpp package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
-    "preinstall": "node .scripts/check-for-pnpm.js && node .scripts/check-node-version.mjs"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "vue": "^3.2.36"
@@ -74,39 +85,49 @@
     "@unocss/preset-icons": "^0.37.1",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.36",
-    "@vueuse/core": "^8.6.0",
+    "@vueuse/core": "^8.5.0",
+    "brotli-size": "^4.0.0",
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
     "cypress": "^9.7.0",
     "eslint": "^8.16.0",
     "eslint-plugin-cypress": "^2.12.1",
+    "esno": "^0.16.3",
+    "fast-glob": "^3.2.11",
+    "gzip-size": "^7.0.0",
     "inquirer": "^8.2.4",
     "lint-staged": "^12.5.0",
     "minimist": "^1.2.6",
     "prompts": "^2.4.2",
-    "simple-git-hooks": "^2.8.0",
-    "sort-package-json": "^1.57.0",
+    "rimraf": "^3.0.2",
+    "simple-git-hooks": "^2.7.0",
+    "terser": "^5.13.1",
     "typescript": "^4.7.2",
-    "unocss": "^0.37.1",
-    "unplugin-auto-import": "^0.8.6",
-    "unplugin-vue-components": "^0.19.6",
+    "unbuild": "^0.7.4",
+    "unocss": "^0.34.1",
+    "unplugin-auto-import": "^0.8.5",
+    "unplugin-vue-components": "^0.19.5",
     "upath": "^2.0.1",
     "vite": "^2.9.9",
     "vitest": "^0.13.0",
     "vue-tsc": "^0.35.2"
   },
+  "pnpm": {
+    "overrides": {
+      "vite": "2.9.9"
+    }
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
+  },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix",
-    "package.json": "sort-package-json"
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
   "config": {
     "commitizen": {
       "path": "@commitlint/cz-commitlint"
     }
-  },
-  "engines": {
-    "node": ">=v16.15.0",
-    "pnpm": ">=7.1.7"
   }
 }

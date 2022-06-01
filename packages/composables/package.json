@@ -1,0 +1,57 @@
+{
+  "name": "@ow3/hello-world-composable",
+  "version": "0.11.0",
+  "packageManager": "pnpm@7.1.6",
+  "description": "The easy way to contain your logic within your monorepo.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "directory": "packages/composables"
+  },
+  "bugs": {
+    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+  },
+  "keywords": [
+    "component",
+    "library",
+    "vue",
+    "typescript",
+    "javascript",
+    "starter",
+    "kit",
+    "composable",
+    "package",
+    "web components",
+    "sfcs"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=v16.15.0",
+    "pnpm": ">=7.1.6"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "stub": "unbuild --stub"
+  },
+  "devDependencies": {
+    "@vueuse/core": "^8.5.0"
+  }
+}
