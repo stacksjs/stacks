@@ -1,6 +1,6 @@
 # Stacks Starter Kit
 
-This is an opinionated starter kit to help kick-start development of your next monorepo/component library.
+This is an opinionated starter kit to help kick-start development of your next monorepo component library.
 
 ## 💡 Get Started
 
