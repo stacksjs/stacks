@@ -45,12 +45,12 @@ const config = {
       name: 'hello-world-vue',
       fileName: (format: string) => {
         if (format === 'es')
-          return 'hello-world-vue.mjs'
+          return 'index.mjs'
 
         if (format === 'umd')
-          return 'hello-world-vue.cjs'
+          return 'index.cjs'
 
-        return 'hello-world-vue.?.js'
+        return 'index.?.js'
       },
     },
 
