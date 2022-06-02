@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Tagged Release
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
