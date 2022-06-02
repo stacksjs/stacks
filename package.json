@@ -1,6 +1,6 @@
 {
   "name": "@ow3/monorepo",
-  "version": "0.11.0",
+  "version": "0.13.1",
   "packageManager": "pnpm@7.1.7",
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
@@ -51,7 +51,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "play": "pnpm --filter './playground' build",
-    "release": "npx bumpp packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
+    "release": "npx bumpp package.json packages/*/package.json --execute 'pnpm run changelog' --commit 'chore(release): %s' --tag --push --all",
     "size": "esno ./.scripts/size.ts",
     "stub": "pnpm -r --parallel run stub",
     "test": "pnpm run test:unit && pnpm run test:e2e",
