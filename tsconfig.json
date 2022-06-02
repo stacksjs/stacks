@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "composite": true,
+    // "composite": true,
     "target": "es2017",
     "module": "esnext",
     "lib": [
@@ -21,13 +21,13 @@
     ],
     "paths": {
       "@ow3/hello-world-vue": [
-        "./packages/vue/src/index.ts"
+        "./packages/vue/src"
       ],
       "@ow3/hello-world-composable": [
-        "./packages/composables/src/index.ts"
+        "./packages/composables/src"
       ],
       "@ow3/hello-world-elements": [
-        "./packages/web-components/src/index.ts"
+        "./packages/web-components/src"
       ]
     }
   },
