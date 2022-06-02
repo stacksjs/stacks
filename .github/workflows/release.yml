@@ -16,19 +16,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.2.2
+
       - name: Set node
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: pnpm
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Setup
-        run: npm i -g @antfu/ni pnpm
-
-      - run: npx ≈ -p angular
-        continue-on-error: true
-        env:
-          CONVENTIONAL_GITHUB_RELEASER_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Install Dependencies
         run: pnpm install
