@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -6,8 +7,8 @@ import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import { alias } from '../../alias'
 
-/** @type {import('vite').UserConfig} */
-const config = {
+// https://vitejs.dev/config/
+const config: UserConfig = {
   resolve: {
     dedupe: ['vue'],
     alias,
