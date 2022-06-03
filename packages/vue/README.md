@@ -38,7 +38,7 @@ import { HelloWorld } from 'hello-world-stack'
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [TypeScript 4.6](https://www.typescriptlang.org/)
+- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
@@ -47,7 +47,7 @@ import { HelloWorld } from 'hello-world-stack'
 - [VS Code Extensions](./.vscode/extensions.json)
   - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
-  - [Windi Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
+  - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
 ### 🧩 Plugins
 
