@@ -13,8 +13,10 @@ cd hello-world-stack
 
 pnpm i -r # install deps for all packages
 pnpm dev # stubs the libraries for local use
-pnpm dev:vite-vue # starts the vite-vue dev server
-pnpm dev:vite-wc # starts the vite-wc dev server
+
+# starts the dev server for any of the examples
+pnpm dev:vite-vue
+pnpm dev:vite-wc
 
 pnpm build # builds the library for production-ready use
 ```
@@ -57,9 +59,6 @@ pnpm run commit # then simply follow the prompts
 
 # after you successfully committed, you may create a "release"
 pnpm run release # automates git commits, versioning, and CHANGELOG generation
-
-# how to test your library locally?
-pnpm pack # packs the library into a tarball
 ```
 
 Read more about these tips in the docs.
