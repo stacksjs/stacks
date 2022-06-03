@@ -7,7 +7,7 @@ importers:
 
   .:
     specifiers:
-      '@antfu/eslint-config': ^0.25.0
+      '@antfu/eslint-config': ^0.25.1
       '@babel/types': ^7.18.4
       '@commitlint/cli': ^17.0.2
       '@commitlint/config-conventional': ^17.0.2
@@ -37,9 +37,9 @@ importers:
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
       terser: ^5.14.0
-      typescript: ^4.7.2
+      typescript: ^4.7.3
       unocss: ^0.37.2
-      unplugin-auto-import: ^0.8.6
+      unplugin-auto-import: ^0.8.7
       unplugin-vue-components: ^0.19.6
       upath: ^2.0.1
       vite: 2.9.9
@@ -121,7 +121,7 @@ importers:
       '@vueuse/core': ^8.6.0
       unbuild: ^0.7.4
     devDependencies:
-      '@vueuse/core': 8.6.0_vue@3.2.36
+      '@vueuse/core': 8.6.0
       unbuild: 0.7.4
 
   packages/elements:
@@ -1568,10 +1568,10 @@ packages:
       '@types/node': 17.0.39
       chalk: 4.1.2
       cosmiconfig: 7.0.1
-      cosmiconfig-typescript-loader: 2.0.1_6kvheyhwjsnzsolam7jkpsfgvy
+      cosmiconfig-typescript-loader: 2.0.1_7mvreszf4wwmovnfi4srbo6mna
       lodash: 4.17.21
       resolve-from: 5.0.0
-      typescript: 4.7.2
+      typescript: 4.7.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -3038,6 +3038,22 @@ packages:
     resolution: {integrity: sha512-Iu8Tbg3f+emIIMmI2ycSI8QcEuAUgPTgHwesDU1eKMLE4YC/c/sFbGc70QgMq31ijRftV0R7vCm9co6rldCeOA==}
     dev: true
 
+  /@vueuse/core/8.6.0:
+    resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      '@vueuse/metadata': 8.6.0
+      '@vueuse/shared': 8.6.0
+      vue-demi: 0.13.1
+    dev: true
+
   /@vueuse/core/8.6.0_vue@3.2.36:
     resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
     peerDependencies:
@@ -3057,6 +3073,20 @@ packages:
 
   /@vueuse/metadata/8.6.0:
     resolution: {integrity: sha512-F+CKPvaExsm7QgRr8y+ZNJFwXasn89rs5wth/HeX9lJ1q8XEt+HJ16Q5Sxh4rfG5YSKXrStveVge8TKvPjMjFA==}
+    dev: true
+
+  /@vueuse/shared/8.6.0:
+    resolution: {integrity: sha512-Y/IVywZo7IfEoSSEtCYpkVEmPV7pU35mEIxV7PbD/D3ly18B3mEsBaPbtDkNM/QP3zAZ5mn4nEkOfddX4uwuIA==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      vue-demi: 0.13.1
     dev: true
 
   /@vueuse/shared/8.6.0_vue@3.2.36:
@@ -4558,7 +4588,7 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cosmiconfig-typescript-loader/2.0.1_6kvheyhwjsnzsolam7jkpsfgvy:
+  /cosmiconfig-typescript-loader/2.0.1_7mvreszf4wwmovnfi4srbo6mna:
     resolution: {integrity: sha512-B9s6sX/omXq7I6gC6+YgLmrBFMJhPWew7ty/X5Tuwtd2zOSgWaUdXjkuVwbe3qqcdETo60+1nSVMekq//LIXVA==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
@@ -4567,8 +4597,8 @@ packages:
     dependencies:
       '@types/node': 17.0.39
       cosmiconfig: 7.0.1
-      ts-node: 10.8.1_6kvheyhwjsnzsolam7jkpsfgvy
-      typescript: 4.7.2
+      ts-node: 10.8.1_7mvreszf4wwmovnfi4srbo6mna
+      typescript: 4.7.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -10463,7 +10493,7 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /ts-node/10.8.1_6kvheyhwjsnzsolam7jkpsfgvy:
+  /ts-node/10.8.1_7mvreszf4wwmovnfi4srbo6mna:
     resolution: {integrity: sha512-Wwsnao4DQoJsN034wePSg5nZiw4YKXf56mPIAeD6wVmiv+RytNSWqc2f3fKvcUoV+Yn2+yocD71VOfQHbmVX4g==}
     hasBin: true
     peerDependencies:
@@ -10489,7 +10519,7 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 4.7.2
+      typescript: 4.7.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -10589,6 +10619,12 @@ packages:
 
   /typescript/4.7.2:
     resolution: {integrity: sha512-Mamb1iX2FDUpcTRzltPxgWMKy3fhg0TN378ylbktPGPK/99KbDtMQ4W1hwgsbPAsG3a0xKa1vmw4VKZQbkvz5A==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: true
+
+  /typescript/4.7.3:
+    resolution: {integrity: sha512-WOkT3XYvrpXx4vMMqlD+8R8R37fZkjyLGlxavMc4iB8lrl8L0DeTcHbYgw/v0N/z9wAFsgBhcsF0ruoySS22mA==}
     engines: {node: '>=4.2.0'}
     hasBin: true
     dev: true
@@ -10969,6 +11005,19 @@ packages:
       - sass
       - stylus
       - supports-color
+    dev: true
+
+  /vue-demi/0.13.1:
+    resolution: {integrity: sha512-xmkJ56koG3ptpLnpgmIzk9/4nFf4CqduSJbUM0OdPoU87NwRuZ6x49OLhjSa/fC15fV+5CbEnrxU4oyE022svg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
     dev: true
 
   /vue-demi/0.13.1_vue@3.2.36:
