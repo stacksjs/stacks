@@ -21,6 +21,19 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
+Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use:
+
+```html
+<html>
+  <body>
+    <hello-world name="Jane Doe"></hello-world>
+    <script src="elements.js"></script>
+  </body>
+</html>
+```
+
+Optional: if you prefer using Vue
+
 ```vue
 <script setup lang="ts">
 import HelloWorld from 'hello-world-stack'
@@ -31,12 +44,30 @@ import HelloWorld from 'hello-world-stack'
 </template>
 ```
 
+### Tips
+
+This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
+
+```bash
+# how to create a git commit?
+git add . # select the changes you want to commit
+pnpm run commit # then simply follow the prompts
+
+# after you successfully committed, you may create a "release"
+pnpm run release # automates git commits, versioning, and CHANGELOG generation
+
+# how to test your library locally?
+pnpm pack # packs the library into a tarball
+```
+
+Read more about these tips in the docs.
+
 ### Dev Tools
 
+- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
@@ -59,22 +90,6 @@ import HelloWorld from 'hello-world-stack'
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
 When using this template, feel free to adjust it to your needs. It simply is a framework to help you quickly & efficiently bootstrap & design component libraries using industry best-practices.
-
-### Tips
-
-This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
-
-```bash
-# how to create a git commit?
-git add . # select the changes you want to commit
-pnpm run commit # then simply answer the questions
-
-# after you have successfully committed, you may create a "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
-
-# how to test your library locally?
-pnpm pack # packs the library into a tarball
-```
 
 ## 🧪 Testing
 
