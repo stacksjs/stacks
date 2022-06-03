@@ -27,7 +27,7 @@ import HelloWorld from 'hello-world-stack'
 </script>
 
 <template>
-  <HelloWorld />
+  <HelloWorld name="J Doe" />
 </template>
 ```
 

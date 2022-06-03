@@ -3,7 +3,7 @@ import { HelloWorld } from '../../packages/vue/src/index'
 </script>
 
 <template>
-  <HelloWorld greeting="Hallo" />
+  <HelloWorld name="Jane Doe" />
 </template>
 
 <style>
