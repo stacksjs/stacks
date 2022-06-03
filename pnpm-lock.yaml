@@ -1701,12 +1701,12 @@ packages:
   /@esbuild-kit/cjs-loader/2.0.1:
     resolution: {integrity: sha512-KmE8XouKm6m05jPIsf5CTIZZ4171GHd+PUts1mtti2tzoiD228qCRjpkCwg540c3fMUweKupO+PIpkJ9+Z7vPg==}
     dependencies:
-      '@esbuild-kit/core-utils': 1.2.1
+      '@esbuild-kit/core-utils': 1.3.0
       get-tsconfig: 3.0.1
     dev: true
 
-  /@esbuild-kit/core-utils/1.2.1:
-    resolution: {integrity: sha512-zNtrwZ/754OMs6joIQIxsdOA3rjhde7Vt/IzkgNnCcQrwUDG5iHmlv9vhlHzyg+BZ6Cp519lrkMKlTCEW00Kpw==}
+  /@esbuild-kit/core-utils/1.3.0:
+    resolution: {integrity: sha512-c3N86nZAgU7soEbSCyLGVVf+9iz5fWw4ujK6e8KSDN3PuVFD6G9JVyLsNWvNoWLmNANb0YKxuhqdOLM4kAK66w==}
     dependencies:
       esbuild: 0.14.38
     dev: true
@@ -1714,7 +1714,7 @@ packages:
   /@esbuild-kit/esm-loader/2.1.4:
     resolution: {integrity: sha512-acfzciUGugu1TV1QHJOAOe6F5miEjQLDYMWhoD4mVPFmwHA8Iwp5UCJidyruj67qp2ybu+Zc++7+th9VnYaZMA==}
     dependencies:
-      '@esbuild-kit/core-utils': 1.2.1
+      '@esbuild-kit/core-utils': 1.3.0
       es-module-lexer: 0.10.5
       get-tsconfig: 3.0.1
     dev: true
@@ -10593,7 +10593,7 @@ packages:
     hasBin: true
     dependencies:
       '@esbuild-kit/cjs-loader': 2.0.1
-      '@esbuild-kit/core-utils': 1.2.1
+      '@esbuild-kit/core-utils': 1.3.0
       '@esbuild-kit/esm-loader': 2.1.4
     optionalDependencies:
       fsevents: 2.3.2

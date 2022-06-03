@@ -31,7 +31,7 @@ import HelloWorld from 'hello-world-stack'
 </template>
 ```
 
-### 👩🏽‍💻 Dev Tools
+### Dev Tools
 
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
@@ -47,13 +47,13 @@ import HelloWorld from 'hello-world-stack'
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
   - [Windi Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
-### 🧩 Plugins
+### Plugins
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
 
-### 🥰 Coding Style
+### Coding Style
 
 - Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
@@ -84,7 +84,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/meemalabs/web-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openwebstacks/stacks-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
