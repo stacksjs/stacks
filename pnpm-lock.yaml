@@ -118,13 +118,13 @@ importers:
 
   examples/vue-cli:
     specifiers:
-      '@ow3/hello-world-vue': ^0.12.0
+      '@ow3/hello-world-vue': ^0.13.0
       '@vue/cli-plugin-babel': ~5.0.4
       '@vue/cli-service': ~5.0.4
       core-js: ^3.22.7
       vue: ^3.2.36
     dependencies:
-      '@ow3/hello-world-vue': 0.12.1
+      '@ow3/hello-world-vue': link:../../packages/vue
       core-js: 3.22.8
       vue: 3.2.36
     devDependencies:
@@ -1888,13 +1888,6 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
     dev: true
-
-  /@ow3/hello-world-vue/0.12.1:
-    resolution: {integrity: sha512-9vXqS24VJiC1nbG/v3NXU61E3qvnxTnVb6Ps7CVfMVOXynVau6rgZTa/2sF9/XM2KhHUP4eeVAGVytaiu/87Zw==}
-    engines: {node: '>=v16.15.1', pnpm: '>=7.1.7'}
-    dependencies:
-      vue: 3.2.36
-    dev: false
 
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
