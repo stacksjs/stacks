@@ -6,20 +6,17 @@ First off, thank you for taking the time to contribute to the Open Web Foundatio
 
 ### TypeScript
 
-It's important to note early on that this project is written with [TypeScript][typescript]. If
-you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight
-roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
+It's important to note early on that this project is written with [TypeScript][typescript]. If you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
+
+Don't be discouraged, because you likely will get by and learning TypeScript on the fly as you view some of the component examples within the codebase.
 
 ### Vue 3.2 & Vite & unbuild
 
-This project uses [Vue][vue], [Vite][vite] and [unbuild][unbuild] to build [Vue][vue-components], Web Components, and composables.
+This project uses [Vue][vue], [Vite][vite] and [unbuild][unbuild] to build [Vue components][vue-components], Web Components, and composables.
 
 ### Architecture
 
-An understanding of the library architecture and design will help if you're looking to
-contribute long-term, or you are working on a big PR. Browse the source and read our
-documentation to get a better idea on how it is structured. Feel free to ask any question,
-we would love to elaborate.
+An understanding of the library architecture and design will help if you're looking to contribute long-term, or you are working on a big PR. Browse the source and read our documentation to get a better idea on how it is structured. Feel free to ask any question, we would love to elaborate.
 
 ## 🎒 Getting Started
 
@@ -29,20 +26,18 @@ Please view the README and the instructions below on how to install the project 
 
 ### Project Setup
 
-**Working on your first Pull Request?** You can learn how from this free series
-[How to Contribute to an Open Source Project on GitHub][pr-beginner-series].
+**Working on your first Pull Request?** You can learn how from this free series [How to Contribute to an Open Source Project on GitHub][pr-beginner-series].
 
-Head over to the [repository][stacks-starter] on GitHub and click the Fork button in the top
-right corner. After the project has been forked, run the following commands in your terminal:
+Head over to the [repository][stacks-starter] on GitHub and click the Fork button in the top right corner. After the project has been forked, run the following commands in your terminal:
 
 ```bash
 # Replace {github-username} with your GitHub username.
-$: git clone https://github.com/{github-username}/stacks-starter --depth=1
+git clone https://github.com/{github-username}/stacks-starter --depth=1
 
-$: cd stacks-starter
+cd stacks-starter
 
 # Create a branch for your PR, replace {issue-no} with the GitHub issue number.
-$: git checkout -b issue-{issue-no}
+git checkout -b issue-{issue-no}
 ```
 
 Now it'll help if we keep our `main` branch pointing at the original repository and make
@@ -50,23 +45,23 @@ pull requests from the forked branch.
 
 ```bash
 # Add the original repository as a "remote" called "upstream".
-$: git remote add upstream git@github.com:openwebstacks/stacks-starter.git
+git remote add upstream git@github.com:openwebstacks/stacks-starter.git
 
 # Fetch the git information from the remote.
-$: git fetch upstream
+git fetch upstream
 
 # Set your local main branch to use the upstream main branch whenever you run `git pull`.
-$: git branch --set-upstream-to=upstream/main main
+git branch --set-upstream-to=upstream/main main
 
 # Run this when we want to update our version of main.
-$: git pull
+git pull
 ```
 
 ## 🧪 Test
 
 ### Unit
 
-Each of our Web Components comes with test cases. Feel free to check them out within the `./tests` root folder. When adding or or updating functionality, please ensure it is covered through our tests and that the new tests pass by running `yarn test`.
+Each of our components come with test cases. Feel free to check them out within the `./tests` root folder. When adding or or updating functionality, please ensure it is covered through our tests cases. Ensure so by running `pnpm test`.
 
 ### Visual
 
