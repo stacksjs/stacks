@@ -43,7 +43,10 @@ export default defineConfig({
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),
-    transformerCompileClass(),
+    transformerCompileClass({
+      trigger: ':stacks:',
+      classPrefix: 'stacks-',
+    }),
   ],
   safelist: 'prose prose-sm m-auto text-left'.split(' '),
 })

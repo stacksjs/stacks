@@ -1,4 +1,4 @@
-# Hello World Composable
+# @ow3/hello-world-composable
 
 wip
 

@@ -1,4 +1,4 @@
-# Vue Components
+# @ow3/hello-world-vue
 
 This is the core of your component library.
 

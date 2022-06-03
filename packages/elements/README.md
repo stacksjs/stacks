@@ -1,4 +1,4 @@
-# Web Components
+# @ow3/hello-world-elements
 
 "Why create components for a specific framework when it can be written to be understood by all — including browsers?"
 

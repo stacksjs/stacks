@@ -8,6 +8,13 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+
+    <script type="module">
+      import { createApp } from 'vue'
+      import { HelloWorld } from '@ow3/hello-world-vue'
+      import '@ow3/hello-world-vue/style.css'
+
+      createApp(HelloWorld).mount('#app')
+    </script>
   </body>
 </html>
