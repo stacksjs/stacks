@@ -2,13 +2,13 @@ import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import type { UserConfig } from 'vite'
-import { alias } from '../../alias'
+// import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
     dedupe: ['vue'],
-    alias,
+    // alias,
   },
 
   plugins: [
