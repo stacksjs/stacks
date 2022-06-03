@@ -1,10 +1,10 @@
-# Stacks - The Modern Component Monorepo
+# Stacks - The Modern Monorepo
 
-Stacks help kick-start development of your next monorepo component library.
+Stacks help kick-start development of your next monorepo/component library, professionally pre-configured with all the tools you need to get started.
 
 ## 💡 Get Started
 
-It's incredibly easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
+It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
 
 ```bash
 # you may use this GitHub template or the following command:
@@ -55,10 +55,10 @@ import HelloWorld from 'hello-world-stack'
 
 ### 🥰 Coding Style
 
-- Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
+- Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
-When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.
+When using this template, feel free to adjust it to your needs. It simply is a framework to help you quickly & efficiently bootstrap & design component libraries using industry best-practices.
 
 ### Tips
 
