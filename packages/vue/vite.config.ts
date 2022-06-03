@@ -18,7 +18,7 @@ const config: UserConfig = {
     Vue(),
 
     Unocss({
-      mode: 'vue-scoped',
+      mode: 'shadow-dom',
       configFile: resolve(__dirname, 'unocss.config.js'),
     }),
 

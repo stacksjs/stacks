@@ -48,7 +48,12 @@
     "build": "vite build",
     "stub": "unbuild --stub"
   },
-  "dependencies": {
-    "vue": "^3.2.36"
+  "devDependencies": {
+    "@unocss/preset-icons": "^0.37.2",
+    "@unocss/transformer-compile-class": "^0.37.2",
+    "unocss": "^0.37.2",
+    "vite": "^2.9.9",
+    "vue": "^3.2.36",
+    "vue-tsc": "^0.36.0"
   }
 }
