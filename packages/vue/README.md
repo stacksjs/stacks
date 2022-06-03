@@ -4,18 +4,15 @@ This is the core of your component library.
 
 ## 💡 Get Started
 
-It's incredibly easy to get your component library started with this slightly opinionated starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, HTML with sprinkled JavaScript will get you really far!
+It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
 
 ```bash
 # you may use this GitHub template or the following command:
 npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
 
-# ensure you also now update your vite.config.ts with your library name
-
- # if you don't have pnpm installed, run `npm i -g pnpm`
-pnpm i # install all deps
-pnpm dev # starts the local server at http://localhost:3333 & watches for changes
+pnpm i -r # install deps for all packages
+pnpm dev # used to develop locally
 pnpm build # builds the library for production-ready use
 ```
 
@@ -23,22 +20,39 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
+Because this project is optimized toward the development of easily reusable & composable component libraries, it's very easy to use (and distribute):
+
 ```vue
 <script setup lang="ts">
-import { HelloWorld } from 'hello-world-stack'
+import HelloWorld from 'hello-world-stack'
 </script>
 
 <template>
-  <HelloWorld />
+  <HelloWorld name="J Doe" />
 </template>
 ```
 
+### Tips
+
+This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the two changelogs: one as part of the GitHub releases & the one markdown file that's stored within the root of the project.
+
+```bash
+# how to create a git commit?
+git add . # select the changes you want to commit
+pnpm run commit # then simply follow the prompts
+
+# after you successfully committed, you may create a "release"
+pnpm run release # automates git commits, versioning, and CHANGELOG generation
+```
+
+Read more about these tips in the docs.
+
 ### Dev Tools
 
+- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
 - [Cypress](https://cypress.io/) - E2E testing
@@ -57,27 +71,10 @@ import { HelloWorld } from 'hello-world-stack'
 
 ### Coding Style
 
-- Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
-- [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
+- Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
-When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.
-
-### Tips
-
-This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
-
-```bash
-# how to create a git commit?
-git add . # select the changes you want to commit
-pnpm run commit # then simply answer the questions
-
-# after you have successfully committed, you may create a "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
-
-# how to test your library locally?
-pnpm pack # packs the library into a tarball
-```
+When using this template, feel free to adjust it to your needs. It simply is a framework to help you quickly & efficiently bootstrap & design component libraries using industry best-practices.
 
 ## 🧪 Testing
 
@@ -87,7 +84,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/meemalabs/web-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openwebstacks/stacks-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 

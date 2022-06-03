@@ -25,7 +25,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
-Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use:
+Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use (and distribute):
 
 ```html
 <html>
