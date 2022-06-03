@@ -50,9 +50,9 @@
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@unocss/preset-icons": "^0.37.2",
-    "@unocss/transformer-compile-class": "^0.37.2",
-    "unocss": "^0.37.2",
+    "@unocss/preset-icons": "^0.37.3",
+    "@unocss/transformer-compile-class": "^0.37.3",
+    "unocss": "^0.37.3",
     "vite": "^2.9.9",
     "vue": "^3.2.36",
     "vue-tsc": "^0.36.0"
