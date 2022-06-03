@@ -12,7 +12,8 @@ npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
 
 pnpm i -r # install deps for all packages
-pnpm dev # used to develop locally
+pnpm dev # stubs the libraries for local use
+pnpm dev:vite-vue # starts the dev server
 pnpm build # builds the library for production-ready use
 ```
 
@@ -84,17 +85,17 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/stacks-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openwebstacks/vue-components-library-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openweblabs/web-components-library-starter/discussions)
+[Discussions on GitHub](https://github.com/openweblabs/stacks-starter/discussions)
 
 For casual chit-chat with others using this package:
 
@@ -102,6 +103,6 @@ For casual chit-chat with others using this package:
 
 ## 📄 License
 
-The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
+The MIT License (MIT). Please see [LICENSE](../../LICENSE.md) for more information.
 
 Made with ❤️
