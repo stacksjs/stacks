@@ -94,7 +94,7 @@
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.0",
     "terser": "^5.14.0",
-    "typescript": "^4.7.2",
+    "typescript": "^4.7.3",
     "unocss": "^0.37.2",
     "unplugin-auto-import": "^0.8.7",
     "unplugin-vue-components": "^0.19.6",
