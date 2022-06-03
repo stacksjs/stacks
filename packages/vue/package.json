@@ -32,7 +32,7 @@
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",

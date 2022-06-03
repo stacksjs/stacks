@@ -6,6 +6,6 @@ import { HelloWorld } from '@ow3/hello-world-vue'
   <HelloWorld name="J. Doe" />
 </template>
 
-<style>
-@import '@ow3/hello-world-vue/dist/style.css';
-</style>
+<!-- <style>
+@import '@ow3/hello-world-vue/style.css';
+</style> -->
