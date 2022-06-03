@@ -90,7 +90,7 @@ importers:
       vitest: 0.13.1
       vue-tsc: 0.36.0_typescript@4.7.3
 
-  examples/vite-vue:
+  examples/vue:
     specifiers:
       '@ow3/hello-world-vue': workspace:*
       '@vitejs/plugin-vue': ^2.3.3
@@ -107,7 +107,7 @@ importers:
       vite: 2.9.9
       vue-tsc: 0.34.17_typescript@4.7.3
 
-  examples/vite-wcs:
+  examples/web-components:
     specifiers:
       '@ow3/hello-world-elements': workspace:*
       '@vue/cli-plugin-babel': ~5.0.4
@@ -3677,7 +3677,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001346
-      electron-to-chromium: 1.4.145
+      electron-to-chromium: 1.4.146
       escalade: 3.1.1
       node-releases: 2.0.5
       picocolors: 1.0.0
@@ -5158,8 +5158,8 @@ packages:
     resolution: {integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=}
     dev: true
 
-  /electron-to-chromium/1.4.145:
-    resolution: {integrity: sha512-g4VQCi61gA0t5fJHsalxAc8NpvxC/CEwLAGLfJ+DmkRXTEyntJA7H01771uVD6X6nnViv3GToPgb0QOVA8ivOQ==}
+  /electron-to-chromium/1.4.146:
+    resolution: {integrity: sha512-4eWebzDLd+hYLm4csbyMU2EbBnqhwl8Oe9eF/7CBDPWcRxFmqzx4izxvHH+lofQxzieg8UbB8ZuzNTxeukzfTg==}
     dev: true
 
   /emoji-regex/8.0.0:

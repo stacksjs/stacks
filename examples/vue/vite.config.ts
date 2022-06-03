@@ -6,7 +6,7 @@ import { alias } from '../../alias'
 export default defineConfig({
   resolve: {
     dedupe: ['vue'],
-    alias,
+    // alias,
   },
 
   plugins: [Vue()],

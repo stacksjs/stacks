@@ -30,7 +30,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "style": "./dist/style.css"
     }
   },
   "main": "dist/index.cjs",
