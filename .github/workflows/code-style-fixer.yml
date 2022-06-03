@@ -14,7 +14,7 @@ jobs:
     if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
     runs-on: ubuntu-20.04
 
-    name: Run JS CS Fixer
+    name: Code Style Fixer
 
     strategy:
       matrix:
