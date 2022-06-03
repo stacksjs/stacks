@@ -6,7 +6,7 @@
 
 Before you get started, it is important to understand what a Web Component is. Think of it as a (custom) HTML element. This custom element can natively be used within your framework-of-choice. That being said, this is an opinionated starter kit, employing many best-practices, to help you expedite the development of your web component library.
 
-### 👩🏽‍💻 Dev Tools
+### Dev Tools
 
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
@@ -20,15 +20,15 @@ Before you get started, it is important to understand what a Web Component is. T
 - [VS Code Extensions](./.vscode/extensions.json)
   - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
-  - [Windi Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
+  - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
-### 🧩 Plugins
+### Plugins
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/vueuse/vueuse) - Collection of useful composition APIs
 
-### 🥰 Coding Style
+### Coding Style
 
 - Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems

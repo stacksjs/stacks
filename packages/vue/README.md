@@ -33,7 +33,7 @@ import { HelloWorld } from 'hello-world-stack'
 </template>
 ```
 
-### 👩🏽‍💻 Dev Tools
+### Dev Tools
 
 - [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
@@ -49,13 +49,13 @@ import { HelloWorld } from 'hello-world-stack'
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
   - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
-### 🧩 Plugins
+### Plugins
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
 
-### 🥰 Coding Style
+### Coding Style
 
 - Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
