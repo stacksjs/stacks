@@ -11,9 +11,11 @@ It's easy to get your component library started with this starter kit. The only 
 npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
 
- # if you don't have pnpm installed, run `npm i -g pnpm`
-pnpm i # install all deps
-pnpm dev # starts the local server at http://localhost:3333 & watches for changes
+pnpm i -r # install deps for all packages
+pnpm dev # stubs the libraries for local use
+pnpm dev:vite-vue # starts the vite-vue dev server
+pnpm dev:vite-wc # starts the vite-wc dev server
+
 pnpm build # builds the library for production-ready use
 ```
 
@@ -32,7 +34,7 @@ Because this monorepo is optimized toward the development of easily reusable & c
 </html>
 ```
 
-Optional: if you prefer using Vue
+_Optional: if you prefer using Vue_
 
 ```vue
 <script setup lang="ts">
