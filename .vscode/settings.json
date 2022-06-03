@@ -4,6 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
+  "css.validate": false,
   "editor.formatOnSave": false,
   "editor.quickSuggestions": {
     "strings": true

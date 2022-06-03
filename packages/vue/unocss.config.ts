@@ -6,7 +6,9 @@ import {
   presetWind,
   transformerDirectives,
   transformerVariantGroup,
+  // transformerCompileClass
 } from 'unocss'
+import transformerCompileClass from '@unocss/transformer-compile-class'
 
 export default defineConfig({
   shortcuts: [
@@ -41,6 +43,7 @@ export default defineConfig({
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),
+    transformerCompileClass(),
   ],
   safelist: 'prose prose-sm m-auto text-left'.split(' '),
 })
