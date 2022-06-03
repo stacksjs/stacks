@@ -2,4 +2,4 @@
 
 wip
 
-Made with ❤️ by Open Web Stacks!
+Made with ❤️
