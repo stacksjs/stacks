@@ -2,7 +2,7 @@
   "name": "@ow3/hello-world-composable",
   "version": "0.13.11",
   "packageManager": "pnpm@7.1.7",
-  "description": "The easy way to contain your logic within your monorepo.",
+  "description": "A dummy composable.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
