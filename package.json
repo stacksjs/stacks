@@ -2,7 +2,7 @@
   "name": "@ow3/monorepo",
   "private": true,
   "version": "0.13.11",
-  "packageManager": "pnpm@7.1.7",
+  "packageManager": "pnpm@7.1.8",
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.1.7"
+    "pnpm": ">=7.1.8"
   },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
@@ -73,8 +73,8 @@
     "@iconify-json/heroicons-outline": "^1.1.1",
     "@iconify-json/heroicons-solid": "^1.1.1",
     "@types/node": "^17.0.31",
-    "@unocss/preset-icons": "^0.37.3",
-    "@unocss/transformer-compile-class": "^0.37.3",
+    "@unocss/preset-icons": "^0.37.4",
+    "@unocss/transformer-compile-class": "^0.37.4",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.36",
     "@vueuse/core": "^8.6.0",
@@ -96,13 +96,13 @@
     "simple-git-hooks": "^2.8.0",
     "terser": "^5.14.0",
     "typescript": "^4.7.3",
-    "unocss": "^0.37.3",
+    "unocss": "^0.37.4",
     "unplugin-auto-import": "^0.8.7",
     "unplugin-vue-components": "^0.19.6",
     "upath": "^2.0.1",
     "vite": "^2.9.9",
     "vitest": "^0.13.1",
-    "vue-tsc": "^0.36.0"
+    "vue-tsc": "^0.36.1"
   },
   "pnpm": {
     "overrides": {

@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-elements",
   "version": "0.13.11",
-  "packageManager": "pnpm@7.1.7",
+  "packageManager": "pnpm@7.1.8",
   "description": "A dummy Web Component library.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -43,7 +43,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.1.7"
+    "pnpm": ">=7.1.8"
   },
   "scripts": {
     "build": "vite build",
@@ -53,12 +53,12 @@
     "@ow3/hello-world-vue": "workspace:*"
   },
   "devDependencies": {
-    "@unocss/preset-icons": "^0.37.3",
-    "@unocss/transformer-compile-class": "^0.37.3",
+    "@unocss/preset-icons": "^0.37.4",
+    "@unocss/transformer-compile-class": "^0.37.4",
     "unbuild": "^0.7.4",
-    "unocss": "^0.37.3",
+    "unocss": "^0.37.4",
     "vite": "^2.9.9",
     "vue": "^3.2.36",
-    "vue-tsc": "^0.36.0"
+    "vue-tsc": "^0.36.1"
   }
 }
