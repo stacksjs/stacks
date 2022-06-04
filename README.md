@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
+
 # Stacks - The Modern Monorepo
 
 Stacks help kick-start development of your next monorepo/component library, pre-configured with all the tools you need to get started. Including the superpowers of interoperability.
