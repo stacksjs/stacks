@@ -17,7 +17,7 @@
     "types": [
       "node",
       "vitest",
-      "vite/client"
+      "vite/client",
     ],
     "paths": {
       "@ow3/hello-world-vue": [

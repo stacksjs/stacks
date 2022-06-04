@@ -6,6 +6,6 @@ import { HelloWorld } from '@ow3/hello-world-vue'
   <HelloWorld />
 </template>
 
-<style scoped>
+<!-- <style scoped>
 @unocss-placeholder
-</style>
+</style> -->

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { resolve } from 'path'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import type { UserConfig } from 'vite'
@@ -23,6 +24,7 @@ const config: UserConfig = {
 
     Unocss({
       mode: 'shadow-dom',
+      configFile: resolve(__dirname, 'unocss.config.js'),
     }),
   ],
 }

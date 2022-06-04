@@ -7,9 +7,5 @@
   },
   "dependencies": {
     "@ow3/hello-world-elements": "workspace:*"
-  },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "~5.0.4",
-    "@vue/cli-service": "~5.0.4"
   }
 }
