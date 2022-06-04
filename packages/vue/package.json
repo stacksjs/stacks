@@ -2,7 +2,7 @@
   "name": "@ow3/hello-world-vue",
   "version": "0.13.11",
   "packageManager": "pnpm@7.1.7",
-  "description": "The easy way to start your Vue 3 Component Library.",
+  "description": "The easy way to start your Vue Component Library.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vue#readme",
