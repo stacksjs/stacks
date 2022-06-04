@@ -27,6 +27,25 @@ const config: UserConfig = {
       configFile: resolve(__dirname, 'unocss.config.js'),
     }),
   ],
+
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: 'hello-world-elements',
+      fileName: (format: string) => {
+        if (format === 'es')
+          return 'index.mjs'
+
+        if (format === 'umd')
+          return 'index.cjs'
+
+        return 'index.?.js'
+      },
+    },
+
+    // sourcemap: true,
+    // minify: false,
+  },
 }
 
 // https://vitejs.dev/config

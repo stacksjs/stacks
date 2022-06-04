@@ -1,6 +1,6 @@
 # Stacks - The Modern Monorepo
 
-Stacks help kick-start development of your next monorepo/component library, professionally pre-configured with all the tools you need to get started.
+Stacks help kick-start development of your next monorepo/component library, pre-configured with all the tools you need to get started. Including the superpowers of interoperability.
 
 ## 💡 Get Started
 
