@@ -13,14 +13,7 @@ const config: UserConfig = {
   },
 
   plugins: [
-    Vue({
-      template: {
-        compilerOptions: {
-          // treat all tags with a dash as custom elements
-          isCustomElement: tag => tag.includes('hello-world'),
-        },
-      },
-    }),
+    Vue(),
 
     Unocss({
       mode: 'shadow-dom',

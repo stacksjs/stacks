@@ -5,7 +5,3 @@ import { HelloWorld } from '@ow3/hello-world-vue'
 <template>
   <HelloWorld />
 </template>
-
-<!-- <style scoped>
-@unocss-placeholder
-</style> -->

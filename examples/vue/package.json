@@ -1,4 +1,5 @@
 {
+  "version": "0.13.11",
   "private": true,
   "scripts": {
     "dev": "vite",
