@@ -37,9 +37,6 @@
   },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
-    "build:composables": "rimraf packages/composables/dist && pnpm -r --filter './packages/composables' build",
-    "build:elements": "rimraf packages/elements/dist && pnpm -r --filter './packages/elements' build",
-    "build:vue": "rimraf packages/vue/dist && pnpm -r --filter './packages/vue' build",
     "dev": "pnpm run stub",
     "dev:vue": "pnpm run build && pnpm --filter './examples/vue' dev",
     "dev:wcs": "pnpm run build && pnpm --filter './examples/web-components' dev",
