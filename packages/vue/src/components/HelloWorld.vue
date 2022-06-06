@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { count, increment } from '@ow3/hello-world-composable'
 
 interface Props {
   name?: string
@@ -8,20 +8,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   name: 'J. Doe',
 })
-
-// reactive state
-const count = ref(0)
-
-// functions that mutate state and trigger updates
-function increment() {
-  count.value++
-}
-
-// lifecycle hooks
-// onMounted(() => {
-//   // eslint-disable-next-line no-console
-//   console.log(`The initial count is ${count}.`)
-// })
 </script>
 
 <template>
