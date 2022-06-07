@@ -29,7 +29,7 @@ const config: UserConfig = {
       imports: ['vue', '@vueuse/core', {
         '@ow3/hello-world-composable': ['isDark', 'toggleDark'],
       }],
-      dts: '../auto-imports.d.ts',
+      dts: 'auto-imports.d.ts',
       eslintrc: {
         enabled: true,
       },
@@ -52,7 +52,7 @@ const config: UserConfig = {
         if (format === 'es')
           return 'hello-world-vue.mjs'
 
-        if (format === 'umd')
+        if (format === 'cjs')
           return 'hello-world-vue.cjs'
 
         if (format === 'iife')

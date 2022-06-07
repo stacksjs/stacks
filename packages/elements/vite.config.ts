@@ -30,7 +30,7 @@ const config: UserConfig = {
         if (format === 'es')
           return 'hello-world-elements.mjs'
 
-        if (format === 'umd')
+        if (format === 'cjs')
           return 'hello-world-elements.cjs'
 
         if (format === 'iife')
