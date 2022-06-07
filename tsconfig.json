@@ -4,6 +4,7 @@
     "target": "es2017",
     "module": "esnext",
     "declaration": true,
+    "skipLibCheck": true,
     "lib": [
       "dom", "esnext"
     ],
