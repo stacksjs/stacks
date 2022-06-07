@@ -12,9 +12,9 @@ npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
 
 pnpm i -r # install deps for all packages
-pnpm dev # stubs the libraries for local use
+pnpm dev # stubs the packages for local use
 pnpm dev:vite-vue # starts the dev server
-pnpm build # builds the library for production-ready use
+pnpm build # builds the packages for production-ready use
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.

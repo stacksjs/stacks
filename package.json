@@ -37,6 +37,7 @@
   },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build:types": "vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
     "dev:vue": "pnpm run build && pnpm --filter './examples/vue' dev",
     "dev:wcs": "pnpm run build && pnpm --filter './examples/web-components' dev",
@@ -55,7 +56,8 @@
     "test:e2e": "cypress open",
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "types:fix": "esno ./.scripts/fix-types.ts"
   },
   "dependencies": {
     "vue": "^3.2.37"
@@ -84,6 +86,7 @@
     "eslint-plugin-cypress": "^2.12.1",
     "esno": "^0.16.3",
     "fast-glob": "^3.2.11",
+    "fs-extra": "^10.1.0",
     "gzip-size": "^7.0.0",
     "inquirer": "^8.2.4",
     "lint-staged": "^13.0.0",

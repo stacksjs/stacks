@@ -30,6 +30,7 @@ importers:
       eslint-plugin-cypress: ^2.12.1
       esno: ^0.16.3
       fast-glob: ^3.2.11
+      fs-extra: ^10.1.0
       gzip-size: ^7.0.0
       inquirer: ^8.2.4
       lint-staged: ^13.0.0
@@ -73,6 +74,7 @@ importers:
       eslint-plugin-cypress: 2.12.1_eslint@8.17.0
       esno: 0.16.3
       fast-glob: 3.2.11
+      fs-extra: 10.1.0
       gzip-size: 7.0.0
       inquirer: 8.2.4
       lint-staged: 13.0.0

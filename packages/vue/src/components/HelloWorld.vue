@@ -1,10 +1,12 @@
-<script setup lang="ts">
+<script lang="ts">
 import { count, increment } from '@ow3/hello-world-composable'
 
 interface Props {
   name?: string
 }
+</script>
 
+<script setup lang="ts">
 const props = withDefaults(defineProps<Props>(), {
   name: 'J. Doe',
 })
