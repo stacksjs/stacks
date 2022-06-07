@@ -25,7 +25,7 @@ const config: UserConfig = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'hello-world-elements',
-      formats: ['cjs', 'es', 'iife'],
+      formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'hello-world-elements.mjs'
@@ -33,8 +33,8 @@ const config: UserConfig = {
         if (format === 'cjs')
           return 'hello-world-elements.cjs'
 
-        if (format === 'iife')
-          return 'hello-world-elements.global.js'
+        // if (format === 'iife')
+        //   return 'hello-world-elements.global.js'
 
         return 'hello-world-elements.?.js'
       },

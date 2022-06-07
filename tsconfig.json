@@ -5,7 +5,7 @@
     "module": "esnext",
     "declaration": true,
     "skipLibCheck": true,
-    "outDir": "dist",
+    "outDir": "packages/types",
     "lib": [
       "dom", "esnext"
     ],

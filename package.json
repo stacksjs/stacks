@@ -36,7 +36,7 @@
     "pnpm": ">=7.1.9"
   },
   "scripts": {
-    "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build": "rimraf packages/*/dist packages/types && pnpm -r --filter './packages/**' run build",
     "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build",
     "build:types": "vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
