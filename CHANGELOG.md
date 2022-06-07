@@ -1,3 +1,7 @@
+## [0.14.1](https://github.com/openwebstacks/stacks-starter/compare/v0.14.0...v0.14.1) (2022-06-07)
+
+
+
 # [0.14.0](https://github.com/openwebstacks/stacks-starter/compare/v0.13.13...v0.14.0) (2022-06-07)
 
 
