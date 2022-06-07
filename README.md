@@ -22,7 +22,7 @@ pnpm dev:wcs
 
 pnpm build # builds the library for production-ready use
 pnpm commit # opens CLI prompt for committing changes
-pnpm release # releases the library (packages) to NPM
+pnpm release # releases the library (packages) to npm
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.

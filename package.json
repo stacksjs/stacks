@@ -28,6 +28,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "workspaces": [
+    "examples/*",
     "packages/*",
     "playground"
   ],
