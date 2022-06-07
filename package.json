@@ -1,6 +1,6 @@
 {
   "name": "@ow3/monorepo",
-  "version": "0.13.11",
+  "version": "0.13.12",
   "private": true,
   "packageManager": "pnpm@7.1.8",
   "description": "The easy way to start your monorepo stack.",
