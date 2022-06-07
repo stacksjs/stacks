@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
 import { resolve } from 'path'
+import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import type { UserConfig } from 'vite'
@@ -25,14 +25,18 @@ const config: UserConfig = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'hello-world-elements',
+      formats: ['cjs', 'es', 'iife'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.mjs'
+          return 'hello-world-elements.mjs'
 
         if (format === 'umd')
-          return 'index.cjs'
+          return 'hello-world-elements.cjs'
 
-        return 'index.?.js'
+        if (format === 'iife')
+          return 'hello-world-elements.global.js'
+
+        return 'hello-world-elements.?.js'
       },
     },
 

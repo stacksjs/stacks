@@ -16,7 +16,7 @@ const config: UserConfig = {
 
   plugins: [
     Vue({
-      customElement: true
+      customElement: true,
     }),
 
     Unocss({
@@ -47,14 +47,18 @@ const config: UserConfig = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'hello-world-vue',
+      formats: ['cjs', 'es', 'iife'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.mjs'
+          return 'hello-world-vue.mjs'
 
         if (format === 'umd')
-          return 'index.cjs'
+          return 'hello-world-vue.cjs'
 
-        return 'index.?.js'
+        if (format === 'iife')
+          return 'hello-world-vue.global.js'
+
+        return 'hello-world-vue.?.js'
       },
     },
 

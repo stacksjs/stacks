@@ -28,16 +28,16 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "types": "./dist/hello-world-elements.d.ts",
+      "require": "./dist/hello-world-elements.cjs",
+      "import": "./dist/hello-world-elements.mjs"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "unpkg": "./hello-world.js",
-  "jsdelivr": "./hello-world.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/hello-world-elements.cjs",
+  "module": "dist/hello-world-elements.mjs",
+  "unpkg": "dist/hello-world-elements.global.js",
+  "jsdelivr": "dist/hello-world-elements.global.js",
+  "types": "dist/hello-world-elements.d.ts",
   "files": [
     "dist"
   ],

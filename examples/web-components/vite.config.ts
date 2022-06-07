@@ -16,6 +16,7 @@ const config: UserConfig = {
         compilerOptions: {
           // treat all tags with a dash as custom elements
           isCustomElement: tag => tag.includes('hello-world'),
+          // isCustomElement: tag => tag.startsWith('prefix-'),
         },
       },
     }),

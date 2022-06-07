@@ -28,15 +28,15 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "types": "./dist/hello-world-vue.d.ts",
+      "require": "./dist/hello-world-vue.cjs",
+      "import": "./dist/hello-world-vue.mjs"
     },
-    "./style.css": "./dist/style.css"
+    "./dist/style.css": "./dist/style.css"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "dist/hello-world-vue.cjs",
+  "module": "dist/hello-world-vue.mjs",
+  "types": "dist/hello-world-vue.d.ts",
   "style": "dist/style.css",
   "files": [
     "dist"
