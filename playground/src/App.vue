@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HelloWorld } from '../../packages/vue/src/index'
+import { HelloWorld } from '@ow3/hello-world-vue'
 </script>
 
 <template>
@@ -7,5 +7,5 @@ import { HelloWorld } from '../../packages/vue/src/index'
 </template>
 
 <style>
-@import '@ow3/hello-world-vue/dist/style.css';
+/* @import '@ow3/hello-world-vue/dist/style.css'; */
 </style>

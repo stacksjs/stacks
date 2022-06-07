@@ -106,11 +106,6 @@
     "vitest": "^0.14.1",
     "vue-tsc": "^0.37.3"
   },
-  "pnpm": {
-    "overrides": {
-      "vite": "2.9.9"
-    }
-  },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",
     "commit-msg": "npx commitlint --config ./commitlint.config.ts --edit $1"
