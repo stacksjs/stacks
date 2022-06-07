@@ -68,7 +68,7 @@ importers:
       bumpp: 7.1.1
       commitizen: 4.2.4
       conventional-changelog-cli: 2.2.2
-      cypress: 10.0.2
+      cypress: 10.0.3
       eslint: 8.17.0
       eslint-plugin-cypress: 2.12.1_eslint@8.17.0
       esno: 0.16.3
@@ -1776,7 +1776,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001346
-      electron-to-chromium: 1.4.146
+      electron-to-chromium: 1.4.147
       escalade: 3.1.1
       node-releases: 2.0.5
       picocolors: 1.0.0
@@ -2377,8 +2377,8 @@ packages:
   /csstype/2.6.20:
     resolution: {integrity: sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA==}
 
-  /cypress/10.0.2:
-    resolution: {integrity: sha512-7+C4KHYBcfZrawss+Gt5PlS35rfc6ySc59JcHDVsIMm1E/J35dqE41UEXpdtwIq3549umCerNWnFADzqib4kcA==}
+  /cypress/10.0.3:
+    resolution: {integrity: sha512-8C82XTybsEmJC9POYSNITGUhMLCRwB9LadP0x33H+52QVoBjhsWvIzrI+ybCe0+TyxaF0D5/9IL2kSTgjqCB9A==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     requiresBuild: true
@@ -2676,8 +2676,8 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
-  /electron-to-chromium/1.4.146:
-    resolution: {integrity: sha512-4eWebzDLd+hYLm4csbyMU2EbBnqhwl8Oe9eF/7CBDPWcRxFmqzx4izxvHH+lofQxzieg8UbB8ZuzNTxeukzfTg==}
+  /electron-to-chromium/1.4.147:
+    resolution: {integrity: sha512-czclPqxLMPqPMkahKcske4TaS5lcznsc26ByBlEFDU8grTBVK9C5W6K9I6oEEhm4Ai4jTihGnys90xY1yjXcRg==}
     dev: true
 
   /emoji-regex/8.0.0:

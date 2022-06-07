@@ -13,7 +13,3 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <HelloWorld :name="props.name" />
 </template>
-
-<style>
-@import '@ow3/hello-world-vue/style.css'
-</style>

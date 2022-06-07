@@ -15,7 +15,9 @@ const config: UserConfig = {
   },
 
   plugins: [
-    Vue(),
+    Vue({
+      customElement: true
+    }),
 
     Unocss({
       mode: 'shadow-dom',
