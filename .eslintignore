@@ -1,3 +1,4 @@
 # we should be able to tuck this file away into or eslint config - check why antfu's preset does not come with it
-tests/cypress
+node_modules
+tests
 build

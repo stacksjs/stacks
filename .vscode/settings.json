@@ -11,6 +11,7 @@
   },
   "windicss.sortOnSave": true,
   "markdownlint.ignore": ["CHANGELOG.md"],
+  "cSpell.ignorePaths": ["node_modules"],
   "cSpell.words": [
     "openweblabs",
     "openweb",
@@ -47,6 +48,9 @@
     "jsdelivr",
     "sfcs",
     "marvinpinto",
-    "iife"
+    "iife",
+    "rimraf",
+    "brotli",
+    "windicss"
   ]
 }

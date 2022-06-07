@@ -707,7 +707,7 @@ packages:
     resolution: {integrity: sha512-KmE8XouKm6m05jPIsf5CTIZZ4171GHd+PUts1mtti2tzoiD228qCRjpkCwg540c3fMUweKupO+PIpkJ9+Z7vPg==}
     dependencies:
       '@esbuild-kit/core-utils': 1.3.1
-      get-tsconfig: 3.0.1
+      get-tsconfig: 3.1.0
     dev: true
 
   /@esbuild-kit/core-utils/1.3.1:
@@ -721,7 +721,7 @@ packages:
     resolution: {integrity: sha512-G0HZSh53dXOb42xR14zEASXtVWFNX2itREVPnh6BWU2PcApbSzFEIUpknotpybuu6QupuW9sS9hVVpJjuyZlSw==}
     dependencies:
       '@esbuild-kit/core-utils': 1.3.1
-      get-tsconfig: 3.0.1
+      get-tsconfig: 3.1.0
     dev: true
 
   /@eslint/eslintrc/1.3.0:
@@ -4104,8 +4104,8 @@ packages:
       get-intrinsic: 1.1.1
     dev: true
 
-  /get-tsconfig/3.0.1:
-    resolution: {integrity: sha512-+m30eQjbcf3xMNdnacXH5IDAKUMbI7Mhbf3e1BHif1FzBlUhBzBlmOVc7kL4+kB035l8OCyBdI3dNXZ3of9HqA==}
+  /get-tsconfig/3.1.0:
+    resolution: {integrity: sha512-/8GSkE76aYtvKYX+uNShbgxI0tRbksEbbjgPOpk0Ca8QqkVZDxTmh6OCQXZaqqOSdfXkEHkvLQ7iPvFd2fnwVQ==}
     dev: true
 
   /getos/3.2.1:
