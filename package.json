@@ -2,7 +2,7 @@
   "name": "@ow3/monorepo",
   "version": "0.13.12",
   "private": true,
-  "packageManager": "pnpm@7.1.8",
+  "packageManager": "pnpm@7.1.9",
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.1.8"
+    "pnpm": ">=7.1.9"
   },
   "scripts": {
     "build": "rimraf packages/*/dist && pnpm -r --filter './packages/**' run build",
@@ -58,7 +58,7 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "vue": "^3.2.36"
+    "vue": "^3.2.37"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.25.1",
@@ -73,13 +73,13 @@
     "@unocss/preset-icons": "^0.37.4",
     "@unocss/transformer-compile-class": "^0.37.4",
     "@vitejs/plugin-vue": "^2.3.3",
-    "@vue/compiler-sfc": "^3.2.36",
+    "@vue/compiler-sfc": "^3.2.37",
     "@vueuse/core": "^8.6.0",
     "brotli-size": "^4.0.0",
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
-    "cypress": "^10.0.2",
+    "cypress": "^10.0.3",
     "eslint": "^8.17.0",
     "eslint-plugin-cypress": "^2.12.1",
     "esno": "^0.16.3",
@@ -97,9 +97,9 @@
     "unplugin-auto-import": "^0.8.7",
     "unplugin-vue-components": "^0.19.6",
     "upath": "^2.0.1",
-    "vite": "^2.9.9",
-    "vitest": "^0.14.0",
-    "vue-tsc": "^0.36.1"
+    "vite": "^2.9.10",
+    "vitest": "^0.14.1",
+    "vue-tsc": "^0.37.1"
   },
   "pnpm": {
     "overrides": {
