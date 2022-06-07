@@ -7,6 +7,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ow3/hello-world-elements": "workspace:*"
+    "@ow3/hello-world-elements": "^0.13.12"
   }
 }

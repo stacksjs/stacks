@@ -7,7 +7,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ow3/hello-world-vue": "workspace:*",
+    "@ow3/hello-world-vue": "^0.13.11",
     "vue": "^3.2.25"
   },
   "devDependencies": {

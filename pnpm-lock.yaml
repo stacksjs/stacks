@@ -92,7 +92,7 @@ importers:
 
   examples/vue:
     specifiers:
-      '@ow3/hello-world-vue': workspace:*
+      '@ow3/hello-world-vue': ^0.13.11
       '@vitejs/plugin-vue': ^2.3.3
       typescript: ^4.5.4
       vite: 2.9.9
@@ -109,7 +109,7 @@ importers:
 
   examples/web-components:
     specifiers:
-      '@ow3/hello-world-elements': workspace:*
+      '@ow3/hello-world-elements': ^0.13.12
     dependencies:
       '@ow3/hello-world-elements': link:../../packages/elements
 
@@ -118,7 +118,7 @@ importers:
       '@vueuse/core': ^8.6.0
       unbuild: ^0.7.4
     devDependencies:
-      '@vueuse/core': 8.6.0
+      '@vueuse/core': 8.6.0_vue@3.2.37
       unbuild: 0.7.4
 
   packages/elements:
@@ -1462,22 +1462,6 @@ packages:
   /@vue/shared/3.2.37:
     resolution: {integrity: sha512-4rSJemR2NQIo9Klm1vabqWjD8rs/ZaJSzMxkMNeJS6lHiUjjUeYFbooN19NgFjztubEKh3WlZUeOLVdbbUWHsw==}
 
-  /@vueuse/core/8.6.0:
-    resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
-    peerDependencies:
-      '@vue/composition-api': ^1.1.0
-      vue: ^2.6.0 || ^3.2.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
-      vue:
-        optional: true
-    dependencies:
-      '@vueuse/metadata': 8.6.0
-      '@vueuse/shared': 8.6.0
-      vue-demi: 0.13.1
-    dev: true
-
   /@vueuse/core/8.6.0_vue@3.2.37:
     resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
     peerDependencies:
@@ -1497,20 +1481,6 @@ packages:
 
   /@vueuse/metadata/8.6.0:
     resolution: {integrity: sha512-F+CKPvaExsm7QgRr8y+ZNJFwXasn89rs5wth/HeX9lJ1q8XEt+HJ16Q5Sxh4rfG5YSKXrStveVge8TKvPjMjFA==}
-    dev: true
-
-  /@vueuse/shared/8.6.0:
-    resolution: {integrity: sha512-Y/IVywZo7IfEoSSEtCYpkVEmPV7pU35mEIxV7PbD/D3ly18B3mEsBaPbtDkNM/QP3zAZ5mn4nEkOfddX4uwuIA==}
-    peerDependencies:
-      '@vue/composition-api': ^1.1.0
-      vue: ^2.6.0 || ^3.2.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
-      vue:
-        optional: true
-    dependencies:
-      vue-demi: 0.13.1
     dev: true
 
   /@vueuse/shared/8.6.0_vue@3.2.37:
@@ -5776,7 +5746,7 @@ packages:
     dev: true
 
   /proxy-from-env/1.0.0:
-    resolution: {integrity: sha512-F2JHgJQ1iqwnHDcQjVBsq3n/uoaFL+iPW/eAeL7kVxy/2RrWaN4WroKjjvbsoRtv0ftelNyC01bjRhn/bhcf4A==}
+    resolution: {integrity: sha1-M8UDmPcOp+uW0h97gXYwpVeRx+4=}
     dev: true
 
   /psl/1.8.0:
@@ -6980,19 +6950,6 @@ packages:
       - sass
       - stylus
       - supports-color
-    dev: true
-
-  /vue-demi/0.13.1:
-    resolution: {integrity: sha512-xmkJ56koG3ptpLnpgmIzk9/4nFf4CqduSJbUM0OdPoU87NwRuZ6x49OLhjSa/fC15fV+5CbEnrxU4oyE022svg==}
-    engines: {node: '>=12'}
-    hasBin: true
-    requiresBuild: true
-    peerDependencies:
-      '@vue/composition-api': ^1.0.0-rc.1
-      vue: ^3.0.0-0 || ^2.6.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
     dev: true
 
   /vue-demi/0.13.1_vue@3.2.37:
