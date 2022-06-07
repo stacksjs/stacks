@@ -58,7 +58,7 @@
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
     "types:fix": "esno ./.scripts/fix-types.ts",
-    "typecheck": "pnpm --filter './packages/vue' typecheck"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "vue": "^3.2.37"
