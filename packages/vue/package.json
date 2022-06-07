@@ -47,7 +47,8 @@
   },
   "scripts": {
     "build": "rimraf dist && vue-tsc --declaration --emitDeclarationOnly && vite build",
-    "stub": "unbuild --stub"
+    "stub": "unbuild --stub",
+    "typecheck": "vue-tsc --noEmit"
   },
   "devDependencies": {
     "@unocss/preset-icons": "^0.38.1",

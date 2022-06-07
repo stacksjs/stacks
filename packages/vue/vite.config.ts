@@ -47,7 +47,7 @@ const config: UserConfig = {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'hello-world-vue',
-      formats: ['cjs', 'es', 'iife'],
+      formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'hello-world-vue.mjs'
