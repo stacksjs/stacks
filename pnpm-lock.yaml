@@ -58,7 +58,7 @@ importers:
       '@commitlint/types': 17.0.0
       '@iconify-json/heroicons-outline': 1.1.1
       '@iconify-json/heroicons-solid': 1.1.1
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
       '@unocss/preset-icons': 0.38.1
       '@unocss/transformer-compile-class': 0.38.1
       '@vitejs/plugin-vue': 2.3.3_vite@2.9.9+vue@3.2.37
@@ -583,10 +583,10 @@ packages:
       '@commitlint/execute-rule': 17.0.0
       '@commitlint/resolve-extends': 17.0.0
       '@commitlint/types': 17.0.0
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
       chalk: 4.1.2
       cosmiconfig: 7.0.1
-      cosmiconfig-typescript-loader: 2.0.1_fvkldoeufjjq5mlpfdkzhuqzdy
+      cosmiconfig-typescript-loader: 2.0.1_f5eqjuxkorpjvs4z7mviievvou
       lodash: 4.17.21
       resolve-from: 5.0.0
       typescript: 4.7.3
@@ -1007,12 +1007,12 @@ packages:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
     dev: true
 
-  /@types/node/14.18.20:
-    resolution: {integrity: sha512-Q8KKwm9YqEmUBRsqJ2GWJDtXltBDxTdC4m5vTdXBolu2PeQh8LX+f6BTwU+OuXPu37fLxoN6gidqBmnky36FXA==}
+  /@types/node/14.18.21:
+    resolution: {integrity: sha512-x5W9s+8P4XteaxT/jKF0PSb7XEvo5VmqEWgsMlyeY4ZlLK8I6aH6g5TPPyDlLAep+GYf4kefb7HFyc7PAO3m+Q==}
     dev: true
 
-  /@types/node/17.0.40:
-    resolution: {integrity: sha512-UXdBxNGqTMtm7hCwh9HtncFVLrXoqA3oJW30j6XWp5BH/wu3mVeaxo7cq5benFdBw34HB3XDT2TRPI7rXZ+mDg==}
+  /@types/node/17.0.41:
+    resolution: {integrity: sha512-xA6drNNeqb5YyV5fO3OAEsnXLfO7uF0whiOfPTz5AeDo8KeZFmODKnvwPymMNO8qE/an8pVY/O50tig2SQCrGw==}
     dev: true
 
   /@types/normalize-package-data/2.4.1:
@@ -1026,7 +1026,7 @@ packages:
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
     dev: true
 
   /@types/sinonjs__fake-timers/8.1.1:
@@ -1045,7 +1045,7 @@ packages:
     resolution: {integrity: sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==}
     requiresBuild: true
     dependencies:
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
     dev: true
     optional: true
 
@@ -2327,16 +2327,16 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cosmiconfig-typescript-loader/2.0.1_fvkldoeufjjq5mlpfdkzhuqzdy:
+  /cosmiconfig-typescript-loader/2.0.1_f5eqjuxkorpjvs4z7mviievvou:
     resolution: {integrity: sha512-B9s6sX/omXq7I6gC6+YgLmrBFMJhPWew7ty/X5Tuwtd2zOSgWaUdXjkuVwbe3qqcdETo60+1nSVMekq//LIXVA==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@types/node': '*'
       typescript: '>=3'
     dependencies:
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
       cosmiconfig: 7.0.1
-      ts-node: 10.8.1_fvkldoeufjjq5mlpfdkzhuqzdy
+      ts-node: 10.8.1_f5eqjuxkorpjvs4z7mviievvou
       typescript: 4.7.3
     transitivePeerDependencies:
       - '@swc/core'
@@ -2392,7 +2392,7 @@ packages:
     dependencies:
       '@cypress/request': 2.88.10
       '@cypress/xvfb': 1.2.4_supports-color@8.1.1
-      '@types/node': 14.18.20
+      '@types/node': 14.18.21
       '@types/sinonjs__fake-timers': 8.1.1
       '@types/sizzle': 2.3.3
       arch: 2.2.0
@@ -6454,7 +6454,7 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /ts-node/10.8.1_fvkldoeufjjq5mlpfdkzhuqzdy:
+  /ts-node/10.8.1_f5eqjuxkorpjvs4z7mviievvou:
     resolution: {integrity: sha512-Wwsnao4DQoJsN034wePSg5nZiw4YKXf56mPIAeD6wVmiv+RytNSWqc2f3fKvcUoV+Yn2+yocD71VOfQHbmVX4g==}
     hasBin: true
     peerDependencies:
@@ -6473,7 +6473,7 @@ packages:
       '@tsconfig/node12': 1.0.9
       '@tsconfig/node14': 1.0.1
       '@tsconfig/node16': 1.0.2
-      '@types/node': 17.0.40
+      '@types/node': 17.0.41
       acorn: 8.7.1
       acorn-walk: 8.2.0
       arg: 4.1.3
