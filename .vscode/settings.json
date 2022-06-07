@@ -10,6 +10,7 @@
     "strings": true
   },
   "windicss.sortOnSave": true,
+  "unocss.root": "packages/unocss.config.ts",
   "markdownlint.ignore": ["CHANGELOG.md"],
   "cSpell.ignorePaths": ["node_modules"],
   "cSpell.words": [

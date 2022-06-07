@@ -17,7 +17,7 @@ const config: UserConfig = {
 
     Unocss({
       mode: 'shadow-dom',
-      configFile: resolve(__dirname, 'unocss.config.js'),
+      configFile: '../unocss.config.ts',
     }),
   ],
 
