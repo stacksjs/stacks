@@ -38,7 +38,7 @@
   "scripts": {
     "build": "rimraf packages/*/dist packages/types && pnpm -r --filter './packages/**' run build",
     "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build",
-    "build:types": "vue-tsc --emitDeclarationOnly",
+    "build:types": "rimraf packages/types && vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
     "dev:vue": "pnpm run build && pnpm --filter './examples/vue' dev",
     "dev:wcs": "pnpm run build && pnpm --filter './examples/web-components' dev",
