@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-elements",
-  "version": "0.13.12",
+  "version": "0.13.13",
   "packageManager": "pnpm@7.1.9",
   "description": "A dummy Web Component library.",
   "author": "Chris Breuer",
