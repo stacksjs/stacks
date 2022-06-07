@@ -27,7 +27,7 @@ const config: UserConfig = {
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
       imports: ['vue', '@vueuse/core', {
-        '@ow3/hello-world-composable': ['isDark', 'toggleDark'],
+        '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
       }],
       dts: 'auto-imports.d.ts',
       eslintrc: {
@@ -39,7 +39,7 @@ const config: UserConfig = {
     Components({
       dirs: ['src/components'],
       extensions: ['vue'],
-      dts: '../components.d.ts',
+      dts: 'components.d.ts',
     }),
   ],
 
