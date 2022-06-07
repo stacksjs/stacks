@@ -29,7 +29,7 @@ const config: UserConfig = {
       imports: ['vue', '@vueuse/core', {
         '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
       }],
-      dts: 'auto-imports.d.ts',
+      dts: '../types/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
       },
@@ -39,7 +39,7 @@ const config: UserConfig = {
     Components({
       dirs: ['src/components'],
       extensions: ['vue'],
-      dts: 'components.d.ts',
+      dts: '../types/components.d.ts',
     }),
   ],
 
