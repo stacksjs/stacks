@@ -1,2 +1,2 @@
-declare const _default: import("unbuild").BuildConfig;
-export default _default;
+declare const _default: import('unbuild').BuildConfig
+export default _default
