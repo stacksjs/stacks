@@ -29,5 +29,5 @@ const props = withDefaults(defineProps<Props>(), {
 </template>
 
 <style scoped>
-@unocss-placeholder
+/* @unocss-placeholder */
 </style>
