@@ -20,7 +20,7 @@ const config: UserConfig = {
     }),
 
     Unocss({
-      mode: 'shadow-dom',
+      mode: 'vue-scoped',
       configFile: '../unocss.config.ts',
     }),
 

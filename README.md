@@ -40,7 +40,7 @@ Because this monorepo is optimized toward the development of easily reusable & c
 </html>
 ```
 
-_Optional: if you prefer using Vue_
+Optional: if you prefer using Vue:
 
 ```vue
 <script setup lang="ts">

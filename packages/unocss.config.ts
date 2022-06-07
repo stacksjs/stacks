@@ -9,7 +9,6 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-// config: UserConfig < Theme >
 
 const config: UserConfig = {
   // shortcuts: [
