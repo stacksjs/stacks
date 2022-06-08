@@ -20,7 +20,11 @@ const config: UserConfig = {
       customElement: true,
     }),
 
-    dts(),
+    dts({
+      tsConfigFilePath: '../../tsconfig.json',
+      insertTypesEntry: true,
+      outputDir: './types',
+    }),
 
     Unocss({
       mode: 'vue-scoped',

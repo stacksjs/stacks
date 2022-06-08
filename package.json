@@ -38,7 +38,7 @@
   },
   "scripts": {
     "build": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
-    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build && esno .scripts/copy-files.ts",
+    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
     "build:types": "rimraf packages/types && vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
     "dev:vue": "pnpm --filter './examples/vue' dev",

@@ -9,6 +9,8 @@
   "editor.quickSuggestions": {
     "strings": true
   },
+  "eslint.packageManager": "pnpm",
+  "npm.packageManager": "pnpm",
   "windicss.sortOnSave": true,
   "unocss.root": "packages/unocss.config.ts",
   "markdownlint.ignore": ["CHANGELOG.md"],
