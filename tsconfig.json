@@ -18,8 +18,11 @@
     "types": [
       "node",
       "vitest",
-      "vite/client",
-      "packages/types"
+      "vite/client"
+    ],
+    "typeRoots": [
+      "packages/types",
+      "node_modules/@types"
     ],
     "paths": {
       "@ow3/hello-world-vue": [
@@ -36,7 +39,6 @@
   "exclude": [
     "**/dist",
     "**/node_modules",
-    "**/playground",
     "**/tests"
   ]
 }

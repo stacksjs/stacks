@@ -5,7 +5,3 @@ import { HelloWorld } from '@ow3/hello-world-vue'
 <template>
   <HelloWorld name="Jane Doe" />
 </template>
-
-<style>
-/* @import '@ow3/hello-world-vue/dist/style.css'; */
-</style>
