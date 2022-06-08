@@ -24,6 +24,7 @@ const config: UserConfig = {
       tsConfigFilePath: '../../tsconfig.json',
       insertTypesEntry: true,
       outputDir: './types',
+      cleanVueFileName: true,
     }),
 
     Unocss({

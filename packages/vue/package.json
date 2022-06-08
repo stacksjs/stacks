@@ -28,7 +28,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./../types/components/HelloWorld.vue.d.ts",
+      "types": "./../types/components/HelloWorld.d.ts",
       "require": "./dist/hello-world-vue.cjs",
       "import": "./dist/hello-world-vue.mjs"
     },
@@ -36,7 +36,7 @@
   },
   "main": "dist/hello-world-vue.cjs",
   "module": "dist/hello-world-vue.mjs",
-  "types": "../types/components/HelloWorld.vue.d.ts",
+  "types": "../types/components/HelloWorld.d.ts",
   "style": "dist/style.css",
   "files": [
     "dist"
