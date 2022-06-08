@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import PresetIcons from '@unocss/preset-icons'
 import { alias } from '../alias'
 
 /** @type {import('vite').UserConfig} */
@@ -14,16 +13,8 @@ const config = {
     Vue(),
 
     Unocss({
+      configFile: '../packages/unocss.config.ts',
       mode: 'vue-scoped',
-      presets: [
-        PresetIcons({
-          prefix: 'i-',
-          extraProperties: {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-          },
-        }),
-      ],
     }),
   ],
 }

@@ -6,5 +6,8 @@
     "dev": "vite --open",
     "build": "vite build",
     "serve": "vite preview"
+  },
+  "dependencies": {
+    "@ow3/hello-world-vue": "workspace:*"
   }
 }
