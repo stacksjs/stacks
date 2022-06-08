@@ -52,20 +52,7 @@ import HelloWorld from 'hello-world-stack'
 </template>
 ```
 
-### Tips
-
-This project also includes a simple way to handle your versioning. Through semantic commit names, it will also generate the 2 changelogs: one as part of the GitHub releases & the one markdown file that's created within the root of the project.
-
-```bash
-# how to create a git commit?
-git add . # select the changes you want to commit
-pnpm run commit # then simply follow the prompts
-
-# after you successfully committed, you may create a "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
-```
-
-Read more about these tips in the docs.
+Read more about the setup & tips in the docs.
 
 ### Dev Tools
 
