@@ -4,8 +4,8 @@
     "target": "es2017",
     "module": "esnext",
     "declaration": true,
+    "outDir": "dist",
     "skipLibCheck": true,
-    "outDir": "packages/types",
     "lib": [
       "dom", "esnext"
     ],

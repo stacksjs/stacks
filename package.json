@@ -37,8 +37,8 @@
     "pnpm": ">=7.1.9"
   },
   "scripts": {
-    "build": "rimraf packages/*/dist packages/types && pnpm -r --filter './packages/**' run build",
-    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build",
+    "build": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build && esno .scripts/copy-files.ts",
+    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build && esno .scripts/copy-files.ts",
     "build:types": "rimraf packages/types && vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
     "dev:vue": "pnpm run build && pnpm --filter './examples/vue' dev",
