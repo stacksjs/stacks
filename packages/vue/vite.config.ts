@@ -5,6 +5,7 @@ import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
+import dts from 'vite-plugin-dts'
 import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
@@ -18,6 +19,8 @@ const config: UserConfig = {
     Vue({
       customElement: true,
     }),
+
+    dts(),
 
     Unocss({
       mode: 'vue-scoped',
