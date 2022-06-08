@@ -32,6 +32,7 @@ const config: UserConfig = {
       dts: '../types/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
+        filepath: '../.eslintrc-auto-import.json',
       },
     }),
 
