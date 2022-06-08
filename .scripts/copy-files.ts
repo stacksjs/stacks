@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, statSync, mkdirSync, readdirSync } from 'fs'
+import { copyFileSync, existsSync, statSync, readdirSync } from 'fs'
 import { resolve, join } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -15,18 +15,7 @@ let copyRecursiveSync = function (src, dest) {
   let stats = exists && statSync(src);
   let isDirectory = exists && stats.isDirectory();
 
-  // eslint-disable-next-line no-console
-  console.log('exists', exists);
-
-  // eslint-disable-next-line no-console
-  console.log('stats', stats);
-
-  // eslint-disable-next-line no-console
-  console.log('isDirectory', isDirectory);
-
   if (isDirectory) {
-    mkdirSync(dest);
-
     readdirSync(src).forEach(function (childItemName) {
       copyRecursiveSync(join(src, childItemName), join(dest, childItemName));
     });
