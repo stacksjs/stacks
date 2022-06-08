@@ -91,14 +91,14 @@ importers:
 
   examples/vue:
     specifiers:
-      '@ow3/hello-world-vue': ^0.13.11
+      '@ow3/hello-world-vue': ^0.14.1
       '@vitejs/plugin-vue': ^2.3.3
       typescript: ^4.5.4
       vite: ^2.9.9
       vue: ^3.2.25
       vue-tsc: ^0.34.7
     dependencies:
-      '@ow3/hello-world-vue': 0.13.13
+      '@ow3/hello-world-vue': link:../../packages/vue
       vue: 3.2.37
     devDependencies:
       '@vitejs/plugin-vue': 2.3.3_vite@2.9.10+vue@3.2.37
@@ -108,9 +108,9 @@ importers:
 
   examples/web-components:
     specifiers:
-      '@ow3/hello-world-elements': ^0.13.12
+      '@ow3/hello-world-elements': ^0.14.1
     dependencies:
-      '@ow3/hello-world-elements': 0.13.13
+      '@ow3/hello-world-elements': link:../../packages/elements
 
   packages/composables:
     specifiers:
@@ -872,18 +872,6 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
     dev: true
-
-  /@ow3/hello-world-elements/0.13.13:
-    resolution: {integrity: sha512-ItqdGBYPP5MBhilgjH+d8hOxpb0t4LFY/A3tGCdna4t/Y03OH5Tg7YHTGnpz/Ol6KLorgfNzsPCTCHJmBfbMqQ==}
-    engines: {node: '>=v16.15.1', pnpm: '>=7.1.9'}
-    dependencies:
-      '@ow3/hello-world-vue': 0.13.13
-    dev: false
-
-  /@ow3/hello-world-vue/0.13.13:
-    resolution: {integrity: sha512-GY9mA4AfwRYpISwlcRVckNVpHmhzEJYrCs/mqJVs+MKZF3efiz9mpwz3WJ8wCPYu7L7MUjNHbwwj43qQ75Mwqw==}
-    engines: {node: '>=v16.15.1', pnpm: '>=7.1.9'}
-    dev: false
 
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
