@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-vue",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "packageManager": "pnpm@7.1.9",
   "description": "A dummy Vue Component Library.",
   "author": "Chris Breuer",
