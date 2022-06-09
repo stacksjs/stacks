@@ -20,7 +20,7 @@ export default function Stacks() {
 
             Unocss({
                 mode: 'vue-scoped',
-                configFile: '../unocss.config.ts',
+                configFile: './unocss.config.ts',
             }),
 
             // https://github.com/antfu/unplugin-auto-import
@@ -42,14 +42,5 @@ export default function Stacks() {
                 dts: '../types/components.d.ts',
             }),
         ],
-
-        // transform(src, id) {
-        //     if (fileRegex.test(id)) {
-        //         return {
-        //             code: compileFileToJS(src),
-        //             map: null // provide source map if available
-        //         }
-        //     }
-        // }
     }
 }
