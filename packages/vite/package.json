@@ -1,0 +1,60 @@
+{
+    "name": "@ow3/vite-plugin-hello-world",
+    "version": "0.14.2",
+    "packageManager": "pnpm@7.1.9",
+    "description": "The core of the component library, including the CLI.",
+    "author": "Chris Breuer",
+    "license": "MIT",
+    "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+        "directory": "packages/composables"
+    },
+    "bugs": {
+        "url": "https://github.com/openwebstacks/stacks-starter/issues"
+    },
+    "keywords": [
+        "vite-plugin",
+        "component",
+        "library",
+        "vue",
+        "typescript",
+        "javascript",
+        "starter",
+        "kit"
+    ],
+    "contributors": [
+        "Chris Breuer <chris@ow3.org>"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.mjs"
+        }
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=v16.15.1",
+        "pnpm": ">=7.1.9"
+    },
+    "scripts": {
+        "build": "unbuild",
+        "stub": "unbuild --stub"
+    },
+    "devDependencies": {
+        "pathe": "^0.3.0",
+        "unbuild": "^0.7.4",
+        "unocss": "^0.38.1",
+        "unplugin-auto-import": "^0.8.7",
+        "unplugin-vue-components": "^0.19.6",
+        "vite-plugin-dts": "^1.2.0",
+        "vite-plugin-inspect": "^0.5.0"
+    }
+}
