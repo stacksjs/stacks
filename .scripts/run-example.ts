@@ -5,7 +5,7 @@
 import { spawn } from 'child_process';
 import { readdirSync, readFileSync } from 'fs';
 import Prompts from 'prompts';
-import path from 'upath';
+import { dirname, resolve, relative } from 'path'
 import minimist from 'minimist';
 import { fileURLToPath } from 'url';
 
@@ -13,8 +13,8 @@ const { prompts } = Prompts;
 
 const args = minimist(process.argv.slice(2));
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const examplesDir = path.resolve(__dirname, '../examples');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const examplesDir = resolve(__dirname, '../examples');
 
 const examples = readdirSync(examplesDir).filter(
     (dirName) => !dirName.startsWith('.'),
@@ -34,9 +34,9 @@ const exampleIndex =
         });
 
 const example = examples[exampleIndex];
-const exampleDir = path.resolve(examplesDir, example);
-const relativePathToExample = path.relative(process.cwd(), exampleDir);
-const examplePkgPath = path.resolve(exampleDir, 'package.json');
+const exampleDir = resolve(examplesDir, example);
+const relativePathToExample = relative(process.cwd(), exampleDir);
+const examplePkgPath = resolve(exampleDir, 'package.json');
 const examplePkgContent = JSON.parse(readFileSync(examplePkgPath).toString());
 
 const scripts = Object.keys(examplePkgContent.scripts);

@@ -4,11 +4,9 @@
 
 import { spawn } from 'child_process';
 import { readdirSync } from 'fs';
-import Prompts from 'prompts';
+import { prompts } from 'prompts';
 import path from 'upath';
 import { fileURLToPath } from 'url';
-
-const { prompts } = Prompts;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packagesDir = path.resolve(__dirname, '../packages');
