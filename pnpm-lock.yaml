@@ -153,7 +153,7 @@ importers:
       unocss: ^0.38.1
       unplugin-auto-import: ^0.8.7
       unplugin-vue-components: ^0.19.6
-      vite: ^2.9.9
+      vite: ^2.9.10
       vite-plugin-dts: ^1.2.0
       vite-plugin-inspect: ^0.5.0
     devDependencies:
