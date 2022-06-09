@@ -1,6 +1,6 @@
 {
     "name": "@ow3/vite-plugin-hello-world",
-    "version": "0.14.2",
+    "version": "0.14.3",
     "packageManager": "pnpm@7.1.9",
     "description": "The core of the component library, the Vite plugin.",
     "author": "Chris Breuer",
