@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { dirname, resolve } from 'pathe'
+import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import sade from 'sade'
 
