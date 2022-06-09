@@ -13,6 +13,8 @@ Currently, the following examples are covered:
 - [ ] Remix
 - [ ] Solid
 
+If any of these uncompleted examples look like a fun project to you, any help is appreciated. 😊
+
 ## 💪🏼 Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
