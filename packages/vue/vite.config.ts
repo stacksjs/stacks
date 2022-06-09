@@ -2,10 +2,6 @@ import { resolve } from 'pathe'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import Unocss from 'unocss/vite'
-import dts from 'vite-plugin-dts'
 import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
@@ -18,37 +14,6 @@ const config: UserConfig = {
   plugins: [
     Vue({
       customElement: true,
-    }),
-
-    dts({
-      tsConfigFilePath: '../../tsconfig.json',
-      insertTypesEntry: true,
-      outputDir: './types',
-      cleanVueFileName: true,
-    }),
-
-    Unocss({
-      mode: 'vue-scoped',
-      configFile: '../unocss.config.ts',
-    }),
-
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: ['vue', '@vueuse/core', {
-        '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
-      }],
-      dts: '../types/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-        filepath: '../.eslintrc-auto-import.json',
-      },
-    }),
-
-    // https://github.com/antfu/unplugin-vue-components
-    Components({
-      dirs: ['src/components'],
-      extensions: ['vue'],
-      dts: '../types/components.d.ts',
     }),
   ],
 
