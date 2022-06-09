@@ -5,7 +5,7 @@
 import { spawn } from 'child_process';
 import { readdirSync } from 'fs';
 import { prompts } from 'prompts';
-import path from 'upath';
+import path from 'pathe';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

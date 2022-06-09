@@ -32,16 +32,15 @@ importers:
       inquirer: ^8.2.4
       lint-staged: ^13.0.1
       minimist: ^1.2.6
+      pathe: ^0.3.0
       prompts: ^2.4.2
       rimraf: ^3.0.2
-      sade: ^1.8.1
       simple-git-hooks: ^2.8.0
       terser: ^5.14.0
       typescript: ^4.7.3
       unocss: ^0.38.1
       unplugin-auto-import: ^0.8.7
       unplugin-vue-components: ^0.19.6
-      upath: ^2.0.1
       vite: ^2.9.10
       vite-plugin-dts: ^1.2.0
       vitest: ^0.14.1
@@ -78,16 +77,15 @@ importers:
       inquirer: 8.2.4
       lint-staged: 13.0.1
       minimist: 1.2.6
+      pathe: 0.3.0
       prompts: 2.4.2
       rimraf: 3.0.2
-      sade: 1.8.1
       simple-git-hooks: 2.8.0
       terser: 5.14.0
       typescript: 4.7.3
       unocss: 0.38.1_vite@2.9.10
       unplugin-auto-import: 0.8.7_tci2uj2i5wdrrn53tzwatf6w64
       unplugin-vue-components: 0.19.6_vite@2.9.10+vue@3.2.37
-      upath: 2.0.1
       vite: 2.9.10
       vite-plugin-dts: 1.2.0_vite@2.9.10
       vitest: 0.14.1
@@ -122,6 +120,16 @@ importers:
       unbuild: ^0.7.4
     devDependencies:
       '@vueuse/core': 8.6.0_vue@3.2.37
+      unbuild: 0.7.4
+
+  packages/core:
+    specifiers:
+      pathe: ^0.3.0
+      sade: ^1.8.1
+      unbuild: ^0.7.4
+    devDependencies:
+      pathe: 0.3.0
+      sade: 1.8.1
       unbuild: 0.7.4
 
   packages/elements:
@@ -191,7 +199,7 @@ packages:
       eslint-plugin-import: 2.26.0_pv5w3e62ssxduf5aiwxbc3knra
       eslint-plugin-jsonc: 2.3.0_eslint@8.17.0
       eslint-plugin-markdown: 2.2.1_eslint@8.17.0
-      eslint-plugin-n: 15.2.1_eslint@8.17.0
+      eslint-plugin-n: 15.2.2_eslint@8.17.0
       eslint-plugin-promise: 6.0.0_eslint@8.17.0
       eslint-plugin-unicorn: 42.0.0_eslint@8.17.0
       eslint-plugin-yml: 1.0.0_eslint@8.17.0
@@ -266,7 +274,7 @@ packages:
       eslint-plugin-html: 6.2.0
       eslint-plugin-import: 2.26.0_pv5w3e62ssxduf5aiwxbc3knra
       eslint-plugin-jsonc: 2.3.0_eslint@8.17.0
-      eslint-plugin-n: 15.2.1_eslint@8.17.0
+      eslint-plugin-n: 15.2.2_eslint@8.17.0
       eslint-plugin-promise: 6.0.0_eslint@8.17.0
       eslint-plugin-unicorn: 42.0.0_eslint@8.17.0
       eslint-plugin-vue: 9.1.0_eslint@8.17.0
@@ -1881,7 +1889,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001351
-      electron-to-chromium: 1.4.149
+      electron-to-chromium: 1.4.150
       escalade: 3.1.1
       node-releases: 2.0.5
       picocolors: 1.0.0
@@ -2792,8 +2800,8 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
-  /electron-to-chromium/1.4.149:
-    resolution: {integrity: sha512-SR6ZQ8gfXX7LIS3UTDXu1CbFMUnluP3TS+jP7QwDwOnoH5CcHbejFdaaaEnGxR6I76E55eFnUV9mxI8GKufkEg==}
+  /electron-to-chromium/1.4.150:
+    resolution: {integrity: sha512-MP3oBer0X7ZeS9GJ0H6lmkn561UxiwOIY9TTkdxVY7lI9G6GVCKfgJaHaDcakwdKxBXA4T3ybeswH/WBIN/KTA==}
     dev: true
 
   /emoji-regex/8.0.0:
@@ -3613,8 +3621,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-n/15.2.1_eslint@8.17.0:
-    resolution: {integrity: sha512-uMG50pvKqXK9ab163bSI5OpyZR0F5yIB0pEC4ciGpBLrXVjVDOlx5oTq8GQULWzbelJt7wL5Rw4T+FfAff5Cxg==}
+  /eslint-plugin-n/15.2.2_eslint@8.17.0:
+    resolution: {integrity: sha512-MLjZVAv4TiCIoXqjibNqCJjLkGHfrOY3XZ0ZBLoW0OnS3o98PUBnzB/kfp8dCz/4A4Y18jjX50PRnqI4ACFY1Q==}
     engines: {node: '>=12.22.0'}
     peerDependencies:
       eslint: '>=7.0.0'
@@ -6322,7 +6330,7 @@ packages:
     dev: true
 
   /sprintf-js/1.0.3:
-    resolution: {integrity: sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=}
+    resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
     dev: true
 
   /sshpk/1.17.0:
@@ -6991,11 +6999,6 @@ packages:
       scule: 0.2.1
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /upath/2.0.1:
-    resolution: {integrity: sha512-1uEe95xksV1O0CYKXo8vQvN1JEbtJp7lb7C5U9HMsIp6IVwntkH/oNUzyVNQSd4S1sYk2FpSSW44FqMc8qee5w==}
-    engines: {node: '>=4'}
     dev: true
 
   /uri-js/4.4.1:
