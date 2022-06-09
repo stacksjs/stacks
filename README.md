@@ -11,10 +11,16 @@ _"The smart way to build component libraries."_ - Chris Breuer
 It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
 
 ```bash
-# you may use this GitHub template or the following command:
+# you may "Use this [GitHub] template" or run the following command:
 npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
+```
 
+## 🤖 Usage
+
+The `package.json` contains some useful snippets you likely want to be aware of. Some commonly used ones are:
+
+```bash
 pnpm i -r # install all dependencies (for all packages)
 pnpm fresh # fresh reinstall of all dependencies
 
@@ -28,11 +34,7 @@ pnpm commit # follow CLI prompts for committing changes
 pnpm release # releases the library (packages) to npm
 ```
 
-Additionally, the `package.json` contains some useful snippets you likely want to be aware of.
-
-## 🤖 Usage
-
-Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use:
+Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's simple easy to use:
 
 ```html
 <html>
