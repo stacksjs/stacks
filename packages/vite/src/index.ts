@@ -7,7 +7,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import { alias } from '../../../alias'
-import { VITE_PLUGIN_NAME, VUE_PACKAGE_NAME } from '../../shared/constants'
+import { VITE_PLUGIN_NAME, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../shared/constants'
 import { UserOptions } from './options'
 
 export default function Stacks(userOptions: UserOptions = {}) {
@@ -19,23 +19,61 @@ export default function Stacks(userOptions: UserOptions = {}) {
 
     // const plugins: Plugin[] = []
 
-    let lib = {
-        entry: resolve(__dirname, 'src/index.ts'),
-        name: VUE_PACKAGE_NAME,
-        formats: ['cjs', 'es'],
-        fileName: (format: string) => {
-            if (format === 'es')
-                return `${VUE_PACKAGE_NAME}.mjs`
+    const buildVueComponents = {
+        lib: {
+            entry: resolve(__dirname, 'src/index.ts'),
+            name: VUE_PACKAGE_NAME,
+            formats: ['cjs', 'es'],
+            fileName: (format: string) => {
+                if (format === 'es')
+                    return `${VUE_PACKAGE_NAME}.mjs`
 
-            if (format === 'cjs')
-                return `${VUE_PACKAGE_NAME}.cjs`
+                if (format === 'cjs')
+                    return `${VUE_PACKAGE_NAME}.cjs`
 
-            // if (format === 'iife')
-            //     return `${VUE_PACKAGE_NAME}.global.js`
+                // if (format === 'iife')
+                //     return `${VUE_PACKAGE_NAME}.global.js`
 
-            return `${VUE_PACKAGE_NAME}.?.js`
+                return `${VUE_PACKAGE_NAME}.?.js`
+            },
         },
-    }
+
+        rollupOptions: {
+            external: ['vue'],
+            output: {
+                // exports: 'named',
+                globals: {
+                    vue: 'Vue',
+                },
+            },
+        },
+
+        // sourcemap: true,
+        // minify: false,
+    };
+
+    // const buildWebComponents = {
+    //     lib: {
+    //         entry: resolve(__dirname, 'src/index.ts'),
+    //         name: WEB_COMPONENTS_PACKAGE_NAME,
+    //         formats: ['cjs', 'es'],
+    //         fileName: (format: string) => {
+    //             if (format === 'es')
+    //                 return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
+
+    //             if (format === 'cjs')
+    //                 return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
+
+    //             // if (format === 'iife')
+    //             //   return 'hello-world-elements.global.js'
+
+    //             return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
+    //         },
+    //         // sourcemap: true,
+    //         // minify: false,;
+    //     }
+    // }
+
 
     return {
         name: VITE_PLUGIN_NAME,
@@ -83,46 +121,6 @@ export default function Stacks(userOptions: UserOptions = {}) {
         ],
 
         // vue components build
-        build: {
-            lib
-        },
-
-        rollupOptions: {
-            external: ['vue'],
-            output: {
-                // exports: 'named',
-                globals: {
-                    vue: 'Vue',
-                },
-            },
-        },
-
-        //     // sourcemap: true,
-        //     // minify: false,
-        // },
-
-        // for web components build
-        // build: {
-        //     lib: {
-        //         entry: resolve(__dirname, 'src/index.ts'),
-        //         name: 'hello-world-elements',
-        //         formats: ['cjs', 'es'],
-        //         fileName: (format: string) => {
-        //             if (format === 'es')
-        //                 return 'hello-world-elements.mjs'
-
-        //             if (format === 'cjs')
-        //                 return 'hello-world-elements.cjs'
-
-        //             // if (format === 'iife')
-        //             //   return 'hello-world-elements.global.js'
-
-        //             return 'hello-world-elements.?.js'
-        //         },
-        //     },
-
-        //     // sourcemap: true,
-        //     // minify: false,
-        // },
+        build: buildVueComponents,
     }
 }
