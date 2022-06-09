@@ -1,4 +1,3 @@
-// import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
@@ -6,7 +5,7 @@ import dts from 'vite-plugin-dts'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { UserOptions } from './options'
-import { alias as StacksAliases } from '../../shared/alias'
+import { alias as StacksAliases } from '../../../config/alias'
 
 export function Stacks(userOptions: UserOptions = {}) {
     // eslint-disable-next-line no-console
