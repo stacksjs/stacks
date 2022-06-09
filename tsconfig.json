@@ -3,7 +3,7 @@
   "files": [],
   "include": [
     "./packages/**/*",
-    "./examples/**/*",
+    "./examples/**/*", "config/constants.ts", "config/alias.ts",
     // "./.scripts/*"
   ]
 }
