@@ -1,4 +1,4 @@
-# @ow3/hello-world-core
+# @ow3/vite-plugin-hello-world
 
 This package contains the "core" logic of this monorepo which is, ultimately, a Vite config.
 
@@ -10,7 +10,7 @@ This includes:
 ## 🤖 Usage
 
 ```bash
-# pnpm i -D @ow3/hello-world-core
+# pnpm i -D @ow3/vite-plugin-hello-world
 ```
 
 Learn more in the docs.
