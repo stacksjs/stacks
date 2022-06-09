@@ -2,7 +2,7 @@
     "name": "@ow3/vite-plugin-hello-world",
     "version": "0.14.2",
     "packageManager": "pnpm@7.1.9",
-    "description": "The core of the component library, including the CLI.",
+    "description": "The core of the component library, the Vite plugin.",
     "author": "Chris Breuer",
     "license": "MIT",
     "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vite#readme",
