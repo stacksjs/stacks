@@ -13,7 +13,7 @@
         "strict": true,
         "strictNullChecks": true,
         "resolveJsonModule": true,
-        "preserveWatchOutput": true,
+        // "preserveWatchOutput": true,
         "jsx": "preserve",
         "types": [
             "node",

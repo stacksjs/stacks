@@ -1,21 +1,18 @@
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
-import Unocss from 'unocss/vite'
 import { alias } from '../alias'
+import { Stacks } from '@ow3/vite-plugin-hello-world'
 
 /** @type {import('vite').UserConfig} */
 const config = {
-  resolve: {
-    alias,
-  },
-
   plugins: [
     Vue(),
 
-    Unocss({
-      configFile: '../packages/core/unocss.config.ts',
-      mode: 'vue-scoped',
-    }),
+    Stacks(),
+    // Unocss({
+    //   configFile: '../packages/core/unocss.config.ts',
+    //   mode: 'vue-scoped',
+    // }),
   ],
 }
 
