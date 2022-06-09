@@ -28,16 +28,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./../types/components/HelloWorld.d.ts",
+      "types": "./dist/HelloWorld.d.ts",
       "require": "./dist/hello-world-vue.cjs",
       "import": "./dist/hello-world-vue.mjs"
-    },
-    "./dist/style.css": "./dist/style.css"
+    }
   },
   "main": "dist/hello-world-vue.cjs",
   "module": "dist/hello-world-vue.mjs",
-  "types": "../types/components/HelloWorld.d.ts",
-  "style": "dist/style.css",
+  "types": "dist/HelloWorld.d.ts",
   "files": [
     "dist"
   ],

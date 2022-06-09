@@ -39,7 +39,7 @@
   "scripts": {
     "build": "esno .scripts/run-build.ts",
     "build:all": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build",
-    "build:types": "rimraf dist packages/composables/* && vue-tsc --emitDeclarationOnly && esno .scripts/copy-files.ts && pnpm run lint:fix",
+    "build:types": "rimraf dist packages/types/composables/* packages/types/components/* && vue-tsc --emitDeclarationOnly && esno .scripts/copy-files.ts && pnpm run lint:fix",
     "dev": "pnpm run stub",
     "example": "esno .scripts/run-example.ts",
     "play": "pnpm --filter './playground' dev",
