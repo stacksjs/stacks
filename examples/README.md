@@ -4,14 +4,14 @@ This folder contains all the examples utilizing the Stacks framework.
 
 Currently, the following examples are covered:
 
-- [x]: # Vue
-- [x]: # Web Components
-- []: # Nuxt
-- []: # Svelte
-- []: # React
-- []: # Next
-- []: # Remix
-- []: # Solid
+[x]: # Vue
+[x]: # Web Components
+[]: # Nuxt
+[]: # Svelte
+[]: # React
+[]: # Next
+[]: # Remix
+[]: # Solid
 
 ## 💪🏼 Contributing
 
