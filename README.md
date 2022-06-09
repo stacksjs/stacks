@@ -2,13 +2,13 @@
 
 # The Modern Monorepo
 
-The Stacks framework helps kick-start development of your next monorepo/component library, pre-configured with all the tools you need to get started. The ultimate goal of this framework is to assist in creating an interoperable library to reach the broadest developer audience.
+The Stacks framework helps kick-start development of your next monorepo/component library, pre-configured with all the bells & whistles you need to get started & be productive. The ultimate goal of this framework is to assist in creating an interoperable library to reach the broadest developer audience.
 
-"The smart way to build component libraries." - Chris Breuer
+_"The smart way to build component libraries."_ - Chris Breuer
 
 ## 💡 Get Started
 
-It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
+It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
 
 ```bash
 # you may use this GitHub template or the following command:
