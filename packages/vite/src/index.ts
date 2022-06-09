@@ -1,4 +1,4 @@
-import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+// import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import dts from 'vite-plugin-dts'
@@ -7,38 +7,38 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import { alias } from '../../../alias'
-import { NAME } from './constants'
+import { VITE_PLUGIN_NAME, VUE_PACKAGE_NAME } from '../../shared/constants'
 import { UserOptions } from './options'
 
 export default function Stacks(userOptions: UserOptions = {}) {
     // eslint-disable-next-line no-console
     console.log('Stacks userOptions', userOptions);
 
-    let server: ViteDevServer | undefined
-    let viteConfig: ResolvedConfig
+    // let server: ViteDevServer | undefined
+    // let viteConfig: ResolvedConfig
 
-    const plugins: Plugin[] = []
+    // const plugins: Plugin[] = []
 
     let lib = {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'hello-world-vue',
+        name: VUE_PACKAGE_NAME,
         formats: ['cjs', 'es'],
         fileName: (format: string) => {
             if (format === 'es')
-                return 'hello-world-vue.mjs'
+                return `${VUE_PACKAGE_NAME}.mjs`
 
             if (format === 'cjs')
-                return 'hello-world-vue.cjs'
+                return `${VUE_PACKAGE_NAME}.cjs`
 
-            if (format === 'iife')
-                return 'hello-world-vue.global.js'
+            // if (format === 'iife')
+            //     return `${VUE_PACKAGE_NAME}.global.js`
 
-            return 'hello-world-vue.?.js'
+            return `${VUE_PACKAGE_NAME}.?.js`
         },
     }
 
     return {
-        name: NAME,
+        name: VITE_PLUGIN_NAME,
 
         resolve: {
             dedupe: ['vue'],
@@ -86,15 +86,16 @@ export default function Stacks(userOptions: UserOptions = {}) {
         build: {
             lib
         },
-        //     rollupOptions: {
-        //         external: ['vue'],
-        //         output: {
-        //             // exports: 'named',
-        //             globals: {
-        //                 vue: 'Vue',
-        //             },
-        //         },
-        //     },
+
+        rollupOptions: {
+            external: ['vue'],
+            output: {
+                // exports: 'named',
+                globals: {
+                    vue: 'Vue',
+                },
+            },
+        },
 
         //     // sourcemap: true,
         //     // minify: false,
