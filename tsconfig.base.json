@@ -4,7 +4,6 @@
         "target": "es2017",
         "module": "esnext",
         "declaration": true,
-        "declarationMap": true,
         "outDir": "dist",
         "skipLibCheck": true,
         "lib": [

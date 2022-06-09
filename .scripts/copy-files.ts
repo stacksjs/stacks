@@ -4,9 +4,8 @@ import { fileURLToPath } from 'url'
 
 // relative to scripts directory
 const destinations = [
-  // i need to copy folders, instead of individual files
-  ['../dist/packages/vue/src/components', '../packages/types/components'],
-  ['../dist/packages/elements/src/components', '../packages/types/components'],
+  // ['../dist/packages/vue/src/components', '../packages/types/components'],
+  // ['../dist/packages/elements/src/components', '../packages/types/components'],
   ['../dist/packages/composables/src', '../packages/types/composables'],
 ]
 

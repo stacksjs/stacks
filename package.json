@@ -2,7 +2,6 @@
   "name": "@ow3/monorepo",
   "version": "0.14.2",
   "private": true,
-  "type": "module",
   "packageManager": "pnpm@7.1.9",
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
@@ -38,9 +37,9 @@
     "pnpm": ">=7.1.9"
   },
   "scripts": {
-    "build": "esno .scripts/run-build.ts",
-    "build:all": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
-    "build:types": "rimraf packages/types && vue-tsc --emitDeclarationOnly",
+    "build": "esno .scripts/run-build.mjs",
+    "build:all": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build:types": "rimraf dist packages/composables/* && vue-tsc --emitDeclarationOnly && esno .scripts/copy-files.ts && pnpm run lint:fix",
     "dev": "pnpm run stub",
     "example": "esno .scripts/run-example.ts",
     "play": "pnpm --filter './playground' dev",

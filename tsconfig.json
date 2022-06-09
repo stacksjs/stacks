@@ -4,6 +4,6 @@
   "include": [
     "./packages/**/*",
     "./examples/**/*",
-    "./.scripts/*"
+    // "./.scripts/*"
   ]
 }
