@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import Stacks from '../vite/src'
 import type { UserConfig } from 'vite'
-// import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {

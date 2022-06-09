@@ -11,6 +11,7 @@ const config: UserConfig = {
   // },
 
   plugins: [
+    // TODO: allow to overwrite the options
     Vue({
       template: {
         compilerOptions: {
@@ -21,6 +22,7 @@ const config: UserConfig = {
       },
     }),
 
+    // TODO: allow to overwrite the options
     Unocss({
       mode: 'shadow-dom',
       presets: [

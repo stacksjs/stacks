@@ -1,16 +1,14 @@
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import Stacks from '../vite/src'
-import Inspect from 'vite-plugin-inspect'
+import { Stacks, resolve } from '../vite/src'
+// import { alias } from '../../alias'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
-  plugins: [
-    Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
+  resolve,
 
-    Stacks({
-      root: './src',
-    }),
+  plugins: [
+    Stacks(),
   ],
 }
 

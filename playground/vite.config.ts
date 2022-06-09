@@ -1,20 +1,15 @@
 import { defineConfig } from 'vite'
-import { alias } from '../alias'
-import Test from '../packages/vite/src/test'
-// import Stacks from '../packages/vite/src/index'
-import Vue from '@vitejs/plugin-vue'
+import { Stacks, alias, buildVueComponents, buildWebComponents } from '../packages/vite/src'
 
 /** @type {import('vite').UserConfig} */
 const config = {
   resolve: {
+    dedupe: ['vue'],
     alias,
   },
 
   plugins: [
-    // Vue(),
-    Test(),
-
-    // Stacks(),
+    Stacks(),
   ],
 }
 
