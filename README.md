@@ -1,6 +1,6 @@
 <p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
 
-_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers_
+_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers._
 
 # The Modern Monorepo
 

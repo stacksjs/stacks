@@ -54,6 +54,7 @@
     "iife",
     "rimraf",
     "brotli",
-    "windicss"
+    "windicss",
+    "nuxt"
   ]
 }
