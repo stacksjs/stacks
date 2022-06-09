@@ -55,6 +55,9 @@
     "rimraf",
     "brotli",
     "windicss",
-    "nuxt"
+    "nuxt",
+    "voorjaar",
+    "dbaeumer",
+    "davidanson",
   ]
 }
