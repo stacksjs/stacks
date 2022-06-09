@@ -1,6 +1,6 @@
-# @ow3/hello-world-composable
+# Types
 
-This folder contains all of the library's composables.
+This folder contains all the packages' TypeScript types. Don't worry, these are created automatically while building the packages/running certain npm scripts.
 
 ## 💪🏼 Contributing
 
