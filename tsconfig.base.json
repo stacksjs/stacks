@@ -6,15 +6,14 @@
         "declaration": true,
         "outDir": "dist",
         "skipLibCheck": true,
-        "lib": [
-            "dom",
-            "esnext"
-        ],
+        "forceConsistentCasingInFileNames": true,
+        "lib": ["dom", "esnext"],
         "moduleResolution": "node",
         "esModuleInterop": true,
         "strict": true,
         "strictNullChecks": true,
         "resolveJsonModule": true,
+        "preserveWatchOutput": true,
         "jsx": "preserve",
         "types": [
             "node",

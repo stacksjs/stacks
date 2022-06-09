@@ -9,7 +9,6 @@
         "declarationMap": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
         "jsx": "preserve",
         "lib": [
             "dom",
