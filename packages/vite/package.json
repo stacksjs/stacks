@@ -5,11 +5,11 @@
     "description": "The core of the component library, including the CLI.",
     "author": "Chris Breuer",
     "license": "MIT",
-    "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/composables#readme",
+    "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/vite#readme",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/openwebstacks/stacks-starter.git",
-        "directory": "packages/composables"
+        "directory": "packages/vite"
     },
     "bugs": {
         "url": "https://github.com/openwebstacks/stacks-starter/issues"
