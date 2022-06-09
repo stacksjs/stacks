@@ -13,7 +13,7 @@ const config = {
     Vue(),
 
     Unocss({
-      configFile: '../packages/unocss.config.ts',
+      configFile: '../packages/core/unocss.config.ts',
       mode: 'vue-scoped',
     }),
   ],
