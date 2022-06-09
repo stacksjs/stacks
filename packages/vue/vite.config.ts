@@ -1,15 +1,14 @@
-import { resolve } from 'pathe'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import { Stacks } from '@ow3/vite-plugin-hello-world'
+import Stacks from '@ow3/vite-plugin-stacks'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   plugins: [
-    Stacks({
-      customElement: true,
-    }),
+    Stacks(),
+    // Stacks({
+    //   customElement: true,
+    // }),
   ],
 }
 

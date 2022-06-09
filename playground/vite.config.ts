@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
 import { alias } from '../alias'
-import { Stacks } from '@ow3/vite-plugin-hello-world'
+import Stacks from '../packages/vite/src/index'
 
 /** @type {import('vite').UserConfig} */
 const config = {
-  plugins: [
-    Vue(),
+  resolve: {
+    alias,
+  },
 
+  plugins: [
     Stacks(),
     // Unocss({
     //   configFile: '../packages/core/unocss.config.ts',

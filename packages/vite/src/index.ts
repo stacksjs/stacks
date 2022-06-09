@@ -1,13 +1,24 @@
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+import Vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import dts from 'vite-plugin-dts'
+import { resolve } from 'pathe'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import { alias } from '../../../alias'
+import { NAME } from './constants'
 
 export default function Stacks() {
+    let server: ViteDevServer | undefined
+    let viteConfig: ResolvedConfig
+
+    const plugins: Plugin[] = []
+
+    plugins.push(Vue)
+
     return {
-        name: 'stacks-plugin',
+        name: NAME,
 
         resolve: {
             dedupe: ['vue'],
@@ -15,6 +26,8 @@ export default function Stacks() {
         },
 
         plugins: [
+            Vue(),
+
             Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
 
             dts({
@@ -50,25 +63,25 @@ export default function Stacks() {
         ],
 
         // vue components build
-        // build: {
-        //     lib: {
-        //         entry: resolve(__dirname, 'src/index.ts'),
-        //         name: 'hello-world-vue',
-        //         formats: ['cjs', 'es'],
-        //         fileName: (format: string) => {
-        //             if (format === 'es')
-        //                 return 'hello-world-vue.mjs'
+        build: {
+            lib: {
+                entry: resolve(__dirname, 'src/index.ts'),
+                name: 'hello-world-vue',
+                formats: ['cjs', 'es'],
+                fileName: (format: string) => {
+                    if (format === 'es')
+                        return 'hello-world-vue.mjs'
 
-        //             if (format === 'cjs')
-        //                 return 'hello-world-vue.cjs'
+                    if (format === 'cjs')
+                        return 'hello-world-vue.cjs'
 
-        //             if (format === 'iife')
-        //                 return 'hello-world-vue.global.js'
+                    if (format === 'iife')
+                        return 'hello-world-vue.global.js'
 
-        //             return 'hello-world-vue.?.js'
-        //         },
-        //     },
-
+                    return 'hello-world-vue.?.js'
+                },
+            },
+        },
         //     rollupOptions: {
         //         external: ['vue'],
         //         output: {
