@@ -37,12 +37,11 @@
     "pnpm": ">=7.1.9"
   },
   "scripts": {
-    "build": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
-    "build:vue": "rimraf packages/*/dist && pnpm -r --filter './packages/vue' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
+    "build": "esno .scripts/run-build.ts",
+    "build:all": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build && esno .scripts/copy-files.ts && pnpm run lint:fix",
     "build:types": "rimraf packages/types && vue-tsc --emitDeclarationOnly",
     "dev": "pnpm run stub",
-    "example:vue:dev": "pnpm --filter './examples/vue' dev",
-    "example:wcs:dev": "pnpm --filter './examples/web-components' dev",
+    "example": "esno .scripts/run-example.ts",
     "play": "pnpm --filter './playground' dev",
     "commit": "git-cz",
     "fresh": "rimraf packages/**/node_modules && rimraf examples/**/node_modules node_modules/ pnpm-lock.yaml && pnpm i -r",

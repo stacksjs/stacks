@@ -1,0 +1,46 @@
+{
+    "compilerOptions": {
+        // "composite": true,
+        "target": "es2017",
+        "module": "esnext",
+        "declaration": true,
+        "declarationMap": true,
+        "outDir": "dist",
+        "skipLibCheck": true,
+        "lib": [
+            "dom",
+            "esnext"
+        ],
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "resolveJsonModule": true,
+        "jsx": "preserve",
+        "types": [
+            "node",
+            "vitest",
+            "vite/client"
+        ],
+        "typeRoots": [
+            "packages/types",
+            "node_modules/@types"
+        ],
+        "paths": {
+            "@ow3/hello-world-vue": [
+                "./packages/vue/src"
+            ],
+            "@ow3/hello-world-composable": [
+                "./packages/composables/src"
+            ],
+            "@ow3/hello-world-elements": [
+                "./packages/web-components/src"
+            ]
+        }
+    },
+    "exclude": [
+        "**/dist",
+        "**/node_modules",
+        "**/tests"
+    ]
+}

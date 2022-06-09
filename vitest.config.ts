@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias,
   },
-  test: {
-    isolate: false,
-  },
+  // test: {
+  //   isolate: false,
+  // },
 })
