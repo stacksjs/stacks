@@ -10,10 +10,6 @@ const config = {
 
   plugins: [
     Stacks(),
-    // Unocss({
-    //   configFile: '../packages/core/unocss.config.ts',
-    //   mode: 'vue-scoped',
-    // }),
   ],
 }
 

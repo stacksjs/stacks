@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { Stacks } from '@ow3/vite-plugin-stacks'
+import Stacks from '../vite/src'
 import type { UserConfig } from 'vite'
 // import { alias } from '../../alias'
 

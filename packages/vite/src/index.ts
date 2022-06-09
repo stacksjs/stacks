@@ -8,14 +8,34 @@ import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import { alias } from '../../../alias'
 import { NAME } from './constants'
+import { UserOptions } from './options'
 
-export default function Stacks() {
+export default function Stacks(userOptions: UserOptions = {}) {
+    // eslint-disable-next-line no-console
+    console.log('Stacks userOptions', userOptions);
+
     let server: ViteDevServer | undefined
     let viteConfig: ResolvedConfig
 
     const plugins: Plugin[] = []
 
-    plugins.push(Vue)
+    let lib = {
+        entry: resolve(__dirname, 'src/index.ts'),
+        name: 'hello-world-vue',
+        formats: ['cjs', 'es'],
+        fileName: (format: string) => {
+            if (format === 'es')
+                return 'hello-world-vue.mjs'
+
+            if (format === 'cjs')
+                return 'hello-world-vue.cjs'
+
+            if (format === 'iife')
+                return 'hello-world-vue.global.js'
+
+            return 'hello-world-vue.?.js'
+        },
+    }
 
     return {
         name: NAME,
@@ -64,23 +84,7 @@ export default function Stacks() {
 
         // vue components build
         build: {
-            lib: {
-                entry: resolve(__dirname, 'src/index.ts'),
-                name: 'hello-world-vue',
-                formats: ['cjs', 'es'],
-                fileName: (format: string) => {
-                    if (format === 'es')
-                        return 'hello-world-vue.mjs'
-
-                    if (format === 'cjs')
-                        return 'hello-world-vue.cjs'
-
-                    if (format === 'iife')
-                        return 'hello-world-vue.global.js'
-
-                    return 'hello-world-vue.?.js'
-                },
-            },
+            lib
         },
         //     rollupOptions: {
         //         external: ['vue'],
