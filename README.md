@@ -1,5 +1,7 @@
 <p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
 
+_Under heavy development during this week, drilling down on the "closer to final" API_
+
 # The Modern Monorepo
 
 The Stacks framework helps kick-start development of your next monorepo/component library, pre-configured with all the bells & whistles you need to get started & be productive. The ultimate goal of this framework is to assist in creating an interoperable library to reach the broadest developer audience.
