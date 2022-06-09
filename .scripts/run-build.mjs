@@ -5,11 +5,11 @@
 import { spawn } from 'child_process';
 import { readdirSync } from 'fs';
 import { prompts } from 'prompts';
-import path from 'pathe';
+import { resolve, dirname } from 'pathe';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const packagesDir = path.resolve(__dirname, '../packages');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packagesDir = resolve(__dirname, '../packages');
 
 const packages = readdirSync(packagesDir).filter(
     (dirName) => !dirName.startsWith('.'),

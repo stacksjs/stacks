@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, statSync, readdirSync } from 'fs'
-import { resolve, join } from 'path'
+import { resolve, join } from 'pathe'
 import { fileURLToPath } from 'url'
 
 // relative to scripts directory

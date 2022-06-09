@@ -4,12 +4,10 @@
 
 import { spawn } from 'child_process';
 import { readdirSync, readFileSync } from 'fs';
-import Prompts from 'prompts';
-import { dirname, resolve, relative } from 'path'
+import { prompts } from 'prompts';
+import { dirname, resolve, relative } from 'pathe'
 import minimist from 'minimist';
 import { fileURLToPath } from 'url';
-
-const { prompts } = Prompts;
 
 const args = minimist(process.argv.slice(2));
 
