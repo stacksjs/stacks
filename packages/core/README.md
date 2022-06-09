@@ -1,9 +1,11 @@
 # @ow3/hello-world-core
 
-This package contains the "core" logic of this monorepo. This includes
+This package contains the "core" logic of this monorepo.
+
+This includes:
 
 - Vite plugin required to build the component library because it requires a custom build step
-- ...
+- an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
 
 ## 🤖 Usage
 
