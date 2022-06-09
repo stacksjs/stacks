@@ -16,11 +16,9 @@ cd hello-world-stack
 pnpm i -r # install dependencies for all packages
 pnpm dev # stubs the libraries for local use
 
-# starts the dev server for any of the examples
-pnpm dev:vue
-pnpm dev:wcs
-
-pnpm build # builds the library for production-ready use
+pnpm build # builds a specific library
+pnpm build:all # builds the library for production-ready use
+pnpm example # run one of the examples
 pnpm commit # opens CLI prompt for committing changes
 pnpm release # releases the library (packages) to npm
 ```
