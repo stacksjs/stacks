@@ -2,7 +2,7 @@
 
 # The Modern Monorepo
 
-Stacks help kick-start development of your next monorepo/component library, pre-configured with all the tools you need to get started. Including superpowers of interoperability.
+The Stacks framework helps kick-start development of your next monorepo/component library, pre-configured with all the tools you need to get started, including superpowers of interoperability. The smart way to build component libraries.
 
 ## 💡 Get Started
 
