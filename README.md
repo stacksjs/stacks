@@ -24,7 +24,7 @@ pnpm example # run one of the examples (follow CLI prompts)
 pnpm build # builds a specific library (follow CLI prompts)
 pnpm build:all # builds the library for production-ready use
 
-pnpm commit # opens CLI prompt for committing changes
+pnpm commit # follow CLI prompts for committing changes
 pnpm release # releases the library (packages) to npm
 ```
 
