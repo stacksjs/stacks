@@ -15,12 +15,15 @@ It's easy to get your component library started with this starter kit. The only 
 npx degit openwebstacks/stacks-starter hello-world-stack
 cd hello-world-stack
 
-pnpm i -r # install dependencies for all packages
-pnpm dev # stubs the libraries for local use
+pnpm i -r # install all dependencies (for all packages)
+pnpm fresh # fresh reinstall of all dependencies
 
-pnpm build # builds a specific library
+pnpm dev # stubs the libraries for local use
+pnpm example # run one of the examples (follow CLI prompts)
+
+pnpm build # builds a specific library (follow CLI prompts)
 pnpm build:all # builds the library for production-ready use
-pnpm example # run one of the examples
+
 pnpm commit # opens CLI prompt for committing changes
 pnpm release # releases the library (packages) to npm
 ```
@@ -29,7 +32,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
-Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use (and distribute):
+Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's very easy to use:
 
 ```html
 <html>
@@ -40,7 +43,7 @@ Because this monorepo is optimized toward the development of easily reusable & c
 </html>
 ```
 
-Optional: if you prefer using Vue:
+Optionally, if you prefer using Vue:
 
 ```vue
 <script setup lang="ts">
