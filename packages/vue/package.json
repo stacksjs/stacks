@@ -44,12 +44,15 @@
     "pnpm": ">=7.1.9"
   },
   "scripts": {
-    "build": "rimraf dist && vue-tsc --declaration --emitDeclarationOnly && vite build",
+    "dev": "vite dev",
+    "test": "vite build",
+    "build": "rimraf dist && vite build && vue-tsc --declaration --emitDeclarationOnly",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
     "@ow3/vite-plugin-stacks": "workspace:*",
     "vite": "^2.9.10",
+    "vite-plugin-inspect": "^0.5.0",
     "vue": "^3.2.37",
     "vue-tsc": "^0.37.3"
   }

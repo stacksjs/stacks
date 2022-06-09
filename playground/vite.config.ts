@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { alias } from '../alias'
 import Stacks from '../packages/vite/src/index'
+import Inspect from 'vite-plugin-inspect'
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -9,6 +10,8 @@ const config = {
   },
 
   plugins: [
+    Inspect(),
+
     Stacks(),
   ],
 }

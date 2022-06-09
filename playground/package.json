@@ -8,6 +8,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@ow3/hello-world-vue": "workspace:*"
+    "@ow3/hello-world-vue": "workspace:*",
+    "vite-plugin-inspect": "^0.5.0"
   }
 }
