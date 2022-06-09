@@ -6,12 +6,12 @@ Currently, the following examples are covered:
 
 - [x] Vue
 - [x] Web Components
-- [] Svelte
-- [] Svelte
-- [] React
-- [] Next
-- [] Remix
-- [] Solid
+- [ ] Svelte
+- [ ] Svelte
+- [ ] React
+- [ ] Next
+- [ ] Remix
+- [ ] Solid
 
 ## 💪🏼 Contributing
 
