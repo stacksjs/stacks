@@ -2,8 +2,10 @@
   "extends": "./tsconfig.base.json",
   "files": [],
   "include": [
+    "./apps/**/*",
+    "./config/*",
+    "./examples/**/*",
     "./packages/**/*",
-    "./examples/**/*", "config/constants.ts", "config/alias.ts",
     // "./scripts/*"
   ]
 }
