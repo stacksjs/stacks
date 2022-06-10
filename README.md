@@ -1,6 +1,6 @@
 <p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
 
-_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well and until then, wip commits it is._
+_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well—and until then, wip commits it is._
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
