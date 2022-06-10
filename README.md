@@ -6,12 +6,13 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started & be productive.
 
-> _The smart way to build component libraries._ - Chris Breuer
+> _The simple way to build component libraries._ - Chris Breuer
 
 ## ☘️ Features
 
 The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
 
+- easily develop & distribute component libraries
 - [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
 - [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
 - [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
