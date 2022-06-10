@@ -14,7 +14,7 @@ cd hello-world-stack
 pnpm i -r # install deps for all packages
 pnpm dev # stubs the libraries for local use
 pnpm dev:vite-wc # starts the dev server
-pnpm build # builds the library for production-ready use
+pnpm build # builds all packages for production-ready use
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.

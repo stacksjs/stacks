@@ -60,5 +60,6 @@
     "dbaeumer",
     "davidanson",
     "vitepress",
+    "deps",
   ]
 }
