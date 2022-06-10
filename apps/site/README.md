@@ -1,6 +1,8 @@
-# Docs
+# The Site
 
-This folder contains the documentation for the library. It also contains the code to build the documentation site which may or may not be easily deployed to Vercel/Netlify.
+The web presence of your component library. It is the source to build the site for the docs of the library. Consequently, the docs live here as well.
+
+Easily deployed to Vercel/Netlify.
 
 WIP
 
