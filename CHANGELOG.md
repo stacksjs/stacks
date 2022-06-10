@@ -1,3 +1,7 @@
+# [0.16.0](https://github.com/openwebstacks/stacks-framework/compare/v0.15.1...v0.16.0) (2022-06-10)
+
+
+
 ## [0.15.1](https://github.com/openwebstacks/stacks-framework/compare/v0.15.0...v0.15.1) (2022-06-09)
 
 
@@ -269,3 +273,6 @@
 
 
 # 0.1.0 (2022-04-26)
+
+
+
