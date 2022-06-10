@@ -12,17 +12,12 @@ The Stacks Framework helps kick-start development of your next component library
 
 The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
 
-- easily develop & distribute component libraries
-- [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
-- [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
-- [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
-- [Vue 3.2](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
-- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
-- [Cypress](https://cypress.io/) - e2e testing
-- [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
+- easily & rapidly develop component libraries with a beautiful DX
+- automated git commits, versioning, and changelog generations
+- automated npm package releases
+- optimized & automated PR dependency updates
+- next-generation docs generator
+- create your own style guide with ease via UnoCSS (e.g. Tailwind CSS)
 
 ## 💡 Get Started
 
@@ -77,7 +72,20 @@ import HelloWorld from 'hello-world-stack'
 
 Read more about the setup & tips in the docs.
 
-### Plugins & Extensions
+### Developer Experience (DX)
+
+- [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
+- [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
+- [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
+- [Vue 3.2](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
+- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
+- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
+- [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
+- [Cypress](https://cypress.io/) - e2e testing
+- [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
+- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
+
+#### Plugins & Extensions
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
@@ -87,7 +95,7 @@ Read more about the setup & tips in the docs.
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
   - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
-### Coding Style
+#### Coding Style
 
 - Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems

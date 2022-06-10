@@ -67,7 +67,7 @@ importers:
       bumpp: 7.1.1
       commitizen: 4.2.4
       conventional-changelog-cli: 2.2.2
-      cypress: 10.0.3
+      cypress: 10.1.0
       eslint: 8.17.0
       eslint-plugin-cypress: 2.12.1_eslint@8.17.0
       esno: 0.16.3
@@ -2521,8 +2521,8 @@ packages:
   /csstype/2.6.20:
     resolution: {integrity: sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA==}
 
-  /cypress/10.0.3:
-    resolution: {integrity: sha512-8C82XTybsEmJC9POYSNITGUhMLCRwB9LadP0x33H+52QVoBjhsWvIzrI+ybCe0+TyxaF0D5/9IL2kSTgjqCB9A==}
+  /cypress/10.1.0:
+    resolution: {integrity: sha512-aQ4JVZVib4Xd9FZW8IRZfKelUvqF4y5A+oUbNvn8TlsBmEfIg3m5Xd6Mt6PVU/jHiVJ9Psl905B3ZPnrDcmyuQ==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     requiresBuild: true

@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
-import { Stacks, alias, buildVueComponents, buildWebComponents } from '../packages/vite/src'
+import { Stacks, resolve, buildVueComponents, buildWebComponents } from '../packages/vite/src'
+
+// eslint-disable-next-line no-console
+console.log('test');
 
 /** @type {import('vite').UserConfig} */
 const config = {
-  resolve: {
-    dedupe: ['vue'],
-    alias,
-  },
+  resolve,
 
   plugins: [
     Stacks(),
