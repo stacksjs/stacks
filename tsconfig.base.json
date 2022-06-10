@@ -33,7 +33,10 @@
             ],
             "@ow3/hello-world-elements": [
                 "./packages/web-components/src"
-            ]
+            ],
+            "@ow3/vite-plugin-stacks": [
+                "./packages/vite/src"
+            ],
         }
     },
     "exclude": [
