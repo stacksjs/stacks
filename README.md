@@ -3,7 +3,7 @@
 _Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well and until then, wip commits it is._
 
 [![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
+<!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 [![GitHub Actions][github-actions-src]][github-actions-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
