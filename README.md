@@ -45,6 +45,10 @@ pnpm build:all # builds the library for production-ready use
 
 pnpm commit # follow CLI prompts for committing changes
 pnpm release # releases the library (packages) to npm
+
+pnpm docs:dev # starts local server for the documentation site
+pnpm docs:build # builds the documentation site
+pnpm docs:serve # serves the documentation site
 ```
 
 Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's simple easy to use:

@@ -39,9 +39,12 @@
   },
   "scripts": {
     "build": "esno scripts/run-build.ts",
-    "build:all": "rimraf dist packages/*/dist && pnpm -r --filter './packages/**' run build",
+    "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
     "build:types": "rimraf dist packages/types/composables/* packages/types/components/* && vue-tsc --emitDeclarationOnly && esno scripts/copy-files.ts && pnpm run lint:fix",
     "dev": "pnpm run stub",
+    "docs:dev": "pnpm --filter './apps/site' dev",
+    "docs:build": "pnpm --filter './apps/site' build",
+    "docs:serve": "pnpm --filter './apps/site' serve",
     "example": "esno scripts/run-example.ts",
     "play": "pnpm --filter './playground' dev",
     "commit": "git-cz",
