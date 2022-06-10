@@ -4,6 +4,7 @@ import Inspect from 'vite-plugin-inspect'
 import dts from 'vite-plugin-dts'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { resolve } from 'pathe'
 import { UserOptions } from './options'
 import { alias as StacksAliases } from '../../../config/alias'
 
@@ -15,14 +16,14 @@ export function Stacks(userOptions: UserOptions = {}) {
         Vue(),
 
         Unocss({
-            configFile: './unocss.config.ts',
+            configFile: resolve(__dirname, 'unocss.config.ts'),
             mode: 'vue-scoped', // or 'shadow-dom'
         }),
 
         Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
 
         dts({
-            tsConfigFilePath: '../../../tsconfig.json',
+            tsConfigFilePath: resolve(__dirname, '../../../tsconfig.json'),
             insertTypesEntry: true,
             outputDir: './types',
             cleanVueFileName: true,
@@ -33,25 +34,25 @@ export function Stacks(userOptions: UserOptions = {}) {
             imports: ['vue', '@vueuse/core', {
                 '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
             }],
-            dts: '../packages/types/auto-imports.d.ts',
+            dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
             eslintrc: {
                 enabled: true,
-                filepath: '../../.eslintrc-auto-import.json',
+                filepath: resolve(__dirname, '../../.eslintrc-auto-import.json') ,
             },
         }),
 
         // https://github.com/antfu/unplugin-vue-components
         Components({
-            dirs: ['../../vue/src/components'],
+            dirs: [resolve(__dirname, '../../vue/src/components')],
             extensions: ['vue'],
-            dts: '../packages/types/auto-imports.d.ts',
+            dts: resolve(__dirname, '../../types/components.d.ts'),
         }),
     ]
 }
 
 export const alias = StacksAliases
 
-export const resolve = {
+export const resolveOptions = {
     dedupe: ['vue'],
     alias,
 }
