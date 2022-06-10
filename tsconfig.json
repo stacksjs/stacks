@@ -4,6 +4,6 @@
   "include": [
     "./packages/**/*",
     "./examples/**/*", "config/constants.ts", "config/alias.ts",
-    // "./.scripts/*"
+    // "./scripts/*"
   ]
 }

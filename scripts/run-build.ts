@@ -1,5 +1,5 @@
 /**
- * Thanks: https://github.com/vitebook/vitebook/blob/main/.scripts/run-build.js
+ * Thanks: https://github.com/vitebook/vitebook/blob/main/scripts/run-build.js
  */
 
 import { spawn } from 'child_process';

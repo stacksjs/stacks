@@ -1,5 +1,5 @@
 /**
- * Thanks: https://github.com/vitebook/vitebook/tree/main/.scripts
+ * Thanks: https://github.com/vitebook/vitebook/tree/main/scripts
  */
 
 import { exec } from 'child_process';

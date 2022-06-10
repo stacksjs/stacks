@@ -1,5 +1,5 @@
 /**
- * Thanks: https://github.com/vitebook/vitebook/blob/main/.scripts/run-example.js
+ * Thanks: https://github.com/vitebook/vitebook/blob/main/scripts/run-example.js
  */
 
 import { spawn } from 'child_process';
@@ -37,7 +37,7 @@ const relativePathToExample = relative(process.cwd(), exampleDir);
 const examplePkgPath = resolve(exampleDir, 'package.json');
 const examplePkgContent = JSON.parse(readFileSync(examplePkgPath).toString());
 
-const scripts = Object.keys(examplePkgContent.scripts);
+const scripts = Object.keys(examplePkgContentscripts);
 const scriptArg = args.script;
 const scriptArgIndex = scripts.findIndex((script) => script === scriptArg);
 
