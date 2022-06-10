@@ -188,8 +188,11 @@ importers:
   playground:
     specifiers:
       '@ow3/hello-world-vue': workspace:*
+      vite: ^2.9.12
     dependencies:
       '@ow3/hello-world-vue': link:../packages/vue
+    devDependencies:
+      vite: 2.9.12
 
 packages:
 

@@ -56,57 +56,57 @@ export const resolve = {
     alias,
 }
 
-export const buildVueComponents = {
-    lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
-        name: VUE_PACKAGE_NAME,
-        formats: ['cjs', 'es'],
-        fileName: (format: string) => {
-            if (format === 'es')
-                return `${VUE_PACKAGE_NAME}.mjs`
+// export const buildVueComponents = {
+//     lib: {
+//         entry: resolve(__dirname, 'src/index.ts'),
+//         name: VUE_PACKAGE_NAME,
+//         formats: ['cjs', 'es'],
+//         fileName: (format: string) => {
+//             if (format === 'es')
+//                 return `${VUE_PACKAGE_NAME}.mjs`
 
-            if (format === 'cjs')
-                return `${VUE_PACKAGE_NAME}.cjs`
+//             if (format === 'cjs')
+//                 return `${VUE_PACKAGE_NAME}.cjs`
 
-            // if (format === 'iife')
-            //     return `${VUE_PACKAGE_NAME}.global.js`
+//             // if (format === 'iife')
+//             //     return `${VUE_PACKAGE_NAME}.global.js`
 
-            return `${VUE_PACKAGE_NAME}.?.js`
-        },
-    },
+//             return `${VUE_PACKAGE_NAME}.?.js`
+//         },
+//     },
 
-    rollupOptions: {
-        external: ['vue'],
-        output: {
-            // exports: 'named',
-            globals: {
-                vue: 'Vue',
-            },
-        },
-    },
+//     rollupOptions: {
+//         external: ['vue'],
+//         output: {
+//             // exports: 'named',
+//             globals: {
+//                 vue: 'Vue',
+//             },
+//         },
+//     },
 
-    // sourcemap: true,
-    // minify: false,
-};
+//     // sourcemap: true,
+//     // minify: false,
+// };
 
-export const buildWebComponents = {
-    lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
-        name: WEB_COMPONENTS_PACKAGE_NAME,
-        formats: ['cjs', 'es'],
-        fileName: (format: string) => {
-            if (format === 'es')
-                return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
+// export const buildWebComponents = {
+//     lib: {
+//         entry: resolve(__dirname, 'src/index.ts'),
+//         name: WEB_COMPONENTS_PACKAGE_NAME,
+//         formats: ['cjs', 'es'],
+//         fileName: (format: string) => {
+//             if (format === 'es')
+//                 return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
 
-            if (format === 'cjs')
-                return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
+//             if (format === 'cjs')
+//                 return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
 
-            // if (format === 'iife')
-            //   return 'hello-world-elements.global.js'
+//             // if (format === 'iife')
+//             //   return 'hello-world-elements.global.js'
 
-            return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
-        },
-        // sourcemap: true,
-        // minify: false,;
-    }
-}
+//             return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
+//         },
+//         // sourcemap: true,
+//         // minify: false,;
+//     }
+// }

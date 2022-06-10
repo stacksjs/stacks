@@ -3,11 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite --open",
+    "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "dependencies": {
     "@ow3/hello-world-vue": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^2.9.12"
   }
 }
