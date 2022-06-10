@@ -1,6 +1,6 @@
-# Stacks Config
+# Docs
 
-This folder contains your Stacks configuration. Feel free to adjust to suit your needs.
+This folder contains the documentation for the library. It also contains the code to build the documentation site which may or may not be easily deployed to Vercel/Netlify.
 
 WIP
 
