@@ -43,7 +43,7 @@ importers:
       unplugin-vue-components: ^0.19.6
       vite: ^2.9.11
       vite-plugin-dts: ^1.2.0
-      vitest: ^0.14.1
+      vitest: ^0.14.2
       vue: ^3.2.37
       vue-tsc: ^0.37.3
     dependencies:
@@ -88,7 +88,7 @@ importers:
       unplugin-vue-components: 0.19.6_vite@2.9.11+vue@3.2.37
       vite: 2.9.11
       vite-plugin-dts: 1.2.0_vite@2.9.11
-      vitest: 0.14.1
+      vitest: 0.14.2
       vue-tsc: 0.37.3_typescript@4.7.3
 
   examples/vue:
@@ -7148,8 +7148,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.14.1:
-    resolution: {integrity: sha512-2UUm6jYgkwh7Y3VKSRR8OuaNCm+iA5LPDnal7jyITN39maZK9L+JVxqjtQ39PSFo5Fl3/BgaJvER6GGHX9JLxg==}
+  /vitest/0.14.2:
+    resolution: {integrity: sha512-vXQUl8OUCqHmxKWscMGL+6Xl1pBJmYHZ8N85iNpLGrirAC2vhspu7b73ShRcLonmZT44BYZW+LBAVvn0L4jyVA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:

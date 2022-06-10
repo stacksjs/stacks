@@ -2,7 +2,7 @@
   "name": "@ow3/monorepo",
   "version": "0.15.1",
   "private": true,
-  "packageManager": "pnpm@7.1.9",
+  "packageManager": "pnpm@7.2.0",
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.1.9"
+    "pnpm": ">=7.2.0"
   },
   "scripts": {
     "build": "esno scripts/run-build.ts",
@@ -104,7 +104,7 @@
     "unplugin-vue-components": "^0.19.6",
     "vite": "^2.9.11",
     "vite-plugin-dts": "^1.2.0",
-    "vitest": "^0.14.1",
+    "vitest": "^0.14.2",
     "vue-tsc": "^0.37.3"
   },
   "simple-git-hooks": {
