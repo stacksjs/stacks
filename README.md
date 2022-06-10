@@ -12,14 +12,15 @@ The Stacks Framework helps kick-start development of your next component library
 
 The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
 
-- [TypeScript 4.7](https://www.typescriptlang.org/)
-- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
+- [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
+- [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
+- [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
-- [Cypress](https://cypress.io/) - E2E testing
-- [Renovate](https://renovatebot.com/) - automatic PR dependency updates
+- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
+- [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
+- [Cypress](https://cypress.io/) - e2e testing
+- [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 
 ## 💡 Get Started
