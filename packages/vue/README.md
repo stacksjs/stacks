@@ -8,7 +8,7 @@ It's easy to get your component library started with this starter kit. The only 
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit openwebstacks/stacks-starter hello-world-stack
+npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
 
 pnpm i -r # install deps for all packages
@@ -95,7 +95,7 @@ Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openweblabs/stacks-starter/discussions)
+[Discussions on GitHub](https://github.com/openweblabs/stacks-framework/discussions)
 
 For casual chit-chat with others using this package:
 

@@ -6,13 +6,13 @@
   "description": "The easy way to start your monorepo stack.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-starter#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git"
+    "url": "git+https://github.com/openwebstacks/stacks-framework.git"
   },
   "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+    "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
     "monorepo",

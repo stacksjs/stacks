@@ -8,7 +8,7 @@ Before you get started, it is important to understand what a Web Component is. T
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit openwebstacks/stacks-starter hello-world-stack
+npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
 
 pnpm i -r # install deps for all packages

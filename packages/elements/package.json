@@ -5,14 +5,14 @@
   "description": "A dummy Web Component library.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-starter/tree/main/packages/elements#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/elements#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-starter.git",
+    "url": "git+https://github.com/openwebstacks/stacks-framework.git",
     "directory": "packages/elements"
   },
   "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-starter/issues"
+    "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
     "component",

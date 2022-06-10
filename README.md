@@ -14,7 +14,7 @@ It's easy to get your component library started with this starter kit. The only 
 
 ```bash
 # you may "Use this [GitHub] template" or run the following command:
-npx degit openwebstacks/stacks-starter hello-world-stack
+npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
 ```
 
@@ -98,7 +98,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/stacks-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openwebstacks/stacks-framework/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
@@ -108,7 +108,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openwebstacks/stacks-starter/discussions)
+[Discussions on GitHub](https://github.com/openwebstacks/stacks-framework/discussions)
 
 For casual chit-chat with others using this package:
 
