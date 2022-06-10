@@ -54,12 +54,12 @@
         "@vitejs/plugin-vue": "^2.3.3",
         "pathe": "^0.3.0",
         "unbuild": "^0.7.4",
-        "unocss": "^0.38.1",
-        "@unocss/preset-icons": "^0.38.1",
-        "@unocss/transformer-compile-class": "^0.38.1",
+        "unocss": "^0.38.2",
+        "@unocss/preset-icons": "^0.38.2",
+        "@unocss/transformer-compile-class": "^0.38.2",
         "unplugin-auto-import": "^0.8.7",
         "unplugin-vue-components": "^0.19.6",
-        "vite": "^2.9.10",
+        "vite": "^2.9.11",
         "vite-plugin-dts": "^1.2.0",
         "vite-plugin-inspect": "^0.5.0"
     }
