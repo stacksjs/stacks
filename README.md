@@ -148,7 +148,7 @@ Made with ❤️
 [npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
 [npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
 
-[github-actions-src]: https://img.shields.io/github/workflow/status/openwebstacks/stacks-framework/ci/main?style=flat-square
+[github-actions-src]: https://img.shields.io/github/workflow/status/openwebstacks/stacks-framework/CI/main?style=flat-square
 [github-actions-href]: https://github.com/openwebstacks/stacks-framework/actions?query=workflow%3Aci
 
 <!-- [codecov-src]: https://img.shields.io/codecov/c/gh/openwebstacks/stacks-framework/main?style=flat-square
