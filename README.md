@@ -17,7 +17,8 @@ The Stacks Framework helps kick-start development of your next component library
 
 The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
 
-- easily & rapidly develop component libraries with a beautiful DX
+- simply & rapidly develop component libraries
+- a beautiful Developer Experience (DX)
 - automated git commits, versioning, and changelog generations
 - automated npm package releases
 - optimized & automated PR dependency updates
