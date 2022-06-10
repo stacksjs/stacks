@@ -22,7 +22,7 @@ importers:
       bumpp: ^7.1.1
       commitizen: ^4.2.4
       conventional-changelog-cli: ^2.2.2
-      cypress: ^10.0.3
+      cypress: ^10.1.0
       eslint: ^8.17.0
       eslint-plugin-cypress: ^2.12.1
       esno: ^0.16.3
@@ -125,7 +125,7 @@ importers:
       '@vueuse/core': ^8.6.0
       unbuild: ^0.7.4
     devDependencies:
-      '@vueuse/core': 8.6.0_vue@3.2.37
+      '@vueuse/core': 8.6.0
       unbuild: 0.7.4
 
   packages/elements:
@@ -1731,6 +1731,22 @@ packages:
   /@vue/shared/3.2.37:
     resolution: {integrity: sha512-4rSJemR2NQIo9Klm1vabqWjD8rs/ZaJSzMxkMNeJS6lHiUjjUeYFbooN19NgFjztubEKh3WlZUeOLVdbbUWHsw==}
 
+  /@vueuse/core/8.6.0:
+    resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      '@vueuse/metadata': 8.6.0
+      '@vueuse/shared': 8.6.0
+      vue-demi: 0.13.1
+    dev: true
+
   /@vueuse/core/8.6.0_vue@3.2.37:
     resolution: {integrity: sha512-VirzExCm/N+QdrEWT7J4uSrvJ5hquKIAU9alQ37kUvIJk9XxCLxmfRnmekYc1kz2+6BnoyuKYXVmrMV351CB4w==}
     peerDependencies:
@@ -1749,6 +1765,20 @@ packages:
 
   /@vueuse/metadata/8.6.0:
     resolution: {integrity: sha512-F+CKPvaExsm7QgRr8y+ZNJFwXasn89rs5wth/HeX9lJ1q8XEt+HJ16Q5Sxh4rfG5YSKXrStveVge8TKvPjMjFA==}
+
+  /@vueuse/shared/8.6.0:
+    resolution: {integrity: sha512-Y/IVywZo7IfEoSSEtCYpkVEmPV7pU35mEIxV7PbD/D3ly18B3mEsBaPbtDkNM/QP3zAZ5mn4nEkOfddX4uwuIA==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      vue-demi: 0.13.1
+    dev: true
 
   /@vueuse/shared/8.6.0_vue@3.2.37:
     resolution: {integrity: sha512-Y/IVywZo7IfEoSSEtCYpkVEmPV7pU35mEIxV7PbD/D3ly18B3mEsBaPbtDkNM/QP3zAZ5mn4nEkOfddX4uwuIA==}
@@ -6032,7 +6062,7 @@ packages:
     dev: true
 
   /proxy-from-env/1.0.0:
-    resolution: {integrity: sha1-M8UDmPcOp+uW0h97gXYwpVeRx+4=}
+    resolution: {integrity: sha512-F2JHgJQ1iqwnHDcQjVBsq3n/uoaFL+iPW/eAeL7kVxy/2RrWaN4WroKjjvbsoRtv0ftelNyC01bjRhn/bhcf4A==}
     dev: true
 
   /psl/1.8.0:
@@ -7385,6 +7415,19 @@ packages:
   /vscode-textmate/5.2.0:
     resolution: {integrity: sha512-Uw5ooOQxRASHgu6C7GVvUxisKXfSgW4oFlO+aa+PAkgmH89O3CXxEEzNRNtHSqtXFTl0nAC1uYj0GMSH27uwtQ==}
     dev: false
+
+  /vue-demi/0.13.1:
+    resolution: {integrity: sha512-xmkJ56koG3ptpLnpgmIzk9/4nFf4CqduSJbUM0OdPoU87NwRuZ6x49OLhjSa/fC15fV+5CbEnrxU4oyE022svg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dev: true
 
   /vue-demi/0.13.1_vue@3.2.37:
     resolution: {integrity: sha512-xmkJ56koG3ptpLnpgmIzk9/4nFf4CqduSJbUM0OdPoU87NwRuZ6x49OLhjSa/fC15fV+5CbEnrxU4oyE022svg==}

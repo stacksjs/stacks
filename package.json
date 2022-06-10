@@ -86,7 +86,7 @@
     "bumpp": "^7.1.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
-    "cypress": "^10.0.3",
+    "cypress": "^10.1.0",
     "eslint": "^8.17.0",
     "eslint-plugin-cypress": "^2.12.1",
     "esno": "^0.16.3",
