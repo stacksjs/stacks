@@ -1,6 +1,6 @@
 <p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
 
-_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers._
+_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well and until then, wip commits it is._
 
 # The Modern Component Library
 
@@ -8,7 +8,7 @@ The Stacks Framework helps kick-start development of your next component library
 
 > _The smart way to build component libraries._ - Chris Breuer
 
-## Features
+## ☘️ Features
 
 The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
 
