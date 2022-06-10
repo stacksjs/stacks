@@ -2,9 +2,9 @@
 
 _Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers._
 
-# The Modern Monorepo
+# The Modern Component Library
 
-The Stacks framework helps kick-start development of your next monorepo/component library, pre-configured with all the bells & whistles you need to get started & be productive. The ultimate goal of this framework is to assist in creating an interoperable library to reach the broadest developer audience.
+The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started & be productive. The ultimate goal of this framework being to assist in creating an interoperable library to reach the broadest developer audience via an ideal DX.
 
 _"The smart way to build component libraries."_ - Chris Breuer
 
