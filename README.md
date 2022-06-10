@@ -4,9 +4,23 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 # The Modern Component Library
 
-The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started & be productive. The ultimate goal of this framework being to assist in creating an interoperable library to reach the broadest developer audience via an ideal DX.
+The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started & be productive.
 
-_"The smart way to build component libraries."_ - Chris Breuer
+> _The smart way to build component libraries._ - Chris Breuer
+
+## Features
+
+The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
+
+- [TypeScript 4.7](https://www.typescriptlang.org/)
+- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
+- [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
+- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
+- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
+- [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
+- [Cypress](https://cypress.io/) - E2E testing
+- [Renovate](https://renovatebot.com/) - automatic PR dependency updates
+- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 
 ## 💡 Get Started
 
@@ -61,27 +75,15 @@ import HelloWorld from 'hello-world-stack'
 
 Read more about the setup & tips in the docs.
 
-### Dev Tools
-
-- [TypeScript 4.7](https://www.typescriptlang.org/)
-- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
-- [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
-- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
-- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
-- [Cypress](https://cypress.io/) - E2E testing
-- [Renovate](https://renovatebot.com/) - automatic PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
-- [VS Code Extensions](./.vscode/extensions.json)
-  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
-  - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
-  - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
-
-### Plugins
+### Plugins & Extensions
 
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
+- [VS Code Extensions](./.vscode/extensions.json)
+  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
+  - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
+  - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
 ### Coding Style
 
