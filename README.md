@@ -2,6 +2,11 @@
 
 _Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well and until then, wip commits it is._
 
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![GitHub Actions][github-actions-src]][github-actions-href]
+<!-- [![Codecov][codecov-src]][codecov-href] -->
+
 # The Modern Component Library
 
 The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started, and be productive.
@@ -40,7 +45,7 @@ pnpm fresh # fresh reinstall of all dependencies
 pnpm dev # stubs the libraries for local use
 pnpm example # run one of the examples (follow CLI prompts)
 
-pnpm build # builds a specific library (follow CLI prompts)
+pnpm build # builds a specific package (follow CLI prompts)
 pnpm build:all # builds the library for production-ready use
 
 pnpm commit # follow CLI prompts for committing changes
@@ -81,8 +86,8 @@ Read more about the setup & tips in the docs.
 - [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
 - [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
 - [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
-- [Vue 3.2](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
-- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
+- [Vue](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
+- [UnoCSS](https://github.com/unocss/unocss) - create & manage your own style guide with ease (e.g. Tailwind CSS)
 - [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
 - [Cypress](https://cypress.io/) - e2e testing
@@ -135,3 +140,16 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
 Made with ❤️
+
+<!-- Badges -->
+[npm-version-src]: https://img.shields.io/npm/v/@ow3/hello-world-vue?style=flat-square
+[npm-version-href]: https://npmjs.com/package/@ow3/hello-world-vue
+
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
+[npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
+
+[github-actions-src]: https://img.shields.io/github/workflow/status/openwebstacks/stacks-framework/ci/main?style=flat-square
+[github-actions-href]: https://github.com/openwebstacks/stacks-framework/actions?query=workflow%3Aci
+
+<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/openwebstacks/stacks-framework/main?style=flat-square
+[codecov-href]: https://codecov.io/gh/openwebstacks/stacks-framework -->
