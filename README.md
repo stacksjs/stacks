@@ -4,9 +4,9 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 # The Modern Component Library
 
-The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started & be productive.
+The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started, and be productive.
 
-> _The simple way to build component libraries._ - Chris Breuer
+> _The clever way to build component libraries._ - Chris Breuer
 
 ## ☘️ Features
 
