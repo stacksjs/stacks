@@ -38,7 +38,7 @@
     "pnpm": ">=7.2.0"
   },
   "scripts": {
-    "build": "esno scripts/run-build.ts",
+    "build": "esno scripts/run-build.js",
     "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
     "build:types": "rimraf dist packages/types/composables/* packages/types/components/* && vue-tsc --emitDeclarationOnly && esno scripts/copy-files.ts && pnpm run lint:fix",
     "dev": "pnpm run stub",

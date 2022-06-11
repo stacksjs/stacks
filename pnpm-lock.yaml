@@ -57,7 +57,7 @@ importers:
       '@commitlint/types': 17.0.0
       '@iconify-json/heroicons-outline': 1.1.1
       '@iconify-json/heroicons-solid': 1.1.1
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
       '@unocss/preset-icons': 0.38.2
       '@unocss/transformer-compile-class': 0.38.2
       '@vitejs/plugin-vue': 2.3.3_vite@2.9.12+vue@3.2.37
@@ -714,10 +714,10 @@ packages:
       '@commitlint/execute-rule': 17.0.0
       '@commitlint/resolve-extends': 17.0.0
       '@commitlint/types': 17.0.0
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
       chalk: 4.1.2
       cosmiconfig: 7.0.1
-      cosmiconfig-typescript-loader: 2.0.1_f5eqjuxkorpjvs4z7mviievvou
+      cosmiconfig-typescript-loader: 2.0.1_wpmar7q2se7jlmxe5wggegnl2m
       lodash: 4.17.21
       resolve-from: 5.0.0
       typescript: 4.7.3
@@ -1270,8 +1270,8 @@ packages:
     resolution: {integrity: sha512-x5W9s+8P4XteaxT/jKF0PSb7XEvo5VmqEWgsMlyeY4ZlLK8I6aH6g5TPPyDlLAep+GYf4kefb7HFyc7PAO3m+Q==}
     dev: true
 
-  /@types/node/17.0.41:
-    resolution: {integrity: sha512-xA6drNNeqb5YyV5fO3OAEsnXLfO7uF0whiOfPTz5AeDo8KeZFmODKnvwPymMNO8qE/an8pVY/O50tig2SQCrGw==}
+  /@types/node/17.0.42:
+    resolution: {integrity: sha512-Q5BPGyGKcvQgAMbsr7qEGN/kIPN6zZecYYABeTDBizOsau+2NMdSVTar9UQw21A2+JyA2KRNDYaYrPB0Rpk2oQ==}
     dev: true
 
   /@types/normalize-package-data/2.4.1:
@@ -1297,7 +1297,7 @@ packages:
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
     dev: true
 
   /@types/scheduler/0.16.2:
@@ -1320,7 +1320,7 @@ packages:
     resolution: {integrity: sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==}
     requiresBuild: true
     dependencies:
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
     dev: true
     optional: true
 
@@ -2638,16 +2638,16 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cosmiconfig-typescript-loader/2.0.1_f5eqjuxkorpjvs4z7mviievvou:
+  /cosmiconfig-typescript-loader/2.0.1_wpmar7q2se7jlmxe5wggegnl2m:
     resolution: {integrity: sha512-B9s6sX/omXq7I6gC6+YgLmrBFMJhPWew7ty/X5Tuwtd2zOSgWaUdXjkuVwbe3qqcdETo60+1nSVMekq//LIXVA==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@types/node': '*'
       typescript: '>=3'
     dependencies:
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
       cosmiconfig: 7.0.1
-      ts-node: 10.8.1_f5eqjuxkorpjvs4z7mviievvou
+      ts-node: 10.8.1_wpmar7q2se7jlmxe5wggegnl2m
       typescript: 4.7.3
     transitivePeerDependencies:
       - '@swc/core'
@@ -6830,7 +6830,7 @@ packages:
       code-block-writer: 11.0.0
     dev: true
 
-  /ts-node/10.8.1_f5eqjuxkorpjvs4z7mviievvou:
+  /ts-node/10.8.1_wpmar7q2se7jlmxe5wggegnl2m:
     resolution: {integrity: sha512-Wwsnao4DQoJsN034wePSg5nZiw4YKXf56mPIAeD6wVmiv+RytNSWqc2f3fKvcUoV+Yn2+yocD71VOfQHbmVX4g==}
     hasBin: true
     peerDependencies:
@@ -6849,7 +6849,7 @@ packages:
       '@tsconfig/node12': 1.0.9
       '@tsconfig/node14': 1.0.1
       '@tsconfig/node16': 1.0.2
-      '@types/node': 17.0.41
+      '@types/node': 17.0.42
       acorn: 8.7.1
       acorn-walk: 8.2.0
       arg: 4.1.3
