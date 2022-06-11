@@ -37,7 +37,7 @@ const relativePathToExample = relative(process.cwd(), exampleDir)
 const examplePkgPath = resolve(exampleDir, 'package.json')
 const examplePkgContent = JSON.parse(readFileSync(examplePkgPath).toString())
 
-const scripts = Object.keys(examplePkgContentscripts)
+const scripts = Object.keys(examplePkgContent)
 const scriptArg = args.script
 const scriptArgIndex = scripts.findIndex(script => script === scriptArg)
 
