@@ -1,4 +1,4 @@
-# @ow3/stacks-core
+# @ow3/vite-plugin-stacks
 <!-- # @ow3/vite-plugin-stacks -->
 
 This package contains the "core" logic of this monorepo which is, ultimately, a Vite config.

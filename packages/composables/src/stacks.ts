@@ -78,12 +78,12 @@ const plugins = [
 
   Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
 
-  // dts({
-  //   tsConfigFilePath: resolve(__dirname, '../../../tsconfig.json'),
-  //   insertTypesEntry: true,
-  //   outputDir: './types',
-  //   cleanVueFileName: true,
-  // }),
+  dts({
+    tsConfigFilePath: resolve(__dirname, '../../../tsconfig.json'),
+    insertTypesEntry: true,
+    outputDir: './types',
+    cleanVueFileName: true,
+  }),
 
   // https://github.com/antfu/unplugin-auto-import
   AutoImport({
