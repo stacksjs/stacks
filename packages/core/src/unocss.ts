@@ -9,6 +9,7 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
+import { CLASS_TRIGGER, CLASS_PREFIX } from '../../../config/constants'
 
 const config: UserConfig = {
   // shortcuts: [
@@ -45,8 +46,8 @@ const config: UserConfig = {
     transformerDirectives(),
     transformerVariantGroup(),
     transformerCompileClass({
-      trigger: ':stacks:',
-      classPrefix: 'stacks-',
+      trigger: CLASS_TRIGGER,
+      classPrefix: CLASS_PREFIX,
     }),
   ],
 
