@@ -1,2 +1,2 @@
-export * from './dark';
-export * from './hello-world';
+export * from './dark'
+export * from './hello-world'

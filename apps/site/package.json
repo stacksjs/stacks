@@ -1,13 +1,13 @@
 {
-    "name": "docs-site",
-    "version": "0.0.0",
-    "private": true,
-    "scripts": {
-        "docs:dev": "vitepress dev docs",
-        "docs:build": "vitepress build docs",
-        "docs:serve": "vitepress serve docs"
-    },
-    "dependencies": {
-        "vitepress": "1.0.0-alpha.1"
-    }
+  "name": "docs-site",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress serve docs"
+  },
+  "dependencies": {
+    "vitepress": "1.0.0-alpha.1"
+  }
 }

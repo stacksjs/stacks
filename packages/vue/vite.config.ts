@@ -15,7 +15,7 @@ const config: UserConfig = {
 // https://vitejs.dev/config
 export default defineConfig(({ command }) => {
   // eslint-disable-next-line no-console
-  console.log('config is', config);
+  console.log('config is', config)
 
   if (command === 'serve')
     return config

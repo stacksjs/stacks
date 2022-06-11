@@ -1,6 +1,6 @@
-import { copyFileSync, existsSync, statSync, readdirSync } from 'fs'
-import { resolve, join } from 'pathe'
+import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { fileURLToPath } from 'url'
+import { join, resolve } from 'pathe'
 
 // relative to scripts directory
 const destinations = [
@@ -9,27 +9,27 @@ const destinations = [
   ['../dist/packages/composables/src', '../packages/types/composables'],
 ]
 
-let copyRecursiveSync = function (src, dest) {
-  let exists = existsSync(src);
-  let stats = exists && statSync(src);
-  let isDirectory = exists && stats.isDirectory();
+const copyRecursiveSync = function (src, dest) {
+  const exists = existsSync(src)
+  const stats = exists && statSync(src)
+  const isDirectory = exists && stats.isDirectory()
 
   if (isDirectory) {
-    readdirSync(src).forEach(function (childItemName) {
-      copyRecursiveSync(join(src, childItemName), join(dest, childItemName));
-    });
+    readdirSync(src).forEach((childItemName) => {
+      copyRecursiveSync(join(src, childItemName), join(dest, childItemName))
+    })
 
     return
   }
 
-  copyFileSync(src, dest);
-};
+  copyFileSync(src, dest)
+}
 
 const _filename = import.meta.url ? fileURLToPath(import.meta.url) : __filename
 
 destinations.forEach(([src, dest]) => {
-  let srcPath = resolve(__filename, '..', src)
-  let destPath = resolve(_filename, '..', dest)
+  const srcPath = resolve(__filename, '..', src)
+  const destPath = resolve(_filename, '..', dest)
 
   copyRecursiveSync(srcPath, destPath)
 })
