@@ -28,7 +28,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./../types/components/HelloWorld.ce.d.ts",
+      "types": "./dist/hello-world-elements.d.ts",
       "require": "./dist/hello-world-elements.cjs",
       "import": "./dist/hello-world-elements.mjs"
     }
@@ -37,7 +37,7 @@
   "module": "dist/hello-world-elements.mjs",
   "unpkg": "dist/hello-world-elements.global.js",
   "jsdelivr": "dist/hello-world-elements.global.js",
-  "types": "../types/components/HelloWorld.ce.d.ts",
+  "types": "dist/hello-world-elements.d.ts",
   "files": [
     "dist"
   ],

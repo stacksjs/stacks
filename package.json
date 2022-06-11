@@ -40,7 +40,7 @@
   "scripts": {
     "build": "esno scripts/run-build.mjs",
     "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
-    "build:types": "rimraf dist packages/types/composables/* packages/types/components/* && vue-tsc --emitDeclarationOnly && esno scripts/copy-files.ts && pnpm run lint:fix",
+    "build:types": "rimraf dist packages/core/src/types/composables/* packages/core/src/types/components/* && need-to-finish-this",
     "dev": "pnpm run stub",
     "docs:dev": "pnpm --filter './apps/site' dev",
     "docs:build": "pnpm --filter './apps/site' build",

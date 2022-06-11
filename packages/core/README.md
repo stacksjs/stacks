@@ -7,6 +7,7 @@ This includes:
 
 - Vite plugin required to build the component library because it requires a custom build step
 - an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
+- the library's TypeScript types
 
 ## 🤖 Usage
 
