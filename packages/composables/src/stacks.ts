@@ -72,7 +72,7 @@ const plugins = [
   Vue(),
 
   Unocss({
-    configFile: resolve(__dirname, '../../stacks/unocss.config.ts'),
+    configFile: resolve(__dirname, '../../core/src/unocss.config.ts'),
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
