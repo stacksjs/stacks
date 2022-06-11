@@ -10,7 +10,7 @@ const config: UserConfig = {
     Stacks(),
   ],
 
-  build: vueComponents('index.ts'),
+  build: vueComponents(),
 }
 
 // https://vitejs.dev/config

@@ -7,9 +7,9 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { resolve } from 'pathe'
 import type { BuildOptions } from 'vite'
-import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../../config/constants'
+import { VUE_PACKAGE_NAME } from '../../../config/constants'
 
-function buildVueComponents(entry: string): BuildOptions {
+function buildVueComponents(entry: string = 'index.ts'): BuildOptions {
   return {
     lib: {
       entry: resolve(__dirname, entry),
@@ -44,35 +44,35 @@ function buildVueComponents(entry: string): BuildOptions {
   }
 }
 
-function buildWebComponents(entry: string): BuildOptions {
-  return {
-    lib: {
-      entry: resolve(__dirname, entry),
-      name: WEB_COMPONENTS_PACKAGE_NAME,
-      formats: ['cjs', 'es'],
-      fileName: (format: string) => {
-        if (format === 'es')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
+// function buildWebComponents(entry: string): BuildOptions {
+//   return {
+//     lib: {
+//       entry: resolve(__dirname, entry),
+//       name: WEB_COMPONENTS_PACKAGE_NAME,
+//       formats: ['cjs', 'es'],
+//       fileName: (format: string) => {
+//         if (format === 'es')
+//           return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
 
-        if (format === 'cjs')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
+//         if (format === 'cjs')
+//           return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
 
-        // if (format === 'iife')
-        //   return 'hello-world-elements.global.js'
+//         // if (format === 'iife')
+//         //   return 'hello-world-elements.global.js'
 
-        return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
-      },
-      // sourcemap: true,
-      // minify: false,;
-    },
-  }
-}
+//         return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
+//       },
+//       // sourcemap: true,
+//       // minify: false,;
+//     },
+//   }
+// }
 
 const plugins = [
   Vue(),
 
   Unocss({
-    configFile: resolve(__dirname, '../../core/src/unocss.config.ts'),
+    configFile: resolve(__dirname, '../../core/src/unocss.ts'),
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
@@ -107,6 +107,6 @@ const plugins = [
 
 export {
   buildVueComponents,
-  buildWebComponents,
+  // buildWebComponents,
   plugins,
 }

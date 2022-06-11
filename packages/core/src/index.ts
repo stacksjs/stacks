@@ -1,5 +1,5 @@
 import { alias } from '../../../config/alias'
-import { buildVueComponents, buildWebComponents, plugins } from '../../composables/src'
+import { buildVueComponents, plugins } from '../../composables/src'
 // import type { UserOptions } from './options'
 
 function Stacks() {
@@ -14,4 +14,4 @@ const resolveOptions = {
   alias,
 }
 
-export { Stacks, alias, resolveOptions, buildVueComponents, buildWebComponents }
+export { Stacks, alias, resolveOptions, buildVueComponents }
