@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import type { UserConfig } from 'vite'
-import { Stacks, resolveOptions as resolve } from '../vite/src'
+import { Stacks, resolveOptions as resolve } from '../stacks/src'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
