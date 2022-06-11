@@ -2,6 +2,9 @@ import { resolve } from 'pathe'
 
 const r = (p: string) => resolve(__dirname, p)
 
+/**
+ * The following configs determine the names of the packages, how they are distributed & accessed.
+ */
 export const alias: Record<string, string> = {
   '@ow3/hello-world-vue': r('../packages/vue/src/'),
   '@ow3/hello-world-elements': r('../packages/elements/src/'),

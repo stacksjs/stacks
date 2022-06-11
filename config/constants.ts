@@ -1,3 +1,6 @@
+/**
+ * Ensure these values are updated to match your component library needs.
+ */
 export const LIBRARY_NAME = 'hello-world'
 export const VITE_PLUGIN_NAME = 'vite-plugin-stacks'
 export const VUE_PACKAGE_NAME = `${LIBRARY_NAME}-vue`
