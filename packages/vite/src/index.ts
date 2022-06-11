@@ -13,6 +13,7 @@ import type { UserOptions } from './options'
 export function Stacks(userOptions: UserOptions = {}) {
   // eslint-disable-next-line no-console
   console.log('userOptions', userOptions)
+
   return [
     Vue(),
 

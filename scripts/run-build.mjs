@@ -34,4 +34,14 @@ const pkg = packages[pkgIndex]
 //   stdio: 'inherit',
 // })
 
-exec(`pnpm run build --filter ./packages/${pkg}`)
+const cmd = `pnpm run build --filter ./packages/${pkg}`
+
+exec(cmd, function(err, stdout, stderr) {
+  if (err) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    console.error(stderr);
+  }
+
+  console.log(stdout);
+});
