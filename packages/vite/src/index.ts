@@ -5,14 +5,13 @@ import dts from 'vite-plugin-dts'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { resolve } from 'pathe'
-import type { BuildOptions } from 'vite'
 import { alias } from '../../../config/alias'
-import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../../config/constants'
+import { buildVueComponents, buildWebComponents } from '../../composables/src'
 // import type { UserOptions } from './options'
 
 function Stacks() {
   // export function Stacks(userOptions: UserOptions = {}) {
-  // eslint-disable-next-line no-console
+
   // console.log('userOptions', userOptions)
 
   return [
@@ -56,65 +55,6 @@ function Stacks() {
 const resolveOptions = {
   dedupe: ['vue'],
   alias,
-}
-
-function buildVueComponents(entry: string): BuildOptions {
-  return {
-    lib: {
-      entry: resolve(__dirname, entry),
-      name: VUE_PACKAGE_NAME,
-      formats: ['cjs', 'es'],
-      fileName: (format: string) => {
-        if (format === 'es')
-          return `${VUE_PACKAGE_NAME}.mjs`
-
-        if (format === 'cjs')
-          return `${VUE_PACKAGE_NAME}.cjs`
-
-        // if (format === 'iife')
-        //     return `${VUE_PACKAGE_NAME}.global.js`
-
-        return `${VUE_PACKAGE_NAME}.?.js`
-      },
-    },
-
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        // exports: 'named',
-        globals: {
-          vue: 'Vue',
-        },
-      },
-    },
-
-    // sourcemap: true,
-    // minify: false,
-  }
-}
-
-function buildWebComponents(entry: string): BuildOptions {
-  return {
-    lib: {
-      entry: resolve(__dirname, entry),
-      name: WEB_COMPONENTS_PACKAGE_NAME,
-      formats: ['cjs', 'es'],
-      fileName: (format: string) => {
-        if (format === 'es')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
-
-        if (format === 'cjs')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
-
-        // if (format === 'iife')
-        //   return 'hello-world-elements.global.js'
-
-        return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
-      },
-      // sourcemap: true,
-      // minify: false,;
-    }
-  }
 }
 
 export { Stacks, alias, resolveOptions, buildVueComponents, buildWebComponents }
