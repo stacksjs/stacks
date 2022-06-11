@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-composable",
   "version": "0.16.0",
-  "packageManager": "pnpm@7.2.0",
+  "packageManager": "pnpm@7.2.1",
   "description": "A dummy composable.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,7 +45,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.2.0"
+    "pnpm": ">=7.2.1"
   },
   "scripts": {
     "build": "unbuild",
