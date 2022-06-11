@@ -1,10 +1,10 @@
-import { UserShortcuts } from "unocss"
+import type { UserShortcuts } from 'unocss'
 
 let shortcuts: UserShortcuts
-let safelist = 'prose prose-sm m-auto text-left'
-let iconCollections = {
-    'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
-    'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
+const safelist = 'prose prose-sm m-auto text-left'
+const iconCollections = {
+  'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
+  'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
 }
 
 // shortcuts = [

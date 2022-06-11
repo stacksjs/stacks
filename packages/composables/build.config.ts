@@ -10,6 +10,6 @@ export default defineBuildConfig({
     emitCJS: true,
   },
   externals: [
-    '@vueuse/core', 'vue'
+    '@vueuse/core', 'vue',
   ],
 })

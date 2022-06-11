@@ -9,8 +9,8 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { CLASS_TRIGGER, CLASS_PREFIX } from '../../../config/constants'
-import { shortcuts, safelist, iconCollections as collections } from '../../../config/style-guide'
+import { CLASS_PREFIX, CLASS_TRIGGER } from '../../../config/constants'
+import { iconCollections as collections, safelist, shortcuts } from '../../../config/style-guide'
 
 const config: UserConfig = {
   shortcuts,

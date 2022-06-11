@@ -9,7 +9,7 @@ import { resolve } from 'pathe'
 import type { BuildOptions } from 'vite'
 import { VUE_PACKAGE_NAME } from '../../../config/constants'
 
-function buildVueComponents(entry: string = 'index.ts'): BuildOptions {
+function buildVueComponents(entry = 'index.ts'): BuildOptions {
   return {
     lib: {
       entry: resolve(__dirname, entry),
