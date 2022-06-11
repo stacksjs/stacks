@@ -10,9 +10,10 @@ import { alias as StacksAliases } from '../../../config/alias'
 import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../../config/constants'
 import type { UserOptions } from './options'
 
-export function Stacks(userOptions: UserOptions = {}) {
+export function Stacks() {
+// export function Stacks(userOptions: UserOptions = {}) {
   // eslint-disable-next-line no-console
-  console.log('userOptions', userOptions)
+  // console.log('userOptions', userOptions)
 
   return [
     Vue(),
