@@ -72,18 +72,18 @@ const plugins = [
   Vue(),
 
   Unocss({
-    configFile: resolve(__dirname, '../../core/src/unocss.ts'),
+    configFile: resolve(__dirname, '../../../config/unocss.ts'),
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
   Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
 
-  dts({
-    tsConfigFilePath: resolve(__dirname, '../../../tsconfig.json'),
-    insertTypesEntry: true,
-    outputDir: './types',
-    cleanVueFileName: true,
-  }),
+  // dts({
+  //   tsConfigFilePath: resolve(__dirname, '../../../tsconfig.json'),
+  //   insertTypesEntry: true,
+  //   outputDir: './types',
+  //   cleanVueFileName: true,
+  // }),
 
   // https://github.com/antfu/unplugin-auto-import
   AutoImport({

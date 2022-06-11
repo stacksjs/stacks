@@ -10,12 +10,10 @@ import {
 } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
 import { CLASS_TRIGGER, CLASS_PREFIX } from '../../../config/constants'
+import { shortcuts, safelist, iconCollections as collections } from '../../../config/style-guide'
 
 const config: UserConfig = {
-  // shortcuts: [
-  //   ['btn', 'px-4 py-1 rounded inline-block bg-teal-600 text-white cursor-pointer hover:bg-teal-700 disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50'],
-  //   ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
-  // ],
+  shortcuts,
 
   presets: [
     presetWind(),
@@ -23,10 +21,7 @@ const config: UserConfig = {
       prefix: 'i-',
       scale: 1.2,
       warn: true,
-      collections: {
-        'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
-        'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
-      },
+      collections,
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
@@ -51,7 +46,7 @@ const config: UserConfig = {
     }),
   ],
 
-  safelist: 'prose prose-sm m-auto text-left'.split(' '),
+  safelist: safelist.split(' '),
 }
 
 export default defineConfig(config)
