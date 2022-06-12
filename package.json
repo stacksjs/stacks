@@ -40,7 +40,7 @@
   "scripts": {
     "build": "esno scripts/run-build.mjs",
     "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
-    "build:types": "rimraf dist packages/core/src/types/composables/* packages/core/src/types/components/* && need-to-finish-this",
+    "build:types": "pnpm fresh && need-to-finish-this",
     "dev": "pnpm run stub",
     "docs:dev": "pnpm --filter './apps/site' dev",
     "docs:build": "pnpm --filter './apps/site' build",
@@ -48,7 +48,7 @@
     "example": "esno scripts/run-example.ts",
     "play": "pnpm --filter './playground' dev",
     "commit": "git-cz",
-    "fresh": "rimraf packages/**/node_modules && rimraf examples/**/node_modules node_modules/ pnpm-lock.yaml && pnpm i -r",
+    "fresh": "rimraf packages/core/types/composables/* packages/core/types/components/* packages/**/node_modules examples/**/node_modules play/node_modules node_modules/ pnpm-lock.yaml && pnpm i -r",
     "preinstall": "esno ./scripts/check-for-pnpm.ts && esno scripts/check-node-version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

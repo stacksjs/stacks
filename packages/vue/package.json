@@ -46,7 +46,7 @@
   },
   "scripts": {
     "dev": "vite dev",
-    "test": "vite build",
+    "build:test": "vite build",
     "build": "vite build && vue-tsc --declaration --emitDeclarationOnly",
     "stub": "unbuild --stub"
   },

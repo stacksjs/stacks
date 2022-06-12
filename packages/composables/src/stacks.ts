@@ -12,7 +12,7 @@ import { VUE_PACKAGE_NAME } from '../../../config/constants'
 function buildVueComponents(entry = 'index.ts'): BuildOptions {
   return {
     lib: {
-      entry: resolve(__dirname, entry),
+      entry,
       name: VUE_PACKAGE_NAME,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
@@ -30,7 +30,7 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@vueuse/core'],
+      external: ['vue', '@vueuse/core', 'unconfig'],
       output: {
         // exports: 'named',
         globals: {
@@ -71,10 +71,10 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
 const plugins = [
   Vue(),
 
-  // Unocss({
-  //   configFile: resolve(__dirname, '../../../config/unocss.ts'),
-  //   mode: 'vue-scoped', // or 'shadow-dom'
-  // }),
+  Unocss({
+    configFile: resolve(__dirname, '../../../config/unocss.ts'),
+    mode: 'vue-scoped', // or 'shadow-dom'
+  }),
 
   // Inspect(), // only applies in dev mode & visit localhost:3000/__inspect/ to inspect the modules
 
@@ -85,12 +85,12 @@ const plugins = [
   //   cleanVueFileName: true,
   // }),
 
-  // // https://github.com/antfu/unplugin-auto-import
+  // https://github.com/antfu/unplugin-auto-import
   // AutoImport({
   //   imports: ['vue', '@vueuse/core', {
   //     '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
   //   }],
-  //   dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
+  //   dts: resolve(__dirname, '../../core/src/types/auto-imports.d.ts'),
   //   eslintrc: {
   //     enabled: true,
   //     filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
@@ -101,7 +101,7 @@ const plugins = [
   // Components({
   //   dirs: [resolve(__dirname, '../../vue/src/components')],
   //   extensions: ['vue'],
-  //   dts: resolve(__dirname, '../../types/components.d.ts'),
+  //   dts: resolve(__dirname, '../../core/src/types/components.d.ts'),
   // }),
 ]
 

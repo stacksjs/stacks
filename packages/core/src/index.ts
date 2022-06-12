@@ -14,4 +14,4 @@ const resolveOptions = {
   alias,
 }
 
-export { Stacks, alias, resolveOptions, buildVueComponents }
+export { Stacks, alias, resolveOptions, buildVueComponents, plugins }

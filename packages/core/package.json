@@ -5,11 +5,11 @@
   "description": "The core of the component library, the Vite plugin.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/vite#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/core#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": "packages/vite"
+    "directory": "packages/core"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"

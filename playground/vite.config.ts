@@ -1,5 +1,9 @@
 import { defineConfig } from 'vite'
-import { Stacks, resolveOptions as resolve } from '../packages/vite/src'
+import { plugins, resolveOptions as resolve } from '../packages/core/src'
+import Vue from '@vitejs/plugin-vue'
+import Unocss from 'unocss/vite'
+import path from 'pathe'
+
 
 // eslint-disable-next-line no-console
 console.log('test')
@@ -9,8 +13,12 @@ const config = {
   resolve,
 
   plugins: [
-    // the issue is that the paths are not properly resolved when using Stacks()
-    Stacks(),
+    Vue(),
+
+    Unocss({
+      configFile: path.resolve(__dirname, '../../../config/unocss.ts'),
+      mode: 'vue-scoped', // or 'shadow-dom'
+    }),
   ],
 }
 
