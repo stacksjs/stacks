@@ -29,7 +29,7 @@ const Configuration: UserConfig = {
     'scope-enum': [
       2, 'always',
       [
-        '', 'examples', 'playground', 'deps', 'release', 'cleanup', 'refactor', 'readme', 'build',
+        '', 'example', 'play', 'deps', 'release', 'cleanup', 'refactor', 'readme', 'build',
         ...packages.filter(item => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts'),
         ...composables.map(item => item.replace(/.ts/g, '')).filter(item => item !== 'index'),
       ],
