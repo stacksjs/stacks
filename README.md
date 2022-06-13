@@ -4,6 +4,7 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
