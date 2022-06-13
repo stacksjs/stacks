@@ -4,8 +4,8 @@ This folder contains GitHub configurations for the project, including these feat
 
 - GitHub Actions (./workflows)
   - [CI][CI] - all CI jobs for the project
-    — lints the code
-    — `typecheck`s the code
+    - lints the code
+    - `typecheck`s the code
     - automatically fixes & applies code style updates
     - runs tests (unit, end-to-end)
     - runs on `ubuntu-latest` with `node-versions` set to `[16x, 18x]`
