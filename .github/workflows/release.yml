@@ -20,16 +20,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: pnpm
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Enabling Corepack
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install Dependencies
         run: pnpm install
 
-      - name: pnpm build
+      - name: Build the release
         run: pnpm run build
 
       - name: Publish to npm

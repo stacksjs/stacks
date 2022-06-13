@@ -15,17 +15,23 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        os: [ubuntu-latest]
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set node
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
-          cache: pnpm
+          node-version: ${{ matrix.node-version }}
 
-      - name: Enabling Corepack
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install Dependencies
@@ -35,17 +41,23 @@ jobs:
         run: pnpm run lint
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        os: [ubuntu-latest]
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
-          cache: pnpm
+          node-version: ${{ matrix.node-version }}
 
-      - name: Enabling Corepack
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install dependencies
@@ -59,20 +71,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [16.x, 18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set node
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: pnpm
 
-      - name: Enabling Corepack
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install Dependencies
@@ -92,20 +103,19 @@ jobs:
             ~/.cache
           key: cypress-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/
-          cache: pnpm
 
-      - name: Enabling Corepack
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install Dependencies
         run: pnpm install
 
-      // TODO: is this still needed?
+      # TODO: is this still needed?
       - name: Cypress PNPM Patch
         run: cp pnpm-lock.yaml package-lock.json
 
