@@ -3,10 +3,12 @@ import { defineConfig } from 'vite'
 import { buildVueComponents as vueComponents, plugins } from '../composables/src/stacks'
 // import { resolve } from 'pathe'
 // import { Stacks, resolveOptions } from '../core/src'
-// import { VUE_PACKAGE_NAME } from '../../config/constants'
+import { VUE_PACKAGE_NAME } from '../../config/constants'
 // import Vue from '@vitejs/plugin-vue'
 import { alias } from '../core/src'
 
+// eslint-disable-next-line no-console
+console.log('here?');
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
@@ -16,43 +18,39 @@ const config: UserConfig = {
 
   plugins,
 
-  build: vueComponents(),
-  // build: {
-  //   lib: {
-  //     entry: resolve(__dirname, '../vue/src/index.ts'), // to ensure the entry is not within the "core"-folder
-  //     name: 'hello-world-vue',
-  //     // formats: ['cjs', 'es'],
-  //     // fileName: (format: string) => {
-  //     //   if (format === 'es')
-  //     //     return 'hello-world-vue.mjs'
+  optimizeDeps: {
+    exclude: ["path", "fs", 'url', 'crypto']
+  },
 
-  //     //   if (format === 'cjs')
-  //     //     return 'hello-world-vue.cjs'
+  build: {
+    lib: {
+      entry: './src/index.ts',
+      name: VUE_PACKAGE_NAME,
+      formats: ['cjs', 'es'],
+      fileName: (format: string) => {
+        if (format === 'es')
+          return `${VUE_PACKAGE_NAME}.mjs`
 
-  //     //   // if (format === 'iife')
-  //     //   //     return `hello-world-vue.global.js`
+        if (format === 'cjs')
+          return `${VUE_PACKAGE_NAME}.cjs`
 
-  //     //   return 'hello-world-vue.?.js'
-  //     // },
-  //   },
+        // if (format === 'iife')
+        //     return `${VUE_PACKAGE_NAME}.global.js`
 
-    // rollupOptions: {
-    //   external: ['vue', '@vueuse/core'],
-    //   output: {
-    //     // exports: 'named',
-    //     globals: {
-    //       vue: 'Vue',
-    //     },
-    //   },
-    // },
+        return `${VUE_PACKAGE_NAME}.?.js`
+      },
+    },
 
-  //   // sourcemap: true,
-  //   // minify: false,
-  // },
-  // optimizeDeps: {
-  //   include: ['vue', '@vueuse/core'],
-  //   exclude: ['unconfig'],
-  // },
+    rollupOptions: {
+      external: ['vue', '@vueuse/core', 'unconfig'],
+      output: {
+        // exports: 'named',
+        globals: {
+          vue: 'Vue',
+        },
+      },
+    },
+  }
 }
 
 // https://vitejs.dev/config
