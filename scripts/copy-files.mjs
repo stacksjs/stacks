@@ -1,12 +1,12 @@
 import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { join, resolve } from 'pathe'
+import { join, resolve } from 'path'
 
 // relative to scripts directory
 const destinations = [
-  // ['../dist/packages/vue/src/components', '../packages/types/components'],
-  // ['../dist/packages/elements/src/components', '../packages/types/components'],
-  ['../dist/packages/composables/src', '../packages/types/composables'],
+  // ['../dist/packages/vue/src/components', '../packages/core/types/components'],
+  // ['../dist/packages/elements/src/components', '../packages/core/types/components'],
+  ['../dist/packages/composables/src', '../packages/core/types/composables'],
 ]
 
 const copyRecursiveSync = function (src, dest) {

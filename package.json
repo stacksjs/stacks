@@ -96,7 +96,6 @@
     "inquirer": "^8.2.4",
     "lint-staged": "^13.0.1",
     "minimist": "^1.2.6",
-    "pathe": "^0.3.0",
     "prompts": "^2.4.2",
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.0",

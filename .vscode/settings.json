@@ -12,7 +12,7 @@
   "eslint.packageManager": "pnpm",
   "npm.packageManager": "pnpm",
   "windicss.sortOnSave": true,
-  "unocss.root": "packages/core/src/unocss.ts",
+  "unocss.root": "packages/core/src/config/unocss.ts",
   "markdownlint.ignore": ["CHANGELOG.md"],
   "cSpell.ignorePaths": ["node_modules"],
   "cSpell.words": [

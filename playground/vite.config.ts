@@ -5,8 +5,6 @@ import Unocss from 'unocss/vite'
 import path from 'path'
 import { VUE_PACKAGE_NAME } from '../config/constants'
 
-// eslint-disable-next-line no-console
-console.log('test', path.resolve(__dirname, '../config/unocss.ts'))
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -19,7 +17,7 @@ const config = {
     Vue(),
 
     Unocss({
-      configFile: path.resolve(__dirname, '../packages/core/src/unocss.ts'),
+      configFile: path.resolve(__dirname, '../packages/core/src/config/unocss.ts'),
       // mode: 'vue-scoped', // or 'shadow-dom'
     }),
   ],

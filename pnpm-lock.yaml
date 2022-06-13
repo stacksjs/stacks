@@ -32,7 +32,6 @@ importers:
       inquirer: ^8.2.4
       lint-staged: ^13.0.1
       minimist: ^1.2.6
-      pathe: ^0.3.0
       prompts: ^2.4.2
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
@@ -77,7 +76,6 @@ importers:
       inquirer: 8.2.4
       lint-staged: 13.0.1
       minimist: 1.2.6
-      pathe: 0.3.0
       prompts: 2.4.2
       rimraf: 3.0.2
       simple-git-hooks: 2.8.0
@@ -133,7 +131,6 @@ importers:
       '@unocss/preset-icons': ^0.39.0
       '@unocss/transformer-compile-class': ^0.39.0
       '@vitejs/plugin-vue': ^2.3.3
-      pathe: ^0.3.0
       unbuild: ^0.7.4
       unocss: ^0.39.0
       unplugin-auto-import: ^0.8.8
@@ -145,7 +142,6 @@ importers:
       '@unocss/preset-icons': 0.39.0
       '@unocss/transformer-compile-class': 0.39.0
       '@vitejs/plugin-vue': 2.3.3_vite@2.9.12+vue@3.2.37
-      pathe: 0.3.0
       unbuild: 0.7.4
       unocss: 0.39.0_vite@2.9.12
       unplugin-auto-import: 0.8.8_vite@2.9.12
@@ -2076,7 +2072,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001352
-      electron-to-chromium: 1.4.152
+      electron-to-chromium: 1.4.153
       escalade: 3.1.1
       node-releases: 2.0.5
       picocolors: 1.0.0
@@ -2991,8 +2987,8 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
-  /electron-to-chromium/1.4.152:
-    resolution: {integrity: sha512-jk4Ju5SGZAQQJ1iI4Rgru7dDlvkQPLpNPWH9gIZmwCD4YteA5Bbk1xPcPDUf5jUYs3e1e80RXdi8XgKQZaigeg==}
+  /electron-to-chromium/1.4.153:
+    resolution: {integrity: sha512-57AV9DNW1R52HjOqnGOCCTLHMHItLTGu/WjB1KYIa4BQ7p0u8J0j8N78akPcOBStKE801xcMjTpmbAylflfIYQ==}
     dev: true
 
   /emoji-regex/8.0.0:

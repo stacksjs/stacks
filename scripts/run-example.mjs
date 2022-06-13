@@ -6,7 +6,7 @@ import { spawn } from 'child_process'
 import { readFileSync, readdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { prompts } from 'prompts'
-import { dirname, relative, resolve } from 'pathe'
+import { dirname, relative, resolve } from 'path'
 import minimist from 'minimist'
 
 const args = minimist(process.argv.slice(2))
