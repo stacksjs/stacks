@@ -2,10 +2,14 @@
 
 This folder contains GitHub configurations for the project, including these features:
 
-- GitHub Actions (workflows)
-  - [CI][CI] — Used to lint the code, run `typecheck`, and ensures both unit & e2e tests pass
-  - [Code Style Fixer][Code Style Fixer] - fixes and commits code style updates
-  - [Release][Release] - automates the release process & changelog generation. It also
+- GitHub Actions (./workflows)
+  - [CI][CI] - all CI jobs for the project
+    — lints the code
+    — `typecheck`s the code
+    - automatically fixes & applies code style updates
+    - runs tests (unit, end-to-end)
+    - runs on `ubuntu-latest` with `node-versions` set to `[16x, 18x]`
+  - [Release][Release] - automates the release process & changelog generation
 - Renovate
   - automatically updates all the dependencies listed in all package.json files throughout the monorepo
 
@@ -33,4 +37,3 @@ Made with ❤️
 
 [CI]: ./workflows/ci.yml
 [Release]: ./workflows/release.yml
-[Code Style Fixer]: ./workflows/code-style-fixer.yml
