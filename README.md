@@ -30,9 +30,11 @@ The ultimate goal of this framework is to assist in creating an interoperable li
 It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
 
 ```bash
-# you may "Use this [GitHub] template" (button in top right corner) or run the following command:
+# you may "Use this template" via the button in top right corner of this page
+# or run the following commands:
 npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
+npm run setup # WIP
 ```
 
 ## 🤖 Usage
