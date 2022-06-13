@@ -32,7 +32,7 @@
         "./packages/web-components/src"
       ],
       "@ow3/vite-plugin-stacks": [
-        "./packages/stacks/src"
+        "./packages/core/src"
       ]
     }
   },

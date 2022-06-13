@@ -43,7 +43,7 @@ npm run setup # WIP
 The `package.json` contains some useful snippets you likely want to be aware of. Some commonly used ones are:
 
 ```bash
-pnpm i -r # install all dependencies (for all packages)
+pnpm install # install all dependencies (for all packages)
 pnpm fresh # fresh reinstall of all dependencies
 
 pnpm dev # stubs the libraries for local use
