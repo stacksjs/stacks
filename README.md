@@ -93,7 +93,7 @@ Read more about the setup & tips in the docs.
 - [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
 - [Cypress](https://cypress.io/) - e2e testing
 - [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
+- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
 
 #### Plugins & Extensions
 
