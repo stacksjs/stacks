@@ -105,6 +105,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      // TODO: is this still needed?
       - name: Cypress PNPM Patch
         run: cp pnpm-lock.yaml package-lock.json
 
