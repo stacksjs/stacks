@@ -2,5 +2,5 @@ export * from './dark'
 export * from './hello-world'
 // export * from './any-other-composable'
 
-// this composable contains the core "build logic" - be careful when adjusting it
+// this composable contains some of the core framework logic - be careful when modifying
 export * from './stacks'
