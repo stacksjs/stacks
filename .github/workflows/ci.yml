@@ -93,7 +93,14 @@ jobs:
         run: pnpm run test:unit
 
   test-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        os: [ubuntu-latest]
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v3
 
