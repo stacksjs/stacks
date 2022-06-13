@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Set node
+      - name: Set Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
@@ -25,7 +24,7 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pnpm install
 
       - name: Build the release
@@ -36,8 +35,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Create GitHub Release
-        uses: marvinpinto/action-automatic-releases@latest
+      - name: Create GitHub release
+        run: npx changelogithub
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          prerelease: false
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

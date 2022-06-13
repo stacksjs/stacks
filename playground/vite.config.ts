@@ -1,25 +1,56 @@
 import { defineConfig } from 'vite'
-import { plugins, resolveOptions } from '../packages/core/src'
+import { plugins, resolveOptions, alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import path from 'pathe'
-
+import path from 'path'
+import { VUE_PACKAGE_NAME } from '../config/constants'
 
 // eslint-disable-next-line no-console
-console.log('test')
+console.log('test', path.resolve(__dirname, '../config/unocss.ts'))
 
 /** @type {import('vite').UserConfig} */
 const config = {
-  resolve: resolveOptions,
+  resolve: {
+    dedupe: ['vue'],
+    alias,
+  },
 
   plugins: [
     Vue(),
 
     Unocss({
-      configFile: path.resolve(__dirname, '../../../config/unocss.ts'),
-      mode: 'vue-scoped', // or 'shadow-dom'
+      configFile: path.resolve(__dirname, '../packages/core/src/unocss.ts'),
+      // mode: 'vue-scoped', // or 'shadow-dom'
     }),
   ],
+
+  lib: {
+    entry: './main.ts',
+    name: VUE_PACKAGE_NAME,
+    formats: ['cjs', 'es'],
+    fileName: (format: string) => {
+      if (format === 'es')
+        return `${VUE_PACKAGE_NAME}.mjs`
+
+      if (format === 'cjs')
+        return `${VUE_PACKAGE_NAME}.cjs`
+
+      // if (format === 'iife')
+      //     return `${VUE_PACKAGE_NAME}.global.js`
+
+      return `${VUE_PACKAGE_NAME}.?.js`
+    },
+  },
+
+  rollupOptions: {
+    external: ['vue', '@vueuse/core'],
+    output: {
+      // exports: 'named',
+      globals: {
+        vue: 'Vue',
+      },
+    },
+  },
 }
 
 // https://vitejs.dev/config
