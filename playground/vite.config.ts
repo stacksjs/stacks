@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { plugins, resolveOptions as resolve } from '../packages/core/src'
+import { plugins, resolveOptions } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import path from 'pathe'
@@ -10,7 +10,7 @@ console.log('test')
 
 /** @type {import('vite').UserConfig} */
 const config = {
-  resolve,
+  resolve: resolveOptions,
 
   plugins: [
     Vue(),

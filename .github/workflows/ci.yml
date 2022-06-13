@@ -19,16 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
-
       - name: Set node
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
           cache: pnpm
 
-      - name: Install
+      - name: Enabling Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
         run: pnpm install
 
       - name: Lint
@@ -39,14 +39,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2.2.2
-
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
           cache: pnpm
+
+      - name: Enabling Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install
@@ -66,16 +66,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
-
       - name: Set node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
-      - run: pnpm install
+      - name: Enabling Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: pnpm install
 
       - name: Unit Test
         run: pnpm run test:unit
@@ -91,9 +92,6 @@ jobs:
             ~/.cache
           key: cypress-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -101,7 +99,11 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: pnpm
 
-      - run: pnpm install
+      - name: Enabling Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: pnpm install
 
       - name: Cypress PNPM Patch
         run: cp pnpm-lock.yaml package-lock.json

@@ -16,15 +16,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
-
       - name: Set node
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Enabling Corepack
+        run: corepack enable
 
       - name: Install Dependencies
         run: pnpm install
