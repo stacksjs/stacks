@@ -1,15 +1,20 @@
 import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
-  entries: [
-    'src/index',
-  ],
-  // clean: true,
-  // declaration: true,
-  rollup: {
-    emitCJS: true,
+  alias: {
+    '@ow3/hello-world-composable': '../composables/src/index.ts',
   },
-  externals: [
-    'vue', '@vueuse/core',
+  entries: [
+    'src/index.ts',
   ],
+  clean: true,
+  declaration: true,
+
+  // rollup: {
+  //   emitCJS: true,
+  //   cjsBridge: true,
+  // },
+  // externals: [
+  //   'vue', '@vueuse/core',
+  // ],
 })
