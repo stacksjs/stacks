@@ -5,7 +5,7 @@ import Unocss from 'unocss/vite'
 // import dts from 'vite-plugin-dts'
 // import AutoImport from 'unplugin-auto-import/vite'
 // import Components from 'unplugin-vue-components/vite'
-import path from 'pathe'
+import path from 'path'
 import type { BuildOptions } from 'vite'
 import { VUE_PACKAGE_NAME } from '../../../config/constants'
 
@@ -30,7 +30,7 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@vueuse/core', 'pathe'],
+      external: ['vue', '@vueuse/core'],
       output: {
         // exports: 'named',
         globals: {

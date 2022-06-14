@@ -1,15 +1,20 @@
 import { defineConfig } from 'vite'
-import { plugins, resolveOptions, alias } from '../packages/core/src'
+import { alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import path from 'pathe'
-import { VUE_PACKAGE_NAME } from '../config/constants'
+import path from 'path'
+// import { VUE_PACKAGE_NAME } from '../config/constants'
 
 /** @type {import('vite').UserConfig} */
 const config = {
   resolve: {
     dedupe: ['vue'],
     alias,
+  },
+
+  optimizeDeps: {
+    // exclude: ['path', 'fs', 'url', 'crypto']
+    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   plugins: [

@@ -52,7 +52,6 @@
   },
   "devDependencies": {
     "jiti": "^1.13.0",
-    "pathe": "^0.3.0",
     "rollup-plugin-typescript2": "^0.32.1",
     "tslib": "^2.4.0",
     "typescript": "^4.7.3",

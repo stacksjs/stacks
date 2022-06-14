@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { join, resolve } from 'pathe'
+import { join, resolve } from 'path'
 
 // relative to scripts directory
 const destinations = [

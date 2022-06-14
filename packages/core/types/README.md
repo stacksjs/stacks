@@ -1,6 +1,6 @@
 # Types
 
-This folder contains all the packages' TypeScript types. Don't worry, these are created automatically while building the packages/running certain npm scripts.
+This folder contains all the packages' TypeScript types. Don't worry, these are created automatically while building the packages (running certain npm scripts).
 
 ## 💪🏼 Contributing
 

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "rootDir": ".",
     "outDir": "dist",
     "target": "es2017",
@@ -8,6 +9,7 @@
     "skipLibCheck": true,
     "lib": [
       "dom",
+      "dom.iterable",
       "esnext"
     ],
     "moduleResolution": "node",

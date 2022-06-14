@@ -10,6 +10,6 @@ export default defineBuildConfig({
     emitCJS: true,
   },
   externals: [
-    '@vueuse/core', 'vue', 'unocss', 'unocss/vite', 'resolve', 'pathe', '@vitejs/plugin-vue', 'vite'
+    '@vueuse/core', 'vue', 'unocss', 'unocss/vite', 'resolve', 'path', '@vitejs/plugin-vue', 'vite'
   ],
 })
