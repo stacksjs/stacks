@@ -25,19 +25,16 @@
     ],
     "paths": {
       "@ow3/hello-world-vue": [
-        "./packages/vue/src"
+        "./packages/vue/src/index.ts"
       ],
       "@ow3/hello-world-composable": [
-        "./packages/composables/src"
+        "./packages/composables/src/index.ts"
       ],
       "@ow3/hello-world-elements": [
-        "./packages/web-components/src"
-      ],
-      "@ow3/vite-plugin-stacks": [
-        "./packages/core/src"
+        "./packages/web-components/src/index.ts"
       ],
       "@ow3/stacks-core": [
-        "./packages/core/src"
+        "./packages/core/src/index.ts"
       ],
     }
   },
