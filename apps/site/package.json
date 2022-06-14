@@ -8,6 +8,6 @@
     "docs:serve": "vitepress serve docs"
   },
   "dependencies": {
-    "vitepress": "1.0.0-alpha.1"
+    "vitepress": "1.0.0-alpha.2"
   }
 }
