@@ -1,4 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
+import typescript from 'rollup-plugin-typescript2';
 
 export default defineBuildConfig({
   alias: {

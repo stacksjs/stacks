@@ -1,20 +1,22 @@
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 // import { buildVueComponents as vueComponents, plugins } from '../composables/src/stacks'
-import { resolve } from 'pathe'
+import path from 'path'
 // import { Stacks, resolveOptions } from '../core/src'
-// import { VUE_PACKAGE_NAME } from '../../config/constants'
+import { VUE_PACKAGE_NAME } from '../../config/constants'
 import Vue from '@vitejs/plugin-vue'
 // import { alias } from '../core/src'
 
+// eslint-disable-next-line no-console
+console.log('here');
+
 // https://vitejs.dev/config/
 const config: UserConfig = {
+  root: path.resolve(__dirname, './src'),
+
   resolve: {
     dedupe: ['vue'],
-    alias: {
-      '@ow3/hello-world-composable': resolve(__dirname, '../composables/src/index.ts'),
-      '@ow3/hello-world-vue': resolve(__dirname, './src/index.ts'),
-    },
+    // alias,
   },
 
   plugins: [
@@ -23,21 +25,21 @@ const config: UserConfig = {
 
   optimizeDeps: {
     // exclude: ['path', 'fs', 'url', 'crypto']
-    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'pathe', 'fs', '@unocss/inspector', 'crypto', 'url']
+    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'my-lib',
-      fileName: format => `my-lib.${format}.js`,
+      entry: path?.resolve(__dirname, 'src/index.ts') || 'src/index.ts',
+      name: VUE_PACKAGE_NAME,
+      fileName: format => `${VUE_PACKAGE_NAME}.${format}.js`,
     },
 
     rollupOptions: {
       // external: [
-      // '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'pathe', 'fs', '@unocss/inspector', 'crypto', 'url'
+      // '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url'
       // ],
-      external: ['vue', 'pathe', 'fs', 'url', 'crypto'],
+      external: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url'],
 
       output: {
         // exports: 'named',
@@ -51,6 +53,9 @@ const config: UserConfig = {
     // minify: true,
   },
 }
+
+// eslint-disable-next-line no-console
+console.log('config', config)
 
 // https://vitejs.dev/config
 export default defineConfig(({ command }) => {
