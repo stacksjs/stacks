@@ -4,11 +4,9 @@ import { buildVueComponents as vueComponents, plugins } from '../composables/src
 // import { resolve } from 'path'
 // import { Stacks, resolveOptions } from '../core/src'
 import { VUE_PACKAGE_NAME } from '../../config/constants'
-// import Vue from '@vitejs/plugin-vue'
+import Vue from '@vitejs/plugin-vue'
 import { alias } from '../core/src'
 
-// eslint-disable-next-line no-console
-console.log('here?');
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
@@ -16,41 +14,43 @@ const config: UserConfig = {
     alias,
   },
 
-  plugins,
+  plugins: [
+    Vue()
+  ],
 
-  optimizeDeps: {
-    exclude: ["path", "fs", 'url', 'crypto']
-  },
+  // optimizeDeps: {
+  //   exclude: ["path", "fs", 'url', 'crypto']
+  // },
 
-  build: {
-    lib: {
-      entry: './src/index.ts',
-      name: VUE_PACKAGE_NAME,
-      formats: ['cjs', 'es'],
-      fileName: (format: string) => {
-        if (format === 'es')
-          return `${VUE_PACKAGE_NAME}.mjs`
+  // build: {
+  //   lib: {
+  //     entry: './src/index.ts',
+  //     name: VUE_PACKAGE_NAME,
+  //     formats: ['cjs', 'es'],
+  //     fileName: (format: string) => {
+  //       if (format === 'es')
+  //         return `${VUE_PACKAGE_NAME}.mjs`
 
-        if (format === 'cjs')
-          return `${VUE_PACKAGE_NAME}.cjs`
+  //       if (format === 'cjs')
+  //         return `${VUE_PACKAGE_NAME}.cjs`
 
-        // if (format === 'iife')
-        //     return `${VUE_PACKAGE_NAME}.global.js`
+  //       // if (format === 'iife')
+  //       //     return `${VUE_PACKAGE_NAME}.global.js`
 
-        return `${VUE_PACKAGE_NAME}.?.js`
-      },
-    },
+  //       return `${VUE_PACKAGE_NAME}.?.js`
+  //     },
+  //   },
 
-    rollupOptions: {
-      external: ['vue', '@vueuse/core', 'unconfig'],
-      output: {
-        // exports: 'named',
-        globals: {
-          vue: 'Vue',
-        },
-      },
-    },
-  }
+  //   rollupOptions: {
+  //     external: ['vue', '@vueuse/core'],
+  //     output: {
+  //       // exports: 'named',
+  //       globals: {
+  //         vue: 'Vue',
+  //       },
+  //     },
+  //   },
+  // }
 }
 
 // https://vitejs.dev/config

@@ -20,7 +20,7 @@ The ultimate goal of this framework is to assist in creating an interoperable li
 
 - simply & rapidly develop component libraries
 - a beautiful Developer Experience (DX)
-- automated git commits, versioning, and changelog generations
+- automated git commits, versioning, and pretty changelog generations (markdown & GitHub releases)
 - automated npm package releases
 - optimized & automated PR dependency updates
 - next-generation docs generator

@@ -29,14 +29,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/HelloWorld.d.ts",
+      "types": "./dist/hello-world-vue.d.ts",
       "require": "./dist/hello-world-vue.cjs",
       "import": "./dist/hello-world-vue.mjs"
     }
   },
   "main": "dist/hello-world-vue.cjs",
   "module": "dist/hello-world-vue.mjs",
-  "types": "dist/HelloWorld.d.ts",
+  "types": "dist/hello-world-vue.d.ts",
   "files": [
     "dist"
   ],
@@ -45,13 +45,11 @@
     "pnpm": ">=7.2.1"
   },
   "scripts": {
-    "dev": "vite dev",
-    "build:test": "vite build",
-    "build": "vite build && vue-tsc --declaration --emitDeclarationOnly",
+    "dev": "vite",
+    "build": "unbuild",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@ow3/vite-plugin-stacks": "workspace:*",
     "unbuild": "^0.7.4",
     "vite": "^2.9.12",
     "vue": "^3.2.37",

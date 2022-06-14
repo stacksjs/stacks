@@ -11,7 +11,7 @@ It's easy to get your component library started with this starter kit. The only 
 npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
 
-pnpm i -r # install deps for all packages
+pnpm i # install deps for all packages
 pnpm dev # stubs the packages for local use
 pnpm dev:vite-vue # starts the dev server
 pnpm build # builds the packages for production-ready use

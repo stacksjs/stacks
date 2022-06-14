@@ -11,7 +11,7 @@ Before you get started, it is important to understand what a Web Component is. T
 npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
 
-pnpm i -r # install deps for all packages
+pnpm i # install deps for all packages
 pnpm dev # stubs the libraries for local use
 pnpm dev:vite-wc # starts the dev server
 pnpm build # builds all packages for production-ready use

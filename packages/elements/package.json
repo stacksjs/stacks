@@ -53,7 +53,7 @@
     "@ow3/hello-world-vue": "workspace:*"
   },
   "devDependencies": {
-    "@ow3/vite-plugin-stacks": "workspace:*",
+    "@ow3/stacks-core": "workspace:*",
     "unbuild": "^0.7.4",
     "vite": "^2.9.12",
     "vue": "^3.2.37",

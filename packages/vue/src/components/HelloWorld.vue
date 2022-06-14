@@ -1,5 +1,6 @@
 <script lang="ts">
-import { count, increment } from '@ow3/hello-world-composable'
+import { count, increment } from '../../../composables'
+// import { count, increment } from '@ow3/hello-world-composable'
 
 interface Props {
   name?: string
