@@ -9,6 +9,9 @@
   <body>
     <div id="app"></div>
 
-    <script type="module" src="./dist/index.mjs"></script>
+    <script type="module">
+      import { HelloWorld } from '@ow3/hello-world-vue';
+      createApp(HelloWorld).mount('#app')
+    </script>
   </body>
 </html>

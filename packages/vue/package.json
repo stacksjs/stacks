@@ -50,6 +50,7 @@
     "stub": "unbuild --stub"
   },
   "devDependencies": {
+    "jiti": "^1.13.0",
     "unbuild": "^0.7.4",
     "vite": "^2.9.12",
     "vue": "^3.2.37",
