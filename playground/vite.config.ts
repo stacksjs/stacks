@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { plugins, resolveOptions, alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import path from 'path'
+import path from 'pathe'
 import { VUE_PACKAGE_NAME } from '../config/constants'
 
 /** @type {import('vite').UserConfig} */

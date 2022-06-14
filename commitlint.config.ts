@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import type { UserConfig } from '@commitlint/types'
 
 const packages = fs.readdirSync(resolve(__dirname, 'packages'))

@@ -6,7 +6,7 @@ import { exec } from 'child_process'
 import { readdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import Prompts from 'prompts'
-import { dirname, resolve } from 'path'
+import { dirname, resolve } from 'pathe'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const packagesDir = resolve(__dirname, '../packages')

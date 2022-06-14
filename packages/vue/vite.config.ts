@@ -1,17 +1,20 @@
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 // import { buildVueComponents as vueComponents, plugins } from '../composables/src/stacks'
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 // import { Stacks, resolveOptions } from '../core/src'
-import { VUE_PACKAGE_NAME } from '../../config/constants'
+// import { VUE_PACKAGE_NAME } from '../../config/constants'
 import Vue from '@vitejs/plugin-vue'
-import { alias } from '../core/src'
+// import { alias } from '../core/src'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
     dedupe: ['vue'],
-    alias,
+    alias: {
+      '@ow3/hello-world-composable': resolve(__dirname, '../composables/src/index.ts'),
+      '@ow3/hello-world-vue': resolve(__dirname, './src/index.ts'),
+    },
   },
 
   plugins: [
@@ -19,7 +22,8 @@ const config: UserConfig = {
   ],
 
   optimizeDeps: {
-    exclude: ["path", "fs", 'url', 'crypto']
+    // exclude: ['path', 'fs', 'url', 'crypto']
+    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'pathe', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   build: {
@@ -30,7 +34,11 @@ const config: UserConfig = {
     },
 
     rollupOptions: {
-      external: ['vue'],
+      // external: [
+      // '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'pathe', 'fs', '@unocss/inspector', 'crypto', 'url'
+      // ],
+      external: ['vue', 'pathe', 'fs', 'url', 'crypto'],
+
       output: {
         // exports: 'named',
         globals: {
@@ -40,7 +48,7 @@ const config: UserConfig = {
     },
 
     // sourcemap: true,
-    // minify: false,
+    // minify: true,
   },
 }
 

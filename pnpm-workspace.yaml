@@ -1,6 +1,6 @@
 packages:
   - 'apps/**'
   - 'examples/**'
-  - 'packages/*'
+  - 'packages/**'
   - playground
   - '!**/tests/**'

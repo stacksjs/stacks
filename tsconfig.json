@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    // "rootDir": "pack",
-    // "outDir": "./dist/",
+    "rootDir": ".",
+    "outDir": "dist",
     "target": "es2017",
     "module": "esnext",
     "skipDefaultLibCheck": true,
@@ -22,7 +22,7 @@
       "vite/client"
     ],
     "typeRoots": [
-      "packages/core/src/types",
+      "packages/core/types",
       "node_modules/@types"
     ],
     "paths": {

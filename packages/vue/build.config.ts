@@ -7,14 +7,12 @@ export default defineBuildConfig({
   entries: [
     'src/index.ts',
   ],
-  clean: true,
+  // clean: true,
   declaration: true,
-
-  // rollup: {
-  //   emitCJS: true,
-  //   cjsBridge: true,
-  // },
-  // externals: [
-  //   'vue', '@vueuse/core',
-  // ],
+  rollup: {
+    emitCJS: true,
+  },
+  externals: [
+    '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'pathe', 'fs', '@unocss/inspector', 'crypto', 'url'
+  ],
 })

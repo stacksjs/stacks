@@ -1,11 +1,11 @@
 // import { ref } from 'vue'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import Inspect from 'vite-plugin-inspect'
-import dts from 'vite-plugin-dts'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { resolve } from 'path'
+// import Inspect from 'vite-plugin-inspect'
+// import dts from 'vite-plugin-dts'
+// import AutoImport from 'unplugin-auto-import/vite'
+// import Components from 'unplugin-vue-components/vite'
+import path from 'pathe'
 import type { BuildOptions } from 'vite'
 import { VUE_PACKAGE_NAME } from '../../../config/constants'
 
@@ -30,7 +30,7 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@vueuse/core', 'unconfig'],
+      external: ['vue', '@vueuse/core', 'pathe'],
       output: {
         // exports: 'named',
         globals: {
@@ -72,7 +72,7 @@ const plugins = [
   Vue(),
 
   Unocss({
-    configFile: resolve(__dirname, '../../../src/config/unocss.ts'), // todo: path may be incorrect
+    configFile: path.resolve(__dirname, '../../core/src/config/unocss.ts'),
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
@@ -90,7 +90,7 @@ const plugins = [
   //   imports: ['vue', '@vueuse/core', {
   //     '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
   //   }],
-  //   dts: resolve(__dirname, '../../core/src/types/auto-imports.d.ts'),
+  //   dts: resolve(__dirname, '../../core/types/auto-imports.d.ts'),
   //   eslintrc: {
   //     enabled: true,
   //     filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
@@ -101,7 +101,7 @@ const plugins = [
   // Components({
   //   dirs: [resolve(__dirname, '../../vue/src/components')],
   //   extensions: ['vue'],
-  //   dts: resolve(__dirname, '../../core/src/types/components.d.ts'),
+  //   dts: resolve(__dirname, '../../core/types/components.d.ts'),
   // }),
 ]
 
