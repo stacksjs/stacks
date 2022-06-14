@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    // "outDir": "./dist/",
     "target": "es2017",
     "module": "esnext",
     "skipDefaultLibCheck": true,
@@ -46,9 +47,9 @@
     "**/tests/**",
   ],
   "include": [
-    "./apps/**/*",
+    "./apps/*",
     "./config/*",
-    "./examples/**/*",
+    "./examples/*",
     "./packages/**/*",
     "./scripts/*"
   ],

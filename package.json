@@ -94,6 +94,7 @@
     "fs-extra": "^10.1.0",
     "gzip-size": "^7.0.0",
     "inquirer": "^8.2.4",
+    "jiti": "^1.13.0",
     "lint-staged": "^13.0.1",
     "minimist": "^1.2.6",
     "prompts": "^2.4.2",

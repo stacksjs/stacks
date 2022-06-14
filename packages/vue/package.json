@@ -29,14 +29,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/hello-world-vue.d.ts",
-      "require": "./dist/hello-world-vue.cjs",
-      "import": "./dist/hello-world-vue.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "dist/hello-world-vue.cjs",
-  "module": "dist/hello-world-vue.mjs",
-  "types": "dist/hello-world-vue.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
