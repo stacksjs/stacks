@@ -1,5 +1,5 @@
 import { defineConfig, UserConfig } from 'vite'
-import { alias } from '../packages/core/src'
+// import { alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 // import Unocss from 'unocss/vite'
 // import path from 'path'
@@ -9,18 +9,18 @@ const config: UserConfig = {
   base: '/play/',
 
   resolve: {
-    // dedupe: ['vue'],
+    dedupe: ['vue'],
     // alias,
   },
 
   optimizeDeps: {
-    exclude: ['@vueuse/core', 'vue', 'path', 'fs', 'url', 'crypto'],
+    exclude: ['@vueuse/core', 'vue', 'unocss'],
     // include: ['@vueuse/core', 'vue', 'unocss', 'vite', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   plugins: [
     Vue({
-      customElement: false
+      customElement: false,
     }),
 
     // Unocss({
@@ -33,7 +33,7 @@ const config: UserConfig = {
     // outDir: '../interactive/public/play',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['vue', '@vueuse/core'],
+      external: ['@vueuse/core', 'vue', 'unocss'],
       output: {
         // exports: 'named',
         globals: {
