@@ -1,129 +1,97 @@
-<p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
+# Web Component Library Starter Kit
 
-_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well—and until then, wip commits it is._
+"Why create components for a specific framework when it can be written to be understood by all — including browsers?"
 
-[![npm version][npm-version-src]][npm-version-href]
-[![GitHub Actions][github-actions-src]][github-actions-href]
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-<!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
-<!-- [![Codecov][codecov-src]][codecov-href] -->
+## 🤝 Introduction
 
-# The Modern Component Library
+Before you get started, it is important to understand what a Web Component is. Think of it as a (custom) HTML element. This custom element can natively be used within your framework-of-choice. That being said, this is an opinionated starter kit, employing many best-practices, to help you expedite the development of your web component library.
 
-The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started, and be productive.
+### 👩🏽‍💻 Dev Tools
 
-> _The clever way to build component libraries._ - Chris Breuer
-
-## ☘️ Features
-
-The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
-
-- simply & rapidly develop component libraries
-- a beautiful Developer Experience (DX)
-- automated git commits, versioning, and pretty changelog generations (markdown & GitHub releases)
-- automated npm package releases
-- optimized & automated PR dependency updates
-- next-generation docs generator
-- create your own style guide with ease via UnoCSS (e.g. Tailwind CSS)
-
-## 💡 Get Started
-
-It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
-
-```bash
-# you may "Use this template" via the button in top right corner of this page
-# or run the following commands:
-npx degit openwebstacks/stacks-framework hello-world-stack
-cd hello-world-stack
-npm run setup # WIP
-```
-
-## 🤖 Usage
-
-The `package.json` contains some useful snippets you likely want to be aware of. Some commonly used ones are:
-
-```bash
-pnpm install # install all dependencies (for all packages)
-pnpm fresh # fresh reinstall of all dependencies
-
-pnpm dev # stubs the libraries for local use
-pnpm example # run one of the examples (follow CLI prompts)
-
-pnpm build # builds a specific package (follow CLI prompts)
-pnpm build:all # builds the library for production-ready use
-
-pnpm commit # follow CLI prompts for committing changes
-pnpm release # releases the library (packages) to npm
-
-pnpm docs:dev # starts local server for the documentation site
-pnpm docs:build # builds the documentation site
-pnpm docs:serve # serves the documentation site
-```
-
-Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's simple easy to use:
-
-```html
-<html>
-  <body>
-    <hello-world name="Jane Doe"></hello-world>
-    <script src="elements.js"></script>
-  </body>
-</html>
-```
-
-Optionally, if you prefer using Vue:
-
-```vue
-<script setup lang="ts">
-import HelloWorld from 'hello-world-stack'
-</script>
-
-<template>
-  <HelloWorld name="J Doe" />
-</template>
-```
-
-Read more about the setup & tips in the docs.
-
-### Developer Experience (DX)
-
-- [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
-- [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
-- [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
-- [Vue](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
-- [UnoCSS](https://github.com/unocss/unocss) - create & manage your own style guide with ease (e.g. Tailwind CSS)
-- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
-- [Cypress](https://cypress.io/) - e2e testing
-- [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
-
-#### Plugins & Extensions
-
-- [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
-- [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
-- [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
+- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
+- [Vue 3.2](https://vuejs.org/) - write Web Components the same way you would write SFCs
+- [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
+- [TypeScript 4.6](https://www.typescriptlang.org/)
+- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - Automate git commits, versioning, and CHANGELOG generation
+- [Vitest](https://github.com/vitest-dev/vitest) - Unit testing powered by Vite
+- [Cypress](https://cypress.io/) - E2E testing
+- [Renovate](https://renovatebot.com/) - automatic PR dependency updates
+- [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 - [VS Code Extensions](./.vscode/extensions.json)
   - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) - Vue 3 `<script setup>` IDE support
   - [cspell](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - spell checking
-  - [Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
+  - [Windi Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
-#### Coding Style
+### 🧩 Plugins
 
-- Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
+- [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
+- [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
+- [VueUse](https://github.com/vueuse/vueuse) - Collection of useful composition APIs
+
+### 🥰 Coding Style
+
+- Use Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
+- [Reactivity Transform](https://vuejs.org/guide/extras/reactivity-transform.html) enabled
 - [ESLint](https://eslint.org/) - statically analyzes your code to quickly find problems
 
-When using this template, feel free to adjust it to your needs. It simply is a framework to help you quickly & efficiently bootstrap & design component libraries using industry best-practices.
+When using this template, feel free to adjust it to your needs. This is simply a framework to help you quickly & efficiently develop and design components using industry best-practices.
+
+## 💡 Get Started
+
+It's very easy to get started, especially if you have designed/developed Vue Single File Components before. Check out the index.html and how the `HelloWorld`-component is defined within this repo. Feel free to create any component.
+
+```bash
+npx degit openweblabs/web-components-library-starter my-lib
+cd my-lib
+pnpm i # if you don't have pnpm installed, run `npm install -g pnpm`
+
+# starts the local server at http://localhost:3333 & watches for changes
+pnpm dev
+
+# builds the component library for production-ready use
+pnpm build
+
+# check out the `package.json` to see the remainder of scripts
+```
+
+### Tips
+
+When using VS Code as your code editor, you may want to consider keeping the [vscode.html-data.json](.vscode/vscode.html-data.json) file updated. It provides hints to your code editor and you can find more examples [here](https://github.com/microsoft/vscode-custom-data/blob/main/web-data/html/htmlTags.json).
+
+```bash
+# how to create a git commit?
+git add . # select the changes you want to commit
+pnpm run commit # then simply answer the questions
+
+# after you have successfully committed, you may create a "release"
+pnpm run release # automates git commits, versioning, and CHANGELOG generation
+```
+
+## 🖥️ Browsers
+
+This starter kit is built for the modern web and avoids bloated polyfills and outdated environments as much as possible. Currently, it supports all browsers that fully implement the [Custom Elements V1][caniuse-custom-el-v1].
+
+- Edge 79+
+- Firefox 63+
+- Chrome 67+
+- Safari 13.1+
+- Opera 64+
+- iOS Safari 13.7+
+- Android Browser 81+
+- Opera Mobile 59+
+- Chrome for Android 88+
+
+[caniuse-custom-el-v1]: https://caniuse.com/custom-elementsv1
 
 ## 🧪 Testing
 
 ```bash
-pnpm test
+yarn test
 ```
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/stacks-framework/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/openweblabs/web-components-library-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
@@ -133,7 +101,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openwebstacks/stacks-framework/discussions)
+[Discussions on GitHub](https://github.com/openweblabs/web-components-library-starter/discussions)
 
 For casual chit-chat with others using this package:
 
@@ -143,17 +111,4 @@ For casual chit-chat with others using this package:
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
-Made with ❤️
-
-<!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/@ow3/hello-world-vue?style=flat-square
-[npm-version-href]: https://npmjs.com/package/@ow3/hello-world-vue
-
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
-[npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
-
-[github-actions-src]: https://img.shields.io/github/workflow/status/openwebstacks/stacks-framework/CI/main?style=flat-square
-[github-actions-href]: https://github.com/openwebstacks/stacks-framework/actions?query=workflow%3Aci
-
-<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/openwebstacks/stacks-framework/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/openwebstacks/stacks-framework -->
+Made with ❤️ by Open Web Labs. And many thanks to [antfu](https://github.com/antfu)!

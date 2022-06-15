@@ -4,17 +4,15 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "css.validate": false,
   "editor.formatOnSave": false,
   "editor.quickSuggestions": {
     "strings": true
   },
-  "eslint.packageManager": "pnpm",
-  "npm.packageManager": "pnpm",
+  "html.customData": [
+    "./.vscode/vscode.html-data.json"
+  ],
+  "css.customData": [],
   "windicss.sortOnSave": true,
-  "unocss.root": "packages/core/src/config/unocss.ts",
-  "markdownlint.ignore": ["CHANGELOG.md"],
-  "cSpell.ignorePaths": ["node_modules"],
   "cSpell.words": [
     "openweblabs",
     "openweb",
@@ -39,33 +37,11 @@
     "preinstall",
     "commitlint",
     "commitlintrc",
-    "pathe",
+    "upath",
     "bumpp",
     "unocss",
-    "windi",
     "typecheck",
     "iconify",
-    "heroicons",
-    "esno",
-    "openwebstacks",
-    "jsdelivr",
-    "sfcs",
-    "marvinpinto",
-    "iife",
-    "rimraf",
-    "brotli",
-    "windicss",
-    "nuxt",
-    "voorjaar",
-    "dbaeumer",
-    "davidanson",
-    "vitepress",
-    "deps",
-    "codecov",
-    "sfc",
-    "corepack",
-    "changelogithub",
-    "dessant",
-    "jiti"
+    "heroicons"
   ]
 }

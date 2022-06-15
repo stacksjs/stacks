@@ -1,9 +1,0 @@
-lockfileVersion: 5.4
-
-importers:
-
-  .:
-    specifiers:
-      '@ow3/hello-world-elements': link:../../packages/elements
-    dependencies:
-      '@ow3/hello-world-elements': link:../../packages/elements

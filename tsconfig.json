@@ -1,70 +1,45 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "baseUrl": ".",
-    "rootDir": ".",
-    "outDir": "dist",
-    "target": "es2017",
+    "target": "esnext",
     "module": "esnext",
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "strict": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
     "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "types": [
-      "node",
-      "vitest",
-      "vite/client"
-    ],
-    "typeRoots": [
-      "packages/core/types",
-      "node_modules/@types"
+      "vite/client",
+      "vue/ref-macros",
+      "node"
     ],
     "paths": {
-      "@ow3/hello-world-vue": [
-        "./packages/vue/src/index.ts"
-      ],
-      "@ow3/hello-world-composable": [
-        "./packages/composables/src/index.ts"
-      ],
-      "@ow3/hello-world-elements": [
-        "./packages/web-components/src/index.ts"
-      ],
-      "@ow3/stacks-core": [
-        "./packages/core/src/index.ts"
+      "~/*": [
+        "src/*"
       ]
-    }
+    },
+    "lib": [
+      "esnext",
+      "dom"
+    ]
   },
-  "exclude": [
-    "**/dist/**",
-    "**/node_modules/**",
-    "**/tests/**"
-  ],
   "include": [
-    "packages/**/*.ts",
-    "packages/**/*.d.ts",
-    "packages/**/*.vue"
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "cypress"
   ]
-  // "exclude": [
-  //   "**/dist/**",
-  //   "**/node_modules/**",
-  //   "**/playground/**",
-  //   "**/examples/**",
-  //   "**/tests/**",
-  // ],
-  // "include": [
-  //   "./apps/*",
-  //   "./config/*",
-  //   "./examples/*",
-  //   "./packages/**/*",
-  //   "./scripts/*"
-  // ],
 }
