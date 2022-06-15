@@ -4,11 +4,11 @@ const { message = 'Welcome!' } = defineProps<{
 }>()
 
 // reactive state
-let count = $ref(0)
+let count = ref(0)
 
 // functions that mutate state and trigger updates
 function increment() {
-  count++
+  count.value++
 }
 
 // lifecycle hooks

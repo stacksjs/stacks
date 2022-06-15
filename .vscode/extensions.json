@@ -6,6 +6,7 @@
     "voorjaar.windicss-intellisense",
     "dbaeumer.vscode-eslint",
     "streetsidesoftware.code-spell-checker",
-    "davidanson.vscode-markdownlint"
+    "davidanson.vscode-markdownlint",
+    "antfu.unocss"
   ]
 }

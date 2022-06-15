@@ -1,5 +1,5 @@
 import { defineCustomElement } from 'vue'
-import HelloWorld from './components/HelloWorld.ce.vue'
+import HelloWorld from './components/HelloWorld.vue'
 
 // console.log('HelloWorld.styles', HelloWorld.styles) // ["/* inlined css */"]
 

@@ -6,11 +6,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
 import PresetIcons from '@unocss/preset-icons'
-import pkg from './package.json'
-
-process.env.VITE_APP_VERSION = pkg.version
-if (process.env.NODE_ENV === 'production')
-  process.env.VITE_APP_BUILD_EPOCH = new Date().getTime().toString()
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -22,11 +17,10 @@ const config: UserConfig = {
 
   plugins: [
     Vue({
-      reactivityTransform: true, // https://vuejs.org/guide/extras/reactivity-transform.html
       template: {
         compilerOptions: {
           // treat all tags with a dash as custom elements
-          isCustomElement: tag => tag.includes('-'),
+          isCustomElement: tag => tag.includes('hello-word'),
         },
       },
     }),
