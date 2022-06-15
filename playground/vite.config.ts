@@ -1,9 +1,9 @@
+import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 // import { alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
-// import Unocss from 'unocss/vite'
-// import path from 'path'
+import Unocss from 'unocss/vite'
 // import { VUE_PACKAGE_NAME } from '../config/constants'
 //
 const config: UserConfig = {
@@ -24,10 +24,10 @@ const config: UserConfig = {
       customElement: false,
     }),
 
-    // Unocss({
-    //   configFile: path.resolve(__dirname, '../packages/core/src/config/unocss.ts'),
-    //   // mode: 'vue-scoped', // or 'shadow-dom'
-    // }),
+    Unocss({
+      configFile: resolve(__dirname, '../packages/core/src/config/unocss.ts'),
+      mode: 'vue-scoped', // or 'shadow-dom'
+    }),
   ],
 
   build: {
