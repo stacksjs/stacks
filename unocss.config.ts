@@ -1,7 +1,7 @@
 import {
   defineConfig,
   presetIcons,
-  // presetTypography,
+  presetTypography,
   // presetWebFonts,
   presetWind,
   transformerDirectives,
@@ -20,7 +20,6 @@ export default defineConfig({
     presetWind(),
     presetIcons({
       prefix: 'i-',
-      scale: 1.2,
       warn: true,
       collections,
       extraProperties: {
@@ -28,7 +27,7 @@ export default defineConfig({
         'vertical-align': 'middle',
       },
     }),
-    // presetTypography(),
+    presetTypography(),
     // presetWebFonts({
     //   fonts: {
     //     sans: 'DM Sans',
