@@ -1,30 +1,51 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import { alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
-import Unocss from 'unocss/vite'
-import path from 'path'
+// import Unocss from 'unocss/vite'
+// import path from 'path'
 // import { VUE_PACKAGE_NAME } from '../config/constants'
+//
+const config: UserConfig = {
+  base: '/play/',
 
-/** @type {import('vite').UserConfig} */
-const config = {
   resolve: {
-    dedupe: ['vue'],
-    alias,
+    // dedupe: ['vue'],
+    // alias,
   },
 
   optimizeDeps: {
-    exclude: ['path', 'fs', 'url', 'crypto'],
+    exclude: ['@vueuse/core', 'vue', 'path', 'fs', 'url', 'crypto'],
     // include: ['@vueuse/core', 'vue', 'unocss', 'vite', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   plugins: [
-    Vue(),
-
-    Unocss({
-      configFile: path.resolve(__dirname, '../packages/core/src/config/unocss.ts'),
-      mode: 'vue-scoped', // or 'shadow-dom'
+    Vue({
+      customElement: false
     }),
-  ]
+
+    // Unocss({
+    //   configFile: path.resolve(__dirname, '../packages/core/src/config/unocss.ts'),
+    //   // mode: 'vue-scoped', // or 'shadow-dom'
+    // }),
+  ],
+
+  build: {
+    // outDir: '../interactive/public/play',
+    emptyOutDir: true,
+    rollupOptions: {
+      external: ['vue', '@vueuse/core'],
+      output: {
+        // exports: 'named',
+        globals: {
+          vue: 'Vue',
+        },
+      },
+
+      input: [
+        './index.html',
+      ],
+    },
+  },
 }
 
 // https://vitejs.dev/config

@@ -2,8 +2,7 @@ import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   entries: [
-    // 'src/index',
-    { input: 'src/components/', outDir: 'dist/components' }, // this works but not generating MyComponent.vue.d.ts
+    'src/index',
   ],
   clean: true,
   declaration: true,
