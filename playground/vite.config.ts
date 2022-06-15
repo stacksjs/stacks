@@ -13,8 +13,8 @@ const config = {
   },
 
   optimizeDeps: {
-    // exclude: ['path', 'fs', 'url', 'crypto']
-    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', 'fs', '@unocss/inspector', 'crypto', 'url']
+    exclude: ['path', 'fs', 'url', 'crypto'],
+    // include: ['@vueuse/core', 'vue', 'unocss', 'vite', 'fs', '@unocss/inspector', 'crypto', 'url']
   },
 
   plugins: [
