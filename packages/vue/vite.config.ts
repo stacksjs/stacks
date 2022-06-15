@@ -1,15 +1,15 @@
+import path from 'path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 // import { buildVueComponents as vueComponents, plugins } from '../composables/src/stacks'
-import path from 'path'
 // import { Stacks, resolveOptions } from '../core/src'
-import { VUE_PACKAGE_NAME } from '../../config/constants'
 import Vue from '@vitejs/plugin-vue'
 import Typescript2 from 'rollup-plugin-typescript2'
+import { VUE_PACKAGE_NAME } from '../../config/constants'
 // import { alias } from '../core/src'
 
 // eslint-disable-next-line no-console
-console.log('here');
+console.log('here')
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -25,13 +25,13 @@ const config: UserConfig = {
 
     {
       ...Typescript2(),
-      apply: 'build'
-    }
+      apply: 'build',
+    },
   ],
 
   optimizeDeps: {
     // exclude: ['path', 'fs', 'url', 'crypto']
-    exclude: ['@vueuse/core', 'vue', 'unocss']
+    exclude: ['@vueuse/core', 'vue', 'unocss'],
   },
 
   build: {

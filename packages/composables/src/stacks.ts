@@ -1,11 +1,11 @@
 // import { ref } from 'vue'
+import path from 'path'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 // import Inspect from 'vite-plugin-inspect'
 // import dts from 'vite-plugin-dts'
 // import AutoImport from 'unplugin-auto-import/vite'
 // import Components from 'unplugin-vue-components/vite'
-import path from 'path'
 import type { BuildOptions } from 'vite'
 import { VUE_PACKAGE_NAME } from '../../../config/constants'
 

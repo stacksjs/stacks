@@ -1,4 +1,5 @@
-import { defineConfig, UserConfig } from 'vite'
+import type { UserConfig } from 'vite'
+import { defineConfig } from 'vite'
 // import { alias } from '../packages/core/src'
 import Vue from '@vitejs/plugin-vue'
 // import Unocss from 'unocss/vite'

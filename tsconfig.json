@@ -40,18 +40,18 @@
       ],
       "@ow3/stacks-core": [
         "./packages/core/src/index.ts"
-      ],
+      ]
     }
   },
   "exclude": [
     "**/dist/**",
     "**/node_modules/**",
-    "**/tests/**",
+    "**/tests/**"
   ],
   "include": [
     "packages/**/*.ts",
     "packages/**/*.d.ts",
-    "packages/**/*.vue",
+    "packages/**/*.vue"
   ]
   // "exclude": [
   //   "**/dist/**",

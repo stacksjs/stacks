@@ -1,5 +1,4 @@
 import { defineBuildConfig } from 'unbuild'
-import typescript from 'rollup-plugin-typescript2';
 
 export default defineBuildConfig({
   alias: {
@@ -14,6 +13,6 @@ export default defineBuildConfig({
     emitCJS: true,
   },
   externals: [
-    '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url'
+    '@vueuse/core', 'vue', 'unocss',
   ],
 })

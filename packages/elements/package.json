@@ -35,9 +35,9 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "unpkg": "dist/hello-world-elements.global.js",
   "jsdelivr": "dist/hello-world-elements.global.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
