@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
@@ -12,6 +11,7 @@ const config: UserConfig = {
   resolve: {
     alias: {
       '~': resolve(__dirname, '/src'),
+      '#config': resolve(__dirname, '/config'),
     },
   },
 
@@ -26,16 +26,8 @@ const config: UserConfig = {
     }),
 
     Unocss({
-      mode: 'shadow-dom',
-      presets: [
-        PresetIcons({
-          prefix: 'i-',
-          extraProperties: {
-            'display': 'inline-block',
-            'vertical-align': 'middle',
-          },
-        }),
-      ],
+      configFile: resolve(__dirname, './unocss.config.ts'),
+      mode: 'shadow-dom', // or 'vue-scoped'
     }),
 
     // https://github.com/antfu/unplugin-auto-import
@@ -53,15 +45,7 @@ const config: UserConfig = {
       extensions: ['vue'],
       dts: 'src/components.d.ts',
     }),
-  ],
-
-  test: {
-    include: ['tests/**/*.test.ts'],
-    environment: 'jsdom',
-    deps: {
-      inline: ['@vue', '@vueuse', 'vue-demi'],
-    },
-  },
+  ]
 }
 
 export default config
