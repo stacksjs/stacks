@@ -39,7 +39,7 @@ const config: UserConfig = {
 
     // https://github.com/antfu/unplugin-vue-components
     Components({
-      dirs: ['packages/components'],
+      dirs: ['packages/vue/src/components'],
       extensions: ['vue'],
       dts: 'packages/core/types/components.d.ts',
     }),
