@@ -8,13 +8,11 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "importHelpers": true,
-    "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "types": [
       "node",
@@ -23,7 +21,7 @@
     ],
     "paths": {
       "~/*": [
-        "./src/*"
+        "packages/*"
       ],
     },
     "lib": [
@@ -32,14 +30,14 @@
     ]
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue"
+    "packages/**/*.ts",
+    "packages/**/*.d.ts",
+    "packages/**/*.tsx",
+    "packages/**/*.vue"
   ],
   "exclude": [
-    "dist",
-    "node_modules",
-    "cypress"
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/cypress/**"
   ]
 }

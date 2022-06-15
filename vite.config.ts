@@ -4,14 +4,12 @@ import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Unocss from 'unocss/vite'
-import PresetIcons from '@unocss/preset-icons'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
     alias: {
-      '~': resolve(__dirname, '/src'),
-      '#config': resolve(__dirname, '/config'),
+      '~': resolve(__dirname, '/packages'),
     },
   },
 
@@ -26,14 +24,14 @@ const config: UserConfig = {
     }),
 
     Unocss({
-      configFile: resolve(__dirname, './unocss.config.ts'),
+      configFile: './unocss.config.ts',
       mode: 'shadow-dom', // or 'vue-scoped'
     }),
 
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
       imports: ['vue', '@vueuse/core'],
-      dts: 'src/auto-imports.d.ts',
+      dts: 'packages/core/types/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
       },
@@ -41,9 +39,9 @@ const config: UserConfig = {
 
     // https://github.com/antfu/unplugin-vue-components
     Components({
-      dirs: ['src/components'],
+      dirs: ['packages/components'],
       extensions: ['vue'],
-      dts: 'src/components.d.ts',
+      dts: 'packages/core/types/components.d.ts',
     }),
   ]
 }
