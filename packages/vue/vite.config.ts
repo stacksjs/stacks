@@ -5,6 +5,7 @@ import path from 'path'
 // import { Stacks, resolveOptions } from '../core/src'
 import { VUE_PACKAGE_NAME } from '../../config/constants'
 import Vue from '@vitejs/plugin-vue'
+import Typescript2 from 'rollup-plugin-typescript2'
 // import { alias } from '../core/src'
 
 // eslint-disable-next-line no-console
@@ -20,12 +21,17 @@ const config: UserConfig = {
   },
 
   plugins: [
-    Vue()
+    Vue(),
+
+    {
+      ...Typescript2(),
+      apply: 'build'
+    }
   ],
 
   optimizeDeps: {
     // exclude: ['path', 'fs', 'url', 'crypto']
-    exclude: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url']
+    exclude: ['@vueuse/core', 'vue', 'unocss']
   },
 
   build: {
@@ -36,10 +42,7 @@ const config: UserConfig = {
     },
 
     rollupOptions: {
-      // external: [
-      // '@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url'
-      // ],
-      external: ['@vueuse/core', 'vue', 'unocss', 'vite', '@vitejs/plugin-vue', 'path', 'fs', '@unocss/inspector', 'crypto', 'url'],
+      external: ['@vueuse/core', 'vue', 'unocss'],
 
       output: {
         // exports: 'named',

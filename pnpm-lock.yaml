@@ -173,18 +173,12 @@ importers:
 
   packages/vue:
     specifiers:
-      jiti: ^1.13.0
-      rollup-plugin-typescript2: ^0.32.1
-      tslib: ^2.4.0
       typescript: ^4.7.3
       unbuild: ^0.7.4
       vite: ^2.9.12
       vue: ^3.2.37
       vue-tsc: ^0.37.8
     devDependencies:
-      jiti: 1.13.0
-      rollup-plugin-typescript2: 0.32.1_fgms252lqu3rk7srzpqqayl4ya
-      tslib: 2.4.0
       typescript: 4.7.3
       unbuild: 0.7.4
       vite: 2.9.12
@@ -194,16 +188,18 @@ importers:
   playground:
     specifiers:
       '@ow3/hello-world-vue': workspace:*
+      rollup-plugin-typescript2: ^0.32.1
       typescript: ^4.7.3
       vite: ^2.9.12
       vue: ^3.2.37
       vue-tsc: ^0.37.8
     dependencies:
       '@ow3/hello-world-vue': link:../packages/vue
-      vue: 3.2.37
     devDependencies:
+      rollup-plugin-typescript2: 0.32.1_fgms252lqu3rk7srzpqqayl4ya
       typescript: 4.7.3
       vite: 2.9.12
+      vue: 3.2.37
       vue-tsc: 0.37.8_typescript@4.7.3
 
 packages:
