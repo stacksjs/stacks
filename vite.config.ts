@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import type { UserConfig } from 'vite'
+import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -46,4 +47,13 @@ const config: UserConfig = {
   ]
 }
 
-export default config
+export default defineConfig(({ command }) => {
+  // // eslint-disable-next-line no-console
+  // console.log('config is', config)
+
+  if (command === 'serve')
+    return config
+
+  // command === 'build'
+  return config
+})
