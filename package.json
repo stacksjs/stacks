@@ -3,7 +3,7 @@
   "version": "0.16.0",
   "private": true,
   "packageManager": "pnpm@7.2.1",
-  "description": "The easy way to start your monorepo stack.",
+  "description": "The easy way to start your component library stack.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-framework#readme",
