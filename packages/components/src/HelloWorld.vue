@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { count } from '~/composables/src'
+import { count, increment } from '../../composables/src'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
-
-// functions that mutate state and trigger updates
-function increment() {
-  count.value++
-}
 
 // lifecycle hooks
 onMounted(() => {

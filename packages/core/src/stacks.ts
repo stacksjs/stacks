@@ -97,7 +97,7 @@ const Stacks = (configFile = 'unocss.config.ts') => [
 
   // https://github.com/antfu/unplugin-vue-components
   Components({
-    dirs: ['packages/vue/src/components'],
+    dirs: ['packages/components/src'],
     extensions: ['vue'],
     dts: resolve(__dirname, '../types/components.d.ts'),
   }),

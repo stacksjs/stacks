@@ -41,6 +41,7 @@
     "build": "esno scripts/run-build.mjs",
     "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
     "build:types": "pnpm fresh && need-to-finish-this",
+    "build:components": "pnpm fresh && pnpm -r --filter './packages/components' run build",
     "dev": "pnpm run stub",
     "dev:old": "pnpm run stub",
     "docs:dev": "pnpm --filter './apps/site' dev",

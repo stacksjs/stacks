@@ -19,7 +19,7 @@ If any of these uncompleted examples look like a fun project to you, any help is
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 

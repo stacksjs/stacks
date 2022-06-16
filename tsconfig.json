@@ -24,7 +24,7 @@
         "packages/*"
       ],
       "@ow3/hello-world-vue": [
-        "packages/vue/src"
+        "packages/components/src"
       ],
       "@ow3/hello-world-elements": [
         "packages/elements/src"

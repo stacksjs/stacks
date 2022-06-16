@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HelloWorld } from '../vue/src'
+import { HelloWorld } from './src'
 </script>
 
 <template>

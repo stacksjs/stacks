@@ -4,8 +4,8 @@ import { join, resolve } from 'path'
 
 // relative to scripts directory
 const destinations = [
-    // ['../dist/packages/vue/src/components', '../packages/core/types/components'],
-    // ['../dist/packages/elements/src/components', '../packages/core/types/components'],
+    // ['../dist/packages/components/src', '../packages/core/types/components'],
+    // ['../dist/packages/elements/src', '../packages/core/types/components'],
     ['../dist/packages/composables/src', '../packages/core/types/composables'],
 ]
 

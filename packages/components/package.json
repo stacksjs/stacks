@@ -5,11 +5,11 @@
   "description": "A Vue Component Library source.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/vue#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/components#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": "packages/vue"
+    "directory": "packages/components"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
@@ -46,9 +46,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "unbuild",
-    "stub": "unbuild --stub",
-    "build:vite": "vite build"
+    "build": "vite build",
+    "stub": "unbuild --stub"
   },
   "devDependencies": {
     "typescript": "^4.7.3",
