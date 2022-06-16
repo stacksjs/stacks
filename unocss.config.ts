@@ -4,10 +4,10 @@ import {
   presetTypography,
   // presetWebFonts,
   presetWind,
-  transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
+import transformerCompileClass from '@unocss/transformer-compile-class'
 import { CLASS_PREFIX, CLASS_TRIGGER } from './config/constants'
 import { icons as collections, safelist, shortcuts } from './config/style'
 
@@ -42,8 +42,8 @@ export default defineConfig({
     transformerDirectives(),
     transformerVariantGroup(),
     transformerCompileClass({
-      trigger: CLASS_TRIGGER,
       classPrefix: CLASS_PREFIX,
+      trigger: CLASS_TRIGGER,
     }),
   ],
 

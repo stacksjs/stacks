@@ -26,7 +26,7 @@ const config: UserConfig = {
 
     Unocss({
       configFile: './unocss.config.ts',
-      mode: 'shadow-dom', // or 'vue-scoped'
+      mode: 'vue-scoped', // or 'shadow-dom'
     }),
 
     // https://github.com/antfu/unplugin-auto-import
