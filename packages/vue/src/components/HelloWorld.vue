@@ -4,7 +4,7 @@ const { greeting = 'Welcome!' } = defineProps<{
 }>()
 
 // reactive state
-let count = ref(0)
+const count = ref(0)
 
 // functions that mutate state and trigger updates
 function increment() {
@@ -24,9 +24,11 @@ onMounted(() => {
   <h1 class=":stacks: font-bold text-3xl text-red-800">
     {{ greeting }}
   </h1>
-  <button type="button"
+  <button
+    type="button"
     class=":stacks: bg-white border rounded-md font-medium border-gray-300 shadow-sm text-base py-2 px-4 text-gray-700 inline-flex items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-    @click="increment">
+    @click="increment"
+  >
     Count is: {{ count }}
   </button>
 </template>

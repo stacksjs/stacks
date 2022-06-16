@@ -44,7 +44,7 @@ const config: UserConfig = {
       extensions: ['vue'],
       dts: 'packages/core/types/components.d.ts',
     }),
-  ]
+  ],
 }
 
 export default defineConfig(({ command }) => {

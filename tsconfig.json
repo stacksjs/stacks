@@ -17,12 +17,12 @@
     "types": [
       "node",
       "vitest",
-      "vite/client",
+      "vite/client"
     ],
     "paths": {
       "~/*": [
         "packages/*"
-      ],
+      ]
     },
     "lib": [
       "esnext",
@@ -31,13 +31,10 @@
   },
   "include": [
     "packages/**/*.ts",
-    "packages/**/*.d.ts",
-    "packages/**/*.tsx",
     "packages/**/*.vue"
   ],
   "exclude": [
     "**/dist/**",
-    "**/node_modules/**",
-    "**/cypress/**"
+    "**/node_modules/**"
   ]
 }

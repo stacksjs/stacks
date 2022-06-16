@@ -4,15 +4,15 @@ import {
   presetTypography,
   // presetWebFonts,
   presetWind,
+  transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
-  transformerCompileClass,
 } from 'unocss'
 import { CLASS_PREFIX, CLASS_TRIGGER } from './config/constants'
 import { icons as collections, safelist, shortcuts } from './config/style'
 
 // eslint-disable-next-line no-console
-console.log('building');
+console.log('building')
 
 export default defineConfig({
   shortcuts,
