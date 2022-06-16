@@ -1,9 +1,7 @@
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
 import { alias } from './config/alias'
-import { plugins } from './packages/composables/src/stacks'
+import { Stacks } from './packages/core/src'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -16,25 +14,7 @@ const config: UserConfig = {
   },
 
   plugins: [
-    ...plugins('./unocss.config.ts'),
-
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: ['vue', '@vueuse/core', {
-        '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
-      }],
-      dts: 'packages/core/types/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-      },
-    }),
-
-    // https://github.com/antfu/unplugin-vue-components
-    Components({
-      dirs: ['packages/vue/src/components'],
-      extensions: ['vue'],
-      dts: 'packages/core/types/components.d.ts',
-    }),
+    Stacks(),
   ],
 }
 

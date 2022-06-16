@@ -151,6 +151,7 @@
     "useGamepad": true,
     "useGeolocation": true,
     "useIdle": true,
+    "useImage": true,
     "useInfiniteScroll": true,
     "useIntersectionObserver": true,
     "useInterval": true,

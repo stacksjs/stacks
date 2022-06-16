@@ -2,10 +2,10 @@
 // import path from 'path'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-// import Inspect from 'vite-plugin-inspect'
+import Inspect from 'vite-plugin-inspect'
 // import dts from 'vite-plugin-dts'
-// import AutoImport from 'unplugin-auto-import/vite'
-// import Components from 'unplugin-vue-components/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 import type { BuildOptions } from 'vite'
 import { VUE_PACKAGE_NAME } from '../../../config/constants'
 
@@ -68,7 +68,7 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
 //   }
 // }
 
-const plugins = (configFile: string) => [
+const Stacks = (configFile = './unocss.config.ts') => [
   Vue({
     template: {
       compilerOptions: {
@@ -78,32 +78,34 @@ const plugins = (configFile: string) => [
     },
   }),
 
+  Inspect(),
+
   Unocss({
     configFile,
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
   // https://github.com/antfu/unplugin-auto-import
-  // AutoImport({
-  //   imports: ['vue', '@vueuse/core', {
-  //     '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
-  //   }],
-  //   dts: 'packages/core/types/auto-imports.d.ts',
-  //   eslintrc: {
-  //     enabled: true,
-  //   },
-  // }),
+  AutoImport({
+    imports: ['vue', '@vueuse/core', {
+      '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
+    }],
+    dts: 'packages/core/types/auto-imports.d.ts',
+    eslintrc: {
+      enabled: true,
+    },
+  }),
 
-  // // https://github.com/antfu/unplugin-vue-components
-  // Components({
-  //   dirs: ['packages/vue/src/components'],
-  //   extensions: ['vue'],
-  //   dts: 'packages/core/types/components.d.ts',
-  // }),
+  // https://github.com/antfu/unplugin-vue-components
+  Components({
+    dirs: ['packages/vue/src/components'],
+    extensions: ['vue'],
+    dts: 'packages/core/types/components.d.ts',
+  }),
 ]
 
 export {
   buildVueComponents,
   // buildWebComponents,
-  plugins,
+  Stacks,
 }
