@@ -41,7 +41,7 @@
     "build": "esno scripts/run-build.mjs",
     "build:all": "pnpm fresh && pnpm -r --filter './packages/**' run build",
     "build:types": "pnpm fresh && need-to-finish-this",
-    "dev": "vite dev --open --port=3333",
+    "dev": "pnpm run stub",
     "dev:old": "pnpm run stub",
     "docs:dev": "pnpm --filter './apps/site' dev",
     "docs:build": "pnpm --filter './apps/site' build",
