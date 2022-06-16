@@ -34,7 +34,7 @@
       ],
       "@ow3/stacks-core": [
         "packages/stacks/src"
-      ],
+      ]
     },
     "lib": [
       "esnext",

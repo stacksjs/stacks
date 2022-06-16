@@ -1,9 +1,7 @@
-// import { ref } from 'vue'
-// import path from 'path'
+import { resolve } from 'path'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
-// import dts from 'vite-plugin-dts'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import type { BuildOptions } from 'vite'
@@ -68,7 +66,7 @@ function buildVueComponents(entry = 'index.ts'): BuildOptions {
 //   }
 // }
 
-const Stacks = (configFile = './unocss.config.ts') => [
+const Stacks = (configFile = 'unocss.config.ts') => [
   Vue({
     template: {
       compilerOptions: {
@@ -81,7 +79,7 @@ const Stacks = (configFile = './unocss.config.ts') => [
   Inspect(),
 
   Unocss({
-    configFile,
+    configFile: resolve(__dirname, configFile),
     mode: 'vue-scoped', // or 'shadow-dom'
   }),
 
@@ -90,9 +88,10 @@ const Stacks = (configFile = './unocss.config.ts') => [
     imports: ['vue', '@vueuse/core', {
       '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
     }],
-    dts: 'packages/core/types/auto-imports.d.ts',
+    dts: resolve(__dirname, '../types/auto-imports.d.ts'),
     eslintrc: {
       enabled: true,
+      filepath: resolve(__dirname, '../../../.eslintrc-auto-import.json'),
     },
   }),
 
@@ -100,7 +99,7 @@ const Stacks = (configFile = './unocss.config.ts') => [
   Components({
     dirs: ['packages/vue/src/components'],
     extensions: ['vue'],
-    dts: 'packages/core/types/components.d.ts',
+    dts: resolve(__dirname, '../types/components.d.ts'),
   }),
 ]
 

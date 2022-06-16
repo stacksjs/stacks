@@ -1,19 +1,19 @@
 {
-    "name": "playground",
-    "version": "0.0.0",
-    "private": true,
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "serve": "vite preview"
-    },
-    "dependencies": {
-        "@ow3/hello-world-vue": "workspace:*"
-    },
-    "devDependencies": {
-        "typescript": "^4.7.3",
-        "vite": "^2.9.12",
-        "vue": "^3.2.37",
-        "vue-tsc": "^0.37.8"
-    }
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite -c ../vite.config.ts",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@ow3/hello-world-vue": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3",
+    "vite": "^2.9.12",
+    "vue": "^3.2.37",
+    "vue-tsc": "^0.37.8"
+  }
 }
