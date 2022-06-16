@@ -31,7 +31,9 @@ const config: UserConfig = {
 
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
-      imports: ['vue', '@vueuse/core'],
+      imports: ['vue', '@vueuse/core', {
+        '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
+      }],
       dts: 'packages/core/types/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
@@ -48,7 +50,6 @@ const config: UserConfig = {
 }
 
 export default defineConfig(({ command }) => {
-  // // eslint-disable-next-line no-console
   // console.log('config is', config)
 
   if (command === 'serve')

@@ -1,10 +1,9 @@
 <script setup lang="ts">
+import { count } from '~/composables/src'
+
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
-
-// reactive state
-const count = ref(0)
 
 // functions that mutate state and trigger updates
 function increment() {
