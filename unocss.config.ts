@@ -14,7 +14,7 @@ import { icons as collections, safelist, shortcuts } from './config/style'
 // eslint-disable-next-line no-console
 console.log('building')
 
-export default defineConfig({
+const config = defineConfig({
   shortcuts,
 
   presets: [
@@ -49,3 +49,5 @@ export default defineConfig({
 
   safelist: safelist.split(' '),
 })
+
+export default config

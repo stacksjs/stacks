@@ -1,33 +1,22 @@
-import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import Unocss from 'unocss/vite'
+import { alias } from './config/alias'
+import { plugins } from './packages/composables/src/stacks'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
-    alias: {
-      '~': resolve(__dirname, '/packages'),
-    },
+    alias,
+  },
+
+  optimizeDeps: {
+    exclude: ['vue', '@vueuse/core', 'unocss/vite'],
   },
 
   plugins: [
-    Vue({
-      template: {
-        compilerOptions: {
-          // treat all tags with a dash as custom elements
-          isCustomElement: tag => tag.includes('hello-word'),
-        },
-      },
-    }),
-
-    Unocss({
-      configFile: './unocss.config.ts',
-      mode: 'vue-scoped', // or 'shadow-dom'
-    }),
+    ...plugins('./unocss.config.ts'),
 
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
@@ -49,8 +38,10 @@ const config: UserConfig = {
   ],
 }
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
   // console.log('config is', config)
+  // eslint-disable-next-line no-console
+  console.log('mode is', mode)
 
   if (command === 'serve')
     return config

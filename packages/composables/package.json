@@ -53,6 +53,8 @@
   },
   "devDependencies": {
     "@vueuse/core": "^8.6.0",
-    "unbuild": "^0.7.4"
+    "unbuild": "^0.7.4",
+    "vite": "^2.9.12",
+    "unocss": "^0.39.0"
   }
 }
