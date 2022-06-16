@@ -100,17 +100,11 @@ importers:
   examples/vue:
     specifiers:
       '@ow3/hello-world-vue': workspace:*
-      typescript: ^4.7.3
-      vite: ^2.9.12
-      vue: ^3.2.37
-      vue-tsc: ^0.37.8
+      '@ow3/stacks-core': workspace:*
     dependencies:
       '@ow3/hello-world-vue': link:../../packages/vue
     devDependencies:
-      typescript: 4.7.3
-      vite: 2.9.12
-      vue: 3.2.37
-      vue-tsc: 0.37.9_typescript@4.7.3
+      '@ow3/stacks-core': link:../../packages/core
 
   packages/composables:
     specifiers:
