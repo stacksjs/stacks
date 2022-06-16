@@ -30,6 +30,8 @@
     ]
   },
   "include": [
+    "apps/**/*.ts",
+    "apps/**/*.vue",
     "packages/**/*.ts",
     "packages/**/*.vue"
   ],
