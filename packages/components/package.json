@@ -45,7 +45,7 @@
     "pnpm": ">=7.2.1"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "unbuild --stub",
     "build": "vite build",
     "stub": "unbuild --stub"
   },

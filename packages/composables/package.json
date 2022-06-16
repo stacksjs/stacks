@@ -48,6 +48,7 @@
     "pnpm": ">=7.2.1"
   },
   "scripts": {
+    "dev": "unbuild --stub",
     "build": "unbuild",
     "stub": "unbuild --stub"
   },
