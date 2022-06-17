@@ -83,9 +83,9 @@
     "@unocss/transformer-compile-class": "^0.39.0",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.37",
-    "@vueuse/core": "^8.6.0",
+    "@vueuse/core": "^8.7.3",
     "brotli-size": "^4.0.0",
-    "bumpp": "^8.0.0",
+    "bumpp": "^8.2.0",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
     "cypress": "^10.1.0",
@@ -97,7 +97,7 @@
     "gzip-size": "^7.0.0",
     "inquirer": "^8.2.4",
     "jiti": "^1.13.0",
-    "lint-staged": "^13.0.1",
+    "lint-staged": "^13.0.2",
     "minimist": "^1.2.6",
     "prompts": "^2.4.2",
     "rimraf": "^3.0.2",
@@ -109,8 +109,8 @@
     "unplugin-vue-components": "^0.19.6",
     "vite": "^2.9.12",
     "vite-plugin-inspect": "^0.5.0",
-    "vitest": "^0.15.0",
-    "vue-tsc": "^0.37.8"
+    "vitest": "^0.15.1",
+    "vue-tsc": "^0.37.9"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",
