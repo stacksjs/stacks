@@ -1,70 +1,54 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "baseUrl": ".",
-    "rootDir": ".",
-    "outDir": "dist",
-    "target": "es2017",
+    "target": "esnext",
     "module": "esnext",
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "strict": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
     "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
     "types": [
       "node",
       "vitest",
       "vite/client"
     ],
-    "typeRoots": [
-      "packages/core/types",
-      "node_modules/@types"
-    ],
     "paths": {
-      "@ow3/hello-world-vue": [
-        "./packages/vue/src/index.ts"
+      "~/*": [
+        "packages/*"
       ],
-      "@ow3/hello-world-composable": [
-        "./packages/composables/src/index.ts"
+      "@ow3/hello-world-vue": [
+        "packages/components/src"
       ],
       "@ow3/hello-world-elements": [
-        "./packages/web-components/src/index.ts"
+        "packages/elements/src"
+      ],
+      "@ow3/hello-world-composable": [
+        "packages/composables/src"
       ],
       "@ow3/stacks-core": [
-        "./packages/core/src/index.ts"
+        "packages/stacks/src"
       ]
-    }
+    },
+    "lib": [
+      "esnext",
+      "dom"
+    ]
   },
+  "include": [
+    "apps/**/*.ts",
+    "apps/**/*.vue",
+    "packages/**/*.ts",
+    "packages/**/*.vue"
+  ],
   "exclude": [
     "**/dist/**",
-    "**/node_modules/**",
-    "**/tests/**"
-  ],
-  "include": [
-    "packages/**/*.ts",
-    "packages/**/*.d.ts",
-    "packages/**/*.vue"
+    "**/node_modules/**"
   ]
-  // "exclude": [
-  //   "**/dist/**",
-  //   "**/node_modules/**",
-  //   "**/playground/**",
-  //   "**/examples/**",
-  //   "**/tests/**",
-  // ],
-  // "include": [
-  //   "./apps/*",
-  //   "./config/*",
-  //   "./examples/*",
-  //   "./packages/**/*",
-  //   "./scripts/*"
-  // ],
 }

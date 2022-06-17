@@ -1,18 +1,17 @@
-# @ow3/vite-plugin-stacks
-<!-- # @ow3/vite-plugin-stacks -->
+# @ow3/stacks-core
 
-This package contains the "core" logic of this monorepo which is, ultimately, a Vite config.
+This package contains the "core" logic of this monorepo which is, ultimately, the build logic.
 
 This includes:
 
-- Vite plugin required to build the component library because it requires a custom build step
+- Vite plugin required to build the component library
 - an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
 - the library's TypeScript types
 
 ## 🤖 Usage
 
 ```bash
-# pnpm i -D @ow3/vite-plugin-stacks
+# pnpm i -D @ow3/stacks
 ```
 
 Learn more in the docs.

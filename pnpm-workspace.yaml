@@ -2,5 +2,4 @@ packages:
   - 'apps/**'
   - 'examples/**'
   - 'packages/**'
-  - playground
-  - '!**/tests/**'
+  - 'playground/**'

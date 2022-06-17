@@ -1,10 +1,15 @@
+import { resolve } from 'path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import { Stacks, alias } from '@ow3/stacks-core'
+import { alias } from './config/alias'
+import { Stacks, buildVueComponents } from './packages/core/src'
+
+const p = resolve(__dirname, 'packages/components/src/index.ts')
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
+    dedupe: ['vue'],
     alias,
   },
 
@@ -15,6 +20,8 @@ const config: UserConfig = {
   plugins: [
     Stacks(),
   ],
+
+  build: buildVueComponents(p),
 }
 
 export default defineConfig(({ command, mode }) => {

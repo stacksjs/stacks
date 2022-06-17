@@ -9,7 +9,7 @@ dist-ssr
 .pnpm-debug.log
 
 # Cypress
-tests/cypress/downloads
-tests/cypress/fixtures
-tests/cypress/plugins
-tests/cypress/support
+/tests/cypress/downloads
+/tests/cypress/fixtures
+/tests/cypress/plugins
+/tests/cypress/support

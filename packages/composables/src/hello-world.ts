@@ -8,12 +8,6 @@ function increment() {
   count.value++
 }
 
-// lifecycle hooks
-// onMounted(() => {
-//   // eslint-disable-next-line no-console
-//   console.log(`The initial count is ${count}.`)
-// })
-
 export {
   count,
   increment,

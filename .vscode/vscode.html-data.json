@@ -3,11 +3,11 @@
   "tags": [
     {
       "name": "hello-world",
-      "description": "The Hello World custom element, built via this library. (You will want to keep adding to this list of attributes.)",
+      "description": "The Hello World custom element, built via this framework. (You will want to keep adding to this list of attributes.)",
       "attributes": [
         {
-          "name": "name",
-          "description": "The name of the person to be greeted."
+          "name": "greeting",
+          "description": "The value of how to greet a person."
         }
       ]
     }

@@ -1,12 +1,14 @@
 # Stacks Examples
 
-This folder contains all the examples utilizing the Stacks framework.
+This folder contains all the examples utilizing the Stacks framework and it can be used to easily create examples for your library.
+
+Examples for your component library are very important in order to find adoption. Your goal is to create a library that is as easy to use as possible, while also ensuring the integration is seamless.
 
 Currently, the following examples are covered:
 
 - [x] Vue
 - [x] Web Components
-- [ ] Svelte
+- [ ] Nuxt
 - [ ] Svelte
 - [ ] React
 - [ ] Next
@@ -17,7 +19,7 @@ If any of these uncompleted examples look like a fun project to you, any help is
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 
