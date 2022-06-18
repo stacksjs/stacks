@@ -1,3 +1,12 @@
+## [0.17.1](https://github.com/openwebstacks/stacks-framework/compare/v0.17.0...v0.17.1) (2022-06-18)
+
+
+### Bug Fixes
+
+* **release:** use env value ([b4785ea](https://github.com/openwebstacks/stacks-framework/commit/b4785eaa2828b305a2212292bd6d40a31ad9f48d))
+
+
+
 # [0.17.0](https://github.com/openwebstacks/stacks-framework/compare/v0.16.0...v0.17.0) (2022-06-18)
 
 
