@@ -47,7 +47,7 @@ module.exports = {
     ],
     useEmoji: false,
     themeColorCode: '',
-    scopes: ['', 'deps', 'example', 'release', 'tooling', 'cleanup', 'readme', 'build', ...packages, ...composables],
+    scopes: ['', 'core', 'deps', 'example', 'play', 'release', 'cleanup', 'readme', 'build', ...packages, ...composables],
     allowCustomScopes: true,
     allowEmptyScopes: true,
     customScopesAlign: 'bottom',
