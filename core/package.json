@@ -51,11 +51,11 @@
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@unocss/preset-icons": "^0.39.1",
-    "@unocss/transformer-compile-class": "^0.39.1",
+    "@unocss/preset-icons": "^0.39.2",
+    "@unocss/transformer-compile-class": "^0.39.2",
     "@vitejs/plugin-vue": "^2.3.3",
     "unbuild": "^0.7.4",
-    "unocss": "^0.39.1",
+    "unocss": "^0.39.2",
     "unplugin-auto-import": "^0.8.8",
     "unplugin-vue-components": "^0.19.6",
     "vite": "^2.9.12",
