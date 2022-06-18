@@ -104,6 +104,9 @@
     "vitest": "^0.15.1",
     "vue-tsc": "^0.37.9"
   },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
+  },
   "config": {
     "commitizen": {
       "path": "node_modules/cz-git"
