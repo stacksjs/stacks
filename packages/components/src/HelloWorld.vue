@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { count, increment } from '../../composables/src'
+import { count, increment } from '~/composables/src'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string

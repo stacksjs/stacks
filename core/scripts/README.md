@@ -4,7 +4,7 @@ This folder contains scripts used by the project. Check the package.json in the 
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](../.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 

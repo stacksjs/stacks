@@ -1,8 +1,6 @@
 # Stacks Config
 
-This folder contains your Stacks configuration. Feel free to adjust to suit your needs.
-
-WIP
+This folder contains your Stacks configuration files. Each file comes with its own description.
 
 ## 💪🏼 Contributing
 

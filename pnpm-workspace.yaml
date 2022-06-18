@@ -1,5 +1,7 @@
 packages:
   - 'apps/**'
+  - 'config/**'
+  - 'core/**'
   - 'examples/**'
   - 'packages/**'
   - 'playground/**'

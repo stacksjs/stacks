@@ -1,20 +1,12 @@
-# @ow3/stacks-core
+# @ow3/playground
 
-This package contains the "core" logic of this monorepo which is, ultimately, the build logic.
+This folder contains the files for your development playground.
 
-This includes:
+## How is the Playground different from an example?
 
-- Vite plugin required to build the component library
-- an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
-- the library's TypeScript types
+The playground is almost the "same" as an example. The difference lies in the dependencies that are required: the playground requires a locally symlinked version (enabled via `pnpm run dev`'s passive watching) and an examples requires the dependencies direct from npm.
 
-## 🤖 Usage
-
-```bash
-# pnpm i -D @ow3/stacks
-```
-
-Learn more in the docs.
+For those reasons, the playground is perfectly suited for your local development.
 
 ## 🧪 Testing
 
@@ -28,7 +20,7 @@ Please see our [releases](https://github.com/openwebstacks/vue-components-librar
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 
