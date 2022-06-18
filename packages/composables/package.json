@@ -55,7 +55,7 @@
   "devDependencies": {
     "@vueuse/core": "^8.7.3",
     "unbuild": "^0.7.4",
-    "unocss": "^0.39.0",
+    "unocss": "^0.39.1",
     "vite": "^2.9.12"
   }
 }
