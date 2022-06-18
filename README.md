@@ -92,7 +92,7 @@ Read more about the setup & tips in the docs.
 - [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
 - [Vue](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
 - [UnoCSS](https://github.com/unocss/unocss) - create & manage your own style guide with ease (e.g. Tailwind CSS)
-- [Commitizen & commitlint](https://www.npmjs.com/package/@commitlint/cz-commitlint) - automate git commits, versioning, and CHANGELOG generation
+- [git-cz](https://www.npmjs.com/package/git-cz) - simplify semantic git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
 - [Cypress](https://cypress.io/) - e2e testing
 - [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates

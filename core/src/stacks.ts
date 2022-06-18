@@ -5,7 +5,7 @@ import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import type { BuildOptions } from 'vite'
-import { VUE_PACKAGE_NAME } from '../../../config/constants'
+import { VUE_PACKAGE_NAME } from '../../config/env'
 
 function buildVueComponents(entry = 'index.ts'): BuildOptions {
   return {
@@ -88,7 +88,7 @@ const Stacks = (configFile = 'unocss.config.ts') => [
     imports: ['vue', '@vueuse/core', {
       '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
     }],
-    dts: resolve(__dirname, '../types/auto-imports.d.ts'),
+    dts: resolve(__dirname, '/types/auto-imports.d.ts'),
     eslintrc: {
       enabled: true,
       filepath: resolve(__dirname, '../../../.eslintrc-auto-import.json'),
@@ -99,7 +99,7 @@ const Stacks = (configFile = 'unocss.config.ts') => [
   Components({
     dirs: ['packages/components/src'],
     extensions: ['vue'],
-    dts: resolve(__dirname, '../types/components.d.ts'),
+    dts: resolve(__dirname, './types/components.d.ts'),
   }),
 ]
 

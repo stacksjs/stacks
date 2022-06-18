@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite -c ../vite.config.ts",
     "build": "vite build",
+    "dev": "vite -c ../core/vite.config.ts",
     "serve": "vite preview"
   },
   "dependencies": {
     "@ow3/hello-world-vue": "workspace:*"
   },
   "devDependencies": {
-    "@ow3/stacks-core": "workspace:*"
+    "@ow3/stacks": "workspace:*"
   }
 }

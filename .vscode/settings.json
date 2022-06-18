@@ -70,6 +70,8 @@
     "corepack",
     "changelogithub",
     "dessant",
-    "jiti"
+    "jiti",
+    "treeshaking",
+    "breakline"
   ]
 }

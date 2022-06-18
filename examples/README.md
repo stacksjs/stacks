@@ -17,6 +17,12 @@ Currently, the following examples are covered:
 
 If any of these uncompleted examples look like a fun project to you, any help is appreciated. 😊
 
+## How is the Playground different from an example?
+
+The playground is almost the "same" as an example. The difference lies in the dependencies that are required: the playground requires a locally symlinked version (enabled via `pnpm run dev`'s passive watching) and an examples requires the dependencies direct from npm.
+
+For those reasons, the playground is perfectly suited for your local development.
+
 ## 💪🏼 Contributing
 
 Please see [CONTRIBUTING](../.github/CONTRIBUTING.md) for details.

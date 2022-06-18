@@ -32,7 +32,7 @@
       "@ow3/hello-world-composable": [
         "packages/composables/src"
       ],
-      "@ow3/stacks-core": [
+      "@ow3/stacks": [
         "packages/stacks/src"
       ]
     },
