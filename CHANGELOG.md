@@ -1,3 +1,17 @@
+# [0.17.0](https://github.com/openwebstacks/stacks-framework/compare/v0.16.0...v0.17.0) (2022-06-18)
+
+
+### Bug Fixes
+
+* lint-staged ([5de3c19](https://github.com/openwebstacks/stacks-framework/commit/5de3c19b67b0c60f2ebd91142fc27c889784820d))
+
+
+### Features
+
+* **core:** add core logic ([#87](https://github.com/openwebstacks/stacks-framework/issues/87)) ([0b037f9](https://github.com/openwebstacks/stacks-framework/commit/0b037f9534303732050d91eb158ab98f436650c5))
+
+
+
 # [0.16.0](https://github.com/openwebstacks/stacks-framework/compare/v0.15.1...v0.16.0) (2022-06-10)
 
 
@@ -273,3 +287,6 @@
 
 
 # 0.1.0 (2022-04-26)
+
+
+
