@@ -15,7 +15,7 @@ module.exports = {
     'scope-enum': [
       2, 'always',
       [
-        '', 'deps', 'example', 'release', 'tooling', 'cleanup', 'readme', 'build', ...packages, ...composables,
+        '', 'core', 'config', 'deps', 'example', 'play', 'release', 'tooling', 'cleanup', 'readme', 'build', ...packages, ...composables,
       ],
     ],
   },

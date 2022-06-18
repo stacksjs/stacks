@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['./core/changelog.js'],
+  extends: ['./config/changelog.js'],
 }
