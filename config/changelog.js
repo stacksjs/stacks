@@ -9,15 +9,15 @@ const composables = fs.readdirSync(path.resolve(__dirname, '../packages/composab
   .map(item => item.replace(/.ts/g, ''))
   .filter(item => item !== 'index')
 
+const scopes = ['', 'ci', 'core', 'config', 'deps', 'example', 'play', 'release', 'readme', 'build', ...packages, ...composables]
+
 /** @type {import('cz-git').UserConfig} */
 module.exports = {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
     'scope-enum': [
       2, 'always',
-      [
-        '', 'core', 'config', 'deps', 'example', 'play', 'release', 'tooling', 'cleanup', 'readme', 'build', ...packages, ...composables,
-      ],
+      scopes,
     ],
   },
   prompt: {
@@ -48,7 +48,7 @@ module.exports = {
     ],
     useEmoji: false,
     themeColorCode: '',
-    scopes: ['', 'core', 'deps', 'example', 'play', 'release', 'cleanup', 'readme', 'build', ...packages, ...composables],
+    scopes,
     allowCustomScopes: true,
     allowEmptyScopes: true,
     customScopesAlign: 'bottom',
