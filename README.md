@@ -10,25 +10,25 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 # The Modern Component Library
 
-The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles you need to get started, and be productive.
+The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles to get started, and be productive.
 
-> _The clever way to build component libraries._ - Chris Breuer
+> _The clever way to your build component libraries._
 
 ## ☘️ Features
 
-The ultimate goal of this framework is to assist in creating an interoperable library via an optimized build (Vite & unbuild) & DX, to reach the broadest developer audience.
+The ultimate goal of this framework, Stacks, is to help you create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
 
 - simply & rapidly develop component libraries
-- a beautiful Developer Experience (DX)
+- a beautiful Developer Experience (DX) provided by Vue, Vite & TypeScript
 - automated git commits, versioning, and pretty changelog generations (markdown & GitHub releases)
 - automated npm package releases
-- optimized & automated PR dependency updates
-- next-generation docs generator
-- create your own style guide with ease via UnoCSS (e.g. Tailwind CSS)
+- optimized & automated GitHub PR dependency updates
+- optimized VitePress setup to document your library
+- style with ease via UnoCSS (e.g. Tailwind CSS)
 
 ## 💡 Get Started
 
-It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
+It's easy to get your component library started with framework. The only prerequisite is a basic understanding of how to work with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
 
 ```bash
 # you may "Use this template" via the button in top right corner of this page
@@ -40,7 +40,7 @@ npm run setup # WIP
 
 ## 🤖 Usage
 
-The `package.json` contains some useful snippets you likely want to be aware of. Some commonly used ones are:
+Some commonly used scripts are:
 
 ```bash
 pnpm install # install all dependencies (for all packages)
@@ -59,6 +59,8 @@ pnpm docs:dev # starts local server for the documentation site
 pnpm docs:build # builds the documentation site
 pnpm docs:serve # serves the documentation site
 ```
+
+_The `package.json` may contain additional useful snippets you want to be aware of._
 
 Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's simple easy to use:
 

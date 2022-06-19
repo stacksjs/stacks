@@ -1,5 +1,6 @@
-<script setup lang="ts">
-import { count, increment } from '~/composables/src'
+<script setup lang='ts'>
+import { onMounted } from 'vue'
+import { count, increment } from '~/composables'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string

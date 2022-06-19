@@ -1,10 +1,5 @@
-import { resolve } from 'path'
-import type { UserConfig } from 'vite'
-import { defineConfig } from 'vite'
-import { alias } from '../config/alias'
-import { Stacks, buildVueComponents } from './src'
-
-const p = resolve(__dirname, 'packages/components/src/index.ts')
+import type { UserConfig } from './stacks'
+import { Stacks, alias, defineConfig, buildVueComponents as vueComponents } from './stacks'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -21,7 +16,7 @@ const config: UserConfig = {
     Stacks(),
   ],
 
-  build: buildVueComponents(p),
+  build: vueComponents(),
 }
 
 export default defineConfig(({ command }) => {

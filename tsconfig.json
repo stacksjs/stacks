@@ -24,16 +24,16 @@
         "packages/*"
       ],
       "@ow3/hello-world-vue": [
-        "packages/components/src"
+        "packages/components"
       ],
       "@ow3/hello-world-elements": [
-        "packages/elements/src"
+        "packages/elements"
       ],
       "@ow3/hello-world-composable": [
-        "packages/composables/src"
+        "packages/composables"
       ],
       "@ow3/stacks": [
-        "packages/stacks/src"
+        "core"
       ]
     },
     "lib": [

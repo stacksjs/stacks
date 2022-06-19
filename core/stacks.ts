@@ -1,13 +1,21 @@
 import { resolve } from 'path'
+import type { BuildOptions, UserConfig } from 'vite'
+import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import type { BuildOptions } from 'vite'
-import { VUE_PACKAGE_NAME } from '../../config/env'
+import { VUE_PACKAGE_NAME } from '../config/env'
+import { alias } from '../config/alias'
 
-function buildVueComponents(entry = 'index.ts'): BuildOptions {
+function buildVueComponents(entry?: string): BuildOptions {
+  if (!entry)
+    entry = resolve(__dirname, '../packages/components/index.ts')
+
+  // eslint-disable-next-line no-console
+  console.log('buildVueComponents with entry of:', entry)
+
   return {
     lib: {
       entry,
@@ -107,4 +115,8 @@ export {
   buildVueComponents,
   // buildWebComponents,
   Stacks,
+  alias,
+  resolve,
+  defineConfig,
+  UserConfig,
 }

@@ -4,9 +4,9 @@ import { join, resolve } from 'path'
 
 // relative to scripts directory
 const destinations = [
-  // ['../dist/packages/components/src', '../packages/core/types/components'],
-  // ['../dist/packages/elements/src', '../packages/core/types/components'],
-  ['../dist/packages/composables/src', '../packages/core/types/composables'],
+  // ['../dist/packages/components', '../packages/core/types/components'],
+  // ['../dist/packages/elements', '../packages/core/types/components'],
+  ['../dist/packages/composables', '../packages/core/types/composables'],
 ]
 
 const copyRecursiveSync = function (src, dest) {
