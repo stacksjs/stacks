@@ -1,7 +1,5 @@
 <p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
 
-_Under heavy development during this week, drilling down on the "closer-to-final" API to create the most simple & reusable component library kit for developers. Blog post incoming as well—and until then, wip commits it is._
-
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
@@ -12,18 +10,18 @@ _Under heavy development during this week, drilling down on the "closer-to-final
 
 The Stacks Framework helps kick-start development of your next component library, in a monorepo type-of-way, pre-configured with all the bells & whistles to get started, and be productive.
 
-> _The clever way to your build component libraries._
+> _The clever way to build your component libraries._
 
 ## ☘️ Features
 
-The ultimate goal of this framework, Stacks, is to help you create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
+The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types. Other core features include:
 
 - automatically builds Vue 2, 3 & Web Component libraries for you
 - simply & rapidly develop component libraries
 - a beautiful Developer Experience (DX)
 - style with ease via UnoCSS _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
 - a modern git commit process
-- automated npm package releases & versioning
+- automated npm package releases & semver versioning
 - pretty changelog generations _(markdown & GitHub releases)_
 - automated type generations for your components & composables
 - optimized & automated GitHub PR dependency updates
