@@ -46,7 +46,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "vite build",
+    "build": "vite build -c ../../core/vite.config.ts",
     "build:unbuild": "unbuild",
     "stub": "unbuild --stub"
   },

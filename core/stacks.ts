@@ -74,12 +74,12 @@ function buildVueComponents(entry?: string): BuildOptions {
 //   }
 // }
 
-const Stacks = (configFile = 'unocss.config.ts') => [
+const Stacks = (configFile = './unocss.config.ts') => [
   Vue({
     template: {
       compilerOptions: {
         // treat all tags with a dash as custom elements
-        isCustomElement: tag => tag.includes('hello-word'),
+        isCustomElement: tag => tag.includes('hello-world'),
       },
     },
   }),
@@ -96,16 +96,16 @@ const Stacks = (configFile = 'unocss.config.ts') => [
     imports: ['vue', '@vueuse/core', {
       '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
     }],
-    dts: resolve(__dirname, '/types/auto-imports.d.ts'),
+    dts: resolve(__dirname, './types/auto-imports.d.ts'),
     eslintrc: {
       enabled: true,
-      filepath: resolve(__dirname, '../../../.eslintrc-auto-import.json'),
+      filepath: resolve(__dirname, './.eslintrc-auto-import.json'),
     },
   }),
 
   // https://github.com/antfu/unplugin-vue-components
   Components({
-    dirs: ['packages/components/src'],
+    dirs: ['../../packages/components'],
     extensions: ['vue'],
     dts: resolve(__dirname, './types/components.d.ts'),
   }),

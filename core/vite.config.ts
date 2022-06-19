@@ -20,7 +20,9 @@ const config: UserConfig = {
 }
 
 export default defineConfig(({ command }) => {
-  // console.log('config is', config)
+  // eslint-disable-next-line no-console
+  console.log('config is', config)
+
   if (command === 'serve')
     return config
 

@@ -4,7 +4,7 @@ import { alias } from '../../config/alias'
 export default defineBuildConfig({
   alias,
   entries: [
-    'src/index.ts',
+    'index.ts',
   ],
   // clean: true,
   declaration: true,
