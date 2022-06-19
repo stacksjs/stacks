@@ -9,7 +9,7 @@ const composables = fs.readdirSync(path.resolve(__dirname, '../packages/composab
   .map(item => item.replace(/.ts/g, ''))
   .filter(item => item !== 'index')
 
-const scopes = ['', 'ci', 'core', 'config', 'deps', 'example', 'play', 'release', 'readme', 'build', ...packages, ...composables]
+const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...packages, ...composables]
 
 /** @type {import('cz-git').UserConfig} */
 module.exports = {
