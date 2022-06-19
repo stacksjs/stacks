@@ -2,7 +2,7 @@
   "name": "@ow3/hello-world-composable",
   "version": "0.16.0",
   "packageManager": "pnpm@7.3.0",
-  "description": "A dummy composable.",
+  "description": "A dummy library of composables.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/composables#readme",
@@ -15,15 +15,15 @@
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
-    "component",
+    "composable",
     "library",
     "vue",
     "typescript",
     "javascript",
     "starter",
     "kit",
-    "composable",
     "package",
+    "components",
     "web components",
     "sfcs"
   ],
@@ -54,8 +54,6 @@
   },
   "devDependencies": {
     "@vueuse/core": "^8.7.4",
-    "unbuild": "^0.7.4",
-    "unocss": "^0.39.3",
-    "vite": "^2.9.12"
+    "unbuild": "^0.7.4"
   }
 }

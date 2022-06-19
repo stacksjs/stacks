@@ -126,13 +126,9 @@ importers:
     specifiers:
       '@vueuse/core': ^8.7.4
       unbuild: ^0.7.4
-      unocss: ^0.39.3
-      vite: ^2.9.12
     devDependencies:
       '@vueuse/core': 8.7.4_vue@3.2.37
       unbuild: 0.7.4
-      unocss: 0.39.3_vite@2.9.12
-      vite: 2.9.12
 
   packages/elements:
     specifiers:
