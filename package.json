@@ -29,9 +29,9 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "workspaces": [
+    ".stacks/*",
     "apps/*",
     "config/*",
-    "core/*",
     "examples/*",
     "packages/*",
     "playground"

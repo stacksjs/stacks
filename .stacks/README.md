@@ -1,6 +1,6 @@
 # @ow3/stacks
 
-This package contains the "core" logic of this monorepo which is, ultimately, the build logic.
+This package contains the "core" logic of this monorepo which is, ultimately, the build logic (excluding the VS Code (IDE) setup).
 
 This includes:
 

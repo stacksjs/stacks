@@ -33,7 +33,7 @@
         "packages/composables"
       ],
       "@ow3/stacks": [
-        "core"
+        ".stacks"
       ]
     },
     "lib": [
@@ -42,8 +42,8 @@
     ]
   },
   "include": [
-    "core/**/*.ts",
-    "core/**/*.json",
+    ".stacks/**/*.ts",
+    ".stacks/**/*.json",
     "apps/**/*.ts",
     "apps/**/*.vue",
     "apps/**/*.json",

@@ -10,5 +10,5 @@ export const alias: Record<string, string> = {
   '@ow3/hello-world-vue': r('../packages/components'),
   '@ow3/hello-world-elements': r('../packages/elements'),
   '@ow3/hello-world-composable': r('../packages/composables'),
-  '@ow3/stacks': r('../core'),
+  '@ow3/stacks': r('../.stacks'),
 }
