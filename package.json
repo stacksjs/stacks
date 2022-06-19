@@ -101,7 +101,7 @@
     "vite": "^2.9.12",
     "vite-plugin-inspect": "^0.5.0",
     "vitest": "^0.15.1",
-    "vue-tsc": "^0.38.0"
+    "vue-tsc": "^0.38.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
