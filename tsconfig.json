@@ -42,10 +42,14 @@
     ]
   },
   "include": [
+    "core/**/*.ts",
+    "core/**/*.json",
     "apps/**/*.ts",
     "apps/**/*.vue",
+    "apps/**/*.json",
     "packages/**/*.ts",
-    "packages/**/*.vue"
+    "packages/**/*.vue",
+    "packages/**/*.json",
   ],
   "exclude": [
     "**/dist/**",

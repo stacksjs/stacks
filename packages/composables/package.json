@@ -49,7 +49,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild",
+    "build": "unbuild ../../core",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
