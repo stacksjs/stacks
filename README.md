@@ -18,13 +18,18 @@ The Stacks Framework helps kick-start development of your next component library
 
 The ultimate goal of this framework, Stacks, is to help you create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
 
+- automatically builds Vue 2, 3 & Web Component libraries for you
 - simply & rapidly develop component libraries
-- a beautiful Developer Experience (DX) provided by Vue, Vite & TypeScript
-- automated git commits, versioning, and pretty changelog generations (markdown & GitHub releases)
-- automated npm package releases
+- a beautiful Developer Experience (DX)
+- style with ease via UnoCSS _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
+- a modern git commit process
+- automated npm package releases & versioning
+- pretty changelog generations _(markdown & GitHub releases)_
+- automated type generations for your components & composables
 - optimized & automated GitHub PR dependency updates
-- optimized VitePress setup to document your library
-- style with ease via UnoCSS (e.g. Tailwind CSS)
+- optimized VitePress setup to present your library
+
+And all this provided by Vue, Vite, TypeScript & Stacks.
 
 ## 💡 Get Started
 
@@ -89,11 +94,11 @@ Read more about the setup & tips in the docs.
 
 ### Developer Experience (DX)
 
-- [TypeScript 4.7](https://www.typescriptlang.org/) - automatically be fully typed
+- [TypeScript 4.7](https://www.typescriptlang.org/)
 - [Vite 2.9](https://vitejs.dev/) - blazing fast build tool
 - [unbuild](https://github.com/unjs/unbuild) - a unified JS/TS build system & "passive watching"
 - [Vue](https://vuejs.org/) - UI framework (make easy use of Vue's powerful SFCs)
-- [UnoCSS](https://github.com/unocss/unocss) - create & manage your own style guide with ease (e.g. Tailwind CSS)
+- [UnoCSS](https://github.com/unocss/unocss) - create & manage your own style guide with ease
 - [Commitizen & git-cz](https://www.npmjs.com/package/git-cz) - simplify semantic git commits, versioning, and CHANGELOG generation
 - [Vitest](https://github.com/vitest-dev/vitest) - unit testing powered by Vite
 - [Cypress](https://cypress.io/) - e2e testing

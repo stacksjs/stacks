@@ -49,7 +49,7 @@
     "apps/**/*.json",
     "packages/**/*.ts",
     "packages/**/*.vue",
-    "packages/**/*.json",
+    "packages/**/*.json"
   ],
   "exclude": [
     "**/dist/**",
