@@ -61,7 +61,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "play": "pnpm --filter './playground' dev",
-    "prepublishOnly": "pnpm i && pnpm run build",
     "release": "npx bumpp package.json .stacks/package.json packages/*/package.json --execute 'pnpm run changelog' --all",
     "size": "esno .stacks/scripts/size.ts",
     "stub": "pnpm -r --parallel run stub",

@@ -24,6 +24,12 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build the release
+        run: pnpm run build
+
       - name: Publish to npm
         run: pnpm -r --filter './packages/**' --filter './.stacks' publish --access public --no-git-checks
         env:
