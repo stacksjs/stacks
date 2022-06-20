@@ -1,3 +1,12 @@
+## [0.20.6](https://github.com/openwebstacks/stacks-framework/compare/v0.20.5...v0.20.6) (2022-06-20)
+
+
+### Bug Fixes
+
+* **ci:** remove `prepublishOnly` hook ([488e3b9](https://github.com/openwebstacks/stacks-framework/commit/488e3b9eeee0a175a4852b9cb9314a0d38d0f882))
+
+
+
 ## [0.20.5](https://github.com/openwebstacks/stacks-framework/compare/v0.20.4...v0.20.5) (2022-06-20)
 
 
