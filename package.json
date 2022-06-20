@@ -1,6 +1,6 @@
 {
   "name": "@ow3/monorepo",
-  "version": "0.20.4",
+  "version": "0.20.5",
   "private": true,
   "packageManager": "pnpm@7.3.0",
   "description": "The easy way to start your component library stack.",
