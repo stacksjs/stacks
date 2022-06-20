@@ -1,10 +1,10 @@
-import type { UserConfig } from 'vite'
-import { defineConfig } from 'vite'
-import { Stacks, alias } from '@ow3/stacks'
+import type { UserConfig } from '../../stacks'
+import { Stacks, alias, defineConfig, buildWebComponents as webComponents } from '../../stacks'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {
+    dedupe: ['vue'],
     alias,
   },
 
@@ -15,12 +15,11 @@ const config: UserConfig = {
   plugins: [
     Stacks(),
   ],
+
+  build: webComponents(),
 }
 
-export default defineConfig(({ command, mode }) => {
-  // eslint-disable-next-line no-console
-  console.log('mode is', mode)
-
+export default defineConfig(({ command }) => {
   if (command === 'serve')
     return config
 

@@ -42,8 +42,10 @@
   },
   "scripts": {
     "build": "pnpm fresh && pnpm -r --filter './packages/**' run build",
+    "build:composables": "pnpm --filter './packages/composables' run build",
     "build:components": "pnpm --filter './packages/components' run build",
-    "build:types": "need-to-finish-this",
+    "build:elements": "pnpm --filter './packages/elements' run build",
+    "build:types": "wip",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "commit": "git cz",
     "coverage": "vitest run --coverage",
@@ -52,20 +54,20 @@
     "docs:build": "pnpm --filter './apps/site' build",
     "docs:dev": "pnpm --filter './apps/site' dev",
     "docs:serve": "pnpm --filter './apps/site' serve",
-    "example": "esno core/scripts/run-example.ts",
-    "fresh": "rimraf apps/site/node_modules core/types/composables/* core/types/components/* packages/**/node_modules examples/**/node_modules core/node_modules node_modules/ pnpm-lock.yaml && pnpm i -r",
-    "preinstall": "esno core/scripts/check-for-pnpm.ts && esno core/scripts/check-node-version.ts",
+    "example": "esno .stacks/scripts/run-example.ts",
+    "fresh": "rimraf apps/site/node_modules .stacks/types/composables/* .stacks/types/components/* packages/**/node_modules examples/**/node_modules .stacks/node_modules node_modules/ pnpm-lock.yaml && pnpm i -r",
+    "preinstall": "esno .stacks/scripts/check-for-pnpm.ts && esno .stacks/scripts/check-node-version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "play": "pnpm --filter './playground' dev",
     "release": "npx bumpp package.json packages/*/package.json --execute 'pnpm run changelog' --all",
-    "size": "esno core/scripts/size.ts",
+    "size": "esno .stacks/scripts/size.ts",
     "stub": "pnpm -r --parallel run stub",
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:e2e": "cypress open",
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
-    "types:fix": "esno core/scripts/fix-types.ts"
+    "types:fix": "esno .stacks/scripts/fix-types.ts"
   },
   "dependencies": {
     "vue": "^3.2.37"

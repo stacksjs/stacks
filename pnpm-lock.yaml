@@ -71,13 +71,7 @@ importers:
       vitest: 0.15.1
       vue-tsc: 0.38.1_typescript@4.7.4
 
-  apps/site:
-    specifiers:
-      vitepress: 1.0.0-alpha.2
-    dependencies:
-      vitepress: 1.0.0-alpha.2_twyhzqqpkwvvgrmyeapdo6i4my
-
-  core:
+  .stacks:
     specifiers:
       '@unocss/preset-icons': ^0.39.3
       '@unocss/transformer-compile-class': ^0.39.3
@@ -99,6 +93,12 @@ importers:
       vite: 2.9.12
       vite-plugin-inspect: 0.5.0_vite@2.9.12
 
+  apps/site:
+    specifiers:
+      vitepress: 1.0.0-alpha.2
+    dependencies:
+      vitepress: 1.0.0-alpha.2_twyhzqqpkwvvgrmyeapdo6i4my
+
   examples/vue:
     specifiers:
       '@ow3/hello-world-vue': workspace:*
@@ -106,7 +106,7 @@ importers:
     dependencies:
       '@ow3/hello-world-vue': link:../../packages/components
     devDependencies:
-      '@ow3/stacks': link:../../core
+      '@ow3/stacks': link:../../.stacks
 
   packages/components:
     specifiers:
@@ -139,7 +139,7 @@ importers:
     dependencies:
       '@ow3/hello-world-vue': link:../components
     devDependencies:
-      '@ow3/stacks': link:../../core
+      '@ow3/stacks': link:../../.stacks
       unbuild: 0.7.4
       vite: 2.9.12
 

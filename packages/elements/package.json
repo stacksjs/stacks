@@ -46,8 +46,8 @@
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "build": "vite build",
     "dev": "unbuild --stub",
+    "build": "vite build -c ../../.stacks/builds/elements/vite.config.ts",
     "stub": "unbuild --stub"
   },
   "dependencies": {

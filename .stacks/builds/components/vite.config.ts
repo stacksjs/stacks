@@ -1,5 +1,5 @@
-import type { UserConfig } from './stacks'
-import { Stacks, alias, defineConfig, buildVueComponents as vueComponents } from './stacks'
+import type { UserConfig } from '../../stacks'
+import { Stacks, alias, defineConfig, buildVueComponents as vueComponents } from '../../stacks'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -20,9 +20,6 @@ const config: UserConfig = {
 }
 
 export default defineConfig(({ command }) => {
-  // eslint-disable-next-line no-console
-  console.log('config is', config)
-
   if (command === 'serve')
     return config
 

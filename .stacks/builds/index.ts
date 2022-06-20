@@ -1,14 +1,11 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
-import { alias } from '../config/alias'
-import { VUE_PACKAGE_NAME } from '../config/env'
+import { alias } from '../alias'
+import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../config/env'
 
 function buildVueComponents(entry?: string): BuildOptions {
   if (!entry)
-    entry = resolve(__dirname, '../packages/components/index.ts')
-
-  // eslint-disable-next-line no-console
-  console.log('buildVueComponents with entry of:', entry)
+    entry = resolve(__dirname, '../../packages/components/index.ts')
 
   return {
     lib: {
@@ -43,29 +40,32 @@ function buildVueComponents(entry?: string): BuildOptions {
   }
 }
 
-// function buildWebComponents(entry: string): BuildOptions {
-//   return {
-//     lib: {
-//       entry: resolve(__dirname, entry),
-//       name: WEB_COMPONENTS_PACKAGE_NAME,
-//       formats: ['cjs', 'es'],
-//       fileName: (format: string) => {
-//         if (format === 'es')
-//           return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
+function buildWebComponents(entry?: string): BuildOptions {
+  if (!entry)
+    entry = resolve(__dirname, '../../packages/components/index.ts')
 
-//         if (format === 'cjs')
-//           return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
+  return {
+    lib: {
+      entry,
+      name: WEB_COMPONENTS_PACKAGE_NAME,
+      formats: ['cjs', 'es'],
+      fileName: (format: string) => {
+        if (format === 'es')
+          return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
 
-//         // if (format === 'iife')
-//         //   return 'hello-world-elements.global.js'
+        if (format === 'cjs')
+          return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
 
-//         return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
-//       },
-//       // sourcemap: true,
-//       // minify: false,;
-//     },
-//   }
-// }
+        // if (format === 'iife')
+        //   return 'hello-world-elements.global.js'
+
+        return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
+      },
+      // sourcemap: true,
+      // minify: false,;
+    },
+  }
+}
 
 function buildComposables(entries: string[] = ['./index']) {
   return {
@@ -75,6 +75,7 @@ function buildComposables(entries: string[] = ['./index']) {
     declaration: true,
     rollup: {
       emitCJS: true,
+      inlineDependencies: true,
     },
     externals: [
       'vue', '@vueuse/core',
@@ -84,6 +85,6 @@ function buildComposables(entries: string[] = ['./index']) {
 
 export {
   buildVueComponents,
-  // buildWebComponents,
+  buildWebComponents,
   buildComposables,
 }

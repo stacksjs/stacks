@@ -49,7 +49,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild ../../.stacks",
+    "build": "unbuild ../../.stacks/builds/composables",
     "stub": "unbuild --stub"
   },
   "devDependencies": {

@@ -11,9 +11,6 @@ import transformerCompileClass from '@unocss/transformer-compile-class'
 import { CLASS_PREFIX, CLASS_TRIGGER } from '../config/env'
 import { icons as collections, safelist, shortcuts } from '../config/style'
 
-// eslint-disable-next-line no-console
-console.log('building')
-
 const config = defineConfig({
   shortcuts,
 
