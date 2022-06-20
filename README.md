@@ -46,7 +46,7 @@ npm run setup # WIP
 Some commonly used scripts are:
 
 ```bash
-pnpm install # install all dependencies (for all packages)
+pnpm install # install all dependencies (for all packages/workspaces)
 pnpm fresh # fresh reinstall of all dependencies
 
 pnpm dev # stubs the libraries for local use
