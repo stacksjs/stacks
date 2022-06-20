@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite -c ../vite.config.ts --open --port=3333",
+    "dev": "vite -c ../build.config.ts --open --port=3333",
     "build": "vite build",
     "serve": "vite preview"
   },

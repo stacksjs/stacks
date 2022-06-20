@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "dev": "vite -c ../core/vite.config.ts",
+    "dev": "vite -c ../core/build.config.ts",
     "serve": "vite preview"
   },
   "dependencies": {
