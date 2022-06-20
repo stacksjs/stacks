@@ -1,7 +1,7 @@
 packages:
-  - '.stacks/**'
-  - 'apps/**'
-  - 'config/**'
-  - 'examples/**'
-  - 'packages/**'
-  - 'playground/**'
+  - '.stacks'
+  - 'apps/*'
+  - 'config/*'
+  - 'packages/*'
+  - 'playground'
+  - '!examples/**'
