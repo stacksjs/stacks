@@ -1,3 +1,12 @@
+# [0.20.0](https://github.com/openwebstacks/stacks-framework/compare/v0.19.2...v0.20.0) (2022-06-20)
+
+
+### Features
+
+* **ci:** add prepublishOnly hook ([dcffc52](https://github.com/openwebstacks/stacks-framework/commit/dcffc5270e28d893b1e5e5113878cb4d1b733457))
+
+
+
 ## [0.19.2](https://github.com/openwebstacks/stacks-framework/compare/v0.19.1...v0.19.2) (2022-06-20)
 
 
