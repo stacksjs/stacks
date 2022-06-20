@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-composable",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "packageManager": "pnpm@7.3.0",
   "description": "A dummy library of composables.",
   "author": "Chris Breuer",

@@ -1,3 +1,12 @@
+## [0.19.1](https://github.com/openwebstacks/stacks-framework/compare/v0.19.0...v0.19.1) (2022-06-20)
+
+
+### Bug Fixes
+
+* **ci:** properly filter for the stacks package ([5913eca](https://github.com/openwebstacks/stacks-framework/commit/5913ecad0c415f1dd9ac47c3c42a7a74daed30f6))
+
+
+
 # [0.19.0](https://github.com/openwebstacks/stacks-framework/compare/v0.18.4...v0.19.0) (2022-06-20)
 
 
