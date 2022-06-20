@@ -9,8 +9,8 @@ const r = (p: string) => resolve(__dirname, p)
  */
 export const alias: Record<string, string> = {
   '~': r('../packages'),
-  '@ow3/hello-world-vue': r('../packages/components'),
-  '@ow3/hello-world-elements': r('../packages/elements'),
-  '@ow3/hello-world-composable': r('../packages/composables'),
-  '@ow3/stacks': r('.'),
+  '@ow3/hello-world-vue': r('../packages/components/index.ts'),
+  '@ow3/hello-world-elements': r('../packages/elements/index.ts'),
+  '@ow3/hello-world-composable': r('../packages/composables/index.ts'),
+  '@ow3/stacks': r('./index.ts'),
 }
