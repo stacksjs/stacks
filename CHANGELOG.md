@@ -1,3 +1,18 @@
+# [0.18.0](https://github.com/openwebstacks/stacks-framework/compare/v0.17.1...v0.18.0) (2022-06-20)
+
+
+### Bug Fixes
+
+* **core:** automatic type & eslintrc generation ([3c7179f](https://github.com/openwebstacks/stacks-framework/commit/3c7179f89ab900eca80536deeb9468d019b9ea26))
+
+
+### Features
+
+* **core:** improve build logic for composables ([0f0edc2](https://github.com/openwebstacks/stacks-framework/commit/0f0edc2a6f09ad7f533756d5aee634509e2e7fd5))
+* **dx:** improve & simplify the build processes ([0d8aa5d](https://github.com/openwebstacks/stacks-framework/commit/0d8aa5d069867029cb7ae9f651935196694386d8))
+
+
+
 ## [0.17.1](https://github.com/openwebstacks/stacks-framework/compare/v0.17.0...v0.17.1) (2022-06-18)
 
 
