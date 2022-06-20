@@ -85,8 +85,29 @@ function buildComposables(entries: string[] = ['./index']): BuildConfig {
   }
 }
 
+function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildConfig {
+  if (!outDir)
+    outDir = resolve(__dirname, '../dist')
+
+  return {
+    alias,
+    entries,
+    outDir,
+    clean: true,
+    declaration: true,
+    rollup: {
+      emitCJS: true,
+      inlineDependencies: true,
+    },
+    externals: [
+      'vite', 'unbuild', 'vue', '@vueuse/core',
+    ],
+  }
+}
+
 export {
   buildVueComponents,
   buildWebComponents,
   buildComposables,
+  buildStacks,
 }

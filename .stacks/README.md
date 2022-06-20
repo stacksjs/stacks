@@ -1,15 +1,17 @@
 # @ow3/stacks
 
-This package contains the "core" logic of this monorepo which is, ultimately, the build logic (excluding the VS Code (IDE) setup).
+This package contains the "core" logic of the framework/the monorepo setup, e.g. the build logic (excluding the VS Code (IDE) setup).
 
 This includes:
 
-- ⚡️ Vite plugin required to build the component library
+- ⚡️ Vite & unbuild plugins to build the component library
 - 🎨 an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
 - 🧙🏼‍♀️ a unified way to access all [icon sets](https://icon-sets.iconify.design)
  — [Icons in Pure CSS](https://antfu.me/posts/icons-in-pure-css)
 - 💬 Fully-typed TypeScript definitions
 - 🌳 Treeshaking for Vue & Web Components
+
+And all of this in a zero-config, yet configurable, way.
 
 ## 🤖 Usage
 

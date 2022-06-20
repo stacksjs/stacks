@@ -1,22 +1,24 @@
 {
   "name": "@ow3/stacks",
-  "version": "0.16.0",
+  "version": "0.18.4",
   "packageManager": "pnpm@7.3.0",
   "description": "The core of the component library and Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/composables#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/.stacks#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": "packages/composables"
+    "directory": ".stacks"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
+    "framework",
     "vite",
     "vite-plugin",
+    "unbuild",
     "component",
     "library",
     "vue",
