@@ -21,8 +21,28 @@ And all of this in a zero-config, yet configurable, way.
 
 ## 🤖 Usage
 
+If you want to use Stacks outside of this framework, install it as a dev dependency:
+
 ```bash
-# pnpm i -D @ow3/stacks
+pnpm i -D @ow3/stacks
+```
+
+Now, you can use it in your project:
+
+```js
+import {
+  buildVueComponents,
+  buildWebComponents,
+  buildComposables,
+  buildStacks,
+  Stacks,
+  alias,
+  resolve,
+  defineConfig,
+  UserConfig,
+ } from '@ow3/stacks'
+
+ // you are now free to use any of the imported methods
 ```
 
 Learn more in the docs.
