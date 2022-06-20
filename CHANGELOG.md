@@ -1,3 +1,12 @@
+## [0.18.3](https://github.com/openwebstacks/stacks-framework/compare/v0.18.2...v0.18.3) (2022-06-20)
+
+
+### Bug Fixes
+
+* **core:** set composable build outdir ([d38b99d](https://github.com/openwebstacks/stacks-framework/commit/d38b99d7aacc5cf92ef2886fa12a31afd1a4e676))
+
+
+
 ## [0.18.2](https://github.com/openwebstacks/stacks-framework/compare/v0.18.1...v0.18.2) (2022-06-20)
 
 
