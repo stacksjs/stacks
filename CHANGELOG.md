@@ -1,3 +1,12 @@
+# [0.19.0](https://github.com/openwebstacks/stacks-framework/compare/v0.18.4...v0.19.0) (2022-06-20)
+
+
+### Features
+
+* **core:** distribute stacks core on npm ([16c90d4](https://github.com/openwebstacks/stacks-framework/commit/16c90d4608d888c168034f9de34b92982b3b8b91))
+
+
+
 ## [0.18.4](https://github.com/openwebstacks/stacks-framework/compare/v0.18.3...v0.18.4) (2022-06-20)
 
 
