@@ -1,15 +1,21 @@
 # @ow3/stacks
 
-This package contains the "core" logic of the framework/the monorepo setup, e.g. the build logic (excluding the VS Code (IDE) setup).
+This package contains the "core" logic of the framework/the monorepo setup, e.g. the build logic (excluding the VS Code/IDE setup).
 
-This includes:
+## ☘️ Features
+
+The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a library of composables, methods, and other goodies required to build optimized component libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
+
+Other included core features are:
 
 - ⚡️ Vite & unbuild plugins to build the component library
-- 🎨 an optimized UnoCSS build for Vue & Web Components that uses Tailwind CSS utility classes
-- 🧙🏼‍♀️ a unified way to access all [icon sets](https://icon-sets.iconify.design)
- — [Icons in Pure CSS](https://antfu.me/posts/icons-in-pure-css)
+- 🏎 Blazing fast, empowered by a beautiful DX
+- 👣 Tiny foot-print in production builds
 - 💬 Fully-typed TypeScript definitions
 - 🌳 Treeshaking for Vue & Web Components
+- 🎨 Optimized UnoCSS build for Vue & Web Components _(defaults to Tailwind CSS utility classes)_
+- 🧙🏼‍♀️ Unified way to access hundreds of [icon sets](https://icon-sets.iconify.design)
+ — [Icons in Pure CSS](https://antfu.me/posts/icons-in-pure-css)
 
 And all of this in a zero-config, yet configurable, way.
 
