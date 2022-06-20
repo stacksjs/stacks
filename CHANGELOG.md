@@ -1,3 +1,12 @@
+## [0.20.2](https://github.com/openwebstacks/stacks-framework/compare/v0.20.1...v0.20.2) (2022-06-20)
+
+
+### Bug Fixes
+
+* **core:** point aliases more specifically to local files ([8833370](https://github.com/openwebstacks/stacks-framework/commit/883337016350837ac2994d2c4fd167873bd79f79))
+
+
+
 ## [0.20.1](https://github.com/openwebstacks/stacks-framework/compare/v0.20.0...v0.20.1) (2022-06-20)
 
 
