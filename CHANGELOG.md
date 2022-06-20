@@ -1,3 +1,12 @@
+## [0.18.1](https://github.com/openwebstacks/stacks-framework/compare/v0.18.0...v0.18.1) (2022-06-20)
+
+
+### Bug Fixes
+
+* **core:** temp aliases workaround ([b6eec12](https://github.com/openwebstacks/stacks-framework/commit/b6eec12fb2b6759fc75ae9747322504ec72055bf))
+
+
+
 # [0.18.0](https://github.com/openwebstacks/stacks-framework/compare/v0.17.1...v0.18.0) (2022-06-20)
 
 
