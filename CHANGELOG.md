@@ -1,3 +1,7 @@
+## [0.18.2](https://github.com/openwebstacks/stacks-framework/compare/v0.18.1...v0.18.2) (2022-06-20)
+
+
+
 ## [0.18.1](https://github.com/openwebstacks/stacks-framework/compare/v0.18.0...v0.18.1) (2022-06-20)
 
 
