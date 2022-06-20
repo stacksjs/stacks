@@ -1,3 +1,12 @@
+## [0.19.2](https://github.com/openwebstacks/stacks-framework/compare/v0.19.1...v0.19.2) (2022-06-20)
+
+
+### Bug Fixes
+
+* **build:** adjust build script to include stacks ([3ba166d](https://github.com/openwebstacks/stacks-framework/commit/3ba166d336c5875d90c9b13356df310c31c76450))
+
+
+
 ## [0.19.1](https://github.com/openwebstacks/stacks-framework/compare/v0.19.0...v0.19.1) (2022-06-20)
 
 
