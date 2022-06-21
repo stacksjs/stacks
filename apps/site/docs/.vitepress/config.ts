@@ -12,7 +12,6 @@ export default defineConfig({
 
     sidebar: {
       '/guide/': sidebarGuide(),
-      '/config/': sidebarConfig(),
     },
 
     editLink: {
@@ -81,18 +80,14 @@ function sidebarGuide() {
         { text: 'Single File Components', link: '/guide/sfcs' },
       ],
     },
-  ]
-}
-
-function sidebarConfig() {
-  return [
     {
-      text: 'Config',
+      text: 'Starters',
+      collapsible: true,
       items: [
-        { text: 'Introduction', link: '/config/introduction' },
-        { text: 'App Configs', link: '/config/app-configs' },
-        { text: 'Theme Configs', link: '/config/theme-configs' },
-        { text: 'Frontmatter Configs', link: '/config/frontmatter-configs' },
+        { text: 'Vue Starter', link: '/starter/vue' },
+        { text: 'Web Component Starter', link: '/starter/web-components' },
+        { text: 'Composable Starter', link: '/starter/web-components' },
+        { text: 'TypeScript Starter', link: '/starter/web-components' },
       ],
     },
   ]
