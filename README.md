@@ -8,11 +8,11 @@
 
 # The Modern Component Library
 
-The Stacks Framework helps kick-start & maintain development of your next component library. It is the most simple & comfortable way to build highly-modular, widely-usable & scalable component libraries. No matter whether you are a beginner or an expert, Stacks' approachable design allows you to learn more about its capabilities as you develop your library.
+The Stacks Framework helps kick-start & maintain development of your next component library. Stacks is the most simple & comfortable solution for frontend developers to build highly-modular, widely-accepted & scalable component libraries. No matter whether you are a beginner or an expert, Stacks' approachable design allows you to learn more about its capabilities as you develop your library.
+
+> _The clever way to build component libraries._
 
 Develop beautiful reactive composable UIs without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—dive in now!
-
-> _The clever way to build your component libraries._
 
 ## ☘️ Features
 
@@ -43,7 +43,7 @@ npm run setup # WIP
 
 ## 🤖 Usage
 
-Some commonly used scripts are:
+The following is a list of the most common ways to use interact with Stacks
 
 ```bash
 pnpm install # install all dependencies (for all packages/workspaces)
@@ -94,11 +94,11 @@ Read more about the setup & tips in the docs.
 
 Stacks is a Component-First, UI & Build Framework. When developing your own library, Stacks bootstraps the following for you:
 
-- [Modern Build engine](https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/builds) - a Stacks optimized [Vite](https://vitejs.dev/) & [unbuild](https://github.com/unjs/unbuild) setup
-- [Modern CSS engine](https://github.com/unocss/unocss) - pre-configured UnoCSS allows to create & manage your style guide with ease
+- [Powerful Build Engine](https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/builds) - Stacks is a optimized [Vite](https://vitejs.dev/) & [unbuild](https://github.com/unjs/unbuild) harmony
+- [Modern CSS Engine](https://github.com/unocss/unocss) - pre-configured UnoCSS allows to create & manage your style guide with ease
 - [Fully Typed APIs](https://www.typescriptlang.org/) - via TypeScript 4.7
-- [Be a good commitizen](https://www.npmjs.com/package/git-cz) - pre-configured Commitizen & git-cz setup to simplify semantic git commits, versioning, and changelog generations
-- [Built with testing in mind](https://github.com/vitest-dev/vitest) - pre-configured unit-testing powered by [Vitest](https://github.com/vitest-dev/vitest) & e2e-testing by [Cypress](https://cypress.io/)
+- [Be a Good Commitizen](https://www.npmjs.com/package/git-cz) - pre-configured Commitizen & git-cz setup to simplify semantic git commits, versioning, and changelog generations
+- [Built With Testing In Mind](https://github.com/vitest-dev/vitest) - pre-configured unit-testing powered by [Vitest](https://github.com/vitest-dev/vitest) & e2e-testing by [Cypress](https://cypress.io/)
 - [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - runs your CI (fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
 
@@ -107,9 +107,9 @@ Stacks is a Component-First, UI & Build Framework. When developing your own libr
 - [Automatically imports components](https://github.com/antfu/unplugin-vue-components)
 - [Use framework functionalities without imports](https://github.com/antfu/unplugin-auto-import)
   - [VueUse](https://github.com/antfu/vueuse) - a collection of useful functions
-- [VS Code Extensions](./.vscode/extensions.json)
-  - [IDE capabilities](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
-  - [Spell checking](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker)
+- [Deep VS Code Integration](./.vscode/extensions.json)
+  - [IDE Capabilities](https://marketplace.visualstudio.com/items?itemName=vue.volar) - type hints, code completion, code formatting and more
+  - [Spell Checking](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - no more annoying typos to slip by!
   - [Utility Class Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
 
 #### Coding Style
