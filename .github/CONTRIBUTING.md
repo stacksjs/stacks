@@ -63,13 +63,6 @@ git pull
 
 Each of our components come with test cases. Feel free to check them out within the `./tests` root folder. When adding or or updating functionality, please ensure it is covered through our tests cases. Ensure so by running `pnpm test`.
 
-### Visual
-
-This project uses [Vitebook][vitebook] to render components and view them in the browser. Simply
-create a `*.stories.ts` file within the `./stories` root folder and run `yarn vitebook` in
-your terminal. To learn more about writing stories follow the link to the vitebook site, and see
-other stories in the project.
-
 ## ✍️ Commit
 
 This project uses [semantic commit messages][semantic-commit-style] to automate package releases. We automated the commit process for you, and simply run `pnpm run commit` in your terminal and follow the instructions.
