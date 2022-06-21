@@ -92,18 +92,15 @@ Read more about the setup & tips in the docs.
 
 ### Developer Experience (DX)
 
-When developing your own library, the following tooling will automatically be set up for you:
+Stacks is a Component-First, UI & Build Framework. When developing your own library, Stacks bootstraps the following for you:
 
-- [Stacks Framework](https://github.com/openwebstack/stacks-framework) - the UI & build framework
-  - [Modern Build engine](https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/builds) - a Stacks optimized [Vite](https://vitejs.dev/) & [unbuild](https://github.com/unjs/unbuild) setup
-  - [Modern CSS engine](https://github.com/unocss/unocss) - pre-configured UnoCSS allows to create & manage your style guide with ease
-  - [Fully Typed](https://www.typescriptlang.org/) - via TypeScript 4.7
-- [Good Commitizen](https://www.npmjs.com/package/git-cz) - pre-configured Commitizen & git-cz setup to simplify semantic git commits, versioning, and changelog generations
+- [Modern Build engine](https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/builds) - a Stacks optimized [Vite](https://vitejs.dev/) & [unbuild](https://github.com/unjs/unbuild) setup
+- [Modern CSS engine](https://github.com/unocss/unocss) - pre-configured UnoCSS allows to create & manage your style guide with ease
+- [Fully Typed APIs](https://www.typescriptlang.org/) - via TypeScript 4.7
+- [Be a good commitizen](https://www.npmjs.com/package/git-cz) - pre-configured Commitizen & git-cz setup to simplify semantic git commits, versioning, and changelog generations
 - [Built with testing in mind](https://github.com/vitest-dev/vitest) - pre-configured unit-testing powered by [Vitest](https://github.com/vitest-dev/vitest) & e2e-testing by [Cypress](https://cypress.io/)
 - [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - runs your CI (fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
-
-The Stacks core is built on top of Vue.
 
 #### Plugins & Extensions
 
