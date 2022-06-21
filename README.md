@@ -27,7 +27,7 @@ The ultimate goal of this framework, Stacks, is to _help you_ create a component
 - Pretty changelog generations _(markdown & GitHub releases)_
 - Fully-typed, automatically _(your components & composables)_
 - Optimized & automated GitHub PR dependency updates
-- Bootstrapped VitePress setup to present your library
+- Bootstrapped documentation tooling & site to present library _(via VitePress)_
 
 ## 💡 Get Started
 
