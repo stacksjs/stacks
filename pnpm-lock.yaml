@@ -694,10 +694,10 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@esbuild-kit/cjs-loader/2.1.0:
-    resolution: {integrity: sha512-KyX25VcC2564K5FnEhNDdzonC87VeSZoLz3h6R8x3d1myhxqGdoQkTQba3VCcuAkgdkn69d3Zhvj3xtGWldbEQ==}
+  /@esbuild-kit/cjs-loader/2.2.0:
+    resolution: {integrity: sha512-MWRzs8ds9sujFL++H9Z4aGak61J1Gjlj9VyIjXx9AlgtCS8EEjdjrWKPMNBXP1hvJMmKbL7PE4zT+OzaBv1CaA==}
     dependencies:
-      '@esbuild-kit/core-utils': 1.4.0
+      '@esbuild-kit/core-utils': 2.0.0
       get-tsconfig: 4.0.4
     dev: true
 
@@ -708,10 +708,17 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /@esbuild-kit/esm-loader/2.2.1:
-    resolution: {integrity: sha512-zs/RX6KqjI9+XZ3XJmgT+Sm+rDy79f56R3l8L4K3Q5sYzpjtBUcTjlYBORVxsQVWcWeutBc6mSW1w5h+Nvk91w==}
+  /@esbuild-kit/core-utils/2.0.0:
+    resolution: {integrity: sha512-6qZTjrfzR44tb8KDtp1ao7N7D2Fa0BDwD44zcTmSM23TtQBhrf1zmyf5HuKv45f4wziXNcSFd1qqt5T5SLmVdg==}
     dependencies:
-      '@esbuild-kit/core-utils': 1.4.0
+      esbuild: 0.14.47
+      source-map-support: 0.5.21
+    dev: true
+
+  /@esbuild-kit/esm-loader/2.3.0:
+    resolution: {integrity: sha512-iaAHKgQlnXNBloPxhxR05d9nR7zF5T0z+p1umAeB/nejY9+cIN3ULMQ/O/QTW6RVtwDGxzdXdgOYCb3FjeI4PA==}
+    dependencies:
+      '@esbuild-kit/core-utils': 2.0.0
       get-tsconfig: 4.0.4
     dev: true
 
@@ -6090,9 +6097,9 @@ packages:
     resolution: {integrity: sha512-2joLNBKxg6Jn+qEMlzMrS2K6uxBG2faQNX7J/w8cO56ysCxJPbfeyWX5Qxbv0l8GeCkkc0Q0/wlH9eEI5LkZeQ==}
     hasBin: true
     dependencies:
-      '@esbuild-kit/cjs-loader': 2.1.0
+      '@esbuild-kit/cjs-loader': 2.2.0
       '@esbuild-kit/core-utils': 1.4.0
-      '@esbuild-kit/esm-loader': 2.2.1
+      '@esbuild-kit/esm-loader': 2.3.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
