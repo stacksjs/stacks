@@ -37,8 +37,8 @@
     "playground"
   ],
   "engines": {
-    "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
+    "node": ">=v16.14.0",
+    "pnpm": ">=7.1.7"
   },
   "scripts": {
     "build": "pnpm -r --filter './packages/**' --filter './.stacks' run build",
