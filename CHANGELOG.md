@@ -1,3 +1,12 @@
+## [0.20.8](https://github.com/openwebstacks/stacks-framework/compare/v0.20.7...v0.20.8) (2022-06-21)
+
+
+### Bug Fixes
+
+* update lockfile ([2749fed](https://github.com/openwebstacks/stacks-framework/commit/2749fed0332aa6334ef3c620d2a1a4c89ff1066e))
+
+
+
 ## [0.20.7](https://github.com/openwebstacks/stacks-framework/compare/v0.20.6...v0.20.7) (2022-06-21)
 
 
