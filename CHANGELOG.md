@@ -1,3 +1,12 @@
+## [0.20.7](https://github.com/openwebstacks/stacks-framework/compare/v0.20.6...v0.20.7) (2022-06-21)
+
+
+### Bug Fixes
+
+* **dx:** properly declare dependencies for builds ([de091d2](https://github.com/openwebstacks/stacks-framework/commit/de091d24e9a9c410efb0e19b6200ee56bffe8367))
+
+
+
 ## [0.20.6](https://github.com/openwebstacks/stacks-framework/compare/v0.20.5...v0.20.6) (2022-06-20)
 
 
