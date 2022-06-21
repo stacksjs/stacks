@@ -43,7 +43,7 @@ npm run setup # WIP
 
 ## 🤖 Usage
 
-The following is a list of the most common ways to use interact with Stacks
+The following is a list of some of the most common ways to use interact with Stacks:
 
 ```bash
 pnpm install # install all dependencies (for all packages/workspaces)
@@ -65,13 +65,13 @@ pnpm docs:serve # serves the documentation site
 
 _The `package.json` may contain additional useful snippets you want to be aware of._
 
-Because this monorepo is optimized toward the development of easily reusable & composable component libraries, it's simple easy to use:
+Because we optimize toward the development of easily reusable & composable component libraries, our primary intention is always _keep it simple, yet configurable_:
 
 ```html
 <html>
   <body>
     <hello-world name="Jane Doe"></hello-world>
-    <script src="elements.js"></script>
+    <script src="hello-world-elements.js"></script>
   </body>
 </html>
 ```
@@ -80,7 +80,7 @@ Optionally, if you prefer using Vue:
 
 ```vue
 <script setup lang="ts">
-import HelloWorld from 'hello-world-stack'
+import HelloWorld from 'hello-world-vue'
 </script>
 
 <template>
@@ -104,7 +104,7 @@ Stacks is a Component-First, UI & Build Framework. When developing your own libr
 
 #### Plugins & Extensions
 
-- [Automatically imports components](https://github.com/antfu/unplugin-vue-components)
+- [Automagically imports components](https://github.com/antfu/unplugin-vue-components)
 - [Use framework functionalities without imports](https://github.com/antfu/unplugin-auto-import)
   - [VueUse](https://github.com/antfu/vueuse) - a collection of useful functions
 - [Deep VS Code Integration](./.vscode/extensions.json)
