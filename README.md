@@ -109,7 +109,7 @@ The Stacks core is built on top of Vue.
 
 - [Automatically imports components](https://github.com/antfu/unplugin-vue-components)
 - [Use framework functionalities without imports](https://github.com/antfu/unplugin-auto-import)
-  - [Collection of useful composition APIs](https://github.com/antfu/vueuse)
+  - [VueUse](https://github.com/antfu/vueuse) - a collection of useful functions
 - [VS Code Extensions](./.vscode/extensions.json)
   - [IDE capabilities](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
   - [Spell checking](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker)
