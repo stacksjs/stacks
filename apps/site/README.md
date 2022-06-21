@@ -1,14 +1,12 @@
 # The Site
 
-The web presence of your component library. It is the source to build the site for the docs of the library. Consequently, the docs live here as well.
+The web presence of your component library. It is the source to build the site for the docs of the library. Consequently, the docs live here as well, managed via VitePress.
 
 Easily deployed to Vercel/Netlify.
 
-WIP
-
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 
@@ -22,6 +20,6 @@ For casual chit-chat with others using this package:
 
 ## 📄 License
 
-The MIT License (MIT). Please see [LICENSE](../LICENSE.md) for more information.
+The MIT License (MIT). Please see [LICENSE](../../LICENSE.md) for more information.
 
 Made with ❤️
