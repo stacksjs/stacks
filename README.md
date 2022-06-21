@@ -18,7 +18,7 @@ Develop beautiful reactive composable UIs without learning a new language. HTML,
 
 The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types. Other core features include:
 
-- Automatically builds & distributes Web Component & Vue (2 & 3) libraries for you
+- Automagically builds & distributes Web Component & Vue (2 & 3) libraries for you
 - Zero-config by default, yet highly-configurable—if needed
 - Delightful Developer Experience _(DX)_
 - Style with ease via UnoCSS _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
