@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import type { UserConfig } from 'vite'
-import { defineConfig } from 'vite'
+import { defineConfig as defineBuildConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
@@ -54,6 +54,6 @@ export {
   Stacks,
   alias,
   resolve,
-  defineConfig,
+  defineBuildConfig,
   UserConfig,
 }

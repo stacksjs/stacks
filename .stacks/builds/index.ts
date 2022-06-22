@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
 import { alias } from '../alias'
-import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../config/env'
+import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../config'
 import { BuildConfig } from 'unbuild'
 
 function buildVueComponents(entry?: string): BuildOptions {
