@@ -1,3 +1,15 @@
+# [0.21.0](https://github.com/openwebstacks/stacks-framework/compare/v0.20.8...v0.21.0) (2022-06-22)
+
+
+### Features
+
+* add icons config ([af71d13](https://github.com/openwebstacks/stacks-framework/commit/af71d13fab19e2d2b3fc19fc982c0a9fe7a7ba96))
+* add styles config ([9448516](https://github.com/openwebstacks/stacks-framework/commit/94485168840712e8f783da27e490f189ade10144))
+* **dx:** add improved vs code file explorer ([06220f5](https://github.com/openwebstacks/stacks-framework/commit/06220f5799075b93e267734e22d17397c9f01be3))
+* expose docs config ([c9b89a5](https://github.com/openwebstacks/stacks-framework/commit/c9b89a5d5efdb5b521c7122310ba5f098c4d5cbe))
+
+
+
 ## [0.20.8](https://github.com/openwebstacks/stacks-framework/compare/v0.20.7...v0.20.8) (2022-06-21)
 
 
