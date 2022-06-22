@@ -13,7 +13,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.39.3
       '@vitejs/plugin-vue': ^2.3.3
       '@vue/compiler-sfc': ^3.2.37
-      '@vueuse/core': ^8.7.4
+      '@vueuse/core': ^8.7.5
       bumpp: ^8.2.1
       commitizen: ^4.2.4
       conventional-changelog-cli: ^2.2.2
@@ -95,9 +95,9 @@ importers:
 
   apps/site:
     specifiers:
-      vitepress: 1.0.0-alpha.2
+      vitepress: 1.0.0-alpha.4
     dependencies:
-      vitepress: 1.0.0-alpha.2_twyhzqqpkwvvgrmyeapdo6i4my
+      vitepress: 1.0.0-alpha.4_twyhzqqpkwvvgrmyeapdo6i4my
 
   packages/components:
     specifiers:
@@ -115,7 +115,7 @@ importers:
 
   packages/composables:
     specifiers:
-      '@vueuse/core': ^8.7.4
+      '@vueuse/core': ^8.7.5
       unbuild: ^0.7.4
     devDependencies:
       '@vueuse/core': 8.7.5_vue@3.2.37
@@ -6621,8 +6621,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.2_twyhzqqpkwvvgrmyeapdo6i4my:
-    resolution: {integrity: sha512-twSsmx2DI/3XgZZ8KLyRAH8RgK2Zj4kJx/kwhZhimwndYqQDrtcIaAcuV+P3FKukZ+cYtm9yt9qohz631jKx4A==}
+  /vitepress/1.0.0-alpha.4_twyhzqqpkwvvgrmyeapdo6i4my:
+    resolution: {integrity: sha512-bOAA4KW6vYGlkbcrPLZLTKWTgXVroObU+o9xj9EENyEl6yg26WWvfN7DGA4BftjdM5O8nR93Z5khPQ3W/tFE7Q==}
     engines: {node: '>=14.6.0'}
     hasBin: true
     dependencies:
