@@ -5,7 +5,7 @@ title: Stacks
 titleTemplate: Component-First. UI & Build Framework.
 
 hero:
-  name: Stacks UI
+  name: 🥞 Stacks
   text: The Modern Component Library.
   tagline: The Stacks Framework helps kick-start & maintain development of your next library. Without a learning curve, or breaking a sweat.
   actions:
