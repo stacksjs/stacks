@@ -1,6 +1,10 @@
-import { defineConfig } from 'vitepress'
+import type { DocsConfig } from '@ow3/stacks'
 
-export default defineConfig({
+/**
+ * This is the place where you define your documentation configuration.
+ * For all available options, see the DocsConfig type definition.
+ */
+export const docs: DocsConfig = {
   lang: 'en-US',
   title: 'Stacks',
   description: 'Component-First. UI & Build Framework.',
@@ -41,7 +45,7 @@ export default defineConfig({
     //     placement: 'vuejsorg'
     // }
   },
-})
+}
 
 function nav() {
   return [
@@ -69,7 +73,7 @@ function sidebarGuide() {
       text: 'Digging Deeper',
       collapsible: true,
       items: [
-        { text: 'Stacks', link: '/guide/stacks' },
+        { text: 'How To?', link: '/guide/stacks' },
         { text: 'Workflows / CI', link: '/guide/ci' },
         { text: 'VS Code', link: '/guide/vs-code' },
         { text: 'Apps', link: '/guide/apps' },
