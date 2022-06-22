@@ -9,7 +9,7 @@ import Components from 'unplugin-vue-components/vite'
 import { alias } from './alias'
 import { buildComposables, buildVueComponents, buildWebComponents, buildStacks } from './builds'
 
-const Stacks = (configFile = './unocss.config.ts') => [
+const Stacks = (configFile = './unocss.ts') => [
   Vue({
     template: {
       compilerOptions: {
