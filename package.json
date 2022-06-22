@@ -70,9 +70,6 @@
     "typecheck": "vue-tsc --noEmit",
     "types:fix": "esno .stacks/scripts/fix-types.ts"
   },
-  "dependencies": {
-    "vue": "^3.2.37"
-  },
   "devDependencies": {
     "@antfu/eslint-config": "^0.25.1",
     "@babel/types": "^7.18.4",
@@ -104,6 +101,7 @@
     "vite": "^2.9.12",
     "vite-plugin-inspect": "^0.5.0",
     "vitest": "^0.15.2",
+    "vue": "^3.2.37",
     "vue-tsc": "^0.38.1"
   },
   "lint-staged": {
