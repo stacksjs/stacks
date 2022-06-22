@@ -2,10 +2,6 @@
   "name": "docs-site",
   "version": "0.0.0",
   "private": true,
-  "engines": {
-    "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
-  },
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
