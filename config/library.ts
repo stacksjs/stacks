@@ -6,8 +6,6 @@
  */
 export const ORGANIZATION_NAME = '@ow3'
 export const LIBRARY_NAME = 'hello-world'
-export const CLASS_TRIGGER = ':stacks:'
-export const CLASS_PREFIX = 'stacks-'
 
 /**
  * We suggest these not be updated unless you have a very strong, specific reason for it.

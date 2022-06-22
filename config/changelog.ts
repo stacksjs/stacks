@@ -1,6 +1,6 @@
 // TODO: refactor to .ts
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
 
 const packages = fs.readdirSync(path.resolve(__dirname, '../packages'))
   .filter(item => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts')

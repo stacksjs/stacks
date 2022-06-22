@@ -1,9 +1,9 @@
-import type { UserShortcuts } from 'unocss'
+import type { Shortcuts } from '@ow3/stacks'
 
 /**
  * Shortcuts provide you with the ability to combine utility names for reusability purposes.
  */
-const shortcuts: UserShortcuts = [
+const shortcuts: Shortcuts = [
   // ['btn', 'px-4 py-1 rounded inline-block bg-teal-600 text-white cursor-pointer hover:bg-teal-700 disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50'],
   // ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
 ]
@@ -15,12 +15,13 @@ const shortcuts: UserShortcuts = [
 const safelist = 'prose prose-sm m-auto text-left'
 
 /**
- * Define any of the icon collections you like to use via "icons in pure css."
- * See https://icon-sets.iconify.design/ for a list of available icon sets.
+ * The trigger defines the class name markup you want to add into your components.
  */
-const icons = {
-  'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
-  'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
-}
+const trigger = ':stacks:'
 
-export { shortcuts, safelist, icons }
+/**
+ * When transforming all utility classes into a single class, this prefix will be added to the generated class.
+ */
+const classPrefix = 'stacks-'
+
+export { trigger, classPrefix, shortcuts, safelist }
