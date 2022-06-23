@@ -1,5 +1,5 @@
-import type { UserConfig } from '../../stacks'
-import { Stacks, defineBuildConfig, buildVueComponents as vueComponents } from '../../stacks'
+import type { UserConfig } from '../../'
+import { Stacks, defineBuildConfig, buildVueComponents as vueComponents } from '../..'
 import { alias } from '../../../config'
 
 // https://vitejs.dev/config/
