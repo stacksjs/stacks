@@ -195,6 +195,6 @@
     "commitizen"
   ],
   "html.customData": [
-    "./config/custom-elements.json"
+    "./.stacks/custom-elements.json"
   ]
 }

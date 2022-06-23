@@ -1,6 +1,6 @@
 import type { UserConfig } from '../../'
 import { Stacks, defineBuildConfig, buildVueComponents as vueComponents } from '../..'
-import { alias } from '../../../config'
+import { alias } from '../../config'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
