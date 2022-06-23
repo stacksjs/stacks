@@ -5,7 +5,7 @@ const r = (p: string) => resolve(__dirname, p)
 /**
  * The following configuration references local aliases.
  *
- * TODO: the future "setup"-command needs to set these aliases.
+ * TODO: the future "artisan setup"-command will set up these aliases.
  */
 export const alias: Record<string, string> = {
   '~': r('../packages'),
