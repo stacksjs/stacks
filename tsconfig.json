@@ -49,6 +49,7 @@
     "apps/**/*.vue",
     "apps/**/*.json",
     "config/*.ts",
+    "config/*.json",
     "packages/**/*.ts",
     "packages/**/*.vue",
     "packages/**/*.json"
