@@ -1,28 +1,31 @@
 {
-  "name": "@ow3/hello-world-vue",
+  "name": "@ow3/hello-world-functions",
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
-  "description": "A Vue Component Library source.",
+  "description": "A dummy library of composable functions.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/components#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/functions#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": "packages/components"
+    "directory": "functions"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
-    "component",
+    "composable",
     "library",
     "vue",
-    "vite",
     "typescript",
     "javascript",
     "starter",
-    "kit"
+    "kit",
+    "package",
+    "components",
+    "web components",
+    "sfcs"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -46,14 +49,11 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "vite build -c ../../.stacks/builds/components/build.config.ts",
+    "build": "unbuild ../../.stacks/builds/composables",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "typescript": "^4.7.4",
-    "unbuild": "^0.7.4",
-    "vite": "^2.9.12",
-    "vue": "^3.2.37",
-    "vue-tsc": "^0.38.1"
+    "@vueuse/core": "^8.7.5",
+    "unbuild": "^0.7.4"
   }
 }

@@ -1,12 +1,12 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
-import { alias } from '../../config'
-import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../config'
+import { alias } from '../config'
+import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../config'
 import { BuildConfig } from 'unbuild'
 
 function buildVueComponents(entry?: string): BuildOptions {
   if (!entry)
-    entry = resolve(__dirname, '../../packages/components/index.ts')
+    entry = resolve(__dirname, '../../components/index.ts')
 
   return {
     lib: {
@@ -43,7 +43,7 @@ function buildVueComponents(entry?: string): BuildOptions {
 
 function buildWebComponents(entry?: string): BuildOptions {
   if (!entry)
-    entry = resolve(__dirname, '../../packages/components/index.ts')
+    entry = resolve(__dirname, '../../components/index.ts')
 
   return {
     lib: {
@@ -72,7 +72,7 @@ function buildComposables(entries: string[] = ['./index']): BuildConfig {
   return {
     alias,
     entries,
-    outDir: resolve(__dirname, '../../packages/composables/dist'),
+    outDir: resolve(__dirname, '../../composables/dist'),
     clean: true,
     declaration: true,
     rollup: {

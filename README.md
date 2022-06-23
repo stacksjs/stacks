@@ -8,13 +8,13 @@
 
 # The Modern Component Library
 
-The ultimate goal of this framework, Stacks, is to _help you_ create & maintain a component library. Stacks is the most simple & comfortable solution for UI developers to build highly-modular, widely-accepted & scalable component libraries, in a beginner-friendly way.
+The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It is the most simple & comfortable solution for developers to build highly-modular, widely-accepted & scalable libraries, in a beginner-friendly way.
 
-> _The clever way to build component libraries._
+> _The clever way to build component & function libraries._
 
 **🤖 Zero-config by default**  
 
-The highly optimized Stacks bundler automagically builds & distributes commonjs & module library formats. Additionally, it automatically generates a Web Component & Vue (2 & 3) libraries, plus component & composable type declarations.
+The highly optimized Stacks bundler automagically builds & distributes CommonJS & module library formats. Stacks also automatically generates a Web Component library, Vue 2 & 3 libraries, a composables/functions library, plus all of its relating component & composable type declarations.
 
 **🎨 Style with ease**
 
@@ -24,9 +24,11 @@ Create your own style guide using conventions you are familiar with via UnoCSS. 
 
 Whether it is the simple setup, modern git commit conventions via commitlint, a modern CI, automated npm package releases & semver versioning, pretty changelog generations, GitHub PR dependency updates, spell-checking, integrated documentation tooling, or a pre-configured playground & examples. Stacks has it all.
 
-**🧩 Deep VS Code integration**
+**🧩 Next-Gen VS Code integration**
 
-IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in Stacks. All without the need of Prettier.
+IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in within Stacks. Without the need of Prettier.
+
+**🤝 Extremely beginner & expert-friendly**
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace. Develop beautiful, reactive, composable UIs without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—all you need to dive in now!
 
@@ -47,8 +49,8 @@ npm run setup # WIP
 The following is a list of some of the most common ways to use interact with Stacks:
 
 ```bash
-pnpm install # install all dependencies (for all packages/workspaces)
-pnpm fresh # fresh reinstall of all dependencies
+pnpm install # installs deps for all workspaces
+pnpm fresh # fresh reinstall of all deps
 
 pnpm dev # stubs the libraries for local use
 pnpm example # run one of the examples (follow CLI prompts)

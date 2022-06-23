@@ -1,6 +1,8 @@
 # Stacks Config
 
-This folder contains your Stacks configuration files. Each file comes with its own description.
+This folder contains your Stacks configuration files. Each file comes with its own descriptions, allowing you to easily learn at your own pace.
+
+Read more in the relating docs.
 
 ## 💪🏼 Contributing
 

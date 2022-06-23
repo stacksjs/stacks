@@ -1,31 +1,26 @@
 {
-  "name": "@ow3/hello-world-composable",
+  "name": "@ow3/hello-world-elements",
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
-  "description": "A dummy library of composables.",
+  "description": "A dummy Web Component library.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/packages/composables#readme",
+  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/elements#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": "packages/composables"
+    "directory": ".stacks/elements"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
-    "composable",
+    "web components",
     "library",
-    "vue",
     "typescript",
     "javascript",
     "starter",
-    "kit",
-    "package",
-    "components",
-    "web components",
-    "sfcs"
+    "kit"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -39,6 +34,8 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
+  "unpkg": "dist/hello-world-elements.global.js",
+  "jsdelivr": "dist/hello-world-elements.global.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -49,11 +46,13 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild ../../.stacks/builds/composables",
+    "build": "vite build -c ../../.stacks/builds/elements/build.config.ts",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@vueuse/core": "^8.7.5",
-    "unbuild": "^0.7.4"
+    "@ow3/hello-world-vue": "workspace:*",
+    "@ow3/stacks": "workspace:*",
+    "unbuild": "^0.7.4",
+    "vite": "^2.9.12"
   }
 }

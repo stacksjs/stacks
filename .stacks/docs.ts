@@ -1,5 +1,5 @@
 import { defineConfig, UserConfig } from 'vitepress'
-import { docs } from '../config'
+import { docs } from './config'
 
 export type DocsConfig = UserConfig
 

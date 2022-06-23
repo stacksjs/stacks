@@ -20,17 +20,14 @@
       "vite/client"
     ],
     "paths": {
-      "~/*": [
-        "packages/*"
-      ],
       "@ow3/hello-world-vue": [
-        "packages/components"
+        "./components/index.ts"
       ],
       "@ow3/hello-world-elements": [
-        "packages/elements"
+        ".stacks/elements"
       ],
-      "@ow3/hello-world-composable": [
-        "packages/composables"
+      "@ow3/hello-world-functions": [
+        "functions"
       ],
       "@ow3/stacks": [
         ".stacks"
@@ -48,11 +45,13 @@
     "apps/**/*.ts",
     "apps/**/*.vue",
     "apps/**/*.json",
+    "components/**/*.json",
+    "components/**/*.vue",
+    "components/**/*.ts",
     "config/*.ts",
     "config/*.json",
-    "packages/**/*.ts",
-    "packages/**/*.vue",
-    "packages/**/*.json"
+    "functions/**/*.ts",
+    "functions/**/*.json"
   ],
   "exclude": [
     "**/dist/**",
