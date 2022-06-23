@@ -1,23 +1,53 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "prettier.enable": false,
+  "emmet.includeLanguages": {
+    "blade.php": "html",
+    "vue": "html"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "files.associations": {
+    "*.vue": "vue"
+  },
+  "git.enableSmartCommit": true,
+  "css.validate": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "css.validate": false,
-  "editor.formatOnSave": false,
   "editor.quickSuggestions": {
     "strings": true
   },
   "eslint.packageManager": "pnpm",
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
+  "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
+  "editor.gotoLocation.multipleDefinitions": "goto",
   "windicss.sortOnSave": true,
-  "unocss.root": "packages/core/src/config/unocss.ts",
+  "unocss.root": ".stacks/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
+  "search.exclude": {
+    "dist": true,
+    "node_modules": true,
+    "CHANGELOG.md": true,
+    "examples": true
+  },
+  "explorer.confirmDragAndDrop": false,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
+  "volar.autoCompleteRefs": false,
+  "volar.codeLens.pugTools": false,
+  "volar.codeLens.scriptSetupTools": true,
+  "volar.completion.preferredTagNameCase": "pascal",
+  "volar.takeOverMode.enabled": true,
+  "todo-tree.highlights.enabled": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "cSpell.ignorePaths": [
+    "node_modules"
+  ],
   "explorer.fileNesting.patterns": {
     "*.component.ts": "$(capture).component.html, $(capture).component.spec.ts, $(capture).component.css, $(capture).component.scss, $(capture).component.sass, $(capture).component.less",
     "*.cpp": "$(capture).hpp, $(capture).h, $(capture).hxx",
@@ -60,9 +90,6 @@
     "vite.config.*": "*.env, .babelrc*, .codecov, .cssnanorc*, .env.*, .envrc, .htmlnanorc*, .lighthouserc.*, .mocha*, .postcssrc*, .terserrc*, api-extractor.json, ava.config.*, babel.config.*, cssnano.config.*, cypress.json, env.d.ts, htmlnanorc.*, jasmine.*, jest.config.*, jsconfig.*, karma*, lighthouserc.*, playwright.config.*, postcss.config.*, puppeteer.config.*, svgo.config.*, tailwind.config.*, tsconfig.*, tsdoc.*, unocss.config.*, vitest.config.*, webpack.config.*, windi.config.*",
     "vue.config.*": "*.env, .babelrc*, .codecov, .cssnanorc*, .env.*, .envrc, .htmlnanorc*, .lighthouserc.*, .mocha*, .postcssrc*, .terserrc*, api-extractor.json, ava.config.*, babel.config.*, cssnano.config.*, cypress.json, env.d.ts, htmlnanorc.*, jasmine.*, jest.config.*, jsconfig.*, karma*, lighthouserc.*, playwright.config.*, postcss.config.*, puppeteer.config.*, svgo.config.*, tailwind.config.*, tsconfig.*, tsdoc.*, unocss.config.*, vitest.config.*, webpack.config.*, windi.config.*"
   },
-  "cSpell.ignorePaths": [
-    "node_modules"
-  ],
   "cSpell.words": [
     "openweblabs",
     "openweb",
@@ -117,6 +144,49 @@
     "jiti",
     "treeshaking",
     "breakline",
-    "automagically"
+    "automagically",
+    "singleline",
+    "gruntfuggly",
+    "envrc",
+    "gitmodules",
+    "gitmessage",
+    "classpath",
+    "cmake",
+    "cssnanorc",
+    "htmlnanorc",
+    "postcssrc",
+    "lighthouserc",
+    "tsdoc",
+    "terserrc",
+    "cssnano",
+    "lintstagedrc",
+    "codeowners",
+    "phpunit",
+    "browserslist",
+    "circleci",
+    "czrc",
+    "flowconfig",
+    "huskyrc",
+    "rustfmt",
+    "pubspec",
+    "astro",
+    "clippy",
+    "pyproject",
+    "releaserc",
+    "stackblitz",
+    "styleci",
+    "stylelint",
+    "textlint",
+    "tazerc",
+    "versionrc",
+    "procfile",
+    "mdsvex",
+    "dangerfile",
+    "dprint",
+    "pullapprove",
+    "phpcs",
+    "vetur",
+    "pyrightconfig",
+    "tsup"
   ]
 }
