@@ -42,11 +42,13 @@
     ]
   },
   "include": [
+    ".stacks/**/*.js",
     ".stacks/**/*.ts",
     ".stacks/**/*.json",
     "apps/**/*.ts",
     "apps/**/*.vue",
     "apps/**/*.json",
+    "config/*.ts",
     "packages/**/*.ts",
     "packages/**/*.vue",
     "packages/**/*.json"

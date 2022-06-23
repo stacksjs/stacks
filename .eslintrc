@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@antfu",
+    "@ow3",
     "./.stacks/.eslintrc-auto-import.json"
   ]
 }

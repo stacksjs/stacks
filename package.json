@@ -71,10 +71,10 @@
     "types:fix": "esno .stacks/scripts/fix-types.ts"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.25.1",
     "@babel/types": "^7.18.4",
     "@iconify-json/heroicons-outline": "^1.1.1",
     "@iconify-json/heroicons-solid": "^1.1.1",
+    "@ow3/eslint-config": "^0.27.0",
     "@types/node": "^17.0.31",
     "@unocss/preset-icons": "^0.39.3",
     "@unocss/transformer-compile-class": "^0.39.3",
