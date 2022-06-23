@@ -5,15 +5,17 @@
  * provided default config creates a well-optimized semver commit-flow that consequently helps generate changelogs.
  */
 
-import fs from 'fs'
-import path from 'path'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fs = require('fs')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path')
 
 const components = fs.readdirSync(path.resolve(__dirname, '../components'))
-  .filter(item => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts')
+  .filter((item: string) => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts')
 
 const functions = fs.readdirSync(path.resolve(__dirname, '../functions'))
-  .map(item => item.replace(/.ts/g, ''))
-  .filter(item => item !== 'index')
+  .map((item: string) => item.replace(/.ts/g, ''))
+  .filter((item: string) => item !== 'index')
 
 const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
 
