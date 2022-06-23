@@ -58,6 +58,7 @@
     "example": "esno .stacks/scripts/run-example.ts",
     "fresh": "rimraf .stacks/types/composables/* .stacks/types/components/* apps/**/node_modules packages/**/node_modules examples/**/node_modules .stacks/node_modules node_modules/ pnpm-lock.yaml && pnpm i",
     "preinstall": "esno .stacks/scripts/check-for-pnpm.ts && esno .stacks/scripts/check-node-version.ts",
+    "postinstall": "npx simple-git-hooks ./config/git-hooks.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "play": "pnpm --filter './playground' dev",
