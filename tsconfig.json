@@ -51,7 +51,7 @@
     "config/*.ts",
     "config/*.json",
     "functions/**/*.ts",
-    "functions/**/*.json",
+    "functions/**/*.json"
   ],
   "exclude": [
     "**/dist/**",
