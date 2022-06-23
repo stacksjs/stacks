@@ -188,5 +188,8 @@
     "vetur",
     "pyrightconfig",
     "tsup"
-  ]
+  ],
+    "html.customData": [
+      "./config/custom-elements.json"
+    ]
 }
