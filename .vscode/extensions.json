@@ -7,6 +7,7 @@
     "dbaeumer.vscode-eslint",
     "streetsidesoftware.code-spell-checker",
     "davidanson.vscode-markdownlint",
-    "antfu.unocss"
+    "antfu.unocss",
+    "Gruntfuggly.todo-tree"
   ]
 }
