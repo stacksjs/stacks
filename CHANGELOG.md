@@ -1,3 +1,15 @@
+# [0.22.0](https://github.com/openwebstacks/stacks-framework/compare/v0.21.0...v0.22.0) (2022-06-23)
+
+
+### Features
+
+* add ow3 eslint config ([e0960cf](https://github.com/openwebstacks/stacks-framework/commit/e0960cfe48f1b258b221cebc603acd24d2173867))
+* **dx:** add todo-tree to vscode setup ([f5839a7](https://github.com/openwebstacks/stacks-framework/commit/f5839a7d73b3d233933d83d9f82a1c2167763969))
+* **dx:** automatically clean all app node_modules ([9d11a3c](https://github.com/openwebstacks/stacks-framework/commit/9d11a3c65617c31f3c8023059fed706c4592a106))
+* **dx:** vscode setup improvements ([e9a8e14](https://github.com/openwebstacks/stacks-framework/commit/e9a8e14462750594cefd3e7d3a41578e1c6b907c))
+
+
+
 # [0.21.0](https://github.com/openwebstacks/stacks-framework/compare/v0.20.8...v0.21.0) (2022-06-22)
 
 

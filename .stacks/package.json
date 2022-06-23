@@ -1,6 +1,6 @@
 {
   "name": "@ow3/stacks",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "packageManager": "pnpm@7.3.0",
   "description": "The core of the component library and Stacks framework.",
   "author": "Chris Breuer",

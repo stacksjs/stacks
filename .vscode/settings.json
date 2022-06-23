@@ -191,7 +191,7 @@
     "applypatch",
     "fsmonitor",
     "sendemail",
-    "changelist'",
+    "changelist"
   ],
   "html.customData": [
     "./config/custom-elements.json"
