@@ -101,15 +101,9 @@ importers:
 
   playground:
     specifiers:
-      typescript: ^4.7.4
       vite: ^2.9.12
-      vue: ^3.2.37
-      vue-tsc: ^0.38.1
     devDependencies:
-      typescript: 4.7.4
       vite: 2.9.12
-      vue: 3.2.37
-      vue-tsc: 0.38.1_typescript@4.7.4
 
 packages:
 

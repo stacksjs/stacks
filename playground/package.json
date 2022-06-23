@@ -1,14 +1,11 @@
 {
-  "name": "playground",
+  "name": "stacks-playground",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "dev": "vite -c ../.stacks/builds/components/build.config.ts --open --port=3333"
   },
   "devDependencies": {
-    "typescript": "^4.7.4",
-    "vite": "^2.9.12",
-    "vue": "^3.2.37",
-    "vue-tsc": "^0.38.1"
+    "vite": "^2.9.12"
   }
 }
