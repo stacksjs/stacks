@@ -1,4 +1,10 @@
-// TODO: refactor to .ts
+/**
+ * This configuration is used to define your "commit flow."
+ *
+ * Adjust the values below however you desire. Though, keep in mind:
+ * provided default config creates a well-optimized semver commit-flow that consequently helps generate changelogs.
+ */
+
 import fs from 'fs'
 import path from 'path'
 

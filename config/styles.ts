@@ -1,3 +1,7 @@
+/**
+ * This configuration is used to define your project-specific style guide.
+ */
+
 import type { Shortcuts } from '@ow3/stacks'
 
 /**

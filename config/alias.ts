@@ -1,12 +1,13 @@
-import { resolve } from 'path'
-
-const r = (p: string) => resolve(__dirname, p)
-
 /**
  * The following configuration references local aliases.
  *
  * TODO: the future "artisan setup"-command will set up these aliases.
  */
+
+import { resolve } from 'path'
+
+const r = (p: string) => resolve(__dirname, p)
+
 export const alias: Record<string, string> = {
   '~': r('../packages'),
   '@ow3/hello-world-vue': r('../packages/components/index.ts'),

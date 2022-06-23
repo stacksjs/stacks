@@ -1,9 +1,11 @@
-import type { DocsConfig } from '@ow3/stacks'
-
 /**
  * This is the place where you define your documentation configuration.
+ *
  * For all available options, see the DocsConfig type definition.
  */
+
+import type { DocsConfig } from '@ow3/stacks'
+
 export const docs: DocsConfig = {
   lang: 'en-US',
   title: 'Stacks',
