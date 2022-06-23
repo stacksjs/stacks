@@ -8,14 +8,14 @@
 import fs from 'fs'
 import path from 'path'
 
-const packages = fs.readdirSync(path.resolve(__dirname, '../packages'))
+const components = fs.readdirSync(path.resolve(__dirname, '../components'))
   .filter(item => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts')
 
-const composables = fs.readdirSync(path.resolve(__dirname, '../packages/composables'))
+const functions = fs.readdirSync(path.resolve(__dirname, '../functions'))
   .map(item => item.replace(/.ts/g, ''))
   .filter(item => item !== 'index')
 
-const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...packages, ...composables]
+const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
 
 /** @type {import('cz-git').UserConfig} */
 module.exports = {

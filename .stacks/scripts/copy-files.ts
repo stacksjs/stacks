@@ -6,7 +6,7 @@ import { join, resolve } from 'path'
 const destinations = [
   // ['../dist/packages/components', '../packages/core/types/components'],
   // ['../dist/packages/elements', '../packages/core/types/components'],
-  ['../dist/packages/composables', '../packages/core/types/composables'],
+  ['../dist/composables', '../.stacks/types/composables'],
 ]
 
 const copyRecursiveSync = function (src, dest) {

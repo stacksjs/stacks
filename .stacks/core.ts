@@ -28,7 +28,7 @@ const Stacks = (configFile = './unocss.ts') => [
   // https://github.com/antfu/unplugin-auto-import
   AutoImport({
     imports: ['vue', '@vueuse/core', {
-      '@ow3/hello-world-composable': ['count', 'increment', 'isDark', 'toggleDark'],
+      '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
     }],
     dts: resolve(__dirname, './types/auto-imports.d.ts'),
     eslintrc: {
@@ -39,7 +39,7 @@ const Stacks = (configFile = './unocss.ts') => [
 
   // https://github.com/antfu/unplugin-vue-components
   Components({
-    dirs: ['../../packages/components'],
+    dirs: ['../../components'],
     extensions: ['vue'],
     dts: resolve(__dirname, './types/components.d.ts'),
   }),

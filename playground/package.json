@@ -7,9 +7,6 @@
     "build": "vite build",
     "serve": "vite preview"
   },
-  "dependencies": {
-    "@ow3/hello-world-vue": "workspace:*"
-  },
   "devDependencies": {
     "typescript": "^4.7.4",
     "vite": "^2.9.12",

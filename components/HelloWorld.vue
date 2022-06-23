@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { onMounted } from 'vue'
-import { count, increment } from '@ow3/hello-world-composable'
+import { count, increment } from '@ow3/hello-world-functions'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
