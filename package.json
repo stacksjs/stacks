@@ -42,10 +42,10 @@
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "build": "pnpm -r --filter './components' -filter './functions' --filter './.stacks' run build",
-    "build:stacks": "pnpm --filter './.stacks' run build",
+    "build": "pnpm --filter './components' -filter './functions' --filter './.stacks' run build",
     "build:functions": "pnpm --filter './functions' run build",
     "build:components": "pnpm --filter './components' --filter './.stacks/elements' run build",
+    "build:stacks": "pnpm --filter './.stacks' run build",
     "build:vue": "pnpm --filter './components' run build",
     "build:elements": "pnpm --filter './.stacks/elements' run build",
     "build:types": "wip",
