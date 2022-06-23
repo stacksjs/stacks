@@ -3,5 +3,5 @@ import HelloWorld from '../components/HelloWorld.vue'
 </script>
 
 <template>
-  <HelloWorld greeting="Hello Vue Component" />
+  <HelloWorld greeting="Hello Stacks Component" />
 </template>
