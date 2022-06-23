@@ -1,5 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
-import { alias } from '../../.stacks/aliass'
+import { alias } from '../../config'
 
 export default defineBuildConfig({
   alias,

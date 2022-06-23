@@ -6,7 +6,7 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { alias } from './alias'
+import { alias } from '../config'
 import { buildComposables, buildVueComponents, buildWebComponents, buildStacks } from './builds'
 
 const Stacks = (configFile = './unocss.ts') => [

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { alias } from './alias'
+import { alias } from '../config'
 
 export default defineConfig({
   optimizeDeps: {

@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
-import { alias } from '../alias'
+import { alias } from '../../config'
 import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../../config'
 import { BuildConfig } from 'unbuild'
 
