@@ -8,31 +8,31 @@
 
 # The Modern Component Library
 
-The Stacks Framework helps kick-start & maintain development of your next component library. Stacks is the most simple & comfortable solution for frontend developers to build highly-modular, widely-accepted & scalable component libraries. No matter whether you are a beginner or an expert, Stacks' approachable design allows you to learn more about its capabilities as you develop your library.
+The ultimate goal of this framework, Stacks, is to _help you_ create & maintain a component library. Stacks is the most simple & comfortable solution for UI developers to build highly-modular, widely-accepted & scalable component libraries, in a beginner-friendly way.
 
 > _The clever way to build component libraries._
 
-Develop beautiful reactive composable UIs without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—dive in now!
+**🤖 Zero-config by default**  
 
-## ☘️ Features
+The highly optimized Stacks bundler automagically builds & distributes commonjs & module library formats. Additionally, it automatically generates a Web Component & Vue (2 & 3) libraries, plus component & composable type declarations.
 
-The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types. Other core features include:
+**🎨 Style with ease**
 
-- Automagically builds & distributes Web Component & Vue (2 & 3) libraries for you
-- Zero-config by default, yet highly-configurable—if needed
-- Delightful Developer Experience _(DX)_
-- Style with ease via UnoCSS _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
-- Modern git commit conventions
-- Automated npm package releases & semver versioning
-- Pretty changelog generations _(markdown & GitHub releases)_
-- Fully-typed, automatically _(your components & composables)_
-- Optimized & automated GitHub PR dependency updates
-- Bootstrapped documentation tooling & site to present library _(via VitePress)_
-- Pre-configured Playground & Examples
+Create your own style guide using conventions you are familiar with via UnoCSS. _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
 
-## 💡 Get Started
+**💡 Delightful DX**
 
-It's easy incredibly easy to get started. The only prerequisite is a basic understanding of how to work with basic HTML & JavaScript. with Vue Single File Components (SFCs). In other words, there is virtually no learning curve because "HTML with sprinkled JavaScript" will get you _incredibly_ far.
+Whether it is the simple setup, modern git commit conventions via commitlint, a modern CI, automated npm package releases & semver versioning, pretty changelog generations, GitHub PR dependency updates, spell-checking, integrated documentation tooling, or a pre-configured playground & examples. Stacks has it all.
+
+**🧩 Deep VS Code integration**
+
+IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in Stacks. All without the need of Prettier.
+
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace. Develop beautiful, reactive, composable UIs without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—all you need to dive in now!
+
+## ☘️ Get Started
+
+It's incredibly easy to get started with this framework:
 
 ```bash
 # you may "Use this template" via the button in top right corner of this page
@@ -64,9 +64,9 @@ pnpm docs:build # builds the documentation site
 pnpm docs:serve # serves the documentation site
 ```
 
-_The `package.json` may contain additional useful snippets you want to be aware of._
+_The `package.json` contains additional useful snippets you may want to be aware of._
 
-Because we optimize toward the development of easily reusable & composable component libraries, our primary intention is always _keep it simple, yet configurable_:
+Because we optimize toward the development of easily reusable & composable component libraries, our primary intention is to always _keep it simple, yet configurable_:
 
 ```html
 <html>
@@ -89,35 +89,7 @@ import HelloWorld from 'hello-world-vue'
 </template>
 ```
 
-Read more about the setup & tips in the docs.
-
-### Developer Experience (DX)
-
-Stacks is a Component-First, UI & Build Framework. When developing your own library, Stacks bootstraps the following for you:
-
-- [Powerful Build Engine](https://github.com/openwebstacks/stacks-framework/tree/main/.stacks/builds) - Stacks is a optimized [Vite](https://vitejs.dev/) & [unbuild](https://github.com/unjs/unbuild) harmony
-- [Modern CSS Engine](https://github.com/unocss/unocss) - pre-configured UnoCSS allows to create & manage your style guide with ease
-- [Fully Typed APIs](https://www.typescriptlang.org/) - via TypeScript 4.7
-- [Be a Good Commitizen](https://www.npmjs.com/package/git-cz) - pre-configured Commitizen & git-cz setup to simplify semantic git commits, versioning, and changelog generations
-- [Built With Testing In Mind](https://github.com/vitest-dev/vitest) - pre-configured unit-testing powered by [Vitest](https://github.com/vitest-dev/vitest) & e2e-testing by [Cypress](https://cypress.io/)
-- [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- [GitHub Actions](https://github.com/features/actions) - runs your CI (fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
-
-#### Plugins & Extensions
-
-- [Automagically imports components](https://github.com/antfu/unplugin-vue-components)
-- [Use framework functionalities without imports](https://github.com/antfu/unplugin-auto-import)
-  - [VueUse](https://github.com/antfu/vueuse) - a collection of useful functions
-- [Deep VS Code Integration](./.vscode/extensions.json)
-  - [IDE Capabilities](https://marketplace.visualstudio.com/items?itemName=vue.volar) - type hints, code completion, code formatting and more
-  - [Spell Checking](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - no more annoying typos to slip by!
-  - [Utility Class Intellisense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Tailwind CSS (or Windi CSS) class name sorter
-
-#### Coding Style
-
-- [ESLint](https://eslint.org/) - statically analyzes, fixes and formats your code without the need of Prettier
-
-When using this framework, feel free to adjust it to your needs. It is "simply" is a set of rules to help you quickly & efficiently bootstrap & design component libraries, using industry best-practices.
+When using this framework, feel free to adjust it to your needs. It is "simply" a set of rules to help you quickly & efficiently bootstrap & design component libraries, using industry best-practices.
 
 ## 🧪 Testing
 
