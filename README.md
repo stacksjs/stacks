@@ -20,19 +20,21 @@ The highly optimized Stacks bundler automagically builds & distributes CommonJS 
 
 Create your own style guide using conventions you are familiar with via UnoCSS. _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
 
-**💡 Delightful DX**
+**⚡️ Next-Gen Developer Experience _(DX)_**
 
-Whether it is the simple setup, modern git commit conventions via commitlint, a modern CI, automated npm package releases & semver versioning, pretty changelog generations, GitHub PR dependency updates, spell-checking, integrated documentation tooling, or a pre-configured playground & examples. Stacks has it all.
+Whether it is the simple setup, modern git commit conventions via commitlint, a modern CI, automated npm package releases & semver versioning, pretty changelog generations, GitHub PR dependency updates, spell-checking, integrated documentation tooling, or a pre-configured playground & examples. _Stacks has it all._
 
-**🧩 Next-Gen VS Code integration**
+**💡 Delightful VS Code integration**
 
-IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in within Stacks. Without the need of Prettier.
+IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in within Stacks. _Without the need of Prettier._
 
-**🤝 Extremely beginner & expert-friendly**
+**🧙🏼‍♀️ Extremely beginner & expert-friendly**
 
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace. Develop beautiful, reactive, composable UIs without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—all you need to dive in now!
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace.
 
-## ☘️ Get Started
+Develop beautiful, reactive, composable UIs & functions without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—that's all you need to dive in now!
+
+## Get Started
 
 It's incredibly easy to get started with this framework:
 
@@ -41,7 +43,7 @@ It's incredibly easy to get started with this framework:
 # or run the following commands:
 npx degit openwebstacks/stacks-framework hello-world-stack
 cd hello-world-stack
-npm run setup # WIP
+npx artisan setup # WIP
 ```
 
 ## 🤖 Usage
