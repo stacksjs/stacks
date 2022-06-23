@@ -1,4 +1,3 @@
-import { defineBuildConfig } from 'unbuild'
-import { buildComposables as stacks } from '..'
+import { buildComposables as stacks, defineBuildConfig } from '@ow3/stacks'
 
-export default defineBuildConfig(stacks(['../../../composables/index']))
+export default defineBuildConfig(stacks(['../../../functions/index']))

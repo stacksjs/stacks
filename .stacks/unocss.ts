@@ -1,3 +1,4 @@
+import { classPrefix, trigger, icons as collections, safelist, shortcuts } from '@ow3/stacks'
 import {
   defineConfig,
   presetIcons,
@@ -8,7 +9,6 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { classPrefix, trigger, icons as collections, safelist, shortcuts } from './config'
 
 const config = defineConfig({
   shortcuts,

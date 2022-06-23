@@ -1,4 +1,3 @@
-import { defineBuildConfig } from 'unbuild'
-import { buildStacks } from './builds'
+import { buildStacks as stacks, defineBuildConfig } from './builds'
 
-export default defineBuildConfig(buildStacks())
+export default defineBuildConfig(stacks())

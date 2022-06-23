@@ -32,7 +32,6 @@
     ".stacks/*",
     "apps/*",
     "components/*",
-    "config/*",
     "examples/*",
     "functions/*",
     "playground/*"

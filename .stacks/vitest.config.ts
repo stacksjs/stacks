@@ -1,5 +1,4 @@
-import { defineConfig } from 'vite'
-import { alias } from './config'
+import { alias, defineConfig } from '@ow3/stacks'
 
 export default defineConfig({
   optimizeDeps: {

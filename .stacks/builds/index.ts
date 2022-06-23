@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
 import { alias } from '../config'
 import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../config'
-import { BuildConfig } from 'unbuild'
+import { BuildConfig, defineBuildConfig } from 'unbuild'
 
 function buildVueComponents(entry?: string): BuildOptions {
   if (!entry)
@@ -106,6 +106,7 @@ function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildCon
 }
 
 export {
+  defineBuildConfig,
   buildVueComponents,
   buildWebComponents,
   buildComposables,

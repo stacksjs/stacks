@@ -1,5 +1,4 @@
-import { defineBuildConfig } from 'unbuild'
-import { alias } from '../.stacks/config'
+import { alias, defineBuildConfig } from '@ow3/stacks'
 
 export default defineBuildConfig({
   alias,

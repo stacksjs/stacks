@@ -2,7 +2,6 @@ packages:
   - .stacks
   - 'apps/*'
   - 'components/*'
-  - 'config/*'
   - 'functions/*'
   - playground
   - '!examples/**'

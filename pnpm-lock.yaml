@@ -90,7 +90,7 @@ importers:
       unplugin-auto-import: 0.9.0_4mifhig4dhgnrt67tg257xfjai
       unplugin-vue-components: 0.19.9_7felabkkrfdt7dxozyactxvh24
       vite-plugin-inspect: 0.5.0_vite@2.9.12
-      vitepress: 1.0.0-alpha.4_twyhzqqpkwvvgrmyeapdo6i4my
+      vitepress: 1.0.0-alpha.4
     devDependencies:
       unbuild: 0.7.4
       vite: 2.9.12
@@ -99,7 +99,7 @@ importers:
     specifiers:
       vitepress: 1.0.0-alpha.4
     dependencies:
-      vitepress: 1.0.0-alpha.4
+      vitepress: 1.0.0-alpha.4_twyhzqqpkwvvgrmyeapdo6i4my
 
   playground:
     specifiers:
@@ -1717,7 +1717,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001358
-      electron-to-chromium: 1.4.167
+      electron-to-chromium: 1.4.168
       node-releases: 2.0.5
       update-browserslist-db: 1.0.4_browserslist@4.21.0
     dev: true
@@ -2566,8 +2566,8 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
-  /electron-to-chromium/1.4.167:
-    resolution: {integrity: sha512-lPHuHXBwpkr4RcfaZBKm6TKOWG/1N9mVggUpP4fY3l1JIUU2x4fkM8928smYdZ5lF+6KCTAxo1aK9JmqT+X71Q==}
+  /electron-to-chromium/1.4.168:
+    resolution: {integrity: sha512-yz247hclRBaP8ABB1hf9kL7AMfa+yC2hB9F3XF8Y87VWMnYgq4QYvV6acRACcDkTDxfGQ4GYK/aZPQiuFMGbaA==}
     dev: true
 
   /emoji-regex/8.0.0:
