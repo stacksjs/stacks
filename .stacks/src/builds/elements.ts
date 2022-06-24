@@ -1,5 +1,5 @@
-import type { UserConfig } from '../..'
-import { Stacks, defineConfig, buildVueComponents as vueComponents, alias } from '../..'
+import type { UserConfig } from '..'
+import { Stacks, alias, buildWebComponents as webComponents, defineConfig } from '..'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
@@ -16,7 +16,7 @@ const config: UserConfig = {
     Stacks(),
   ],
 
-  build: vueComponents(),
+  build: webComponents(),
 }
 
 export default defineConfig(({ command }) => {

@@ -43,14 +43,5 @@
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.3.0"
-  },
-  "scripts": {
-    "dev": "unbuild --stub",
-    "build": "unbuild ../../.stacks/builds/functions",
-    "stub": "unbuild --stub"
-  },
-  "devDependencies": {
-    "@vueuse/core": "^8.7.5",
-    "unbuild": "^0.7.4"
   }
 }

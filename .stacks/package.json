@@ -1,5 +1,6 @@
 {
   "name": "@ow3/stacks",
+  "private": true,
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
   "description": "The core of the component library and Stacks framework.",
@@ -49,7 +50,7 @@
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "build": "unbuild",
+    "build:functions": "unbuild",
     "dev": "unbuild --stub",
     "stub": "unbuild --stub"
   },

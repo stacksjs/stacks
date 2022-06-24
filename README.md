@@ -36,14 +36,11 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 
 ## Get Started
 
-It's incredibly easy to get started with this framework:
+It's incredibly easy to get started with this framework. It's as simple as "Using this template" via the button in top right corner of this page, or run the following snippet of code in your terminal:
 
 ```bash
-# you may "Use this template" via the button in top right corner of this page
-# or run the following commands: (WIP)
-npx create-stack hello-world-stack 
-cd hello-world-stack
-npx artisan setup
+npx create-stack hello-world # wip - under heavy development - check back this weekend!
+cd hello-world && npx artisan setup
 ```
 
 ## 🤖 Usage
@@ -64,8 +61,8 @@ pnpm commit # follow CLI prompts for committing changes
 pnpm release # releases the library (packages) to npm
 
 pnpm docs:dev # starts local server for the documentation site
-pnpm docs:build # builds the documentation site
-pnpm docs:serve # serves the documentation site
+pnpm docs:build # builds the docs
+pnpm docs:serve # serves the docs
 ```
 
 _The `package.json` contains additional useful snippets you may want to be aware of._

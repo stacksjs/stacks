@@ -1,11 +1,15 @@
 import { resolve } from 'path'
-import type { BuildOptions } from 'vite'
+import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '..'
-import { BuildConfig, defineBuildConfig } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
+import { buildStacks } from './stacks'
+import type { BuildConfig as UnbuildConfig } from 'unbuild'
 
-function buildVueComponents(entry?: string): BuildOptions {
+export type BuildConfig = UnbuildConfig
+
+function buildVueComponents(entry?: string): ViteBuildOptions {
   if (!entry)
-    entry = resolve(__dirname, '../../components/index.ts')
+    entry = resolve(__dirname, '../../../components/index.ts')
 
   return {
     lib: {
@@ -40,7 +44,7 @@ function buildVueComponents(entry?: string): BuildOptions {
   }
 }
 
-function buildWebComponents(entry?: string): BuildOptions {
+function buildWebComponents(entry?: string): ViteBuildOptions {
   if (!entry)
     entry = resolve(__dirname, '../../components/index.ts')
 
@@ -84,34 +88,7 @@ function buildFunctions(entries: string[] = ['./index']): BuildConfig {
   }
 }
 
-function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildConfig {
-  // eslint-disable-next-line no-console
-  console.log('here?')
-  
-  if (!outDir)
-    outDir = resolve(__dirname, '../dist')
-
-  // eslint-disable-next-line no-console
-  console.log('entries', entries)
-
-  return {
-    alias,
-    entries,
-    outDir,
-    clean: true,
-    declaration: true,
-    rollup: {
-      emitCJS: true,
-      inlineDependencies: true,
-    },
-    externals: [
-      'vite', 'vue', '@vueuse/core',
-    ],
-  }
-}
-
 export {
-  BuildConfig,
   defineBuildConfig,
   buildVueComponents,
   buildWebComponents,

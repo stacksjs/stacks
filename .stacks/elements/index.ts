@@ -1,8 +1,8 @@
-import { HelloWorld, defineCustomElement } from '@ow3/stacks'
+// TODO: this needs to be dynamic
 
-// TODO: need to automate this definition process
+import { defineCustomElement } from '@ow3/stacks'
+import { HelloWorld } from '@ow3/hello-world-stack'
+
 const HelloWorldCustomElement = defineCustomElement(HelloWorld)
 
-// export function register() {
 customElements.define('hello-world', HelloWorldCustomElement)
-// }

@@ -1,6 +1,10 @@
-// import { resolve } from 'path'
+import { resolve } from 'path'
 import { buildStacks, defineBuildConfig } from './src'
 
-console.log('Building stacks...')
+const entries = [
+    resolve(__dirname, '../functions/index.ts'),
+    resolve(__dirname, '../components/index.ts'),
+];
+const outDir = resolve(__dirname, '../functions/dist');
 
-export default defineBuildConfig(buildStacks())
+export default defineBuildConfig(buildStacks(entries, outDir))

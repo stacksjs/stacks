@@ -1,7 +1,7 @@
 packages:
-  - '.stacks/**'
-  - 'apps/**'
-  - 'components/*'
-  - 'functions/*'
-  - 'playground/*'
+  - './.stacks/**'
+  - './apps/**'
+  - ./components
+  - ./functions
+  - ./playground
   - '!examples/**'

@@ -4,9 +4,10 @@
  * For all available options, see the DocsConfig type definition.
  */
 
-import type { DocsConfig } from '@ow3/stacks'
+// import type { DocsConfig } from '@ow3/stacks'
+import type { UserConfig } from 'vitepress'
 
-export const docs: DocsConfig = {
+export const docs: UserConfig = {
   lang: 'en-US',
   title: 'Stacks',
   description: 'Component-First. UI & Build Framework.',
