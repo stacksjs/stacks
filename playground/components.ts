@@ -1,5 +1,5 @@
-import type { UserConfig } from '../'
-import { Stacks, defineConfig, buildVueComponents as vueComponents, alias } from '../'
+import type { UserConfig } from '../.stacks'
+import { Stacks, alias, defineConfig, buildVueComponents as vueComponents } from '../.stacks'
 
 // eslint-disable-next-line no-console
 console.log('config is here ')

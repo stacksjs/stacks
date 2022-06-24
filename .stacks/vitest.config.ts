@@ -1,4 +1,4 @@
-import { alias, defineConfig } from '@ow3/stacks'
+import { alias, defineConfig } from '.'
 
 export default defineConfig({
   optimizeDeps: {
@@ -9,7 +9,7 @@ export default defineConfig({
     alias,
   },
 
-  // test: {
-  //   isolate: false,
-  // },
+  test: {
+    isolate: false,
+  },
 })

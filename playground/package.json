@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite -c ../.stacks/src/builds/components.ts --open --port=3333"
+    "dev": "vite dev -c ./components.ts --open --port=3333"
   },
   "devDependencies": {
     "vite": "^2.9.12"

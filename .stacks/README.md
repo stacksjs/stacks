@@ -24,7 +24,7 @@ And all of this in a zero-config, yet configurable, way.
 If you want to use Stacks outside of this framework, install it as a dev dependency:
 
 ```bash
-pnpm i -D @ow3/stacks
+pnpm i -D @ow3/stacks # wip
 ```
 
 Now, you can use it in your project:

@@ -29,16 +29,16 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "types": "./../.stacks/functions/dist/index.d.ts",
+      "require": "./../.stacks/functions/dist/index.cjs",
+      "import": "./../.stacks/functions/dist/index.mjs"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "../.stacks/functions/dist/index.cjs",
+  "module": "../.stacks/functions/dist/index.mjs",
+  "types": "../.stacks/functions/dist/index.d.ts",
   "files": [
-    "dist"
+    "../.stacks/functions/dist"
   ],
   "engines": {
     "node": ">=v16.15.1",

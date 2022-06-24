@@ -1,4 +1,4 @@
-import { classPrefix, trigger, icons as collections, safelist, shortcuts } from '@ow3/stacks'
+import { classPrefix, trigger, icons as collections, safelist, shortcuts } from '.'
 import {
   defineConfig,
   presetIcons,
