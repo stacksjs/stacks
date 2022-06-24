@@ -1,7 +1,6 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
-import { alias } from '../config'
-import { VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../config'
+import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '@ow3/stacks'
 import { BuildConfig, defineBuildConfig } from 'unbuild'
 
 function buildVueComponents(entry?: string): BuildOptions {
@@ -68,7 +67,7 @@ function buildWebComponents(entry?: string): BuildOptions {
   }
 }
 
-function buildComposables(entries: string[] = ['./index']): BuildConfig {
+function buildFunctions(entries: string[] = ['./index']): BuildConfig {
   return {
     alias,
     entries,
@@ -89,6 +88,9 @@ function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildCon
   if (!outDir)
     outDir = resolve(__dirname, '../dist')
 
+  // eslint-disable-next-line no-console
+  console.log('entries', entries)
+
   return {
     alias,
     entries,
@@ -100,15 +102,16 @@ function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildCon
       inlineDependencies: true,
     },
     externals: [
-      'vite', 'unbuild', 'vue', '@vueuse/core',
+      'vite', 'vue', '@vueuse/core',
     ],
   }
 }
 
 export {
+  BuildConfig,
   defineBuildConfig,
   buildVueComponents,
   buildWebComponents,
-  buildComposables,
+  buildFunctions,
   buildStacks,
 }

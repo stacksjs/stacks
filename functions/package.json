@@ -16,16 +16,13 @@
   },
   "keywords": [
     "composable",
+    "function",
     "library",
-    "vue",
     "typescript",
     "javascript",
     "starter",
     "kit",
-    "package",
-    "components",
-    "web components",
-    "sfcs"
+    "package"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -49,7 +46,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild ../../.stacks/builds/composables",
+    "build": "unbuild ../../.stacks/builds/functions",
     "stub": "unbuild --stub"
   },
   "devDependencies": {

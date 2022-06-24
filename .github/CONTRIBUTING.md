@@ -12,7 +12,7 @@ Don't be discouraged, because you likely will get by and learning TypeScript on 
 
 ### Vue 3.2 & Vite & unbuild
 
-This project uses [Vue][vue], [Vite][vite] and [unbuild][unbuild] to build [Vue components][vue-components], Web Components, and composables.
+This project uses [Vue][vue], [Vite][vite] and [unbuild][unbuild] to build [Vue components][vue-components], Web Components, and "composable functions".
 
 ### Architecture
 

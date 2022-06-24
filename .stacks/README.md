@@ -4,7 +4,7 @@ This package contains the "core" logic of the framework/the monorepo setup, e.g.
 
 ## ☘️ Features
 
-The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a library of composables, methods, and other goodies required to build optimized component libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
+The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a toolkit of composables, methods, and other goodies required to build optimized component libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
 
 Other included core features are:
 
@@ -31,14 +31,14 @@ Now, you can use it in your project:
 
 ```js
 import {
+  alias,
   buildVueComponents,
   buildWebComponents,
-  buildComposables,
+  buildFunctions,
   buildStacks,
-  Stacks,
-  alias,
-  resolve,
   defineConfig,
+  resolve,
+  Stacks,
   UserConfig,
  } from '@ow3/stacks'
 

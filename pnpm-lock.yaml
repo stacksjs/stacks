@@ -81,7 +81,6 @@ importers:
       unplugin-vue-components: ^0.19.9
       vite: ^2.9.12
       vite-plugin-inspect: ^0.5.0
-      vitepress: 1.0.0-alpha.4
     dependencies:
       '@unocss/preset-icons': 0.39.3
       '@unocss/transformer-compile-class': 0.39.3
@@ -90,7 +89,6 @@ importers:
       unplugin-auto-import: 0.9.0_4mifhig4dhgnrt67tg257xfjai
       unplugin-vue-components: 0.19.9_7felabkkrfdt7dxozyactxvh24
       vite-plugin-inspect: 0.5.0_vite@2.9.12
-      vitepress: 1.0.0-alpha.4
     devDependencies:
       unbuild: 0.7.4
       vite: 2.9.12
@@ -525,17 +523,6 @@ packages:
     resolution: {integrity: sha512-bh5IskwkkodbvC0FzSg1AxMykfDl95hebEKwxNoq4e5QaGzOXSBgW8+jnMFZ7JU4sTBiB04vZWoUSzNrPboLZA==}
     dev: false
 
-  /@docsearch/js/3.1.0:
-    resolution: {integrity: sha512-5XSK+xbP0hcTIp54MECqxkWLs6kf7Ug4nWdxWNtx8cUpLiFNFnKXDxCb35wnyNpjukmrx7Q9DkO5tFFsmNVxng==}
-    dependencies:
-      '@docsearch/react': 3.1.0
-      preact: 10.8.2
-    transitivePeerDependencies:
-      - '@types/react'
-      - react
-      - react-dom
-    dev: false
-
   /@docsearch/js/3.1.0_twyhzqqpkwvvgrmyeapdo6i4my:
     resolution: {integrity: sha512-5XSK+xbP0hcTIp54MECqxkWLs6kf7Ug4nWdxWNtx8cUpLiFNFnKXDxCb35wnyNpjukmrx7Q9DkO5tFFsmNVxng==}
     dependencies:
@@ -545,18 +532,6 @@ packages:
       - '@types/react'
       - react
       - react-dom
-    dev: false
-
-  /@docsearch/react/3.1.0:
-    resolution: {integrity: sha512-bjB6ExnZzf++5B7Tfoi6UXgNwoUnNOfZ1NyvnvPhWgCMy5V/biAtLL4o7owmZSYdAKeFSvZ5Lxm0is4su/dBWg==}
-    peerDependencies:
-      '@types/react': '>= 16.8.0 < 19.0.0'
-      react: '>= 16.8.0 < 19.0.0'
-      react-dom: '>= 16.8.0 < 19.0.0'
-    dependencies:
-      '@algolia/autocomplete-core': 1.6.3
-      '@docsearch/css': 3.1.0
-      algoliasearch: 4.13.1
     dev: false
 
   /@docsearch/react/3.1.0_twyhzqqpkwvvgrmyeapdo6i4my:
@@ -6390,30 +6365,6 @@ packages:
       rollup: 2.75.7
     optionalDependencies:
       fsevents: 2.3.2
-
-  /vitepress/1.0.0-alpha.4:
-    resolution: {integrity: sha512-bOAA4KW6vYGlkbcrPLZLTKWTgXVroObU+o9xj9EENyEl6yg26WWvfN7DGA4BftjdM5O8nR93Z5khPQ3W/tFE7Q==}
-    engines: {node: '>=14.6.0'}
-    hasBin: true
-    dependencies:
-      '@docsearch/css': 3.1.0
-      '@docsearch/js': 3.1.0
-      '@vitejs/plugin-vue': 2.3.3_vite@2.9.12+vue@3.2.37
-      '@vue/devtools-api': 6.1.4
-      '@vueuse/core': 8.7.5_vue@3.2.37
-      body-scroll-lock: 4.0.0-beta.0
-      shiki: 0.10.1
-      vite: 2.9.12
-      vue: 3.2.37
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@vue/composition-api'
-      - less
-      - react
-      - react-dom
-      - sass
-      - stylus
-    dev: false
 
   /vitepress/1.0.0-alpha.4_twyhzqqpkwvvgrmyeapdo6i4my:
     resolution: {integrity: sha512-bOAA4KW6vYGlkbcrPLZLTKWTgXVroObU+o9xj9EENyEl6yg26WWvfN7DGA4BftjdM5O8nR93Z5khPQ3W/tFE7Q==}

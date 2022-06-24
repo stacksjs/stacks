@@ -20,6 +20,9 @@
       "vite/client"
     ],
     "paths": {
+      "@ow3/hello-world-stack": [
+        "./components/index.ts"
+      ],
       "@ow3/hello-world-vue": [
         "./components/index.ts"
       ],
@@ -30,7 +33,7 @@
         "functions"
       ],
       "@ow3/stacks": [
-        ".stacks"
+        ".stacks/index.ts"
       ]
     },
     "lib": [

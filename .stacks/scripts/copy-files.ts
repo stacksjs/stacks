@@ -6,10 +6,10 @@ import { join, resolve } from 'path'
 const destinations = [
   // ['../dist/packages/components', '../packages/core/types/components'],
   // ['../dist/packages/elements', '../packages/core/types/components'],
-  ['../dist/composables', '../.stacks/types/composables'],
+  ['../dist/functions', '../.stacks/types/functions'],
 ]
 
-const copyRecursiveSync = function (src, dest) {
+const copyRecursiveSync = function (src: string, dest: string) {
   const exists = existsSync(src)
   const stats = exists && statSync(src)
   const isDirectory = exists && stats.isDirectory()

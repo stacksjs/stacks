@@ -31,7 +31,7 @@ jobs:
         run: pnpm run build
 
       - name: Publish to npm
-        run: pnpm -r --filter './components/**' -filter './functions/**' --filter './.stacks' publish --access public --no-git-checks
+        run: pnpm --filter './.stacks' --filter './components' --filter './functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

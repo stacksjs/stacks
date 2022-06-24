@@ -32,7 +32,7 @@ IDE Capabilities, such as type hints, code completion, code formatting, and more
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace.
 
-Develop beautiful, reactive, composable UIs & functions without learning a new language. HTML, CSS, sprinkled with minimal JavaScript—that's all you need to dive in now!
+Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now!
 
 ## Get Started
 
