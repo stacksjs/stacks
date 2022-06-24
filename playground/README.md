@@ -4,15 +4,9 @@ This folder contains the files for your development playground.
 
 ## How is the Playground different from an example?
 
-The playground is almost the "same" as an example. The difference lies in the dependencies that are required: the playground requires a locally symlinked version (enabled via `pnpm run dev`'s passive watching) and an examples requires the dependencies direct from npm.
+A playground is almost "identical" to examples. The core difference lies in the dependencies that are required: the playground requires a locally, symlinked version (enabled via `pnpm run dev`'s passive watching) and examples require the dependencies strictly from released npm versions.
 
 For those reasons, the playground is perfectly suited for your local development.
-
-## 🧪 Testing
-
-```bash
-pnpm test
-```
 
 ## 📈 Changelog
 

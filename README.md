@@ -39,8 +39,7 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. It's as simple as "Using this template" via the button in top right corner of this page, or run the following snippet of code in your terminal:
 
 ```bash
-npx create-stack hello-world # wip - under heavy development - check back this weekend!
-cd hello-world && npx artisan setup
+pnpm create stack hello-world # wip - under heavy development - check back this weekend!
 ```
 
 ## 🤖 Usage

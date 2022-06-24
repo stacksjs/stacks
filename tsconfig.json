@@ -55,7 +55,7 @@
     "config/*.json",
     "functions/**/*.ts",
     "functions/**/*.json"
-, "playground/components.config.ts"  ],
+  ],
   "exclude": [
     "**/dist/**",
     "**/node_modules/**"

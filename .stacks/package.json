@@ -39,7 +39,7 @@
   },
   "scripts": {
     "build:functions": "unbuild",
-    "dev": "unbuild --stub",
+    "dev": "vite -c playground.ts dev",
     "stub": "unbuild --stub"
   },
   "dependencies": {

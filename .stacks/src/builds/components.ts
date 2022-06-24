@@ -1,9 +1,6 @@
 import type { UserConfig } from '../'
 import { Stacks, defineConfig, buildVueComponents as vueComponents, alias } from '../'
 
-// eslint-disable-next-line no-console
-console.log('config is here ')
-
 // https://vitejs.dev/config/
 const config: UserConfig = {
   resolve: {

@@ -2,7 +2,7 @@
 
 This folder contains your Stacks configuration files. Each file comes with its own descriptions, allowing you to easily learn at your own pace.
 
-Read more in the relating docs.
+Read more in the relating docs. This part of the docs is WIP.
 
 ## 💪🏼 Contributing
 
