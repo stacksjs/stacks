@@ -39,7 +39,10 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. It's as simple as "Using this template" via the button in top right corner of this page, or run the following snippet of code in your terminal:
 
 ```bash
-pnpm create stack hello-world # wip - under heavy development - check back this weekend!
+pnpm create stack hello-world # wip - check back this weekend!
+
+# alternatively, if pnpm is not installed but npm is:
+npx degit openwebstacks/stacks-framework#v0.22.1 hello-world
 ```
 
 ## 🤖 Usage
@@ -47,25 +50,29 @@ pnpm create stack hello-world # wip - under heavy development - check back this 
 The following is a list of some of the most common ways to use interact with Stacks:
 
 ```bash
-pnpm install # installs deps for all workspaces
-pnpm fresh # fresh reinstall of all deps
+# this functionality is WIP
+npx artisan install # installs deps (for all workspaces)
+npx artisan fresh # fresh reinstall of all deps
 
-pnpm dev # stubs the libraries for local use
-pnpm example # run one of the examples (follow CLI prompts)
+npx artisan dev # runs a local dev server of your stack
+npx artisan example # select to run one of examples (follow CLI prompts)
 
-pnpm build # builds a specific package (follow CLI prompts)
-pnpm build:all # builds the library for production-ready use
+npx artisan commit # follow CLI prompts for committing changes
+npx artisan release # releases the library (packages) to npm
 
-pnpm commit # follow CLI prompts for committing changes
-pnpm release # releases the library (packages) to npm
+# build for production-ready use
+npx artisan build # builds a specific package (follow CLI prompts)
+npx artisan build:functions # builds the function library
+npx artisan build:components # builds the component libraries
+npx artisan build:all # builds component & function libraries
 
-pnpm docs:dev # starts local server for the documentation site
-pnpm docs:build # builds the docs
+npx artisan docs:dev # starts local server for documentation site
+npx artisan docs:build # builds docs for production deployment
 ```
 
 _The `package.json` contains additional useful snippets you may want to be aware of._
 
-Because we optimize toward the development of easily reusable & composable component libraries, our primary intention is to always _keep it simple, yet configurable_:
+Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable_:
 
 ```html
 <html>
