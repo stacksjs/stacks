@@ -1,5 +1,5 @@
-import type { UserConfig } from '@ow3/stacks'
-import { Stacks, alias, buildWebComponents as webComponents, defineConfig } from '@ow3/stacks'
+import type { UserConfig } from '../..'
+import { Stacks, alias, buildWebComponents as webComponents, defineConfig } from '../..'
 
 // https://vitejs.dev/config/
 const config: UserConfig = {

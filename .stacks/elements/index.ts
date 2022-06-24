@@ -1,13 +1,7 @@
-import { defineCustomElement } from 'vue'
-import { HelloWorld } from 'components'
+import { HelloWorld, defineCustomElement } from '@ow3/stacks'
 
-// console.log('HelloWorld.styles', HelloWorld.styles) // ["/* inlined css */"]
-
-// convert into custom element constructor
+// TODO: need to automate this definition process
 const HelloWorldCustomElement = defineCustomElement(HelloWorld)
-
-// export individual elements
-// export { HelloWorldCustomElement, AnotherCustomElement };
 
 // export function register() {
 customElements.define('hello-world', HelloWorldCustomElement)

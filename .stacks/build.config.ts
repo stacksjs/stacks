@@ -1,6 +1,6 @@
-import { resolve } from 'path'
-import { buildStacks as stacks, defineBuildConfig } from '@ow3/stacks'
+// import { resolve } from 'path'
+import { buildStacks, defineBuildConfig } from './src'
 
 console.log('Building stacks...')
 
-export default defineBuildConfig(stacks([resolve(__dirname, '../index')]))
+export default defineBuildConfig(buildStacks())

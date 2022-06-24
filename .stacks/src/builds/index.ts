@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import type { BuildOptions } from 'vite'
-import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '@ow3/stacks'
+import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '..'
 import { BuildConfig, defineBuildConfig } from 'unbuild'
 
 function buildVueComponents(entry?: string): BuildOptions {
@@ -85,6 +85,9 @@ function buildFunctions(entries: string[] = ['./index']): BuildConfig {
 }
 
 function buildStacks(entries: string[] = ['./index'], outDir?: string): BuildConfig {
+  // eslint-disable-next-line no-console
+  console.log('here?')
+  
   if (!outDir)
     outDir = resolve(__dirname, '../dist')
 

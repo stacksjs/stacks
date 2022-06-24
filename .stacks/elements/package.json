@@ -50,7 +50,6 @@
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@ow3/hello-world-vue": "workspace:*",
     "@ow3/stacks": "workspace:*",
     "unbuild": "^0.7.4",
     "vite": "^2.9.12"

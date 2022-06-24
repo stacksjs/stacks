@@ -6,7 +6,8 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { alias } from './config'
+import { alias } from '../../config/alias'
+import { defineCustomElement } from 'vue'
 
 const Stacks = (configFile = './unocss.ts') => [
   Vue({
@@ -50,5 +51,6 @@ export {
   alias,
   resolve,
   defineConfig,
+  defineCustomElement,
   UserConfig,
 }
