@@ -6,7 +6,7 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# The Modern Component Library
+# The Modern Component & Function Library
 
 The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It is the most simple & comfortable solution for developers to build highly-modular, widely-accepted & scalable libraries, in a beginner-friendly way.
 
