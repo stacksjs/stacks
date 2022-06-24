@@ -28,14 +28,6 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "workspaces": [
-    ".stacks/*",
-    "apps/*",
-    "components/*",
-    "examples/*",
-    "functions/*",
-    "playground/*"
-  ],
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.3.0"
