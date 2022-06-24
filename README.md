@@ -12,17 +12,17 @@ The ultimate goal of the Stacks Framework is to _help you_ create & maintain com
 
 > _The clever way to build component & function libraries._
 
-**🤖 Zero-config by default**  
+**🤖 Zero-config, by design**  
 
-The highly optimized Stacks bundler automagically builds & distributes CommonJS & module library formats. Stacks also automatically generates a Web Component library, Vue 2 & 3 libraries, a composables/functions library, plus all of its relating component & composable type declarations.
+The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating component & composable type declarations.
 
 **🎨 Style with ease**
 
-Create your own style guide using conventions you are familiar with via UnoCSS. _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
+Create your own style guide using conventions you are familiar with via UnoCSS's atomic CSS engine. _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
 
-**⚡️ Next-Gen Developer Experience _(DX)_**
+**⚡️ Next-gen Developer Experience _(DX)_**
 
-Whether it is the simple setup, modern git commit conventions via commitlint, a modern CI, automated npm package releases & semver versioning, pretty changelog generations, GitHub PR dependency updates, spell-checking, integrated documentation tooling, or a pre-configured playground & examples. _Stacks has it all._
+Whether it is the simple artisan setup, the modern git commit conventions via commitlint, the simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated GitHub PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
 
 **💡 Delightful VS Code integration**
 
@@ -36,18 +36,16 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 
 ## Get Started
 
-It's incredibly easy to get started with this framework. It's as simple as "Using this template" via the button in top right corner of this page, or run the following snippet of code in your terminal:
+It's incredibly easy to get started with this framework. You may "Use this template" (via the button in top right corner of this page), or run the following snippet of code in your terminal:
 
 ```bash
-pnpm create stack hello-world # wip - check back this weekend!
-
-# alternatively, if pnpm is not installed but npm is:
-npx degit openwebstacks/stacks-framework#v0.22.1 hello-world
+# ensure Node 16 or higher is installed
+npx artisan make:stack hello-world
 ```
 
 ## 🤖 Usage
 
-The following is a list of some of the most common ways to use interact with Stacks:
+The following is a list of some of the most common ways to use interact with the Stacks API:
 
 ```bash
 # this functionality is WIP
@@ -55,35 +53,35 @@ npx artisan install # installs deps (for all workspaces)
 npx artisan fresh # fresh reinstall of all deps
 
 npx artisan dev # runs a local dev server of your stack
+npx artisan docs:dev # starts local dev server for docs
 npx artisan example # select to run one of examples (follow CLI prompts)
 
 npx artisan commit # follow CLI prompts for committing changes
 npx artisan release # releases the library (packages) to npm
 
-# build for production-ready use
-npx artisan build # builds a specific package (follow CLI prompts)
-npx artisan build:functions # builds the function library
-npx artisan build:components # builds the component libraries
+# Building for Production
+npx artisan build # select a specific build (follow CLI prompts)
 npx artisan build:all # builds component & function libraries
-
-npx artisan docs:dev # starts local server for documentation site
-npx artisan docs:build # builds docs for production deployment
+npx artisan functions:build # builds the function library
+npx artisan components:build # builds the component libraries
+npx artisan docs:build # command to use when deploying to Vercel or Netlify
 ```
 
 _The `package.json` contains additional useful snippets you may want to be aware of._
 
-Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable_:
+Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._ Hence, by default, Stacks bundles several libraries for you:
 
 ```html
 <html>
   <body>
+    <!-- A "Custom Element"/Web Component Library is automatically created for you -->
     <hello-world name="Jane Doe"></hello-world>
     <script src="hello-world-elements.js"></script>
   </body>
 </html>
 ```
 
-Optionally, if you prefer using Vue:
+If you prefer using the Vue syntax, a Vue 2 & 3 compatible library also gets automatically generated for you:
 
 ```vue
 <script setup lang="ts">
@@ -95,7 +93,7 @@ import HelloWorld from 'hello-world-vue'
 </template>
 ```
 
-When using this framework, feel free to adjust it to your needs. It is "simply" a set of rules to help you quickly & efficiently bootstrap & design component libraries, using industry best-practices.
+You may view this framework as a "great set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases.
 
 ## 🧪 Testing
 

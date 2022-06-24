@@ -5,35 +5,31 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { alias } from '../config/alias'
+// import { alias } from '../config/alias'
+
+// eslint-disable-next-line no-console
+console.log('reachiedn');
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
-  root: resolve(__dirname, '../playground'),
+  root: '../playground',
   
   server: {
     port: 3333,
     open: true,
   },
   
-  resolve: {
-    dedupe: ['vue'],
-    alias,
-  },
+  // resolve: {
+  //   dedupe: ['vue'],
+  //   alias,
+  // },
 
   // optimizeDeps: {
   //   exclude: ['vue', '@vueuse/core', 'unocss/vite'],
   // },
 
   plugins: [
-    Vue({
-      template: {
-        compilerOptions: {
-          // treat all tags with a dash as custom elements
-          isCustomElement: tag => tag.includes('hello-world'),
-        },
-      },
-    }),
+    Vue(),
 
     Inspect(),
 
@@ -65,6 +61,6 @@ const config: UserConfig = {
 }
 
 // eslint-disable-next-line no-console
-console.log('config is here?', config)
+// console.log('config is here?', config)
 
 export default config;
