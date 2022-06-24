@@ -61,7 +61,6 @@ pnpm release # releases the library (packages) to npm
 
 pnpm docs:dev # starts local server for the documentation site
 pnpm docs:build # builds the docs
-pnpm docs:serve # serves the docs
 ```
 
 _The `package.json` contains additional useful snippets you may want to be aware of._
