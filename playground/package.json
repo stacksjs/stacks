@@ -1,5 +1,5 @@
 {
-  "name": "stacks-playground",
+  "name": "@ow3/stacks-playground",
   "version": "0.0.0",
   "private": true,
   "scripts": {

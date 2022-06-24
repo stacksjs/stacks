@@ -40,10 +40,10 @@ It's incredibly easy to get started with this framework:
 
 ```bash
 # you may "Use this template" via the button in top right corner of this page
-# or run the following commands:
-npx degit openwebstacks/stacks-framework hello-world-stack
+# or run the following commands: (WIP)
+npx create-stack hello-world-stack 
 cd hello-world-stack
-npx artisan setup # WIP
+npx artisan setup
 ```
 
 ## 🤖 Usage

@@ -9,7 +9,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": ".stacks/elements"
+    "directory": "./.stacks/elements"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
@@ -46,11 +46,10 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "vite build -c ../../.stacks/builds/elements/build.config.ts",
+    "build": "vite build -c ../src/builds/elements/build.config.ts",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "@ow3/stacks": "workspace:*",
     "unbuild": "^0.7.4",
     "vite": "^2.9.12"
   }

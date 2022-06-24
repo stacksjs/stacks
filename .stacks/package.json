@@ -9,13 +9,14 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openwebstacks/stacks-framework.git",
-    "directory": ".stacks"
+    "directory": "./.stacks"
   },
   "bugs": {
     "url": "https://github.com/openwebstacks/stacks-framework/issues"
   },
   "keywords": [
     "framework",
+    "bundler",
     "vite",
     "vite-plugin",
     "unbuild",

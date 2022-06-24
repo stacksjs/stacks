@@ -1,5 +1,5 @@
 {
-  "name": "@ow3/monorepo",
+  "name": "@ow3/stacks-monorepo",
   "version": "0.22.1",
   "private": true,
   "packageManager": "pnpm@7.3.0",
@@ -36,7 +36,7 @@
     "build": "pnpm --filter './components' -filter './functions' --filter './.stacks' run build",
     "build:functions": "pnpm --filter './functions' run build",
     "build:components": "pnpm --filter './components' --filter './.stacks/elements' run build",
-    "build:stacks": "pnpm --filter './.stacks' run build",
+    "build:stacks": "pnpm -r --filter './.stacks/**' run build",
     "build:vue": "pnpm --filter './components' run build",
     "build:elements": "pnpm --filter './.stacks/elements' run build",
     "build:types": "wip",

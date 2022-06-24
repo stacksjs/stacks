@@ -27,13 +27,13 @@
         "./components/index.ts"
       ],
       "@ow3/hello-world-elements": [
-        ".stacks/elements"
+        "./.stacks/elements/index.ts"
       ],
       "@ow3/hello-world-functions": [
-        "functions"
+        "./functions/index.ts"
       ],
       "@ow3/stacks": [
-        ".stacks/index.ts"
+        ".stacks/src/index.ts"
       ]
     },
     "lib": [
