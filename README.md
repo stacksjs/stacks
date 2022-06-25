@@ -12,7 +12,7 @@ The ultimate goal of the Stacks Framework is to _help you_ create & maintain com
 
 > _The clever way to build component & function libraries._
 
-**🤖 Zero-config, by design**  
+**🤖 Zero-config, by design**
 
 The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating component & composable type declarations.
 
@@ -48,28 +48,47 @@ npx artisan make:stack hello-world
 The following is a list of some of the most common ways to use interact with the Stacks API:
 
 ```bash
-# this functionality is WIP—check back this weekend for updates
+# develop locally (WIP—check back this weekend for updates)
 npx artisan install # installs deps (for all workspaces)
 npx artisan fresh # fresh reinstall of all deps
-npx artisan commit # follow CLI prompts for committing changes
-npx artisan release # releases the stack & its packages to npm
 
-# develop locally
-npx artisan dev # runs a local dev server of your stack
+npx artisan dev # starts local dev server for playground
 npx artisan dev:docs # starts local dev server for docs
 npx artisan example # select to run one of examples (follow CLI prompts)
 
+# toolkit
+npx artisan commit # follow CLI prompts for committing changes
+npx artisan release # creates all the releases for the stack & consequently publishes to npm
+npx artisan changelog # generates CHANGELOG.md
+npx artisan stub # stubs all the libraries
+npx artisan lint # runs linter
+npx artisan lint:fix # runs linter and fixes issues
+
 # building for production
 npx artisan build # select a specific build (follow CLI prompts)
-npx artisan build:all # builds component & function libraries
+npx artisan build:all # builds all libraries automagically
+npx artisan build:elements # builds the Web Component library
+npx artisan build:vue # builds the Vue 2 & 3 libraries
 npx artisan build:components # builds the component libraries
 npx artisan build:functions # builds the function library
-npx artisan build:docs # command to use when deploying to Vercel or Netlify
+
+# command to use when deploying to Vercel, Netlify, or GitHub Pages
+npx artisan build:playground 
+npx artisan build:docs
+
+# test your stack
+npx artisan test # runs test suite
+npx artisan test:unit # runs unit tests
+npx artisan test:e2e # runs e2e tests
 ```
 
-_The `package.json` contains additional useful snippets you may want to be aware of._
+Read more here about the Stacks CLI in the documentation.
 
-Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._ Hence, by default, Stacks bundles several libraries for you:
+## 📚 Utilizing the Built Libraries
+
+Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._
+
+Hence, by default, Stacks bundles several your components into several libraries for you:
 
 ```html
 <html>
@@ -93,7 +112,7 @@ import HelloWorld from 'hello-world-vue'
 </template>
 ```
 
-You may view this framework as a "great set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases.
+You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases possibly.
 
 ## 🧪 Testing
 
