@@ -39,7 +39,7 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. You may "Use this template" (via the button in top right corner of this page), or run the following snippet of code in your terminal:
 
 ```bash
-# ensure Node 16 or higher is installed
+# Node.js > 16.10 (run `fnm use` to install an appropriate version)
 npx artisan make:stack hello-world
 ```
 
