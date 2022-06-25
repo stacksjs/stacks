@@ -53,6 +53,12 @@ npx artisan install # installs deps (for all workspaces)
 npx artisan fresh # fresh reinstall of all deps
 
 npx artisan dev # starts local dev server for playground
+
+
+
+
+
+
 npx artisan dev:docs # starts local dev server for docs
 npx artisan example # select to run one of examples (follow CLI prompts)
 
@@ -88,12 +94,12 @@ Read more here about the Stacks CLI in the documentation.
 
 Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._
 
-Hence, by default, Stacks bundles several your components into several libraries for you:
+Hence, by default, Stacks bundles your components into several outputs:
 
 ```html
 <html>
+  <!-- a Custom Element/Web Component library is automatically created -->
   <body>
-    <!-- A "Custom Element"/Web Component Library is automatically created for you -->
     <hello-world name="Jane Doe"></hello-world>
     <script src="hello-world-elements.js"></script>
   </body>

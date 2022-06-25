@@ -1,5 +1,4 @@
 import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
-import { fileURLToPath } from 'url'
 import { join, resolve } from 'path'
 
 // relative to scripts directory
@@ -11,8 +10,9 @@ const destinations = [
 
 const copyRecursiveSync = function (src: string, dest: string) {
   const exists = existsSync(src)
-  const stats = exists && statSync(src)
-  const isDirectory = exists && stats.isDirectory()
+  const stats = exists ? statSync(src) : false
+  // const isDirectory = exists && stats.isDirectory()
+  const isDirectory = stats
 
   if (isDirectory) {
     readdirSync(src).forEach((childItemName) => {
@@ -25,11 +25,9 @@ const copyRecursiveSync = function (src: string, dest: string) {
   copyFileSync(src, dest)
 }
 
-const _filename = import.meta.url ? fileURLToPath(import.meta.url) : __filename
-
 destinations.forEach(([src, dest]) => {
   const srcPath = resolve(__filename, '..', src)
-  const destPath = resolve(_filename, '..', dest)
+  const destPath = resolve(__filename, '..', dest)
 
   copyRecursiveSync(srcPath, destPath)
 })

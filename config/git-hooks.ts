@@ -9,8 +9,8 @@
  */
 
 const hooks = {
-  'pre-commit': 'npx --no-install lint-staged',
-  'commit-msg': 'npx --no -- commitlint --config config/changelog.ts --edit $1',
+  'pre-commit': 'lint-staged',
+  'commit-msg': 'npx --no -- commitlint --edit $1',
 }
 
 module.exports = hooks

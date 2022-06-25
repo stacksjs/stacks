@@ -4,9 +4,9 @@ importers:
 
   .:
     specifiers:
-      '@ow3/stacks': workspace:*
-    devDependencies:
-      '@ow3/stacks': link:.stacks
+      stacks: workspace:*
+    dependencies:
+      stacks: link:.stacks
 
   .stacks:
     specifiers:
@@ -14,6 +14,7 @@ importers:
       '@iconify-json/heroicons-outline': ^1.1.1
       '@iconify-json/heroicons-solid': ^1.1.1
       '@ow3/eslint-config': ^0.27.3
+      '@types/fs-extra': ^9.0.13
       '@types/node': ^17.0.31
       '@unocss/preset-icons': ^0.40.0
       '@unocss/transformer-compile-class': ^0.40.0
@@ -58,7 +59,7 @@ importers:
       commitizen: 4.2.4
       conventional-changelog-cli: 2.2.2
       cypress: 10.2.0
-      cz-git: 1.3.5
+      cz-git: 1.3.7
       eslint: 8.18.0
       eslint-plugin-cypress: 2.12.1_eslint@8.18.0
       esno: 0.16.3
@@ -70,13 +71,15 @@ importers:
       typescript: 4.7.4
       unbuild: 0.7.4
       unocss: 0.40.0_vite@2.9.12
-      unplugin-auto-import: 0.9.1_4jnm4urp6nwbe5o76bpn6kimyu
-      unplugin-vue-components: 0.19.9_vite@2.9.12+vue@3.2.37
+      unplugin-auto-import: 0.9.1_kkym5et7ndslmw326rjinmcmta
+      unplugin-vue-components: 0.19.9_7felabkkrfdt7dxozyactxvh24
       vite: 2.9.12
       vite-plugin-inspect: 0.5.0_vite@2.9.12
       vitest: 0.16.0
       vue: 3.2.37
       vue-tsc: 0.38.1_typescript@4.7.4
+    devDependencies:
+      '@types/fs-extra': 9.0.13
 
   .stacks/elements:
     specifiers:
@@ -407,12 +410,12 @@ packages:
     dev: false
     optional: true
 
-  /@commitlint/config-validator/17.0.0:
-    resolution: {integrity: sha512-78IQjoZWR4kDHp/U5y17euEWzswJpPkA9TDL5F6oZZZaLIEreWzrDZD5PWtM8MsSRl/K2LDU/UrzYju2bKLMpA==}
+  /@commitlint/config-validator/17.0.3:
+    resolution: {integrity: sha512-3tLRPQJKapksGE7Kee9axv+9z5I2GDHitDH4q63q7NmNA0wkB+DAorJ0RHz2/K00Zb1/MVdHzhCga34FJvDihQ==}
     engines: {node: '>=v14'}
     dependencies:
       '@commitlint/types': 17.0.0
-      ajv: 6.12.6
+      ajv: 8.11.0
     dev: false
     optional: true
 
@@ -422,14 +425,14 @@ packages:
     dev: false
     optional: true
 
-  /@commitlint/load/17.0.0:
-    resolution: {integrity: sha512-XaiHF4yWQOPAI0O6wXvk+NYLtJn/Xb7jgZEeKd4C1ZWd7vR7u8z5h0PkWxSr0uLZGQsElGxv3fiZ32C5+q6M8w==}
+  /@commitlint/load/17.0.3:
+    resolution: {integrity: sha512-3Dhvr7GcKbKa/ey4QJ5MZH3+J7QFlARohUow6hftQyNjzoXXROm+RwpBes4dDFrXG1xDw9QPXA7uzrOShCd4bw==}
     engines: {node: '>=v14'}
     requiresBuild: true
     dependencies:
-      '@commitlint/config-validator': 17.0.0
+      '@commitlint/config-validator': 17.0.3
       '@commitlint/execute-rule': 17.0.0
-      '@commitlint/resolve-extends': 17.0.0
+      '@commitlint/resolve-extends': 17.0.3
       '@commitlint/types': 17.0.0
       '@types/node': 17.0.45
       chalk: 4.1.2
@@ -444,11 +447,11 @@ packages:
     dev: false
     optional: true
 
-  /@commitlint/resolve-extends/17.0.0:
-    resolution: {integrity: sha512-wi60WiJmwaQ7lzMXK8Vbc18Hq9tE2j/6iv2AFfPUGV7fvfY6Sf1iNKuUHirSqR0fquUyufIXe4y/K9A6LVIIvw==}
+  /@commitlint/resolve-extends/17.0.3:
+    resolution: {integrity: sha512-H/RFMvrcBeJCMdnVC4i8I94108UDccIHrTke2tyQEg9nXQnR5/Hd6MhyNWkREvcrxh9Y+33JLb+PiPiaBxCtBA==}
     engines: {node: '>=v14'}
     dependencies:
-      '@commitlint/config-validator': 17.0.0
+      '@commitlint/config-validator': 17.0.3
       '@commitlint/types': 17.0.0
       import-fresh: 3.3.0
       lodash: 4.17.21
@@ -902,8 +905,14 @@ packages:
   /@types/estree/0.0.39:
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
 
-  /@types/estree/0.0.51:
-    resolution: {integrity: sha512-CuPgU6f3eT/XgKKPqKd/gLZV1Xmvf1a2R5POBOGQa6uv82xpls89HU5zKeVoyR8XzHd1RGNOlQlvUe3CFkjWNQ==}
+  /@types/estree/0.0.52:
+    resolution: {integrity: sha512-BZWrtCU0bMVAIliIV+HJO1f1PR41M7NKjfxrFJwwhKI1KwhwOxYw1SXg9ao+CIMt774nFuGiG6eU+udtbEI9oQ==}
+
+  /@types/fs-extra/9.0.13:
+    resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
+    dependencies:
+      '@types/node': 17.0.45
+    dev: true
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
@@ -929,10 +938,6 @@ packages:
 
   /@types/node/17.0.45:
     resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
-    dev: false
-
-  /@types/node/18.0.0:
-    resolution: {integrity: sha512-cHlGmko4gWLVI27cGJntjs/Sj8th9aYwplmZFwmmgYQQvL5NUsgVJG7OddLvNfLqYS31KFN0s3qlaD9qCaxACA==}
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -958,7 +963,7 @@ packages:
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 18.0.0
+      '@types/node': 17.0.45
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
@@ -1447,6 +1452,16 @@ packages:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
     dev: false
+
+  /ajv/8.11.0:
+    resolution: {integrity: sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==}
+    dependencies:
+      fast-deep-equal: 3.1.3
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+      uri-js: 4.4.1
+    dev: false
+    optional: true
 
   /algoliasearch/4.13.1:
     resolution: {integrity: sha512-dtHUSE0caWTCE7liE1xaL+19AFf6kWEcyn76uhcitWpntqvicFHXKFoZe5JJcv9whQOTRM6+B8qJz6sFj+rDJA==}
@@ -2305,14 +2320,14 @@ packages:
       longest: 2.0.1
       word-wrap: 1.2.3
     optionalDependencies:
-      '@commitlint/load': 17.0.0
+      '@commitlint/load': 17.0.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
     dev: false
 
-  /cz-git/1.3.5:
-    resolution: {integrity: sha512-ko5FELcnOaRGRN6nAnmxaBKHzLuOf/wqekQD7C28KgFMtCp+VBdAWh0AJayfrDpj9PGsX8hIYZzwBcmZoBYYnA==}
+  /cz-git/1.3.7:
+    resolution: {integrity: sha512-DNI2mOwb3QIEj/XBro0hlD1hg8+wZtZ+5rhUIKL4i93iFqTJe/qJTSV18roivBCnMDeFK4evfXKcBz3r4udLsA==}
     dev: false
 
   /dargs/7.0.0:
@@ -4024,7 +4039,7 @@ packages:
   /is-reference/1.2.1:
     resolution: {integrity: sha512-U82MsXXiFIrjCK4otLT+o2NA2Cd2g5MLoOVXUZjIOhLurrRxpEXzI8O0KZHr3IjLvlAH1kTPYSuqer5T9ZVBKQ==}
     dependencies:
-      '@types/estree': 0.0.51
+      '@types/estree': 0.0.52
 
   /is-regex/1.1.4:
     resolution: {integrity: sha512-kvRdxDsxZjhzUX07ZnLydzS1TU/TJlTUHHY4YLL87e37oUA49DfkLqgy+VjFocowy29cKvcSiu+kIv728jTTVg==}
@@ -4145,6 +4160,11 @@ packages:
   /json-schema-traverse/0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
     dev: false
+
+  /json-schema-traverse/1.0.0:
+    resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
+    dev: false
+    optional: true
 
   /json-schema/0.4.0:
     resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
@@ -5220,6 +5240,12 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: false
 
+  /require-from-string/2.0.2:
+    resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+    optional: true
+
   /resolve-dir/1.0.1:
     resolution: {integrity: sha512-R7uiTjECzvOsWSfdM0QKFNBVFcK27aHOUwdvK53BcW8zqnGdYp0Fbj82cy54+2A4P2tFM22J5kRfe1R+lM/1yg==}
     engines: {node: '>=0.10.0'}
@@ -5998,7 +6024,7 @@ packages:
     engines: {node: '>=12.18'}
     dev: false
 
-  /unimport/0.4.0_vite@2.9.12:
+  /unimport/0.4.0_4mifhig4dhgnrt67tg257xfjai:
     resolution: {integrity: sha512-k2KgvR/rvpmOln5vJtgbikfnntV3nG2F4mRrAI+16cA0KgANaPqHwVrdJijWbW4ZLDmSt0xzCfy4MJt8bMel0w==}
     dependencies:
       '@rollup/pluginutils': 4.2.1
@@ -6010,7 +6036,7 @@ packages:
       pathe: 0.3.0
       scule: 0.2.1
       strip-literal: 0.4.0
-      unplugin: 0.7.0_vite@2.9.12
+      unplugin: 0.7.0_4mifhig4dhgnrt67tg257xfjai
     transitivePeerDependencies:
       - esbuild
       - rollup
@@ -6062,7 +6088,7 @@ packages:
       - vite
     dev: false
 
-  /unplugin-auto-import/0.9.1_4jnm4urp6nwbe5o76bpn6kimyu:
+  /unplugin-auto-import/0.9.1_kkym5et7ndslmw326rjinmcmta:
     resolution: {integrity: sha512-U2LGVl7nlVIGGV86Gr4x9JS5R2Vag43CGDiOebcCqQ1FPV/r8pdQ9yIZVbBj/v6xk3px/vE1zePC9z/WZgKmXg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -6076,8 +6102,8 @@ packages:
       '@vueuse/core': 8.7.5_vue@3.2.37
       local-pkg: 0.4.1
       magic-string: 0.26.2
-      unimport: 0.4.0_vite@2.9.12
-      unplugin: 0.7.0_vite@2.9.12
+      unimport: 0.4.0_4mifhig4dhgnrt67tg257xfjai
+      unplugin: 0.7.0_4mifhig4dhgnrt67tg257xfjai
     transitivePeerDependencies:
       - esbuild
       - rollup
@@ -6085,7 +6111,7 @@ packages:
       - webpack
     dev: false
 
-  /unplugin-vue-components/0.19.9_vite@2.9.12+vue@3.2.37:
+  /unplugin-vue-components/0.19.9_7felabkkrfdt7dxozyactxvh24:
     resolution: {integrity: sha512-i5mZtg85euPWZrGswFkoa9pf4WjKCP5qOjnwOyg3KOKVzFjnP3osCdrunQMjtoMKehTdz1vV6baZH8bZR4PNgg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -6107,7 +6133,7 @@ packages:
       magic-string: 0.26.2
       minimatch: 5.1.0
       resolve: 1.22.1
-      unplugin: 0.7.0_vite@2.9.12
+      unplugin: 0.7.0_4mifhig4dhgnrt67tg257xfjai
       vue: 3.2.37
     transitivePeerDependencies:
       - esbuild
@@ -6117,7 +6143,7 @@ packages:
       - webpack
     dev: false
 
-  /unplugin/0.7.0_vite@2.9.12:
+  /unplugin/0.7.0_4mifhig4dhgnrt67tg257xfjai:
     resolution: {integrity: sha512-OsiFrgybmqm5bGuaodvbLYhqUrvGuRHRMZDhddKEXTDbuQ1x+hR7M1WpQguXj03whVYjEYChhFo738cZH5RNig==}
     peerDependencies:
       esbuild: '>=0.13'
@@ -6136,6 +6162,8 @@ packages:
     dependencies:
       acorn: 8.7.1
       chokidar: 3.5.3
+      esbuild: 0.14.47
+      rollup: 2.75.7
       vite: 2.9.12
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.4.4

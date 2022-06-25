@@ -33,7 +33,7 @@
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "dev": "pnpm --filter ./.stacks dev",
+    "dev": "vite",
     "build": "pnpm --filter ./components --filter ./functions run build",
     "build:functions": "pnpm --filter ./.stacks run build:functions",
     "build:components": "pnpm --filter ./components run build",
@@ -48,7 +48,7 @@
     "dev:docs": "pnpm --filter ./apps/site dev",
     "docs:serve": "pnpm --filter ./apps/site serve",
     "example": "esno .stacks/scripts/run-example.ts",
-    "fresh": "rimraf .stacks/types/functions/* .stacks/types/components/* apps/**/node_modules config/node_modules components/node_modules examples/**/node_modules .stacks/node_modules node_modules/ pnpm-lock.yaml && pnpm i",
+    "fresh": "rimraf .stacks/dist .stacks/functions/dist .stacks/elements/dist .stacks/elements/node_modules .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules config/node_modules components/dist components/node_modules examples/**/node_modules node_modules/ pnpm-lock.yaml && pnpm i",
     "preinstall": "esno .stacks/scripts/check-for-pnpm.ts && esno .stacks/scripts/check-node-version.ts",
     "postinstall": "npx simple-git-hooks ./config/git-hooks.ts",
     "lint": "eslint .",
@@ -62,8 +62,8 @@
     "typecheck": "vue-tsc --noEmit",
     "types:fix": "esno .stacks/scripts/fix-types.ts"
   },
-  "devDependencies": {
-    "@ow3/stacks": "workspace:*"
+  "dependencies": {
+    "stacks": "workspace:*"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"

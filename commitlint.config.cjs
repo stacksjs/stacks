@@ -1,25 +1,17 @@
-/**
- * This configuration is used to define your "commit flow."
- *
- * Adjust the values below however you desire. Though, keep in mind:
- * provided default config creates a well-optimized semver commit-flow that consequently helps generate changelogs.
- */
+const { readdirSync } = require('fs')
+const { resolve } = require('path')
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fs = require('fs')
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const path = require('path')
+const exclude = ['.eslintrc-auto-import.json', 'shims.d.ts', 'HelloWorld.vue', 'README.md', 'build.config.ts', 'node_modules', 'package.json', 'index']
 
-const components = fs.readdirSync(path.resolve(__dirname, '../components'))
-  .filter((item: string) => item !== '.eslintrc-auto-import.json' && item !== 'shims.d.ts')
+const components = readdirSync(resolve(__dirname, './components'))
+  .filter((item) => item.includes(exclude))
 
-const functions = fs.readdirSync(path.resolve(__dirname, '../functions'))
-  .map((item: string) => item.replace(/.ts/g, ''))
-  .filter((item: string) => item !== 'index')
+const functions = readdirSync(resolve(__dirname, './functions'))
+  .map((item) => item.replace(/.ts/g, ''))
+  .filter((item) => item.includes(exclude))
 
 const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
 
-/** @type {import('cz-git').UserConfig} */
 module.exports = {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules

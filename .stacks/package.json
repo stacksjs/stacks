@@ -1,5 +1,5 @@
 {
-  "name": "@ow3/stacks",
+  "name": "stacks",
   "private": true,
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
@@ -76,5 +76,8 @@
     "vitest": "^0.16.0",
     "vue": "^3.2.37",
     "vue-tsc": "^0.38.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13"
   }
 }

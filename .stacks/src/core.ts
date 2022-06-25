@@ -9,50 +9,61 @@ import Components from 'unplugin-vue-components/vite'
 import { alias } from '../../config/alias'
 import { defineCustomElement, createApp } from 'vue'
 
+const UiEngine = Vue({
+  template: {
+    compilerOptions: {
+      // treat all tags with a dash as custom elements
+      isCustomElement: tag => tag.includes('hello-world'),
+    },
+  },
+})
+
+const StyleEngine = (configFile: string) => Unocss({
+  configFile: resolve(__dirname, configFile),
+  mode: 'vue-scoped', // or 'shadow-dom'
+})
+
+// https://github.com/antfu/unplugin-auto-import
+const autoImports = AutoImport({
+  imports: ['vue', '@vueuse/core', {
+    // TODO: this needs to be dynamically generated
+    '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
+  }],
+  dts: resolve(__dirname, './types/auto-imports.d.ts'),
+  eslintrc: {
+    enabled: true,
+    filepath: resolve(__dirname, './.eslintrc-auto-import.json'),
+  },
+})
+
+const components = Components({
+  dirs: ['../../components'],
+  extensions: ['vue'],
+  dts: resolve(__dirname, './types/components.d.ts'),
+})
+
 const Stacks = (configFile = './unocss.ts') => [
-  Vue({
-    template: {
-      compilerOptions: {
-        // treat all tags with a dash as custom elements
-        isCustomElement: tag => tag.includes('hello-world'),
-      },
-    },
-  }),
-
   Inspect(),
+  
+  UiEngine,
 
-  Unocss({
-    configFile: resolve(__dirname, configFile),
-    mode: 'vue-scoped', // or 'shadow-dom'
-  }),
+  StyleEngine(configFile),
 
-  // https://github.com/antfu/unplugin-auto-import
-  AutoImport({
-    imports: ['vue', '@vueuse/core', {
-      // TODO: this needs to be dynamically generated
-      '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
-    }],
-    dts: resolve(__dirname, './types/auto-imports.d.ts'),
-    eslintrc: {
-      enabled: true,
-      filepath: resolve(__dirname, './.eslintrc-auto-import.json'),
-    },
-  }),
+  autoImports,
 
-  // https://github.com/antfu/unplugin-vue-components
-  Components({
-    dirs: ['../../components'],
-    extensions: ['vue'],
-    dts: resolve(__dirname, './types/components.d.ts'),
-  }),
+  components,
 ]
 
 export {
-  Stacks,
   alias,
   resolve,
   createApp,
   defineConfig,
   defineCustomElement,
+  Stacks,
+  UiEngine,
+  StyleEngine,
+  autoImports,
+  components,
   UserConfig,
 }

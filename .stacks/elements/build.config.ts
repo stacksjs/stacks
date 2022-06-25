@@ -1,0 +1,5 @@
+export default {
+  entries: [
+    './index'
+  ]
+}
