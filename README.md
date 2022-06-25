@@ -48,23 +48,23 @@ npx artisan make:stack hello-world
 The following is a list of some of the most common ways to use interact with the Stacks API:
 
 ```bash
-# this functionality is WIP
+# this functionality is WIP—check back this weekend for updates
 npx artisan install # installs deps (for all workspaces)
 npx artisan fresh # fresh reinstall of all deps
+npx artisan commit # follow CLI prompts for committing changes
+npx artisan release # releases the stack & its packages to npm
 
+# develop locally
 npx artisan dev # runs a local dev server of your stack
-npx artisan docs:dev # starts local dev server for docs
+npx artisan dev:docs # starts local dev server for docs
 npx artisan example # select to run one of examples (follow CLI prompts)
 
-npx artisan commit # follow CLI prompts for committing changes
-npx artisan release # releases the library (packages) to npm
-
-# Building for Production
+# building for production
 npx artisan build # select a specific build (follow CLI prompts)
 npx artisan build:all # builds component & function libraries
-npx artisan functions:build # builds the function library
-npx artisan components:build # builds the component libraries
-npx artisan docs:build # command to use when deploying to Vercel or Netlify
+npx artisan build:components # builds the component libraries
+npx artisan build:functions # builds the function library
+npx artisan build:docs # command to use when deploying to Vercel or Netlify
 ```
 
 _The `package.json` contains additional useful snippets you may want to be aware of._
