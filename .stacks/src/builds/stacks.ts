@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { alias } from '..'
+import { alias } from '../config'
 import { BuildConfig } from 'unbuild'
 
 export function buildStacks(entries: string[] = ['./src/index'], outDir?: string): BuildConfig {  

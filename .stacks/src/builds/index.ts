@@ -1,8 +1,9 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '..'
+import { alias, library as app } from '../config'
+// import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../config'
 import { defineBuildConfig } from 'unbuild'
-import { buildStacks } from './stacks'
+import { buildStacks } from 'stacks'
 import type { BuildConfig as UnbuildConfig } from 'unbuild'
 
 export type BuildConfig = UnbuildConfig
@@ -14,19 +15,19 @@ function buildVueComponents(entry?: string): ViteBuildOptions {
   return {
     lib: {
       entry,
-      name: VUE_PACKAGE_NAME,
+      name: app.VUE_PACKAGE_NAME,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return `${VUE_PACKAGE_NAME}.mjs`
+          return `${app.VUE_PACKAGE_NAME}.mjs`
 
         if (format === 'cjs')
-          return `${VUE_PACKAGE_NAME}.cjs`
+          return `${app.VUE_PACKAGE_NAME}.cjs`
 
         // if (format === 'iife')
-        //     return `${VUE_PACKAGE_NAME}.global.js`
+        //     return `${app.VUE_PACKAGE_NAME}.global.js`
 
-        return `${VUE_PACKAGE_NAME}.?.js`
+        return `${app.VUE_PACKAGE_NAME}.?.js`
       },
     },
     rollupOptions: {
@@ -51,19 +52,19 @@ function buildWebComponents(entry?: string): ViteBuildOptions {
   return {
     lib: {
       entry,
-      name: WEB_COMPONENTS_PACKAGE_NAME,
+      name: app.WEB_COMPONENTS_PACKAGE_NAME,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.mjs`
+          return `${app.WEB_COMPONENTS_PACKAGE_NAME}.mjs`
 
         if (format === 'cjs')
-          return `${WEB_COMPONENTS_PACKAGE_NAME}.cjs`
+          return `${app.WEB_COMPONENTS_PACKAGE_NAME}.cjs`
 
         // if (format === 'iife')
         //   return 'hello-world-elements.global.js'
 
-        return `${WEB_COMPONENTS_PACKAGE_NAME}.?.js`
+        return `${app.WEB_COMPONENTS_PACKAGE_NAME}.?.js`
       },
       // sourcemap: true,
       // minify: false,;

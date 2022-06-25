@@ -1,9 +1,10 @@
 // import { resolve } from 'path'
-// import type { UserConfig } from 'vite'
+import type { UserConfig as ViteConfig } from 'vite'
 import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
 // import Unocss from 'unocss/vite'
-import { alias } from './.stacks/src/index'
+// import { UiEngine } from 'stacks/src/core'
+import Vue from '@vitejs/plugin-vue'
+import { alias } from './config/alias'
 // import Inspect from 'vite-plugin-inspect'
 // import AutoImport from 'unplugin-auto-import/vite'
 // import Components from 'unplugin-vue-components/vite'
@@ -13,9 +14,8 @@ import { alias } from './.stacks/src/index'
 console.log('reaching?')
 
 // https://vitejs.dev/config/
-const config = {
-// const config: UserConfig = {
-  // root: '/Users/chrisbreuer/Code/stacks-framework',
+const config: ViteConfig = {
+  root: '/Users/chrisbreuer/Code/stacks-framework/playground',
 
   resolve: {
     alias,

@@ -20,6 +20,7 @@
     "library",
     "typescript",
     "javascript",
+    "stack",
     "starter",
     "kit",
     "package"
@@ -29,16 +30,16 @@
   ],
   "exports": {
     ".": {
-      "types": "./../.stacks/functions/dist/index.d.ts",
-      "require": "./../.stacks/functions/dist/index.cjs",
-      "import": "./../.stacks/functions/dist/index.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "../.stacks/functions/dist/index.cjs",
-  "module": "../.stacks/functions/dist/index.mjs",
-  "types": "../.stacks/functions/dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "../.stacks/functions/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=v16.15.1",
