@@ -8,7 +8,7 @@
 
 # The Modern Component & Function Library
 
-The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It is the most simple & comfortable solution for developers to build highly-modular, widely-accepted & scalable libraries, in a beginner-friendly way.
+The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It shouldn't be a chore creating & maintaining them! Stacks allows you to easily build highly-modular, widely-accepted & scalable libraries—in beginner & expert-friendly ways—embodying [Component-First Design](/component-first-design.md) principles.
 
 > _The clever way to build component & function libraries._
 
@@ -18,13 +18,13 @@ The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 li
 
 **🎨 Style with ease**
 
-Create your own style guide using conventions you are familiar with via UnoCSS's atomic CSS engine. _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_
+Create your own style guide using conventions you are familiar with. UnoCSS's atomic CSS engine allows for just that in a blazing-fast way _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_.
 
-**⚡️ Next-gen Developer Experience _(DX)_**
+**✨ Next-gen Developer Experience _(DX)_**
 
-Whether it is the simple artisan setup, the modern git commit conventions via commitlint, the simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated GitHub PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
+Whether it is the simplistic artisan setup, the modern git commit conventions via commitlint, the simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated GitHub PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
 
-**💡 Delightful VS Code integration**
+**💡 First-class VS Code integration**
 
 IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in within Stacks. _Without the need of Prettier._
 
@@ -39,36 +39,52 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. You may "Use this template" (via the button in top right corner of this page), or run the following snippet of code in your terminal:
 
 ```bash
-# Node.js > 16.10 (run `fnm use` to install an appropriate version)
 npx artisan make:stack hello-world
 ```
 
+Please ensure to use Node.js v16.10 or higher. _Stacks is also `fnm` & `nvm` friendly._
+
 ## 🤖 Usage
 
-The following is a list of some of the most common ways to use interact with the Stacks API:
+The following is a list of some of the most common ways to use interact with the Stacks API. Meet the Stacks Toolkit:
 
 ```bash
-# develop locally (WIP—check back this weekend for updates)
-npx artisan install # installs deps (for all workspaces)
+# develop locally, to be released with 0.23.0
+npx artisan install # or `pnpm i`
+npx artisan dev # start one of the dev servers (components, functions, or docs)
+npx artisan commit # follow CLI prompts for committing staged changes
+npx artisan release # creates the releases for the stack & consequently, publishes them to npm
+
+npx artisan make:component HelloWorld # bootstraps a HelloWorld component
+npx artisan make:function hello-world # bootstraps a HelloWorld function
+```
+
+<details>
+<summary>View the complete Stacks Toolkit</summary>
+
+```bash
+npx artisan install # or `pnpm i`
 npx artisan fresh # fresh reinstall of all deps
 
-npx artisan dev # starts local dev server for playground
-
-
-
-
-
-
+npx artisan dev # start one of the dev servers (components, functions, or docs)
+npx artisan dev:components # starts local dev server for playground
+npx artisan dev:functions # stubs the functions
 npx artisan dev:docs # starts local dev server for docs
-npx artisan example # select to run one of examples (follow CLI prompts)
 
-# toolkit
-npx artisan commit # follow CLI prompts for committing changes
-npx artisan release # creates all the releases for the stack & consequently publishes to npm
-npx artisan changelog # generates CHANGELOG.md
+npx artisan make:component HelloWorld
+npx artisan make:function hello-world
+npx artisan make:stack hello-world
+
 npx artisan stub # stubs all the libraries
+npx artisan stub:components # stubs the component library
+npx artisan stub:functions # stubs the function library
+
 npx artisan lint # runs linter
 npx artisan lint:fix # runs linter and fixes issues
+
+npx artisan commit # follow CLI prompts for committing staged changes
+npx artisan release # creates the releases for the stack & triggers the Release Action (workflow)
+npx artisan changelog # generates CHANGELOG.md
 
 # building for production
 npx artisan build # select a specific build (follow CLI prompts)
@@ -78,9 +94,11 @@ npx artisan build:vue # builds the Vue 2 & 3 libraries
 npx artisan build:components # builds the component libraries
 npx artisan build:functions # builds the function library
 
-# command to use when deploying to Vercel, Netlify, or GitHub Pages
+# when deploying to Vercel, Netlify, or GitHub Pages
 npx artisan build:playground 
 npx artisan build:docs
+
+npx artisan example # select to run one of examples (follow CLI prompts)
 
 # test your stack
 npx artisan test # runs test suite
@@ -88,25 +106,31 @@ npx artisan test:unit # runs unit tests
 npx artisan test:e2e # runs e2e tests
 ```
 
+</details>
+
 Read more here about the Stacks CLI in the documentation.
 
 ## 📚 Utilizing the Built Libraries
 
 Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._
 
-Hence, by default, Stacks bundles your components into several outputs:
+By default, Stacks bundles your components into several outputs. Web Component (Custom Elements) & Vue Component Libraries are automatically generated, amongst other packages.
+
+<details>
+<summary>A Custom Element example</summary>
 
 ```html
 <html>
-  <!-- a Custom Element/Web Component library is automatically created -->
   <body>
     <hello-world name="Jane Doe"></hello-world>
     <script src="hello-world-elements.js"></script>
   </body>
 </html>
 ```
+</details>
 
-If you prefer using the Vue syntax, a Vue 2 & 3 compatible library also gets automatically generated for you:
+<details>
+<summary>A Vue 2 & 3 example</summary>
 
 ```vue
 <script setup lang="ts">
@@ -117,8 +141,9 @@ import HelloWorld from 'hello-world-vue'
   <HelloWorld name="J Doe" />
 </template>
 ```
+</details>
 
-You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases possibly.
+You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases possible.
 
 ## 🧪 Testing
 
