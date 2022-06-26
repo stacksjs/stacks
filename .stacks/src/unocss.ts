@@ -1,4 +1,5 @@
-import { classPrefix, trigger, icons as collections, safelist, shortcuts } from 'stacks'
+import { classPrefix, trigger, safelist, shortcuts } from 'config/styles'
+import { icons as collections } from 'config/icons'
 import {
   defineConfig,
   presetIcons,

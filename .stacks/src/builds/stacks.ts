@@ -2,12 +2,12 @@ import { resolve } from 'path'
 import { alias } from '../config'
 import { BuildConfig } from 'unbuild'
 
-export function buildStacks(entries: string[] = ['./src/index'], outDir?: string): BuildConfig {  
+export default function buildConfig(entries: string[] = ['./src/index'], outDir?: string): BuildConfig {  
   if (!outDir)
     outDir = resolve(__dirname, '../dist')
 
   return {
-    alias,
+    alias: alias.default,
     entries,
     outDir,
     clean: true,

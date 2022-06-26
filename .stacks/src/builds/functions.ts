@@ -1,3 +1,3 @@
-import { buildFunctions as stacks, defineBuildConfig } from '.'
+import { buildFunctions as stacksFunctions, defineBuildConfig } from '../builds'
 
-export default defineBuildConfig(stacks(['../../../functions/index']))
+export default defineBuildConfig(stacksFunctions(['../../../functions/index']))

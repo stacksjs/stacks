@@ -1,10 +1,10 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { alias, library as app } from '../config'
-// import { alias, VUE_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME } from '../config'
-import { defineBuildConfig } from 'unbuild'
-import { buildStacks } from 'stacks'
+import alias from '../../../config/alias'
+import app from '../../../config/library'
 import type { BuildConfig as UnbuildConfig } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
+import stacksBuildConfig from '../builds/stacks'
 
 export type BuildConfig = UnbuildConfig
 
@@ -94,5 +94,5 @@ export {
   buildVueComponents,
   buildWebComponents,
   buildFunctions,
-  buildStacks,
+  stacksBuildConfig,
 }

@@ -1,4 +1,5 @@
-import { alias, defineConfig } from '.'
+import alias from 'config/alias'
+import { defineConfig } from 'stacks'
 
 export default defineConfig({
   optimizeDeps: {

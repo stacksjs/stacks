@@ -28,12 +28,15 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "imports": {
+    "#ansi-styles": "./source/vendor/ansi-styles/index.js"
+  },
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite serve playground",
     "build": "pnpm --filter ./components --filter ./functions run build",
     "build:functions": "pnpm --filter ./.stacks run build:functions",
     "build:components": "pnpm --filter ./components run build",

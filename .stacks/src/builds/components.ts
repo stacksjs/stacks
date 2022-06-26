@@ -1,8 +1,10 @@
-import type { UserConfig } from '../'
-import { Stacks, defineConfig, buildVueComponents as vueComponents, alias } from '../'
+import type { ViteConfig } from '../core'
+import { buildVueComponents as vueComponents } from '../builds'
+import { defineConfig, Stacks } from '../core'
+import alias from '../../../config/alias'
 
 // https://vitejs.dev/config/
-const config: UserConfig = {
+const config: ViteConfig = {
   resolve: {
     dedupe: ['vue'],
     alias,

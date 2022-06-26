@@ -21,17 +21,20 @@
       "vite/client"
     ],
     "paths": {
-      "~/*": [
+      "~/stacks": [
+        "./.stacks/src/index.ts"
+      ],
+      "~/stacks/*": [
         "./.stacks/src/*"
       ],
-      "stacks/*": [
-        ".stacks/src/*"
+      "~/builds": [
+        "./.stacks/src/builds/index.ts"
       ],
-      "config/*": [
-        "./config/*"
+      "~/config": [
+        "./config/index.ts"
       ],
-      "functions/*": [
-        "./functions/*"
+      "~/functions": [
+        "./functions/index.ts"
       ],
       "@ow3/hello-world-stack": [
         "./components/index.ts"
@@ -55,6 +58,7 @@
     ]
   },
   "include": [
+    "*.ts",
     ".stacks/**/*.js",
     ".stacks/**/*.ts",
     ".stacks/**/*.json",

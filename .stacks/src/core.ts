@@ -1,12 +1,11 @@
 import { resolve } from 'path'
-import type { UserConfig } from 'vite'
+import type { UserConfig as ViteConfig } from 'vite'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { alias } from '../../config/alias'
 import { defineCustomElement, createApp } from 'vue'
 
 const UiEngine = Vue({
@@ -25,10 +24,12 @@ const StyleEngine = (configFile: string) => Unocss({
 
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
-  imports: ['vue', '@vueuse/core', {
+  imports: ['vue', '@vueuse/core', 
+  // {
     // TODO: this needs to be dynamically generated
-    '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
-  }],
+    // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
+  // }
+],
   dts: resolve(__dirname, './types/auto-imports.d.ts'),
   eslintrc: {
     enabled: true,
@@ -54,16 +55,4 @@ const Stacks = (configFile = './unocss.ts') => [
   components,
 ]
 
-export {
-  alias,
-  resolve,
-  createApp,
-  defineConfig,
-  defineCustomElement,
-  Stacks,
-  UiEngine,
-  StyleEngine,
-  autoImports,
-  components,
-  UserConfig,
-}
+export { resolve, createApp, defineConfig, defineCustomElement, Stacks, UiEngine, StyleEngine, autoImports, components, ViteConfig }

@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { buildStacks, defineBuildConfig } from './src'
+import { defineBuildConfig, stacksBuildConfig } from './src/builds'
 
 const entries = [
     resolve(__dirname, '../functions/index'),
@@ -7,4 +7,4 @@ const entries = [
 ];
 const outDir = resolve(__dirname, '../.stacks/functions/dist');
 
-export default defineBuildConfig(buildStacks(entries, outDir))
+export default defineBuildConfig(stacksBuildConfig(entries, outDir))

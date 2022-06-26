@@ -5,9 +5,9 @@
  */
 
 // import type { DocsConfig } from 'stacks'
-import type { DocsConfig } from 'stacks'
+import type { DocsConfig } from '~/stacks/docs'
 
-export const docs: DocsConfig = {
+const docs: DocsConfig = {
   lang: 'en-US',
   title: 'Stacks',
   description: 'Component-First. UI & Build Framework.',
@@ -99,3 +99,5 @@ function sidebarGuide() {
     },
   ]
 }
+
+export default docs
