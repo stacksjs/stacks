@@ -6,9 +6,9 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# The Modern Component & Function Library
+# The Atomic UI & UX Framework
 
-The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It shouldn't be a chore creating & maintaining them! Stacks allows you to easily build highly-modular, widely-accepted & scalable libraries—in beginner & expert-friendly ways—embodying [Component-First Design](/component-first-design.md) principles.
+The ultimate goal of the Stacks Framework is to _help you_ create & maintain component (UI) & function (UX) libraries. It shouldn't be a chore creating maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
 
 > _The clever way to build component & function libraries._
 
@@ -46,7 +46,7 @@ Please ensure to use Node.js v16.10 or higher. _Stacks is also `fnm` & `nvm` fri
 
 ## 🤖 Usage
 
-The following is a list of some of the most common ways to use interact with the Stacks API. Meet the Stacks Toolkit:
+The following is a list of some of the most common ways to use interact with the Stacks API. Meet the Artisan Toolkit:
 
 ```bash
 # develop locally, to be released with 0.23.0
@@ -60,7 +60,7 @@ npx artisan make:function hello-world # bootstraps a HelloWorld function
 ```
 
 <details>
-<summary>View the complete Stacks Toolkit</summary>
+<summary>View the complete Stacks Artisan Toolkit</summary>
 
 ```bash
 npx artisan install # or `pnpm i`
@@ -118,24 +118,36 @@ Because we optimize toward the development of easily reusable & composable compo
 By default, Stacks bundles your components into several outputs. Web Component (Custom Elements) & Vue Component Libraries are automatically generated, amongst other packages.
 
 <details>
-<summary>A Custom Element example</summary>
+<summary>A Custom Element usage example</summary>
+
+```bash
+npm install my-awesome-library
+```
+
+After you installed your Stacks generated library, you can use a "Custom Element" (Web Component) in the following way:
 
 ```html
 <html>
   <body>
     <hello-world name="Jane Doe"></hello-world>
-    <script src="hello-world-elements.js"></script>
+    <script src="my-awesome-library.js"></script>
   </body>
 </html>
 ```
 </details>
 
 <details>
-<summary>A Vue 2 & 3 example</summary>
+<summary>A Vue 2 & 3 usage example</summary>
+
+```bash
+npm install my-awesome-library
+```
+
+After you installed your Stacks generated library, you can use your Vue Components in the following way:
 
 ```vue
 <script setup lang="ts">
-import HelloWorld from 'hello-world-vue'
+import HelloWorld from 'my-awesome-library'
 </script>
 
 <template>

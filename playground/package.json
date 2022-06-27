@@ -1,0 +1,34 @@
+{
+  "name": "playground",
+  "version": "0.22.1",
+  "private": true,
+  "packageManager": "pnpm@7.3.0",
+  "description": "Your component playground.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "engines": {
+    "node": ">=v16.15.1",
+    "pnpm": ">=7.3.0"
+  },
+  "scripts": {
+    "dev": "unbuild --stub",
+    "stub": "unbuild --stub"
+  },
+  "devDependencies": {
+    "stacks": "workspace:*"
+  },
+  "build": {
+    "entries": [
+      "./index"
+    ],
+    "clean": true,
+    "declaration": true,
+    "rollup": {
+      "emitCJS": true,
+      "inlineDependencies": true
+    }
+  }
+}

@@ -1,6 +1,7 @@
 {
   "name": "stacks",
   "private": true,
+  "type": "module",
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
   "description": "The core of the component library and Stacks framework.",
@@ -38,9 +39,17 @@
     "pnpm": ">=7.3.0"
   },
   "scripts": {
-    "build:functions": "unbuild",
-    "dev": "vite",
-    "stub": "unbuild --stub"
+    "dev": "pnpm run stubs && vite serve ../playground",
+    "dev:components": "unbuild ../components --stub",
+    "dev:elements": "unbuild ../components --stub",
+    "dev:functions": "unbuild ../functions --stub",
+    "dev:playground": "vite serve ../playground -c ./src/builds/playground.ts",
+    "build:components": "vite build -c ./src/builds/components.ts",
+    "build:elements": "vite build -c ./src/builds/elements.ts",
+    "build:functions": "unbuild ../functions",
+    "build:playground": "vite build -c ./src/builds/playground.ts",
+    "stub": "unbuild --stub",
+    "stubs": "pnpm -r --parallel run stub"
   },
   "dependencies": {
     "@babel/types": "^7.18.4",

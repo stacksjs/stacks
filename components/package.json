@@ -47,14 +47,20 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "vite build -c ../.stacks/src/builds/components.ts",
     "stub": "unbuild --stub"
   },
   "devDependencies": {
-    "typescript": "^4.7.4",
-    "unbuild": "^0.7.4",
-    "vite": "^2.9.12",
-    "vue": "^3.2.37",
-    "vue-tsc": "^0.38.1"
+    "stacks": "workspace:*"
+  },
+  "build": {
+    "entries": [
+      "./index"
+    ],
+    "clean": true,
+    "declaration": true,
+    "rollup": {
+      "emitCJS": true,
+      "inlineDependencies": true
+    }
   }
 }

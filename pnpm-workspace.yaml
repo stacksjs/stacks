@@ -4,4 +4,5 @@ packages:
   - './apps/**'
   - ./components
   - ./functions
+  - ./playground
   - '!examples/**'

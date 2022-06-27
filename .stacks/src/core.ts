@@ -6,7 +6,7 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { defineCustomElement, createApp } from 'vue'
+import { createApp } from 'vue'
 
 const UiEngine = Vue({
   template: {
@@ -17,8 +17,8 @@ const UiEngine = Vue({
   },
 })
 
-const StyleEngine = (configFile: string) => Unocss({
-  configFile: resolve(__dirname, configFile),
+const StyleEngine = () => Unocss({
+  configFile: resolve(__dirname, './unocss.ts'),
   mode: 'vue-scoped', // or 'shadow-dom'
 })
 
@@ -30,29 +30,29 @@ const autoImports = AutoImport({
     // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
   // }
 ],
-  dts: resolve(__dirname, './types/auto-imports.d.ts'),
+  dts: resolve(__dirname, '../types/auto-imports.d.ts'),
   eslintrc: {
     enabled: true,
-    filepath: resolve(__dirname, './.eslintrc-auto-import.json'),
+    filepath: resolve(__dirname, '../.eslintrc-auto-import.json'),
   },
 })
 
-const components = Components({
-  dirs: ['../../components'],
+const components = (dirPath: string, dtsPath: string) => Components({
+  dirs: [dirPath],
   extensions: ['vue'],
-  dts: resolve(__dirname, './types/components.d.ts'),
+  dts: dtsPath,
 })
 
-const Stacks = (configFile = './unocss.ts') => [
+const Stacks = (componentsDirPath: string = '../../../components/src', componentsDtsPath: string = '../types/components.d.ts') => [
   Inspect(),
   
   UiEngine,
 
-  StyleEngine(configFile),
+  StyleEngine,
 
   autoImports,
 
-  components,
+  components(componentsDirPath, componentsDtsPath),
 ]
 
-export { resolve, createApp, defineConfig, defineCustomElement, Stacks, UiEngine, StyleEngine, autoImports, components, ViteConfig }
+export { resolve, createApp, defineConfig, Stacks, UiEngine, StyleEngine, autoImports, components, ViteConfig }

@@ -1,7 +1,9 @@
 import type { ViteConfig } from '../core'
-import { buildWebComponents as webComponents } from '../builds'
-import alias from 'config/alias'
+import type { BuildOptions as ViteBuildOptions } from 'vite'
+import alias from '../../../config/alias'
+import library from '../../../config/library'
 import { defineConfig, Stacks } from '../core'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 const config: ViteConfig = {
@@ -11,14 +13,42 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@vueuse/core', 'unocss/vite'],
+    exclude: ['vue', '@vueuse/core'],
   },
 
   plugins: [
     Stacks(),
   ],
 
-  build: webComponents(),
+  build: buildOptions(),
+}
+
+export function buildOptions(entry?: string): ViteBuildOptions {
+  if (!entry)
+    entry = resolve(__dirname, '../../components/index.ts')
+
+  return {
+    lib: {
+      entry,
+      name: library.WEB_COMPONENTS_PACKAGE_NAME,
+      formats: ['cjs', 'es'],
+      fileName: (format: string) => {
+        if (format === 'es')
+          return `index.mjs`
+
+        if (format === 'cjs')
+          return `index.cjs`
+
+        // if (format === 'iife')
+        //   return 'index.iife.js'
+
+        return `index.?.js`
+      },
+
+      // sourcemap: true,
+      // minify: false,;
+    },
+  }
 }
 
 export default defineConfig(({ command }) => {
