@@ -2,7 +2,7 @@
   "name": "@ow3/stacks-monorepo",
   "version": "0.22.1",
   "private": true,
-  "packageManager": "pnpm@7.3.0",
+  "packageManager": "pnpm@7.4.0",
   "description": "The easy way to start your component library stack.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -30,7 +30,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
+    "pnpm": ">=7.4.0"
   },
   "scripts": {
     "dev": "pnpm --filter ./.stacks dev",
@@ -44,7 +44,7 @@
     "dev:playground": "pnpm --filter ./.stacks dev:playground",
     "build": "pnpm run typecheck && wip",
     "stubs": "pnpm --filter ./.stacks stubs",
-    "build:types": "wip",
+    "build:types": "wip && maybeNotNeededBcOfAutoGenOfTypes",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "commit": "git cz",
     "coverage": "vitest run --coverage",
@@ -55,8 +55,8 @@
     "fresh": "rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules config/node_modules components/dist functions/dist components/node_modules playground/dist playground/node_modules examples/**/node_modules node_modules/ pnpm-lock.yaml && pnpm i",
     "preinstall": "esno .stacks/scripts/check-for-pnpm.ts && esno .stacks/scripts/check-node-version.ts",
     "postinstall": "npx simple-git-hooks ./config/git-hooks.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
     "release": "npx bumpp .stacks/package.json apps/**/package.json components/package.json examples/**/package.json functions/package.json playground/package.json package.json --execute 'pnpm run changelog' --all",
     "size": "esno .stacks/scripts/size.ts",
     "test": "pnpm run test:unit && pnpm run test:e2e",

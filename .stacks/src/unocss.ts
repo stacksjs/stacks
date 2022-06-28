@@ -1,17 +1,11 @@
-import { classPrefix, trigger, safelist, shortcuts } from '../../config/styles'
-import { icons as collections } from '../../config/icons'
-import {
-  defineConfig,
-  presetIcons,
-  presetTypography,
-  // presetWebFonts,
-  presetWind,
-  transformerDirectives,
-  transformerVariantGroup,
-} from 'unocss'
+import type { UserConfig } from 'unocss'
+import { defineConfig, presetIcons, presetTypography, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
+// presetWebFonts,
 import transformerCompileClass from '@unocss/transformer-compile-class'
+import { icons as collections } from '../../config/icons'
+import { classPrefix, safelist, shortcuts, trigger } from '../../config/styles'
 
-const config = defineConfig({
+const config: UserConfig = defineConfig({
   shortcuts,
 
   presets: [

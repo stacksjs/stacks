@@ -1,8 +1,8 @@
 {
   "name": "stacks",
-  "private": true,
   "version": "0.22.1",
-  "packageManager": "pnpm@7.3.0",
+  "private": true,
+  "packageManager": "pnpm@7.4.0",
   "description": "The core of the component library and Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   "main": "src/index.ts",
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
+    "pnpm": ">=7.4.0"
   },
   "scripts": {
     "dev": "pnpm run stubs && vite serve ../playground",
@@ -48,7 +48,9 @@
     "build:functions": "unbuild ../functions",
     "build:playground": "vite build -c ./src/builds/playground.ts",
     "stub": "unbuild --stub",
-    "stubs": "pnpm -r --parallel run stub"
+    "stubs": "pnpm -r --parallel run stub",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@babel/types": "^7.18.6",

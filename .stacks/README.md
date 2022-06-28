@@ -31,18 +31,18 @@ Now, you can use it in your project:
 
 ```js
 import {
-  alias,
-  buildVueComponents,
-  buildWebComponents,
-  buildFunctions,
-  buildStacks,
-  defineConfig,
-  resolve,
   Stacks,
   UserConfig,
- } from '@ow3/stacks'
+  alias,
+  buildFunctions,
+  buildStacks,
+  buildVueComponents,
+  buildWebComponents,
+  defineConfig,
+  resolve,
+} from '@ow3/stacks'
 
- // you are now free to use any of the imported methods
+// you are now free to use any of the imported methods
 ```
 
 Learn more in the docs.

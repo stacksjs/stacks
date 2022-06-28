@@ -28,12 +28,12 @@ export function styleEngine() {
 
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
-  imports: ['vue', '@vueuse/core', 
+  imports: ['vue', '@vueuse/core',
   // {
     // TODO: this needs to be dynamically generated
     // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
   // }
-],
+  ],
   dts: resolve(__dirname, '../types/auto-imports.d.ts'),
   eslintrc: {
     enabled: true,
@@ -47,9 +47,9 @@ const components = (dirPath: string, dtsPath: string) => Components({
   dts: dtsPath,
 })
 
-const Stacks = (componentsDirPath: string = '../../../components/src', componentsDtsPath: string = '../types/components.d.ts') => <PluginOption>[
+const Stacks = (componentsDirPath = '../../../components/src', componentsDtsPath = '../types/components.d.ts') => <PluginOption>[
   Inspect(),
-  
+
   UiEngine,
 
   styleEngine(),

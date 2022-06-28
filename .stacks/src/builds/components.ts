@@ -1,8 +1,8 @@
-import type { ViteConfig } from '../core'
-import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { defineConfig, Stacks } from '../core'
-import alias from '../../../config/alias'
 import { resolve } from 'path'
+import type { BuildOptions as ViteBuildOptions } from 'vite'
+import type { ViteConfig } from '../core'
+import { Stacks, defineConfig } from '../core'
+import alias from '../../../config/alias'
 import library from '../../../config/library'
 
 // https://vitejs.dev/config/
@@ -44,18 +44,18 @@ export function buildOptions(entry?: string): ViteBuildOptions {
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return `index.mjs`
+          return 'index.mjs'
 
         if (format === 'cjs')
-          return `index.cjs`
+          return 'index.cjs'
 
         // if (format === 'iife')
         //     return `index.iife.js`
 
-        return `index.?.js`
+        return 'index.?.js'
       },
     },
-    
+
     rollupOptions: {
       external: ['vue', '@vueuse/core'],
       output: {

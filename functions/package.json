@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-functions",
   "version": "0.22.1",
-  "packageManager": "pnpm@7.3.0",
+  "packageManager": "pnpm@7.4.0",
   "description": "A dummy library of composable functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,10 +33,13 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
+    "pnpm": ">=7.4.0"
   },
   "scripts": {
-    "stub": "unbuild --stub"
+    "dev": "unbuild --stub",
+    "stub": "unbuild --stub",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "stacks": "workspace:*"

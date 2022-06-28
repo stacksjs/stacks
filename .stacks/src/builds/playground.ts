@@ -1,14 +1,14 @@
 // import type { ViteConfig } from '../core'
-import { defineConfig } from '../core'
-// import { defineConfig, Stacks } from '../core'
+import { resolve } from 'path'
 import Vue from '@vitejs/plugin-vue'
+// import { defineConfig, Stacks } from '../core'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import type { UserConfig } from 'vite'
 import alias from '../../../config/alias'
-import { resolve } from 'path'
-import { UserConfig } from 'vite'
+import { defineConfig } from '../core'
 
 const dirPath = resolve(__dirname, '../../../components/src')
 const dtsPath = resolve(__dirname, '../../types/components.d.ts')
@@ -31,12 +31,12 @@ export function styleEngine() {
 
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
-  imports: ['vue', '@vueuse/core', 
+  imports: ['vue', '@vueuse/core',
   // {
     // TODO: this needs to be dynamically generated
     // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
   // }
-],
+  ],
   dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
   eslintrc: {
     enabled: true,
@@ -57,7 +57,7 @@ const config: UserConfig = {
 
   optimizeDeps: {
     include: ['stacks'],
-  },  
+  },
 
   resolve: {
     alias,
@@ -65,7 +65,7 @@ const config: UserConfig = {
 
   plugins: [
     Inspect(),
-  
+
     UiEngine,
 
     styleEngine(),

@@ -1,14 +1,13 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
-  "prettier.enable": false,
   "emmet.includeLanguages": {
     "blade.php": "html",
     "vue": "html"
   },
   "emmet.triggerExpansionOnTab": true,
-  "files.associations": {
-    "*.vue": "vue"
-  },
+  // "files.associations": {
+  //   "*.vue": "vue"
+  // },
   "git.enableSmartCommit": true,
   "css.validate": false,
   "editor.codeActionsOnSave": {
@@ -25,7 +24,7 @@
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "windicss.sortOnSave": true,
-  "unocss.root": ".stacks/unocss.ts",
+  "unocss.root": ".stacks/src/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
@@ -215,5 +214,6 @@
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
-  ]
+  ],
+  "prettier.enable": false
 }

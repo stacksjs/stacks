@@ -1,8 +1,8 @@
 import { resolve } from 'path'
+import type { BuildConfig } from 'unbuild'
 import { alias } from '../config'
-import { BuildConfig } from 'unbuild'
 
-export default function buildConfig(entries: string[] = ['./src/index'], outDir?: string): BuildConfig {  
+export default function buildConfig(entries: string[] = ['./src/index'], outDir?: string): BuildConfig {
   if (!outDir)
     outDir = resolve(__dirname, '../dist')
 
