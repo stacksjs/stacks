@@ -2,7 +2,7 @@
   "name": "stacks",
   "private": true,
   "version": "0.22.1",
-  "packageManager": "pnpm@7.3.0",
+  "packageManager": "pnpm@7.4.0",
   "description": "The core of the component library and Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   "main": "src/index.ts",
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.3.0"
+    "pnpm": ">=7.4.0"
   },
   "scripts": {
     "dev": "pnpm run stubs && vite serve ../playground",
@@ -64,7 +64,7 @@
     "bumpp": "^8.2.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
-    "cypress": "^10.2.0",
+    "cypress": "^10.3.0",
     "cz-git": "^1.3.8",
     "eslint": "^8.18.0",
     "eslint-plugin-cypress": "^2.12.1",
