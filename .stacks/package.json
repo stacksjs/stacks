@@ -52,13 +52,13 @@
     "stubs": "pnpm -r --parallel run stub"
   },
   "dependencies": {
-    "@babel/types": "^7.18.4",
-    "@iconify-json/heroicons-outline": "^1.1.1",
-    "@iconify-json/heroicons-solid": "^1.1.1",
-    "@ow3/eslint-config": "^0.27.3",
+    "@babel/types": "^7.18.6",
+    "@iconify-json/heroicons-outline": "^1.1.2",
+    "@iconify-json/heroicons-solid": "^1.1.2",
+    "@ow3/eslint-config": "^0.27.4",
     "@types/node": "^17.0.31",
-    "@unocss/preset-icons": "^0.41.0",
-    "@unocss/transformer-compile-class": "^0.41.0",
+    "@unocss/preset-icons": "^0.41.1",
+    "@unocss/transformer-compile-class": "^0.41.1",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.37",
     "@vueuse/core": "^8.7.5",
@@ -66,7 +66,7 @@
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
     "cypress": "^10.2.0",
-    "cz-git": "^1.3.7",
+    "cz-git": "^1.3.8",
     "eslint": "^8.18.0",
     "eslint-plugin-cypress": "^2.12.1",
     "esno": "^0.16.3",
@@ -77,14 +77,14 @@
     "simple-git-hooks": "^2.8.0",
     "typescript": "^4.7.4",
     "unbuild": "^0.7.4",
-    "unocss": "^0.41.0",
+    "unocss": "^0.41.1",
     "unplugin-auto-import": "^0.9.1",
-    "unplugin-vue-components": "^0.19.9",
-    "vite": "^2.9.12",
+    "unplugin-vue-components": "^0.20.1",
+    "vite": "^2.9.13",
     "vite-plugin-inspect": "^0.5.0",
     "vitest": "^0.16.0",
     "vue": "^3.2.37",
-    "vue-tsc": "^0.38.1"
+    "vue-tsc": "^0.38.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13"
