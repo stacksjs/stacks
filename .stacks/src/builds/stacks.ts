@@ -17,7 +17,7 @@ export default function buildConfig(entries: string[] = ['./src/index'], outDir?
       inlineDependencies: true,
     },
     externals: [
-      'vite', 'vue', '@vueuse/core',
+      'stack',
     ],
   }
 }

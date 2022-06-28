@@ -1,4 +1,4 @@
-<script setup lang='ts'>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { count, increment } from 'functions'
 

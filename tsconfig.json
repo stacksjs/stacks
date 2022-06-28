@@ -22,7 +22,10 @@
     ],
     "paths": {
       "stacks": [
-        "./.stacks/src/index.ts"
+        "./.stacks/index.ts"
+      ],
+      "~/functions": [
+        "./functions/index.ts"
       ],
       "stacks/*": [
         "./.stacks/src/*"
@@ -37,7 +40,7 @@
         "./config/index.ts"
       ],
       "functions": [
-        "./functions/src/index.ts"
+        "./functions/index.ts"
       ]
     },
     "lib": [
@@ -46,20 +49,23 @@
     ]
   },
   "include": [
-    "*.ts",
+    "./*.ts",
+    ".stacks/*.js",
+    ".stacks/*.ts",
     ".stacks/**/*.js",
     ".stacks/**/*.ts",
-    ".stacks/**/*.json",
-    "apps/**/*.ts",
-    "apps/**/*.vue",
-    "apps/**/*.json",
-    "components/**/*.json",
-    "components/**/*.vue",
-    "components/**/*.ts",
-    "config/*.ts",
-    "config/*.json",
-    "functions/**/*.ts",
-    "functions/**/*.json"
+    "./.stacks/**/*.js",
+    "./.stacks/**/*.ts",
+    "./apps/**/*.ts",
+    "./apps/**/*.vue",
+    "./apps/**/*.json",
+    "./components/**/*.json",
+    "./components/**/*.vue",
+    "./components/**/*.ts",
+    "./config/*.ts",
+    "./config/*.json",
+    "./functions/**/*.ts",
+    "./functions/**/*.json"
   ],
   "exclude": [
     "**/dist/**",

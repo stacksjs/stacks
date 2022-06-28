@@ -9,6 +9,9 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "imports": {
+    "stacks": "../.stacks/index.ts"
+  },
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.3.0"

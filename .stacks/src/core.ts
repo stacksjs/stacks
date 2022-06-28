@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import type { UserConfig as ViteConfig } from 'vite'
+import type { PluginOption, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
@@ -7,6 +7,8 @@ import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { createApp } from 'vue'
+
+export type ViteConfig = UserConfig
 
 const UiEngine = Vue({
   template: {
@@ -17,10 +19,12 @@ const UiEngine = Vue({
   },
 })
 
-const StyleEngine = () => Unocss({
-  configFile: resolve(__dirname, './unocss.ts'),
-  mode: 'vue-scoped', // or 'shadow-dom'
-})
+export function styleEngine() {
+  return Unocss({
+    configFile: resolve(__dirname, './unocss.ts'),
+    mode: 'vue-scoped', // or 'shadow-dom'
+  })
+}
 
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
@@ -43,16 +47,16 @@ const components = (dirPath: string, dtsPath: string) => Components({
   dts: dtsPath,
 })
 
-const Stacks = (componentsDirPath: string = '../../../components/src', componentsDtsPath: string = '../types/components.d.ts') => [
+const Stacks = (componentsDirPath: string = '../../../components/src', componentsDtsPath: string = '../types/components.d.ts') => <PluginOption>[
   Inspect(),
   
   UiEngine,
 
-  StyleEngine,
+  styleEngine(),
 
   autoImports,
 
   components(componentsDirPath, componentsDtsPath),
 ]
 
-export { resolve, createApp, defineConfig, Stacks, UiEngine, StyleEngine, autoImports, components, ViteConfig }
+export { resolve, createApp, defineConfig, Stacks, UiEngine, autoImports, components }

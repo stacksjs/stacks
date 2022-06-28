@@ -42,7 +42,7 @@
     "build:elements": "pnpm --filter ./.stacks build:elements",
     "build:playground": "pnpm --filter ./.stacks build:playground",
     "dev:playground": "pnpm --filter ./.stacks dev:playground",
-    "build": "wip",
+    "build": "pnpm run typecheck && wip",
     "stubs": "pnpm --filter ./.stacks stubs",
     "build:types": "wip",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
@@ -65,7 +65,7 @@
     "typecheck": "vue-tsc --noEmit",
     "types:fix": "esno .stacks/scripts/fix-types.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "stacks": "workspace:*"
   },
   "lint-staged": {

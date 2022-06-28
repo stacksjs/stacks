@@ -1,7 +1,6 @@
 {
   "name": "stacks",
   "private": true,
-  "type": "module",
   "version": "0.22.1",
   "packageManager": "pnpm@7.3.0",
   "description": "The core of the component library and Stacks framework.",
@@ -87,6 +86,18 @@
     "vue-tsc": "^0.38.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13"
+    "@types/fs-extra": "^9.0.13",
+    "@unocss/vite": "^0.41.1"
+  },
+  "build": {
+    "entries": [
+      "./index"
+    ],
+    "clean": true,
+    "declaration": true,
+    "rollup": {
+      "emitCJS": true,
+      "inlineDependencies": true
+    }
   }
 }
