@@ -6,19 +6,19 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# The Atomic UI & UX Framework
+# The Modern Component & Function Library
 
-The ultimate goal of the Stacks Framework is to _help you_ create & maintain component (UI) & function (UX) libraries. It shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
+The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
 
 > _The clever way to build component & function libraries._
 
 **🤖 Zero-config, by design**
 
-The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating component & composable type declarations.
+The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. The best of Vite & unbuild's engines in a _zero-config_ way.
 
 **🎨 Style with ease**
 
-Create your own style guide using conventions you are familiar with. UnoCSS's atomic CSS engine allows for just that in a blazing-fast way _(e.g. Tailwind CSS, Windi CSS, Heroicons, Bootstrap, etc.)_.
+Create your own style guide using conventions you are familiar with. Our UnoCSS atomic engine allows for just that—in a blazing-fast, on-demand way—Tailwind CSS, Windi CSS, Bootstrap, Heroicons, Material Design Icons, and more available.
 
 **✨ Next-gen Developer Experience _(DX)_**
 
@@ -32,7 +32,7 @@ IDE Capabilities, such as type hints, code completion, code formatting, and more
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace.
 
-Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now!
+Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ## Get Started
 
