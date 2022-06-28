@@ -1,6 +1,8 @@
 # Apps
 
-This folder should contain your applications. One of those applications is the "site" that Stacks scaffolds for you. Other examples could include "VS Code plugin", if your project requires one, etc.
+This folder contains your applications. One of those applications is the "site" that Stacks scaffolds for you. This site may be used as the your documentation site, or as a landing page for your application.
+
+Other examples could include a "VS Code plugin", a mobile app, a desktop app, etc.—if your project requires it.
 
 ## 💪🏼 Contributing
 

@@ -8,7 +8,7 @@
 
 # The Atomic UI & UX Framework
 
-The ultimate goal of the Stacks Framework is to _help you_ create & maintain component (UI) & function (UX) libraries. It shouldn't be a chore creating maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
+The ultimate goal of the Stacks Framework is to _help you_ create & maintain component (UI) & function (UX) libraries. It shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
 
 > _The clever way to build component & function libraries._
 
