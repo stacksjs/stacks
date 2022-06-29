@@ -25,6 +25,7 @@
     "javascript",
     "starter kit"
   ],
+  "sideEffects": false,
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
