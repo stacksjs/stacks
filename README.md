@@ -42,7 +42,8 @@ It's incredibly easy to get started with this framework. You may "Use this templ
 npx artisan make:stack hello-world
 ```
 
-Please ensure to use Node.js v16.10 or higher. _Stacks is also `fnm` & `nvm` friendly._
+> **Note**
+> Node.js v16.10 or higher required. _Stacks is `fnm` & `nvm` friendly._
 
 ## 🤖 Usage
 
