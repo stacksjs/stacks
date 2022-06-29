@@ -1,8 +1,9 @@
-import type { UserConfig } from 'vite'
-import { Stacks, alias, defineBuildConfig } from '@ow3/stacks'
+import type { ViteConfig } from 'stacks'
+import { Stacks, defineConfig } from 'stacks'
+import alias from 'config/alias'
 
 // https://vitejs.dev/config/
-const config: UserConfig = {
+const config: ViteConfig = {
   resolve: {
     alias,
   },
@@ -16,7 +17,7 @@ const config: UserConfig = {
   ],
 }
 
-export default defineBuildConfig(({ command, mode }) => {
+export default defineConfig(({ command, mode }) => {
   // eslint-disable-next-line no-console
   console.log('mode is', mode)
 

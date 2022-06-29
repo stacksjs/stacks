@@ -1,23 +1,25 @@
 const { readdirSync } = require('fs')
 const { resolve } = require('path')
+const configPath = resolve(__dirname, './config/git.ts')
+const { paramCase } = require('change-case')
+const jiti = require('jiti')(configPath, { debug: true })
 
-const exclude = ['.eslintrc-auto-import.json', 'shims.d.ts', 'HelloWorld.vue', 'README.md', 'build.config.ts', 'node_modules', 'package.json', 'index']
+const components = readdirSync(resolve(__dirname, './components/src'))
+  .map((item) => paramCase(item.replace(/.vue/g, '')))
 
-const components = readdirSync(resolve(__dirname, './components'))
-  .filter((item) => item.includes(exclude))
-
-const functions = readdirSync(resolve(__dirname, './functions'))
-  .map((item) => item.replace(/.ts/g, ''))
-  .filter((item) => item.includes(exclude))
+let functions = readdirSync(resolve(__dirname, './functions/src'))
+  .map((item) => paramCase(item.replace(/.ts/g, '')))
 
 const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
+const uniqueScopes = [...new Set(scopes)];
+
 
 module.exports = {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
     'scope-enum': [
       2, 'always',
-      scopes,
+      uniqueScopes,
     ],
   },
   prompt: {

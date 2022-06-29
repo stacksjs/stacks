@@ -9,9 +9,6 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "imports": {
-    "stacks": "../.stacks/index.ts"
-  },
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.4.0"
@@ -23,7 +20,7 @@
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "@ow3/stacks": "workspace:*"
   },
   "build": {
     "entries": [

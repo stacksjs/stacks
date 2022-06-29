@@ -42,7 +42,7 @@
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "@ow3/stacks": "workspace:*"
   },
   "build": {
     "entries": [

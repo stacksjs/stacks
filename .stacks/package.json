@@ -1,5 +1,5 @@
 {
-  "name": "stacks",
+  "name": "@ow3/stacks",
   "version": "0.22.1",
   "private": true,
   "packageManager": "pnpm@7.4.0",
@@ -32,21 +32,43 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "artisan": "bin/artisan.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "scripts"
+  ],
   "engines": {
     "node": ">=v16.15.1",
     "pnpm": ">=7.4.0"
   },
   "scripts": {
-    "dev": "pnpm run stubs && vite serve ../playground",
+    "make:component": "wip",
+    "make:function": "wip",
+    "make:stack": "wip",
+    "dev": "pnpm run stubs",
     "dev:components": "unbuild ../components --stub",
     "dev:elements": "unbuild ../components --stub",
     "dev:functions": "unbuild ../functions --stub",
+    "dev:stacks": "unbuild --stub",
     "dev:playground": "vite serve ../playground -c ./src/builds/playground.ts",
     "build": "pnpm run typecheck && wip",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
     "build:functions": "unbuild ../functions",
+    "build:stacks": "unbuild",
     "build:playground": "vite build -c ./src/builds/playground.ts",
     "stub": "unbuild --stub",
     "stubs": "pnpm -r --parallel run stub",
@@ -61,9 +83,10 @@
     "test:unit": "cd .. && vitest",
     "typecheck": "vue-tsc --noEmit",
     "types:fix": "esno scripts/fix-types.ts",
-    "fresh": "cd .. && rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules config/node_modules components/dist functions/dist components/node_modules playground/dist playground/node_modules examples/**/node_modules node_modules/ pnpm-lock.yaml && pnpm i",
+    "fresh": "pnpm run clean && pnpm i",
     "example": "esno scripts/run-example.ts",
     "coverage": "cd .. && vitest run --coverage",
+    "clean": "cd .. && rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules config/node_modules components/dist functions/dist components/node_modules playground/dist playground/node_modules examples/**/node_modules node_modules/ pnpm-lock.yaml",
     "preinstall": "esno scripts/check-for-pnpm.ts && esno scripts/check-node-version.ts",
     "postinstall": "npx simple-git-hooks ../config/git-hooks.ts"
   },
@@ -79,6 +102,8 @@
     "@vue/compiler-sfc": "^3.2.37",
     "@vueuse/core": "^8.7.5",
     "bumpp": "^8.2.1",
+    "cac": "^6.7.12",
+    "change-case": "^4.1.2",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.2.2",
     "cypress": "^10.3.0",
@@ -108,7 +133,8 @@
   },
   "build": {
     "entries": [
-      "./index"
+      "./index",
+      "./src/cli"
     ],
     "clean": true,
     "declaration": true,

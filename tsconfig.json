@@ -48,25 +48,6 @@
       "dom"
     ]
   },
-  // "include": [
-  //   "./*.ts",
-  //   ".stacks/*.js",
-  //   ".stacks/*.ts",
-  //   ".stacks/**/*.js",
-  //   ".stacks/**/*.ts",
-  //   "./.stacks/**/*.js",
-  //   "./.stacks/**/*.ts",
-  //   "./apps/**/*.ts",
-  //   "./apps/**/*.vue",
-  //   "./apps/**/*.json",
-  //   "./components/**/*.json",
-  //   "./components/**/*.vue",
-  //   "./components/**/*.ts",
-  //   "./config/*.ts",
-  //   "./config/*.json",
-  //   "./functions/**/*.ts",
-  //   "./functions/**/*.json"
-  // ],
   "exclude": [
     "**/dist/**",
     "**/node_modules/**",

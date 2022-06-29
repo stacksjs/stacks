@@ -39,7 +39,7 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. You may "Use this template" (via the button in top right corner of this page), or run the following snippet of code in your terminal:
 
 ```bash
-npx artisan make:stack hello-world
+npx artisan setup
 ```
 
 > **Note**
@@ -50,14 +50,16 @@ npx artisan make:stack hello-world
 The following is a list of some of the most common ways to use interact with the Stacks API. Meet the Artisan Toolkit:
 
 ```bash
-# develop locally, to be released with 0.23.0
-npx artisan install # or `pnpm i`
-npx artisan dev # start one of the dev servers (components, functions, or docs)
+# local workflow, to be released with 0.23.0
+npx artisan install # installs all dependencies
+npx artisan dev # starts one of the dev servers (components, functions, or docs)
 npx artisan commit # follow CLI prompts for committing staged changes
 npx artisan release # creates the releases for the stack & consequently, publishes them to npm
 
 npx artisan make:component HelloWorld # bootstraps a HelloWorld component
 npx artisan make:function hello-world # bootstraps a HelloWorld function
+
+npx artisan help
 ```
 
 <details>

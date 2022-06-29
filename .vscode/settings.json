@@ -1,5 +1,6 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.format.enable": true,
   "emmet.includeLanguages": {
     "blade.php": "html",
     "vue": "html"
@@ -13,13 +14,13 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
+  // "eslint.codeAction.showDocumentation": {
+  //   "enable": true
+  // },
   "editor.quickSuggestions": {
     "strings": true
   },
   "eslint.packageManager": "pnpm",
-  "eslint.codeAction.showDocumentation": {
-    "enable": true
-  },
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
@@ -225,10 +226,12 @@
     "changelist",
     "commitizen",
     "demi",
-    "composability"
+    "composability",
+    "scrollback"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
   ],
-  "prettier.enable": false
+  "prettier.enable": false,
+  "terminal.integrated.scrollback": 10000
 }
