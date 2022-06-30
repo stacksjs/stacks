@@ -3,13 +3,12 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "git.enableSmartCommit": true,
   "css.validate": false,
-  "eslint.format.enable": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  // "eslint.codeAction.showDocumentation": {
-  //   "enable": true
-  // },
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
   "editor.quickSuggestions": {
     "strings": true
   },
