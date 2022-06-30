@@ -5,7 +5,7 @@
   "css.validate": false,
   "eslint.format.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
+    "source.fixAll.eslint": true
   },
   // "eslint.codeAction.showDocumentation": {
   //   "enable": true
@@ -13,7 +13,6 @@
   "editor.quickSuggestions": {
     "strings": true
   },
-  "eslint.packageManager": "pnpm",
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
@@ -225,5 +224,5 @@
     "./.stacks/custom-elements.json"
   ],
   "prettier.enable": false,
-  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.scrollback": 10000
 }
