@@ -1,18 +1,11 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
-  "eslint.format.enable": true,
-  "emmet.includeLanguages": {
-    "blade.php": "html",
-    "vue": "html"
-  },
-  "emmet.triggerExpansionOnTab": true,
-  // "files.associations": {
-  //   "*.vue": "vue"
-  // },
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "git.enableSmartCommit": true,
   "css.validate": false,
+  "eslint.format.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": true,
   },
   // "eslint.codeAction.showDocumentation": {
   //   "enable": true
@@ -25,7 +18,7 @@
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "windicss.sortOnSave": true,
-  "unocss.root": ".stacks/src/unocss.ts",
+  "unocss.root": "./.stacks/src/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
@@ -44,7 +37,6 @@
   "volar.completion.preferredTagNameCase": "pascal",
   "volar.takeOverMode.enabled": true,
   "todo-tree.highlights.enabled": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
   "cSpell.ignorePaths": [
     "node_modules"
   ],
@@ -233,5 +225,5 @@
     "./.stacks/custom-elements.json"
   ],
   "prettier.enable": false,
-  "terminal.integrated.scrollback": 10000
+  "terminal.integrated.scrollback": 10000,
 }

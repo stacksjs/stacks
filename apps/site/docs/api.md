@@ -6,6 +6,8 @@ npx artisan make:function hello-world # bootstraps hello-world.ts function
 npx artisan make:stack hello-world # bootstraps component & function
 
 npx artisan install # installs all deps
+npx artisan update # updates the stack to the latest version
+npx artisan clean # cleans all deps & dist folders
 npx artisan fresh # cleans & reinstalls all deps
 
 npx artisan dev # stubs everything & and starts smart dev server 
@@ -44,7 +46,7 @@ npx artisan test:unit # runs unit tests
 npx artisan test:coverage # runs test coverage
 
 npx artisan example # run an example script (follow prompts)
-npx artisan size # wip
+
 npx artisan preinstall # the preinstall hook that ensures proper node & pnpm versions are installed 
 npx artisan postinstall # the postinstall hook that ensures git hooks are configured after initial install
 ```
