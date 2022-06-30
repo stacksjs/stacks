@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-functions",
-  "version": "0.22.1",
+  "version": "0.23.0",
   "packageManager": "pnpm@7.4.0",
   "description": "A dummy library of composable functions.",
   "author": "Chris Breuer",
@@ -50,7 +50,9 @@
     ],
     "clean": true,
     "declaration": true,
-    "externals": ["stacks"],
+    "externals": [
+      "stacks"
+    ],
     "rollup": {
       "emitCJS": true,
       "inlineDependencies": true

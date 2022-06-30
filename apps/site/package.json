@@ -1,6 +1,6 @@
 {
   "name": "docs-site",
-  "version": "0.0.0",
+  "version": "0.23.0",
   "private": true,
   "scripts": {
     "dev": "vitepress dev docs",

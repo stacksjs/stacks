@@ -1,3 +1,22 @@
+# [0.23.0](https://github.com/openwebstacks/stacks-framework/compare/v0.22.1...v0.23.0) (2022-06-30)
+
+
+### Bug Fixes
+
+* adjust the stacks exports ([927d4f3](https://github.com/openwebstacks/stacks-framework/commit/927d4f381ce990aa921d8cce196074595dca2ad0))
+* **core:** properly build stacks ([35d9a14](https://github.com/openwebstacks/stacks-framework/commit/35d9a14b4b072cf4900667d1f5b503c6400e2cf5))
+* ensure eslint runs ([e7338a5](https://github.com/openwebstacks/stacks-framework/commit/e7338a505a6cc749777fd398f4f2756d88be6060))
+
+
+### Features
+
+* allow tree shaking via sideEffects ([75bba51](https://github.com/openwebstacks/stacks-framework/commit/75bba51bb43419da56a6f0c1b88ac0d014e016b9))
+* **core:** simplify stacks architecture ([444c2d8](https://github.com/openwebstacks/stacks-framework/commit/444c2d838a50654c728e745be1f666ecd2f095be))
+* **dx:** add fnm & nvm integration ([39b9f99](https://github.com/openwebstacks/stacks-framework/commit/39b9f9994deb3e5d5a8ce6fd040411dcec310136))
+* **dx:** add vscode output colorizer ([7b20110](https://github.com/openwebstacks/stacks-framework/commit/7b201102b1c34694f8945289565d73d26eda9ecc))
+
+
+
 ## [0.22.1](https://github.com/openwebstacks/stacks-framework/compare/v0.22.0...v0.22.1) (2022-06-23)
 
 
