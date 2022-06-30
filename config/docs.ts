@@ -9,7 +9,7 @@ import type { DocsConfig } from 'stacks'
 const docs: DocsConfig = {
   lang: 'en-US',
   title: 'Stacks',
-  description: 'Component-First. UI & Build Framework.',
+  description: 'Composability-First. UI/FX Framework.',
 
   lastUpdated: true,
 
