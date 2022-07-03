@@ -2,7 +2,7 @@
   "name": "@ow3/stacks-monorepo",
   "version": "0.23.0",
   "private": true,
-  "packageManager": "pnpm@7.4.1",
+  "packageManager": "pnpm@7.5.0",
   "description": "The easy way to start your component library stack.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -31,7 +31,7 @@
   ],
   "engines": {
     "node": ">=v16.15.1",
-    "pnpm": ">=7.4.1"
+    "pnpm": ">=7.5.0"
   },
   "scripts": {
     "artisan": "esno ./.stacks/src/cli/run.ts",
