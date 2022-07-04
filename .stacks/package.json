@@ -67,7 +67,7 @@
     "dev:functions": "unbuild ../functions --stub",
     "dev:stacks": "unbuild --stub",
     "dev:playground": "vite serve ../playground -c ./src/builds/playground.ts",
-    "build": "pnpm run typecheck && wip",
+    "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:elements && pnpm run build:functions && pnpm run build:stacks",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
     "build:functions": "unbuild ../functions",
