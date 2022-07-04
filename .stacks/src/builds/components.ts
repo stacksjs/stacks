@@ -33,7 +33,7 @@ export default defineConfig(({ command }) => {
 
 export function buildOptions(entry?: string): ViteBuildOptions {
   if (!entry)
-    entry = resolve(__dirname, '../../../components/src/index.ts')
+    entry = resolve(__dirname, '../../../components/index.ts')
 
   return {
     outDir: resolve(__dirname, '../../../components/dist'),
