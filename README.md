@@ -14,7 +14,7 @@ The ultimate goal of the Stacks Framework is to _help you_ create & maintain com
 
 **🤖 Zero-config, by design**
 
-The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. The best of Vite & unbuild's engines in a _zero-config_ way.
+The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML. The best of Vite & unbuild's engines in a _zero-config_ way.
 
 **🎨 Style with ease**
 
