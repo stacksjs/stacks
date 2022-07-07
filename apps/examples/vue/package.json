@@ -8,7 +8,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@ow3/hello-world-vue": "workspace:*"
+    "@ow3/hello-world-components": "workspace:*"
   },
   "devDependencies": {
     "@ow3/stacks": "workspace:*"

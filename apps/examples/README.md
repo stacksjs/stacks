@@ -1,8 +1,8 @@
 # Stacks Examples
 
-This folder contains all the examples utilizing the Stacks framework and it can be used to easily create examples for your library.
+This folder contains all the examples utilizing the Stacks framework. Its primary use-case is to act as a starting part for you to showcase examples of your Stack.
 
-Examples for your component library are very important in order to find adoption. Your goal is to create a library that is as easy to use as possible, while also ensuring the integration is seamless.
+For instance, "examples" of your component library are incredibly important in order to find adoption. In this case, your goal is to create a codebase that is as easy to use as possible, while also ensuring the integration is seamless.
 
 Currently, the following examples are covered:
 

@@ -17,6 +17,7 @@ const UiEngine = Vue({
   template: {
     compilerOptions: {
       // treat all tags with a dash as custom elements
+      // TODO: add config for this
       isCustomElement: tag => tag.includes('hello-world'),
     },
   },
@@ -32,10 +33,10 @@ export function styleEngine() {
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
   imports: ['vue', '@vueuse/core',
-  // {
+    // {
     // TODO: this needs to be dynamically generated
     // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
-  // }
+    // }
   ],
   dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
   eslintrc: {
