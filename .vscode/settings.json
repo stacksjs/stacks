@@ -24,7 +24,6 @@
     "dist": true,
     "node_modules": true,
     "CHANGELOG.md": true,
-    "examples": true
   },
   "explorer.confirmDragAndDrop": false,
   "explorer.fileNesting.enabled": true,
