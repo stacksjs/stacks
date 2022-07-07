@@ -24,9 +24,6 @@
       "stacks": [
         "./.stacks/index.ts"
       ],
-      "~/functions": [
-        "./functions/index.ts"
-      ],
       "stacks/*": [
         "./.stacks/src/*"
       ],
@@ -36,10 +33,16 @@
       "components": [
         "./components/index.ts"
       ],
+      "~/components": [
+        "./components/index.ts"
+      ],
       "config": [
         "./config/index.ts"
       ],
       "functions": [
+        "./functions/index.ts"
+      ],
+      "~/functions": [
         "./functions/index.ts"
       ]
     },
