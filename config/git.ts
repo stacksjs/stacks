@@ -17,4 +17,4 @@ export const hooks = {
  * This is the place where you define your git commit scopes.
  * A scope is a category of commits that share commonalities.
  */
-export const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build']
+export const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'play', 'release', 'readme', 'build']

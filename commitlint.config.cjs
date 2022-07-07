@@ -5,14 +5,13 @@ const { paramCase } = require('change-case')
 const jiti = require('jiti')(configPath, { debug: true })
 
 const components = readdirSync(resolve(__dirname, './components/src'))
-  .map((item) => paramCase(item.replace(/.vue/g, '')))
+  .map(item => paramCase(item.replace(/.vue/g, '')))
 
-let functions = readdirSync(resolve(__dirname, './functions/src'))
-  .map((item) => paramCase(item.replace(/.ts/g, '')))
+const functions = readdirSync(resolve(__dirname, './functions/src'))
+  .map(item => paramCase(item.replace(/.ts/g, '')))
 
-const scopes = ['', 'ci', 'core', 'config', 'deps', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
-const uniqueScopes = [...new Set(scopes)];
-
+const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
+const uniqueScopes = [...new Set(scopes)]
 
 module.exports = {
   rules: {
