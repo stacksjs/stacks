@@ -42,7 +42,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=v16.15.1",
+    "node": ">=v16.16.0",
     "pnpm": ">=7.5.0"
   },
   "scripts": {
