@@ -6,15 +6,15 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# The Modern Component & Function Library
+# The Atomic UI/FX Engine
 
-The ultimate goal of the Stacks Framework is to _help you_ create & maintain component & function libraries. It shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain UIs (pages & components) & function libraries. In other words, it shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
 
-> _The clever way to build component & function libraries._
+> _The clever way to build & share component & function libraries._
 
 **🤖 Zero-config, by design**
 
-The Stacks bundler automagically generates a Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML. The best of Vite & unbuild's engines in a _zero-config_ way.
+The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite & unbuild engines in a zero-config way._
 
 **🎨 Style with ease**
 
@@ -22,11 +22,11 @@ Create your own style guide using conventions you are familiar with. Our UnoCSS 
 
 **✨ Next-gen Developer Experience _(DX)_**
 
-Whether it is the simplistic artisan setup, the modern git commit conventions via commitlint, the simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated GitHub PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
+Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
 
 **💡 First-class VS Code integration**
 
-IDE Capabilities, such as type hints, code completion, code formatting, and more, are all natively built-in within Stacks. _Without the need of Prettier._
+IDE Capabilities, such as type hints, code completion, code formatting, and more—all natively built-into Stacks. _And without the need of Prettier._
 
 **🧙🏼‍♀️ Extremely beginner & expert-friendly**
 
@@ -36,7 +36,7 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 
 ## Get Started
 
-It's incredibly easy to get started with this framework. You may "Use this template" (via the button in top right corner of this page), or run the following snippet of code in your terminal:
+It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
 npx artisan setup
@@ -47,17 +47,18 @@ npx artisan setup
 
 ## 🤖 Usage
 
-The following is a list of some of the most common ways to use interact with the Stacks API. Meet the Artisan Toolkit:
+The following list is of some of the most common ways to interact with the Stacks API. Meet the Artisan Toolkit:
 
 ```bash
-# local workflow, to be released with 0.23.0
+# local workflow, to be released with 0.24.0
 npx artisan install # installs all dependencies
-npx artisan dev # starts one of the dev servers (components, functions, or docs)
-npx artisan commit # follow CLI prompts for committing staged changes
+npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+npx artisan commit # follow CLI prompts for committing changes
 npx artisan release # creates the releases for the stack & consequently, publishes them to npm
 
 npx artisan make:component HelloWorld # bootstraps a HelloWorld component
 npx artisan make:function hello-world # bootstraps a HelloWorld function
+npx artisan make:page hello-world # bootstraps a page for you (https://127.0.0.1/hello-world)
 
 npx artisan help
 ```
@@ -69,18 +70,21 @@ npx artisan help
 npx artisan install # or `pnpm i`
 npx artisan fresh # fresh reinstall of all deps
 
-npx artisan dev # start one of the dev servers (components, functions, or docs)
-npx artisan dev:components # starts local dev server for playground
+npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+npx artisan dev:components # starts local playground dev server
 npx artisan dev:functions # stubs the functions
-npx artisan dev:docs # starts local dev server for docs
+npx artisan dev:pages # starts local pages dev server
+npx artisan dev:docs # starts local docs dev server
 
 npx artisan make:component HelloWorld
 npx artisan make:function hello-world
 npx artisan make:stack hello-world
+npx artisan make:page hello-world
 
 npx artisan stub # stubs all the libraries
 npx artisan stub:components # stubs the component library
 npx artisan stub:functions # stubs the function library
+npx artisan stub:pages # stubs the pages
 
 npx artisan lint # runs linter
 npx artisan lint:fix # runs linter and fixes issues
@@ -96,13 +100,14 @@ npx artisan build:elements # builds the Web Component (Custom Element) library
 npx artisan build:vue # builds the Vue 2 & 3 libraries
 npx artisan build:components # builds the component libraries
 npx artisan build:functions # builds the function library
+npx artisan build:pages # builds the pages
 npx artisan build:types # builds all types
 
 # when deploying to Vercel, Netlify, or GitHub Pages
 npx artisan build:playground 
 npx artisan build:docs
 
-npx artisan example # select to run one of examples (follow CLI prompts)
+npx artisan example # select the example to run (follow CLI prompts)
 
 # test your stack
 npx artisan test # runs test suite
