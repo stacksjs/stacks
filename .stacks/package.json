@@ -96,7 +96,7 @@
     "postinstall": "npx simple-git-hooks ../config/git-hooks.ts"
   },
   "dependencies": {
-    "@babel/types": "^7.18.7",
+    "@babel/types": "^7.18.8",
     "@iconify-json/heroicons-outline": "^1.1.2",
     "@iconify-json/heroicons-solid": "^1.1.2",
     "@ow3/eslint-config": "^0.27.6",
@@ -105,7 +105,7 @@
     "@unocss/transformer-compile-class": "^0.43.2",
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/compiler-sfc": "^3.2.37",
-    "@vueuse/core": "^8.9.0",
+    "@vueuse/core": "^8.9.1",
     "bumpp": "^8.2.1",
     "cac": "^6.7.12",
     "change-case": "^4.1.2",
@@ -127,7 +127,7 @@
     "unocss": "^0.43.2",
     "unplugin-auto-import": "^0.9.2",
     "unplugin-vue-components": "^0.21.1",
-    "vite": "^2.9.13",
+    "vite": "^2.9.14",
     "vite-plugin-inspect": "^0.5.1",
     "vitest": "^0.17.1",
     "vue": "^3.2.37",
