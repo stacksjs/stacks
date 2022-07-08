@@ -12,6 +12,8 @@ The goal of the Stacks framework is to _help you_ create & maintain UIs (pages &
 
 > _The clever way to build & share component & function libraries._
 
+![Atomic UI & FX Design](./apps/site/docs/images/diagram.png)
+
 **🤖 Zero-config, by design**
 
 The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite & unbuild engines in a zero-config way._
