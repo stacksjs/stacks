@@ -59,8 +59,8 @@ npx artisan commit # follow CLI prompts for committing changes
 npx artisan release # creates the releases for the stack & consequently, publishes them to npm
 
 npx artisan make:component HelloWorld # bootstraps a HelloWorld component
-npx artisan make:function hello-world # bootstraps a HelloWorld function
-npx artisan make:page hello-world # bootstraps a page for you (https://127.0.0.1/hello-world)
+npx artisan make:function HelloWorld # bootstraps a HelloWorld function
+npx artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
 
 npx artisan help
 ```
@@ -125,10 +125,12 @@ Read more here about the Stacks CLI in the documentation.
 
 Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._
 
-By default, Stacks bundles your components into several outputs. Web Component (Custom Elements) & Vue Component Libraries are automatically generated, amongst other packages.
+By default, Stacks realizes whether your Stack includes components, functions, and/or pages. Based on that determination, Stacks builds your outputs.
+
+The UI libraries that automatically get built are a Web Component (Custom Elements) & Vue Component library.
 
 <details>
-<summary>A Custom Element usage example</summary>
+<summary>Custom Element usage</summary>
 
 ```bash
 npm install my-awesome-library
@@ -147,7 +149,7 @@ After you installed your Stacks generated library, you can use a "Custom Element
 </details>
 
 <details>
-<summary>A Vue 2 & 3 usage example</summary>
+<summary>Vue 2 & 3 usage</summary>
 
 ```bash
 npm install my-awesome-library
@@ -166,7 +168,29 @@ import HelloWorld from 'my-awesome-library'
 ```
 </details>
 
-You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component libraries—using industry best-practices, to reach one of the broadest user bases possible.
+_A function library may also be automatically generated._
+
+<details>
+<summary>Functions usage</summary>
+
+```bash
+npm install hello-world-library
+```
+
+After you installed your Stacks generated library, you can use your functions in the following way:
+
+```ts
+import { count, increment } from 'hello-world-library'
+
+console.log('count is', count)
+
+increment()
+
+console.log('increased count is', count)
+```
+</details>
+
+You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best-practices, to reach one of the broadest user bases possible.
 
 ## 🧪 Testing
 
