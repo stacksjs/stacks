@@ -18,7 +18,7 @@ The Stacks framework automagically bundles & builds your code. A Web Component l
 
 **🎨 Style with ease**
 
-Create your own style guide using conventions you are familiar with. Our UnoCSS atomic engine allows for just that—in a blazing-fast, on-demand way—Tailwind CSS, Windi CSS, Bootstrap, Heroicons, Material Design Icons, and more available.
+Create your own style guide using conventions you are familiar with. Our UnoCSS atomic engine allows for just that—in a blazing-fast, on-demand way—Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more available.
 
 **✨ Next-gen Developer Experience _(DX)_**
 
@@ -78,8 +78,8 @@ npx artisan dev:docs # starts local docs dev server
 
 npx artisan make:component HelloWorld
 npx artisan make:function hello-world
-npx artisan make:stack hello-world
 npx artisan make:page hello-world
+npx artisan make:stack hello-world
 
 npx artisan stub # stubs all the libraries
 npx artisan stub:components # stubs the component library
