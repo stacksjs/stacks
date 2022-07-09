@@ -1,8 +1,5 @@
 packages:
   - ./.stacks
-  - ./.stacks/elements
   - './apps/**'
   - ./components
   - ./functions
-  - ./playground
-  - '!examples/**'
