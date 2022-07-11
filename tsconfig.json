@@ -27,7 +27,13 @@
       "stacks/*": [
         "./.stacks/src/*"
       ],
+      "~/stacks": [
+        "./.stacks/index.ts"
+      ],
       "builds": [
+        "./.stacks/src/builds/index.ts"
+      ],
+      "~/builds": [
         "./.stacks/src/builds/index.ts"
       ],
       "components": [
@@ -37,6 +43,9 @@
         "./components/index.ts"
       ],
       "config": [
+        "./config/index.ts"
+      ],
+      "~/config": [
         "./config/index.ts"
       ],
       "functions": [
@@ -57,5 +66,6 @@
     "tests/cypress/**",
     "apps/site/**",
     "commitlint.config.cjs"
-  ]
+  ],
+  "extends": "./.stacks/.nitro/types/tsconfig.json"
 }
