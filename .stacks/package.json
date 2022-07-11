@@ -88,10 +88,10 @@
     "test": "cd .. && pnpm run test:unit && pnpm run test:e2e",
     "test:e2e": "cd .. && cypress open",
     "test:unit": "cd .. && vitest",
-    "typecheck": "vue-tsc --noEmit",
+    "test:coverage": "cd .. && vitest run --coverage",
+    "test:types": "vue-tsc --noEmit",
     "types:fix": "esno scripts/fix-types.ts",
     "example": "esno scripts/run-example.ts",
-    "coverage": "cd .. && vitest run --coverage",
     "preinstall": "esno scripts/check-for-pnpm.ts && esno scripts/check-node-version.ts",
     "postinstall": "npx simple-git-hooks ../config/git-hooks.ts"
   },

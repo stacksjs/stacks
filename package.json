@@ -68,8 +68,8 @@
     "test": "pnpm --filter ./.stacks run test",
     "test:e2e": "pnpm --filter ./.stacks run test:e2e",
     "test:unit": "pnpm --filter ./.stacks run test:unit",
-    "test:coverage": "pnpm --filter ./.stacks coverage",
-    "typecheck": "pnpm --filter ./.stacks run typecheck",
+    "test:coverage": "pnpm --filter ./.stacks test:coverage",
+    "test:types": "pnpm --filter ./.stacks run test:types",
     "types:fix": "pnpm --filter ./.stacks run types:fix",
     "preinstall": "pnpm --filter ./.stacks run preinstall",
     "postinstall": "pnpm --filter ./.stacks run postinstall"
