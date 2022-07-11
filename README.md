@@ -16,7 +16,7 @@ The goal of the Stacks framework is to _help you_ create & maintain UIs (pages &
 
 **🤖 Zero-config, by design**
 
-The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite & unbuild engines in a zero-config way._
+The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite, Nitro & unbuild engines in a zero-config way._
 
 **🎨 Style with ease**
 
@@ -95,19 +95,21 @@ npx artisan commit # follow CLI prompts for committing staged changes
 npx artisan release # creates the releases for the stack & triggers the Release Action (workflow)
 npx artisan changelog # generates CHANGELOG.md
 
-# building for production
+# building for production (e.g. npm)
 npx artisan build # select a specific build (follow CLI prompts)
-npx artisan build:all # builds all libraries automagically
-npx artisan build:elements # builds the Web Component (Custom Element) library
-npx artisan build:vue # builds the Vue 2 & 3 libraries
-npx artisan build:components # builds the component libraries
-npx artisan build:functions # builds the function library
-npx artisan build:pages # builds the pages
+npx artisan build:components # builds component libraries
+npx artisan build:functions # builds function library
+npx artisan build:elements # builds Web Component library (Custom Elements)
+npx artisan build:vue # builds Vue 2 & 3 compatible libraries
 npx artisan build:types # builds all types
 
-# when deploying to Vercel, Netlify, or GitHub Pages
-npx artisan build:playground 
-npx artisan build:docs
+# when building for Vercel, Netlify, and more
+npx artisan deploy:playground
+npx artisan deploy:docs
+
+# creates a server to be deployed into any VPS
+npx artisan server:functions # wip
+npx artisan server:pages # wip
 
 npx artisan example # select the example to run (follow CLI prompts)
 
@@ -115,6 +117,8 @@ npx artisan example # select the example to run (follow CLI prompts)
 npx artisan test # runs test suite
 npx artisan test:unit # runs unit tests
 npx artisan test:e2e # runs e2e tests
+npx artisan test:coverage # runs test coverage
+npx artisan test:types # runs typecheck
 ```
 
 </details>
@@ -194,7 +198,7 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 
 ## 🚙 Roadmap
 
-The Stacks ecosystem is made up of many stacks. Some very useful ones are:
+Part of the Stacks ecosystem are the following first-party supported stacks:
 
 - [Table](https://github.com/ow3org/table-stack) (Q3 - Data tables with ease)
 - [Date Picker](https://github.com/ow3org/date-picker-stack) (Q3 - Beautiful, modern date picker)
@@ -207,7 +211,7 @@ The Stacks ecosystem is made up of many stacks. Some very useful ones are:
   - [DeFi](https://github.com/ow3org/defi-stack) (Q4 - Cross-chain DeFi engine, including staking support)
   - [DAO](https://github.com/ow3org/dao-stack) (Q4 - Powerful toolkit for DAO governance)
 
-These are also great examples to see how to utilize the Stacks Framework. Find more awesome Stacks [here](https://github.com/ow3org/awesome-stacks).
+These stacks make great examples. Find more awesome Stacks [here](https://github.com/ow3org/awesome-stacks).
 
 ## 🧪 Testing
 
