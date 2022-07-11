@@ -57,7 +57,6 @@
     "pnpm": ">=7.5.0"
   },
   "scripts": {
-    "nitro:dev": "nitro dev",
     "nitro:build": "nitro build",
     "make:component": "wip",
     "make:function": "wip",
@@ -68,6 +67,7 @@
     "dev": "pnpm run stubs",
     "dev:components": "unbuild ../components --stub",
     "dev:elements": "unbuild ../components --stub",
+    "dev:pages": "nitro dev",
     "dev:functions": "unbuild ../functions --stub",
     "dev:stacks": "unbuild --stub",
     "dev:playground": "vite serve ../apps/playground -c ./src/builds/playground.ts",
@@ -75,6 +75,8 @@
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
     "build:functions": "unbuild ../functions",
+    "server:functions": "wip",
+    "server:pages": "nitro build",
     "build:stacks": "unbuild",
     "build:playground": "vite build -c ./src/builds/playground.ts",
     "stub": "unbuild --stub",

@@ -2,6 +2,9 @@
 
 This is the core of your component library.
 
+> **Note**
+> If your project does not require any UI components, you can remove this folder._
+
 ## 💡 Get Started
 
 It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
