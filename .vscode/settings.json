@@ -216,7 +216,13 @@
     "commitizen",
     "demi",
     "composability",
-    "scrollback"
+    "scrollback",
+    "polacek",
+    "showcaseable",
+    "nitropack",
+    "roadmap",
+    "solana",
+    "cardano",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
