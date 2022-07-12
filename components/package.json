@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-components",
   "version": "0.23.0",
-  "packageManager": "pnpm@7.5.0",
+  "packageManager": "pnpm@7.5.1",
   "description": "A Component Library source.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -43,7 +43,7 @@
   ],
   "engines": {
     "node": ">=v16.16.0",
-    "pnpm": ">=7.5.0"
+    "pnpm": ">=7.5.1"
   },
   "scripts": {
     "dev": "unbuild --stub",
