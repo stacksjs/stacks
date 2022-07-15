@@ -105,7 +105,7 @@
     "@types/node": "^17.0.31",
     "@unocss/preset-icons": "^0.44.1",
     "@unocss/transformer-compile-class": "^0.44.1",
-    "@vitejs/plugin-vue": "^2.3.3",
+    "@vitejs/plugin-vue": "^3.0.0",
     "@vue/compiler-sfc": "^3.2.37",
     "@vueuse/core": "^8.9.2",
     "bumpp": "^8.2.1",
