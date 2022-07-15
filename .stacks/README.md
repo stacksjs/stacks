@@ -8,7 +8,7 @@ The ultimate goal of this framework, Stacks, is to _help you_ create a component
 
 Other included core features are:
 
-- ⚡️ Vite & unbuild plugins to build the component library
+- ⚡️ Vite plugins to build the component library
 - 🏎 Blazing fast, empowered by a beautiful DX
 - 👣 Tiny foot-print in production builds
 - 💬 Fully-typed TypeScript definitions

@@ -1,6 +1,0 @@
-export * from './src/core'
-export * from './src/builds'
-export * from './src/styles'
-export * from './src/docs'
-export * from './src/functions'
-export * from './src/config'

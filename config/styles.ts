@@ -2,7 +2,7 @@
  * This configuration is used to define your project-specific style guide.
  */
 
-import type { Shortcuts } from 'stacks'
+import type { Shortcuts } from 'stacks/'
 
 /**
  * Shortcuts provide you with the ability to combine utility names for reusability purposes.

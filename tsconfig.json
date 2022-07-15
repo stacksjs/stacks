@@ -22,13 +22,13 @@
     ],
     "paths": {
       "stacks": [
-        "./.stacks/index.ts"
+        ".stacks/src/index.ts"
       ],
       "stacks/*": [
         "./.stacks/src/*"
       ],
       "~/stacks": [
-        "./.stacks/index.ts"
+        ".stacks/src/index.ts"
       ],
       "builds": [
         "./.stacks/src/builds/index.ts"

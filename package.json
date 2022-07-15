@@ -34,7 +34,7 @@
     "pnpm": ">=7.5.1"
   },
   "scripts": {
-    "artisan": "esno ./.stacks/src/cli/run.ts",
+    "artisan": "pnpm --filter ./.stacks run artisan",
     "make:component": "pnpm --filter ./.stacks run make:component",
     "make:function": "pnpm --filter ./.stacks run make:function",
     "make:stack": "pnpm --filter ./.stacks run make:stack",
@@ -55,6 +55,7 @@
     "build:elements": "pnpm --filter ./.stacks build:elements",
     "build:docs": "pnpm --filter ./.stacks build:docs",
     "build:playground": "pnpm --filter ./.stacks build:playground",
+    "build:cli": "pnpm --filter ./.stacks build:cli",
     "build:stacks": "pnpm --filter ./.stacks build:stacks",
     "server:functions": "pnpm --filter ./.stacks server:functions",
     "server:pages": "pnpm --filter ./.stacks server:pages",

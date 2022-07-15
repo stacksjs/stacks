@@ -9,6 +9,8 @@ import { parseArgs } from './parse-args'
  */
 export async function main(): Promise<void> {
   try {
+    console.log('test artisan')
+
     // Setup global error handlers
     process.on('uncaughtException', errorHandler)
     process.on('unhandledRejection', errorHandler)
