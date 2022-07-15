@@ -29,10 +29,10 @@ export function styleEngine() {
 // https://github.com/antfu/unplugin-auto-import
 const autoImports = AutoImport({
   imports: ['vue', '@vueuse/core',
-  // {
+    // {
     // TODO: this needs to be dynamically generated
     // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
-  // }
+    // }
   ],
   dts: resolve(__dirname, '../types/auto-imports.d.ts'),
   eslintrc: {
@@ -41,13 +41,26 @@ const autoImports = AutoImport({
   },
 })
 
-const components = (dirPath: string, dtsPath: string) => Components({
+const components = (dirPath: string, dtsPath: string, extensions: string[]) => Components({
   dirs: [dirPath],
-  extensions: ['vue'],
+  extensions,
   dts: dtsPath,
 })
 
-const Stacks = (componentsDirPath = '../../../components/src', componentsDtsPath = '../types/components.d.ts') => <PluginOption>[
+/**
+ * The parsed command-line arguments
+ */
+export interface StacksOptions {
+  componentsSrcPath?: string
+  dtsPath?: string
+  extensions?: string[]
+}
+
+const Stacks = ({
+  componentsSrcPath = '../../../components/src',
+  dtsPath = '../types/components.d.ts',
+  extensions = ['vue'],
+}: StacksOptions) => <PluginOption>[
   Inspect(),
 
   UiEngine,
@@ -56,7 +69,7 @@ const Stacks = (componentsDirPath = '../../../components/src', componentsDtsPath
 
   autoImports,
 
-  components(componentsDirPath, componentsDtsPath),
+  components(componentsSrcPath, dtsPath, extensions),
 ]
 
 export { resolve, createApp, defineConfig, Stacks, UiEngine, autoImports, components }

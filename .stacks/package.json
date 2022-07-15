@@ -57,6 +57,7 @@
     "pnpm": ">=7.5.1"
   },
   "scripts": {
+    "artisan": "esno ./src/cli/run.ts",
     "nitro:build": "nitro build",
     "make:component": "wip",
     "make:function": "wip",
@@ -69,17 +70,18 @@
     "dev:elements": "unbuild ../components --stub",
     "dev:pages": "nitro dev",
     "dev:functions": "unbuild ../functions --stub",
-    "dev:stacks": "unbuild --stub",
+    "dev:stacks": "unbuild ./src --stub",
     "dev:playground": "vite serve ../apps/playground -c ./src/builds/playground.ts",
-    "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:elements && pnpm run build:functions && pnpm run build:stacks",
+    "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:elements && pnpm run build:functions && pnpm run build:cli && pnpm run build:stacks",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
+    "build:cli": "unbuild ./src/cli/index.ts",
     "build:functions": "unbuild ../functions",
     "server:functions": "wip",
     "server:pages": "nitro build",
-    "build:stacks": "unbuild",
+    "build:stacks": "unbuild ./src/index",
     "build:playground": "vite build -c ./src/builds/playground.ts",
-    "stub": "unbuild --stub",
+    "stub": "unbuild ./src --stub",
     "stubs": "pnpm -r --parallel run stub",
     "lint": "eslint . && pnpm -r --parallel lint",
     "lint:fix": "eslint . --fix && pnpm -r --parallel lint:fix",
@@ -125,7 +127,6 @@
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.0",
     "typescript": "^4.7.4",
-    "unbuild": "^0.7.4",
     "unocss": "^0.44.2",
     "unplugin-auto-import": "^0.9.3",
     "unplugin-vue-components": "^0.21.1",
@@ -137,7 +138,8 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@unocss/vite": "^0.44.2"
+    "@unocss/vite": "^0.44.2",
+    "vitepress": "1.0.0-alpha.4"
   },
   "build": {
     "entries": [
@@ -146,6 +148,7 @@
     ],
     "clean": true,
     "declaration": true,
+    "externals": ["vitepress", "stacks"],
     "rollup": {
       "emitCJS": true,
       "inlineDependencies": true
