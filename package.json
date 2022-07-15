@@ -88,5 +88,15 @@
     "commitizen": {
       "path": "node_modules/cz-git"
     }
-  }
+  },
+  "pnpm": { 
+   "peerDependencyRules": { 
+     "ignoreMissing": [ 
+       "@algolia/client-search", 
+       "react", 
+       "react-dom", 
+       "@types/react" 
+     ] 
+   } 
+ } 
 }
