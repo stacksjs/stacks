@@ -129,7 +129,7 @@
     "unocss": "^0.44.2",
     "unplugin-auto-import": "^0.9.3",
     "unplugin-vue-components": "^0.21.1",
-    "vite": "^2.9.14",
+    "vite": "^3.0.0",
     "vite-plugin-inspect": "^0.6.0",
     "vitest": "^0.18.0",
     "vue": "^3.2.37",
