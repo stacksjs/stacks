@@ -10,7 +10,7 @@ For those reasons, the playground is perfectly suited for your local development
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/vue-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/ow3org/vue-components-library-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 

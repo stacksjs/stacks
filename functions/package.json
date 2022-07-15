@@ -5,14 +5,14 @@
   "description": "A dummy library of composable functions.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/functions#readme",
+  "homepage": "https://github.com/ow3org/stacks-framework/tree/main/functions#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-framework.git",
+    "url": "git+https://github.com/ow3org/stacks-framework.git",
     "directory": "functions"
   },
   "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-framework/issues"
+    "url": "https://github.com/ow3org/stacks-framework/issues"
   },
   "keywords": [
     "composable",

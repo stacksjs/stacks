@@ -3,16 +3,16 @@
   "version": "0.23.0",
   "private": true,
   "packageManager": "pnpm@7.5.1",
-  "description": "The easy way to start your component library stack.",
+  "description": "The easy way to start your component and/or function library stack.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework#readme",
+  "homepage": "https://github.com/ow3org/stacks-framework#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-framework.git"
+    "url": "git+https://github.com/ow3org/stacks-framework.git"
   },
   "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-framework/issues"
+    "url": "https://github.com/ow3org/stacks-framework/issues"
   },
   "keywords": [
     "monorepo",

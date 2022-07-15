@@ -221,7 +221,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/stacks-framework/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/ow3org/stacks-framework/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
@@ -231,7 +231,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openwebstacks/stacks-framework/discussions)
+[Discussions on GitHub](https://github.com/ow3org/stacks-framework/discussions)
 
 For casual chit-chat with others using this package:
 
@@ -250,8 +250,8 @@ Made with ❤️
 [npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
 [npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
 
-[github-actions-src]: https://img.shields.io/github/workflow/status/openwebstacks/stacks-framework/CI/main?style=flat-square
-[github-actions-href]: https://github.com/openwebstacks/stacks-framework/actions?query=workflow%3Aci
+[github-actions-src]: https://img.shields.io/github/workflow/status/ow3org/stacks-framework/CI/main?style=flat-square
+[github-actions-href]: https://github.com/ow3org/stacks-framework/actions?query=workflow%3Aci
 
-<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/openwebstacks/stacks-framework/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/openwebstacks/stacks-framework -->
+<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/ow3org/stacks-framework/main?style=flat-square
+[codecov-href]: https://codecov.io/gh/ow3org/stacks-framework -->

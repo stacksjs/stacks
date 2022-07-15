@@ -6,14 +6,14 @@
   "description": "The core of the component library and Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/openwebstacks/stacks-framework/tree/main/.stacks#readme",
+  "homepage": "https://github.com/ow3org/stacks-framework/tree/main/.stacks#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openwebstacks/stacks-framework.git",
+    "url": "git+https://github.com/ow3org/stacks-framework.git",
     "directory": "./.stacks"
   },
   "bugs": {
-    "url": "https://github.com/openwebstacks/stacks-framework/issues"
+    "url": "https://github.com/ow3org/stacks-framework/issues"
   },
   "keywords": [
     "framework",
@@ -75,7 +75,7 @@
     "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:elements && pnpm run build:functions && pnpm run build:cli && pnpm run build:stacks",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
-    "build:cli": "unbuild ./src/cli/index.ts",
+    "build:cli": "vite build -c ./src/builds/cli.ts",
     "build:functions": "unbuild ../functions",
     "server:functions": "wip",
     "server:pages": "nitro build",

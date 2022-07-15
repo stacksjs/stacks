@@ -11,7 +11,7 @@ It's easy to get your component library started with this starter kit. The only 
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit openwebstacks/stacks-framework hello-world-stack
+npx degit ow3org/stacks-framework hello-world-stack
 cd hello-world-stack
 
 pnpm i # install deps for all packages
@@ -88,7 +88,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/openwebstacks/vue-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/ow3org/vue-components-library-starter/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
