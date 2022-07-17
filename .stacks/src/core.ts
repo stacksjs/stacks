@@ -5,7 +5,7 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
+import Comps from 'unplugin-vue-components/vite'
 import { createApp } from 'vue'
 
 export type ViteConfig = UserConfig
@@ -19,15 +19,13 @@ const UiEngine = Vue({
   },
 })
 
-export function styleEngine() {
-  return Unocss({
-    configFile: resolve(__dirname, './unocss.ts'),
-    mode: 'vue-scoped', // or 'shadow-dom'
-  })
-}
+const StyleEngine = Unocss({
+  configFile: resolve(__dirname, './unocss.ts'),
+  mode: 'vue-scoped', // or 'shadow-dom'
+})
 
 // https://github.com/antfu/unplugin-auto-import
-const autoImports = AutoImport({
+const AutoImports = AutoImport({
   imports: ['vue', '@vueuse/core',
     // {
     // TODO: this needs to be dynamically generated
@@ -41,10 +39,10 @@ const autoImports = AutoImport({
   },
 })
 
-const components = (dirPath: string, dtsPath: string, extensions: string[]) => Components({
-  dirs: [dirPath],
-  extensions,
-  dts: dtsPath,
+const Components = Comps({
+  dirs: ['../../../components/src'],
+  extensions: ['vue'],
+  dts: '../types/components.d.ts',
 })
 
 /**
@@ -56,20 +54,16 @@ export interface StacksOptions {
   extensions?: string[]
 }
 
-const Stacks = ({
-  componentsSrcPath = '../../../components/src',
-  dtsPath = '../types/components.d.ts',
-  extensions = ['vue'],
-}: StacksOptions) => <PluginOption>[
+const Stacks = () => <PluginOption>[
   Inspect(),
 
   UiEngine,
 
-  styleEngine(),
+  StyleEngine,
 
-  autoImports,
+  AutoImports,
 
-  components(componentsSrcPath, dtsPath, extensions),
+  Components,
 ]
 
-export { resolve, createApp, defineConfig, Stacks, UiEngine, autoImports, components }
+export default { resolve, createApp, defineConfig, Stacks, UiEngine, AutoImports, StyleEngine, Components }

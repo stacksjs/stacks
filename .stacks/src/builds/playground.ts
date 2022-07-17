@@ -23,7 +23,7 @@ const UiEngine = Vue({
   },
 })
 
-export function styleEngine() {
+export function StyleEngine() {
   return Unocss({
     configFile: resolve(__dirname, '../unocss.ts'),
     mode: 'vue-scoped', // or 'shadow-dom'
@@ -69,7 +69,7 @@ const config: UserConfig = {
 
     UiEngine,
 
-    styleEngine(),
+    StyleEngine(),
 
     autoImports,
 

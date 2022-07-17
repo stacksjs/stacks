@@ -1,46 +1,40 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
-import { Stacks, defineConfig } from '../core'
+import { AutoImports, Components, StyleEngine, UiEngine, defineConfig } from '../core'
 import alias from '../../../config/alias'
 import library from '../../../config/library'
 
-// https://vitejs.dev/config/
 const config: ViteConfig = {
   resolve: {
     dedupe: ['vue'],
     alias,
   },
 
-  // optimizeDeps: {
-  //   exclude: ['vue', '@vueuse/core'],
-  // },
+  optimizeDeps: {
+    exclude: ['vue', '@vueuse/core'],
+  },
 
   plugins: [
-    Stacks(),
+    UiEngine,
+
+    StyleEngine,
+
+    AutoImports,
+
+    Components,
   ],
 
-  build: buildOptions(),
+  build: componentsBuildOptions(),
 }
 
-export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return config
-
-  // command === 'build'
-  return config
-})
-
-export function buildOptions(entry?: string): ViteBuildOptions {
-  if (!entry)
-    entry = resolve(__dirname, '../../../components/index.ts')
-
+export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../../components/dist'),
+    outDir: resolve(__dirname, '../../dist/components'),
 
     lib: {
-      entry,
-      name: library.VUE_PACKAGE_NAME,
+      entry: resolve(__dirname, '../../../components/index.ts'),
+      name: library.COMPONENTS_PACKAGE_NAME,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
@@ -70,3 +64,11 @@ export function buildOptions(entry?: string): ViteBuildOptions {
     // minify: false,
   }
 }
+
+export default defineConfig(({ command }) => {
+  if (command === 'serve')
+    return config
+
+  // command === 'build'
+  return config
+})

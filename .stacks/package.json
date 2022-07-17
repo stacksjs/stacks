@@ -3,7 +3,7 @@
   "version": "0.23.0",
   "private": true,
   "packageManager": "pnpm@7.5.1",
-  "description": "The core of the component library and Stacks framework.",
+  "description": "The Stacks Framework.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks-framework/tree/main/.stacks#readme",
@@ -17,15 +17,14 @@
   },
   "keywords": [
     "framework",
-    "bundler",
-    "vite",
-    "vite-plugin",
-    "unbuild",
-    "component",
-    "library",
-    "vue",
     "typescript",
     "javascript",
+    "vite",
+    "nitro",
+    "vue",
+    "functions",
+    "components",
+    "library",
     "starter",
     "kit"
   ],
@@ -43,9 +42,9 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "artisan": "./dist/cli.mjs",
-    "stacks": "./dist/cli.mjs",
-    "stx": "./dist/cli.mjs"
+    "artisan": "./dist/cli/artisan.mjs",
+    "stacks": "./dist/cli/artisan.mjs",
+    "stx": "./dist/cli/artisan.mjs"
   },
   "files": [
     "bin",
@@ -65,21 +64,21 @@
     "fresh": "pnpm run clean && pnpm i",
     "update": "pnpm --filter ./.stacks run update",
     "clean": "cd .. && rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules apps/**/dist config/node_modules components/dist functions/dist components/node_modules node_modules/ pnpm-lock.yaml",
-    "dev": "pnpm run stubs",
-    "dev:components": "unbuild ../components --stub",
-    "dev:elements": "unbuild ../components --stub",
+    "dev": "wip",
+    "dev:components": "wip",
+    "dev:elements": "wip",
     "dev:pages": "nitro dev",
-    "dev:functions": "unbuild ../functions --stub",
-    "dev:stacks": "unbuild ./src --stub",
+    "dev:functions": "wip",
+    "dev:stacks": "wip",
     "dev:playground": "vite serve ../apps/playground -c ./src/builds/playground.ts",
     "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:elements && pnpm run build:functions && pnpm run build:cli && pnpm run build:stacks",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
     "build:cli": "vite build -c ./src/builds/cli.ts",
-    "build:functions": "unbuild ../functions",
+    "build:functions": "vite build -c ./src/builds/functions.ts",
     "server:functions": "wip",
     "server:pages": "nitro build",
-    "build:stacks": "unbuild ./src/index",
+    "build:stacks": "vite -c ./src/builds/stacks.ts",
     "build:playground": "vite build -c ./src/builds/playground.ts",
     "stub": "unbuild ./src --stub",
     "stubs": "pnpm -r --parallel run stub",
@@ -139,16 +138,19 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@unocss/vite": "^0.44.2",
+    "events": "^3.3.0",
     "vitepress": "1.0.0-alpha.4"
   },
   "build": {
     "entries": [
-      "./index",
-      "./src/cli"
+      "./index"
     ],
     "clean": true,
     "declaration": true,
-    "externals": ["vitepress", "stacks"],
+    "externals": [
+      "vitepress",
+      "stacks"
+    ],
     "rollup": {
       "emitCJS": true,
       "inlineDependencies": true

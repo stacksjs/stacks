@@ -16,18 +16,15 @@ const config: ViteConfig = {
 
 export function buildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/functions'),
+    outDir: resolve(__dirname, '../../dist/cli'),
 
     lib: {
-      entry: resolve(__dirname, '../../../functions/index.ts'),
-      name: 'functions',
-      formats: ['es', 'cjs'],
+      entry: resolve(__dirname, '../cli/index.ts'),
+      name: 'artisan',
+      formats: ['es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'
-
-        if (format === 'cjs')
-          return 'index.cjs'
 
         // if (format === 'iife')
         //     return `index.iife.js`
