@@ -9,13 +9,11 @@
  * That's why we recommend to only set the "organization name" & "library name."
  */
 
+import type { Hosts } from 'stacks/types'
+
 export const ORGANIZATION_NAME = '@ow3'
 export const LIBRARY_NAME = 'hello-world'
-export const COMPONENTS_PACKAGE_NAME = `${LIBRARY_NAME}-vue`
-export const VUE_NPM_PACKAGE_NAME = `${ORGANIZATION_NAME}/${COMPONENTS_PACKAGE_NAME}`
-export const WEB_COMPONENTS_PACKAGE_NAME = `${LIBRARY_NAME}-elements`
-export const WEB_COMPONENTS_NPM_PACKAGE_NAME = `${ORGANIZATION_NAME}/${WEB_COMPONENTS_PACKAGE_NAME}`
-export const COMPOSABLE_PACKAGE_NAME = `${LIBRARY_NAME}-composable`
-export const COMPOSABLE_NPM_PACKAGE_NAME = `${ORGANIZATION_NAME}/${COMPOSABLE_PACKAGE_NAME}`
+export const PACKAGE_MANAGER: String = 'npm'
+export const HOST: Hosts = 'netlify'
 
-export default { ORGANIZATION_NAME, LIBRARY_NAME, COMPONENTS_PACKAGE_NAME, VUE_NPM_PACKAGE_NAME, WEB_COMPONENTS_PACKAGE_NAME, WEB_COMPONENTS_NPM_PACKAGE_NAME, COMPOSABLE_PACKAGE_NAME, COMPOSABLE_NPM_PACKAGE_NAME }
+export const packageName: String = `${ORGANIZATION_NAME}/${LIBRARY_NAME}-stack`

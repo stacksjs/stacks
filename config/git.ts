@@ -1,14 +1,11 @@
 /**
- * This is the place where you define your git hooks.
- *
- * All available, valid git hooks are:
- *  'applypatch-msg', 'pre-applypatch', 'post-applypatch', 'pre-commit', 'pre-merge-commit', 'prepare-commit-msg', 'commit-msg',
- *  'post-commit', 'pre-rebase', 'post-checkout', 'post-merge', 'pre-push', 'pre-receive', 'update', 'proc-receive', 'post-receive',
- *  'post-update', 'reference-transaction', 'push-to-checkout', 'pre-auto-gc', 'post-rewrite', 'sendemail-validate',
- *  'fsmonitor-watchman', 'p4-changelist', 'p4-prepare-changelist', 'p4-post-changelist', 'p4-pre-submit', 'post-index-change',
+ * This is the place to define your git hooks.
+ * For all available options, please review the type definition.
  */
 
-export const hooks = {
+import type { GitHooks } from 'stacks/types'
+
+export const hooks: GitHooks = {
   'pre-commit': 'lint-staged',
   'commit-msg': 'npx --no -- commitlint --edit $1',
 }
@@ -16,5 +13,6 @@ export const hooks = {
 /**
  * This is the place where you define your git commit scopes.
  * A scope is a category of commits that share commonalities.
+ * Feel free to edit this list to your needs as your scopes may be project-specific.
  */
 export const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'play', 'release', 'readme', 'build']

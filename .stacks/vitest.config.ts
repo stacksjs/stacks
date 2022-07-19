@@ -1,4 +1,4 @@
-import alias from 'config/alias'
+import alias from 'stacks/alias'
 import { defineConfig } from '.'
 
 export default defineConfig({

@@ -1,3 +1,1 @@
-export interface FunctionsConfig {
-  host: 'netlify' | 'vercel'
-}
+export type Hosts = 'netlify' | 'vercel'

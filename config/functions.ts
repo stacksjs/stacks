@@ -3,8 +3,9 @@
  * For all available options, see the FunctionsConfig type definition.
  */
 
-import type { FunctionsConfig } from 'stacks/types'
+import type { Hosts } from 'stacks/types'
+import { HOST, LIBRARY_NAME, ORGANIZATION_NAME, PACKAGE_MANAGER } from './library'
 
-export const functions: FunctionsConfig = {
-  host: 'netlify',
-}
+export const packageManager: String = PACKAGE_MANAGER
+export const packageName: String = `${ORGANIZATION_NAME}/${LIBRARY_NAME}-fx`
+export const host: Hosts = HOST

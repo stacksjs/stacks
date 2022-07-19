@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
-import alias from '../../../config/alias'
+import alias from '../alias'
 import library from '../../../config/library'
 import { Stacks, defineConfig } from '../core'
 
