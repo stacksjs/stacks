@@ -140,20 +140,5 @@
     "@unocss/vite": "^0.44.4",
     "events": "^3.3.0",
     "vitepress": "1.0.0-alpha.4"
-  },
-  "build": {
-    "entries": [
-      "./index"
-    ],
-    "clean": true,
-    "declaration": true,
-    "externals": [
-      "vitepress",
-      "stacks"
-    ],
-    "rollup": {
-      "emitCJS": true,
-      "inlineDependencies": true
-    }
   }
 }

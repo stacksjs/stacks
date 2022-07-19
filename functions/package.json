@@ -43,19 +43,5 @@
   },
   "devDependencies": {
     "@ow3/stacks": "workspace:*"
-  },
-  "build": {
-    "entries": [
-      "./index"
-    ],
-    "clean": true,
-    "declaration": true,
-    "externals": [
-      "stacks"
-    ],
-    "rollup": {
-      "emitCJS": true,
-      "inlineDependencies": true
-    }
   }
 }
