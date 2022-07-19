@@ -2,7 +2,7 @@
  * This configuration is used to define your project-specific style guide.
  */
 
-import type { Shortcuts } from 'stacks/'
+import type { Shortcuts } from 'stacks'
 
 /**
  * Shortcuts provide you with the ability to combine utility names for reusability purposes.
@@ -28,4 +28,13 @@ const trigger = ':stacks:'
  */
 const classPrefix = 'stacks-'
 
-export { trigger, classPrefix, shortcuts, safelist }
+/**
+ * Define any of the icon collections you like to use via "icons in pure css."
+ * See https://stacks.ow3.org/config/icons for a list of available icon sets.
+ */
+const icons = {
+  'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
+  'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
+}
+
+export default { trigger, classPrefix, shortcuts, safelist, icons }

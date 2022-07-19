@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
 import { AutoImports, Components, StyleEngine, UiEngine, defineConfig } from '../core'
-import alias from '../../../config/alias'
+import alias from '../alias'
 import library from '../../../config/library'
 
 const config: ViteConfig = {
