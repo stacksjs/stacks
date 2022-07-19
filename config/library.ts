@@ -13,7 +13,7 @@ import type { Hosts } from 'stacks/types'
 
 export const ORGANIZATION_NAME = '@ow3'
 export const LIBRARY_NAME = 'hello-world'
-export const PACKAGE_MANAGER: String = 'npm'
+export const PACKAGE_MANAGER = 'npm'
 export const HOST: Hosts = 'netlify'
 
-export const packageName: String = `${ORGANIZATION_NAME}/${LIBRARY_NAME}-stack`
+export const packageName = `${ORGANIZATION_NAME}/${LIBRARY_NAME}-stack`
