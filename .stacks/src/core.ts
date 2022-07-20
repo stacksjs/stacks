@@ -5,6 +5,7 @@ import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Comps from 'unplugin-vue-components/vite'
 import Inspect from 'vite-plugin-inspect'
+
 export { createApp } from 'vue'
 export { defineConfig } from 'vite'
 
@@ -69,4 +70,4 @@ export const Stacks = () => <PluginOption>[
   Components,
 ]
 
-export default { resolve, createApp, Stacks, UiEngine, AutoImports, StyleEngine, Components }
+export default { resolve, Stacks, UiEngine, AutoImports, StyleEngine, Components }

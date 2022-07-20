@@ -7,9 +7,6 @@
     "dev": "vite -c ../core/build.config.ts",
     "serve": "vite preview"
   },
-  "dependencies": {
-    "@ow3/hello-world-components": "workspace:*"
-  },
   "devDependencies": {
     "@ow3/stacks": "workspace:*"
   }

@@ -9,6 +9,7 @@ import alias from '../alias'
 // https://vitejs.dev/config/
 const config: ViteConfig = {
   resolve: {
+    extensions: ['.vue'],
     alias,
   },
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { count, increment } from '../../functions'
+import { count, increment } from 'functions'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string

@@ -6,13 +6,17 @@ import { AutoImports, Components, StyleEngine, UiEngine, defineConfig } from '..
 import alias from '../alias'
 
 const config: ViteConfig = {
+  server: {
+    port: 3333,
+  },
+
   resolve: {
     dedupe: ['vue'],
     alias,
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@vueuse/core'],
+    exclude: ['fsevents'],
   },
 
   plugins: [
@@ -32,8 +36,10 @@ export function componentsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(__dirname, '../../dist/components'),
 
+    // emptyOutDir: true,
+
     lib: {
-      entry: resolve(__dirname, '../../components/index.ts'),
+      entry: resolve(__dirname, '../../../components/index.ts'),
       name: library.packageName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
