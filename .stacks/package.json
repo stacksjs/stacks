@@ -133,7 +133,7 @@
     "vite-plugin-inspect": "^0.6.0",
     "vitest": "^0.18.1",
     "vue": "^3.2.37",
-    "vue-tsc": "^0.38.8"
+    "vue-tsc": "^0.38.9"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
