@@ -1,5 +1,5 @@
-import type { ViteConfig } from 'stacks/'
-import { Stacks, defineConfig } from 'stacks/'
+import type { ViteConfig } from 'stacks'
+import { Stacks, defineConfig } from 'stacks'
 import alias from 'stacks/alias'
 
 // https://vitejs.dev/config/

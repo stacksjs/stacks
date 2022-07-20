@@ -33,7 +33,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     outDir: resolve(__dirname, '../../dist/components'),
 
     lib: {
-      entry: resolve(__dirname, '../../../components/index.ts'),
+      entry: resolve(__dirname, '../../components/index.ts'),
       name: library.packageName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

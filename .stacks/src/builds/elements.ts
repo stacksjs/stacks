@@ -1,8 +1,8 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
+import { LIBRARY_NAME } from 'config/library'
 import type { ViteConfig } from '../core'
 import alias from '../alias'
-import library from '../../../config/library'
 import { Stacks, defineConfig } from '../core'
 
 // https://vitejs.dev/config/
@@ -30,7 +30,7 @@ export function buildOptions(entry?: string): ViteBuildOptions {
   return {
     lib: {
       entry,
-      name: library.WEB_COMPONENTS_PACKAGE_NAME,
+      name: LIBRARY_NAME,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

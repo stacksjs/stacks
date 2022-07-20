@@ -4,7 +4,7 @@
  */
 
 // import type { DocsConfig } from 'stacks'
-import type { DocsConfig } from 'stacks/'
+import type { DocsConfig } from 'stacks'
 
 const docs: DocsConfig = {
   lang: 'en-US',

@@ -2,10 +2,10 @@ import { resolve } from 'path'
 import type { PluginOption, UserConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
-import Inspect from 'vite-plugin-inspect'
 import AutoImport from 'unplugin-auto-import/vite'
 import Comps from 'unplugin-vue-components/vite'
-import { createApp } from 'vue'
+import Inspect from 'vite-plugin-inspect'
+export { createApp } from 'vue'
 export { defineConfig } from 'vite'
 
 export type ViteConfig = UserConfig
@@ -16,7 +16,7 @@ export function UiEngine(isCustomElement = false) {
       template: {
         compilerOptions: {
           // todo: automatically generate this
-          isCustomElement: tag => tag.includes('hello-world'),
+          isCustomElement: () => true,
         },
       },
     })

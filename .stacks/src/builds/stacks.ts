@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
-import { autoImports, defineConfig } from '../core'
+import { AutoImports, defineConfig } from '../core'
 import alias from '../alias'
 
 // if we build this, it needs to include everything
@@ -17,7 +17,7 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    autoImports,
+    AutoImports,
   ],
 
   build: stacksBuildOptions(),
