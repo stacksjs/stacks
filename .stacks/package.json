@@ -65,7 +65,7 @@
     "update": "pnpm --filter ./.stacks run update",
     "clean": "cd .. && rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules apps/**/dist config/node_modules components/dist functions/dist components/node_modules node_modules/ pnpm-lock.yaml",
     "dev": "wip",
-    "dev:components": "vite dev ../components -c ./src/builds/components.ts",
+    "dev:components": "vite serve ./src/components -c ./src/builds/components.ts",
     "dev:elements": "wip",
     "dev:pages": "nitro dev",
     "dev:functions": "wip",
@@ -85,7 +85,7 @@
     "lint": "eslint . && pnpm -r --parallel lint",
     "lint:fix": "eslint . --fix && pnpm -r --parallel lint:fix",
     "commit": "cd .. && git cz",
-    "release": "cd .. && bumpp .stacks/package.json apps/**/package.json components/package.json functions/package.json package.json --execute 'pnpm run changelog' --all",
+    "release": "cd .. && bumpp .stacks/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "size": "esno .stacks/scripts/size.ts",
     "test": "cd .. && pnpm run test:unit && pnpm run test:e2e",
@@ -106,7 +106,6 @@
     "@types/node": "^17.0.31",
     "@unocss/preset-icons": "^0.44.5",
     "@unocss/transformer-compile-class": "^0.44.5",
-    "@vitejs/plugin-vue": "^3.0.1",
     "@vueuse/core": "^8.9.4",
     "bumpp": "^8.2.1",
     "cac": "^6.7.12",
@@ -136,6 +135,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
+    "@vitejs/plugin-vue": "^3.0.1",
     "@unocss/vite": "^0.44.5",
     "events": "^3.3.0",
     "vitepress": "1.0.0-alpha.4"
