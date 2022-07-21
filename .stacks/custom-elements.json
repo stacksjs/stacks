@@ -3,7 +3,7 @@
   "tags": [
     {
       "name": "hello-world",
-      "description": "The Hello World custom element, built via this framework. (You will want to keep adding to this list of attributes. Soon, this file will be automatically generated. See https://github.com/ow3org/stacks-framework/issues/103)",
+      "description": "The Hello World custom element, built via this framework. (You will want to keep adding to this list of attributes. Soon, this file will be automatically generated. See https://github.com/ow3org/stacks/issues/103)",
       "attributes": [
         {
           "name": "greeting",

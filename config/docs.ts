@@ -21,13 +21,13 @@ const docs: DocsConfig = {
     },
 
     editLink: {
-      pattern: 'https://github.com/ow3org/stacks-framework/edit/main/apps/site/docs/:path',
+      pattern: 'https://github.com/ow3org/stacks/edit/main/apps/site/docs/:path',
       text: 'Edit this page on GitHub',
     },
 
     socialLinks: [
       { icon: 'twitter', link: 'https://twitter.com/ow3org' },
-      { icon: 'github', link: 'https://github.com/ow3org/stacks-framework' },
+      { icon: 'github', link: 'https://github.com/ow3org/stacks' },
       { icon: 'discord', link: 'https://twitter.com/ow3org' },
     ],
 
@@ -54,7 +54,7 @@ function nav() {
     { text: 'Config', link: '/config', activeMatch: '/config' },
     {
       text: 'Changelog',
-      link: 'https://github.com/ow3org/stacks-framework/blob/main/CHANGELOG.md',
+      link: 'https://github.com/ow3org/stacks/blob/main/CHANGELOG.md',
     },
     { text: 'Blog', link: 'https://updates.ow3.org' },
   ]

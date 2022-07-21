@@ -6,13 +6,13 @@
   "description": "The easy way to start your component and/or function library stack.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/ow3org/stacks-framework#readme",
+  "homepage": "https://github.com/ow3org/stacks#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ow3org/stacks-framework.git"
+    "url": "git+https://github.com/ow3org/stacks.git"
   },
   "bugs": {
-    "url": "https://github.com/ow3org/stacks-framework/issues"
+    "url": "https://github.com/ow3org/stacks/issues"
   },
   "keywords": [
     "monorepo",

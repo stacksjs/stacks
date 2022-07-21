@@ -3,8 +3,7 @@
 This is the where you create your components.
 
 > **Note**
-> If your project does not require any UI components, you can remove this folder.
-> If it does require components, you may use this readme as the boilerplate of your library.
+> If your project does not require any UI components, you can remove this folder. If your library does include components, you may use this readme as the boilerplate of your component library.
 
 ## 💡 Get Started
 
@@ -12,7 +11,7 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit ow3org/stacks-framework hello-world-stack
+npx degit ow3org/stacks hello-world-stack
 cd hello-world-stack
 
 pnpm i # install deps for all packages
@@ -99,7 +98,7 @@ Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/openweblabs/stacks-framework/discussions)
+[Discussions on GitHub](https://github.com/openweblabs/stacks/discussions)
 
 For casual chit-chat with others using this package:
 

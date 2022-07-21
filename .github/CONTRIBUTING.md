@@ -28,13 +28,13 @@ Please view the README and the instructions below on how to install the project 
 
 **Working on your first Pull Request?** You can learn how from this free series [How to Contribute to an Open Source Project on GitHub][pr-beginner-series].
 
-Head over to the [repository][stacks-framework] on GitHub and click the Fork button in the top right corner. After the project has been forked, run the following commands in your terminal:
+Head over to the [repository][stacks] on GitHub and click the Fork button in the top right corner. After the project has been forked, run the following commands in your terminal:
 
 ```bash
 # Replace {github-username} with your GitHub username.
-git clone https://github.com/{github-username}/stacks-framework --depth=1
+git clone https://github.com/{github-username}/stacks --depth=1
 
-cd stacks-framework
+cd stacks
 
 # Create a branch for your PR, replace {issue-no} with the GitHub issue number.
 git checkout -b issue-{issue-no}
@@ -45,7 +45,7 @@ pull requests from the forked branch.
 
 ```bash
 # Add the original repository as a "remote" called "upstream".
-git remote add upstream git@github.com:ow3org/stacks-framework.git
+git remote add upstream git@github.com:ow3org/stacks.git
 
 # Fetch the git information from the remote.
 git fetch upstream
@@ -82,7 +82,7 @@ git push
 
 ## 🎉 Pull Request
 
-When you're all done, head over to the [repository][stacks-framework], and click the big green
+When you're all done, head over to the [repository][stacks], and click the big green
 `Compare & Pull Request` button that should appear after you've pushed changes to your fork.
 
 Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to
@@ -95,6 +95,6 @@ contribution is appreciated more than you can imagine, and even a failed PR can 
 [unbuild]: https://github.com/unjs/unbuild
 [vitebook]: https://vitebook.dev/
 [vue-components]: https://vuejs.org/guide/essentials/component-basics.html
-[stacks-framework]: https://github.com/ow3org/stacks-framework
+[stacks]: https://github.com/ow3org/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [pr-beginner-series]: https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github
