@@ -10,9 +10,9 @@
 
 The goal of the Stacks framework is to _help you_ create & maintain UIs (pages & components) & function libraries. In other words, it shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
 
-> _The clever way to build & share component & function libraries._
-
 ![Atomic UI & FX Design](./apps/site/docs/images/diagram.png)
+
+> _The clever way to build & share component & function libraries._
 
 **🤖 Zero-config, by design**
 
