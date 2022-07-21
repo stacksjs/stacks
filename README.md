@@ -8,7 +8,7 @@
 
 # The Atomic UI/FX Engine
 
-The goal of the Stacks framework is to _help you_ create & maintain UIs (pages & components) & function libraries. In other words, it shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain UIs (pages & components) & function libraries. In other words, it shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
 
 ![Atomic UI & FX Design](./apps/site/docs/images/diagram.png)
 
