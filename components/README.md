@@ -4,6 +4,7 @@ This is the where you create your components.
 
 > **Note**
 > If your project does not require any UI components, you can remove this folder.
+> If it does require components, you may use this readme as the boilerplate of your library.
 
 ## 💡 Get Started
 
