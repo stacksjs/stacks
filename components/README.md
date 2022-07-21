@@ -1,13 +1,13 @@
 # @ow3/hello-world-vue
 
-This is the core of your component library.
+This is the where you create your components.
 
 > **Note**
-> If your project does not require any UI components, you can remove this folder._
+> If your project does not require any UI components, you can remove this folder.
 
 ## 💡 Get Started
 
-It's easy to get your component library started with this starter kit. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
+It's easy to get your component library started with Stacks. The only prerequisite is a basic understanding of how to design/develop Vue Single File Components (SFCs). In other words, there is virtually no learning curve because HTML with sprinkled JavaScript will get you incredibly far.
 
 ```bash
 # you may use this GitHub template or the following command:

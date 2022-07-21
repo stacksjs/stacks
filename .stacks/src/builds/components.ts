@@ -6,8 +6,11 @@ import { AutoImports, Components, StyleEngine, UiEngine, defineConfig } from '..
 import alias from '../alias'
 
 const config: ViteConfig = {
+  root: resolve(__dirname, '../../../components'),
+
   server: {
     port: 3333,
+    open: true,
   },
 
   resolve: {

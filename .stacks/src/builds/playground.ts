@@ -10,7 +10,7 @@ import type { UserConfig } from 'vite'
 import alias from '../alias'
 import { defineConfig } from '../core'
 
-const dirPath = resolve(__dirname, '../../../components/src')
+const dirPath = resolve(__dirname, '../../../components')
 const dtsPath = resolve(__dirname, '../../types/components.d.ts')
 
 const UiEngine = Vue({

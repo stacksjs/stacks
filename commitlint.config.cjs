@@ -4,10 +4,10 @@ const configPath = resolve(__dirname, './config/git.ts')
 const { paramCase } = require('change-case')
 const jiti = require('jiti')(configPath, { debug: true })
 
-const components = readdirSync(resolve(__dirname, './components/src'))
+const components = readdirSync(resolve(__dirname, './components'))
   .map(item => paramCase(item.replace(/.vue/g, '')))
 
-const functions = readdirSync(resolve(__dirname, './functions/src'))
+const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
 
 const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]

@@ -37,10 +37,10 @@
         "./.stacks/src/builds/index.ts"
       ],
       "components": [
-        "./components/index.ts"
+        ".stacks/src/components/index.ts"
       ],
       "~/components": [
-        "./components/index.ts"
+        ".stacks/src/components/index.ts"
       ],
       "config": [
         "./config/index.ts"
@@ -49,10 +49,10 @@
         "./config/index.ts"
       ],
       "functions": [
-        "./functions/index.ts"
+        ".stacks/src/functions/index.ts"
       ],
       "~/functions": [
-        "./functions/index.ts"
+        ".stacks/src/functions/index.ts"
       ]
     },
     "lib": [

@@ -52,7 +52,7 @@ export function AutoImports() {
 
 export function Components() {
   return Comps({
-    dirs: ['../../components/src'],
+    dirs: ['../../components'],
     extensions: ['vue'],
     dts: '../types/components.d.ts',
   })
