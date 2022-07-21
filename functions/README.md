@@ -1,4 +1,4 @@
-# Functions
+# Your Functions Library
 
 You may use functions to share on npm or have them run on a server behind one of your `../routes`.
 
