@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    "useDefineForClassFields": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "strict": true,
@@ -13,6 +14,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
+    "isolatedModules": true,
     "strictNullChecks": true,
     "baseUrl": ".",
     "types": [

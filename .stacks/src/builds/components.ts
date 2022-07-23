@@ -66,7 +66,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@vueuse/core'],
+      external: ['vitepress', 'vue', '@vueuse/core'],
       output: {
         // exports: 'named',
         globals: {

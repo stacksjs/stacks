@@ -1,5 +1,5 @@
-import alias from 'stacks/alias'
-import { defineConfig } from 'stacks'
+import alias from 'stacks/src/alias'
+import { defineConfig } from 'stacks/src'
 
 export default defineConfig({
   optimizeDeps: {

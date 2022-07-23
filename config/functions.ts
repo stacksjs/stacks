@@ -3,7 +3,7 @@
  * For all available options, see the FunctionsConfig type definition.
  */
 
-import type { Hosts } from 'stacks/types'
+import type { Hosts } from 'stacks/src/types'
 import { HOST, LIBRARY_NAME, ORGANIZATION_NAME, PACKAGE_MANAGER } from './library'
 
 export const packageManager = PACKAGE_MANAGER
