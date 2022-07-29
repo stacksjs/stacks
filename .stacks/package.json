@@ -106,7 +106,7 @@
     "@types/node": "^18.0.6",
     "@unocss/preset-icons": "^0.44.5",
     "@unocss/transformer-compile-class": "^0.44.5",
-    "@vueuse/core": "^8.9.4",
+    "@vueuse/core": "^9.0.2",
     "bumpp": "^8.2.1",
     "cac": "^6.7.12",
     "change-case": "^4.1.2",
