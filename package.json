@@ -2,7 +2,7 @@
   "name": "@ow3/stacks-monorepo",
   "version": "0.23.0",
   "private": true,
-  "packageManager": "pnpm@7.7.0",
+  "packageManager": "pnpm@7.8.0",
   "description": "The easy way to start your component and/or function library (stack).",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -31,7 +31,7 @@
   ],
   "engines": {
     "node": ">=v16.16.0",
-    "pnpm": ">=7.7.0"
+    "pnpm": ">=7.8.0"
   },
   "scripts": {
     "artisan": "pnpm --filter ./.stacks run artisan",
