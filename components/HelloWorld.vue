@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { count, increment } from 'stacks'
+import { count, increment } from 'functions'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
 
-// lifecycle hooks
+// auto-imported lifecycle hooks
 onMounted(() => {
   // eslint-disable-next-line no-console
   console.log(`The initial count is ${count}.`)

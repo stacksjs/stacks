@@ -9,7 +9,7 @@
  * That's why we recommend to only set the "organization name" & "library name."
  */
 
-import type { Hosts } from 'stacks/src/types'
+import type { Hosts } from 'stacks/types'
 
 export const ORGANIZATION_NAME = '@ow3'
 export const LIBRARY_NAME = 'hello-world'

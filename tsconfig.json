@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
     "useDefineForClassFields": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
@@ -29,33 +29,21 @@
       "stacks/*": [
         "./.stacks/src/*"
       ],
-      "~/stacks": [
-        ".stacks/src/index.ts"
-      ],
       "builds": [
-        "./.stacks/src/builds/index.ts"
-      ],
-      "~/builds": [
         "./.stacks/src/builds/index.ts"
       ],
       "components": [
         ".stacks/src/components/index.ts"
       ],
-      "~/components": [
-        ".stacks/src/components/index.ts"
-      ],
       "config": [
-        "./config/index.ts"
-      ],
-      "~/config": [
-        "./config/index.ts"
+        "./.stacks/src/config.ts"
       ],
       "functions": [
-        ".stacks/src/functions/index.ts"
+        "./.stacks/src/functions/index.ts"
       ],
-      "~/functions": [
-        ".stacks/src/functions/index.ts"
-      ]
+      "~/*": [
+        "./*"
+      ],
     },
     "lib": [
       "esnext",
