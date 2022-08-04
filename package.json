@@ -3,7 +3,7 @@
   "version": "0.23.0",
   "private": true,
   "packageManager": "pnpm@7.7.0",
-  "description": "The easy way to start your component and/or function library stack.",
+  "description": "The easy way to start your component and/or function library (stack).",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks#readme",
