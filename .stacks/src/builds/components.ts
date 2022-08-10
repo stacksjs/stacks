@@ -2,10 +2,10 @@ import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import Inspect from 'vite-plugin-inspect'
 import Vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
 import { library } from '../config'
 import type { ViteConfig } from '../core'
-import { AutoImports, Components, StyleEngine, defineConfig } from '../core'
-// import { AutoImports, Components, StyleEngine, UiEngine, defineConfig } from '../core'
+import { AutoImports, StyleEngine, defineConfig } from '../core'
 import alias from '../alias'
 
 const config: ViteConfig = {
@@ -22,7 +22,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['fsevents', 'vitepress'],
+    exclude: ['vitepress'],
   },
 
   plugins: [
@@ -35,7 +35,11 @@ const config: ViteConfig = {
 
     AutoImports,
 
-    Components,
+    Components({
+      dirs: ['../../../components'],
+      extensions: ['vue'],
+      dts: '../types/components.d.ts',
+    }),
   ],
 
   build: componentsBuildOptions(),

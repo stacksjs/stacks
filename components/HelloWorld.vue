@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { count, increment } from 'functions'
+// import { count, increment } from 'functions'
 
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
@@ -19,7 +19,7 @@ onMounted(() => {
   <h1 class="font-bold text-3xl text-red-800">
     {{ greeting }}
   </h1>
-  <button
+  <!-- <button
     type="button"
     class=":uno: inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
     @click="increment"
@@ -29,5 +29,5 @@ onMounted(() => {
       aria-hidden="true"
     />
     Count is: {{ count }}
-  </button>
+  </button> -->
 </template>

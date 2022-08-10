@@ -1,6 +1,7 @@
 {
   "name": "@ow3/stacks",
   "version": "0.23.0",
+  "type": "module",
   "private": true,
   "packageManager": "pnpm@7.8.0",
   "description": "The Stacks Framework.",
@@ -135,8 +136,8 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@vitejs/plugin-vue": "^3.0.1",
     "@unocss/vite": "^0.45.4",
+    "@vitejs/plugin-vue": "^3.0.1",
     "events": "^3.3.0",
     "vitepress": "1.0.0-alpha.4"
   }

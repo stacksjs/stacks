@@ -39,7 +39,7 @@
         "./.stacks/src/config.ts"
       ],
       "functions": [
-        "./.stacks/src/functions/index.ts"
+        ".stacks/src/functions/functions.ts"
       ],
       "~/*": [
         "./*"
