@@ -39,18 +39,19 @@ const config: ViteConfig = {
       dirs: [
         resolve(__dirname, '../../../functions'),
         resolve(__dirname, '../../../components'),
+        resolve(__dirname, '../../../config'),
       ],
       dts: resolve(__dirname, '../../../auto-imports.d.ts'),
       eslintrc: {
         enabled: true,
-        filepath: resolve(__dirname, '../../../.eslintrc-auto-import.json'),
+        filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
       },
     }),
 
     Components({
       dirs: ['../../../components'],
       extensions: ['vue'],
-      dts: '../types/components.d.ts',
+      dts: '../../../components.d.ts',
     }),
   ],
 

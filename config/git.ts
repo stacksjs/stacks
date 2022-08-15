@@ -3,7 +3,7 @@
  * For all available options, please review the type definition.
  */
 
-import type { GitHooks } from 'stacks/src/types'
+import type { GitHooks } from 'stacks/types'
 
 export const hooks: GitHooks = {
   'pre-commit': 'lint-staged',

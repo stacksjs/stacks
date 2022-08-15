@@ -3,7 +3,6 @@
  * For all available options, see the DocsConfig type definition.
  */
 
-// import type { DocsConfig } from 'stacks'
 import type { DocsConfig } from 'stacks'
 
 const docs: DocsConfig = {

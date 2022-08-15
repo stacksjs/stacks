@@ -11,9 +11,12 @@
 
 import type { Hosts } from 'stacks/types'
 
-export const ORGANIZATION_NAME = '@ow3'
-export const LIBRARY_NAME = 'hello-world'
-export const PACKAGE_MANAGER = 'npm'
-export const HOST: Hosts = 'netlify'
+export const organizationName = '@ow3'
+export const libraryName = 'hello-world'
+export const packageManager = 'npm'
+export const host: Hosts = 'netlify'
 
-export const packageName = `${ORGANIZATION_NAME}/${LIBRARY_NAME}-stack`
+export const packageName = `${organizationName}/${libraryName}-stack`
+export const functionsLibraryName = `${organizationName}/${libraryName}-fx`
+export const vueComponentsLibraryName = `${organizationName}/${libraryName}-ui`
+export const webComponentsLibraryName = `${organizationName}/${libraryName}-elements`
