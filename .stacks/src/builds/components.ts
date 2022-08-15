@@ -3,9 +3,10 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import Inspect from 'vite-plugin-inspect'
 import Vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
+import AutoImport from 'unplugin-auto-import/vite'
 import { library } from '../config'
 import type { ViteConfig } from '../core'
-import { AutoImports, StyleEngine, defineConfig } from '../core'
+import { StyleEngine, defineConfig } from '../core'
 import alias from '../alias'
 
 const config: ViteConfig = {
@@ -33,7 +34,18 @@ const config: ViteConfig = {
 
     StyleEngine,
 
-    AutoImports,
+    AutoImport({
+      imports: ['vue', '@vueuse/core'],
+      dirs: [
+        resolve(__dirname, '../../../functions'),
+        resolve(__dirname, '../../../components'),
+      ],
+      dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
+      eslintrc: {
+        enabled: true,
+        filepath: resolve(__dirname, '../.eslintrc-auto-import.json'),
+      },
+    }),
 
     Components({
       dirs: ['../../../components'],

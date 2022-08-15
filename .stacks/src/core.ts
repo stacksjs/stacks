@@ -33,16 +33,14 @@ export function StyleEngine() {
   })
 }
 
-// https://github.com/antfu/unplugin-auto-import
 export function AutoImports() {
   return AutoImport({
-    imports: ['vue', '@vueuse/core',
-      // {
-      // TODO: this needs to be dynamically generated
-      // '@ow3/hello-world-functions': ['count', 'increment', 'isDark', 'toggleDark'],
-      // }
+    imports: ['vue', '@vueuse/core'],
+    dirs: [
+      resolve(__dirname, '../../functions'),
+      resolve(__dirname, '../../components'),
     ],
-    dts: resolve(__dirname, '../types/auto-imports.d.ts'),
+    dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
     eslintrc: {
       enabled: true,
       filepath: resolve(__dirname, '../.eslintrc-auto-import.json'),

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import HelloWorld from 'components'
+// eslint-disable-next-line no-console
+console.log('HelloWorld component is ready')
 </script>
 
 <template>
