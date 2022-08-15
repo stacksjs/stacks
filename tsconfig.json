@@ -20,7 +20,7 @@
     "types": [
       "node",
       "vitest",
-      "vite/client"
+      "vite/client",
     ],
     "paths": {
       "stacks": [

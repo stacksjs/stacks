@@ -32,7 +32,7 @@
   "volar.codeLens.pugTools": false,
   "volar.codeLens.scriptSetupTools": true,
   "volar.completion.preferredTagNameCase": "pascal",
-  "volar.takeOverMode.enabled": true,
+  "volar.takeOverMode.enabled": "auto",
   "todo-tree.highlights.enabled": true,
   "cSpell.ignorePaths": [
     "node_modules"
@@ -223,6 +223,11 @@
     "roadmap",
     "solana",
     "cardano",
+    "triggerable",
+    "fullscreen",
+    "gamepad",
+    "geolocation",
+    "autosize",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

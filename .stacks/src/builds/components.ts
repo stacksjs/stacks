@@ -40,10 +40,10 @@ const config: ViteConfig = {
         resolve(__dirname, '../../../functions'),
         resolve(__dirname, '../../../components'),
       ],
-      dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
+      dts: resolve(__dirname, '../../../auto-imports.d.ts'),
       eslintrc: {
         enabled: true,
-        filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
+        filepath: resolve(__dirname, '../../../.eslintrc-auto-import.json'),
       },
     }),
 
