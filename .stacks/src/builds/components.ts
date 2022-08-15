@@ -43,7 +43,7 @@ const config: ViteConfig = {
       dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
       eslintrc: {
         enabled: true,
-        filepath: resolve(__dirname, '../.eslintrc-auto-import.json'),
+        filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
       },
     }),
 
