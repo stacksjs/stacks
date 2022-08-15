@@ -3,13 +3,13 @@ const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
 
-// todo: auto-import this
-// import { onMounted } from 'vue'
-// const functions = import.meta.glob('../functions/*.ts', { as: 'raw', eager: true })
-
 // eslint-disable-next-line no-console
 console.log(`The greeting is ${greeting}.`)
-// })
+
+onMounted(() => {
+  // eslint-disable-next-line no-console
+  console.log('HelloWorld component mounted.')
+})
 </script>
 
 <template>
