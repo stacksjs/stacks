@@ -13,12 +13,12 @@ importers:
       '@babel/types': ^7.18.10
       '@iconify-json/heroicons-outline': ^1.1.2
       '@iconify-json/heroicons-solid': ^1.1.2
-      '@ow3/eslint-config': ^0.27.6
+      '@ow3/eslint-config': ^0.27.7
       '@types/fs-extra': ^9.0.13
       '@types/node': ^18.0.6
-      '@unocss/preset-icons': ^0.45.6
-      '@unocss/transformer-compile-class': ^0.45.6
-      '@unocss/vite': ^0.45.6
+      '@unocss/preset-icons': ^0.45.7
+      '@unocss/transformer-compile-class': ^0.45.7
+      '@unocss/vite': ^0.45.7
       '@vitejs/plugin-vue': ^3.0.3
       '@vueuse/core': ^9.1.0
       bumpp: ^8.2.1
@@ -26,7 +26,7 @@ importers:
       change-case: ^4.1.2
       commitizen: ^4.2.5
       conventional-changelog-cli: ^2.2.2
-      cypress: ^10.4.0
+      cypress: ^10.5.0
       cz-git: ^1.3.10
       eslint: ^8.22.0
       eslint-plugin-cypress: ^2.12.1
@@ -39,13 +39,13 @@ importers:
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
       typescript: ^4.7.4
-      unocss: ^0.45.6
+      unocss: ^0.45.7
       unplugin-auto-import: ^0.11.1
       unplugin-vue-components: ^0.22.4
-      vite: ^3.0.7
+      vite: ^3.0.8
       vite-plugin-inspect: ^0.6.0
-      vitepress: 1.0.0-alpha.4
-      vitest: ^0.21.1
+      vitepress: 1.0.0-alpha.5
+      vitest: ^0.22.0
       vue: ^3.2.37
       vue-tsc: ^0.40.1
     dependencies:
@@ -75,11 +75,11 @@ importers:
       simple-git-hooks: 2.8.0
       typescript: 4.7.4
       unocss: 0.45.7_vite@3.0.8
-      unplugin-auto-import: 0.11.1_5uum4ylnynghuhxuow57vx52pq
-      unplugin-vue-components: 0.22.4_ufy6fydyuyaiiyys52pg2bdj2m
+      unplugin-auto-import: 0.11.1_ec23nt2klvnwecaapnmjcdbtn4
+      unplugin-vue-components: 0.22.4_ecsahzkvoon6g53k3ecktcshee
       vite: 3.0.8
       vite-plugin-inspect: 0.6.0_vite@3.0.8
-      vitest: 0.21.1
+      vitest: 0.22.0
       vue: 3.2.37
       vue-tsc: 0.40.1_typescript@4.7.4
     devDependencies:
@@ -87,7 +87,7 @@ importers:
       '@unocss/vite': 0.45.7_vite@3.0.8
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.8+vue@3.2.37
       events: 3.3.0
-      vitepress: 1.0.0-alpha.4
+      vitepress: 1.0.0-alpha.5
 
   apps/examples/vue:
     specifiers:
@@ -103,9 +103,9 @@ importers:
 
   apps/site:
     specifiers:
-      vitepress: 1.0.0-alpha.4
+      vitepress: 1.0.0-alpha.5
     devDependencies:
-      vitepress: 1.0.0-alpha.4
+      vitepress: 1.0.0-alpha.5
 
 packages:
 
@@ -7129,26 +7129,6 @@ packages:
       - webpack
     dev: false
 
-  /unimport/0.6.7_rollup@2.78.0+vite@3.0.8:
-    resolution: {integrity: sha512-EMoVqDjswHkU+nD098QYHXH7Mkw7KwGDQAyeRF2lgairJnuO+wpkhIcmCqrD1OPJmsjkTbJ2tW6Ap8St0PuWZA==}
-    dependencies:
-      '@rollup/pluginutils': 4.2.1
-      escape-string-regexp: 5.0.0
-      fast-glob: 3.2.11
-      local-pkg: 0.4.2
-      magic-string: 0.26.2
-      mlly: 0.5.12
-      pathe: 0.3.4
-      scule: 0.3.2
-      strip-literal: 0.4.0
-      unplugin: 0.9.2_rollup@2.78.0+vite@3.0.8
-    transitivePeerDependencies:
-      - esbuild
-      - rollup
-      - vite
-      - webpack
-    dev: false
-
   /unist-util-stringify-position/2.0.3:
     resolution: {integrity: sha512-3faScn5I+hy9VleOq/qNbAd6pAx7iH5jYBMS9I1HgQVijz/4mv5Bvw5iw1sC/90CODiKo81G/ps8AJrISn687g==}
     dependencies:
@@ -7190,7 +7170,7 @@ packages:
       - vite
     dev: false
 
-  /unplugin-auto-import/0.11.1_5uum4ylnynghuhxuow57vx52pq:
+  /unplugin-auto-import/0.11.1_ec23nt2klvnwecaapnmjcdbtn4:
     resolution: {integrity: sha512-3KMbjc3Sv2h1osgQ16uKmD2XHb8MLK3Lj5Twzo3x2vDexYdNKjVljLZUX+eT5cvh2f1VzJR77dkzDhdEi9+1uw==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -7204,8 +7184,8 @@ packages:
       '@vueuse/core': 9.1.0_vue@3.2.37
       local-pkg: 0.4.2
       magic-string: 0.26.2
-      unimport: 0.6.7_rollup@2.78.0+vite@3.0.8
-      unplugin: 0.9.2_rollup@2.78.0+vite@3.0.8
+      unimport: 0.6.7_2clfuxxspoax4hidjlibcaaexu
+      unplugin: 0.9.2_2clfuxxspoax4hidjlibcaaexu
     transitivePeerDependencies:
       - esbuild
       - rollup
@@ -7213,7 +7193,7 @@ packages:
       - webpack
     dev: false
 
-  /unplugin-vue-components/0.22.4_ufy6fydyuyaiiyys52pg2bdj2m:
+  /unplugin-vue-components/0.22.4_ecsahzkvoon6g53k3ecktcshee:
     resolution: {integrity: sha512-2rRZcM9OnJGXnYxQNfaceEYuPeVACcWySIjy8WBwIiN3onr980TmA3XE5pRJFt8zoQrUA+c46oyIq96noLqrEQ==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -7232,7 +7212,7 @@ packages:
       magic-string: 0.26.2
       minimatch: 5.1.0
       resolve: 1.22.1
-      unplugin: 0.9.2_rollup@2.78.0+vite@3.0.8
+      unplugin: 0.9.2_2clfuxxspoax4hidjlibcaaexu
       vue: 3.2.37
     transitivePeerDependencies:
       - esbuild
@@ -7262,31 +7242,6 @@ packages:
       acorn: 8.8.0
       chokidar: 3.5.3
       esbuild: 0.15.3
-      rollup: 2.78.0
-      vite: 3.0.8
-      webpack-sources: 3.2.3
-      webpack-virtual-modules: 0.4.4
-    dev: false
-
-  /unplugin/0.9.2_rollup@2.78.0+vite@3.0.8:
-    resolution: {integrity: sha512-Wo9lx9rA0O3AWhLYYNZ6DgnNhL5t5r7kV/Jg5BXjTQtY+DEWrD8VLFSaOmKN0tgqZCMqZ+XrzgOe/3DzIO4/SA==}
-    peerDependencies:
-      esbuild: '>=0.13'
-      rollup: ^2.50.0
-      vite: ^2.3.0 || ^3.0.0-0
-      webpack: 4 || 5
-    peerDependenciesMeta:
-      esbuild:
-        optional: true
-      rollup:
-        optional: true
-      vite:
-        optional: true
-      webpack:
-        optional: true
-    dependencies:
-      acorn: 8.8.0
-      chokidar: 3.5.3
       rollup: 2.78.0
       vite: 3.0.8
       webpack-sources: 3.2.3
@@ -7441,8 +7396,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.4:
-    resolution: {integrity: sha512-bOAA4KW6vYGlkbcrPLZLTKWTgXVroObU+o9xj9EENyEl6yg26WWvfN7DGA4BftjdM5O8nR93Z5khPQ3W/tFE7Q==}
+  /vitepress/1.0.0-alpha.5:
+    resolution: {integrity: sha512-bhUfmTzd+i5fm2rInBR1Q/1RBhT0xTXM+vPqVWJdHmIc8XnWF/O7lT6kai38rOTNTt/KyPDk2SRRourPVhQJMA==}
     engines: {node: '>=14.6.0'}
     hasBin: true
     dependencies:
@@ -7466,15 +7421,14 @@ packages:
       - stylus
     dev: true
 
-  /vitest/0.21.1:
-    resolution: {integrity: sha512-WBIxuFmIDPuK47GO6Lu9eNeRMqHj/FWL3dk73OHH3eyPPWPiu+UB3QHLkLK2PEggCqJW4FaWoWg8R68S7p9+9Q==}
+  /vitest/0.22.0:
+    resolution: {integrity: sha512-BSIro/QOHLaQY08FHwT6THWhqLQ+VPU+N4Rdo4pcP+16XB6oLmNNAXGcSh/MOLUhfUy+mqCwx7AyKmU7Ms5R+g==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@vitest/browser': '*'
       '@vitest/ui': '*'
-      c8: '*'
       happy-dom: '*'
       jsdom: '*'
     peerDependenciesMeta:
@@ -7483,8 +7437,6 @@ packages:
       '@vitest/browser':
         optional: true
       '@vitest/ui':
-        optional: true
-      c8:
         optional: true
       happy-dom:
         optional: true
