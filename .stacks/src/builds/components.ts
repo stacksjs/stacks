@@ -12,6 +12,8 @@ import alias from '../alias'
 const config: ViteConfig = {
   root: resolve(__dirname, '../../../components'),
 
+  envPrefix: 'STACKS_',
+
   server: {
     port: 3333,
     open: true,
@@ -42,10 +44,7 @@ const config: ViteConfig = {
         resolve(__dirname, '../../../config'),
       ],
       dts: resolve(__dirname, '../../../auto-imports.d.ts'),
-      eslintrc: {
-        enabled: true,
-        filepath: resolve(__dirname, '../../.eslintrc-auto-import.json'),
-      },
+      vueTemplate: true,
     }),
 
     Components({

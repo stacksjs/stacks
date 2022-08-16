@@ -32,14 +32,14 @@
       "builds": [
         "./.stacks/src/builds/index.ts"
       ],
-      "components": [
-        ".stacks/src/components/index.ts"
+      "components/*": [
+        "./components/*"
       ],
       "config": [
         "./.stacks/src/config.ts"
       ],
-      "functions": [
-        ".stacks/src/functions/functions.ts"
+      "functions/*": [
+        "./functions/*"
       ],
       "~/*": [
         "./*"

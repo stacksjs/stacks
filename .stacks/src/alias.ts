@@ -11,9 +11,9 @@ const r = (p: string) => resolve(__dirname, p)
 const alias: Record<string, string> = {
   '~/': r('../../..'),
   'stacks': r('./index.ts'),
-  'functions': r('./functions/index.ts'),
-  'components': r('./components/index.ts'),
-  'config': r('./config/index.ts'),
+  'functions': r('./functions'),
+  'components': r('./components'),
+  'config': r('./config.ts'),
 }
 
 export default alias
