@@ -2,7 +2,7 @@
  * This configuration is used to define your project-specific style guide.
  */
 
-import type { Shortcuts } from 'stacks/src'
+import type { Shortcuts } from 'stacks'
 
 /**
  * Shortcuts provide you with the ability to combine utility names for reusability purposes.
@@ -21,7 +21,7 @@ export const safelist = 'prose prose-sm m-auto text-left'
 /**
  * The trigger defines the class name markup you want to add into your components.
  */
-export const trigger = ':stacks:'
+export const trigger = ':stx:'
 
 /**
  * When transforming all utility classes into a single class, this prefix will be added to the generated class.

@@ -4,9 +4,10 @@ import Inspect from 'vite-plugin-inspect'
 import Vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import Unocss from 'unocss/vite'
 import { library } from '../config'
 import type { ViteConfig } from '../core'
-import { StyleEngine, defineConfig } from '../core'
+import { defineConfig } from '../core'
 import alias from '../alias'
 
 const config: ViteConfig = {
@@ -34,7 +35,10 @@ const config: ViteConfig = {
     // UiEngine,
     Vue(),
 
-    StyleEngine,
+    Unocss({
+      configFile: resolve(__dirname, '../unocss.ts'),
+      mode: 'vue-scoped', // or 'shadow-dom'
+    }),
 
     AutoImport({
       imports: ['vue', '@vueuse/core'],

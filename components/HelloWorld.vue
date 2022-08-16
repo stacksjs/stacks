@@ -13,18 +13,174 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1 class="font-bold text-3xl text-red-800">
-    {{ greeting }}
-  </h1>
-  <button
-    type="button"
-    class=":uno: inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-    @click="increment"
-  >
-    <i
-      class=":uno: i-heroicons-outline-plus -ml-1 mr-3 h-5 w-5"
-      aria-hidden="true"
-    />
-    Count is: {{ count }}
-  </button>
+  <div class=":stx: antialiased font-sans">
+    <div class=":stx: relative flex items-top justify-center min-h-screen bg-gray-50 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
+      <div class=":stx: max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class=":stx: flex justify-center items-center pt-8 sm:justify-between sm:pt-0">
+          <img
+            src="../.github/art/logo.svg"
+            class="h-16"
+          >
+
+          <Counter />
+        </div>
+
+        <div class=":stx: mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+          <div class=":stx: grid grid-cols-1 md:grid-cols-2">
+            <div class=":stx: p-6">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-book-open w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://stacks.ow3org.com/docs"
+                    class=":stx: underline text-gray-900 dark:text-white"
+                  >Documentation</a>
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Stacks has wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
+                </div>
+              </div>
+            </div>
+
+            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-puzzle w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://StacksCasts.com"
+                    class=":stx: underline text-gray-900 dark:text-white"
+                  >Components</a>
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build component libraries & distribute them on npm.
+                </div>
+              </div>
+            </div>
+
+            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-template w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://stacks.ow3.org/"
+                    class=":stx: underline text-gray-900 dark:text-white"
+                  >Pages</a>
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is.
+                </div>
+              </div>
+            </div>
+
+            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-variable w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                  Functions
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is.
+                </div>
+              </div>
+            </div>
+
+            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-terminal w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://stacks.ow3.org/"
+                    class=":stx: underline text-gray-900 dark:text-white"
+                  >Full Stack Capabilities</a>
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Stacks allows you to build component libraries, function libraries, pages, and it allows you to use Full Stack capabilities. Connect your database to utilize a modern MVC framework.
+                </div>
+              </div>
+            </div>
+
+            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+              <div class=":stx: flex items-center">
+                <i
+                  class=":stx: i-heroicons-outline-globe w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class=":stx: ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                  Vibrant Ecosystem
+                </div>
+              </div>
+
+              <div class=":stx: ml-12">
+                wip
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class=":stx: flex justify-center mt-4 sm:items-center sm:justify-between">
+          <div class=":stx: text-center text-sm text-gray-500 sm:text-left">
+            <div class=":stx: flex items-center">
+              <i
+                class=":stx: -mt-px w-5 h-5 text-gray-400 i-heroicons-outline-heart"
+                aria-hidden="true"
+              />
+              <svg
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                class=""
+              >
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+
+              <a
+                href="https://github.com/sponsors/chrisbbreuer"
+                class=":stx: ml-1 underline"
+              >
+                Sponsor
+              </a>
+            </div>
+          </div>
+
+          <div class=":stx: ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
+            Stacks Pre-Alpha (Node v18.0)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
