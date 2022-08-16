@@ -30,7 +30,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v16.16.0",
+    "node": ">=v16.17.0",
     "pnpm": ">=7.9.0"
   },
   "scripts": {
