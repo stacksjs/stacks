@@ -228,6 +228,7 @@
     "gamepad",
     "geolocation",
     "autosize",
+    "vercel",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

@@ -9,7 +9,7 @@
         class=":stx: i-heroicons-outline-plus -ml-1 mr-3 h-5 w-5"
         aria-hidden="true"
       />
-      Count is: {{ count }}
+      Dummy Counter: {{ count }}
     </button>
   </div>
 </template>

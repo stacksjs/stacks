@@ -86,7 +86,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is.
+                  Building on top of the "components," you may easily reuse them to build your "pages." SSR is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported & more to come.
                 </div>
               </div>
             </div>
@@ -119,7 +119,7 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3.org/"
                     class=":stx: underline text-gray-900 dark:text-white"
-                  >Full Stack Capabilities</a>
+                  >Modern Full Stack</a>
                 </div>
               </div>
 
@@ -142,7 +142,44 @@ onMounted(() => {
               </div>
 
               <div class=":stx: ml-12">
-                wip
+                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Stacks's robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any stack of your choice.
+                  <a
+                    href="https://forge.Stacks.com"
+                    class=":stx: underline"
+                  >Tables</a>, <a
+                    href="https://vapor.Stacks.com"
+                    class=":stx: underline"
+                  >Date Picker</a>,
+                  <a
+                    href="https://nova.Stacks.com"
+                    class=":stx: underline"
+                  >File Manager</a>,
+                  <a
+                    href="https://nova.Stacks.com"
+                    class=":stx: underline"
+                  >Images</a>,
+                  <a
+                    href="https://nova.Stacks.com"
+                    class=":stx: underline"
+                  >Videos</a>,
+                  <a
+                    href="https://nova.Stacks.com"
+                    class=":stx: underline"
+                  >Audios</a>,
+
+                  and Web3 libraries, such as <a
+                    href="https://envoyer.io"
+                    class=":stx: underline"
+                  >DAO</a>, <a
+                    href="https://envoyer.io"
+                    class=":stx: underline"
+                  >NFTs</a>, <a
+                    href="https://envoyer.io"
+                    class=":stx: underline"
+                  >DeFi</a>
+                  stacks, and more. It will help you take your projects to the next level.
+                </div>
               </div>
             </div>
           </div>
