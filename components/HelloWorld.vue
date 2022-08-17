@@ -57,7 +57,7 @@ onMounted(() => {
                 />
                 <div class=":stx: ml-4 text-lg leading-7 font-semibold">
                   <a
-                    href="https://StacksCasts.com"
+                    href="https://stacks.ow3.org/components"
                     class=":stx: underline text-gray-900 dark:text-white"
                   >Components</a>
                 </div>
@@ -78,7 +78,7 @@ onMounted(() => {
                 />
                 <div class=":stx: ml-4 text-lg leading-7 font-semibold">
                   <a
-                    href="https://stacks.ow3.org/"
+                    href="https://stacks.ow3.org/pages"
                     class=":stx: underline text-gray-900 dark:text-white"
                   >Pages</a>
                 </div>
@@ -98,7 +98,10 @@ onMounted(() => {
                   aria-hidden="true"
                 />
                 <div class=":stx: ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
-                  Functions
+                  <a
+                    href="https://stacks.ow3.org/functions"
+                    class=":stx: underline text-gray-900 dark:text-white"
+                  >Functions</a>
                 </div>
               </div>
 
@@ -148,34 +151,38 @@ onMounted(() => {
                     href="https://forge.Stacks.com"
                     class=":stx: underline"
                   >Tables</a>, <a
-                    href="https://vapor.Stacks.com"
+                    href="https://github.com/ow3org/date-picker"
                     class=":stx: underline"
                   >Date Picker</a>,
                   <a
-                    href="https://nova.Stacks.com"
+                    href="https://github.com/ow3org/file-manager"
                     class=":stx: underline"
                   >File Manager</a>,
                   <a
-                    href="https://nova.Stacks.com"
+                    href="https://github.com/ow3org/image"
                     class=":stx: underline"
                   >Images</a>,
                   <a
-                    href="https://nova.Stacks.com"
+                    href="https://github.com/ow3org/video"
                     class=":stx: underline"
                   >Videos</a>,
                   <a
-                    href="https://nova.Stacks.com"
+                    href="https://github.com/ow3org/audio"
                     class=":stx: underline"
                   >Audios</a>,
-
-                  and Web3 libraries, such as <a
-                    href="https://envoyer.io"
+                  and
+                  <a
+                    href="https://github.com/ow3org/web3"
+                    class=":stx: underline"
+                  >Web3</a>
+                  libraries, such as <a
+                    href="https://github.com/ow3org/daos"
                     class=":stx: underline"
                   >DAO</a>, <a
-                    href="https://envoyer.io"
+                    href="https://github.com/ow3org/nfts"
                     class=":stx: underline"
                   >NFTs</a>, <a
-                    href="https://envoyer.io"
+                    href="https://github.com/ow3org/defi"
                     class=":stx: underline"
                   >DeFi</a>
                   stacks, and more. It will help you take your projects to the next level.
