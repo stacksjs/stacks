@@ -65,7 +65,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build universal component libraries & it simplifies & automates the distribution process via npm.
+                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build universal component libraries. With built-in release & commit flows, it simplifies & automates the distribution process for you via npm.
                 </div>
               </div>
             </div>
@@ -107,7 +107,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is.
+                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. Don't sweat it, it's simple!
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks allows you to build universal component libraries, pages, function libraries, APIs, and it enables you to utilize modern Full Stack capabilities.
+                  The Stacks framework is a universally usable framework that specializes in building UIs & functions. Whether you are trying to build a highly reusable component library, SSR pages, composable function libraries, or complete APIs including a deployable web server—Stacks enables you to utilize modern & serverless Full Stack capabilities.
                 </div>
               </div>
             </div>
