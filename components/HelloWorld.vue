@@ -44,7 +44,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks has wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
+                  Stacks has a wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
                 </div>
               </div>
             </div>
@@ -65,7 +65,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build component libraries & distribute them on npm.
+                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build universal component libraries & it simplifies & automates the distribution process via npm.
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of the "components," you may easily reuse them to build your "pages." SSR is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported & more to come.
+                  Building on top of the "components," you may easily reuse them to develop your "pages." SSR is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported & more to come.
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks allows you to build component libraries, function libraries, pages, and it allows you to use Full Stack capabilities. Connect your database to utilize a modern MVC framework.
+                  Stacks allows you to build universal component libraries, pages, function libraries, APIs, and it enables you to utilize modern Full Stack capabilities.
                 </div>
               </div>
             </div>
@@ -185,7 +185,7 @@ onMounted(() => {
                     href="https://github.com/ow3org/defi"
                     class=":stx: underline"
                   >DeFi</a>
-                  stacks, and more. It will help you take your projects to the next level.
+                  stacks, and more—we got you covered.
                 </div>
               </div>
             </div>

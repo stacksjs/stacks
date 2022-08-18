@@ -26,7 +26,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vitepress'],
+    exclude: ['vue', '@vueuse/core', 'vitepress'],
   },
 
   plugins: [
@@ -63,12 +63,12 @@ const config: ViteConfig = {
 
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/components'),
+    outDir: resolve(__dirname, '../../../dist/components'),
 
-    // emptyOutDir: true,
+    emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../../../components/index.ts'),
+      entry: resolve(__dirname, '../components/build.ts'),
       name: library.packageName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

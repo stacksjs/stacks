@@ -26,7 +26,7 @@ export const trigger = ':stx:'
 /**
  * When transforming all utility classes into a single class, this prefix will be added to the generated class.
  */
-export const classPrefix = 'stacks-'
+export const classPrefix = 'stx-'
 
 /**
  * Define any of the icon collections you like to use via "icons in pure css."

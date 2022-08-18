@@ -18,5 +18,5 @@ export const host: Hosts = 'netlify'
 
 export const packageName = `${organizationName}/${libraryName}-stack`
 export const functionsLibraryName = `${organizationName}/${libraryName}-fx`
-export const vueComponentsLibraryName = `${organizationName}/${libraryName}-ui`
+export const componentsLibraryName = `${organizationName}/${libraryName}-ui`
 export const webComponentsLibraryName = `${organizationName}/${libraryName}-elements`

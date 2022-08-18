@@ -16,7 +16,6 @@ export function UiEngine(isCustomElement = false) {
     return Vue({
       template: {
         compilerOptions: {
-          // todo: automatically generate this
           isCustomElement: () => true,
         },
       },

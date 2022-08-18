@@ -1,7 +1,7 @@
 import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { classPrefix, icons as collections, safelist, shortcuts, trigger } from '../../config/styles'
+import { classPrefix, icons as collections, safelist, shortcuts, trigger } from '../../config/components'
 
 const config: UserConfig = defineConfig({
   shortcuts,
@@ -19,7 +19,7 @@ const config: UserConfig = defineConfig({
       },
     }),
     presetWebFonts({
-      provider: 'bunny',
+      provider: 'bunny', // privacy-friendly Google Web Fonts proxy
       fonts: {
         // these will extend the default theme
         sans: 'Inter',
