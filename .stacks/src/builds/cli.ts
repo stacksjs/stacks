@@ -11,10 +11,10 @@ const config: ViteConfig = {
     alias,
   },
 
-  build: buildOptions(),
+  build: cliBuildOptions(),
 }
 
-export function buildOptions(): ViteBuildOptions {
+export function cliBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(__dirname, '../../dist/cli'),
 
@@ -24,12 +24,9 @@ export function buildOptions(): ViteBuildOptions {
       formats: ['es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.mjs'
+          return 'artisan.mjs'
 
-        // if (format === 'iife')
-        //     return `index.iife.js`
-
-        return 'index.?.js'
+        return 'artisan.?.js'
       },
     },
 

@@ -43,9 +43,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "artisan": "./dist/cli/artisan.mjs",
-    "stacks": "./dist/cli/artisan.mjs",
-    "stx": "./dist/cli/artisan.mjs"
+    "artisan": "bin/artisan.js"
   },
   "files": [
     "bin",
@@ -60,8 +58,9 @@
     "dev:components": "vite serve ./src/components -c ./src/builds/components.ts",
     "build:components": "vite build -c ./src/builds/components.ts",
     "build:elements": "vite build -c ./src/builds/elements.ts",
-
+    "build:cli": "vite build -c ./src/builds/cli.ts",
     "artisan": "esno ./src/cli/run.ts",
+
     "nitro:build": "nitro build",
     "make:component": "wip",
     "make:function": "wip",
@@ -74,7 +73,6 @@
     "dev:stacks": "wip",
     "dev:playground": "vite serve ../apps/playground -c ./src/builds/playground.ts",
     "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:functions && pnpm run build:cli",
-    "build:cli": "vite build -c ./src/builds/cli.ts",
     "build:functions": "vite build -c ./src/builds/functions.ts",
     "build:stacks": "vite -c ./src/builds/stacks.ts",
     "build:playground": "vite build -c ./src/builds/playground.ts",

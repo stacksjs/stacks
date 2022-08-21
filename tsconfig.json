@@ -12,15 +12,16 @@
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "isolatedModules": true,
     "strictNullChecks": true,
     "baseUrl": ".",
     "types": [
-      "node",
       "vitest",
       "vite/client",
+      "vue/ref-macros",
     ],
     "paths": {
       "stacks": [
@@ -46,8 +47,8 @@
       ],
     },
     "lib": [
-      "esnext",
-      "dom"
+      "ESNext",
+      "DOM"
     ]
   },
   "exclude": [

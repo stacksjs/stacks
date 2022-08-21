@@ -23,7 +23,8 @@ export function parseArgs(): ParsedArgs {
       .command('dev', 'Run dev script for any of these packages')
       .option('-q, --quiet', 'Quiet mode')
       .action((options) => {
-        console.log('options', options)
+        // todo: next, here we need to add options
+        console.log('dev options', options)
       })
 
     cli
@@ -31,7 +32,7 @@ export function parseArgs(): ParsedArgs {
       .command('dev:components')
       .option('-q, --quiet', 'Quiet mode')
       .action((options) => {
-        console.log('options', options)
+        console.log('dev:components options', options)
       })
 
     cli
@@ -39,7 +40,7 @@ export function parseArgs(): ParsedArgs {
       .command('dev:functions')
       .option('-q, --quiet', 'Quiet mode')
       .action((options) => {
-        console.log('options', options)
+        console.log('dev:functions options', options)
       })
 
     const result = cli.parse()
@@ -61,16 +62,6 @@ export function parseArgs(): ParsedArgs {
       //     execute: args.execute,
       // },
     }
-
-    // If a version number or release type was specified, then it will mistakenly be added to the "files" array
-    // if (parsedArgs.options.files && parsedArgs.options.files.length > 0) {
-    //     const firstArg = parsedArgs.options.files[0]
-
-    //     if (firstArg === 'prompt' || isReleaseType(firstArg) || isValidVersion(firstArg)) {
-    //         parsedArgs.options.release = firstArg
-    //         parsedArgs.options.files.shift()
-    //     }
-    // }
 
     return parsedArgs
   }

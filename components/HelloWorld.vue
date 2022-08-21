@@ -65,7 +65,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic UI development is a fancy word for UI development based on highly reusable "components"—a cornerstone of the framework. Stacks provides the most simplistic way to build universal component libraries. With built-in release & commit flows, it simplifies & automates the distribution process for you via npm.
+                  Stacks provides the most simplistic way to automatically build universal, framework agnostic (Web Components, Vue, React integrations, etc.) components—from one codebase! With built-in release & commit flows, it simplifies & automates the distribution process for you via npm.
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of the "components," you may easily reuse them to develop your "pages." SSR is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported & more to come.
+                  Building on top of the “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported—and more!
                 </div>
               </div>
             </div>
@@ -107,7 +107,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic FX development, at core, is a simple way to create composable functions. These "function libraries" may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. Don't sweat it, it's simple!
+                  Atomic FX development, at core, is a simple way to create composable functions. These “function libraries” may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. <i>Don’t sweat it, it’s simple!</i>
                 </div>
               </div>
             </div>
@@ -146,7 +146,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks's robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any stack of your choice.
+                  Stacks’s robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
                     href="https://forge.Stacks.com"
                     class=":stx: underline"
