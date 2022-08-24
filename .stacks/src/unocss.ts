@@ -1,5 +1,6 @@
 import type { UserConfig } from 'unocss'
-import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetIcons, presetTypography, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
+// import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
 import { classPrefix, icons as collections, safelist, shortcuts, trigger } from '../../config/components'
 
@@ -18,14 +19,14 @@ const config: UserConfig = defineConfig({
         'vertical-align': 'middle',
       },
     }),
-    presetWebFonts({
-      provider: 'bunny', // privacy-friendly Google Web Fonts proxy
-      fonts: {
-        // these will extend the default theme
-        sans: 'Inter',
-        mono: 'Inter',
-      },
-    }),
+    // presetWebFonts({
+    //   provider: 'bunny', // privacy-friendly Google Web Fonts proxy
+    //   fonts: {
+    //     // these will extend the default theme
+    //     sans: 'Inter',
+    //     mono: 'Inter',
+    //   },
+    // }),
   ],
 
   transformers: [

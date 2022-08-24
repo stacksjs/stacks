@@ -229,6 +229,7 @@
     "geolocation",
     "autosize",
     "vercel",
+    "jsdevtools",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

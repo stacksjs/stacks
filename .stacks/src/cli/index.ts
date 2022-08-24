@@ -1,71 +1,68 @@
+import { cac } from 'cac'
 import { version as packageVersion } from '../../package.json'
+import { startDevelopmentServer } from '../start-development-server'
+import { startBuildProcess } from '../start-build-process'
 import { ExitCode } from './exit-code'
-import { parseArgs } from './parse-args'
 
 /**
  * The main entry point of the CLI
  *
- * @param args - The command-line arguments (e.g. ["dev", "--quiet=true", "-q"])
+ * @param args - The command-line arguments (e.g. ["dev", "dev -c", "dev:components"])
  */
 export async function main(): Promise<void> {
   try {
-    console.log('test artisan')
+    const cli = cac('artisan')
 
     // Setup global error handlers
     process.on('uncaughtException', errorHandler)
     process.on('unhandledRejection', errorHandler)
 
-    // Parse the command-line arguments
-    const { help, version } = parseArgs()
-    // const { help, version, quiet, options } = parseArgs()
+    cli
+      .version(packageVersion)
+      .command('dev', 'Start the development server for any of the following packages')
+      .option('-c, --components', 'Start the Components development server')
+      .option('-f, --functions', 'Start the Functions development server')
+      .option('-p, --pages', 'Start the Pages development server')
+      .option('-d, --docs', 'Start the Documentation development server')
+      .action(async (options) => {
+        await startDevelopmentServer(options)
+      })
 
-    if (help) {
-      process.exit(ExitCode.Success)
-    }
-    else if (version) {
-      // Show the version number and exit
-      console.log(packageVersion)
-      process.exit(ExitCode.Success)
-    }
-    else {
-      // if (!quiet)
-      //     options.progress = progress
+    cli
+      .version(packageVersion)
+      .command('dev:components', 'Start the development server for your component library')
+      .action(async () => {
+        await startDevelopmentServer('components')
+      })
 
-      // await versionBump(options)
-    }
+    cli
+      .version(packageVersion)
+      .command('build', 'Automagically build your library for production use. Select any of the following packages')
+      .option('-c, --components', 'Build your component library')
+      .option('-f, --functions', 'Build your function library')
+      .option('-p, --pages', 'Build your pages')
+      .option('-d, --docs', 'Build your documentation')
+      .action(async (options) => {
+        await startBuildProcess(options)
+      })
+
+    // cli
+    //   .version(packageVersion)
+    //   .command('help', 'Review the available commands')
+    //   .outputHelp()
+
+    cli
+      .version(packageVersion)
+      .command('version', 'Review the current version')
+      .outputVersion()
+
+    // const result = cli.parse()
+    cli.parse()
   }
   catch (error) {
     errorHandler(error as Error)
   }
 }
-
-// function progress({ event, script, updatedFiles, skippedFiles, newVersion }: VersionBumpProgress): void {
-//     switch (event) {
-//         case ProgressEvent.FileUpdated:
-//             console.log(success, `Updated ${updatedFiles.pop()} to ${newVersion}`)
-//             break
-
-//         case ProgressEvent.FileSkipped:
-//             console.log(info, `${skippedFiles.pop()} did not need to be updated`)
-//             break
-
-//         case ProgressEvent.GitCommit:
-//             console.log(success, 'Git commit')
-//             break
-
-//         case ProgressEvent.GitTag:
-//             console.log(success, 'Git tag')
-//             break
-
-//         case ProgressEvent.GitPush:
-//             console.log(success, 'Git push')
-//             break
-
-//         case ProgressEvent.NpmScript:
-//             console.log(success, `Npm run ${script}`)
-//             break
-//     }
-// }
 
 function errorHandler(error: Error): void {
   let message = error.message || String(error)

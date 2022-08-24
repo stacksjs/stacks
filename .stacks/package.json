@@ -60,7 +60,6 @@
     "build:elements": "vite build -c ./src/builds/elements.ts",
     "build:cli": "vite build -c ./src/builds/cli.ts",
     "artisan": "esno ./src/cli/run.ts",
-
     "nitro:build": "nitro build",
     "make:component": "wip",
     "make:function": "wip",
@@ -101,7 +100,6 @@
     "@iconify-json/heroicons-outline": "^1.1.2",
     "@iconify-json/heroicons-solid": "^1.1.2",
     "@ow3/eslint-config": "^0.27.7",
-    "@types/node": "^18.0.6",
     "@unocss/preset-icons": "^0.45.8",
     "@unocss/transformer-compile-class": "^0.45.8",
     "@vueuse/core": "^9.1.0",
@@ -133,8 +131,11 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
+    "@types/node": "^18.0.6",
     "@unocss/vite": "^0.45.8",
     "@vitejs/plugin-vue": "^3.0.3",
+    "detect-indent": "^7.0.0",
+    "detect-newline": "^4.0.0",
     "events": "^3.3.0",
     "vitepress": "1.0.0-alpha.8"
   }
