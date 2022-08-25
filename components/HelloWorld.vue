@@ -86,7 +86,7 @@ onMounted(() => {
 
               <div class=":stx: ml-12">
                 <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of the “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported—and more!
+                  Building on top of “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported—and more!
                 </div>
               </div>
             </div>

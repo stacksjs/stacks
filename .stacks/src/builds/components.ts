@@ -47,14 +47,14 @@ const config: ViteConfig = {
         resolve(__dirname, '../../../components'),
         resolve(__dirname, '../../../config'),
       ],
-      dts: resolve(__dirname, '../../../auto-imports.d.ts'),
+      dts: resolve(__dirname, '../../auto-imports.d.ts'),
       vueTemplate: true,
     }),
 
     Components({
-      dirs: ['../../../components'],
+      dirs: [resolve(__dirname, '../../../components')],
       extensions: ['vue'],
-      dts: '../../../components.d.ts',
+      dts: '../../components.d.ts',
     }),
   ],
 
@@ -63,7 +63,7 @@ const config: ViteConfig = {
 
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../../dist/components'),
+    outDir: resolve(__dirname, '../../dist/components'),
 
     emptyOutDir: true,
 

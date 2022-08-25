@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { HelloWorld } from 'stacks/components'
+import App from 'components/App.vue'
 </script>
 
 <template>
-  <HelloWorld greeting="Hello Stacks Component" />
+  <App />
 </template>

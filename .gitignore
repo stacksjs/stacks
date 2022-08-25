@@ -8,6 +8,7 @@ dist-ssr
 .temp
 .pnpm-debug.log
 .stacks/.nitro
+.stacks/.output
 
 # Cypress
 /tests/cypress/downloads
