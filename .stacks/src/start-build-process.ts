@@ -5,7 +5,7 @@ import { NpmScript } from './types/cli'
 
 const { prompts } = Prompts
 
-export async function startBuildProcess(options) {
+export async function startBuildProcess(options: any) {
   if (options.components || options === 'components') {
     // eslint-disable-next-line no-console
     console.log('Building your component library for production use...')
@@ -32,22 +32,31 @@ export async function startBuildProcess(options) {
 
   else {
     const answer = await prompts.select({
+      type: 'select',
+      name: 'build',
       message: 'Which stack are you trying to build for production use?',
-      choices: ['Components', 'Functions', 'Pages', 'Docs'],
+      choices: [
+        { title: 'Components', value: 'components' },
+        { title: 'Functions', value: 'functions' },
+        { title: 'Pages', value: 'pages' },
+        { title: 'Docs', value: 'docs' },
+      ],
       initial: 0,
     })
 
-    if (answer === 0) {
+    // @ts-expect-error the answer object type expects to return a void type but it returns a string
+    if (answer === 'components') {
       // eslint-disable-next-line no-console
-      console.log('Building your component library for production use...')
+      console.log('Building your Stacks component library for production use...')
       await runNpmScript(NpmScript.BuildComponents)
     }
 
-    // else if (answer === 1) {
-    //   // eslint-disable-next-line no-console
-    //   console.log('Building your function library for production use...')
-    //   await runNpmScript(NpmScript.DevFunctions)
-    // }
+    // @ts-expect-error the answer object type expects to return a void type but it returns a string
+    else if (answer === 'functions') {
+      // eslint-disable-next-line no-console
+      console.log('Building your Stacks function library for production use...')
+      await runNpmScript(NpmScript.DevFunctions)
+    }
 
     // else if (answer === 2) {
     //   // eslint-disable-next-line no-console

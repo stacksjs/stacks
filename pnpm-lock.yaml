@@ -16,6 +16,7 @@ importers:
       '@ow3/eslint-config': ^0.27.7
       '@types/fs-extra': ^9.0.13
       '@types/node': ^18.0.6
+      '@types/prompts': ^2.0.14
       '@unocss/preset-icons': ^0.45.8
       '@unocss/transformer-compile-class': ^0.45.8
       '@unocss/vite': ^0.45.8
@@ -86,6 +87,7 @@ importers:
     devDependencies:
       '@types/fs-extra': 9.0.13
       '@types/node': 18.7.6
+      '@types/prompts': 2.0.14
       '@unocss/vite': 0.45.8_vite@3.0.8
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.8+vue@3.2.37
       detect-indent: 7.0.0
@@ -936,6 +938,12 @@ packages:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
     dev: false
     optional: true
+
+  /@types/prompts/2.0.14:
+    resolution: {integrity: sha512-HZBd99fKxRWpYCErtm2/yxUZv6/PBI9J7N4TNFffl5JbrYMHBwF25DjQGTW3b3jmXq+9P6/8fCIb2ee57BFfYA==}
+    dependencies:
+      '@types/node': 18.7.6
+    dev: true
 
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
