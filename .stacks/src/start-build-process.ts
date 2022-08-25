@@ -32,7 +32,7 @@ export async function startBuildProcess(options) {
 
   else {
     const answer = await prompts.select({
-      message: 'Which development server are you trying to start?',
+      message: 'Which stack are you trying to build for production use?',
       choices: ['Components', 'Functions', 'Pages', 'Docs'],
       initial: 0,
     })

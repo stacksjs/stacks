@@ -37,7 +37,7 @@ export async function main(): Promise<void> {
 
     cli
       .version(packageVersion)
-      .command('build', 'Automagically build your library for production use. Select any of the following packages')
+      .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
       .option('-c, --components', 'Build your component library')
       .option('-f, --functions', 'Build your function library')
       .option('-p, --pages', 'Build your pages')
