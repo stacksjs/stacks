@@ -3,7 +3,6 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
 import alias from '../alias'
-// import library from '../../../config/library'
 
 // https://vitejs.dev/config/
 const config: ViteConfig = {

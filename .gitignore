@@ -1,6 +1,8 @@
 node_modules
 .DS_Store
-dist
+*/dist/cli/*
+*/dist/components/*
+*/dist/elements/*
 dist-ssr
 *.local
 .DS_STORE

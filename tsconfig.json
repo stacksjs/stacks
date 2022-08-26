@@ -30,9 +30,6 @@
       "stacks/*": [
         "./.stacks/src/*"
       ],
-      "builds": [
-        "./.stacks/src/builds/index.ts"
-      ],
       "components/*": [
         "./components/*"
       ],

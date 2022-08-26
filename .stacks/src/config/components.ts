@@ -68,7 +68,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../components/build.ts'),
+      entry: resolve(__dirname, '../components/library.ts'),
       name: library.packageName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
@@ -86,7 +86,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vitepress', 'vue', '@vueuse/core'],
+      external: ['vue', '@vueuse/core'],
       output: {
         // exports: 'named',
         globals: {

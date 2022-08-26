@@ -3,12 +3,10 @@ const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
 
-// eslint-disable-next-line no-console
-console.log(`The greeting is ${greeting}.`)
-
+// easily use any of the lifecycle hooks without needing to import them
 onMounted(() => {
   // eslint-disable-next-line no-console
-  console.log('HelloWorld component mounted.')
+  console.log('HelloWorld component mounted & the greeting is', greeting)
 })
 </script>
 
