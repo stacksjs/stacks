@@ -9,7 +9,7 @@ import { ExitCode } from './exit-code'
  *
  * @param args - The command-line arguments (e.g. ["dev", "dev -c", "dev:components"])
  */
-export async function main(): Promise<void> {
+async function main() {
   try {
     const cli = cac('artisan')
 
@@ -73,3 +73,5 @@ function errorHandler(error: Error): void {
   console.error(message)
   process.exit(ExitCode.FatalError)
 }
+
+main()
