@@ -1,0 +1,4 @@
+button:
+  counter: 'Counter'
+  toggle_langs: 'Toggle Language'
+  toggle_dark: 'Toggle Dark Mode'

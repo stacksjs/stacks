@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks",
-  "version": "0.23.0",
   "type": "module",
+  "version": "0.23.0",
   "private": true,
   "packageManager": "pnpm@7.9.5",
   "description": "The Stacks Framework.",
@@ -43,7 +43,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "artisan": "./dist/cli/index.mjs"
+    "artisan": "./dist/cli/artisan.mjs"
   },
   "files": [
     "dist",
@@ -68,15 +68,13 @@
     "make:stack": "wip",
     "fresh": "pnpm run clean && pnpm i",
     "update": "pnpm --filter ./.stacks run update",
-    "clean": "cd .. && rimraf .stacks/dist .stacks/types/functions/* .stacks/types/components/* .stacks/node_modules apps/**/node_modules apps/**/dist config/node_modules components/dist functions/dist components/node_modules node_modules/ pnpm-lock.yaml",
+    "clean": "cd .. && rimraf .stacks/node_modules apps/**/node_modules node_modules/ pnpm-lock.yaml",
     "dev:pages": "nitro dev",
     "dev:functions": "wip",
     "dev:stacks": "wip",
     "build": "pnpm run typecheck && pnpm run build:components && pnpm run build:functions && pnpm run build:cli",
     "server:functions": "wip",
     "server:pages": "nitro build",
-    "stub": "unbuild ./src --stub",
-    "stubs": "pnpm -r --parallel run stub",
     "lint": "eslint . && pnpm -r --parallel lint",
     "lint:fix": "eslint . --fix && pnpm -r --parallel lint:fix",
     "commit": "cd .. && git cz",
@@ -90,12 +88,13 @@
     "test:types": "vue-tsc --noEmit",
     "types:fix": "esno scripts/fix-types.ts",
     "preinstall": "esno scripts/check-node-version.ts",
-    "postinstall": "npx simple-git-hooks ../config/git-hooks.ts"
+    "postinstall": "npx simple-git-hooks ../config/git.ts"
   },
   "dependencies": {
     "@babel/types": "^7.18.13",
     "@iconify-json/heroicons-outline": "^1.1.4",
     "@iconify-json/heroicons-solid": "^1.1.5",
+    "@intlify/vite-plugin-vue-i18n": "^6.0.0",
     "@ow3/eslint-config": "^0.27.7",
     "@unocss/preset-icons": "^0.45.13",
     "@unocss/transformer-compile-class": "^0.45.13",
@@ -114,6 +113,7 @@
     "fs-extra": "^10.1.0",
     "lint-staged": "^13.0.3",
     "nitropack": "^0.4.24",
+    "pathe": "^0.3.5",
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.0",
     "typescript": "^4.8.2",
@@ -124,6 +124,7 @@
     "vite-plugin-inspect": "^0.6.0",
     "vitest": "^0.22.1",
     "vue": "^3.2.37",
+    "vue-i18n": "^9.2.2",
     "vue-tsc": "^0.40.1"
   },
   "devDependencies": {

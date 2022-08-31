@@ -3,7 +3,6 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
 import alias from '../alias'
-// import library from '../../../config/library'
 
 // https://vitejs.dev/config/
 const config: ViteConfig = {
@@ -18,16 +17,19 @@ export function cliBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(__dirname, '../../dist/cli'),
 
+    emptyOutDir: true,
+
     lib: {
       entry: resolve(__dirname, '../cli/index.ts'),
       name: 'artisan',
       formats: ['es'],
-      fileName: (format: string) => {
-        if (format === 'es')
-          return 'artisan.mjs'
-
-        return 'artisan.?.js'
+      fileName: () => {
+        return 'artisan.mjs'
       },
+    },
+
+    rollupOptions: {
+      external: ['path'],
     },
 
     // sourcemap: true,
@@ -35,10 +37,6 @@ export function cliBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return config
-
-  // command === 'build'
+export default defineConfig(() => {
   return config
 })

@@ -8,8 +8,18 @@ const { prompts } = Prompts
 export async function startBuildProcess(options: any) {
   if (options.components || options === 'components') {
     // eslint-disable-next-line no-console
-    console.log('Building your component library for production use...')
+    console.log('Building your component library for production use & npm/CDN distribution...')
     await runNpmScript(NpmScript.BuildComponents)
+
+    // eslint-disable-next-line no-console
+    console.log('Building your web component library for production use & npm/CDN distribution...')
+    await runNpmScript(NpmScript.BuildElements)
+  }
+
+  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
+    // eslint-disable-next-line no-console
+    console.log('Building your web component library for production use & npm/CDN distribution...')
+    await runNpmScript(NpmScript.BuildElements)
   }
 
   // else if (options.functions) {

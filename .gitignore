@@ -1,6 +1,6 @@
 node_modules
 .DS_Store
-*/dist/cli/*
+!*/dist/cli/*
 */dist/components/*
 */dist/elements/*
 dist-ssr

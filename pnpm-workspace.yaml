@@ -1,4 +1,3 @@
 packages:
   - ./.stacks
   - './apps/**'
-  - ./functions

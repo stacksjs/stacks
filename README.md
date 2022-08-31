@@ -22,7 +22,7 @@ Create your own style guide using conventions you are familiar with. Our UnoCSS 
 
 **✨ Next-gen Developer Experience _(DX)_**
 
-Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured playground & examples... _Stacks has it all._
+Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured examples... _Stacks has it all._
 
 **💡 First-class VS Code integration**
 

@@ -1,7 +1,15 @@
 <script setup lang="ts">
+// which properties does your component accept?
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
 }>()
+
+const { t, availableLocales, locale } = useI18n()
+
+const toggleLocales = () => {
+  const locales = availableLocales
+  locale.value = locales[(locales.indexOf(locale.value) + 1) % locales.length]
+}
 
 // easily use any of the lifecycle hooks without needing to import them
 onMounted(() => {
@@ -11,177 +19,196 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class=":stx: antialiased font-sans">
-    <div class=":stx: relative flex items-top justify-center min-h-screen bg-gray-50 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
-      <div class=":stx: max-w-6xl mx-auto sm:px-6 lg:px-8">
-        <div class=":stx: flex justify-center items-center pt-8 sm:justify-between sm:pt-0">
-          <img
-            src="../.github/art/logo.svg"
-            class="h-16"
-          >
+  <div class="antialiased font-sans">
+    <div class="relative flex items-top justify-center min-h-screen bg-gray-50 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
+      <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="flex justify-center items-center pt-8 sm:justify-between sm:pt-0">
+          <Logo />
 
-          <Counter />
+          <div class="flex items-end">
+            <Counter />
+
+            <button
+              class="btn"
+              :title="t('button.toggle_dark')"
+              @click="toggleDark()"
+            >
+              <div class="i-heroicons-outline-sun dark:i-heroicons-outline-moon" />
+            </button>
+
+            <button
+              class="btn"
+              :title="t('button.toggle_langs')"
+              @click="toggleLocales()"
+            >
+              <div class="i-heroicons-outline-language" />
+            </button>
+          </div>
         </div>
 
-        <div class=":stx: mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
-          <div class=":stx: grid grid-cols-1 md:grid-cols-2">
-            <div class=":stx: p-6">
-              <div class=":stx: flex items-center">
+        <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="p-6">
+              <div class="flex items-center">
                 <i
-                  class=":stx: i-heroicons-outline-book-open w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-book-open w-8 h-8 text-gray-500"
                   aria-hidden="true"
                 />
 
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg leading-7 font-semibold">
                   <a
                     href="https://stacks.ow3org.com/docs"
-                    class=":stx: underline text-gray-900 dark:text-white"
+                    class="underline text-gray-900 dark:text-white"
                   >Documentation</a>
                 </div>
               </div>
 
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
                   Stacks has a wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
                 </div>
               </div>
             </div>
 
-            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
-              <div class=":stx: flex items-center">
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
+              <div class="flex items-center">
                 <i
-                  class=":stx: i-heroicons-outline-puzzle w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-puzzle w-8 h-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg leading-7 font-semibold">
                   <a
                     href="https://stacks.ow3.org/components"
-                    class=":stx: underline text-gray-900 dark:text-white"
+                    class="underline text-gray-900 dark:text-white"
                   >Components</a>
                 </div>
               </div>
 
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks provides the most simplistic way to automatically build universal, framework agnostic (Web Components, Vue, React integrations, etc.) components—from one codebase! With built-in release & commit flows, it simplifies & automates the distribution process for you via npm.
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  The easiest way to build component libraries and distribute them on npm. Stacks automatically imports all of your components & makes them available to you in your templates.
+                  And it automatically builds framework agnostic (e.g. Web & Vue Components) component libraries out of those.
                 </div>
               </div>
             </div>
 
-            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700">
-              <div class=":stx: flex items-center">
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
                 <i
-                  class=":stx: i-heroicons-outline-template w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-template w-8 h-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
-                  <a
-                    href="https://stacks.ow3.org/pages"
-                    class=":stx: underline text-gray-900 dark:text-white"
-                  >Pages</a>
-                </div>
-              </div>
-
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported—and more!
-                </div>
-              </div>
-            </div>
-
-            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
-              <div class=":stx: flex items-center">
-                <i
-                  class=":stx: i-heroicons-outline-variable w-8 h-8 text-gray-500"
-                  aria-hidden="true"
-                />
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                <div class="ml-4 text-lg leading-7 font-semibold">
                   <a
                     href="https://stacks.ow3.org/functions"
-                    class=":stx: underline text-gray-900 dark:text-white"
+                    class="underline text-gray-900 dark:text-white"
                   >Functions</a>
                 </div>
               </div>
 
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
                   Atomic FX development, at core, is a simple way to create composable functions. These “function libraries” may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. <i>Don’t sweat it, it’s simple!</i>
                 </div>
               </div>
             </div>
 
-            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700">
-              <div class=":stx: flex items-center">
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+              <div class="flex items-center">
                 <i
-                  class=":stx: i-heroicons-outline-terminal w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-variable w-8 h-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
                   <a
-                    href="https://stacks.ow3.org/"
-                    class=":stx: underline text-gray-900 dark:text-white"
-                  >Modern Full Stack</a>
+                    href="https://stacks.ow3.org/pages"
+                    class="underline text-gray-900 dark:text-white"
+                  >Pages</a>
                 </div>
               </div>
 
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  The Stacks framework is a universally usable framework that specializes in building UIs & functions. Whether you are trying to build a highly reusable component library, SSR pages, composable function libraries, or complete APIs including a deployable web server—Stacks enables you to utilize modern & serverless Full Stack capabilities.
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Building on top of “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported, including many other cloud providers.
                 </div>
               </div>
             </div>
 
-            <div class=":stx: p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
-              <div class=":stx: flex items-center">
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
                 <i
-                  class=":stx: i-heroicons-outline-globe w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-terminal w-8 h-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class=":stx: ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                <div class="ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://stacks.ow3.org/"
+                    class="underline text-gray-900 dark:text-white"
+                  >Modern DX</a>
+                </div>
+              </div>
+
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                  Stacks means a simplistic artisan setup & maintenance, IDE integration, auto-formatting, auto-imported APIs,
+                  modern git commit conventions, npm package releases & semver versioning,
+                  pretty changelog generations, PR dependency updates, integrated
+                  documentation tooling, and more. <i>A well-defined set of best practices & automations.</i>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+              <div class="flex items-center">
+                <i
+                  class="i-heroicons-outline-globe w-8 h-8 text-gray-500"
+                  aria-hidden="true"
+                />
+                <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
                   Vibrant Ecosystem
                 </div>
               </div>
 
-              <div class=":stx: ml-12">
-                <div class=":stx: mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
                   Stacks’s robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
                     href="https://forge.Stacks.com"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Tables</a>, <a
                     href="https://github.com/ow3org/date-picker"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Date Picker</a>,
                   <a
                     href="https://github.com/ow3org/file-manager"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >File Manager</a>,
                   <a
                     href="https://github.com/ow3org/image"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Images</a>,
                   <a
                     href="https://github.com/ow3org/video"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Videos</a>,
                   <a
                     href="https://github.com/ow3org/audio"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Audios</a>,
                   and
                   <a
                     href="https://github.com/ow3org/web3"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >Web3</a>
                   libraries, such as <a
                     href="https://github.com/ow3org/daos"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >DAO</a>, <a
                     href="https://github.com/ow3org/nfts"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >NFTs</a>, <a
                     href="https://github.com/ow3org/defi"
-                    class=":stx: underline"
+                    class="underline text-blue-600 dark:text-blue-200"
                   >DeFi</a>
                   stacks, and more—we got you covered.
                 </div>
@@ -190,11 +217,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class=":stx: flex justify-center mt-4 sm:items-center sm:justify-between">
-          <div class=":stx: text-center text-sm text-gray-500 sm:text-left">
-            <div class=":stx: flex items-center">
+        <div class="flex justify-center mt-4 sm:items-center sm:justify-between">
+          <div class="text-center text-sm text-gray-500 sm:text-left">
+            <div class="flex items-center">
               <i
-                class=":stx: -mt-px w-5 h-5 text-gray-400 i-heroicons-outline-heart"
+                class="-mt-px w-5 h-5 text-gray-400 i-heroicons-outline-heart"
                 aria-hidden="true"
               />
               <svg
@@ -211,18 +238,25 @@ onMounted(() => {
 
               <a
                 href="https://github.com/sponsors/chrisbbreuer"
-                class=":stx: ml-1 underline"
+                class="ml-1 underline text-blue-600 dark:text-blue-200"
               >
                 Sponsor
               </a>
             </div>
           </div>
 
-          <div class=":stx: ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Pre-Alpha (Node v18.0)
+          <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
+            Stacks Pre-Alpha (Node v18.8)
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style>
+  body {
+    /* reset browser styles */
+    margin: 0;
+  }
+</style>

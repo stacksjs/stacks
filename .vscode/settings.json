@@ -35,7 +35,8 @@
   "volar.takeOverMode.enabled": "auto",
   "todo-tree.highlights.enabled": true,
   "cSpell.ignorePaths": [
-    "node_modules"
+    "node_modules",
+    "lang/de.yml"
   ],
   "explorer.fileNesting.patterns": {
     "*.asax": "$(capture).*.cs, $(capture).*.vb",
@@ -230,6 +231,8 @@
     "autosize",
     "vercel",
     "jsdevtools",
+    "intlify",
+    "automations",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

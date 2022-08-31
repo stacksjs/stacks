@@ -1,0 +1,4 @@
+button:
+  counter: 'Klicker'
+  toggle_langs: 'Sprache Wechseln'
+  toggle_dark: 'Toggle Dunkel Modus'

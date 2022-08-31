@@ -11,6 +11,8 @@
 
 import type { Hosts } from 'stacks/types'
 
+export const defaultLanguage = 'en'
+
 export const organizationName = '@ow3'
 export const libraryName = 'hello-world'
 export const packageManager = 'npm'

@@ -39,11 +39,27 @@ async function main() {
       .version(packageVersion)
       .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
       .option('-c, --components', 'Build your component library')
+      .option('-w, --web-components', 'Build your web component library') // these are automatically built with your -c option as well
+      .option('-e, --elements', 'An alias to the -w flag')
       .option('-f, --functions', 'Build your function library')
       .option('-p, --pages', 'Build your pages')
       .option('-d, --docs', 'Build your documentation')
       .action(async (options) => {
         await startBuildProcess(options)
+      })
+
+    cli
+      .version(packageVersion)
+      .command('build:components', 'Automagically build your component libraries for production use & npm/CDN distribution.')
+      .action(async () => {
+        await startBuildProcess('components')
+      })
+
+    cli
+      .version(packageVersion)
+      .command('build:elements', 'Automagically build web component library for production use & npm/CDN distribution.')
+      .action(async () => {
+        await startBuildProcess('web-components')
       })
 
     // cli

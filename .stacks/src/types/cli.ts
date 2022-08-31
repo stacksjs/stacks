@@ -10,6 +10,7 @@ export interface StacksOptions {
 export const enum NpmScript {
   Build = 'build',
   BuildComponents = 'build:components',
+  BuildElements = 'build:elements',
   BuildFunctions = 'build:functions',
   BuildPages = 'build:pages',
   BuildDocs = 'build:docs',

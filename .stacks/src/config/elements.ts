@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import Inspect from 'vite-plugin-inspect'
+import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import Vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -54,14 +55,21 @@ const config: ViteConfig = {
         resolve(__dirname, '../../../components'),
         resolve(__dirname, '../../../config'),
       ],
-      dts: resolve(__dirname, '../../../auto-imports.d.ts'),
+      dts: resolve(__dirname, '../../auto-imports.d.ts'),
       vueTemplate: true,
     }),
 
     Components({
-      dirs: ['../../../components'],
+      dirs: [resolve(__dirname, '../../../components')],
       extensions: ['vue'],
-      dts: '../../../components.d.ts',
+      dts: '../../components.d.ts',
+    }),
+
+    // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
+    VueI18n({
+      runtimeOnly: true,
+      compositionOnly: true,
+      include: [resolve(__dirname, '../../../lang/**')],
     }),
   ],
 
@@ -70,7 +78,7 @@ const config: ViteConfig = {
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../../dist/elements'),
+    outDir: resolve(__dirname, '../../dist/elements'),
 
     emptyOutDir: true,
 
@@ -84,9 +92,6 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
 
         if (format === 'cjs')
           return 'index.cjs'
-
-        // if (format === 'iife')
-        //   return 'index.iife.js'
 
         return 'index.?.js'
       },

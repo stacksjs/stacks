@@ -4,7 +4,7 @@
  * TODO: the future "artisan setup"-command will set up these aliases.
  */
 
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 
 const r = (p: string) => resolve(__dirname, p)
 

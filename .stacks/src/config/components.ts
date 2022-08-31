@@ -1,5 +1,6 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
+import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import Inspect from 'vite-plugin-inspect'
 import Vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
@@ -26,7 +27,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@vueuse/core', 'vitepress'],
+    exclude: ['vue', '@vueuse/core'],
   },
 
   plugins: [
@@ -41,8 +42,9 @@ const config: ViteConfig = {
     }),
 
     AutoImport({
-      imports: ['vue', '@vueuse/core'],
+      imports: ['vue', 'vue-i18n', '@vueuse/core'],
       dirs: [
+        resolve(__dirname, '../functions'),
         resolve(__dirname, '../../../functions'),
         resolve(__dirname, '../../../components'),
         resolve(__dirname, '../../../config'),
@@ -56,6 +58,14 @@ const config: ViteConfig = {
       extensions: ['vue'],
       dts: '../../components.d.ts',
     }),
+
+    // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
+    VueI18n({
+      runtimeOnly: true,
+      compositionOnly: true,
+      globalSFCScope: true,
+      include: [resolve(__dirname, '../../../lang/**')],
+    }),
   ],
 
   build: componentsBuildOptions(),
@@ -68,7 +78,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../components/library.ts'),
+      entry: resolve(__dirname, '../components/index.ts'),
       name: library.packageName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
