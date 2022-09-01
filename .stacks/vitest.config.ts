@@ -1,4 +1,4 @@
-import alias from './src/alias'
+import alias from './src/core/alias'
 import { defineConfig } from './src/core'
 
 export default defineConfig({

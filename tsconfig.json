@@ -33,9 +33,6 @@
       "components/*": [
         "./components/*"
       ],
-      "config": [
-        "./.stacks/src/config.ts"
-      ],
       "functions/*": [
         "./functions/*"
       ],

@@ -6,10 +6,10 @@ import Vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Unocss from 'unocss/vite'
-import { library } from '../config'
+import { library } from '../core/config'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
-import alias from '../alias'
+import alias from '../core/alias'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../../components'),
@@ -37,14 +37,13 @@ const config: ViteConfig = {
     Vue(),
 
     Unocss({
-      configFile: resolve(__dirname, '../unocss.ts'),
+      configFile: resolve(__dirname, '../core/unocss.ts'),
       mode: 'vue-scoped', // or 'shadow-dom'
     }),
 
     AutoImport({
       imports: ['vue', 'vue-i18n', '@vueuse/core'],
       dirs: [
-        resolve(__dirname, '../functions'),
         resolve(__dirname, '../../../functions'),
         resolve(__dirname, '../../../components'),
         resolve(__dirname, '../../../config'),

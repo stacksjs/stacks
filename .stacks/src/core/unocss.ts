@@ -2,7 +2,7 @@ import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 // import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { classPrefix, icons as collections, safelist, shortcuts, trigger } from '../../config/components'
+import { classPrefix, icons as collections, safelist, shortcuts, trigger } from '../../../config/components'
 
 const config: UserConfig = defineConfig({
   shortcuts,

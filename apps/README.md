@@ -2,7 +2,7 @@
 
 This folder contains your applications. One of those applications is the "site" that Stacks scaffolds for you. This site may be used as the your documentation site, or as a landing page for your application.
 
-Other examples could include a "VS Code plugin", a mobile app, a desktop app, etc.—if your project requires it.
+Other examples could include a "VS Code plugin", a mobile app, a desktop app, etc.—whatever your application/ecosystem requires.
 
 ## 💪🏼 Contributing
 

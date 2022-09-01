@@ -5,5 +5,8 @@
   Adjust it to your needs. Happy coding!
 -->
 <template>
-  <HelloWorld greeting="Jane Doe" />
+  <HelloWorld
+    greeting="Jane Doe"
+    :show-buttons="true"
+  />
 </template>

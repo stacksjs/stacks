@@ -8,21 +8,21 @@
 
 # The Atomic UI/FX Engine
 
-The goal of the Stacks framework is to _help you_ create & maintain UIs (pages & components) & function libraries. In other words, it shouldn't be a chore creating or maintaining them. Stacks allows you to easily build highly-composable & scalable libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. The Stacks build system allows you to easily & automatically build highly-composable & scalable framework agnostic libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
 
 ![Atomic UI & FX Design](./apps/site/docs/images/diagram.png)
 
 **🤖 Zero-config, by design**
 
-The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite, Nitro & unbuild engines in a zero-config way._
+The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library or API, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite, Nitro & unbuild engines in a zero-config way._
 
 **🎨 Style with ease**
 
-Create your own style guide using conventions you are familiar with. Our UnoCSS atomic engine allows for just that—in a blazing-fast, on-demand way—Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more available.
+Create your own style guide using conventions you are familiar with. Stacks' UnoCSS atomic engine allows for just that, in a blazing-fast, on-demand way. Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more to choose from.
 
 **✨ Next-gen Developer Experience _(DX)_**
 
-Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, simple CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured examples... _Stacks has it all._
+Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, a powerful, yet simple, CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured examples... _Stacks has it all._
 
 **💡 First-class VS Code integration**
 
@@ -30,11 +30,11 @@ IDE Capabilities, such as type hints, code completion, code formatting, and more
 
 **🧙🏼‍♀️ Extremely beginner & expert-friendly**
 
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace.
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework.
 
 Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
-> _The clever way to build & share component & function libraries._
+> _The clever way to build & share component & function libraries (and servers!)._
 
 ## Get Started
 
@@ -55,6 +55,7 @@ The following list is of some of the most common ways to interact with the Stack
 # local workflow, to be released with 0.24.0
 npx artisan install # installs all dependencies
 npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+npx artisan build # follow CLI prompts to select which library (or server) to build
 npx artisan commit # follow CLI prompts for committing changes
 npx artisan release # creates the releases for the stack & consequently, publishes them to npm
 
@@ -74,9 +75,9 @@ npx artisan fresh # fresh reinstall of all deps
 
 npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
 npx artisan dev:components # starts local playground dev server
-npx artisan dev:functions # stubs the functions
 npx artisan dev:pages # starts local pages dev server
 npx artisan dev:docs # starts local docs dev server
+npx artisan dev:functions # stubs the functions
 
 npx artisan make:component HelloWorld
 npx artisan make:function hello-world

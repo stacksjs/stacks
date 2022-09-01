@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
 import { AutoImports, defineConfig } from '../core'
-import alias from '../alias'
+import alias from '../core/alias'
 
 // if we build this, it needs to include everything
 

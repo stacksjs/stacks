@@ -1,0 +1,66 @@
+import { createUnplugin } from 'unplugin'
+import { createFilter } from '@rollup/pluginutils'
+import chokidar from 'chokidar'
+import type { ResolvedConfig, ViteDevServer } from 'vite'
+import type { Options, PublicPluginAPI } from '../types'
+import { shouldTransform, stringifyComponentImport } from '../core/utils'
+import { Context } from './context'
+
+export default createUnplugin<Options>((options = {}) => {
+  const filter = createFilter(
+    options.include || [/\.vue$/, /\.vue\?vue/],
+    options.exclude || [/[\\/]node_modules[\\/]/, /[\\/]\.git[\\/]/, /[\\/]\.stacks[\\/]/, /[\\/]\.nuxt[\\/]/],
+  )
+  const ctx: Context = new Context(options)
+
+  const api: PublicPluginAPI = {
+    async findComponent(name, filename) {
+      return await ctx.findComponent(name, 'component', filename ? [filename] : [])
+    },
+    stringifyImport(info) {
+      return stringifyComponentImport(info, ctx)
+    },
+  }
+
+  return {
+    name: 'stacks',
+    enforce: 'post',
+
+    api,
+
+    transformInclude(id) {
+      return filter(id)
+    },
+
+    async transform(code, id) {
+      if (!shouldTransform(code))
+        return null
+      try {
+        const result = await ctx.transform(code, id)
+        ctx.generateDeclaration()
+        return result
+      }
+      catch (e) {
+        this.error(e)
+      }
+    },
+
+    vite: {
+      configResolved(config: ResolvedConfig) {
+        ctx.setRoot(config.root)
+        ctx.sourcemap = true
+
+        if (options.dts) {
+          ctx.searchGlob()
+          ctx.generateDeclaration()
+        }
+
+        if (config.build.watch && config.command === 'build')
+          ctx.setupWatcher(chokidar.watch(ctx.options.globs))
+      },
+      configureServer(server: ViteDevServer) {
+        ctx.setupViteServer(server)
+      },
+    },
+  }
+})

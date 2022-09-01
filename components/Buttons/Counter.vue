@@ -6,16 +6,14 @@ const { t } = useI18n()
   <div>
     <button
       type="button"
-      class="btn"
+      class="btn text-xs"
       @click="increment"
     >
       <i
         class="i-heroicons-outline-plus -ml-1 mr-3 h-4 w-4"
         aria-hidden="true"
       />
-      <span class="text-xs">
-        {{ t('button.counter') }}: {{ count }}
-      </span>
+      {{ t('button.counter') }}: {{ count }}
     </button>
   </div>
 </template>

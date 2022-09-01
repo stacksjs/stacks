@@ -233,6 +233,7 @@
     "jsdevtools",
     "intlify",
     "automations",
+    "pluginutils",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

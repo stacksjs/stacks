@@ -1,6 +1,4 @@
 export * from './core'
-// export * from './builds'
-export * from './styles'
+export * from './types/styles'
 // export * from './docs'
-// export * from './functions'
-export * from './config'
+export * from './core/config'

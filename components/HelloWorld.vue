@@ -2,14 +2,10 @@
 // which properties does your component accept?
 const { greeting = 'Welcome!' } = defineProps<{
   greeting: string
+  showButtons: boolean
 }>()
 
-const { t, availableLocales, locale } = useI18n()
-
-const toggleLocales = () => {
-  const locales = availableLocales
-  locale.value = locales[(locales.indexOf(locale.value) + 1) % locales.length]
-}
+const { t } = useI18n()
 
 // easily use any of the lifecycle hooks without needing to import them
 onMounted(() => {
@@ -25,24 +21,15 @@ onMounted(() => {
         <div class="flex justify-center items-center pt-8 sm:justify-between sm:pt-0">
           <Logo />
 
-          <div class="flex items-end">
+          <div
+            v-if="showButtons"
+            class="flex items-end"
+          >
             <Counter />
 
-            <button
-              class="btn"
-              :title="t('button.toggle_dark')"
-              @click="toggleDark()"
-            >
-              <div class="i-heroicons-outline-sun dark:i-heroicons-outline-moon" />
-            </button>
+            <ToggleDark />
 
-            <button
-              class="btn"
-              :title="t('button.toggle_langs')"
-              @click="toggleLocales()"
-            >
-              <div class="i-heroicons-outline-language" />
-            </button>
+            <ToggleLanguage />
           </div>
         </div>
 
@@ -59,7 +46,9 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3org.com/docs"
                     class="underline text-gray-900 dark:text-white"
-                  >Documentation</a>
+                  >
+                    {{ t('hello_world.title_1') }}
+                  </a>
                 </div>
               </div>
 
@@ -80,7 +69,9 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3.org/components"
                     class="underline text-gray-900 dark:text-white"
-                  >Components</a>
+                  >
+                    {{ t('hello_world.title_2') }}
+                  </a>
                 </div>
               </div>
 
@@ -102,7 +93,9 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3.org/functions"
                     class="underline text-gray-900 dark:text-white"
-                  >Functions</a>
+                  >
+                    {{ t('hello_world.title_3') }}
+                  </a>
                 </div>
               </div>
 
@@ -123,7 +116,9 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3.org/pages"
                     class="underline text-gray-900 dark:text-white"
-                  >Pages</a>
+                  >
+                    {{ t('hello_world.title_4') }}
+                  </a>
                 </div>
               </div>
 
@@ -144,7 +139,9 @@ onMounted(() => {
                   <a
                     href="https://stacks.ow3.org/"
                     class="underline text-gray-900 dark:text-white"
-                  >Modern DX</a>
+                  >
+                    {{ t('hello_world.title_5') }}
+                  </a>
                 </div>
               </div>
 
@@ -165,7 +162,7 @@ onMounted(() => {
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
-                  Vibrant Ecosystem
+                  {{ t('hello_world.title_6') }}
                 </div>
               </div>
 
