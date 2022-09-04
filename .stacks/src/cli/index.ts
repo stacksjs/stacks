@@ -1,7 +1,8 @@
 import { cac } from 'cac'
 import { version as packageVersion } from '../../package.json'
-import { startDevelopmentServer } from '../start-development-server'
-import { startBuildProcess } from '../start-build-process'
+import { startDevelopmentServer } from '../scripts/dev'
+import { startBuildProcess } from '../scripts/build'
+import { reinstallNpmDependencies } from '../scripts/fresh'
 import { ExitCode } from './exit-code'
 
 /**
@@ -60,6 +61,13 @@ async function main() {
       .command('build:elements', 'Automagically build web component library for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('web-components')
+      })
+
+    cli
+      .version(packageVersion)
+      .command('fresh', 'Reinstalls your npm dependencies')
+      .action(async () => {
+        await reinstallNpmDependencies()
       })
 
     // cli

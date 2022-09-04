@@ -19,4 +19,5 @@ export const enum NpmScript {
   DevFunctions = 'dev:functions',
   DevPages = 'dev:pages',
   DevDocs = 'dev:docs',
+  Fresh = 'fresh',
 }

@@ -1,44 +1,16 @@
 import Prompts from 'prompts'
-import { ExitCode } from './cli/exit-code'
+import { ExitCode } from '../cli/exit-code'
+import { NpmScript } from '../types/cli'
 import { runNpmScript } from './run-npm-script'
-import { NpmScript } from './types/cli'
 
 const { prompts } = Prompts
 
-export async function startBuildProcess(options: any) {
-  if (options.components || options === 'components') {
+export async function reinstallNpmDependencies(options: any) {
+  if (options.fresh || options === 'fresh') {
     // eslint-disable-next-line no-console
-    console.log('Building your component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildComponents)
-
-    // eslint-disable-next-line no-console
-    console.log('Building your web component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildElements)
+    console.log('Reinstalling your npm dependencies...')
+    await runNpmScript(NpmScript.Fresh)
   }
-
-  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
-    // eslint-disable-next-line no-console
-    console.log('Building your web component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildElements)
-  }
-
-  // else if (options.functions) {
-  //   // eslint-disable-next-line no-console
-  //   console.log('Building your function library for production use...')
-  //   await runNpmScript(NpmScript.BuildFunctions)
-  // }
-
-  // else if (options.pages) {
-  //   // eslint-disable-next-line no-console
-  //   console.log('Building your pages for production use...')
-  //   await runNpmScript(NpmScript.BuildPages)
-  // }
-
-  // else if (options.docs) {
-  //   // eslint-disable-next-line no-console
-  //   console.log('Starting development server for components...')
-  //   await runNpmScript(NpmScript.BuildDocs)
-  // }
 
   else {
     const answer = await prompts.select({
