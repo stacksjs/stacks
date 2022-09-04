@@ -31,6 +31,7 @@ importers:
       change-case: ^4.1.2
       chokidar: ^3.5.3
       commitizen: ^4.2.5
+      consola: ^2.15.3
       conventional-changelog-cli: ^2.2.2
       cypress: ^10.7.0
       cz-git: ^1.3.11
@@ -113,6 +114,7 @@ importers:
       '@types/prompts': 2.0.14
       '@unocss/vite': 0.45.15_vite@3.0.9
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.38
+      consola: 2.15.3
       detect-indent: 7.0.0
       detect-newline: 4.0.0
       events: 3.3.0
@@ -2315,7 +2317,6 @@ packages:
 
   /consola/2.15.3:
     resolution: {integrity: sha512-9vAdYbHj6x2fLKC4+oPH0kFzY/orMZyG2Aj+kNylHxKGJ/Ed4dpNyAQYwJOdqO4zdM7XpVHmyejQDcQHrnuXbw==}
-    dev: false
 
   /console-control-strings/1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}

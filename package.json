@@ -47,7 +47,6 @@
     "make:stack": "pnpm artisan make:stack",
     "fresh": "pnpm artisan fresh",
     "update": "pnpm artisan update",
-    "clean": "pnpm artisan clean",
     "dev:components": "pnpm artisan dev:components",
     "dev:functions": "pnpm artisan dev:functions",
     "dev:docs": "pnpm artisan dev:docs",
@@ -94,14 +93,14 @@
       "path": "node_modules/cz-git"
     }
   },
-  "pnpm": { 
-   "peerDependencyRules": { 
-     "ignoreMissing": [ 
-       "@algolia/client-search", 
-       "react", 
-       "react-dom", 
-       "@types/react" 
-     ] 
-   } 
- } 
+  "pnpm": {
+   "peerDependencyRules": {
+     "ignoreMissing": [
+       "@algolia/client-search",
+       "react",
+       "react-dom",
+       "@types/react"
+     ]
+   }
+ }
 }

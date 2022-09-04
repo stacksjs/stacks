@@ -1,4 +1,5 @@
 import Prompts from 'prompts'
+import consola from 'consola'
 import { ExitCode } from '../cli/exit-code'
 import { NpmScript } from '../types/cli'
 import { runNpmScript } from './run-npm-script'
@@ -8,9 +9,8 @@ const { prompts } = Prompts
 // currently, can be viewed as an alias of the dev command
 export async function startPlayground(options: any) {
   if (options.components || options === 'components') {
-    // eslint-disable-next-line no-console
-    console.log('Starting your components playground...')
-    await runNpmScript(NpmScript.Playground)
+    consola.info('Starting your components playground...')
+    // await runNpmScript(NpmScript.Playground)
   }
 
   else {
@@ -26,8 +26,7 @@ export async function startPlayground(options: any) {
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     if (answer === 'components') {
-      // eslint-disable-next-line no-console
-      console.log('Starting development server for your components...')
+      consola.info('Starting development server for your components...')
       await runNpmScript(NpmScript.DevComponents)
     }
 
