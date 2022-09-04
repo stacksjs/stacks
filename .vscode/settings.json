@@ -21,8 +21,9 @@
     "CHANGELOG.md"
   ],
   "search.exclude": {
-    "dist": true,
-    "node_modules": true,
+    "**/*.cjs": true,
+    "**/*.mjs": true,
+    "**/node_modules": true,
     "CHANGELOG.md": true,
   },
   "explorer.confirmDragAndDrop": false,
