@@ -10,12 +10,14 @@ const config: ViteConfig = {
     alias,
   },
 
-  build: buildOptions(),
+  build: functionsBuildOptions(),
 }
 
-export function buildOptions(): ViteBuildOptions {
+export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(__dirname, '../../dist/functions'),
+
+    emptyOutDir: true,
 
     lib: {
       entry: resolve(__dirname, '../../../functions/index.ts'),

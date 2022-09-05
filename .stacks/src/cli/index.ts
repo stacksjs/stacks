@@ -59,6 +59,13 @@ async function main() {
 
     cli
       .version(packageVersion)
+      .command('build:functions', 'Automagically build your function library for production use & npm/CDN distribution.')
+      .action(async () => {
+        await startBuildProcess('functions')
+      })
+
+    cli
+      .version(packageVersion)
       .command('build:elements', 'Automagically build web component library for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('web-components')

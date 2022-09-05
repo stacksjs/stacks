@@ -3,6 +3,7 @@ node_modules
 !*/dist/cli/*
 */dist/components/*
 */dist/elements/*
+*/dist/functions/*
 dist-ssr
 *.local
 .DS_STORE

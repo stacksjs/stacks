@@ -10,14 +10,23 @@ export async function startBuildProcess(options: any) {
   if (options.components || options === 'components') {
     consola.info('Building your component library for production use & npm/CDN distribution...')
     await runNpmScript(NpmScript.BuildComponents)
+    consola.success('Your component library was built successfully.')
 
     consola.info('Building your web component library for production use & npm/CDN distribution...')
     await runNpmScript(NpmScript.BuildElements)
+    consola.success('Your web components library was built successfully.')
   }
 
   else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
     consola.info('Building your web component library for production use & npm/CDN distribution...')
     await runNpmScript(NpmScript.BuildElements)
+    consola.success('Your web components library was built successfully.')
+  }
+
+  else if (options.functions || options === 'functions') {
+    consola.info('Building your functions library for production use & npm/CDN distribution...')
+    await runNpmScript(NpmScript.BuildFunctions)
+    consola.success('Your functions library was built successfully.')
   }
 
   else {
