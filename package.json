@@ -48,6 +48,7 @@
     "dev:functions": "cd ./.stacks && pnpm run dev:functions",
     "build": "cd ./.stacks && pnpm run build",
     "build:components": "cd ./.stacks && pnpm run build:components",
+    "build:elements": "cd ./.stacks && pnpm run build:elements",
     "build:functions": "cd ./.stacks && pnpm run build:functions",
 
     "make:component": "cd ./.stacks && pnpm run make:component",
@@ -57,7 +58,6 @@
     "dev:docs": "cd ./.stacks && pnpm run dev:docs",
     "dev:playground": "cd ./.stacks && pnpm run dev:playground",
     "dev:stacks": "cd ./.stacks && pnpm run dev:stacks",
-    "build:elements": "cd ./.stacks && pnpm run build:elements",
     "build:docs": "cd ./.stacks && pnpm run build:docs",
     "build:playground": "cd ./.stacks && pnpm run build:playground",
     "build:cli": "cd ./.stacks && pnpm run build:cli",

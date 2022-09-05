@@ -28,7 +28,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@vueuse/core', 'vitepress'],
+    exclude: ['vue', '@vueuse/core'],
   },
 
   plugins: [
@@ -49,7 +49,7 @@ const config: ViteConfig = {
     }),
 
     AutoImport({
-      imports: ['vue', '@vueuse/core'],
+      imports: ['vue', 'vue-i18n', '@vueuse/core'],
       dirs: [
         resolve(__dirname, '../../../functions'),
         resolve(__dirname, '../../../components'),
@@ -83,7 +83,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../components/library.ts'),
+      entry: resolve(__dirname, '../../../config/components.ts'),
       name: library.webComponentsLibraryName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

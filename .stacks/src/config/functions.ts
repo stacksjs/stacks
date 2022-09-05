@@ -20,7 +20,7 @@ export function functionsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../../../functions/index.ts'),
+      entry: resolve(__dirname, '../../../config/functions.ts'),
       name: 'functions',
       formats: ['es', 'cjs'],
       fileName: (format: string) => {
