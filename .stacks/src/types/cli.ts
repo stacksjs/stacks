@@ -22,4 +22,6 @@ export const enum NpmScript {
   DevDocs = 'dev:docs',
   Fresh = 'fresh',
   Update = 'update',
+  Lint = 'lint',
+  LintFix = 'lint:fix',
 }

@@ -3,6 +3,7 @@ import { version as packageVersion } from '../../package.json'
 import { startDevelopmentServer } from '../scripts/dev'
 import { startBuildProcess } from '../scripts/build'
 import { reinstallNpmDependencies } from '../scripts/fresh'
+import { lint, lintFix } from '../scripts/lint'
 import { updateNpmDependencies } from '../scripts/update'
 import { ExitCode } from './exit-code'
 
@@ -90,6 +91,20 @@ async function main() {
       .command('update', 'Updates your npm dependencies to their latest version based on the specified range.')
       .action(async () => {
         await updateNpmDependencies()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('lint', 'Automagically lints your codebase.')
+      .action(async () => {
+        await lint()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('lint:fix', 'Automagically fixes lint errors.')
+      .action(async () => {
+        await lintFix()
       })
 
     // cli

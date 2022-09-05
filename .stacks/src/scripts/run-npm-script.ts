@@ -13,7 +13,8 @@ export async function runNpmScript(script: NpmScript) {
   const { data: manifest } = await readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script))
-    await ezSpawn.async('npm', ['run', script, '--silent'], { stdio: 'inherit' })
+    await ezSpawn.async('npm', ['run', script], { stdio: 'inherit' })
+  // await ezSpawn.async('npm', ['run', script, '--silent'], { stdio: 'inherit' })
 }
 
 /**

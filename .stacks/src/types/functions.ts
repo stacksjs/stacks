@@ -1,1 +1,2 @@
-export type Hosts = 'netlify' | 'vercel'
+export type Hosts = 'netlify'
+| 'vercel'
