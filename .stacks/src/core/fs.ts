@@ -71,7 +71,7 @@ export function readTextFile(name: string, cwd: string): Promise<TextFile> {
  */
 export function writeTextFile(file: TextFile): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.writeFile(file.path, file.data, (err) => {
+    fs.writeFile(file.path, file.data, (err: any) => {
       if (err)
         reject(err)
 

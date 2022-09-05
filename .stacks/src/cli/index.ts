@@ -5,6 +5,7 @@ import { startBuildProcess } from '../scripts/build'
 import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
 import { updateNpmDependencies } from '../scripts/update'
+import { component as makeComponent, fx as makeFunction, language as makeLanguage } from '../scripts/make'
 import { ExitCode } from './exit-code'
 
 /**
@@ -25,8 +26,8 @@ async function main() {
       .command('dev', 'Start the development server for any of the following packages')
       .option('-c, --components', 'Start the Components development server')
       .option('-f, --functions', 'Start the Functions development server')
-      .option('-p, --pages', 'Start the Pages development server')
-      .option('-d, --docs', 'Start the Documentation development server')
+      // .option('-p, --pages', 'Start the Pages development server')
+      // .option('-d, --docs', 'Start the Documentation development server')
       .action(async (options) => {
         await startDevelopmentServer(options)
       })
@@ -45,8 +46,8 @@ async function main() {
       .option('-w, --web-components', 'Build your web component library') // these are automatically built with your -c option as well
       .option('-e, --elements', 'An alias to the -w flag')
       .option('-f, --functions', 'Build your function library')
-      .option('-p, --pages', 'Build your pages')
-      .option('-d, --docs', 'Build your documentation')
+      // .option('-p, --pages', 'Build your pages')
+      // .option('-d, --docs', 'Build your documentation')
       .action(async (options) => {
         await startBuildProcess(options)
       })
@@ -105,6 +106,27 @@ async function main() {
       .command('lint:fix', 'Automagically fixes lint errors.')
       .action(async () => {
         await lintFix()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('make:component', 'Scaffolds a component.')
+      .action(async () => {
+        await makeComponent(cli.args[0])
+      })
+
+    cli
+      .version(packageVersion)
+      .command('make:function', 'Scaffolds a function.')
+      .action(async () => {
+        await makeFunction(cli.args[0])
+      })
+
+    cli
+      .version(packageVersion)
+      .command('make:lang', 'Scaffolds a language file.')
+      .action(async () => {
+        await makeLanguage(cli.args[0])
       })
 
     // cli
