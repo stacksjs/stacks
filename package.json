@@ -50,6 +50,7 @@
     "build:components": "cd ./.stacks && pnpm run build:components",
     "build:elements": "cd ./.stacks && pnpm run build:elements",
     "build:functions": "cd ./.stacks && pnpm run build:functions",
+    "build:artisan-cli": "cd ./.stacks && pnpm run build:artisan-cli",
 
     "make:component": "cd ./.stacks && pnpm run make:component",
     "make:function": "cd ./.stacks && pnpm run make:function",
@@ -60,7 +61,6 @@
     "dev:stacks": "cd ./.stacks && pnpm run dev:stacks",
     "build:docs": "cd ./.stacks && pnpm run build:docs",
     "build:playground": "cd ./.stacks && pnpm run build:playground",
-    "build:cli": "cd ./.stacks && pnpm run build:cli",
     "build:stacks": "cd ./.stacks && pnpm run build:stacks",
     "server:functions": "cd ./.stacks && pnpm run server:functions",
     "server:pages": "cd ./.stacks && pnpm run server:pages",

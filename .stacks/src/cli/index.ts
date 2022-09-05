@@ -73,6 +73,13 @@ async function main() {
 
     cli
       .version(packageVersion)
+      .command('build:artisan-cli', 'Automagically build the Artisan CLI.')
+      .action(async () => {
+        await startBuildProcess('artisan-cli')
+      })
+
+    cli
+      .version(packageVersion)
       .command('fresh', 'Reinstalls your npm dependencies.')
       .action(async () => {
         await reinstallNpmDependencies()

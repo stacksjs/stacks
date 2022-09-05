@@ -29,6 +29,12 @@ export async function startBuildProcess(options: any) {
     consola.success('Your functions library was built successfully.')
   }
 
+  else if (options.artisanCli || options === 'artisan-cli') {
+    consola.info('Building the Artisan CLI...')
+    await runNpmScript(NpmScript.BuildArtisanCli)
+    consola.success('The Artisan CLI was built successfully.')
+  }
+
   else {
     const answer = await prompts.select({
       type: 'select',

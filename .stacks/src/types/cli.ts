@@ -14,6 +14,7 @@ export const enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildPages = 'build:pages',
   BuildDocs = 'build:docs',
+  BuildArtisanCli = 'build:artisan-cli',
   Dev = 'dev',
   DevComponents = 'dev:components',
   DevFunctions = 'dev:functions',
