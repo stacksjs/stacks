@@ -1,13 +1,13 @@
 # For ease of use, nest the translations based on component names (paths) utilized
 button:
-  counter: 'Counter'
-  toggle_langs: 'Toggle Language'
-  toggle_dark: 'Toggle Dark Mode'
+  counter: Counter
+  toggle_langs: Toggle Language
+  toggle_dark: Toggle Dark Mode
 
 hello_world:
-  title_1: 'Documentation'
-  title_2: 'Components'
-  title_3: 'Functions'
-  title_4: 'Pages'
-  title_5: 'Modern DX'
-  title_6: 'Vibrant Ecosystem'
+  title_1: Documentation
+  title_2: Components
+  title_3: Functions
+  title_4: Pages
+  title_5: Modern DX
+  title_6: Vibrant Ecosystem

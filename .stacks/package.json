@@ -76,7 +76,7 @@
     "server:functions": "wip",
     "server:pages": "nitro build",
     "lint": "eslint ..",
-    "lint:fix": "eslint . --fix && pnpm -r --parallel lint:fix",
+    "lint:fix": "eslint .. --fix",
     "commit": "cd .. && git cz",
     "release": "cd .. && bumpp .stacks/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",

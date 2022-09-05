@@ -21,7 +21,7 @@
     "types": [
       "vitest",
       "vite/client",
-      "vue/ref-macros",
+      "vue/ref-macros"
     ],
     "paths": {
       "stacks": [
@@ -38,7 +38,7 @@
       ],
       "~/*": [
         "./*"
-      ],
+      ]
     },
     "lib": [
       "ESNext",
@@ -52,7 +52,7 @@
     "./.stacks/**/*",
     "./functions/**/*",
     "./pages/**/*",
-    "./components/**/*",
+    "./components/**/*"
   ],
   "exclude": [
     "./.stacks/types/*",
@@ -69,5 +69,5 @@
     "apps/site/**",
     "commitlint.config.cjs"
   ],
-  "extends": "./.stacks/.nitro/types/tsconfig.json",
+  "extends": "./.stacks/.nitro/types/tsconfig.json"
 }

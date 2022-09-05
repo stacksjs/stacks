@@ -7,9 +7,6 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks#readme",
-  "bin": {
-    "artisan": "./.stacks/dist/cli/artisan.mjs"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ow3org/stacks.git"
@@ -33,6 +30,9 @@
     "starter kit"
   ],
   "sideEffects": false,
+  "bin": {
+    "artisan": "./.stacks/dist/cli/artisan.mjs"
+  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -85,6 +85,16 @@
   "devDependencies": {
     "@ow3/stacks": "workspace:*"
   },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@algolia/client-search",
+        "react",
+        "react-dom",
+        "@types/react"
+      ]
+    }
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
@@ -92,15 +102,5 @@
     "commitizen": {
       "path": "node_modules/cz-git"
     }
-  },
-  "pnpm": {
-   "peerDependencyRules": {
-     "ignoreMissing": [
-       "@algolia/client-search",
-       "react",
-       "react-dom",
-       "@types/react"
-     ]
-   }
- }
+  }
 }

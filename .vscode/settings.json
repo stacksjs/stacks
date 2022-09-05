@@ -24,7 +24,7 @@
     "**/*.cjs": true,
     "**/*.mjs": true,
     "**/node_modules": true,
-    "CHANGELOG.md": true,
+    "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
   "explorer.fileNesting.enabled": true,
@@ -235,7 +235,7 @@
     "intlify",
     "automations",
     "pluginutils",
-    "consola",
+    "consola"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

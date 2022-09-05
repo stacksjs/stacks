@@ -1,12 +1,12 @@
 button:
-  counter: 'Klicker'
-  toggle_langs: 'Sprache Wechseln'
-  toggle_dark: 'Toggle Dunkel Modus'
+  counter: Klicker
+  toggle_langs: Sprache Wechseln
+  toggle_dark: Toggle Dunkel Modus
 
 hello_world:
-  title_1: 'Dokumentation'
-  title_2: 'Components'
-  title_3: 'Funktionen'
-  title_4: 'Seiten'
-  title_5: 'Modernes DX'
-  title_6: 'Vibrantes Ecosystem'
+  title_1: Dokumentation
+  title_2: Components
+  title_3: Funktionen
+  title_4: Seiten
+  title_5: Modernes DX
+  title_6: Vibrantes Ecosystem
