@@ -56,9 +56,10 @@
     "make:component": "cd ./.stacks && pnpm run make:component",
     "make:function": "cd ./.stacks && pnpm run make:function",
     "make:lang": "cd ./.stacks && pnpm run make:lang",
+    "make:stack": "cd ./.stacks && pnpm run make:stack",
+
     "examples:vue": "cd ./.stacks && pnpm run examples:vue",
 
-    "make:stack": "cd ./.stacks && pnpm run make:stack",
     "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "dev:docs": "cd ./.stacks && pnpm run dev:docs",
     "dev:playground": "cd ./.stacks && pnpm run dev:playground",

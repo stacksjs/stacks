@@ -1,4 +1,6 @@
+import { resolve } from 'path'
 import consola from 'consola'
+import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { writeTextFile } from '../core/fs'
 
 export async function component(name: string) {
@@ -67,6 +69,19 @@ export async function language(language: string) {
     })
 
     consola.success(`Created the ${language} translation file.`)
+  }
+  catch (err) {
+    consola.error(err)
+  }
+}
+
+export async function stack(name: string) {
+  consola.info('Creating your stack...')
+
+  try {
+    const path = resolve(process.cwd(), `../${name}`)
+    await ezSpawn.async('degit', ['ow3org/stacks#main', `../${name}`], { stdio: 'inherit' })
+    consola.success(`Successfully created the ${name} stack at path: ${path}`)
   }
   catch (err) {
     consola.error(err)

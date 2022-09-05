@@ -5,7 +5,7 @@ import { startBuildProcess } from '../scripts/build'
 import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
 import { updateNpmDependencies } from '../scripts/update'
-import { component as makeComponent, fx as makeFunction, language as makeLanguage } from '../scripts/make'
+import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from '../scripts/make'
 import { ExitCode } from './exit-code'
 
 /**
@@ -127,6 +127,13 @@ async function main() {
       .command('make:lang', 'Scaffolds a language file.')
       .action(async () => {
         await makeLanguage(cli.args[0])
+      })
+
+    cli
+      .version(packageVersion)
+      .command('make:stack', 'Scaffolds a new stack.')
+      .action(async () => {
+        await makeStack(cli.args[0])
       })
 
     // cli

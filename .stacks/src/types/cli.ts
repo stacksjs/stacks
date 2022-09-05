@@ -20,4 +20,5 @@ export const enum NpmScript {
   Update = 'update',
   Lint = 'lint',
   LintFix = 'lint:fix',
+  MakeStack = 'make:stack',
 }
