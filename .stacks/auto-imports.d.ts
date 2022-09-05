@@ -4,7 +4,7 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
-  const classPrefix: typeof import('../config/components')['classPrefix']
+  const classPrefix: typeof import('../config/ui')['classPrefix']
   const componentsLibraryName: typeof import('../config/library')['componentsLibraryName']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
@@ -37,7 +37,7 @@ declare global {
   const h: typeof import('vue')['h']
   const hooks: typeof import('../config/git')['hooks']
   const host: typeof import('../config/library')['host']
-  const icons: typeof import('../config/components')['icons']
+  const icons: typeof import('../config/ui')['icons']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const increment: typeof import('../functions/counter')['increment']
   const inject: typeof import('vue')['inject']
@@ -89,12 +89,12 @@ declare global {
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
-  const safelist: typeof import('../config/components')['safelist']
+  const safelist: typeof import('../config/ui')['safelist']
   const scopes: typeof import('../config/git')['scopes']
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
-  const shortcuts: typeof import('../config/components')['shortcuts']
+  const shortcuts: typeof import('../config/ui')['shortcuts']
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
   const templateRef: typeof import('@vueuse/core')['templateRef']
@@ -105,7 +105,7 @@ declare global {
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
   const toggleDark: typeof import('../functions/dark')['toggleDark']
-  const trigger: typeof import('../config/components')['trigger']
+  const trigger: typeof import('../config/ui')['trigger']
   const triggerRef: typeof import('vue')['triggerRef']
   const tryOnBeforeMount: typeof import('@vueuse/core')['tryOnBeforeMount']
   const tryOnBeforeUnmount: typeof import('@vueuse/core')['tryOnBeforeUnmount']
@@ -285,7 +285,7 @@ declare module '@vue/runtime-core' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
-    readonly classPrefix: UnwrapRef<typeof import('../config/components')['classPrefix']>
+    readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
     readonly componentsLibraryName: UnwrapRef<typeof import('../config/library')['componentsLibraryName']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
@@ -318,7 +318,7 @@ declare module '@vue/runtime-core' {
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hooks: UnwrapRef<typeof import('../config/git')['hooks']>
     readonly host: UnwrapRef<typeof import('../config/library')['host']>
-    readonly icons: UnwrapRef<typeof import('../config/components')['icons']>
+    readonly icons: UnwrapRef<typeof import('../config/ui')['icons']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -370,12 +370,12 @@ declare module '@vue/runtime-core' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
-    readonly safelist: UnwrapRef<typeof import('../config/components')['safelist']>
+    readonly safelist: UnwrapRef<typeof import('../config/ui')['safelist']>
     readonly scopes: UnwrapRef<typeof import('../config/git')['scopes']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
-    readonly shortcuts: UnwrapRef<typeof import('../config/components')['shortcuts']>
+    readonly shortcuts: UnwrapRef<typeof import('../config/ui')['shortcuts']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
@@ -386,7 +386,7 @@ declare module '@vue/runtime-core' {
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toggleDark: UnwrapRef<typeof import('../functions/dark')['toggleDark']>
-    readonly trigger: UnwrapRef<typeof import('../config/components')['trigger']>
+    readonly trigger: UnwrapRef<typeof import('../config/ui')['trigger']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeUnmount']>

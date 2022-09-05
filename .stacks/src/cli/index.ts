@@ -3,6 +3,7 @@ import { version as packageVersion } from '../../package.json'
 import { startDevelopmentServer } from '../scripts/dev'
 import { startBuildProcess } from '../scripts/build'
 import { reinstallNpmDependencies } from '../scripts/fresh'
+import { updateNpmDependencies } from '../scripts/update'
 import { ExitCode } from './exit-code'
 
 /**
@@ -65,9 +66,16 @@ async function main() {
 
     cli
       .version(packageVersion)
-      .command('fresh', 'Reinstalls your npm dependencies')
+      .command('fresh', 'Reinstalls your npm dependencies.')
       .action(async () => {
         await reinstallNpmDependencies()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('update', 'Updates your npm dependencies to their latest version based on the specified range.')
+      .action(async () => {
+        await updateNpmDependencies()
       })
 
     // cli

@@ -9,7 +9,8 @@ import type { NpmScript } from '../types/cli'
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript) {
-  const { data: manifest } = await readJsonFile('package.json', resolve(process.cwd(), '..'))
+  const path = resolve(process.cwd())
+  const { data: manifest } = await readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script))
     await ezSpawn.async('npm', ['run', script, '--silent'], { stdio: 'inherit' })
