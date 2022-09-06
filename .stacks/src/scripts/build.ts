@@ -32,7 +32,13 @@ export async function startBuildProcess(options: any) {
   else if (options.artisanCli || options === 'artisan-cli') {
     consola.info('Building the Artisan CLI...')
     await runNpmScript(NpmScript.BuildArtisanCli)
-    consola.success('The Artisan CLI was built successfully.')
+    consola.success('Artisan CLI was built successfully.')
+  }
+
+  else if (options.docs || options === 'docs') {
+    consola.info('Building the Documentation...')
+    await runNpmScript(NpmScript.BuildDocs)
+    consola.success('Documentation was built successfully.')
   }
 
   else {
@@ -43,7 +49,7 @@ export async function startBuildProcess(options: any) {
       choices: [
         { title: 'Components', value: 'components' },
         { title: 'Functions', value: 'functions' },
-        { title: 'Pages', value: 'pages' },
+        // { title: 'Pages', value: 'pages' },
         { title: 'Docs', value: 'docs' },
       ],
       initial: 0,
@@ -59,6 +65,12 @@ export async function startBuildProcess(options: any) {
     else if (answer === 'functions') {
       consola.info('Building your Stacks function library for production use...')
       await runNpmScript(NpmScript.DevFunctions)
+    }
+
+    // @ts-expect-error the answer object type expects to return a void type but it returns a string
+    else if (answer === 'docs') {
+      consola.info('Building your documentation site to be deployed...')
+      await runNpmScript(NpmScript.BuildDocs)
     }
 
     else { process.exit(ExitCode.InvalidArgument) }

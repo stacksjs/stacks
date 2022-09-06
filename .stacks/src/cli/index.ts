@@ -26,8 +26,8 @@ async function main() {
       .command('dev', 'Start the development server for any of the following packages')
       .option('-c, --components', 'Start the Components development server')
       .option('-f, --functions', 'Start the Functions development server')
+      .option('-d, --docs', 'Start the Documentation development server')
       // .option('-p, --pages', 'Start the Pages development server')
-      // .option('-d, --docs', 'Start the Documentation development server')
       .action(async (options) => {
         await startDevelopmentServer(options)
       })
@@ -41,11 +41,19 @@ async function main() {
 
     cli
       .version(packageVersion)
+      .command('dev:docs', 'Start the development server for your documentation')
+      .action(async () => {
+        await startDevelopmentServer('docs')
+      })
+
+    cli
+      .version(packageVersion)
       .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
       .option('-c, --components', 'Build your component library')
       .option('-w, --web-components', 'Build your web component library') // these are automatically built with your -c option as well
       .option('-e, --elements', 'An alias to the -w flag')
       .option('-f, --functions', 'Build your function library')
+      .option('-d, --docs', 'Build your documentation site')
       // .option('-p, --pages', 'Build your pages')
       // .option('-d, --docs', 'Build your documentation')
       .action(async (options) => {
@@ -78,6 +86,13 @@ async function main() {
       .command('build:artisan-cli', 'Automagically build the Artisan CLI.')
       .action(async () => {
         await startBuildProcess('artisan-cli')
+      })
+
+    cli
+      .version(packageVersion)
+      .command('build:docs', 'Automagically build your documentation site.')
+      .action(async () => {
+        await startBuildProcess('docs')
       })
 
     cli

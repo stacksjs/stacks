@@ -46,6 +46,7 @@
     "update": "cd ./.stacks && pnpm run update",
     "dev:components": "cd ./.stacks && pnpm run dev:components",
     "dev:functions": "cd ./.stacks && pnpm run dev:functions",
+    "dev:docs": "cd ./.stacks && pnpm run dev:docs",
     "build": "cd ./.stacks && pnpm run build",
     "build:components": "cd ./.stacks && pnpm run build:components",
     "build:elements": "cd ./.stacks && pnpm run build:elements",
@@ -60,9 +61,10 @@
     "examples:vue": "cd ./.stacks && pnpm run examples:vue",
     "commit": "cd ./.stacks && pnpm run commit",
     "release": "cd ./.stacks && pnpm run release",
-    "dev:pages": "cd ./.stacks && pnpm run dev:pages",
-    "dev:docs": "cd ./.stacks && pnpm run dev:docs",
+
     "build:docs": "cd ./.stacks && pnpm run build:docs",
+
+    "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "build:stacks": "cd ./.stacks && pnpm run build:stacks",
     "server:functions": "cd ./.stacks && pnpm run server:functions",
     "server:pages": "cd ./.stacks && pnpm run server:pages",

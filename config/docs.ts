@@ -6,6 +6,7 @@
 import type { DocsConfig } from 'stacks/types'
 
 const docs: DocsConfig = {
+  outDir: '../.stacks/dist/docs',
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',

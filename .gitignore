@@ -4,6 +4,7 @@ node_modules
 */dist/components/*
 */dist/elements/*
 */dist/functions/*
+*/dist/docs/*
 dist-ssr
 *.local
 .DS_STORE
