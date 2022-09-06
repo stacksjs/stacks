@@ -135,7 +135,7 @@ export function getNameFromFilePath(filePath: string, options: ResolvedOptions):
   }
 
   if (directoryAsNamespace) {
-    // remove namesspaces from folder names
+    // remove namespaces from folder names
     if (globalNamespaces.some((name: string) => folders.includes(name)))
       folders = folders.filter(f => !globalNamespaces.includes(f))
 

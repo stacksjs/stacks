@@ -8,8 +8,13 @@
     <link rel="stylesheet" href="./dist/style.css">
   </head>
   <body>
-    <!-- components/Demo.vue is rendered here -->
     <div id="app"></div>
-    <script type="module" src="./dist/index.mjs"></script>
+
+    <script type="module">
+      import { createApp } from 'vue'
+      import App from './App.vue'
+
+      createApp(App).mount('#app')
+    </script>
   </body>
 </html>

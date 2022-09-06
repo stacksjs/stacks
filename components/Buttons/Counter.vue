@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t } = useI18n()
+// const { t } = useI18n()
 </script>
 
 <template>
@@ -13,7 +13,8 @@ const { t } = useI18n()
         class="i-heroicons-outline-plus -ml-1 mr-3 h-4 w-4"
         aria-hidden="true"
       />
-      {{ t('button.counter') }}: {{ count }}
+      <!-- {{ t('button.counter') }}: {{ count }} -->
+      Counter: {{ count }}
     </button>
   </div>
 </template>

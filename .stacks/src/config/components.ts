@@ -27,7 +27,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@vueuse/core'],
+    exclude: ['vue'],
   },
 
   plugins: [
@@ -95,7 +95,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@vueuse/core'],
+      external: ['vue'],
       output: {
         // exports: 'named',
         globals: {

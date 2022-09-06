@@ -2,8 +2,12 @@
 export {}
 declare global {
   const Counter: typeof import('../config/components')['Counter']
+  const Demo: typeof import('../config/components')['Demo']
   const EffectScope: typeof import('vue')['EffectScope']
   const HelloWorld: typeof import('../config/components')['HelloWorld']
+  const Logo: typeof import('../config/components')['Logo']
+  const ToggleDark: typeof import('../config/components')['ToggleDark']
+  const ToggleLanguage: typeof import('../config/components')['ToggleLanguage']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const classPrefix: typeof import('../config/ui')['classPrefix']
@@ -286,8 +290,12 @@ import { UnwrapRef } from 'vue'
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     readonly Counter: UnwrapRef<typeof import('../config/components')['Counter']>
+    readonly Demo: UnwrapRef<typeof import('../config/components')['Demo']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly HelloWorld: UnwrapRef<typeof import('../config/components')['HelloWorld']>
+    readonly Logo: UnwrapRef<typeof import('../config/components')['Logo']>
+    readonly ToggleDark: UnwrapRef<typeof import('../config/components')['ToggleDark']>
+    readonly ToggleLanguage: UnwrapRef<typeof import('../config/components')['ToggleLanguage']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
