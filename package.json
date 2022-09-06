@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "private": true,
   "packageManager": "pnpm@7.10.0",
   "description": "The easy way to build your component and/or function libraries & APIs.",
@@ -58,10 +58,8 @@
     "make:lang": "cd ./.stacks && pnpm run make:lang",
     "make:stack": "cd ./.stacks && pnpm run make:stack",
     "examples:vue": "cd ./.stacks && pnpm run examples:vue",
-
     "commit": "cd ./.stacks && pnpm run commit",
     "release": "cd ./.stacks && pnpm run release",
-
     "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "dev:docs": "cd ./.stacks && pnpm run dev:docs",
     "build:docs": "cd ./.stacks && pnpm run build:docs",
