@@ -4,7 +4,7 @@ import { library } from '../core/config'
 import type { ViteConfig } from '../core'
 import alias from '../core/alias'
 import { defineConfig } from '../core'
-import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
+import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from '../plugin/stacks'
 
 const isWebComponent = true
 

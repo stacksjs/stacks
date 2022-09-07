@@ -1,4 +1,4 @@
-export * from './core'
-export * from './types/styles'
+export * from './plugin'
+export * from './types'
 // export * from './docs'
 export * from './core/config'

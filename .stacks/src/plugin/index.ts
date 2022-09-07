@@ -3,7 +3,7 @@ import type { PluginOption, UserConfig } from 'vite'
 import { createApp } from 'vue'
 import { defineConfig } from 'vite'
 import { defineConfig as defineTestConfig } from 'vitest/config'
-import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../config/stacks'
+import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
 
 export type ViteConfig = UserConfig
 
@@ -19,4 +19,4 @@ const Stacks = (isWebComponent = false) => <PluginOption>[
   components,
 ]
 
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig }
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig, envPrefix, i18n }

@@ -1,10 +1,9 @@
 import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '../core/config'
-import type { ViteConfig } from '../core'
-import { defineConfig } from '../core'
+import type { ViteConfig } from '../plugin'
+import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../plugin'
 import alias from '../core/alias'
-import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../../components'),
