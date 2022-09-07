@@ -6,6 +6,7 @@ import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
 import { updateNpmDependencies } from '../scripts/update'
 import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from '../scripts/make'
+import { typecheck } from '../scripts/test'
 import { ExitCode } from './exit-code'
 
 /**
@@ -149,6 +150,13 @@ async function main() {
       .command('make:stack', 'Scaffolds a new stack.')
       .action(async () => {
         await makeStack(cli.args[0])
+      })
+
+    cli
+      .version(packageVersion)
+      .command('test:types', 'Typechecks your codebase.')
+      .action(async () => {
+        await typecheck()
       })
 
     // cli

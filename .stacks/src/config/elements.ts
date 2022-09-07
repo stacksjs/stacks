@@ -1,21 +1,17 @@
 import { resolve } from 'path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import Inspect from 'vite-plugin-inspect'
-import VueI18n from '@intlify/vite-plugin-vue-i18n'
-import Vue from '@vitejs/plugin-vue'
-import Components from 'unplugin-vue-components/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Unocss from 'unocss/vite'
 import { library } from '../core/config'
 import type { ViteConfig } from '../core'
 import alias from '../core/alias'
 import { defineConfig } from '../core'
+import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
 
-// https://vitejs.dev/config/
+const isWebComponent = true
+
 const config: ViteConfig = {
   root: resolve(__dirname, '../../../components'),
 
-  envPrefix: 'STACKS_',
+  envPrefix,
 
   server: {
     port: 3333,
@@ -32,45 +28,17 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    Inspect(),
+    inspect,
 
-    // UiEngine,
-    Vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: () => true,
-        },
-      },
-    }),
+    uiEngine(isWebComponent),
 
-    Unocss({
-      configFile: resolve(__dirname, '../unocss.ts'),
-      mode: 'shadow-dom', // or 'vue-scoped'
-    }),
+    atomicCssEngine(isWebComponent),
 
-    AutoImport({
-      imports: ['vue', 'vue-i18n', '@vueuse/core'],
-      dirs: [
-        resolve(__dirname, '../../../functions'),
-        resolve(__dirname, '../../../components'),
-        resolve(__dirname, '../../../config'),
-      ],
-      dts: resolve(__dirname, '../../auto-imports.d.ts'),
-      vueTemplate: true,
-    }),
+    autoImports,
 
-    Components({
-      dirs: [resolve(__dirname, '../../../components')],
-      extensions: ['vue'],
-      dts: '../../components.d.ts',
-    }),
+    components,
 
-    // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
-    VueI18n({
-      runtimeOnly: true,
-      compositionOnly: true,
-      include: [resolve(__dirname, '../../../lang/**')],
-    }),
+    i18n,
   ],
 
   build: webComponentsBuildOptions(),

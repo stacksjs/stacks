@@ -62,12 +62,6 @@ export async function startBuildProcess(options: any) {
     }
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'functions') {
-      consola.info('Building your Stacks function library for production use...')
-      await runNpmScript(NpmScript.DevFunctions)
-    }
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
     else if (answer === 'docs') {
       consola.info('Building your documentation site to be deployed...')
       await runNpmScript(NpmScript.BuildDocs)

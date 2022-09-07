@@ -22,4 +22,5 @@ export const enum NpmScript {
   Lint = 'lint',
   LintFix = 'lint:fix',
   MakeStack = 'make:stack',
+  TestTypes = 'test:types',
 }

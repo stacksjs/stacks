@@ -34,7 +34,7 @@
 
 # npx artisan lint # lints the codebase
 # npx artisan lint:fix # auto-fixes lint errors
-# npx artisan typecheck # runs typecheck
+# npx artisan test:types # runs typecheck
 # npx artisan types:fix # wip
 
 # npx artisan test # runs whole test suite
