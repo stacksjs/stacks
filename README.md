@@ -10,7 +10,7 @@
 
 The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. The Stacks build system allows you to easily & automatically build highly-composable & scalable framework agnostic libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
 
-![Atomic UI & FX Design](./apps/site/docs/images/diagram.png)
+![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
 **🤖 Zero-config, by design**
 
