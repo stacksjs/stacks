@@ -62,7 +62,6 @@
     "commit": "cd ./.stacks && pnpm run commit",
     "release": "cd ./.stacks && pnpm run release",
 
-
     "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "build:stacks": "cd ./.stacks && pnpm run build:stacks",
     "server:functions": "cd ./.stacks && pnpm run server:functions",
