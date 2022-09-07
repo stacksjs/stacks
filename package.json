@@ -51,6 +51,7 @@
     "build:components": "cd ./.stacks && pnpm run build:components",
     "build:elements": "cd ./.stacks && pnpm run build:elements",
     "build:functions": "cd ./.stacks && pnpm run build:functions",
+    "build:docs": "cd ./.stacks && pnpm run build:docs",
     "build:artisan-cli": "cd ./.stacks && pnpm run build:artisan-cli",
     "lint": "cd ./.stacks && pnpm run lint",
     "lint:fix": "cd ./.stacks && pnpm run lint:fix",
@@ -62,7 +63,6 @@
     "commit": "cd ./.stacks && pnpm run commit",
     "release": "cd ./.stacks && pnpm run release",
 
-    "build:docs": "cd ./.stacks && pnpm run build:docs",
 
     "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "build:stacks": "cd ./.stacks && pnpm run build:stacks",

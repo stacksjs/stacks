@@ -53,7 +53,7 @@
     "./functions/**/*",
     "./pages/**/*",
     "./components/**/*"
-  ],
+, "apps/site/snippets"  ],
   "exclude": [
     "./.stacks/types/*",
     "./.stacks/scripts/*",

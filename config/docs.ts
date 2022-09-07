@@ -3,10 +3,11 @@
  * For all available options, see the DocsConfig type definition.
  */
 
+import { resolve } from 'path'
 import type { DocsConfig } from 'stacks/types'
 
 const docs: DocsConfig = {
-  outDir: '../.stacks/dist/docs',
+  outDir: resolve(__dirname, '../.stacks/dist/docs'),
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',
@@ -48,6 +49,8 @@ const docs: DocsConfig = {
     // }
   },
 }
+
+export default docs
 
 function nav() {
   return [
@@ -98,5 +101,3 @@ function sidebarGuide() {
     },
   ]
 }
-
-export default docs
