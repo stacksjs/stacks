@@ -100,7 +100,7 @@ jobs:
         run: pnpm run test
 
   js-cs-fixer:
-    # if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
+    if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
     runs-on: ${{ matrix.os }}
 
     strategy:
