@@ -74,9 +74,7 @@
     "test": "cd ./.stacks && pnpm run test",
     "test:coverage": "cd ./.stacks && pnpm run test:coverage",
     "test:types": "cd ./.stacks && pnpm run test:types",
-    "types:fix": "cd ./.stacks && pnpm run types:fix",
-    "preinstall": "cd ./.stacks && pnpm run preinstall",
-    "postinstall": "cd ./.stacks && pnpm run postinstall"
+    "types:fix": "cd ./.stacks && pnpm run types:fix"
   },
   "devDependencies": {
     "@ow3/stacks": "workspace:*"

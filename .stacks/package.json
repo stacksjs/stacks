@@ -85,9 +85,7 @@
     "test": "cd .. && vitest",
     "test:coverage": "cd .. && vitest run --coverage",
     "test:types": "vue-tsc --noEmit",
-    "types:fix": "esno src/scripts/fix-types.ts",
-    "preinstall": "esno src/scripts/check-node-version.ts",
-    "postinstall": "npx simple-git-hooks ../config/git.ts"
+    "types:fix": "esno src/scripts/fix-types.ts"
   },
   "dependencies": {
     "@iconify-json/heroicons-outline": "^1.1.4",
