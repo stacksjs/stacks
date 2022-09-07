@@ -69,7 +69,7 @@
     "fresh": "pnpm run clean && pnpm i",
     "make:stack": "pnpm artisan make:stack",
     "update": "pnpm update",
-    "build": "pnpm run typecheck && pnpm artisan build",
+    "build": "pnpm run test:types && pnpm artisan build",
     "clean": "rimraf ./node_modules ../apps/**/node_modules ../node_modules/ ../pnpm-lock.yaml",
     "dev:docs": "vitepress dev ../apps/site",
     "build:docs": "vitepress build ../apps/site",
