@@ -235,7 +235,8 @@
     "intlify",
     "automations",
     "pluginutils",
-    "consola"
+    "consola",
+    "zixuanchen",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

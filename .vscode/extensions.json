@@ -9,6 +9,7 @@
     "davidanson.vscode-markdownlint",
     "antfu.unocss",
     "Gruntfuggly.todo-tree",
-    "IBM.output-colorizer"
+    "IBM.output-colorizer",
+    "ZixuanChen.vitest-explorer"
   ]
 }
