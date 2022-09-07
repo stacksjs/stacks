@@ -82,8 +82,8 @@
     "release": "cd .. && bumpp .stacks/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "size": "esno src/scripts/size.ts",
-    "test": "cd .. && vitest",
-    "test:coverage": "cd .. && vitest run --coverage",
+    "test": "vitest --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit",
     "types:fix": "esno src/scripts/fix-types.ts"
   },

@@ -6,7 +6,7 @@ import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
 import { updateNpmDependencies } from '../scripts/update'
 import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from '../scripts/make'
-import { typecheck } from '../scripts/test'
+import { generateTestCoverageReport, runTestSuite, typecheck } from '../scripts/test'
 import { ExitCode } from './exit-code'
 
 /**
@@ -154,9 +154,23 @@ async function main() {
 
     cli
       .version(packageVersion)
+      .command('test', 'Runs your test suite.')
+      .action(async () => {
+        await runTestSuite()
+      })
+
+    cli
+      .version(packageVersion)
       .command('test:types', 'Typechecks your codebase.')
       .action(async () => {
         await typecheck()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('test:coverage', 'Generates a test coverage report.')
+      .action(async () => {
+        await generateTestCoverageReport()
       })
 
     // cli

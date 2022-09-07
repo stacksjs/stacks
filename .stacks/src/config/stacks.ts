@@ -19,7 +19,7 @@ export const components = Components({
 })
 
 export const autoImports = AutoImport({
-  imports: ['vue', 'vue-i18n', '@vueuse/core'],
+  imports: ['vue', 'vue-i18n', '@vueuse/core', 'vitest'],
   dirs: [
     resolve(__dirname, '../../../functions'),
     resolve(__dirname, '../../../components'),
