@@ -2,7 +2,7 @@
   "type": "module",
   "version": "0.23.1",
   "private": true,
-  "packageManager": "pnpm@7.10.0",
+  "packageManager": "pnpm@7.11.0",
   "description": "The easy way to build your component and/or function libraries & APIs.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -38,7 +38,7 @@
   ],
   "engines": {
     "node": ">=v16.17.0",
-    "pnpm": ">=7.10.0"
+    "pnpm": ">=7.11.0"
   },
   "scripts": {
     "artisan": "jiti ./.stacks/src/cli/index.ts",
