@@ -17,6 +17,7 @@ declare global {
   const beforeEach: typeof import('vitest')['beforeEach']
   const chai: typeof import('vitest')['chai']
   const classPrefix: typeof import('../config/ui')['classPrefix']
+  const collect: typeof import('collect.js')['collect']
   const componentsLibraryName: typeof import('../config/library')['componentsLibraryName']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
@@ -318,6 +319,7 @@ declare module '@vue/runtime-core' {
     readonly beforeEach: UnwrapRef<typeof import('vitest')['beforeEach']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
+    readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
     readonly componentsLibraryName: UnwrapRef<typeof import('../config/library')['componentsLibraryName']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
