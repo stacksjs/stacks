@@ -10,7 +10,7 @@ importers:
 
   .stacks:
     specifiers:
-      '@babel/types': ^7.18.13
+      '@babel/types': ^7.19.0
       '@iconify-json/heroicons-outline': ^1.1.4
       '@iconify-json/heroicons-solid': ^1.1.5
       '@intlify/vite-plugin-vue-i18n': ^6.0.1
@@ -22,11 +22,11 @@ importers:
       '@types/minimatch': ^5.1.2
       '@types/node': ^18.7.15
       '@types/prompts': ^2.0.14
-      '@unocss/preset-icons': ^0.45.15
-      '@unocss/transformer-compile-class': ^0.45.15
-      '@unocss/vite': ^0.45.15
+      '@unocss/preset-icons': ^0.45.18
+      '@unocss/transformer-compile-class': ^0.45.18
+      '@unocss/vite': ^0.45.18
       '@vitejs/plugin-vue': ^3.1.0
-      '@vueuse/core': ^9.1.1
+      '@vueuse/core': ^9.2.0
       bumpp: ^8.2.1
       cac: ^6.7.14
       change-case: ^4.1.2
@@ -44,26 +44,26 @@ importers:
       events: ^3.3.0
       fast-glob: ^3.2.11
       fs-extra: ^10.1.0
-      jiti: ^1.14.0
+      jiti: ^1.15.0
       lint-staged: ^13.0.3
       local-pkg: ^0.4.2
       minimatch: ^5.1.0
       nitropack: ^0.5.1
-      pathe: ^0.3.5
+      pathe: ^0.3.7
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
       typescript: ^4.8.2
-      unocss: ^0.45.15
+      unocss: ^0.45.18
       unplugin: ^0.9.5
       unplugin-auto-import: ^0.11.2
       unplugin-vue-components: ^0.22.4
       vite: ^3.1.0
-      vite-plugin-inspect: ^0.6.1
+      vite-plugin-inspect: ^0.7.1
       vitepress: 1.0.0-alpha.13
       vitest: ^0.23.1
       vue: ^3.2.38
       vue-i18n: ^9.2.2
-      vue-tsc: ^0.40.7
+      vue-tsc: ^0.40.10
     dependencies:
       '@iconify-json/heroicons-outline': 1.1.4
       '@iconify-json/heroicons-solid': 1.1.5
@@ -99,7 +99,7 @@ importers:
       unplugin-auto-import: 0.11.2_q56ozvtnskq5ttyncuthdeai2a
       unplugin-vue-components: 0.22.4_2d3bn7cmzgzv5agt4tfysovnry
       vite: 3.1.0
-      vite-plugin-inspect: 0.6.1_vite@3.1.0
+      vite-plugin-inspect: 0.7.1_vite@3.1.0
       vitest: 0.23.1
       vue: 3.2.38
       vue-i18n: 9.2.2_vue@3.2.38
@@ -6664,14 +6664,15 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: false
 
-  /vite-plugin-inspect/0.6.1_vite@3.1.0:
-    resolution: {integrity: sha512-MQzIgMoPyiPDuHoO6p7QBOrmheBU/ntg0cgtgcnm21S/Xds5oak1CbVLSAvv4fK1ZpetLK+tlJ+2mlFO9fG3SQ==}
+  /vite-plugin-inspect/0.7.1_vite@3.1.0:
+    resolution: {integrity: sha512-mkTw5itsI+89WNJ6og0BpEAaV4ticrOGaoj+oWDR61W72H2mfkuw3MaAdpnnq6s6A7tKfM4nPaMtxjlmw3uXYg==}
     engines: {node: '>=14'}
     peerDependencies:
-      vite: ^3.0.0
+      vite: ^3.1.0
     dependencies:
       '@rollup/pluginutils': 4.2.1
       debug: 4.3.4
+      fs-extra: 10.1.0
       kolorist: 1.5.1
       sirv: 2.0.2
       ufo: 0.8.5
