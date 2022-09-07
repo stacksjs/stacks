@@ -13,9 +13,3 @@ dist-ssr
 .pnpm-debug.log
 .stacks/.nitro
 .stacks/.output
-
-# Cypress
-/tests/cypress/downloads
-/tests/cypress/fixtures
-/tests/cypress/plugins
-/tests/cypress/support

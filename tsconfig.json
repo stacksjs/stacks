@@ -53,7 +53,7 @@
     "./functions/**/*",
     "./pages/**/*",
     "./components/**/*"
-, "apps/site/snippets"  ],
+  ],
   "exclude": [
     "./.stacks/types/*",
     "./.stacks/scripts/*",
@@ -65,7 +65,6 @@
     "./.stacks/vitest.config.ts",
     "**/dist/**",
     "**/node_modules/**",
-    "tests/cypress/**",
     "apps/site/**",
     "commitlint.config.cjs"
   ],

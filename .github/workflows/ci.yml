@@ -115,7 +115,6 @@ jobs:
         with:
           path: |
             ~/.cache
-          key: cypress-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -128,17 +127,6 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
-
-      # TODO: is this still needed?
-      - name: Cypress PNPM Patch
-        run: cp pnpm-lock.yaml package-lock.json
-
-      - name: Cypress
-        uses: cypress-io/github-action@v2
-        with:
-          install-command: echo
-          build: pnpm run build
-          start: npx vite --port 3333
 
   js-cs-fixer:
     # if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
