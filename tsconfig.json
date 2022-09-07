@@ -67,6 +67,5 @@
     "**/node_modules/**",
     "apps/site/**",
     "commitlint.config.cjs"
-  ],
-  "extends": "./.stacks/.nitro/types/tsconfig.json"
+  ]
 }
