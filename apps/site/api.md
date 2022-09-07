@@ -10,14 +10,11 @@
 # npx artisan clean # cleans all deps & dist folders
 # npx artisan fresh # cleans & reinstalls all deps
 
-# npx artisan dev # stubs everything & and starts smart dev server 
+# npx artisan dev # stubs everything & and starts smart dev server
 # npx artisan dev:components # stubs components
-# npx artisan dev:functions # stubs functions
 # npx artisan dev:elements # stubs components
 # npx artisan dev:playground # starts dev server & opens Stacks playground
 # npx artisan dev:docs # starts docs dev server & opens docs in browser
-# npx artisan dev:stacks # stubs the framework
-# npx artisan stubs # stubs everything
 
 # npx artisan build # runs typecheck & builds the project
 # npx artisan build:components # builds component library
@@ -47,6 +44,6 @@
 
 # npx artisan example # run an example script (follow prompts)
 
-# npx artisan preinstall # the preinstall hook that ensures proper node & pnpm versions are installed 
+# npx artisan preinstall # the preinstall hook that ensures proper node & pnpm versions are installed
 # npx artisan postinstall # the postinstall hook that ensures git hooks are configured after initial install
 ```

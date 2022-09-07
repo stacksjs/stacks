@@ -77,11 +77,11 @@ npx artisan dev # starts one of the dev servers (components, functions, pages, o
 npx artisan dev:components # starts local playground dev server
 npx artisan dev:pages # starts local pages dev server
 npx artisan dev:docs # starts local docs dev server
-npx artisan dev:functions # stubs the functions
 
 npx artisan make:component HelloWorld
 npx artisan make:function hello-world
 npx artisan make:page hello-world
+npx artisan make:lang en
 npx artisan make:stack hello-world
 
 npx artisan stub # stubs all the libraries
