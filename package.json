@@ -61,8 +61,9 @@
     "examples:vue": "cd ./.stacks && pnpm run examples:vue",
     "commit": "cd ./.stacks && pnpm run commit",
     "release": "cd ./.stacks && pnpm run release",
-    "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "build:stacks": "cd ./.stacks && pnpm run build:stacks",
+
+    "dev:pages": "cd ./.stacks && pnpm run dev:pages",
     "server:functions": "cd ./.stacks && pnpm run server:functions",
     "server:pages": "cd ./.stacks && pnpm run server:pages",
     "changelog": "cd ./.stacks && pnpm run changelog",

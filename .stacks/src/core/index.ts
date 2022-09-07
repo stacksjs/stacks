@@ -1,70 +1,22 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import type { PluginOption, UserConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import Unocss from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Comps from 'unplugin-vue-components/vite'
-import Inspect from 'vite-plugin-inspect'
-
-export { createApp } from 'vue'
-export { defineConfig } from 'vite'
+import { createApp } from 'vue'
+import { defineConfig } from 'vite'
+import { defineConfig as defineTestConfig } from 'vitest/config'
+import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../config/stacks'
 
 export type ViteConfig = UserConfig
 
-export function UiEngine(isCustomElement = false) {
-  if (isCustomElement) {
-    return Vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: () => true,
-        },
-      },
-    })
-  }
+const Stacks = (isWebComponent = false) => <PluginOption>[
+  inspect,
 
-  return Vue()
-}
+  uiEngine(isWebComponent),
 
-export function StyleEngine() {
-  return Unocss({
-    configFile: resolve(__dirname, './unocss.ts'),
-    mode: 'vue-scoped', // or 'shadow-dom'
-  })
-}
+  atomicCssEngine(isWebComponent),
 
-export function AutoImports() {
-  return AutoImport({
-    imports: ['vue', '@vueuse/core'],
-    dirs: [
-      resolve(__dirname, '../../functions'),
-      resolve(__dirname, '../../components'),
-    ],
-    dts: resolve(__dirname, '../../types/auto-imports.d.ts'),
-    eslintrc: {
-      enabled: true,
-      filepath: resolve(__dirname, '../.eslintrc-auto-import.json'),
-    },
-  })
-}
+  autoImports,
 
-export function Components() {
-  return Comps({
-    dirs: ['../../components'],
-    extensions: ['vue'],
-    dts: '../types/components.d.ts',
-  })
-}
-
-export const Stacks = () => <PluginOption>[
-  Inspect(),
-
-  UiEngine,
-
-  StyleEngine,
-
-  AutoImports,
-
-  Components,
+  components,
 ]
 
-export default { resolve, Stacks, UiEngine, AutoImports, StyleEngine, Components }
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig }

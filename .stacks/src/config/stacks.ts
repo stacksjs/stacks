@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -70,7 +70,6 @@ export const envPrefix = 'STACKS_'
 // https://vitejs.dev/config/
 const config: ViteConfig = {
   resolve: {
-    extensions: ['.vue'],
     alias,
   },
 
@@ -98,7 +97,7 @@ export function stacksBuildOptions(): ViteBuildOptions {
     outDir: resolve(__dirname, '../../dist/stacks'),
 
     lib: {
-      entry: resolve(__dirname, '../index.ts'),
+      entry: resolve(__dirname, '../../index.ts'),
       name: 'stacks',
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

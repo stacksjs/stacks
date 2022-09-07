@@ -236,7 +236,7 @@
     "automations",
     "pluginutils",
     "consola",
-    "zixuanchen",
+    "zixuanchen"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

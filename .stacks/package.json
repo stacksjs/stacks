@@ -61,7 +61,7 @@
     "examples:vue": "pnpm run build:components && vite serve ./examples/vue -c ./src/config/example-vue.ts",
     "build:functions": "vite build -c ./src/config/functions.ts",
     "build:artisan-cli": "vite build -c ./src/config/cli.ts",
-    "build:stacks": "vite -c ./src/config/stacks.ts needed for our starter kits",
+    "build:stacks": "vite -c ./src/config/stacks.ts",
     "nitro:build": "nitro build",
     "make:component": "pnpm artisan make:component",
     "make:function": "pnpm artisan make:function",
