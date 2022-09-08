@@ -1,3 +1,12 @@
+# [0.24.0](https://github.com/ow3org/stacks/compare/v0.23.2...v0.24.0) (2022-09-08)
+
+
+### Features
+
+* **dx:** use Laravel-like collections ([9457963](https://github.com/ow3org/stacks/commit/9457963adf98c939c2b3528ad5a920260934f970))
+
+
+
 ## [0.23.2](https://github.com/ow3org/stacks/compare/v0.23.1...v0.23.2) (2022-09-07)
 
 
