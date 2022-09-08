@@ -52,7 +52,6 @@ npx artisan setup
 The following list is of some of the most common ways to interact with the Stacks API. Meet the Artisan Toolkit:
 
 ```bash
-# local workflow, to be released with 0.24.0
 npx artisan install # installs all dependencies
 npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
 npx artisan build # follow CLI prompts to select which library (or server) to build
