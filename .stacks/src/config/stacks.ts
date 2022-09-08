@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import alias from '../core/alias'
 import { defineConfig } from '../plugin'
@@ -10,7 +10,8 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    include: ['vue', '@vueuse/core'],
+    include: ['vue', '@vueuse/core', 'vite', '@unocss/vite'],
+    exclude: ['node:path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto'],
   },
 
   build: stacksBuildOptions(),
@@ -36,7 +37,7 @@ export function stacksBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['stacks'],
+      external: ['node:path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto'],
     },
 
     // sourcemap: true,

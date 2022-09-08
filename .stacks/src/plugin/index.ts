@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import type { PluginOption, UserConfig } from 'vite'
 import { createApp } from 'vue'
 import { defineConfig } from 'vite'

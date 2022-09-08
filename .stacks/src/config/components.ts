@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '../core/config'
 import type { ViteConfig } from '../plugin'

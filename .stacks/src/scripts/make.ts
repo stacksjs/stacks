@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { writeTextFile } from '../core/fs'

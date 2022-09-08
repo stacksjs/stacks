@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { readJsonFile } from '../core/fs'
 import type { Manifest } from '../core/manifest'

@@ -3,7 +3,7 @@
  * For all available options, see the DocsConfig type definition.
  */
 
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import type { DocsConfig } from 'stacks/types'
 
 const docs: DocsConfig = {

@@ -1,7 +1,7 @@
-import { resolve } from 'pathe'
+import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import type { ViteConfig } from '../core'
-import { defineConfig } from '../core'
+import type { ViteConfig } from '../plugin'
+import { defineConfig } from '../plugin'
 import alias from '../core/alias'
 
 // https://vitejs.dev/config/

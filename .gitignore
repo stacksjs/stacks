@@ -5,6 +5,7 @@ node_modules
 */dist/elements/*
 */dist/functions/*
 */dist/docs/*
+*/dist/stacks/*
 dist-ssr
 *.local
 .DS_STORE
