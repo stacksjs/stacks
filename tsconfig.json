@@ -55,8 +55,6 @@
     "./components/**/*"
   ],
   "exclude": [
-    "./.stacks/types/*",
-    "./.stacks/scripts/*",
     ".stacks/src/playground/*",
     "./.stacks/examples/*",
     "./.stacks/bin/*",
