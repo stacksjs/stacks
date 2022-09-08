@@ -123,9 +123,9 @@
     "vite": "^3.1.0",
     "vite-plugin-inspect": "^0.7.1",
     "vitest": "^0.23.1",
-    "vue": "^3.2.38",
+    "vue": "^3.2.39",
     "vue-i18n": "^9.2.2",
-    "vue-tsc": "^0.40.10"
+    "vue-tsc": "^0.40.13"
   },
   "devDependencies": {
     "@babel/types": "^7.19.0",
