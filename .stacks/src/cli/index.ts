@@ -55,6 +55,7 @@ async function main() {
       .option('-e, --elements', 'An alias to the -w flag')
       .option('-f, --functions', 'Build your function library')
       .option('-d, --docs', 'Build your documentation site')
+      .option('-n, --npm', 'Build all npm publishable code')
       // .option('-p, --pages', 'Build your pages')
       // .option('-d, --docs', 'Build your documentation')
       .action(async (options) => {

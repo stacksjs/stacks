@@ -28,7 +28,7 @@ jobs:
         run: pnpm install
 
       - name: Build the release
-        run: pnpm run build
+        run: pnpm run build --npm
 
       - name: Publish to npm
         run: pnpm --filter './.stacks' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks

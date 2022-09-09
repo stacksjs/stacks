@@ -1,44 +1,124 @@
+import { resolve } from 'node:path'
 import Prompts from 'prompts'
 import consola from 'consola'
 import { ExitCode } from '../cli/exit-code'
 import { NpmScript } from '../types/cli'
+import { hasFiles } from '../core/fs'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts
 
-export async function startBuildProcess(options: any) {
-  if (options.components || options === 'components') {
-    consola.info('Building your component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildComponents)
-    consola.success('Your component library was built successfully.')
+export async function buildComponentLibraries() {
+  await buildVueComponentLibrary()
+  await buildWebComponentLibrary()
+}
 
-    consola.info('Building your web component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildElements)
-    consola.success('Your web components library was built successfully.')
+export async function buildVueComponentLibrary() {
+  consola.info('Building your component library for production use & npm/CDN distribution...')
+
+  if (hasFiles(resolve(process.cwd(), './components'))) {
+    try {
+      await runNpmScript(NpmScript.BuildComponents)
+      consola.success('Your component library was built successfully.')
+    }
+    catch (error) {
+      consola.error('There was an error building your component library.')
+      consola.error(error)
+    }
   }
-
-  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
-    consola.info('Building your web component library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildElements)
-    consola.success('Your web components library was built successfully.')
+  else {
+    consola.info('No components found.')
   }
+}
 
-  else if (options.functions || options === 'functions') {
-    consola.info('Building your functions library for production use & npm/CDN distribution...')
-    await runNpmScript(NpmScript.BuildFunctions)
-    consola.success('Your functions library was built successfully.')
+export async function buildWebComponentLibrary() {
+  consola.info('Building your component library for production use & npm/CDN distribution...')
+
+  if (hasFiles(resolve(process.cwd(), './components'))) {
+    try {
+      await runNpmScript(NpmScript.BuildElements)
+      consola.success('Your web component library was built successfully.')
+    }
+    catch (error) {
+      consola.error('There was an error building your web component library.')
+      consola.error(error)
+    }
   }
+  else {
+    consola.info('No components found.')
+  }
+}
 
-  else if (options.artisanCli || options === 'artisan-cli') {
-    consola.info('Building the Artisan CLI...')
+export async function buildArtisanCli() {
+  consola.info('Building the Artisan CLI...')
+
+  try {
     await runNpmScript(NpmScript.BuildArtisanCli)
     consola.success('Artisan CLI was built successfully.')
   }
+  catch (error) {
+    consola.error('There was an error building the Artisan CLI.')
+    consola.error(error)
+  }
+}
+
+export async function buildDocs() {
+  consola.info('Building the Artisan CLI...')
+
+  try {
+    await runNpmScript(NpmScript.BuildArtisanCli)
+    consola.success('Artisan CLI was built successfully.')
+  }
+  catch (error) {
+    consola.error('There was an error building the Artisan CLI.')
+    consola.error(error)
+  }
+}
+
+export async function buildFunctionLibrary() {
+  consola.info('Building your functions library for production use & npm/CDN distribution...')
+
+  if (hasFiles(resolve(process.cwd(), './functions'))) {
+    try {
+      await runNpmScript(NpmScript.BuildFunctions)
+      consola.success('Your functions library was built successfully.')
+    }
+    catch (error) {
+      consola.error('There was an error building your functions library.')
+      consola.error(error)
+    }
+  }
+  else {
+    consola.info('No functions found.')
+  }
+}
+
+export async function startBuildProcess(options: any) {
+  if (options.components || options === 'components') {
+    await buildComponentLibraries()
+  }
+
+  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
+    await buildWebComponentLibrary()
+  }
+
+  else if (options.functions || options === 'functions') {
+    await buildFunctionLibrary()
+  }
+
+  else if (options.artisanCli || options === 'artisan-cli') {
+    await buildArtisanCli()
+  }
 
   else if (options.docs || options === 'docs') {
-    consola.info('Building the Documentation...')
-    await runNpmScript(NpmScript.BuildDocs)
-    consola.success('Documentation was built successfully.')
+    await buildDocs()
+  }
+
+  else if (options.npm || options === 'npm') {
+    await buildComponentLibraries()
+    await buildFunctionLibrary()
+
+    consola.success('All your libraries were built successfully to be distributed on npm.')
   }
 
   else {
@@ -56,17 +136,17 @@ export async function startBuildProcess(options: any) {
     })
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    if (answer === 'components') {
-      consola.info('Building your Stacks component library for production use...')
-      await runNpmScript(NpmScript.BuildComponents)
-    }
+    if (answer === 'components')
+      await buildComponentLibraries()
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'docs') {
-      consola.info('Building your documentation site to be deployed...')
-      await runNpmScript(NpmScript.BuildDocs)
-    }
+    if (answer === 'functions')
+      await buildFunctionLibrary()
 
-    else { process.exit(ExitCode.InvalidArgument) }
+    // @ts-expect-error the answer object type expects to return a void type but it returns a string
+    else if (answer === 'docs')
+      await buildDocs()
+
+    else process.exit(ExitCode.InvalidArgument)
   }
 }
