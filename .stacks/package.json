@@ -79,7 +79,7 @@
     "lint": "eslint ..",
     "lint:fix": "eslint .. --fix",
     "commit": "cd .. && git cz",
-    "release": "cd .. && bumpp .stacks/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
+    "release": "cd .. && bumpp .stacks/package.json .stacks/**/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "size": "esno src/scripts/size.ts",
     "test": "vitest --config vitest.config.ts",
