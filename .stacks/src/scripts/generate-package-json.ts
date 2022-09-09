@@ -7,7 +7,7 @@ export async function generatePackageJson(type: string) {
   consola.info(`Creating the corresponding package.json file needed to publish the ${type} package...`)
 
   const author = library.author
-  const stackName = library.stackName
+  const repository = library.repository
   const contributors = library.contributors
 
   let name, description, directory, keywords
@@ -46,14 +46,14 @@ export async function generatePackageJson(type: string) {
   "description": "${description}",
   "author": "${author}",
   "license": "MIT",
-  "homepage": "https://github.com/${stackName}/tree/main/${directory}#readme",
+  "homepage": "https://github.com/${repository}/tree/main/${directory}#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/${stackName}.git",
+    "url": "git+https://github.com/${repository}.git",
     "directory": "${directory}"
   },
   "bugs": {
-    "url": "https://github.com/${stackName}/issues"
+    "url": "https://github.com/${repository}/issues"
   },
   "keywords": ${JSON.stringify(keywords)},
   "contributors": ${JSON.stringify(contributors)},

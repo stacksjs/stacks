@@ -13,8 +13,9 @@ export const author = 'Chris Breuer'
 export const contributors = ['Chris Breuer <chris@ow3.org>']
 export const defaultLanguage = 'en'
 
-export const organizationName = '@ow3'
 export const libraryName = 'hello-world'
+export const organizationName = '@ow3'
+export const repository = 'ow3org/stacks'
 export const host: Hosts = 'netlify'
 
 export const stackName = `${organizationName}/${libraryName}`
@@ -30,4 +31,4 @@ export const componentLibraryKeywords = ['component', 'library', 'vue', 'vite', 
 export const webComponentLibraryKeywords = ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript']
 export const functionLibraryKeywords = ['functions', 'composables', 'library', 'typescript', 'javascript']
 
-export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, componentLibraryName, webComponentLibraryName, componentLibraryDescription, webComponentLibraryDescription, functionLibraryDescription, componentLibraryKeywords, webComponentLibraryKeywords, functionLibraryKeywords, functionLibraryName }
+export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, componentLibraryName, webComponentLibraryName, componentLibraryDescription, webComponentLibraryDescription, functionLibraryDescription, componentLibraryKeywords, webComponentLibraryKeywords, functionLibraryKeywords, functionLibraryName, repository }
