@@ -2,7 +2,6 @@
   "name": "@ow3/stacks",
   "type": "module",
   "version": "0.25.3",
-  "private": true,
   "packageManager": "pnpm@7.11.0",
   "description": "The Stacks Framework.",
   "author": "Chris Breuer",
@@ -46,8 +45,7 @@
     "artisan": "./dist/cli/artisan.mjs"
   },
   "files": [
-    "dist",
-    "scripts"
+    "dist/stacks"
   ],
   "engines": {
     "node": ">=v16.17.0",
