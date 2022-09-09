@@ -8,16 +8,13 @@
 
 import type { Hosts } from 'stacks/types'
 
-export const defaultLanguage = 'en'
 export const license = 'MIT'
 export const author = 'Chris Breuer'
-export const contributors = [
-  'Chris Breuer <chris@ow3.org>',
-]
+export const contributors = ['Chris Breuer <chris@ow3.org>']
+export const defaultLanguage = 'en'
 
 export const organizationName = '@ow3'
 export const libraryName = 'hello-world'
-export const packageManager = 'npm'
 export const host: Hosts = 'netlify'
 
 export const stackName = `${organizationName}/${libraryName}`
@@ -25,35 +22,12 @@ export const functionLibraryName = `${organizationName}/${libraryName}-fx`
 export const componentLibraryName = `${organizationName}/${libraryName}-ui`
 export const webComponentLibraryName = `${organizationName}/${libraryName}-elements`
 
-export const componentLibraryDescription = 'Your Vue component library.'
-export const webComponentLibraryDescription = 'Your framework agnostic web component library.'
-export const functionLibraryDescription = 'Your function library.'
+export const componentLibraryDescription = 'Your Vue component library description.'
+export const webComponentLibraryDescription = 'Your framework agnostic web component library description.'
+export const functionLibraryDescription = 'Your function library description.'
 
-export const componentLibraryKeywords = [
-  'component',
-  'library',
-  'vue',
-  'vite',
-  'typescript',
-  'javascript',
-]
+export const componentLibraryKeywords = ['component', 'library', 'vue', 'vite', 'typescript', 'javascript']
+export const webComponentLibraryKeywords = ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript']
+export const functionLibraryKeywords = ['functions', 'composables', 'library', 'typescript', 'javascript']
 
-export const webComponentLibraryKeywords = [
-  'custom-elements',
-  'web-components',
-  'component',
-  'library',
-  'framework-agnostic',
-  'typescript',
-  'javascript',
-]
-
-export const functionLibraryKeywords = [
-  'functions',
-  'composables',
-  'library',
-  'typescript',
-  'javascript',
-]
-
-export default { defaultLanguage, license, author, contributors, organizationName, libraryName, packageManager, host, stackName, componentLibraryName, webComponentLibraryName, componentLibraryDescription, webComponentLibraryDescription, functionLibraryDescription, componentLibraryKeywords, webComponentLibraryKeywords, functionLibraryKeywords, functionLibraryName }
+export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, componentLibraryName, webComponentLibraryName, componentLibraryDescription, webComponentLibraryDescription, functionLibraryDescription, componentLibraryKeywords, webComponentLibraryKeywords, functionLibraryKeywords, functionLibraryName }
