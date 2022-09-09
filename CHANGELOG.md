@@ -1,3 +1,12 @@
+## [0.25.2](https://github.com/ow3org/stacks/compare/v0.25.1...v0.25.2) (2022-09-09)
+
+
+### Bug Fixes
+
+* **dx:** bump auto-generated package.json files ([b8a1973](https://github.com/ow3org/stacks/commit/b8a1973cd4469bb400d474a82e1f4ca2378610f5))
+
+
+
 ## [0.25.1](https://github.com/ow3org/stacks/compare/v0.25.0...v0.25.1) (2022-09-09)
 
 
