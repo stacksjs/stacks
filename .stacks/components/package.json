@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-ui",
-  "version": "0.25.2",
-  "description": "Your Vue Component Library source.",
+  "version": "0.25.3",
+  "description": "Your Vue component library description.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/@ow3/hello-world/tree/main/components#readme",
@@ -19,9 +19,7 @@
     "vue",
     "vite",
     "typescript",
-    "javascript",
-    "starter",
-    "kit"
+    "javascript"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"

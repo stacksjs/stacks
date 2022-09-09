@@ -1,3 +1,12 @@
+## [0.25.3](https://github.com/ow3org/stacks/compare/v0.25.2...v0.25.3) (2022-09-09)
+
+
+### Features
+
+* **dx:** add a npm option for build process ([98b2275](https://github.com/ow3org/stacks/commit/98b22757a7d612354577544bb4e7b1695dcdb72a))
+
+
+
 ## [0.25.2](https://github.com/ow3org/stacks/compare/v0.25.1...v0.25.2) (2022-09-09)
 
 

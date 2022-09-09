@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-fx",
-  "version": "0.25.2",
-  "description": "Your Vue Component Library source.",
+  "version": "0.25.3",
+  "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/@ow3/hello-world/tree/main/functions#readme",
@@ -14,14 +14,11 @@
     "url": "https://github.com/@ow3/hello-world/issues"
   },
   "keywords": [
-    "component",
+    "functions",
+    "composables",
     "library",
-    "vue",
-    "vite",
     "typescript",
-    "javascript",
-    "starter",
-    "kit"
+    "javascript"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
