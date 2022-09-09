@@ -1,10 +1,10 @@
 # @ow3/stacks
 
-This package contains the "core" logic of the framework/the monorepo setup, e.g. the build logic (excluding the VS Code/IDE setup).
+This package contains the "core" logic of the framework/monorepo setup, e.g. the build logic (excluding the IDE setup).
 
 ## ☘️ Features
 
-The ultimate goal of this framework, Stacks, is to _help you_ create a component library. Stacks is a toolkit of composables, methods, and other goodies required to build optimized component libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its types.
+The ultimate goal of this framework, Stacks, is to _help you_ create a component and/or function library. Stacks is a toolkit of composables, methods, and other goodies required to build optimized libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its TypeScript types.
 
 Other included core features are:
 
@@ -24,7 +24,7 @@ And all of this in a zero-config, yet configurable, way.
 If you want to use Stacks outside of this framework, install it as a dev dependency:
 
 ```bash
-pnpm i -D @ow3/stacks # wip
+pnpm i -D @ow3/stacks
 ```
 
 Now, you can use it in your project:
@@ -32,14 +32,17 @@ Now, you can use it in your project:
 ```js
 import {
   Stacks,
-  UserConfig,
-  alias,
-  buildFunctions,
-  buildStacks,
-  buildVueComponents,
-  buildWebComponents,
+  atomicCssEngine,
+  autoImports,
+  components,
+  createApp,
   defineConfig,
+  defineTestConfig,
+  envPrefix,
+  i18n,
+  inspect,
   resolve,
+  uiEngine
 } from '@ow3/stacks'
 
 // you are now free to use any of the imported methods
