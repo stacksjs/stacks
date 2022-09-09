@@ -59,16 +59,16 @@ export async function generatePackageJson(type: string) {
   "contributors": ${JSON.stringify(contributors)},
   "exports": {
     ".": {
-      "types": "./../dist/${type}/index.d.ts",
-      "require": "./../dist/${type}/index.cjs",
-      "import": "./../dist/${type}/index.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "../dist/${type}/index.cjs",
-  "module": "../dist/${type}/index.mjs",
-  "types": "../dist/${type}/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "../dist/${type}"
+    "dist"
   ]
 }
 `,

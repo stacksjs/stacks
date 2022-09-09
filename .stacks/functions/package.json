@@ -25,15 +25,15 @@
   ],
   "exports": {
     ".": {
-      "types": "./../dist/functions/index.d.ts",
-      "require": "./../dist/functions/index.cjs",
-      "import": "./../dist/functions/index.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "../dist/functions/index.cjs",
-  "module": "../dist/functions/index.mjs",
-  "types": "../dist/functions/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "../dist/functions"
+    "dist/functions"
   ]
 }

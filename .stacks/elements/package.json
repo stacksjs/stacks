@@ -26,15 +26,15 @@
   ],
   "exports": {
     ".": {
-      "types": "./../dist/elements/index.d.ts",
-      "require": "./../dist/elements/index.cjs",
-      "import": "./../dist/elements/index.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "../dist/elements/index.cjs",
-  "module": "../dist/elements/index.mjs",
-  "types": "../dist/elements/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
-    "../dist/elements"
+    "./dist"
   ]
 }
