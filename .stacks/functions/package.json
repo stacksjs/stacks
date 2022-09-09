@@ -1,0 +1,31 @@
+{
+  "name": "@ow3/hello-world-fx",
+  "version": "",
+  "description": "Your Vue Component Library source.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/@ow3/hello-world/tree/main/functions#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/@ow3/hello-world.git",
+    "directory": "functions"
+  },
+  "bugs": {
+    "url": "https://github.com/@ow3/hello-world/issues"
+  },
+  "keywords": ["component","library","vue","vite","typescript","javascript","starter","kit"],
+  "contributors": ["Chris Breuer <chris@ow3.org>"],
+  "exports": {
+    ".": {
+      "types": "./../dist/functions/index.d.ts",
+      "require": "./../dist/functions/index.cjs",
+      "import": "./../dist/functions/index.mjs"
+    }
+  },
+  "main": "../dist/functions/index.cjs",
+  "module": "../dist/functions/index.mjs",
+  "types": "../dist/functions/index.d.ts",
+  "files": [
+    "../dist/functions"
+  ]
+}

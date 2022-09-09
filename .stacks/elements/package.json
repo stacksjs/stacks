@@ -1,0 +1,31 @@
+{
+  "name": "@ow3/hello-world-elements",
+  "version": "",
+  "description": "Your Vue Component Library source.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/@ow3/hello-world/tree/main/components#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/@ow3/hello-world.git",
+    "directory": "components"
+  },
+  "bugs": {
+    "url": "https://github.com/@ow3/hello-world/issues"
+  },
+  "keywords": ["component","library","vue","vite","typescript","javascript","starter","kit"],
+  "contributors": ["Chris Breuer <chris@ow3.org>"],
+  "exports": {
+    ".": {
+      "types": "./../dist/elements/index.d.ts",
+      "require": "./../dist/elements/index.cjs",
+      "import": "./../dist/elements/index.mjs"
+    }
+  },
+  "main": "../dist/elements/index.cjs",
+  "module": "../dist/elements/index.mjs",
+  "types": "../dist/elements/index.d.ts",
+  "files": [
+    "../dist/elements"
+  ]
+}
