@@ -52,7 +52,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
 
     lib: {
       entry: resolve(__dirname, '../../../config/components.ts'),
-      name: library.webComponentsLibraryName,
+      name: library.webComponentLibraryName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

@@ -11,7 +11,7 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx degit ow3org/stacks hello-world
+npx artisan make:stack hello-world
 cd hello-world-stack
 
 pnpm i # install deps for all packages
@@ -53,8 +53,8 @@ Read more about these tips in the docs.
 
 ### Dev Tools
 
-- [TypeScript 4.7](https://www.typescriptlang.org/)
-- [Vite 2.9](https://vitejs.dev/) - "Next Generation Frontend Tooling"
+- [TypeScript 4.9](https://www.typescriptlang.org/)
+- [Vite 3.1](https://vitejs.dev/) - "Next Generation Frontend Tooling"
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [Commitizen & git-cz](https://www.npmjs.com/package/git-cz) - Automate git commits, versioning, and CHANGELOG generation
@@ -71,6 +71,7 @@ Read more about these tips in the docs.
 - [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
+- [Collect.js](https://github.com/ecrmnn/collect.js) - Easily work with object via Laravel-like collections
 
 ### Coding Style
 

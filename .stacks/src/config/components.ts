@@ -49,7 +49,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
 
     lib: {
       entry: resolve(__dirname, '../../../config/components.ts'),
-      name: library.packageName,
+      name: library.stackName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

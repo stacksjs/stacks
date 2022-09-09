@@ -14,3 +14,7 @@ dist-ssr
 .pnpm-debug.log
 .stacks/.nitro
 .stacks/.output
+.stacks/components/package.json
+.stacks/functions/package.json
+.stacks/elements/package.json
+.stacks/src/components/.vite-inspect

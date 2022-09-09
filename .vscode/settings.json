@@ -235,7 +235,8 @@
     "automations",
     "pluginutils",
     "consola",
-    "zixuanchen"
+    "zixuanchen",
+    "laravel"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

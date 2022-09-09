@@ -80,3 +80,10 @@ export function writeTextFile(file: TextFile): Promise<void> {
     })
   })
 }
+
+/**
+ * Determine whether a folder has any files in it.
+ */
+export function hasFiles(folder: string): boolean {
+  return fs.readdirSync(folder).length > 0
+}
