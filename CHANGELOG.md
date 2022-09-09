@@ -1,3 +1,12 @@
+## [0.25.5](https://github.com/ow3org/stacks/compare/v0.25.4...v0.25.5) (2022-09-09)
+
+
+### Bug Fixes
+
+* **ci:** adjust the repository url ([6f284c8](https://github.com/ow3org/stacks/commit/6f284c8b9274be72419f0a61a6c62f96a268181e))
+
+
+
 ## [0.25.4](https://github.com/ow3org/stacks/compare/v0.25.3...v0.25.4) (2022-09-09)
 
 

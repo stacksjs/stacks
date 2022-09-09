@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-fx",
-  "version": "",
+  "version": "0.25.5",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -13,8 +13,16 @@
   "bugs": {
     "url": "https://github.com/ow3org/stacks/issues"
   },
-  "keywords": ["functions","composables","library","typescript","javascript"],
-  "contributors": ["Chris Breuer <chris@ow3.org>"],
+  "keywords": [
+    "functions",
+    "composables",
+    "library",
+    "typescript",
+    "javascript"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
