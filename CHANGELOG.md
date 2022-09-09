@@ -1,3 +1,12 @@
+## [0.25.7](https://github.com/ow3org/stacks/compare/v0.25.6...v0.25.7) (2022-09-09)
+
+
+### Bug Fixes
+
+* **ci:** add pnpm workspaces ([e7dc99b](https://github.com/ow3org/stacks/commit/e7dc99b702f097aa19629812ae55d264baa95ed6))
+
+
+
 ## [0.25.6](https://github.com/ow3org/stacks/compare/v0.25.5...v0.25.6) (2022-09-09)
 
 
