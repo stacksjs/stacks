@@ -1,3 +1,12 @@
+# [0.25.0](https://github.com/ow3org/stacks/compare/v0.24.1...v0.25.0) (2022-09-09)
+
+
+### Features
+
+* **dx:** automatically create library package.json files ([5c567d5](https://github.com/ow3org/stacks/commit/5c567d58dd2751a64d18bde2b0a67cb90b562799))
+
+
+
 ## [0.24.1](https://github.com/ow3org/stacks/compare/v0.24.0...v0.24.1) (2022-09-08)
 
 
