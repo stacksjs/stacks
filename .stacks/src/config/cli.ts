@@ -15,7 +15,7 @@ const config: ViteConfig = {
 
 export function cliBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/cli'),
+    outDir: resolve(__dirname, '../../cli/dist'),
 
     emptyOutDir: true,
 
@@ -29,7 +29,7 @@ export function cliBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['path'],
+      external: ['node:path'],
     },
 
     // sourcemap: true,

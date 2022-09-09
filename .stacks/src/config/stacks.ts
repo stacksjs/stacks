@@ -18,7 +18,7 @@ const config: ViteConfig = {
 
 export function stacksBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/stacks'),
+    outDir: resolve(__dirname, '../../stacks/dist'),
 
     lib: {
       entry: resolve(__dirname, '../index.ts'),

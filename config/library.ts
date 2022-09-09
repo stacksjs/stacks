@@ -19,7 +19,7 @@ export const host: Hosts = 'netlify'
 
 export const stackName = `${organizationName}/${libraryName}`
 export const functionLibraryName = `${organizationName}/${libraryName}-fx`
-export const componentLibraryName = `${organizationName}/${libraryName}-ui`
+export const componentLibraryName = `${organizationName}/${libraryName}-vue`
 export const webComponentLibraryName = `${organizationName}/${libraryName}-elements`
 
 export const componentLibraryDescription = 'Your Vue component library description.'

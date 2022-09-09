@@ -43,7 +43,7 @@ const config: ViteConfig = {
 
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/components'),
+    outDir: resolve(__dirname, '../../components/dist'),
 
     emptyOutDir: true,
 

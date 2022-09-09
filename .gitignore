@@ -1,11 +1,11 @@
 node_modules
 .DS_Store
-!*/dist/cli/*
-*/dist/components/*
-*/dist/elements/*
-*/dist/functions/*
-*/dist/docs/*
-*/dist/stacks/*
+!*/cli/dist/*
+*/components/dist/*
+*/elements/dist/*
+*/functions/dist/*
+*/docs/dist/*
+*/stacks/dist/*
 dist-ssr
 *.local
 .DS_STORE

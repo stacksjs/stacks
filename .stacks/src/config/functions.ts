@@ -15,7 +15,7 @@ const config: ViteConfig = {
 
 export function functionsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../dist/functions'),
+    outDir: resolve(__dirname, '../../functions/dist'),
 
     emptyOutDir: true,
 

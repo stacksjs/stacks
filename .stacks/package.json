@@ -33,19 +33,19 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/stacks/index.d.ts",
-      "require": "./dist/stacks/index.cjs",
-      "import": "./dist/stacks/index.js"
+      "types": "./stacks/dist/index.d.ts",
+      "require": "./stacks/dist/index.cjs",
+      "import": "./stacks/dist/index.js"
     }
   },
-  "main": "dist/stacks/index.cjs",
-  "module": "dist/stacks/index.js",
-  "types": "dist/stacks/index.d.ts",
+  "main": "stacks/dist/index.cjs",
+  "module": "stacks/dist/index.js",
+  "types": "stacks/dist/index.d.ts",
   "bin": {
-    "artisan": "./dist/cli/artisan.mjs"
+    "artisan": "./cli/dist/artisan.mjs"
   },
   "files": [
-    "dist/stacks"
+    "stacks/dist"
   ],
   "engines": {
     "node": ">=v16.17.0",
