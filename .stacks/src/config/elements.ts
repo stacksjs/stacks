@@ -1,10 +1,10 @@
 import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '../core/config'
-import type { ViteConfig } from '../plugin'
+import type { ViteConfig } from '../core'
 import alias from '../core/alias'
-import { defineConfig } from '../plugin'
-import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from '../plugin/stacks'
+import { defineConfig } from '../core'
+import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from '../core/stacks'
 
 const isWebComponent = true
 

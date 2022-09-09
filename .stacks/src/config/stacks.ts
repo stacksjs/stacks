@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import alias from '../core/alias'
-import { defineConfig } from '../plugin'
-import type { ViteConfig } from '../plugin'
+import { defineConfig } from '../core'
+import type { ViteConfig } from '../core'
 
 const config: ViteConfig = {
   resolve: {

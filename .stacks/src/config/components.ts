@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '../core/config'
-import type { ViteConfig } from '../plugin'
-import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../plugin'
+import type { ViteConfig } from '../core'
+import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
 import alias from '../core/alias'
 
 const config: ViteConfig = {
