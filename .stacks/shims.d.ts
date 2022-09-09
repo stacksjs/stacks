@@ -1,3 +1,7 @@
+/// <reference types="vite/client" />
+/// <reference types="vitest" />
+/// <reference types="vue/ref-macros" />
+
 declare interface Window {
   // extend the window
 }
