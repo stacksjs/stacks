@@ -1,3 +1,12 @@
+## [0.25.1](https://github.com/ow3org/stacks/compare/v0.25.0...v0.25.1) (2022-09-09)
+
+
+### Bug Fixes
+
+* **dx:** ensure package.json files are included in version control ([d05f4e9](https://github.com/ow3org/stacks/commit/d05f4e960f80fcc0c944ec76cc869b08e5c61d1b))
+
+
+
 # [0.25.0](https://github.com/ow3org/stacks/compare/v0.24.1...v0.25.0) (2022-09-09)
 
 
