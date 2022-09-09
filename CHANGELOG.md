@@ -1,3 +1,18 @@
+## [0.25.4](https://github.com/ow3org/stacks/compare/v0.25.3...v0.25.4) (2022-09-09)
+
+
+### Bug Fixes
+
+* **ci:** stacks publish script ([f54f96a](https://github.com/ow3org/stacks/commit/f54f96a35c17b89063c811de1a6b939ea97f5be4))
+* link to stacks built files ([e5945d7](https://github.com/ow3org/stacks/commit/e5945d78c0bfd3d0369e82c8bcb1b81de703149f))
+
+
+### Features
+
+* default to node 18.9.0 support ([75c02cb](https://github.com/ow3org/stacks/commit/75c02cb7b928386a9159043463dfd12bd082a96e))
+
+
+
 ## [0.25.3](https://github.com/ow3org/stacks/compare/v0.25.2...v0.25.3) (2022-09-09)
 
 
