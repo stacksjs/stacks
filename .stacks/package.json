@@ -34,14 +34,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "types": "./dist/stacks/index.d.ts",
+      "require": "./dist/stacks/index.cjs",
+      "import": "./dist/stacks/index.js"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/stacks/index.cjs",
+  "module": "dist/stacks/index.js",
+  "types": "dist/stacks/index.d.ts",
   "bin": {
     "artisan": "./dist/cli/artisan.mjs"
   },
