@@ -1,3 +1,12 @@
+## [0.27.1](https://github.com/ow3org/stacks/compare/v0.27.0...v0.27.1) (2022-09-11)
+
+
+### Features
+
+* **dx:** use gegit for setups ([48a4749](https://github.com/ow3org/stacks/commit/48a474935c7935879be2f700eb6cb5218ecdc18e))
+
+
+
 # [0.27.0](https://github.com/ow3org/stacks/compare/v0.26.0...v0.27.0) (2022-09-11)
 
 
