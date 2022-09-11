@@ -1,13 +1,7 @@
 node_modules
 .DS_Store
 !*/cli/dist/*
-*/components/dist/*
-*/elements/dist/*
-*/functions/dist/*
-*/docs/dist/*
-*/stacks/dist/*
-dist-ssr
-*.local
+**/dist/*
 .DS_STORE
 .cache
 .temp
