@@ -1,3 +1,12 @@
+# [0.26.0](https://github.com/ow3org/stacks/compare/v0.25.7...v0.26.0) (2022-09-11)
+
+
+### Features
+
+* **core:** export build options ([2bb4af5](https://github.com/ow3org/stacks/commit/2bb4af5fab7c3b8d411f67c1ada9292df3b3b4b1))
+
+
+
 ## [0.25.7](https://github.com/ow3org/stacks/compare/v0.25.6...v0.25.7) (2022-09-09)
 
 
