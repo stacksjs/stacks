@@ -30,15 +30,9 @@ export function functionsBuildOptions(): ViteBuildOptions {
         if (format === 'cjs')
           return 'index.cjs'
 
-        // if (format === 'iife')
-        //     return `index.iife.js`
-
         return 'index.?.js'
       },
     },
-
-    // sourcemap: true,
-    // minify: false,
   }
 }
 

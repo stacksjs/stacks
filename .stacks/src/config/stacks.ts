@@ -38,9 +38,6 @@ export function stacksBuildOptions(): ViteBuildOptions {
     rollupOptions: {
       external: ['node:path', 'path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto', 'chokidar', '@rollup/pluginutils'],
     },
-
-    // sourcemap: true,
-    // minify: false,
   }
 }
 

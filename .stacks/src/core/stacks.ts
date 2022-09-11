@@ -6,8 +6,6 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 
-type modeType = 'vue-scoped' | 'shadow-dom'
-
 export const inspect = Inspect()
 
 export const components = Components({
@@ -35,14 +33,9 @@ export const i18n = VueI18n({
 })
 
 export function atomicCssEngine(isWebComponent = false) {
-  let mode: modeType = 'vue-scoped'
-
-  if (isWebComponent)
-    mode = 'shadow-dom'
-
   return Unocss({
     configFile: resolve(__dirname, '../core/unocss.ts'),
-    mode,
+    mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
 

@@ -31,9 +31,6 @@ export function cliBuildOptions(): ViteBuildOptions {
     rollupOptions: {
       external: ['node:path'],
     },
-
-    // sourcemap: true,
-    // minify: false,
   }
 }
 

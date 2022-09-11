@@ -1,8 +1,7 @@
 import { resolve } from 'node:path'
-import Inspect from 'vite-plugin-inspect'
-import Vue from '@vitejs/plugin-vue'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
+import { inspect, uiEngine } from '../core/stacks'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../examples/web-components'),
@@ -13,9 +12,9 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    Inspect(),
+    inspect,
 
-    Vue(),
+    uiEngine(),
   ],
 }
 

@@ -1,7 +1,9 @@
 import { resolve } from 'node:path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
+import { library } from '../core/config'
 import type { ViteConfig } from '../core'
-import { Stacks, alias, defineConfig, envPrefix, library } from '../core'
+import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
+import alias from '../core/alias'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../../components'),
@@ -23,7 +25,17 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    Stacks(),
+    inspect,
+
+    uiEngine(),
+
+    atomicCssEngine(),
+
+    autoImports,
+
+    components,
+
+    i18n,
   ],
 
   build: componentsBuildOptions(),
@@ -45,9 +57,6 @@ export function componentsBuildOptions(): ViteBuildOptions {
 
         if (format === 'cjs')
           return 'index.cjs'
-
-        // if (format === 'iife')
-        //     return `index.iife.js`
 
         return 'index.?.js'
       },
