@@ -10,9 +10,9 @@ const destinations = [
 
 const copyRecursiveSync = function (src: string, dest: string) {
   const exists = existsSync(src)
-  const stats = exists ? statSync(src) : false
-  // const isDirectory = exists && stats.isDirectory()
-  const isDirectory = stats
+  const stats = statSync(src)
+
+  const isDirectory = exists && stats.isDirectory()
 
   if (isDirectory) {
     readdirSync(src).forEach((childItemName) => {
