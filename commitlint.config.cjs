@@ -10,7 +10,7 @@ const components = readdirSync(resolve(__dirname, './components'))
 const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
 
-const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'play', 'release', 'readme', 'build', ...components, ...functions]
+const scopes = ['', 'ci', 'core', 'config', 'deps', 'docs', 'dx', 'example', 'release', 'readme', 'build', 'scripts', ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
 module.exports = {

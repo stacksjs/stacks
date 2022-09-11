@@ -31,7 +31,6 @@ export const autoImports = AutoImport({
 export const i18n = VueI18n({
   runtimeOnly: true,
   compositionOnly: true,
-  globalSFCScope: true,
   include: [resolve(__dirname, '../../../lang/**')],
 })
 
@@ -42,7 +41,7 @@ export function atomicCssEngine(isWebComponent = false) {
     mode = 'shadow-dom'
 
   return Unocss({
-    configFile: resolve(__dirname, './unocss.ts'),
+    configFile: resolve(__dirname, '../core/unocss.ts'),
     mode,
   })
 }

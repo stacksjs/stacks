@@ -4,7 +4,7 @@
  * the type definition.
  */
 
-import type { GitHooks } from 'stacks/types'
+import type { GitHooks } from 'stacks'
 
 export const hooks: GitHooks = {
   'pre-commit': 'lint-staged',
