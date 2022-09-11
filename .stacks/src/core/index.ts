@@ -5,7 +5,9 @@ import { defineConfig } from 'vite'
 import { defineConfig as defineTestConfig } from 'vitest/config'
 import { componentsBuildOptions } from '../config/components'
 import { webComponentsBuildOptions } from '../config/elements'
+import { library } from './config'
 import { atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
+import alias from './alias'
 
 export type ViteConfig = UserConfig
 
@@ -19,6 +21,8 @@ const Stacks = (isWebComponent = false) => <PluginOption>[
   autoImports,
 
   components,
+
+  i18n,
 ]
 
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig, envPrefix, i18n, componentsBuildOptions, webComponentsBuildOptions }
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig, envPrefix, i18n, componentsBuildOptions, webComponentsBuildOptions, alias, library }
