@@ -41,9 +41,7 @@
     ]
   },
   "include": [
-    "./.stacks/shims.d.ts",
-    "./.stacks/auto-imports.d.ts",
-    "./.stacks/components.d.ts",
+    "./.stacks/**.d.ts",
     "./.stacks/**/*",
     "./functions/**/*",
     "./pages/**/*",
