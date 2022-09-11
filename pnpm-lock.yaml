@@ -56,7 +56,7 @@ importers:
       vite: ^3.1.0
       vite-plugin-inspect: ^0.7.1
       vitepress: 1.0.0-alpha.13
-      vitest: ^0.23.1
+      vitest: ^0.23.2
       vue: ^3.2.39
       vue-i18n: ^9.2.2
       vue-tsc: ^0.40.13
@@ -107,10 +107,19 @@ importers:
       vite: 3.1.0
       vite-plugin-inspect: 0.7.1_vite@3.1.0
       vitepress: 1.0.0-alpha.13
-      vitest: 0.23.1
+      vitest: 0.23.2
       vue: 3.2.39
       vue-i18n: 9.2.2_vue@3.2.39
       vue-tsc: 0.40.13_typescript@4.8.3
+
+  .stacks/components:
+    specifiers: {}
+
+  .stacks/elements:
+    specifiers: {}
+
+  .stacks/functions:
+    specifiers: {}
 
 packages:
 
@@ -6351,8 +6360,8 @@ packages:
     resolution: {integrity: sha512-ak+PZZEuH3mw6CCFOgf5S90YH0MARnZNhxjhjguAmoJimEMAJuNip/rJRd6/wyylHItomVpKTzZk9zrhTrQCoQ==}
     dev: false
 
-  /tinypool/0.2.4:
-    resolution: {integrity: sha512-Vs3rhkUH6Qq1t5bqtb816oT+HeJTXfwt2cbPH17sWHIYKTotQIFPk3tf2fgqRrVyMDVOc1EnPgzIxfIulXVzwQ==}
+  /tinypool/0.3.0:
+    resolution: {integrity: sha512-NX5KeqHOBZU6Bc0xj9Vr5Szbb1j8tUHIeD18s41aDJaPeC5QTdEhK0SpdpUrZlj2nv5cctNcSjaKNanXlfcVEQ==}
     engines: {node: '>=14.0.0'}
     dev: false
 
@@ -6828,8 +6837,8 @@ packages:
       - terser
     dev: false
 
-  /vitest/0.23.1:
-    resolution: {integrity: sha512-kn9pG+h6VA3yj/xRvwgLKEd33rOlzMqJEg3tl5HSm3WUPlkY1Lr1FK8RN1uIqVKvFxmz6HGU3EQW+xW2kazRkQ==}
+  /vitest/0.23.2:
+    resolution: {integrity: sha512-kTBKp3ROPDkYC+x2zWt4znkDtnT08W1FQ6ngRFuqxpBGNuNVS+eWZKfffr8y2JGvEzZ9EzMAOcNaiqMj/FZqMw==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
@@ -6858,7 +6867,7 @@ packages:
       local-pkg: 0.4.2
       strip-literal: 0.4.0
       tinybench: 2.1.5
-      tinypool: 0.2.4
+      tinypool: 0.3.0
       tinyspy: 1.0.2
       vite: 3.1.0
     transitivePeerDependencies:
