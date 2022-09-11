@@ -80,7 +80,7 @@ export async function stack(name: string) {
 
   try {
     const path = resolve(process.cwd(), `../${name}`)
-    await ezSpawn.async('degit', ['ow3org/stacks#main', `../${name}`], { stdio: 'inherit' })
+    await ezSpawn.async('gegit', ['ow3org/stacks#main', `../${name}`], { stdio: 'inherit' })
     consola.success(`Successfully created the ${name} stack at path: ${path}`)
   }
   catch (err) {
