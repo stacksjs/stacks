@@ -1,3 +1,18 @@
+# [0.27.0](https://github.com/ow3org/stacks/compare/v0.26.0...v0.27.0) (2022-09-11)
+
+
+### Bug Fixes
+
+* properly identify whether `isDirectory` ([918bee0](https://github.com/ow3org/stacks/commit/918bee0e05a88cd4bd1638c38c2d457189e3d5c5))
+
+
+### Features
+
+* **dx:** add repository to auto-imports ([93e5bb4](https://github.com/ow3org/stacks/commit/93e5bb4a8639ebc5d2902b7d054764ea9f25472e))
+* **dx:** add scripts scope ([6d0fa25](https://github.com/ow3org/stacks/commit/6d0fa258b0a7c03f328380a82f9e6d460ed4707d))
+
+
+
 # [0.26.0](https://github.com/ow3org/stacks/compare/v0.25.7...v0.26.0) (2022-09-11)
 
 
