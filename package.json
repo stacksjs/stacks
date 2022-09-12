@@ -72,7 +72,8 @@
     "test": "cd ./.stacks && pnpm run test",
     "test:coverage": "cd ./.stacks && pnpm run test:coverage",
     "test:types": "cd ./.stacks && pnpm run test:types",
-    "types:fix": "cd ./.stacks && pnpm run types:fix"
+    "types:fix": "cd ./.stacks && pnpm run types:fix",
+    "generate:types": "cd ./.stacks && pnpm run generate:types"
   },
   "devDependencies": {
     "@ow3/stacks": "workspace:*"

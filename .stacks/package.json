@@ -33,14 +33,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./stacks/dist/index.d.ts",
+      "types": "./stacks/dist/types/index.d.ts",
       "require": "./stacks/dist/index.cjs",
       "import": "./stacks/dist/index.js"
     }
   },
   "main": "stacks/dist/index.cjs",
   "module": "stacks/dist/index.js",
-  "types": "stacks/dist/index.d.ts",
+  "types": "stacks/dist/types/index.d.ts",
   "bin": {
     "artisan": "./cli/dist/artisan.mjs"
   },
@@ -83,7 +83,8 @@
     "test": "vitest --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit",
-    "types:fix": "esno src/scripts/fix-types.ts"
+    "types:fix": "esno src/scripts/fix-types.ts",
+    "generate:types": "vue-tsc --declaration --emitDeclarationOnly && jiti src/scripts/copy-files.ts"
   },
   "dependencies": {
     "@babel/types": "^7.19.0",

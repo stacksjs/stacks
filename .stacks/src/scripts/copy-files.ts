@@ -1,21 +1,24 @@
-import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
 import { join, resolve } from 'pathe'
 
 // relative to scripts directory
 const destinations = [
-  ['../../components.d.ts', '../../components/dist/index.d.ts'],
-  ['../../components.d.ts', '../../elements/dist/index.d.ts'],
+  ['../../dist/types/.stacks/src', '../../stacks/dist/types'],
+  ['../../dist/types/components', '../../components/dist/types'],
+  ['../../dist/types/functions', '../../functions/dist/types'],
 ]
 
-const copyRecursiveSync = function (src: string, dest: string) {
-  const exists = existsSync(src)
-  const stats = statSync(src)
+// copy files and/or folders from src to dest
+export const copyFiles = (src: string, dest: string) => {
+  if (!existsSync(src))
+    return
 
-  const isDirectory = exists && stats.isDirectory()
+  if (statSync(src).isDirectory()) {
+    if (!existsSync(dest))
+      mkdirSync(dest, { recursive: true })
 
-  if (isDirectory) {
-    readdirSync(src).forEach((childItemName) => {
-      copyRecursiveSync(join(src, childItemName), join(dest, childItemName))
+    readdirSync(src).forEach((file) => {
+      copyFiles(join(src, file), join(dest, file))
     })
 
     return
@@ -28,5 +31,8 @@ destinations.forEach(([src, dest]) => {
   const srcPath = resolve(__filename, '..', src)
   const destPath = resolve(__filename, '..', dest)
 
-  copyRecursiveSync(srcPath, destPath)
+  // eslint-disable-next-line no-console
+  console.log('copying', srcPath, 'to', destPath)
+
+  copyFiles(srcPath, destPath)
 })

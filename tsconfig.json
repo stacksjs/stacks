@@ -18,6 +18,7 @@
     "isolatedModules": true,
     "strictNullChecks": true,
     "baseUrl": ".",
+    "outDir": ".stacks/dist/types",
     "paths": {
       "stacks": [
         ".stacks/src/index.ts"
