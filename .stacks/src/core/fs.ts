@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'pathe'
+import { join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 
@@ -50,7 +50,7 @@ export async function writeJsonFile(file: JsonFile): Promise<void> {
  */
 export function readTextFile(name: string, cwd: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
-    const filePath = path.join(cwd, name)
+    const filePath = join(cwd, name)
 
     fs.readFile(filePath, 'utf8', (err, text) => {
       if (err) {

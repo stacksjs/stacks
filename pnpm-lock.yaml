@@ -47,6 +47,7 @@ importers:
       local-pkg: ^0.4.2
       minimatch: ^5.1.0
       nitropack: ^0.5.1
+      pathe: ^0.3.7
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
       typescript: ^4.8.3
@@ -98,6 +99,7 @@ importers:
       local-pkg: 0.4.2
       minimatch: 5.1.0
       nitropack: 0.5.1_vite@3.1.0
+      pathe: 0.3.7
       rimraf: 3.0.2
       simple-git-hooks: 2.8.0
       typescript: 4.8.3
