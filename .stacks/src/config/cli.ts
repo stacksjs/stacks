@@ -24,7 +24,7 @@ export function cliBuildOptions(): ViteBuildOptions {
       name: 'artisan',
       formats: ['es'],
       fileName: () => {
-        return 'artisan.mjs'
+        return 'artisan.js'
       },
     },
 

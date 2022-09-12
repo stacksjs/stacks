@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Demo } from './dist/index.mjs'
+import { Demo } from './dist/index.js'
 </script>
 
 <template>

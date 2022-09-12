@@ -42,7 +42,7 @@
   "module": "stacks/dist/index.js",
   "types": "stacks/dist/types/index.d.ts",
   "bin": {
-    "artisan": "./cli/dist/artisan.mjs"
+    "artisan": "./cli/dist/artisan.js"
   },
   "files": [
     "stacks/dist"

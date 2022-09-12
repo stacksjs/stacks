@@ -53,7 +53,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.mjs'
+          return 'index.js'
 
         if (format === 'cjs')
           return 'index.cjs'

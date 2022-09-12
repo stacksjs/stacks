@@ -25,7 +25,7 @@ export function functionsBuildOptions(): ViteBuildOptions {
       formats: ['es', 'cjs'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.mjs'
+          return 'index.js'
 
         if (format === 'cjs')
           return 'index.cjs'
