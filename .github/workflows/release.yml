@@ -27,8 +27,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build the release
+      - name: Build the component & function library releases
         run: pnpm run build --npm
+
+      - name: Build the Stacks release
+        run: pnpm run build:stacks
 
       - name: Publish to npm
         run: pnpm --filter './.stacks' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks
