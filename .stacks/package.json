@@ -33,33 +33,33 @@
   ],
   "exports": {
     ".": {
-      "types": "./stacks/dist/types/index.d.ts",
-      "require": "./stacks/dist/index.cjs",
-      "import": "./stacks/dist/index.js"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "stacks/dist/index.cjs",
-  "module": "stacks/dist/index.js",
-  "types": "stacks/dist/types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "bin": {
-    "artisan": "./cli/dist/artisan.js"
+    "artisan": "./dist/cli.mjs"
   },
   "files": [
-    "stacks/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=v16.17.0",
     "pnpm": ">=7.11.0"
   },
   "scripts": {
-    "artisan": "jiti ./src/cli/index.ts",
-    "dev:components": "vite serve ./src/components -c ./src/config/components.ts",
-    "build:components": "vite build -c ./src/config/components.ts",
-    "build:elements": "vite build -c ./src/config/elements.ts",
-    "examples:vue": "pnpm run build:components && vite serve ./examples/vue -c ./src/config/example-vue.ts",
-    "build:functions": "vite build -c ./src/config/functions.ts",
-    "build:artisan-cli": "vite build -c ./src/config/cli.ts",
-    "build:stacks": "vite build -c ./src/config/stacks.ts",
+    "artisan": "jiti ./src/cli.ts",
+    "dev:components": "vite serve ./src/components -c ./src/build/components.ts",
+    "build:components": "vite build -c ./src/build/components.ts",
+    "build:elements": "vite build -c ./src/build/elements.ts",
+    "examples:vue": "pnpm run build:components && vite serve ./examples/vue -c ./src/build/example-vue.ts",
+    "build:functions": "vite build -c ./src/build/functions.ts",
+    "build:artisan-cli": "unbuild",
+    "build:stacks": "unbuild",
     "nitro:build": "nitro build",
     "make:component": "pnpm artisan make:component",
     "make:function": "pnpm artisan make:function",
@@ -128,6 +128,7 @@
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.0",
     "typescript": "^4.8.3",
+    "unbuild": "^0.8.11",
     "unocss": "^0.45.21",
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.7",

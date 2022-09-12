@@ -1,13 +1,14 @@
+#!/usr/bin/env node
 import { cac } from 'cac'
-import { version as packageVersion } from '../../package.json'
-import { startDevelopmentServer } from '../scripts/dev'
-import { startBuildProcess } from '../scripts/build'
-import { reinstallNpmDependencies } from '../scripts/fresh'
-import { lint, lintFix } from '../scripts/lint'
-import { updateNpmDependencies } from '../scripts/update'
-import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from '../scripts/make'
-import { generateTestCoverageReport, runTestSuite, typecheck } from '../scripts/test'
-import { ExitCode } from './exit-code'
+import { version as packageVersion } from '../package.json'
+import { startDevelopmentServer } from './scripts/dev'
+import { startBuildProcess } from './scripts/build'
+import { reinstallNpmDependencies } from './scripts/fresh'
+import { lint, lintFix } from './scripts/lint'
+import { updateNpmDependencies } from './scripts/update'
+import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from './scripts/make'
+import { generateTestCoverageReport, runTestSuite, typecheck } from './scripts/test'
+import { ExitCode } from './cli/exit-code'
 
 /**
  * The main entry point of the CLI

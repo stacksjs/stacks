@@ -48,7 +48,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../../../config/components.ts'),
+      entry: resolve(__dirname, '../../../build/components.ts'),
       name: library.stackName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

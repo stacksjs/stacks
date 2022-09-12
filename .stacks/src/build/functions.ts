@@ -4,7 +4,6 @@ import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
 import alias from '../core/alias'
 
-// https://vitejs.dev/config/
 const config: ViteConfig = {
   resolve: {
     alias,
