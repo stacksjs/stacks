@@ -1,3 +1,12 @@
+# [0.28.0](https://github.com/ow3org/stacks/compare/v0.27.1...v0.28.0) (2022-09-12)
+
+
+### Features
+
+* **dx:** add generate:types command ([a5faad9](https://github.com/ow3org/stacks/commit/a5faad99a2a6de43b5e3d75862f5b0161c2f7dbc))
+
+
+
 ## [0.27.1](https://github.com/ow3org/stacks/compare/v0.27.0...v0.27.1) (2022-09-11)
 
 
