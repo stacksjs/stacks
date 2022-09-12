@@ -93,6 +93,19 @@ export async function buildFunctionLibrary() {
   }
 }
 
+export async function generateTypes() {
+  consola.info('Building your functions library for production use & npm/CDN distribution...')
+
+  try {
+    await runNpmScript(NpmScript.GenerateTypes)
+    consola.success('Your library types were generated.')
+  }
+  catch (error) {
+    consola.error('There was an error generating your types')
+    consola.error(error)
+  }
+}
+
 export async function startBuildProcess(options: any) {
   if (options.components || options === 'components') {
     await buildComponentLibraries()
@@ -117,8 +130,9 @@ export async function startBuildProcess(options: any) {
   else if (options.npm || options === 'npm') {
     await buildComponentLibraries()
     await buildFunctionLibrary()
+    await generateTypes()
 
-    consola.success('All your libraries were built successfully to be distributed on npm.')
+    consola.success('All your libraries and its types were built successfully to be distributed on npm.')
   }
 
   else {
