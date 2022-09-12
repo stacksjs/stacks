@@ -1,3 +1,12 @@
+## [0.28.4](https://github.com/ow3org/stacks/compare/v0.28.3...v0.28.4) (2022-09-12)
+
+
+### Features
+
+* **dx:** generate types upon building for npm ([4563b6d](https://github.com/ow3org/stacks/commit/4563b6da6a84ab3ab49d91d649868a9af7f2dbad))
+
+
+
 ## [0.28.3](https://github.com/ow3org/stacks/compare/v0.28.1...v0.28.3) (2022-09-12)
 
 

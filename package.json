@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "version": "0.28.3",
+  "version": "0.28.4",
   "private": true,
   "packageManager": "pnpm@7.11.0",
   "description": "The easy way to build your component and/or function libraries & APIs.",
