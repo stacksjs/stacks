@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, readdirSync, statSync } from 'fs'
-import { join, resolve } from 'node:path'
+import { join, resolve } from 'pathe'
 
 // relative to scripts directory
 const destinations = [

@@ -1,20 +1,21 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
+import type { PluginOption } from 'vite'
 
-export const inspect = Inspect()
+const inspect = Inspect()
 
-export const components = Components({
+const components = Components({
   dirs: [resolve(__dirname, '../../../components')],
   extensions: ['vue'],
   dts: '../../components.d.ts',
 })
 
-export const autoImports = AutoImport({
+const autoImports = AutoImport({
   imports: ['vue', 'vue-i18n', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
   dirs: [
     resolve(__dirname, '../../../functions'),
@@ -26,20 +27,20 @@ export const autoImports = AutoImport({
 })
 
 // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
-export const i18n = VueI18n({
+const i18n = VueI18n({
   runtimeOnly: true,
   compositionOnly: true,
   include: [resolve(__dirname, '../../../lang/**')],
 })
 
-export function atomicCssEngine(isWebComponent = false) {
+function atomicCssEngine(isWebComponent = false) {
   return Unocss({
     configFile: resolve(__dirname, '../core/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
 
-export function uiEngine(isWebComponent = false) {
+function uiEngine(isWebComponent = false) {
   if (isWebComponent) {
     return Vue({
       template: {
@@ -53,4 +54,20 @@ export function uiEngine(isWebComponent = false) {
   return Vue()
 }
 
-export const envPrefix = 'STACKS_'
+const Stacks = (isWebComponent = false) => <PluginOption>[
+  inspect,
+
+  uiEngine(isWebComponent),
+
+  atomicCssEngine(isWebComponent),
+
+  autoImports,
+
+  components,
+
+  i18n,
+]
+
+const envPrefix = 'STACKS_'
+
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, envPrefix, i18n }

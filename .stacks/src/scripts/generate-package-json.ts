@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import consola from 'consola'
 import { hasFiles, writeTextFile } from '../core/fs'
 import library from '../../../config/library'

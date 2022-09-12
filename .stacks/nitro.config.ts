@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import { defineNitroConfig } from 'nitropack'
 
 export default defineNitroConfig({

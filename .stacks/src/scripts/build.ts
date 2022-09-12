@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
 import { ExitCode } from '../cli/exit-code'

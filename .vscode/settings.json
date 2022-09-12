@@ -104,7 +104,7 @@
     "meema",
     "meemalabs",
     "pnpm",
-    "gegit",
+    "giget",
     "vitest",
     "vitejs",
     "vite",
@@ -236,7 +236,8 @@
     "pluginutils",
     "consola",
     "zixuanchen",
-    "laravel"
+    "laravel",
+    "pathe",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

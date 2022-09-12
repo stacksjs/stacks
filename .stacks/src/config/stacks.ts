@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import alias from '../core/alias'
 import { defineConfig } from '../core'
@@ -10,7 +10,7 @@ const config: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['node:path', 'path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto', 'chokidar', '@rollup/pluginutils'],
+    exclude: ['pathe', 'path', 'node:path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto', 'chokidar', '@rollup/pluginutils'],
   },
 
   build: stacksBuildOptions(),
@@ -36,7 +36,7 @@ export function stacksBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['node:path', 'path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto', 'chokidar', '@rollup/pluginutils'],
+      external: ['pathe', 'path', 'node:path', 'node:url', 'node:module', 'fs', 'node:perf_hooks', 'node:util', 'node:dns', 'node:crypto', 'node:zlib', 'module', 'node:fs', 'node:buffer', 'util', 'url', 'node:https', 'node:http', 'node:child_process', 'fs/promises', 'crypto', 'chokidar', '@rollup/pluginutils'],
     },
   }
 }

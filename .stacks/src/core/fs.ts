@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'node:path'
+import path from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 

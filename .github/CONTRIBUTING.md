@@ -93,7 +93,6 @@ contribution is appreciated more than you can imagine, and even a failed PR can 
 [vue]: https://vuejs.org/
 [vite]: https://vitejs.dev/
 [unbuild]: https://github.com/unjs/unbuild
-[vitebook]: https://vitebook.dev/
 [vue-components]: https://vuejs.org/guide/essentials/component-basics.html
 [stacks]: https://github.com/ow3org/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716

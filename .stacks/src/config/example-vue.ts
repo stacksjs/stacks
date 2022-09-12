@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
 import { inspect, uiEngine } from '../core/stacks'

@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../core'
 import { defineConfig } from '../core'
@@ -29,7 +29,7 @@ export function cliBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['node:path'],
+      external: ['pathe'],
     },
   }
 }
