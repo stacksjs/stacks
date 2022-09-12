@@ -1,7 +1,6 @@
 import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { library } from '../core/config'
-import type { ViteConfig } from '../core'
+import type { ViteConfig } from '../types'
 import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
 import alias from '../core/alias'
 
@@ -49,7 +48,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
 
     lib: {
       entry: resolve(__dirname, '../../../build/components.ts'),
-      name: library.stackName,
+      name: stackName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

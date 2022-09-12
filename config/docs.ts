@@ -4,7 +4,7 @@
  */
 
 import { resolve } from 'pathe'
-import type { DocsConfig } from 'stacks/types'
+import type { DocsConfig } from 'stacks'
 
 const docs: DocsConfig = {
   outDir: resolve(__dirname, '../.stacks/docs/dist'),
@@ -38,15 +38,15 @@ const docs: DocsConfig = {
     },
 
     algolia: {
-      appId: '8J64VVRP8K',
-      apiKey: 'a18e2f4cc5665f6602c5631fd868adfd',
-      indexName: 'vitepress',
+      appId: '',
+      apiKey: '',
+      indexName: '',
     },
 
-    // carbonAds: {
-    //     code: 'CEBDT27Y',
-    //     placement: 'vuejsorg'
-    // }
+    carbonAds: {
+      code: '',
+      placement: '',
+    },
   },
 }
 

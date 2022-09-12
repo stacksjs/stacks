@@ -12,7 +12,6 @@ export const enum NpmScript {
   BuildComponents = 'build:components',
   BuildElements = 'build:elements',
   BuildFunctions = 'build:functions',
-  BuildArtisanCli = 'build:artisan-cli',
   BuildDocs = 'build:docs',
   Dev = 'dev',
   DevComponents = 'dev:components',

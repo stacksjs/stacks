@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import type { ViteConfig } from '../core'
+import type { ViteConfig } from '../types'
 import { defineConfig } from '../core'
 import { inspect, uiEngine } from '../core/stacks'
 

@@ -86,13 +86,6 @@ async function main() {
 
     cli
       .version(packageVersion)
-      .command('build:artisan-cli', 'Automagically build the Artisan CLI.')
-      .action(async () => {
-        await startBuildProcess('artisan-cli')
-      })
-
-    cli
-      .version(packageVersion)
       .command('build:docs', 'Automagically build your documentation site.')
       .action(async () => {
         await startBuildProcess('docs')

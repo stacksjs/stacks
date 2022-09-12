@@ -1,36 +1,31 @@
 import { resolve } from 'pathe'
 import consola from 'consola'
 import { hasFiles, writeTextFile } from '../core/fs'
-import library from '../../../config/library'
 
 export async function generatePackageJson(type: string) {
   consola.info(`Creating the corresponding package.json file needed to publish the ${type} package...`)
 
-  const author = library.author
-  const repository = library.repository
-  const contributors = library.contributors
-
   let name, description, directory, keywords
 
   if (type === 'components') {
-    name = library.componentLibraryName
-    description = library.componentLibraryDescription
+    name = componentLibraryName
+    description = componentLibraryDescription
     directory = 'components'
-    keywords = library.componentLibraryKeywords
+    keywords = componentLibraryKeywords
   }
 
   else if (type === 'elements') {
-    name = library.webComponentLibraryName
-    description = library.webComponentLibraryDescription
+    name = webComponentLibraryName
+    description = webComponentLibraryDescription
     directory = 'components'
-    keywords = library.componentLibraryKeywords
+    keywords = componentLibraryKeywords
   }
 
   else if (type === 'functions') {
-    name = library.functionLibraryName
-    description = library.functionLibraryDescription
+    name = functionLibraryName
+    description = functionLibraryDescription
     directory = 'functions'
-    keywords = library.functionLibraryKeywords
+    keywords = functionLibraryKeywords
   }
 
   const path = resolve(process.cwd(), `./.stacks/${type}/package.json`)

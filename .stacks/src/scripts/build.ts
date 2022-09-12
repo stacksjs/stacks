@@ -49,24 +49,11 @@ export async function buildWebComponentLibrary() {
   }
 }
 
-export async function buildArtisanCli() {
-  consola.info('Building the Artisan CLI...')
-
-  try {
-    await runNpmScript(NpmScript.BuildArtisanCli)
-    consola.success('Artisan CLI was built successfully.')
-  }
-  catch (error) {
-    consola.error('There was an error building the Artisan CLI.')
-    consola.error(error)
-  }
-}
-
 export async function buildDocs() {
   consola.info('Building the Artisan CLI...')
 
   try {
-    await runNpmScript(NpmScript.BuildArtisanCli)
+    await runNpmScript(NpmScript.BuildDocs)
     consola.success('Artisan CLI was built successfully.')
   }
   catch (error) {
@@ -117,10 +104,6 @@ export async function startBuildProcess(options: any) {
 
   else if (options.functions || options === 'functions') {
     await buildFunctionLibrary()
-  }
-
-  else if (options.artisanCli || options === 'artisan-cli') {
-    await buildArtisanCli()
   }
 
   else if (options.docs || options === 'docs') {

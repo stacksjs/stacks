@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import type { ViteConfig } from '../core'
+import type { ViteConfig } from '../types'
 import { defineConfig } from '../core'
 import alias from '../core/alias'
 
@@ -20,7 +20,7 @@ export function functionsBuildOptions(): ViteBuildOptions {
 
     lib: {
       entry: resolve(__dirname, '../../../config/functions.ts'),
-      name: 'functions',
+      name: functionLibraryName,
       formats: ['es', 'cjs'],
       fileName: (format: string) => {
         if (format === 'es')
