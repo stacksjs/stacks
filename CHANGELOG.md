@@ -1,3 +1,12 @@
+# [0.29.0](https://github.com/ow3org/stacks/compare/v0.28.6...v0.29.0) (2022-09-13)
+
+
+### Features
+
+* **dx:** add commit command ([a055fe0](https://github.com/ow3org/stacks/commit/a055fe02e6c4b5d7bc0b6aa7f6026685e1f377ea))
+
+
+
 ## [0.28.6](https://github.com/ow3org/stacks/compare/v0.28.5...v0.28.6) (2022-09-12)
 
 
