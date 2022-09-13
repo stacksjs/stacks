@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import type { ViteConfig } from '../types'
-import { defineConfig } from '../core'
+import type { ViteConfig } from '..'
+import { defineConfig } from '..'
 import alias from '../core/alias'
 import { functionLibraryName } from '../../../config/library'
 

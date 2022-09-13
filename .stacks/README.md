@@ -38,7 +38,6 @@ import {
   createApp,
   defineConfig,
   defineTestConfig,
-  envPrefix,
   i18n,
   inspect,
   resolve,

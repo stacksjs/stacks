@@ -73,6 +73,4 @@ const Stacks = (isWebComponent = false) => <PluginOption>[
   i18n,
 ]
 
-const envPrefix = 'STACKS_'
-
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, envPrefix, i18n }
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, i18n }

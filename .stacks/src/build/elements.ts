@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../types'
 import alias from '../core/alias'
-import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
+import { atomicCssEngine, autoImports, components, defineConfig, i18n, inspect, uiEngine } from '..'
 import { webComponentLibraryName } from '../../../config/library'
 import { _dirname } from '../core/fs'
 
@@ -11,7 +11,7 @@ const isWebComponent = true
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),
 
-  envPrefix,
+  envPrefix: 'STACKS_',
 
   server: {
     port: 3333,
