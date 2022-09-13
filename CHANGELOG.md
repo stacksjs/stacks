@@ -1,3 +1,12 @@
+# [0.30.0](https://github.com/ow3org/stacks/compare/v0.29.2...v0.30.0) (2022-09-13)
+
+
+### Features
+
+* **cli:** add build:stacks command ([9ff0256](https://github.com/ow3org/stacks/commit/9ff02565bb58191b988a003f91a1768acc784d8d))
+
+
+
 ## [0.29.2](https://github.com/ow3org/stacks/compare/v0.29.1...v0.29.2) (2022-09-13)
 
 
