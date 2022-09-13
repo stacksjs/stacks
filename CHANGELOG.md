@@ -1,3 +1,12 @@
+## [0.29.2](https://github.com/ow3org/stacks/compare/v0.29.1...v0.29.2) (2022-09-13)
+
+
+### Bug Fixes
+
+* **ci:** release script ([3e4c424](https://github.com/ow3org/stacks/commit/3e4c424f989fa6b4dbf0a22587f6b593c9a73eb1))
+
+
+
 ## [0.29.1](https://github.com/ow3org/stacks/compare/v0.29.0...v0.29.1) (2022-09-13)
 
 
