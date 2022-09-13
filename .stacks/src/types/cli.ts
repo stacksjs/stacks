@@ -13,6 +13,7 @@ export const enum NpmScript {
   BuildElements = 'build:elements',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
+  BuildStacks = 'build:stacks',
   Dev = 'dev',
   DevComponents = 'dev:components',
   DevDocs = 'dev:docs',

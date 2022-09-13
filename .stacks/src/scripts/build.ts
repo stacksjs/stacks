@@ -62,6 +62,19 @@ export async function buildDocs() {
   }
 }
 
+export async function buildStacks() {
+  consola.info('Building the Stacks Framework...')
+
+  try {
+    await runNpmScript(NpmScript.BuildStacks)
+    consola.success('Stacks was built successfully.')
+  }
+  catch (error) {
+    consola.error('There was an error building the Stacks framework.')
+    consola.error(error)
+  }
+}
+
 export async function buildFunctionLibrary() {
   consola.info('Building your functions library for production use & npm/CDN distribution...')
 
@@ -108,6 +121,10 @@ export async function startBuildProcess(options: any) {
 
   else if (options.docs || options === 'docs') {
     await buildDocs()
+  }
+
+  else if (options.stacks || options === 'stacks') {
+    await buildStacks()
   }
 
   else if (options.npm || options === 'npm') {

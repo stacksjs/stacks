@@ -95,6 +95,13 @@ async function main() {
 
     cli
       .version(packageVersion)
+      .command('build:stacks', 'Build the core Stacks framework.')
+      .action(async () => {
+        await startBuildProcess('stacks')
+      })
+
+    cli
+      .version(packageVersion)
       .command('fresh', 'Reinstalls your npm dependencies.')
       .action(async () => {
         await reinstallNpmDependencies()
