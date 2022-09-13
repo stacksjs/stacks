@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks",
   "type": "module",
-  "version": "0.30.3",
+  "version": "0.30.4",
   "packageManager": "pnpm@7.11.0",
   "description": "The Stacks Framework.",
   "author": "Chris Breuer",
