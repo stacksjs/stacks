@@ -26,4 +26,5 @@ export const enum NpmScript {
   TestCoverage = 'test:coverage',
   GenerateTypes = 'generate:types',
   Release = 'release',
+  Commit = 'commit',
 }

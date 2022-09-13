@@ -10,6 +10,7 @@ import { component as makeComponent, fx as makeFunction, language as makeLanguag
 import { generateTestCoverageReport, runTestSuite, typecheck } from './scripts/test'
 import { ExitCode } from './cli/exit-code'
 import { release } from './scripts/release'
+import { commit } from './scripts/commit'
 
 /**
  * The main entry point of the CLI
@@ -174,6 +175,13 @@ async function main() {
       .command('release', 'Releases a new version of your libraries/packages.')
       .action(async () => {
         await release()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('commit', 'Commit your stashed changes.')
+      .action(async () => {
+        await commit()
       })
 
     // cli
