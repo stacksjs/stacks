@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
 import { join, resolve } from 'pathe'
 

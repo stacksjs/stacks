@@ -41,7 +41,8 @@
     "pnpm": ">=7.11.0"
   },
   "scripts": {
-    "artisan": "jiti ./.stacks/src/cli.ts",
+    "artisan": "cd .stacks && jiti ./src/cli.ts",
+    "a": "cd .stacks && jiti ./src/cli.ts",
     "fresh": "pnpm artisan fresh",
     "update": "pnpm artisan update",
     "dev:components": "pnpm artisan dev:components",

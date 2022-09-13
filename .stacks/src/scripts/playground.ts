@@ -1,7 +1,7 @@
 import Prompts from 'prompts'
 import consola from 'consola'
 import { ExitCode } from '../cli/exit-code'
-import { NpmScript } from '../types/cli'
+import { NpmScript } from '../types'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts

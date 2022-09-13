@@ -78,7 +78,7 @@
     "lint": "eslint ..",
     "lint:fix": "eslint .. --fix",
     "commit": "cd .. && git cz",
-    "release": "cd .. && jiti .stacks/src/scripts/generate-package-json.ts && bumpp .stacks/package.json .stacks/**/package.json apps/**/package.json package.json --execute 'pnpm run changelog' --all",
+    "release": "jiti ./src/scripts/generate-package-json.ts && bumpp ./package.json ./**/package.json ../apps/**/package.json ../package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "size": "esno src/scripts/size.ts",
     "test": "vitest --config vitest.config.ts",

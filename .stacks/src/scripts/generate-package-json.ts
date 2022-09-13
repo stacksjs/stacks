@@ -1,5 +1,7 @@
+#!/usr/bin/env node
 import { resolve } from 'pathe'
 import consola from 'consola'
+import { author, componentLibraryDescription, componentLibraryKeywords, componentLibraryName, contributors, functionLibraryDescription, functionLibraryKeywords, functionLibraryName, repository, webComponentLibraryDescription, webComponentLibraryName } from '../../../config/library'
 import { hasFiles, writeTextFile } from '../core/fs'
 
 export async function generatePackageJson(type: string) {
@@ -28,7 +30,7 @@ export async function generatePackageJson(type: string) {
     keywords = functionLibraryKeywords
   }
 
-  const path = resolve(process.cwd(), `./.stacks/${type}/package.json`)
+  const path = resolve(process.cwd(), `./${type}/package.json`)
 
   try {
     // the version does not have to be set here,
@@ -69,7 +71,7 @@ export async function generatePackageJson(type: string) {
 `,
     })
 
-    consola.success('Created the package.json file.')
+    consola.success(`Created the ${type} package.json file.`)
   }
   catch (err) {
     consola.error(err)

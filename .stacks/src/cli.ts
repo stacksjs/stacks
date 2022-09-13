@@ -9,6 +9,7 @@ import { updateNpmDependencies } from './scripts/update'
 import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from './scripts/make'
 import { generateTestCoverageReport, runTestSuite, typecheck } from './scripts/test'
 import { ExitCode } from './cli/exit-code'
+import { release } from './scripts/release'
 
 /**
  * The main entry point of the CLI
@@ -166,6 +167,13 @@ async function main() {
       .command('test:coverage', 'Generates a test coverage report.')
       .action(async () => {
         await generateTestCoverageReport()
+      })
+
+    cli
+      .version(packageVersion)
+      .command('release', 'Releases a new version of your libraries/packages.')
+      .action(async () => {
+        await release()
       })
 
     // cli

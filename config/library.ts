@@ -6,7 +6,7 @@
  * updating these settings. Read more in its documentation:
  */
 
-import type { Hosts } from 'stacks/types'
+import type { Hosts } from 'stacks'
 
 export const license = 'MIT'
 export const author = 'Chris Breuer'

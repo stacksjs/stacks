@@ -23,9 +23,6 @@
       "stacks": [
         ".stacks/src/index.ts"
       ],
-      "stacks/*": [
-        "./.stacks/src/*"
-      ],
       "components/*": [
         "./components/*"
       ],
@@ -49,7 +46,6 @@
     "./components/**/*"
   ],
   "exclude": [
-    ".stacks/src/playground/*",
     "./.stacks/examples/*",
     "./.stacks/bin/*",
     "./.stacks/README.md",

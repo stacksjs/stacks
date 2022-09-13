@@ -1,20 +1,25 @@
 import { resolve } from 'pathe'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { readJsonFile } from '../core/fs'
-import type { Manifest } from '../core/manifest'
+import type { Manifest, NpmScript } from '../types'
 import { isManifest } from '../core/manifest'
-import type { NpmScript } from '../types/cli'
 
 /**
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript) {
-  const path = resolve(process.cwd())
+  let path = resolve(process.cwd(), '.')
+
+  // in this case, the artisan command was called from the root folder
+  // but since the CLI script is store in the .stacks folder, we need to
+  // go up one level to find the package.json file
+  if (!path.includes('.stacks'))
+    path = resolve(path, '.stacks')
+
   const { data: manifest } = await readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script))
     await ezSpawn.async('npm', ['run', script], { stdio: 'inherit' })
-  // await ezSpawn.async('npm', ['run', script, '--silent'], { stdio: 'inherit' })
 }
 
 /**
