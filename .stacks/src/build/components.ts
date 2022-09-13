@@ -1,12 +1,17 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../types'
 import { componentLibraryName } from '../../../config/library'
 import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
 import alias from '../core/alias'
 
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
+
 const config: ViteConfig = {
-  root: resolve(__dirname, '../../../components'),
+  root: resolve(_dirname, '../../../components'),
 
   envPrefix,
 
@@ -43,12 +48,12 @@ const config: ViteConfig = {
 
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../components/dist'),
+    outDir: resolve(_dirname, '../../components/dist'),
 
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../components/index.ts'),
+      entry: resolve(_dirname, '../components/index.ts'),
       name: componentLibraryName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

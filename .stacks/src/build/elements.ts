@@ -1,4 +1,5 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../types'
 import alias from '../core/alias'
@@ -7,8 +8,12 @@ import { webComponentLibraryName } from '../../../config/library'
 
 const isWebComponent = true
 
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
+
 const config: ViteConfig = {
-  root: resolve(__dirname, '../../../components'),
+  root: resolve(_dirname, '../../../components'),
 
   envPrefix,
 
@@ -45,12 +50,12 @@ const config: ViteConfig = {
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../elements/dist'),
+    outDir: resolve(_dirname, '../../elements/dist'),
 
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../components/index.ts'),
+      entry: resolve(_dirname, '../components/index.ts'),
       name: webComponentLibraryName,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

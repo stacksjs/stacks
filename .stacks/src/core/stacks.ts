@@ -1,4 +1,5 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import VueI18n from '@intlify/vite-plugin-vue-i18n'
@@ -7,10 +8,14 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import type { PluginOption } from 'vite'
 
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
+
 const inspect = Inspect()
 
 const components = Components({
-  dirs: [resolve(__dirname, '../../../components')],
+  dirs: [resolve(_dirname, '../../../components')],
   extensions: ['vue'],
   dts: '../../components.d.ts',
 })
@@ -18,11 +23,11 @@ const components = Components({
 const autoImports = AutoImport({
   imports: ['vue', 'vue-i18n', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
   dirs: [
-    resolve(__dirname, '../../../functions'),
-    resolve(__dirname, '../../../components'),
-    resolve(__dirname, '../../../config'),
+    resolve(_dirname, '../../../functions'),
+    resolve(_dirname, '../../../components'),
+    resolve(_dirname, '../../../config'),
   ],
-  dts: resolve(__dirname, '../../auto-imports.d.ts'),
+  dts: resolve(_dirname, '../../auto-imports.d.ts'),
   vueTemplate: true,
 })
 
@@ -30,12 +35,12 @@ const autoImports = AutoImport({
 const i18n = VueI18n({
   runtimeOnly: true,
   compositionOnly: true,
-  include: [resolve(__dirname, '../../../lang/**')],
+  include: [resolve(_dirname, '../../../lang/**')],
 })
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: resolve(__dirname, '../core/unocss.ts'),
+    configFile: resolve(_dirname, '../core/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }

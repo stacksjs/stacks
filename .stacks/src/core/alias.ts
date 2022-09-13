@@ -4,9 +4,14 @@
  * TODO: the future "artisan setup"-command will set up these aliases.
  */
 
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
 
-const r = (p: string) => resolve(__dirname, p)
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
+
+const r = (p: string) => resolve(_dirname, p)
 
 const alias: Record<string, string> = {
   '~/': r('../../..'),

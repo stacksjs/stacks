@@ -1,9 +1,14 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../types'
 import { defineConfig } from '../core'
 import alias from '../core/alias'
 import { functionLibraryName } from '../../../config/library'
+
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
 
 const config: ViteConfig = {
   resolve: {
@@ -15,12 +20,12 @@ const config: ViteConfig = {
 
 export function functionsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(__dirname, '../../functions/dist'),
+    outDir: resolve(_dirname, '../../functions/dist'),
 
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(__dirname, '../../../config/functions.ts'),
+      entry: resolve(_dirname, '../../../config/functions.ts'),
       name: functionLibraryName,
       formats: ['es', 'cjs'],
       fileName: (format: string) => {
