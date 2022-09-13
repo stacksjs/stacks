@@ -46,7 +46,7 @@ importers:
       lint-staged: ^13.0.3
       local-pkg: ^0.4.2
       minimatch: ^5.1.0
-      nitropack: ^0.5.1
+      nitropack: ^0.5.2
       pathe: ^0.3.7
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
