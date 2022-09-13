@@ -1,3 +1,12 @@
+## [0.30.3](https://github.com/ow3org/stacks/compare/v0.30.2...v0.30.3) (2022-09-13)
+
+
+### Bug Fixes
+
+* **build:** sort export order ([ed9906e](https://github.com/ow3org/stacks/commit/ed9906ed40890b5244d3bcf5797011b4423046d8))
+
+
+
 ## [0.30.2](https://github.com/ow3org/stacks/compare/v0.30.1...v0.30.2) (2022-09-13)
 
 
