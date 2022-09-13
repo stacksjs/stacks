@@ -1,5 +1,6 @@
 import fs from 'fs'
-import { join } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 
@@ -87,3 +88,7 @@ export function writeTextFile(file: TextFile): Promise<void> {
 export function hasFiles(folder: string): boolean {
   return fs.readdirSync(folder).length > 0
 }
+
+export const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))

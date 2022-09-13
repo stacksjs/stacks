@@ -1,16 +1,12 @@
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import type { ViteConfig } from '../types'
 import alias from '../core/alias'
 import { atomicCssEngine, autoImports, components, defineConfig, envPrefix, i18n, inspect, uiEngine } from '../core'
 import { webComponentLibraryName } from '../../../config/library'
+import { _dirname } from '../core/fs'
 
 const isWebComponent = true
-
-const _dirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : dirname(fileURLToPath(import.meta.url))
 
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),

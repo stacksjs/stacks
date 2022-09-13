@@ -5,4 +5,4 @@ import { defineConfig as defineTestConfig } from 'vitest/config'
 import { componentsBuildOptions, webComponentsBuildOptions } from '../build'
 import { Stacks, atomicCssEngine, autoImports, components, envPrefix, i18n, inspect, uiEngine } from './stacks'
 
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig, envPrefix, i18n, componentsBuildOptions, webComponentsBuildOptions }
+export { envPrefix, resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, createApp, defineConfig, defineTestConfig, i18n, componentsBuildOptions, webComponentsBuildOptions }
