@@ -1,3 +1,12 @@
+## [0.29.1](https://github.com/ow3org/stacks/compare/v0.29.0...v0.29.1) (2022-09-13)
+
+
+### Bug Fixes
+
+* **build:** several issues ([e6c6de2](https://github.com/ow3org/stacks/commit/e6c6de22bc261d12b464e1702b0a2a3a66237c7c))
+
+
+
 # [0.29.0](https://github.com/ow3org/stacks/compare/v0.28.6...v0.29.0) (2022-09-13)
 
 
