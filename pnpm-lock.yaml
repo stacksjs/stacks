@@ -41,12 +41,12 @@ importers:
       events: ^3.3.0
       fast-glob: ^3.2.12
       fs-extra: ^10.1.0
-      giget: ^0.1.5
+      giget: ^0.1.6
       jiti: ^1.15.0
       lint-staged: ^13.0.3
       local-pkg: ^0.4.2
       minimatch: ^5.1.0
-      nitropack: ^0.5.2
+      nitropack: ^0.5.3
       pathe: ^0.3.7
       rimraf: ^3.0.2
       simple-git-hooks: ^2.8.0
@@ -99,7 +99,7 @@ importers:
       lint-staged: 13.0.3
       local-pkg: 0.4.2
       minimatch: 5.1.0
-      nitropack: 0.5.2_vite@3.1.0
+      nitropack: 0.5.3_vite@3.1.0
       pathe: 0.3.7
       rimraf: 3.0.2
       simple-git-hooks: 2.8.0
@@ -2065,8 +2065,8 @@ packages:
       semver: 7.3.7
     dev: false
 
-  /c12/0.2.11:
-    resolution: {integrity: sha512-DOy85AO8HN66IgqCDUmMrLb+r4/z8f8Cu8oUIfERbzi/vxZ/GS99SU7lIMz0EQgJktZp6FtcisuiyCdQ6VaTTQ==}
+  /c12/0.2.12:
+    resolution: {integrity: sha512-Oq+XDrx2luek30VrWU0QXrvPbILAp8fDVgprRvhP4WL4CZaSqE7CNHIhq1R824YSkMVUOfMjsZFRcVqs7I2Xxg==}
     dependencies:
       defu: 6.1.0
       dotenv: 16.0.2
@@ -5457,8 +5457,8 @@ packages:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: false
 
-  /nitropack/0.5.2_vite@3.1.0:
-    resolution: {integrity: sha512-VXLxM5e6Fnkj8XPT9WHIPAKo1PRFr9zlLtE1Rhu8N1p9BCyTtFvXXQpOJeeTXrjYYUsFqlBlzQof+tCc0TfeTg==}
+  /nitropack/0.5.3_vite@3.1.0:
+    resolution: {integrity: sha512-X54AQOAUDwuegwMaiVsWGUpG7kgOVlwUnbV9fIo4sClmwU7zmTblmM+NhiioC06r/Z5OKKM8Bj+vmIL52GBejg==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0}
     hasBin: true
     dependencies:
@@ -5474,7 +5474,7 @@ packages:
       '@rollup/pluginutils': 4.2.1
       '@vercel/nft': 0.22.1
       archiver: 5.3.1
-      c12: 0.2.11
+      c12: 0.2.12
       chalk: 5.0.1
       chokidar: 3.5.3
       consola: 2.15.3
