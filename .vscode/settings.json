@@ -237,7 +237,8 @@
     "consola",
     "zixuanchen",
     "laravel",
-    "pathe"
+    "pathe",
+    "safelist"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
