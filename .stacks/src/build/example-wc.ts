@@ -1,6 +1,7 @@
 import { resolve } from 'pathe'
+import { defineConfig } from 'vite'
 import type { ViteConfig } from '..'
-import { defineConfig, inspect, uiEngine } from '..'
+import { inspect, uiEngine } from '..'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../examples/web-components'),

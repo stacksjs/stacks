@@ -29,6 +29,9 @@ const autoImports = AutoImport({
   ],
   dts: resolve(_dirname, '../../auto-imports.d.ts'),
   vueTemplate: true,
+  eslintrc: {
+    enabled: true,
+  },
 })
 
 // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n

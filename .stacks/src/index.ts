@@ -1,7 +1,3 @@
 export { atomicCssEngine, autoImports, components, i18n, inspect, uiEngine, Stacks } from './core/stacks'
-export { resolve } from 'pathe'
-export { createApp } from 'vue'
-export { defineConfig } from 'vite'
-export { defineConfig as defineTestConfig } from 'vitest/config'
 export { componentsBuildOptions, webComponentsBuildOptions } from './build'
 export * from './types'

@@ -25,14 +25,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "types": "./dist/functions.d.ts",
+      "require": "./dist/functions.cjs",
+      "import": "./dist/functions.mjs"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/functions.cjs",
+  "module": "dist/functions.mjs",
+  "types": "dist/functions.d.ts",
   "files": [
     "dist"
   ]

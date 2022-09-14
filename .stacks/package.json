@@ -58,7 +58,7 @@
     "build:components": "vite build -c ./src/build/components.ts",
     "build:elements": "vite build -c ./src/build/elements.ts",
     "examples:vue": "pnpm run build:components && vite serve ./examples/vue -c ./src/build/example-vue.ts",
-    "build:functions": "vite build -c ./src/build/functions.ts",
+    "build:functions": "cd ./functions && unbuild",
     "build:stacks": "unbuild",
     "build:cli": "unbuild",
     "nitro:build": "nitro build",
