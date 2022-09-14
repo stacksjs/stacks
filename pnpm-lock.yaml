@@ -57,7 +57,7 @@ importers:
       unplugin-vue-components: ^0.22.7
       vite: ^3.1.0
       vite-plugin-inspect: ^0.7.1
-      vitepress: 1.0.0-alpha.13
+      vitepress: 1.0.0-alpha.14
       vitest: ^0.23.2
       vue: ^3.2.39
       vue-i18n: ^9.2.2
@@ -110,7 +110,7 @@ importers:
       unplugin-vue-components: 0.22.7_q6y4fuc4545gimljymezpzp4pu
       vite: 3.1.0
       vite-plugin-inspect: 0.7.1_vite@3.1.0
-      vitepress: 1.0.0-alpha.13
+      vitepress: 1.0.0-alpha.14
       vitest: 0.23.2
       vue: 3.2.39
       vue-i18n: 9.2.2_vue@3.2.39
@@ -5621,6 +5621,10 @@ packages:
       set-blocking: 2.0.0
     dev: false
 
+  /nprogress/0.2.0:
+    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
+    dev: false
+
   /nth-check/2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
     dependencies:
@@ -7386,8 +7390,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress/1.0.0-alpha.13:
-    resolution: {integrity: sha512-gCbKb+6o0g5wHt2yyqBPk7FcvrB+MfwGtg1JMS5p99GTQR87l3b7symCl8o1ecv7MDXwJ2mPB8ZrYNLnQAJxLQ==}
+  /vitepress/1.0.0-alpha.14:
+    resolution: {integrity: sha512-GVwDeZPc/+5vgxOh0NfbKlk/QT4e20hRUdLdG+hEP8myJmM0IC4uIL7xK2G/wn6ucei9hLb0YQh677oDhCxF6g==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.2.1
@@ -7396,6 +7400,7 @@ packages:
       '@vue/devtools-api': 6.2.1
       '@vueuse/core': 9.2.0_vue@3.2.39
       body-scroll-lock: 4.0.0-beta.0
+      nprogress: 0.2.0
       shiki: 0.11.1
       vite: 3.1.0
       vue: 3.2.39

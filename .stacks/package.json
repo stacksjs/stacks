@@ -135,7 +135,7 @@
     "unplugin-vue-components": "^0.22.7",
     "vite": "^3.1.0",
     "vite-plugin-inspect": "^0.7.1",
-    "vitepress": "1.0.0-alpha.13",
+    "vitepress": "1.0.0-alpha.14",
     "vitest": "^0.23.2",
     "vue": "^3.2.39",
     "vue-i18n": "^9.2.2",
