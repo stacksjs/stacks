@@ -140,5 +140,8 @@
     "vue": "^3.2.39",
     "vue-i18n": "^9.2.2",
     "vue-tsc": "^0.40.13"
+  },
+  "devDependencies": {
+    "@vitest/coverage-istanbul": "^0.23.2"
   }
 }
