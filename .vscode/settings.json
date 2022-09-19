@@ -1,8 +1,6 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "git.enableSmartCommit": true,
-  "css.validate": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -12,6 +10,17 @@
   "editor.quickSuggestions": {
     "strings": true
   },
+  "eslint.format.enable": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.formatOnSave": true,
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "git.enableSmartCommit": true,
+  "css.validate": false,
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
@@ -238,7 +247,8 @@
     "zixuanchen",
     "laravel",
     "pathe",
-    "safelist"
+    "safelist",
+    "unimport"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
