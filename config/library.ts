@@ -1,9 +1,9 @@
 /**
  * Your component & function library variables.
  *
- * These values may be updated at any time, but if you update the "library name,"
- * it will create a new npm package with future releases. Be careful when
- * updating these settings. Read more in its documentation:
+ * These values may be updated at any time, but if you update
+ * the "library name," it will create a new npm package for
+ * future releases. Read more in its documentation:
  */
 
 import type { Hosts } from 'stacks'
@@ -36,6 +36,7 @@ export const functionsLibrary = {
   description: 'Your function library description.',
   keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
   shouldBuildIife: false,
+  shouldGenerateSourcemap: false,
 }
 
 export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, componentsLibrary, functionsLibrary, webComponentsLibrary }

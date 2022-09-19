@@ -10,9 +10,9 @@ It's important to note early on that this project is written with [TypeScript][t
 
 Don't be discouraged, because you likely will get by and learning TypeScript on the fly as you view some of the component examples within the codebase.
 
-### Vue 3.2 & Vite & unbuild
+### Vue 3.2 & Vite
 
-This project uses [Vue][vue], [Vite][vite] and [unbuild][unbuild] to build [Vue components][vue-components], Web Components, and "composable functions".
+This project uses [Vue][vue] & [Vite][vite] to build [Vue components][vue-components], Web Components, and "composable functions".
 
 ### Architecture
 
@@ -92,7 +92,6 @@ contribution is appreciated more than you can imagine, and even a failed PR can 
 [typescript]: https://www.typescriptlang.org
 [vue]: https://vuejs.org/
 [vite]: https://vitejs.dev/
-[unbuild]: https://github.com/unjs/unbuild
 [vue-components]: https://vuejs.org/guide/essentials/component-basics.html
 [stacks]: https://github.com/ow3org/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716

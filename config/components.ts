@@ -1,7 +1,7 @@
 /**
  * This is the entry point to your component library.
- * Simply include the components to be export here
- * and your built library will include them.
+ * Simply include the functions you wish to
+ * include in your built library.
  */
 
 export { default as Counter } from '../components/Buttons/Counter.vue'

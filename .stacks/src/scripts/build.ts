@@ -5,6 +5,7 @@ import { ExitCode } from '../cli/exit-code'
 import { NpmScript } from '../types'
 import { hasFiles } from '../core/fs'
 import { runNpmScript } from './run-npm-script'
+import { generateTypes } from './generate'
 
 const { prompts } = Prompts
 
@@ -90,19 +91,6 @@ export async function buildFunctionsLibrary() {
   }
   else {
     consola.info('No functions found.')
-  }
-}
-
-export async function generateTypes() {
-  consola.info('Building your functions library for production use & npm/CDN distribution...')
-
-  try {
-    await runNpmScript(NpmScript.GenerateTypes)
-    consola.success('Your library types were generated.')
-  }
-  catch (error) {
-    consola.error('There was an error generating your types')
-    consola.error(error)
   }
 }
 

@@ -1,10 +1,9 @@
 import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
-import typescript2 from 'rollup-plugin-typescript2'
 import type { ViteConfig } from '../types'
 import { functionsLibrary } from '../../../config/library'
-import { autoImports, inspect } from '..'
+import { autoImports } from '..'
 import alias from '../core/alias'
 import { _dirname } from '../core/fs'
 
@@ -13,13 +12,8 @@ const config: ViteConfig = {
 
   envPrefix: 'STACKS_',
 
-  server: {
-    port: 3333,
-    open: true,
-  },
-
   resolve: {
-    dedupe: ['vue'],
+    // dedupe: ['vue'],
     alias,
   },
 
@@ -28,18 +22,7 @@ const config: ViteConfig = {
   // },
 
   plugins: [
-    inspect,
-
     autoImports,
-
-    {
-      ...typescript2({
-        clean: true,
-        useTsconfigDeclarationDir: true,
-        tsconfig: resolve(_dirname, '../../../tsconfig.json'),
-      }),
-      apply: 'build',
-    },
   ],
 
   build: functionsBuildOptions(),
@@ -48,19 +31,21 @@ const config: ViteConfig = {
 export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(_dirname, '../../functions/dist'),
-
     emptyOutDir: true,
-
+    sourcemap: functionsLibrary.shouldGenerateSourcemap,
     lib: {
-      entry: resolve(_dirname, '../../functions/index.ts'),
+      entry: resolve(_dirname, '../../../config/functions.ts'),
       name: functionsLibrary.name,
-      formats: ['cjs', 'es'],
+      formats: functionsLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'
 
         if (format === 'cjs')
           return 'index.cjs'
+
+        if (format === 'iife')
+          return 'index.iife.js'
 
         return 'index.?.js'
       },
@@ -76,7 +61,6 @@ export function functionsBuildOptions(): ViteBuildOptions {
     // },
     // },
 
-    // sourcemap: true,
     // minify: false,
   }
 }

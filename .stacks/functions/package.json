@@ -35,8 +35,5 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ],
-  "scripts": {
-    "lint:fix": "cd .. && pnpm run lint:fix"
-  }
+  ]
 }

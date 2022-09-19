@@ -11,6 +11,7 @@ import { generateTestCoverageReport, runTestSuite, typecheck } from './scripts/t
 import { ExitCode } from './cli/exit-code'
 import { release } from './scripts/release'
 import { commit } from './scripts/commit'
+import { generateTypes } from './scripts/generate'
 
 /**
  * The main entry point of the CLI
@@ -26,7 +27,6 @@ async function main() {
     process.on('unhandledRejection', errorHandler)
 
     cli
-      .version(packageVersion)
       .command('dev', 'Start the development server for any of the following packages')
       .option('-c, --components', 'Start the Components development server')
       .option('-f, --functions', 'Start the Functions development server')
@@ -37,21 +37,18 @@ async function main() {
       })
 
     cli
-      .version(packageVersion)
       .command('dev:components', 'Start the development server for your component library')
       .action(async () => {
         await startDevelopmentServer('components')
       })
 
     cli
-      .version(packageVersion)
       .command('dev:docs', 'Start the development server for your documentation')
       .action(async () => {
         await startDevelopmentServer('docs')
       })
 
     cli
-      .version(packageVersion)
       .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
       .option('-c, --components', 'Build your component library')
       .option('-w, --web-components', 'Build your web component library') // these are automatically built with your -c option as well
@@ -66,142 +63,124 @@ async function main() {
       })
 
     cli
-      .version(packageVersion)
       .command('build:components', 'Automagically build your component libraries for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('components')
       })
 
     cli
-      .version(packageVersion)
       .command('build:functions', 'Automagically build your function library for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('functions')
       })
 
     cli
-      .version(packageVersion)
       .command('build:elements', 'Automagically build web component library for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('web-components')
       })
 
     cli
-      .version(packageVersion)
       .command('build:docs', 'Automagically build your documentation site.')
       .action(async () => {
         await startBuildProcess('docs')
       })
 
     cli
-      .version(packageVersion)
       .command('build:stacks', 'Build the core Stacks framework.')
       .action(async () => {
         await startBuildProcess('stacks')
       })
 
     cli
-      .version(packageVersion)
       .command('fresh', 'Reinstalls your npm dependencies.')
       .action(async () => {
         await reinstallNpmDependencies()
       })
 
     cli
-      .version(packageVersion)
       .command('update', 'Updates your npm dependencies to their latest version based on the specified range.')
       .action(async () => {
         await updateNpmDependencies()
       })
 
     cli
-      .version(packageVersion)
       .command('lint', 'Automagically lints your codebase.')
       .action(async () => {
         await lint()
       })
 
     cli
-      .version(packageVersion)
       .command('lint:fix', 'Automagically fixes lint errors.')
       .action(async () => {
         await lintFix()
       })
 
     cli
-      .version(packageVersion)
       .command('make:component', 'Scaffolds a component.')
       .action(async () => {
         await makeComponent(cli.args[0])
       })
 
     cli
-      .version(packageVersion)
       .command('make:function', 'Scaffolds a function.')
       .action(async () => {
         await makeFunction(cli.args[0])
       })
 
     cli
-      .version(packageVersion)
       .command('make:lang', 'Scaffolds a language file.')
       .action(async () => {
         await makeLanguage(cli.args[0])
       })
 
     cli
-      .version(packageVersion)
       .command('make:stack', 'Scaffolds a new stack.')
       .action(async () => {
         await makeStack(cli.args[0])
       })
 
     cli
-      .version(packageVersion)
       .command('test', 'Runs your test suite.')
       .action(async () => {
         await runTestSuite()
       })
 
     cli
-      .version(packageVersion)
       .command('test:types', 'Typechecks your codebase.')
       .action(async () => {
         await typecheck()
       })
 
     cli
-      .version(packageVersion)
       .command('test:coverage', 'Generates a test coverage report.')
       .action(async () => {
         await generateTestCoverageReport()
       })
 
     cli
-      .version(packageVersion)
       .command('release', 'Releases a new version of your libraries/packages.')
       .action(async () => {
         await release()
       })
 
     cli
-      .version(packageVersion)
       .command('commit', 'Commit your stashed changes.')
       .action(async () => {
         await commit()
       })
 
-    // cli
-    //   .version(packageVersion)
-    //   .command('help', 'Review the available commands')
-    //   .outputHelp()
+    cli
+      .command('generate:types', 'Generates the types of your library/libraries.')
+      .action(async () => {
+        await generateTypes()
+      })
 
     cli
       .version(packageVersion)
       .command('version', 'Review the current version')
       .outputVersion()
 
-    // const result = cli.parse()
     cli.parse()
   }
   catch (error) {

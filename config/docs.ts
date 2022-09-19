@@ -1,6 +1,7 @@
 /**
- * This is the place where you define your documentation configuration.
- * For all available options, see the DocsConfig type definition.
+ * This is the place where you define your documentation
+ * configuration. For all available options,
+ * see the DocsConfig type definition.
  */
 
 import { resolve } from 'pathe'

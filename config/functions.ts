@@ -1,7 +1,7 @@
 /**
  * This is the entry point to your function library.
- * Simply include the functions to be export here
- * and your built library will include them.
+ * Simply include the functions you wish to
+ * include in your built library.
  */
 
 export * from '../functions/counter'
