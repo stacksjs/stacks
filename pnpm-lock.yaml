@@ -25,7 +25,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.45.21
       '@unocss/vite': ^0.45.21
       '@vitejs/plugin-vue': ^3.1.0
-      '@vitest/coverage-istanbul': ^0.23.2
+      '@vitest/coverage-istanbul': ^0.23.4
       '@vueuse/core': ^9.2.0
       bumpp: ^8.2.1
       cac: ^6.7.14
@@ -56,10 +56,10 @@ importers:
       unocss: ^0.45.21
       unplugin-auto-import: ^0.11.2
       unplugin-vue-components: ^0.22.7
-      vite: ^3.1.0
-      vite-plugin-inspect: ^0.7.1
-      vitepress: 1.0.0-alpha.14
-      vitest: ^0.23.2
+      vite: ^3.1.2
+      vite-plugin-inspect: ^0.7.2
+      vitepress: 1.0.0-alpha.15
+      vitest: ^0.23.4
       vue: ^3.2.39
       vue-i18n: ^9.2.2
       vue-tsc: ^0.40.13
@@ -112,7 +112,7 @@ importers:
       unplugin-vue-components: 0.22.7_a35c2tzqgijav5jkbfyu2c5dqu
       vite: 3.1.2
       vite-plugin-inspect: 0.7.2_vite@3.1.2
-      vitepress: 1.0.0-alpha.14
+      vitepress: 1.0.0-alpha.15
       vitest: 0.23.4
       vue: 3.2.39
       vue-i18n: 9.2.2_vue@3.2.39
@@ -495,7 +495,7 @@ packages:
       cosmiconfig-typescript-loader: 4.1.0_3owiowz3ujipd4k6pbqn3n7oui
       lodash: 4.17.21
       resolve-from: 5.0.0
-      ts-node: 10.9.1_ck2axrxkiif44rdbzjywaqjysa
+      ts-node: 10.9.1_bidgzm5cq2du6gnjtweqqjrrn4
       typescript: 4.8.3
     transitivePeerDependencies:
       - '@swc/core'
@@ -2645,7 +2645,7 @@ packages:
     dependencies:
       '@types/node': 14.18.29
       cosmiconfig: 7.0.1
-      ts-node: 10.9.1_ck2axrxkiif44rdbzjywaqjysa
+      ts-node: 10.9.1_bidgzm5cq2du6gnjtweqqjrrn4
       typescript: 4.8.3
     dev: false
     optional: true
@@ -7040,7 +7040,7 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /ts-node/10.9.1_ck2axrxkiif44rdbzjywaqjysa:
+  /ts-node/10.9.1_bidgzm5cq2du6gnjtweqqjrrn4:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -7059,7 +7059,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 14.18.29
+      '@types/node': 18.7.18
       acorn: 8.8.0
       acorn-walk: 8.2.0
       arg: 4.1.3
@@ -7502,8 +7502,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress/1.0.0-alpha.14:
-    resolution: {integrity: sha512-GVwDeZPc/+5vgxOh0NfbKlk/QT4e20hRUdLdG+hEP8myJmM0IC4uIL7xK2G/wn6ucei9hLb0YQh677oDhCxF6g==}
+  /vitepress/1.0.0-alpha.15:
+    resolution: {integrity: sha512-+pHJQCpnv0wVgLRyonisrj7Y77PVhbns2nTLxV9GkH3T+RTY/W2JmRatzBg5WciMaPyO8Ms6F3YElO5PULVv3w==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.2.1
