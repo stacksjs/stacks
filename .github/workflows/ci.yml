@@ -13,7 +13,7 @@ env:
   PR_NUMBER: '${{ github.event.number }}'
   SOURCE_BRANCH: $GITHUB_HEAD_REF
   FIXER_BRANCH: auto-fixed/$GITHUB_HEAD_REF
-  TITLE: Apply fixes from JS-CS-Fixer
+  TITLE: 'chore: apply fixes from JS-CS-Fixer'
   DESCRIPTION: This merge request applies JS code style fixes from an analysis carried out through GitHub Actions.
 
 concurrency:

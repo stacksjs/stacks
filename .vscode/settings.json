@@ -248,7 +248,8 @@
     "laravel",
     "pathe",
     "safelist",
-    "unimport"
+    "unimport",
+    "globalFroms"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
