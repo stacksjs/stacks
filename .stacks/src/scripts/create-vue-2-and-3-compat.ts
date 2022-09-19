@@ -1,12 +1,13 @@
 /**
- * Thanks: https://github.com/vueuse/vueuse/blob/main/scripts/fix-types.ts
+ * Thanks for inspiration:
+ * https://github.com/vueuse/vueuse/blob/main/scripts/fix-types.ts
  */
 
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 
-export async function fixTypes() {
-  const files = await fg(['types/**/*.d.ts', 'packages/*/dist/*.d.ts'], {
+export async function useVueDemi(paths: string[]) {
+  const files = await fg(paths, {
     onlyFiles: true,
   })
 
@@ -20,4 +21,4 @@ export async function fixTypes() {
   }
 }
 
-fixTypes()
+// useVueDemi()
