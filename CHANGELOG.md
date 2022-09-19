@@ -1,3 +1,12 @@
+## [0.31.1](https://github.com/ow3org/stacks/compare/v0.31.0...v0.31.1) (2022-09-19)
+
+
+### Bug Fixes
+
+* **config:** adjust default package.json values ([f7eb5d2](https://github.com/ow3org/stacks/commit/f7eb5d2ca679c03d4f61afcf35cf0c46635eac24))
+
+
+
 # [0.31.0](https://github.com/ow3org/stacks/compare/v0.30.4...v0.31.0) (2022-09-19)
 
 

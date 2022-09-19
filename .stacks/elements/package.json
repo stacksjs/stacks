@@ -1,7 +1,7 @@
 {
-  "name": "@ow3/hello-world-vue",
-  "version": "0.31.0",
-  "description": "custom-elements,web-components,library,framework-agnostic,typescript,javascript",
+  "name": "@ow3/hello-world-elements",
+  "version": "0.31.1",
+  "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks/tree/main/components#readme",
@@ -14,10 +14,10 @@
     "url": "https://github.com/ow3org/stacks/issues"
   },
   "keywords": [
-    "component",
+    "custom-elements",
+    "web-components",
     "library",
-    "vue",
-    "vite",
+    "framework-agnostic",
     "typescript",
     "javascript"
   ],
