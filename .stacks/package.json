@@ -93,7 +93,7 @@
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@intlify/vite-plugin-vue-i18n": "^6.0.1",
     "@jsdevtools/ez-spawn": "^3.0.4",
-    "@ow3/eslint-config": "^0.28.2",
+    "@ow3/eslint-config": "^0.29.1",
     "@rollup/pluginutils": "^4.2.1",
     "@types/fs-extra": "^9.0.13",
     "@types/minimatch": "^5.1.2",
@@ -102,6 +102,7 @@
     "@unocss/preset-icons": "^0.45.21",
     "@unocss/transformer-compile-class": "^0.45.21",
     "@unocss/vite": "^0.45.21",
+    "@vitest/coverage-istanbul": "^0.23.2",
     "@vitejs/plugin-vue": "^3.1.0",
     "@vueuse/core": "^9.2.0",
     "bumpp": "^8.2.1",
@@ -140,8 +141,5 @@
     "vue": "^3.2.39",
     "vue-i18n": "^9.2.2",
     "vue-tsc": "^0.40.13"
-  },
-  "devDependencies": {
-    "@vitest/coverage-istanbul": "^0.23.2"
   }
 }
