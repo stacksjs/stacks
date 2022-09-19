@@ -25,15 +25,18 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/functions.d.ts",
-      "require": "./dist/functions.cjs",
-      "import": "./dist/functions.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
     }
   },
-  "main": "dist/functions.cjs",
-  "module": "dist/functions.mjs",
-  "types": "dist/functions.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "lint:fix": "cd .. && pnpm run lint:fix"
+  }
 }

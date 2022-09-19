@@ -75,7 +75,7 @@ export async function buildStacks() {
   }
 }
 
-export async function buildFunctionLibrary() {
+export async function buildFunctionsLibrary() {
   consola.info('Building your functions library for production use & npm/CDN distribution...')
 
   if (hasFiles(resolve(process.cwd(), './functions'))) {
@@ -116,7 +116,7 @@ export async function startBuildProcess(options: any) {
   }
 
   else if (options.functions || options === 'functions') {
-    await buildFunctionLibrary()
+    await buildFunctionsLibrary()
   }
 
   else if (options.docs || options === 'docs') {
@@ -129,7 +129,7 @@ export async function startBuildProcess(options: any) {
 
   else if (options.npm || options === 'npm') {
     await buildComponentLibraries()
-    await buildFunctionLibrary()
+    await buildFunctionsLibrary()
     await generateTypes()
 
     consola.success('All your libraries and its types were built successfully to be distributed on npm.')
@@ -155,7 +155,7 @@ export async function startBuildProcess(options: any) {
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     if (answer === 'functions')
-      await buildFunctionLibrary()
+      await buildFunctionsLibrary()
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     else if (answer === 'docs')

@@ -1,9 +1,10 @@
 import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
+import typescript2 from 'rollup-plugin-typescript2'
 import type { ViteConfig } from '../types'
-import { componentsLibrary } from '../../../config/library'
-import { atomicCssEngine, autoImports, components, i18n, inspect, uiEngine } from '..'
+import { functionsLibrary } from '../../../config/library'
+import { autoImports, inspect } from '..'
 import alias from '../core/alias'
 import { _dirname } from '../core/fs'
 
@@ -22,36 +23,37 @@ const config: ViteConfig = {
     alias,
   },
 
-  optimizeDeps: {
-    exclude: ['vue'],
-  },
+  // optimizeDeps: {
+  //   exclude: ['vue'],
+  // },
 
   plugins: [
     inspect,
 
-    uiEngine(),
-
-    atomicCssEngine(),
-
     autoImports,
 
-    components,
-
-    i18n,
+    {
+      ...typescript2({
+        clean: true,
+        useTsconfigDeclarationDir: true,
+        tsconfig: resolve(_dirname, '../../../tsconfig.json'),
+      }),
+      apply: 'build',
+    },
   ],
 
-  build: componentsBuildOptions(),
+  build: functionsBuildOptions(),
 }
 
-export function componentsBuildOptions(): ViteBuildOptions {
+export function functionsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(_dirname, '../../components/dist'),
+    outDir: resolve(_dirname, '../../functions/dist'),
 
     emptyOutDir: true,
 
     lib: {
-      entry: resolve(_dirname, '../components/index.ts'),
-      name: componentsLibrary.name,
+      entry: resolve(_dirname, '../../functions/index.ts'),
+      name: functionsLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
@@ -64,15 +66,15 @@ export function componentsBuildOptions(): ViteBuildOptions {
       },
     },
 
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        // exports: 'named',
-        globals: {
-          vue: 'Vue',
-        },
-      },
-    },
+    // rollupOptions: {
+    // external: ['vue'],
+    // output: {
+    //   // exports: 'named',
+    //   globals: {
+    //     vue: 'Vue',
+    //   },
+    // },
+    // },
 
     // sourcemap: true,
     // minify: false,
