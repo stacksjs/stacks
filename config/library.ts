@@ -20,15 +20,15 @@ export const contributors = ['Chris Breuer <chris@ow3.org>']
 export const defaultLanguage = 'en'
 
 export const componentsLibrary = {
-  name: `${stackName}-elements`,
-  description: 'Your framework agnostic web component library description.',
+  name: `${stackName}-vue`,
+  description: 'Your Vue component library description',
   keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
 }
 
 export const webComponentsLibrary = {
-  name: `${stackName}-vue`,
-  description: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-  keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
+  name: `${stackName}-elements`,
+  description: 'Your framework agnostic web component library description.',
+  keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
 }
 
 export const functionsLibrary = {
