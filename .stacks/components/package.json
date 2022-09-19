@@ -1,7 +1,7 @@
 {
-  "name": "@ow3/hello-world-vue",
-  "version": "0.30.4",
-  "description": "Your Vue component library description.",
+  "name": "@ow3/hello-world-elements",
+  "version": "0.31.0",
+  "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks/tree/main/components#readme",
@@ -28,11 +28,11 @@
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"

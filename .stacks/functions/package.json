@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-fx",
-  "version": "0.30.4",
+  "version": "0.31.0",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -27,11 +27,11 @@
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"

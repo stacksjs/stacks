@@ -1,3 +1,12 @@
+# [0.31.0](https://github.com/ow3org/stacks/compare/v0.30.4...v0.31.0) (2022-09-19)
+
+
+### Features
+
+* **test:** add istanbul coverage ([ec02b06](https://github.com/ow3org/stacks/commit/ec02b06d190d9d50d211abc56ef83a9295c45b98))
+
+
+
 ## [0.30.4](https://github.com/ow3org/stacks/compare/v0.30.3...v0.30.4) (2022-09-13)
 
 
