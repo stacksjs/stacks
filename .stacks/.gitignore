@@ -1,0 +1,5 @@
+.nitro
+.output
+src/components/.vite-inspect
+functions/index.ts
+functions/src

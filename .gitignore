@@ -1,11 +1,8 @@
 node_modules
 .DS_Store
+.DS_STORE
 !*/cli/dist/*
 **/dist/*
-.DS_STORE
 .cache
 .temp
 .pnpm-debug.log
-.stacks/.nitro
-.stacks/.output
-.stacks/src/components/.vite-inspect
