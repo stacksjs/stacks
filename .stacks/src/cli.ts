@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { cac } from 'cac'
 import { version as packageVersion } from '../package.json'
 import { startDevelopmentServer } from './scripts/dev'
