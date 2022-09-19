@@ -2,7 +2,7 @@
   "name": "@ow3/stacks",
   "type": "module",
   "version": "0.30.4",
-  "packageManager": "pnpm@7.11.0",
+  "packageManager": "pnpm@7.12.0",
   "description": "The Stacks Framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -50,7 +50,7 @@
   ],
   "engines": {
     "node": ">=v16.17.0",
-    "pnpm": ">=7.11.0"
+    "pnpm": ">=7.12.0"
   },
   "scripts": {
     "artisan": "jiti ./src/cli.ts",
@@ -102,7 +102,7 @@
     "@unocss/preset-icons": "^0.45.21",
     "@unocss/transformer-compile-class": "^0.45.21",
     "@unocss/vite": "^0.45.21",
-    "@vitest/coverage-istanbul": "^0.23.2",
+    "@vitest/coverage-istanbul": "^0.23.4",
     "@vitejs/plugin-vue": "^3.1.0",
     "@vueuse/core": "^9.2.0",
     "bumpp": "^8.2.1",
@@ -134,10 +134,10 @@
     "unocss": "^0.45.21",
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.7",
-    "vite": "^3.1.0",
-    "vite-plugin-inspect": "^0.7.1",
-    "vitepress": "1.0.0-alpha.14",
-    "vitest": "^0.23.2",
+    "vite": "^3.1.2",
+    "vite-plugin-inspect": "^0.7.2",
+    "vitepress": "1.0.0-alpha.15",
+    "vitest": "^0.23.4",
     "vue": "^3.2.39",
     "vue-i18n": "^9.2.2",
     "vue-tsc": "^0.40.13"
