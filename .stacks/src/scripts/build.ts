@@ -118,7 +118,6 @@ export async function startBuildProcess(options: any) {
   else if (options.npm || options === 'npm') {
     await buildComponentLibraries()
     await buildFunctionsLibrary()
-    await generateTypes()
 
     consola.success('All your libraries and its types were built successfully to be distributed on npm.')
   }
@@ -151,4 +150,6 @@ export async function startBuildProcess(options: any) {
 
     else process.exit(ExitCode.InvalidArgument)
   }
+
+  await generateTypes()
 }
