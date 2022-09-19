@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from 'pathe'
 import consola from 'consola'
-import { author, componentLibraryDescription, componentLibraryKeywords, componentLibraryName, contributors, functionLibraryDescription, functionLibraryKeywords, functionLibraryName, repository, webComponentLibraryDescription, webComponentLibraryName } from '../../../config/library'
+import { author, componentsLibrary, contributors, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
 import { hasFiles, writeTextFile } from '../core/fs'
 
 export async function generatePackageJson(type: string) {
@@ -10,24 +10,24 @@ export async function generatePackageJson(type: string) {
   let name, description, directory, keywords
 
   if (type === 'components') {
-    name = componentLibraryName
-    description = componentLibraryDescription
+    name = componentsLibrary.name
+    description = componentsLibrary.description
     directory = 'components'
-    keywords = componentLibraryKeywords
+    keywords = componentsLibrary.keywords
   }
 
   else if (type === 'elements') {
-    name = webComponentLibraryName
-    description = webComponentLibraryDescription
+    name = webComponentsLibrary.name
+    description = webComponentsLibrary.description
     directory = 'components'
-    keywords = componentLibraryKeywords
+    keywords = webComponentsLibrary.keywords
   }
 
   else if (type === 'functions') {
-    name = functionLibraryName
-    description = functionLibraryDescription
+    name = functionsLibrary.name
+    description = functionsLibrary.description
     directory = 'functions'
-    keywords = functionLibraryKeywords
+    keywords = functionsLibrary.keywords
   }
 
   const path = resolve(process.cwd(), `./${type}/package.json`)

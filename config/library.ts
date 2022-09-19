@@ -8,27 +8,34 @@
 
 import type { Hosts } from 'stacks'
 
+export const libraryName = 'hello-world'
+export const organizationName = '@ow3'
+export const stackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
+export const repository = 'ow3org/stacks'
+export const host: Hosts = 'netlify'
+
 export const license = 'MIT'
 export const author = 'Chris Breuer'
 export const contributors = ['Chris Breuer <chris@ow3.org>']
 export const defaultLanguage = 'en'
 
-export const libraryName = 'hello-world'
-export const organizationName = '@ow3'
-export const repository = 'ow3org/stacks'
-export const host: Hosts = 'netlify'
+export const componentsLibrary = {
+  name: `${stackName}-elements`,
+  description: 'Your framework agnostic web component library description.',
+  keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
+}
 
-export const stackName = `${organizationName}/${libraryName}`
-export const functionLibraryName = `${organizationName}/${libraryName}-fx`
-export const componentLibraryName = `${organizationName}/${libraryName}-vue`
-export const webComponentLibraryName = `${organizationName}/${libraryName}-elements`
+export const webComponentsLibrary = {
+  name: `${stackName}-vue`,
+  description: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
+  keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
+}
 
-export const componentLibraryDescription = 'Your Vue component library description.'
-export const webComponentLibraryDescription = 'Your framework agnostic web component library description.'
-export const functionLibraryDescription = 'Your function library description.'
+export const functionsLibrary = {
+  name: `${stackName}-fx`,
+  description: 'Your function library description.',
+  keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
+  shouldBuildIife: false,
+}
 
-export const componentLibraryKeywords = ['component', 'library', 'vue', 'vite', 'typescript', 'javascript']
-export const webComponentLibraryKeywords = ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript']
-export const functionLibraryKeywords = ['functions', 'composables', 'library', 'typescript', 'javascript']
-
-export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, componentLibraryName, webComponentLibraryName, componentLibraryDescription, webComponentLibraryDescription, functionLibraryDescription, componentLibraryKeywords, webComponentLibraryKeywords, functionLibraryKeywords, functionLibraryName, repository }
+export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, componentsLibrary, functionsLibrary, webComponentsLibrary }

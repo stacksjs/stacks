@@ -18,9 +18,7 @@
     "chai": true,
     "classPrefix": true,
     "collect": true,
-    "componentLibraryDescription": true,
-    "componentLibraryKeywords": true,
-    "componentLibraryName": true,
+    "componentsLibrary": true,
     "computed": true,
     "computedAsync": true,
     "computedEager": true,
@@ -49,9 +47,7 @@
     "effectScope": true,
     "expect": true,
     "extendRef": true,
-    "functionLibraryDescription": true,
-    "functionLibraryKeywords": true,
-    "functionLibraryName": true,
+    "functionsLibrary": true,
     "getCurrentInstance": true,
     "getCurrentScope": true,
     "h": true,
@@ -303,9 +299,7 @@
     "watchThrottled": true,
     "watchTriggerable": true,
     "watchWithFilter": true,
-    "webComponentLibraryDescription": true,
-    "webComponentLibraryKeywords": true,
-    "webComponentLibraryName": true,
+    "webComponentsLibrary": true,
     "whenever": true
   }
 }

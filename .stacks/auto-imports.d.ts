@@ -19,9 +19,7 @@ declare global {
   const chai: typeof import('vitest')['chai']
   const classPrefix: typeof import('../config/ui')['classPrefix']
   const collect: typeof import('collect.js')['collect']
-  const componentLibraryDescription: typeof import('../config/library')['componentLibraryDescription']
-  const componentLibraryKeywords: typeof import('../config/library')['componentLibraryKeywords']
-  const componentLibraryName: typeof import('../config/library')['componentLibraryName']
+  const componentsLibrary: typeof import('../config/library')['componentsLibrary']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -50,9 +48,7 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const expect: typeof import('vitest')['expect']
   const extendRef: typeof import('@vueuse/core')['extendRef']
-  const functionLibraryDescription: typeof import('../config/library')['functionLibraryDescription']
-  const functionLibraryKeywords: typeof import('../config/library')['functionLibraryKeywords']
-  const functionLibraryName: typeof import('../config/library')['functionLibraryName']
+  const functionsLibrary: typeof import('../config/library')['functionsLibrary']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const h: typeof import('vue')['h']
@@ -304,9 +300,7 @@ declare global {
   const watchThrottled: typeof import('@vueuse/core')['watchThrottled']
   const watchTriggerable: typeof import('@vueuse/core')['watchTriggerable']
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
-  const webComponentLibraryDescription: typeof import('../config/library')['webComponentLibraryDescription']
-  const webComponentLibraryKeywords: typeof import('../config/library')['webComponentLibraryKeywords']
-  const webComponentLibraryName: typeof import('../config/library')['webComponentLibraryName']
+  const webComponentsLibrary: typeof import('../config/library')['webComponentsLibrary']
   const whenever: typeof import('@vueuse/core')['whenever']
 }
 // for vue template auto import
@@ -331,9 +325,7 @@ declare module '@vue/runtime-core' {
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
-    readonly componentLibraryDescription: UnwrapRef<typeof import('../config/library')['componentLibraryDescription']>
-    readonly componentLibraryKeywords: UnwrapRef<typeof import('../config/library')['componentLibraryKeywords']>
-    readonly componentLibraryName: UnwrapRef<typeof import('../config/library')['componentLibraryName']>
+    readonly componentsLibrary: UnwrapRef<typeof import('../config/library')['componentsLibrary']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -362,9 +354,7 @@ declare module '@vue/runtime-core' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
-    readonly functionLibraryDescription: UnwrapRef<typeof import('../config/library')['functionLibraryDescription']>
-    readonly functionLibraryKeywords: UnwrapRef<typeof import('../config/library')['functionLibraryKeywords']>
-    readonly functionLibraryName: UnwrapRef<typeof import('../config/library')['functionLibraryName']>
+    readonly functionsLibrary: UnwrapRef<typeof import('../config/library')['functionsLibrary']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
@@ -616,9 +606,7 @@ declare module '@vue/runtime-core' {
     readonly watchThrottled: UnwrapRef<typeof import('@vueuse/core')['watchThrottled']>
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
-    readonly webComponentLibraryDescription: UnwrapRef<typeof import('../config/library')['webComponentLibraryDescription']>
-    readonly webComponentLibraryKeywords: UnwrapRef<typeof import('../config/library')['webComponentLibraryKeywords']>
-    readonly webComponentLibraryName: UnwrapRef<typeof import('../config/library')['webComponentLibraryName']>
+    readonly webComponentsLibrary: UnwrapRef<typeof import('../config/library')['webComponentsLibrary']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
   }
 }
