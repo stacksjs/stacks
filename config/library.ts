@@ -6,7 +6,7 @@
  * future releases. Read more in its documentation:
  */
 
-import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
+import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LibraryOptions, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
 
 export const libraryName: LibraryName = 'hello-world'
 export const organizationName: OrganizationName = '@ow3'
@@ -19,19 +19,19 @@ export const author: Author = 'Chris Breuer'
 export const contributors: Contributors = ['Chris Breuer <chris@ow3.org>']
 export const defaultLanguage: LanguageCode = 'en'
 
-export const componentsLibrary = {
+export const componentsLibrary: LibraryOptions = {
   name: `${stackName}-vue`,
   description: 'Your Vue component library description',
   keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
 }
 
-export const webComponentsLibrary = {
+export const webComponentsLibrary: LibraryOptions = {
   name: `${stackName}-elements`,
   description: 'Your framework agnostic web component library description.',
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
 }
 
-export const functionsLibrary = {
+export const functionsLibrary: LibraryOptions = {
   name: `${stackName}-fx`,
   description: 'Your function library description.',
   keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
