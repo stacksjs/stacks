@@ -6,18 +6,18 @@
  * future releases. Read more in its documentation:
  */
 
-import type { Hosts } from 'stacks'
+import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
 
-export const libraryName = 'hello-world'
-export const organizationName = '@ow3'
-export const stackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
-export const repository = 'ow3org/stacks'
+export const libraryName: LibraryName = 'hello-world'
+export const organizationName: OrganizationName = '@ow3'
+export const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
+export const repository: Repository = 'ow3org/stacks'
 export const host: Hosts = 'netlify'
 
-export const license = 'MIT'
-export const author = 'Chris Breuer'
-export const contributors = ['Chris Breuer <chris@ow3.org>']
-export const defaultLanguage = 'en'
+export const license: LicenseType = 'MIT'
+export const author: Author = 'Chris Breuer'
+export const contributors: Contributors = ['Chris Breuer <chris@ow3.org>']
+export const defaultLanguage: LanguageCode = 'en'
 
 export const componentsLibrary = {
   name: `${stackName}-vue`,

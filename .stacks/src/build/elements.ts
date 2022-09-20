@@ -20,12 +20,7 @@ const config: ViteConfig = {
   },
 
   resolve: {
-    dedupe: ['vue'],
     alias,
-  },
-
-  optimizeDeps: {
-    exclude: ['vue', '@vueuse/core'],
   },
 
   plugins: [
@@ -46,9 +41,7 @@ const config: ViteConfig = {
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(_dirname, '../../elements/dist'),
-
     emptyOutDir: true,
-
     lib: {
       entry: resolve(_dirname, '../components/index.ts'),
       name: webComponentsLibrary.name,

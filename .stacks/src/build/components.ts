@@ -44,9 +44,7 @@ const config: ViteConfig = {
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(_dirname, '../../components/dist'),
-
     emptyOutDir: true,
-
     lib: {
       entry: resolve(_dirname, '../components/index.ts'),
       name: componentsLibrary.name,
@@ -65,15 +63,11 @@ export function componentsBuildOptions(): ViteBuildOptions {
     rollupOptions: {
       external: ['vue'],
       output: {
-        // exports: 'named',
         globals: {
           vue: 'Vue',
         },
       },
     },
-
-    // sourcemap: true,
-    // minify: false,
   }
 }
 
