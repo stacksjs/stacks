@@ -43,12 +43,12 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     outDir: resolve(_dirname, '../../elements/dist'),
     emptyOutDir: true,
     lib: {
-      entry: resolve(_dirname, '../components/index.ts'),
+      entry: resolve(_dirname, '../../../config/web-components.ts'),
       name: webComponentsLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
-          return 'index.js'
+          return 'index.mjs'
 
         if (format === 'cjs')
           return 'index.cjs'

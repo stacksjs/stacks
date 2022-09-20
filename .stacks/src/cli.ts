@@ -11,6 +11,7 @@ import { ExitCode } from './cli/exit-code'
 import { release } from './scripts/release'
 import { commit } from './scripts/commit'
 import { generateTypes } from './scripts/generate'
+import { runExample } from './scripts/examples'
 
 /**
  * The main entry point of the CLI
@@ -137,6 +138,28 @@ async function main() {
       .command('make:stack', 'Scaffolds a new stack.')
       .action(async () => {
         await makeStack(cli.args[0])
+      })
+
+    cli
+      .command('example', 'Test your libraries against your built bundle.')
+      .option('-c, --components', 'Test your Vue component library')
+      .option('-v, --vue', 'Test your Vue component library')
+      .option('-w, --web-components', 'Test your web component library')
+      .option('-e, --elements', 'An alias to the -w flag')
+      .action(async (options) => {
+        await runExample(options)
+      })
+
+    cli
+      .command('example:vue', 'Test your Vue component library.')
+      .action(async () => {
+        await runExample('vue')
+      })
+
+    cli
+      .command('example:elements', 'Test your Web Component library.')
+      .action(async () => {
+        await runExample('elements')
       })
 
     cli

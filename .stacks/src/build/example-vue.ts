@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '..'
-import { inspect, uiEngine } from '..'
+import { uiEngine } from '..'
 
 const config: ViteConfig = {
   root: resolve(__dirname, '../../examples/vue'),
@@ -12,8 +12,6 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    inspect,
-
     uiEngine(),
   ],
 }

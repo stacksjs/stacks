@@ -28,4 +28,6 @@ export const enum NpmScript {
   GenerateTypes = 'generate:types',
   Release = 'release',
   Commit = 'commit',
+  ExampleVue = 'example:vue',
+  ExampleElements = 'example:elements',
 }

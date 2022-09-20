@@ -6,7 +6,6 @@
     "HelloWorld": true,
     "Logo": true,
     "ToggleDark": true,
-    "ToggleLanguage": true,
     "afterAll": true,
     "afterEach": true,
     "assert": true,

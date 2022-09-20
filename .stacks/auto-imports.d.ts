@@ -7,7 +7,6 @@ declare global {
   const HelloWorld: typeof import('../config/components')['HelloWorld']
   const Logo: typeof import('../config/components')['Logo']
   const ToggleDark: typeof import('../config/components')['ToggleDark']
-  const ToggleLanguage: typeof import('../config/components')['ToggleLanguage']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
   const assert: typeof import('vitest')['assert']
@@ -312,7 +311,6 @@ declare module '@vue/runtime-core' {
     readonly HelloWorld: UnwrapRef<typeof import('../config/components')['HelloWorld']>
     readonly Logo: UnwrapRef<typeof import('../config/components')['Logo']>
     readonly ToggleDark: UnwrapRef<typeof import('../config/components')['ToggleDark']>
-    readonly ToggleLanguage: UnwrapRef<typeof import('../config/components')['ToggleLanguage']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
     readonly assert: UnwrapRef<typeof import('vitest')['assert']>
