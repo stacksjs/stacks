@@ -38,7 +38,6 @@ import {
   createApp,
   defineConfig,
   defineTestConfig,
-  i18n,
   inspect,
   resolve,
   uiEngine

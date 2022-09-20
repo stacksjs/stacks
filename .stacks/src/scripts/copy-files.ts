@@ -32,8 +32,5 @@ destinations.forEach(([src, dest]) => {
   const srcPath = resolve(__filename, '..', src)
   const destPath = resolve(__filename, '..', dest)
 
-  // eslint-disable-next-line no-console
-  console.log('copying', srcPath, 'to', destPath)
-
   copyFiles(srcPath, destPath)
 })

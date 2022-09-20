@@ -2,7 +2,6 @@ import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'pathe'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
@@ -21,7 +20,7 @@ const components = Components({
 })
 
 const autoImports = AutoImport({
-  imports: ['vue', 'vue-i18n', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
+  imports: ['vue', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
   dirs: [
     resolve(_dirname, '../../../functions'),
     resolve(_dirname, '../../../components'),
@@ -32,13 +31,6 @@ const autoImports = AutoImport({
   eslintrc: {
     enabled: true,
   },
-})
-
-// https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
-const i18n = VueI18n({
-  runtimeOnly: true,
-  compositionOnly: true,
-  include: [resolve(_dirname, '../../../lang/**')],
 })
 
 function atomicCssEngine(isWebComponent = false) {
@@ -72,8 +64,6 @@ const Stacks = (isWebComponent = false) => <PluginOption>[
   autoImports,
 
   components,
-
-  i18n,
 ]
 
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect, i18n }
+export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect }

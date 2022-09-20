@@ -5,8 +5,6 @@ const { greeting = 'Welcome!' } = defineProps<{
   showButtons: boolean
 }>()
 
-// const { t } = useI18n()
-
 // easily use any of the lifecycle hooks without needing to import them
 onMounted(() => {
   // eslint-disable-next-line no-console
@@ -47,7 +45,6 @@ onMounted(() => {
                     href="https://stacks.ow3org.com/docs"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    <!-- {{ t('hello_world.title_1') }} -->
                     Documentation
                   </a>
                 </div>
@@ -71,7 +68,6 @@ onMounted(() => {
                     href="https://stacks.ow3.org/components"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    <!-- {{ t('hello_world.title_2') }} -->
                     Components
                   </a>
                 </div>
@@ -96,7 +92,6 @@ onMounted(() => {
                     href="https://stacks.ow3.org/functions"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    <!-- {{ t('hello_world.title_3') }} -->
                     Functions
                   </a>
                 </div>
@@ -120,7 +115,6 @@ onMounted(() => {
                     href="https://stacks.ow3.org/pages"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    <!-- {{ t('hello_world.title_4') }} -->
                     Pages
                   </a>
                 </div>
@@ -144,7 +138,6 @@ onMounted(() => {
                     href="https://stacks.ow3.org/"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    <!-- {{ t('hello_world.title_5') }} -->
                     Modern DX
                   </a>
                 </div>
@@ -167,7 +160,6 @@ onMounted(() => {
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
-                  <!-- {{ t('hello_world.title_6') }} -->
                   Vibrant Ecosystem
                 </div>
               </div>

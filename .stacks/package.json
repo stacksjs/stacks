@@ -90,7 +90,6 @@
     "@babel/types": "^7.19.0",
     "@iconify-json/heroicons-outline": "^1.1.4",
     "@iconify-json/heroicons-solid": "^1.1.5",
-    "@intlify/vite-plugin-vue-i18n": "^6.0.1",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@ow3/eslint-config": "^0.29.1",
     "@rollup/pluginutils": "^4.2.1",
@@ -137,7 +136,6 @@
     "vitepress": "1.0.0-alpha.15",
     "vitest": "^0.23.4",
     "vue": "^3.2.39",
-    "vue-i18n": "^9.2.2",
     "vue-tsc": "^0.40.13"
   }
 }

@@ -3,7 +3,7 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import { componentsLibrary } from '../../../config/library'
-import { atomicCssEngine, autoImports, components, i18n, inspect, uiEngine } from '..'
+import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
 import alias from '../core/alias'
 import { _dirname } from '../core/fs'
 
@@ -36,8 +36,6 @@ const config: ViteConfig = {
     autoImports,
 
     components,
-
-    i18n,
   ],
 
   build: componentsBuildOptions(),
