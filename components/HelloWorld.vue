@@ -26,8 +26,6 @@ onMounted(() => {
             <Counter />
 
             <ToggleDark />
-
-            <ToggleLanguage />
           </div>
         </div>
 

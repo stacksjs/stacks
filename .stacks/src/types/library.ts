@@ -51,7 +51,7 @@ export type LanguageCode = 'aa' | 'ab' | 'af' | 'ak' | 'als' | 'am' | 'an' | 'an
 export type Hosts = 'netlify' | 'vercel'
 
 /**
- * The list of options used to build your library.
+ * The list of available options to build your library.
  */
 export interface LibraryOptions {
   /**
