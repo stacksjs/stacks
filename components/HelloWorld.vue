@@ -50,7 +50,7 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks has a wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
+                  Stacks will have (wip) a wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
                 </div>
               </div>
             </div>
@@ -166,7 +166,7 @@ onMounted(() => {
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
                   Stacks’s robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
-                    href="https://forge.Stacks.com"
+                    href="https://github.com/ow3org/table"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Tables</a>, <a
                     href="https://github.com/ow3org/date-picker"
@@ -247,7 +247,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style>
+<style scoped>
   body {
     /* reset browser styles */
     margin: 0;
