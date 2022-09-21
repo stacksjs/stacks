@@ -116,7 +116,7 @@
     "lint-staged": "^13.0.3",
     "local-pkg": "^0.4.2",
     "minimatch": "^5.1.0",
-    "nitropack": "^0.5.3",
+    "nitropack": "^0.5.4",
     "only-allow": "^1.1.1",
     "pathe": "^0.3.8",
     "rimraf": "^3.0.2",
