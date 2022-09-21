@@ -80,7 +80,7 @@ export async function stack(name: string) {
 
   try {
     const path = resolve(process.cwd(), `../../${name}`)
-    await ezSpawn.async('giget', ['gh:ow3org/stacks#main', path], { stdio: 'inherit' })
+    await ezSpawn.async(`giget gh:ow3org/stacks#main ${path}`, { stdio: 'inherit' })
     consola.success(`The ${name} is not accessible at path: ${path}`)
   }
   catch (err) {
