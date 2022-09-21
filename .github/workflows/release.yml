@@ -30,9 +30,6 @@ jobs:
       - name: Build the component & function library releases
         run: pnpm artisan build --npm
 
-      - name: Build the Artisan CLI
-        run: cd .stacks && pnpm run build:cli
-
       - name: Publish to npm
         run: pnpm --filter './.stacks' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks
         env:

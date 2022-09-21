@@ -58,7 +58,6 @@
     "build:components": "vite build -c ./src/build/components.ts",
     "build:elements": "vite build -c ./src/build/elements.ts",
     "build:functions": "vite build -c ./src/build/functions.ts",
-    "build:cli": "vite build -c ./src/build/cli.ts",
     "build:stacks": "wip",
     "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../components/dist dist && vite serve -c ../../src/build/example-vue.ts",
     "example:elements": "pnpm run build:elements && cd examples/web-components && ln -sf ../../elements/dist dist && vite serve -c ../../src/build/example-wc.ts",
