@@ -243,7 +243,8 @@
     "pathe",
     "safelist",
     "unimport",
-    "globalFroms"
+    "globalFroms",
+    "npmrc"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
