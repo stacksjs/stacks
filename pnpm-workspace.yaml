@@ -1,4 +1,5 @@
 packages:
+  - ./
   - ./.stacks
   - ./.stacks/components
   - ./.stacks/elements

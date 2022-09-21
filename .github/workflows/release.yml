@@ -34,7 +34,7 @@ jobs:
         run: cd .stacks && pnpm run build:cli
 
       - name: Publish to npm
-        run: pnpm --filter './.stacks' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks
+        run: pnpm --filter './' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

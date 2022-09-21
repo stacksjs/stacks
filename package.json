@@ -1,4 +1,5 @@
 {
+  "name": "@ow3/stacks",
   "type": "module",
   "version": "0.31.11",
   "private": true,
