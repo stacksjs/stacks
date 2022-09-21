@@ -120,7 +120,9 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of “components,” you may easily reuse them to develop your “pages.” SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly. Vercel & Netlify are supported, including many other cloud providers.
+                  Building on top of “components,” you may easily reuse them to develop your “pages.”
+                  SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly.
+                  Vercel & Netlify are supported, including many other cloud providers.
                 </div>
               </div>
             </div>
@@ -143,10 +145,10 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks means a simplistic artisan setup & maintenance, IDE integration, auto-formatting, auto-imported APIs,
-                  modern git commit conventions, npm package releases & semver versioning,
-                  pretty changelog generations, PR dependency updates, integrated
-                  documentation tooling, and more. <i>A well-defined set of best practices & automations.</i>
+                  Approachable artisan design; simplistic setup, maintenance & collaboration. Deep IDE integration,
+                  auto-formatting, access to powerful utility APIs, modern git commit conventions, npm package releases, semver powered,
+                  pretty changelog generations, PR dependency updates, documentation tooling, and more.
+                  <i>A well-defined set of best practices & automations.</i>
                 </div>
               </div>
             </div>

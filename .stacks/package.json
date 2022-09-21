@@ -45,7 +45,8 @@
     "artisan": "./dist/cli.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "engines": {
     "node": ">=v16.17.0",

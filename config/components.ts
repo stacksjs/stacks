@@ -1,11 +1,15 @@
 /**
- * This is the entry point to your component library.
- * Simply include the functions you wish to
- * include in your built library.
+ * This is where you define the components that need to
+ * be included in your library. Ensure that those
+ * component names exist in ../components/**
  */
 
-export { default as Counter } from '../components/Buttons/Counter.vue'
-export { default as ToggleDark } from '../components/Buttons/ToggleDark.vue'
-export { default as Logo } from '../components/Logo.vue'
-export { default as HelloWorld } from '../components/HelloWorld.vue'
-export { default as Demo } from '../components/Demo.vue'
+// TODO: implement to be triggered in correct Vite plugin build hook
+// needs to generate a file that exports all components/defines the webcomponents
+export const components = [
+  ['Counter', 'RenamedComponent'],
+  'ToggleDark',
+  'Logo',
+  'HelloWorld',
+  'Demo',
+]
