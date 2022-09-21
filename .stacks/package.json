@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks-framework",
   "type": "module",
-  "version": "0.31.11",
+  "version": "0.31.12",
   "packageManager": "pnpm@7.12.1",
   "description": "The Stacks Framework.",
   "author": "Chris Breuer",
@@ -34,7 +34,7 @@
   "bin": {
     "artisan": "./bin/artisan.mjs"
   },
-    "files": [
+  "files": [
     "dist",
     "src",
     "../apps"
