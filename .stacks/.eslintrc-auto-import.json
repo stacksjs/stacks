@@ -1,11 +1,6 @@
 {
   "globals": {
-    "Counter": true,
-    "Demo": true,
     "EffectScope": true,
-    "HelloWorld": true,
-    "Logo": true,
-    "ToggleDark": true,
     "afterAll": true,
     "afterEach": true,
     "assert": true,
@@ -17,6 +12,7 @@
     "chai": true,
     "classPrefix": true,
     "collect": true,
+    "components": true,
     "componentsLibrary": true,
     "computed": true,
     "computedAsync": true,

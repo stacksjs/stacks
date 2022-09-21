@@ -1,7 +1,7 @@
 packages:
-  - ./
-  - ./.stacks
   - ./.stacks/components
   - ./.stacks/elements
   - ./.stacks/functions
+  - ./.stacks
   - './apps/**'
+  - .
