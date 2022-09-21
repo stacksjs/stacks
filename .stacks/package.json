@@ -42,7 +42,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "artisan": "./dist/cli.mjs"
+    "artisan": "./src/cli.mjs"
   },
   "files": [
     "dist",

@@ -31,7 +31,7 @@
   ],
   "sideEffects": false,
   "bin": {
-    "artisan": "./.stacks/dist/cli/artisan.js"
+    "artisan": "./.stacks/src/cli.ts"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
