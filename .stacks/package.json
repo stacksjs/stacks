@@ -32,7 +32,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "bin": {
-    "artisan": "./bin/artisan.mjs"
+    "artisan": "./bin/cli.mjs"
   },
   "files": [
     "dist",
