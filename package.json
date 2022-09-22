@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks",
   "type": "module",
-  "version": "0.32.5",
+  "version": "0.32.6",
   "packageManager": "pnpm@7.12.1",
   "description": "The easy way to build your component and/or function libraries & APIs.",
   "author": "Chris Breuer",
@@ -80,7 +80,7 @@
     "types:fix": "pnpm artisan types:fix",
     "generate:types": "pnpm artisan generate:types"
   },
-  "devDependencies": {
+  "dependencies": {
     "@ow3/stacks-core": "workspace:*"
   },
   "pnpm": {

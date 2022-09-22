@@ -73,6 +73,9 @@ export async function generatePackageJson(type: string) {
   "scripts": {
     "build": "vite build -c ../src/build/${config}.ts",
     "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@ow3/stacks-core": "workspace:*"
   }
 }
 `,

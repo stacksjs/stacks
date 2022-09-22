@@ -1,6 +1,6 @@
 {
   "name": "@ow3/hello-world-fx",
-  "version": "0.32.5",
+  "version": "0.32.6",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -39,5 +39,8 @@
   "scripts": {
     "build": "vite build -c ../src/build/functions.ts",
     "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@ow3/stacks-core": "workspace:*"
   }
 }

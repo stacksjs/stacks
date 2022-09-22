@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@ow3/stacks-core': workspace:*
-    devDependencies:
+    dependencies:
       '@ow3/stacks-core': link:.stacks
 
   .stacks:
@@ -128,7 +128,10 @@ importers:
       unbuild: 0.8.11
 
   .stacks/components:
-    specifiers: {}
+    specifiers:
+      '@ow3/stacks-core': workspace:*
+    devDependencies:
+      '@ow3/stacks-core': link:..
 
   .stacks/elements:
     specifiers: {}
