@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks",
   "type": "module",
-  "version": "0.31.16",
+  "version": "0.31.17",
   "packageManager": "pnpm@7.12.1",
   "description": "The easy way to build your component and/or function libraries & APIs.",
   "author": "Chris Breuer",
@@ -30,6 +30,12 @@
     "starter kit"
   ],
   "sideEffects": false,
+  "bin": {
+    "artisan": "./bin/artisan.mjs",
+    "art": "./bin/artisan.mjs",
+    "stacks": "./bin/artisan.mjs",
+    "stx": "./bin/artisan.mjs"
+  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

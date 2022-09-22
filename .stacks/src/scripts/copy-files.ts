@@ -4,7 +4,6 @@ import { join, resolve } from 'pathe'
 
 // relative to scripts directory
 const destinations = [
-  ['../../dist/types/.stacks/src', '../../stacks/dist/types'],
   ['../../dist/types/components', '../../components/dist/types'],
   ['../../dist/types/functions', '../../functions/dist/types'],
 ]
