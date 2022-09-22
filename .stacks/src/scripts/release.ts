@@ -5,5 +5,5 @@ import { runNpmScript } from './run-npm-script'
 export async function release() {
   consola.info('Releasing...')
   await runNpmScript(NpmScript.Release)
-  consola.success('Released.')
+  consola.success('Successfully triggered the GitHub Release Workflow.')
 }
