@@ -22,7 +22,7 @@ export async function generatePackageJson(type: string) {
     description = webComponentsLibrary.description
     directory = 'components'
     keywords = webComponentsLibrary.keywords
-    config = 'web-components'
+    config = 'components' // TODO: this should be web-components
   }
 
   else if (type === 'functions') {

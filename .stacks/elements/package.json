@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-elements",
   "type": "module",
-  "version": "0.32.9",
+  "version": "0.32.10",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -39,7 +39,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../src/build/web-components.ts",
+    "build": "vite build -c ../src/build/components.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
