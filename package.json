@@ -2,7 +2,7 @@
   "name": "@ow3/stacks",
   "type": "module",
   "version": "0.32.11",
-  "packageManager": "pnpm@7.12.1",
+  "packageManager": "pnpm@7.12.2",
   "description": "The easy way to build your component and/or function libraries & APIs.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -41,7 +41,7 @@
   ],
   "engines": {
     "node": ">=v16.17.0",
-    "pnpm": ">=7.12.0"
+    "pnpm": ">=7.12.2"
   },
   "scripts": {
     "artisan": "cd .stacks && jiti ./src/cli.ts",
