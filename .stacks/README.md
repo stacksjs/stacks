@@ -1,4 +1,4 @@
-# @ow3/stacks
+# @ow3/stacks-core
 
 This package contains the "core" logic of the framework/monorepo setup, e.g. the build logic (excluding the IDE setup).
 
