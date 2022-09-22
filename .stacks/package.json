@@ -63,6 +63,7 @@
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
+    "prepublishOnly": "pnpm run build:cli",
     "artisan": "jiti ./src/cli.ts",
     "dev:components": "vite serve ./src/components -c ./src/build/components.ts",
     "build:components": "vite build -c ./src/build/components.ts",
