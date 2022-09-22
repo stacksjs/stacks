@@ -1,6 +1,7 @@
 {
   "name": "@ow3/hello-world-elements",
-  "version": "0.32.6",
+  "type": "module",
+  "version": "0.32.7",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",

@@ -1,6 +1,7 @@
 {
   "name": "@ow3/hello-world-fx",
-  "version": "0.32.6",
+  "type": "module",
+  "version": "0.32.7",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",

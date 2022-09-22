@@ -42,6 +42,7 @@ export async function generatePackageJson(type: string) {
       path,
       data: `{
   "name": "${name}",
+  "type": "module",
   "version": "",
   "description": "${description}",
   "author": "${author}",
