@@ -1,7 +1,6 @@
 node_modules
 .DS_Store
 .DS_STORE
-!*/cli/dist/*
 **/dist/*
 .cache
 .temp

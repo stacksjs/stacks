@@ -30,9 +30,6 @@
     "starter kit"
   ],
   "sideEffects": false,
-  "bin": {
-    "artisan": "./.stacks/bin/artisan.mjs"
-  },
   "files": [
     ".github",
     ".stacks",
@@ -103,7 +100,7 @@
     "generate:types": "pnpm artisan generate:types"
   },
   "devDependencies": {
-    "@ow3/stacks": "workspace:*"
+    "@ow3/stacks-core": "workspace:*"
   },
   "pnpm": {
     "peerDependencyRules": {

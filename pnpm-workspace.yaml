@@ -4,4 +4,4 @@ packages:
   - ./.stacks/functions
   - ./.stacks
   - './apps/**'
-  - .
+  - ./

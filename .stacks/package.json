@@ -1,9 +1,9 @@
 {
-  "name": "@ow3/stacks-framework",
+  "name": "@ow3/stacks-core",
   "type": "module",
   "version": "0.31.13",
   "packageManager": "pnpm@7.12.1",
-  "description": "The Stacks Framework.",
+  "description": "The Stacks framework core.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks/tree/main/.stacks#readme",
@@ -32,12 +32,30 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "bin": {
-    "artisan": "./bin/artisan.mjs"
+    "artisan": "./bin/artisan.mjs",
+    "art": "./bin/artisan.mjs",
+    "stacks": "./bin/artisan.mjs",
+    "stx": "./bin/artisan.mjs"
   },
   "files": [
+    "bin",
+    "components",
     "dist",
+    "elements",
+    "examples",
+    "functions",
     "src",
-    "../apps"
+    ".gitignore",
+    "custom-elements.json",
+    "nitro.config.ts",
+    "package.json",
+    ".eslintrc-auto-import.json",
+    "build.config.ts",
+    "vitest.config.ts",
+    "README.md",
+    "shims.d.ts",
+    "auto-imports.d.ts",
+    "components.d.ts"
   ],
   "engines": {
     "node": ">=v16.17.0",
