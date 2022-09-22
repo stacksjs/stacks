@@ -1,6 +1,6 @@
 {
   "name": "artisan-init",
-  "version": "0.31.18",
+  "version": "0.32.0",
   "description": "Artisan framework init.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -40,7 +40,7 @@
     "cac": "^6.7.14",
     "kolorist": "^1.6.0"
   },
-   "devDependencies": {
+  "devDependencies": {
     "unbuild": "^0.8.11"
   }
 }

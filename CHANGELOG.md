@@ -1,3 +1,12 @@
+# [0.32.0](https://github.com/ow3org/stacks/compare/v0.31.18...v0.32.0) (2022-09-22)
+
+
+### Features
+
+* **cli:** add `artisan-init` support ([995a5f4](https://github.com/ow3org/stacks/commit/995a5f4cf9f8dcfdd502437272b8167302c06915))
+
+
+
 ## [0.31.18](https://github.com/ow3org/stacks/compare/v0.31.17...v0.31.18) (2022-09-22)
 
 
