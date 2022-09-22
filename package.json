@@ -30,31 +30,6 @@
     "starter kit"
   ],
   "sideEffects": false,
-  "files": [
-    ".github",
-    ".stacks",
-    ".vscode",
-    "apps",
-    "components",
-    "config",
-    "functions",
-    "lang",
-    "routes",
-    "tests",
-    ".gitignore",
-    ".gitattributes",
-    "package.json",
-    ".editorconfig",
-    ".eslintrc",
-    ".node-version",
-    ".npmrc",
-    "commitlint.config.cjs",
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-    "tsconfig.json",
-    "README.md",
-    "LICENSE.md"
-  ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

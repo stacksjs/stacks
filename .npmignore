@@ -1,0 +1,15 @@
+node_modules
+.DS_Store
+.DS_STORE
+.cache
+.temp
+.pnpm-debug.log
+.stacks/.nitro
+.stacks/.output
+.stacks/src/components/.vite-inspect/*
+.stacks/components/dist/*
+.stacks/elements/dist/*
+.stacks/docs/dist/*
+.stacks/functions/dist/*
+.stacks/stacks/dist/*
+!.stacks/dist/*
