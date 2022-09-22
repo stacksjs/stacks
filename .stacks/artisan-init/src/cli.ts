@@ -2,6 +2,7 @@
 import { bold, cyan, dim, red, yellow } from 'kolorist'
 import cac from 'cac'
 import { version } from '../package.json'
+import { stack as makeStack } from '../../src/scripts/make'
 
 const cli = cac('artisan-init')
 
@@ -23,6 +24,8 @@ cli
   .command('')
   .action(async (args: any) => {
     const path = args
+
+    await makeStack('testing')
 
     // eslint-disable-next-line no-console
     console.log('path is', path)
