@@ -7,13 +7,14 @@ import { hasFiles, writeTextFile } from '../core/fs'
 export async function generatePackageJson(type: string) {
   consola.info(`Creating the corresponding package.json file needed to publish the ${type} package...`)
 
-  let name, description, directory, keywords
+  let name, description, directory, keywords, config
 
   if (type === 'components') {
     name = componentsLibrary.name
     description = componentsLibrary.description
     directory = 'components'
     keywords = componentsLibrary.keywords
+    config = 'components'
   }
 
   else if (type === 'elements') {
@@ -21,6 +22,7 @@ export async function generatePackageJson(type: string) {
     description = webComponentsLibrary.description
     directory = 'components'
     keywords = webComponentsLibrary.keywords
+    config = 'web-components'
   }
 
   else if (type === 'functions') {
@@ -28,6 +30,7 @@ export async function generatePackageJson(type: string) {
     description = functionsLibrary.description
     directory = 'functions'
     keywords = functionsLibrary.keywords
+    config = 'functions'
   }
 
   const path = resolve(process.cwd(), `./${type}/package.json`)
@@ -66,7 +69,11 @@ export async function generatePackageJson(type: string) {
   "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "build": "vite build -c ../src/build/${config}.ts",
+    "prepublishOnly": "pnpm run build"
+  }
 }
 `,
     })

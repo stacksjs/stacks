@@ -36,5 +36,9 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "build": "vite build -c ../src/build/web-components.ts",
+    "prepublishOnly": "pnpm run build"
+  }
 }

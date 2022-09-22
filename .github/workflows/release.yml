@@ -27,9 +27,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build the component & function library releases
-        run: pnpm artisan build --npm
-
       - name: Publish to npm
         run: pnpm --filter './' --filter './.stacks' --filter './.stacks/artisan-init' --filter './.stacks/components' --filter './.stacks/functions' --filter './.stacks/elements' publish --access public --no-git-checks
         env:

@@ -5,7 +5,6 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks/tree/main/.stacks/artisan-init#readme",
-  "bin": "./cli.mjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ow3org/stacks.git",
@@ -23,6 +22,7 @@
     "typescript"
   ],
   "sideEffects": false,
+  "bin": "./cli.mjs",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
