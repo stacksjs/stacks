@@ -206,8 +206,9 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Image](https://github.com/ow3org/image-stack) (Q3 - Modern image experience)
 - [Video](https://github.com/ow3org/video-stack) (Q3 - Modern video experience)
 - [Audio](https://github.com/ow3org/audio-stack) (Q3 - Modern audio experience)
-- [Web3](https://github.com/ow3org/web3-stack) (Q3 - Wallet Authentication, and more)
-  - [NFT](https://github.com/ow3org/nft-stack) (Q3 - Solana NFTs, Candy Machine mechanisms, and more. _Ethereum & Cardano support coming._)
+- [Web3](https://github.com/ow3org/web3-stack) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
+  - [Wallets](https://github.com/ow3org/wallets) (Q3 - Wallet Authentication)
+  - [NFT](https://github.com/ow3org/nft-stack) (Q3 - NFTs, Candy Machine mechanisms, and more.)
   - [DeFi](https://github.com/ow3org/defi-stack) (Q4 - Cross-chain DeFi engine, including staking support)
   - [DAO](https://github.com/ow3org/dao-stack) (Q4 - Powerful toolkit for DAO governance)
 
