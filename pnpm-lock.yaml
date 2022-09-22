@@ -134,10 +134,16 @@ importers:
       '@ow3/stacks-core': link:..
 
   .stacks/elements:
-    specifiers: {}
+    specifiers:
+      '@ow3/stacks-core': workspace:*
+    devDependencies:
+      '@ow3/stacks-core': link:..
 
   .stacks/functions:
-    specifiers: {}
+    specifiers:
+      '@ow3/stacks-core': workspace:*
+    devDependencies:
+      '@ow3/stacks-core': link:..
 
 packages:
 
