@@ -1,0 +1,46 @@
+{
+  "name": "artisan-init",
+  "version": "0.31.18",
+  "description": "Artisan framework init.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/ow3org/stacks/tree/main/.stacks/artisan-init#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ow3org/stacks.git",
+    "directory": ".stacks/artisan-init"
+  },
+  "bugs": {
+    "url": "https://github.com/ow3org/stacks/issues"
+  },
+  "keywords": [
+    "artisan",
+    "init",
+    "cli",
+    "starter-kit",
+    "stacks",
+    "typescript"
+  ],
+  "sideEffects": false,
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "*.mjs"
+  ],
+  "scripts": {
+    "artisan-init": "pnpm run dev && node cli.mjs",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cac": "^6.7.14",
+    "kolorist": "^1.6.0"
+  },
+   "devDependencies": {
+    "unbuild": "^0.8.11"
+  }
+}

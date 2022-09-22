@@ -1,4 +1,5 @@
 packages:
+  - ./.stacks/artisan-init
   - ./.stacks/components
   - ./.stacks/elements
   - ./.stacks/functions

@@ -244,7 +244,8 @@
     "safelist",
     "unimport",
     "globalFroms",
-    "npmrc"
+    "npmrc",
+    "kolorist"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
