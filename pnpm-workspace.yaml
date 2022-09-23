@@ -1,7 +1,7 @@
 packages:
   - ./.stacks/artisan-init
   - ./.stacks/components
-  - ./.stacks/elements
+  - ./.stacks/web-components
   - ./.stacks/functions
   - ./.stacks
   - './apps/**'

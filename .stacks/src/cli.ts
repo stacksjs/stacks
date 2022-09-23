@@ -32,7 +32,7 @@ async function main() {
       .option('-f, --functions', 'Start the Functions development server')
       .option('-d, --docs', 'Start the Documentation development server')
       // .option('-p, --pages', 'Start the Pages development server')
-      .action(async (options) => {
+      .action(async (options: any) => {
         await startDevelopmentServer(options)
       })
 
@@ -51,7 +51,7 @@ async function main() {
     cli
       .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
       .option('-c, --components', 'Build your component library')
-      .option('-w, --web-components', 'Build your web component library') // these are automatically built with your -c option as well
+      .option('-w, --web-components', 'Build your framework agnostic web component library') // these are automatically built with your -c option as well
       .option('-e, --elements', 'An alias to the -w flag')
       .option('-f, --functions', 'Build your function library')
       .option('-d, --docs', 'Build your documentation site')
@@ -73,7 +73,7 @@ async function main() {
       })
 
     cli
-      .command('build:elements', 'Automagically build web component library for production use & npm/CDN distribution.')
+      .command('build:web-components', 'Automagically build web component library for production use & npm/CDN distribution.')
       .action(async () => {
         await startBuildProcess('web-components')
       })
@@ -155,9 +155,9 @@ async function main() {
       })
 
     cli
-      .command('example:elements', 'Test your Web Component library.')
+      .command('example:web-components', 'Test your Web Component library.')
       .action(async () => {
-        await runExample('elements')
+        await runExample('web-components')
       })
 
     cli

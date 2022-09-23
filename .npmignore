@@ -8,7 +8,7 @@ node_modules
 .stacks/.output
 .stacks/src/components/.vite-inspect/*
 .stacks/components/dist/*
-.stacks/elements/dist/*
+.stacks/web-components/dist/*
 .stacks/docs/dist/*
 .stacks/functions/dist/*
 .stacks/stacks/dist/*

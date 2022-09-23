@@ -12,14 +12,14 @@
 
 # npx artisan dev # stubs everything & and starts smart dev server
 # npx artisan dev:components # stubs components
-# npx artisan dev:elements # stubs components
+# npx artisan dev:web-components # stubs components
 # npx artisan dev:playground # starts dev server & opens Stacks playground
 # npx artisan dev:docs # starts docs dev server & opens docs in browser
 
 # npx artisan build # runs typecheck & builds the project
 # npx artisan build:components # builds component library
 # npx artisan build:functions # builds function library
-# npx artisan build:elements # builds web components/custom elements library
+# npx artisan build:web-components # builds web components/custom elements library
 # npx artisan build:playground # builds the playground
 # npx artisan build:docs # builds the docs
 # npx artisan build:stacks # builds the framework

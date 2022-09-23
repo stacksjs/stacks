@@ -135,13 +135,13 @@ importers:
     devDependencies:
       '@ow3/stacks-core': link:..
 
-  .stacks/elements:
+  .stacks/functions:
     specifiers:
       '@ow3/stacks-core': workspace:*
     devDependencies:
       '@ow3/stacks-core': link:..
 
-  .stacks/functions:
+  .stacks/web-components:
     specifiers:
       '@ow3/stacks-core': workspace:*
     devDependencies:

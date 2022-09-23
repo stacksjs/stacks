@@ -37,7 +37,7 @@ export async function buildWebComponentLibrary() {
 
   if (hasFiles(resolve(process.cwd(), './components'))) {
     try {
-      await runNpmScript(NpmScript.BuildElements)
+      await runNpmScript(NpmScript.BuildWebComponents)
       consola.success('Your web component library was built successfully.')
     }
     catch (error) {

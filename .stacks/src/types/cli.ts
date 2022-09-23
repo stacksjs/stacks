@@ -10,7 +10,7 @@ export interface StacksOptions {
 export const enum NpmScript {
   Build = 'build',
   BuildComponents = 'build:components',
-  BuildElements = 'build:elements',
+  BuildWebComponents = 'build:web-components',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
@@ -29,5 +29,5 @@ export const enum NpmScript {
   Release = 'release',
   Commit = 'commit',
   ExampleVue = 'example:vue',
-  ExampleElements = 'example:elements',
+  ExampleWebComponents = 'example:web-components',
 }

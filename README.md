@@ -99,9 +99,9 @@ npx artisan changelog # generates CHANGELOG.md
 npx artisan build # select a specific build (follow CLI prompts)
 npx artisan build:components # builds component libraries
 npx artisan build:functions # builds function library
-npx artisan build:elements # builds Web Component library (Custom Elements)
-npx artisan build:vue # builds Vue 2 & 3 compatible libraries
-npx artisan build:types # builds all types
+npx artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+npx artisan build:components # builds Vue 2 & 3 compatible libraries
+
 
 # when building for Vercel, Netlify, and more
 npx artisan deploy:playground

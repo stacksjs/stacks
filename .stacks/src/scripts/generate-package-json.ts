@@ -17,7 +17,7 @@ export async function generatePackageJson(type: string) {
     config = 'components'
   }
 
-  else if (type === 'elements') {
+  else if (type === 'web-components') {
     name = webComponentsLibrary.name
     description = webComponentsLibrary.description
     directory = 'components'
@@ -92,7 +92,7 @@ export async function generatePackageJson(type: string) {
 export async function generate() {
   if (hasFiles(resolve(process.cwd(), './components'))) {
     await generatePackageJson('components')
-    await generatePackageJson('elements')
+    await generatePackageJson('web-components')
   }
 
   if (hasFiles(resolve(process.cwd(), './functions')))
