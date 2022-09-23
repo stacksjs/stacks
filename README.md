@@ -104,7 +104,6 @@ npx artisan build:components # builds Vue 2 & 3 compatible libraries
 
 
 # when building for Vercel, Netlify, and more
-npx artisan deploy:playground
 npx artisan deploy:docs
 
 # creates a server to be deployed into any VPS

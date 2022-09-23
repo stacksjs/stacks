@@ -12,7 +12,6 @@ const docs: DocsConfig = {
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',
-
   lastUpdated: true,
 
   themeConfig: {
@@ -85,7 +84,6 @@ function sidebarGuide() {
         { text: 'Apps', link: '/guide/apps' },
         { text: 'Examples', link: '/guide/examples' },
         { text: 'Packages', link: '/guide/packages' },
-        { text: 'Playground', link: '/guide/playground' },
         { text: 'Testing', link: '/guide/testing' },
         { text: 'Single File Components', link: '/guide/sfcs' },
       ],

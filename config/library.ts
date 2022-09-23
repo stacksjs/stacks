@@ -8,30 +8,30 @@
 
 import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LibraryOptions, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
 
-export const libraryName: LibraryName = 'hello-world'
-export const organizationName: OrganizationName = '@ow3'
-export const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
-export const repository: Repository = 'ow3org/stacks'
-export const host: Hosts = 'netlify'
+const libraryName: LibraryName = 'hello-world'
+const organizationName: OrganizationName = '@ow3'
+const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
+const repository: Repository = 'ow3org/stacks'
+const host: Hosts = 'netlify'
 
-export const license: LicenseType = 'MIT'
-export const author: Author = 'Chris Breuer'
-export const contributors: Contributors = ['Chris Breuer <chris@ow3.org>']
-export const defaultLanguage: LanguageCode = 'en'
+const license: LicenseType = 'MIT'
+const author: Author = 'Chris Breuer'
+const contributors: Contributors = ['Chris Breuer <chris@ow3.org>']
+const defaultLanguage: LanguageCode = 'en'
 
-export const componentsLibrary: LibraryOptions = {
+const componentsLibrary: LibraryOptions = {
   name: `${stackName}-vue`,
   description: 'Your Vue component library description',
   keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
 }
 
-export const webComponentsLibrary: LibraryOptions = {
+const webComponentsLibrary: LibraryOptions = {
   name: `${stackName}-elements`,
   description: 'Your framework agnostic web component library description.',
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
 }
 
-export const functionsLibrary: LibraryOptions = {
+const functionsLibrary: LibraryOptions = {
   name: `${stackName}-fx`,
   description: 'Your function library description.',
   keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],

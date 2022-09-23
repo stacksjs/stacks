@@ -30,12 +30,6 @@
     "starter kit"
   ],
   "sideEffects": false,
-  "bin": {
-    "artisan": "./.stacks/bin/artisan.mjs",
-    "art": "./.stacks/bin/artisan.mjs",
-    "stacks": "./.stacks/bin/artisan.mjs",
-    "stx": "./.stacks/bin/artisan.mjs"
-  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -72,12 +66,12 @@
     "changelog": "pnpm artisan changelog",
     "deploy:functions": "pnpm artisan deploy:functions",
     "deploy:docs": "pnpm artisan deploy:docs",
-    "deploy:playground": "pnpm artisan deploy:playground",
     "test": "pnpm artisan test",
     "test:coverage": "pnpm artisan test:coverage",
     "test:types": "pnpm artisan test:types",
     "types:fix": "pnpm artisan types:fix",
     "generate:types": "pnpm artisan generate:types",
+    "key:generate": "pnpm artisan key:generate",
     "a": "cd .stacks && jiti ./src/cli.ts",
     "art": "cd .stacks && jiti ./src/cli.ts",
     "stacks": "cd .stacks && jiti ./src/cli.ts",

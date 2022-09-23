@@ -6,10 +6,12 @@
 
 // TODO: implement to be triggered in correct Vite plugin build hook
 // needs to generate a file that exports all components/defines the web components
-export const components = [
+const components = [
   ['Counter', 'RenamedComponent'],
   'ToggleDark',
   'Logo',
   'HelloWorld',
   'Demo',
 ]
+
+export { components }

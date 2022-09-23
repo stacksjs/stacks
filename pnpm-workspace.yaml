@@ -1,5 +1,5 @@
 packages:
-  - ./.stacks/artisan-init
+  - ./.stacks/artisan
   - ./.stacks/components
   - ./.stacks/web-components
   - ./.stacks/functions

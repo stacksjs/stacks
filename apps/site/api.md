@@ -13,20 +13,16 @@
 # npx artisan dev # stubs everything & and starts smart dev server
 # npx artisan dev:components # stubs components
 # npx artisan dev:web-components # stubs components
-# npx artisan dev:playground # starts dev server & opens Stacks playground
 # npx artisan dev:docs # starts docs dev server & opens docs in browser
 
 # npx artisan build # runs typecheck & builds the project
 # npx artisan build:components # builds component library
 # npx artisan build:functions # builds function library
 # npx artisan build:web-components # builds web components/custom elements library
-# npx artisan build:playground # builds the playground
 # npx artisan build:docs # builds the docs
-# npx artisan build:stacks # builds the framework
 
 # npx artisan deploy:functions # zero-config: Netlify, Vercel, AWS, Cloudflare (and more)
 # npx artisan deploy:docs # zero-config: Netlify & Vercel
-# npx artisan deploy:playground # zero-config: Netlify & Vercel
 
 # npx artisan commit # Be a good commitizen. GUI for git commits.
 # npx artisan release # GUI for releasing the libraries & triggers npm releases

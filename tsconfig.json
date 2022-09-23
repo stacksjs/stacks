@@ -39,6 +39,7 @@
     ]
   },
   "include": [
+    "./.stacks/shims.d.ts",
     "./.stacks/**.d.ts",
     "./.stacks/**/*",
     "./components/**/*",

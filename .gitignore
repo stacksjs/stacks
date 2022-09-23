@@ -5,3 +5,6 @@ node_modules
 .cache
 .temp
 .pnpm-debug.log
+.env
+.env.local
+.env.production
