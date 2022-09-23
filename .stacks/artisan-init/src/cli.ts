@@ -23,9 +23,9 @@ cli
 cli
   .command('')
   .action(async (args: any) => {
-    const path = args
+    const path = cli.args[0] || '.'
 
-    await makeStack('testing')
+    await makeStack(path)
 
     // eslint-disable-next-line no-console
     console.log('path is', path)
