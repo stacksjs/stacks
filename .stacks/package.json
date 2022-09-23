@@ -145,5 +145,15 @@
     "vitest": "^0.23.4",
     "vue": "^3.2.39",
     "vue-tsc": "^0.40.13"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@algolia/client-search",
+        "react",
+        "react-dom",
+        "@types/react"
+      ]
+    }
   }
 }
