@@ -1,7 +1,7 @@
 {
   "name": "artisan-init",
   "type": "module",
-  "version": "0.32.14",
+  "version": "0.32.15",
   "description": "Artisan framework init.",
   "author": "Chris Breuer",
   "license": "MIT",
