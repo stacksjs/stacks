@@ -52,7 +52,7 @@
     "components.d.ts"
   ],
   "engines": {
-    "node": ">=v16.17.0",
+    "node": ">=v16.17.1",
     "pnpm": ">=7.12.2"
   },
   "scripts": {
