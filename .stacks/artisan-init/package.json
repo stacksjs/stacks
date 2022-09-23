@@ -1,8 +1,8 @@
 {
   "name": "artisan-init",
   "type": "module",
-  "packageManager": "pnpm@7.12.2",
   "version": "0.32.17",
+  "packageManager": "pnpm@7.12.2",
   "description": "Artisan framework init.",
   "author": "Chris Breuer",
   "license": "MIT",
