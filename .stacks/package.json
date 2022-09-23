@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks-core",
   "type": "module",
-  "version": "0.32.11",
+  "version": "0.32.12",
   "packageManager": "pnpm@7.12.2",
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
