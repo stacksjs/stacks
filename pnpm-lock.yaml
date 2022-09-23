@@ -16,6 +16,7 @@ importers:
       '@jsdevtools/ez-spawn': ^3.0.4
       '@ow3/eslint-config': ^0.29.1
       '@rollup/pluginutils': ^4.2.1
+      '@types/bcrypt': ^5.0.0
       '@types/crypto-js': ^4.1.1
       '@types/fs-extra': ^9.0.13
       '@types/minimatch': ^5.1.2
@@ -72,6 +73,7 @@ importers:
       '@jsdevtools/ez-spawn': 3.0.4
       '@ow3/eslint-config': 0.29.1_irgkl5vooow2ydyo6aokmferha
       '@rollup/pluginutils': 4.2.1
+      '@types/bcrypt': 5.0.0
       '@types/crypto-js': 4.1.1
       '@types/fs-extra': 9.0.13
       '@types/minimatch': 5.1.2
@@ -1036,6 +1038,12 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: false
     optional: true
+
+  /@types/bcrypt/5.0.0:
+    resolution: {integrity: sha512-agtcFKaruL8TmcvqbndlqHPSJgsolhf/qPWchFlgnW1gECTN/nKbFcoFnvKAQRFfKbh+BO6A3SWdJu9t+xF3Lw==}
+    dependencies:
+      '@types/node': 18.7.18
+    dev: false
 
   /@types/chai-subset/1.3.3:
     resolution: {integrity: sha512-frBecisrNGz+F4T6bcc+NLeolfiojh5FxW2klu669+8BARtyQv2C/GkNW6FUodVe4BroGMP/wER/YDGc7rEllw==}

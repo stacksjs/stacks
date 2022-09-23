@@ -99,6 +99,7 @@
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@ow3/eslint-config": "^0.29.1",
     "@rollup/pluginutils": "^4.2.1",
+    "@types/bcrypt": "^5.0.0",
     "@types/crypto-js": "^4.1.1",
     "@types/fs-extra": "^9.0.13",
     "@types/minimatch": "^5.1.2",
