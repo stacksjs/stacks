@@ -2,6 +2,17 @@
 /// <reference types="vitest" />
 /// <reference types="vue/ref-macros" />
 
+interface ImportMetaEnv {
+  readonly APP_NAME: string
+  readonly APP_ENV: string
+  readonly APP_KEY: string
+  readonly APP_URL: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
 declare interface Window {
   // extend the window
 }

@@ -1,9 +1,9 @@
 import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
-import { ExitCode } from '../cli/exit-code'
-import { NpmScript } from '../types'
-import { hasFiles } from '../core/fs'
+import { NpmScript } from '../../src/types'
+import { hasFiles } from '../../src/core/fs'
+import { ExitCode } from './cli/exit-code'
 import { runNpmScript } from './run-npm-script'
 import { generateTypes } from './generate'
 

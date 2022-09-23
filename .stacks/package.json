@@ -32,7 +32,6 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "bin",
     "components",
     "dist",
     "elements",
@@ -90,7 +89,8 @@
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit",
     "types:fix": "esno src/scripts/fix-types.ts",
-    "generate:types": "vue-tsc --declaration --emitDeclarationOnly && jiti src/scripts/copy-files.ts"
+    "generate:types": "vue-tsc --declaration --emitDeclarationOnly && jiti src/scripts/copy-files.ts",
+    "key:generate": "pnpm artisan key:generate"
   },
   "dependencies": {
     "@babel/types": "^7.19.0",
@@ -99,6 +99,7 @@
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@ow3/eslint-config": "^0.29.1",
     "@rollup/pluginutils": "^4.2.1",
+    "@types/crypto-js": "^4.1.1",
     "@types/fs-extra": "^9.0.13",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.7.15",
@@ -109,6 +110,7 @@
     "@vitejs/plugin-vue": "^3.1.0",
     "@vitest/coverage-istanbul": "^0.23.4",
     "@vueuse/core": "^9.2.0",
+    "bcrypt": "^5.0.1",
     "bumpp": "^8.2.1",
     "cac": "^6.7.14",
     "change-case": "^4.1.2",
@@ -116,6 +118,7 @@
     "commitizen": "^4.2.5",
     "consola": "^2.15.3",
     "conventional-changelog-cli": "^2.2.2",
+    "crypto-js": "^4.1.1",
     "cz-git": "^1.3.11",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",

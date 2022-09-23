@@ -30,4 +30,5 @@ export const enum NpmScript {
   Commit = 'commit',
   ExampleVue = 'example:vue',
   ExampleWebComponents = 'example:web-components',
+  KeyGenerate = 'key:generate',
 }

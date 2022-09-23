@@ -2,7 +2,7 @@
 import { resolve } from 'pathe'
 import consola from 'consola'
 import { author, componentsLibrary, contributors, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
-import { hasFiles, writeTextFile } from '../core/fs'
+import { hasFiles, writeTextFile } from '../../src/core/fs'
 import { packageManager } from '../../package.json'
 
 export async function generatePackageJson(type: string) {

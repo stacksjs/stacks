@@ -9,7 +9,7 @@ import { _dirname } from '../core/fs'
 
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),
-
+  envDir: resolve(_dirname, '../../../'),
   envPrefix: 'STACKS_',
 
   server: {
