@@ -16,4 +16,7 @@ export const hooks: GitHooks = {
  * category of commits that share commonalities. Feel free to edit this
  * list to your needs as your scopes may be project-specific.
  */
-export const scopes = ['', 'ci', 'core', 'cli', 'config', 'deps', 'docs', 'dx', 'example', 'release', 'readme', 'build', 'scripts', 'test']
+export const scopes = [
+  '', 'ci', 'core', 'cli', 'config', 'deps', 'docs', 'dx',
+  'example', 'release', 'readme', 'build', 'scripts', 'test',
+]

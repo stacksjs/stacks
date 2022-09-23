@@ -44,8 +44,8 @@ export async function generatePackageJson(type: string) {
       data: `{
   "name": "${name}",
   "type": "module",
-  "version": "",
   "packageManager": "${packageManager}",
+  "version": "",
   "description": "${description}",
   "author": "${author}",
   "license": "MIT",
