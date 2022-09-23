@@ -3,6 +3,7 @@ import { resolve } from 'pathe'
 import consola from 'consola'
 import { author, componentsLibrary, contributors, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
 import { hasFiles, writeTextFile } from '../core/fs'
+import { packageManager } from '../../package.json'
 
 export async function generatePackageJson(type: string) {
   consola.info(`Creating the corresponding package.json file needed to publish the ${type} package...`)
@@ -44,6 +45,7 @@ export async function generatePackageJson(type: string) {
   "name": "${name}",
   "type": "module",
   "version": "",
+  "packageManager": "${packageManager}",
   "description": "${description}",
   "author": "${author}",
   "license": "MIT",

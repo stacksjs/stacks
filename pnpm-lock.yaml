@@ -118,14 +118,18 @@ importers:
 
   .stacks/artisan-init:
     specifiers:
+      '@jsdevtools/ez-spawn': ^3.0.4
       cac: ^6.7.14
       giget: ^0.1.7
       kolorist: ^1.6.0
+      pathe: ^0.3.8
       unbuild: ^0.8.11
     dependencies:
+      '@jsdevtools/ez-spawn': 3.0.4
       cac: 6.7.14
       giget: 0.1.7
       kolorist: 1.6.0
+      pathe: 0.3.8
     devDependencies:
       unbuild: 0.8.11
 

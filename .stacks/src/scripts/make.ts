@@ -80,8 +80,9 @@ export async function stack(name: string) {
 
   try {
     const path = resolve(process.cwd(), name)
-    await ezSpawn.async(`giget gh:ow3org/stacks#main ${path}`, { stdio: 'inherit' })
-    consola.success(`The ${name} is now accessible at path: ${path}`)
+    await ezSpawn.async(`giget stacks ${path}`)
+    consola.success('Successfully scaffolded your project.')
+    consola.info(`cd ${path} && pnpm install`)
   }
   catch (err) {
     consola.error(err)

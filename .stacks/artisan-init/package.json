@@ -1,7 +1,8 @@
 {
   "name": "artisan-init",
   "type": "module",
-  "version": "0.32.16",
+  "packageManager": "pnpm@7.12.2",
+  "version": "0.32.17",
   "description": "Artisan framework init.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -39,9 +40,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@jsdevtools/ez-spawn": "^3.0.4",
     "cac": "^6.7.14",
     "giget": "^0.1.7",
-    "kolorist": "^1.6.0"
+    "kolorist": "^1.6.0",
+    "pathe": "^0.3.8"
   },
   "devDependencies": {
     "unbuild": "^0.8.11"

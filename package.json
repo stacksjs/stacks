@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks",
   "type": "module",
-  "version": "0.32.16",
+  "version": "0.32.17",
   "packageManager": "pnpm@7.12.2",
   "description": "The easy way to build your component and/or function libraries & APIs.",
   "author": "Chris Breuer",
@@ -45,7 +45,6 @@
   },
   "scripts": {
     "artisan": "cd .stacks && jiti ./src/cli.ts",
-    "a": "cd .stacks && jiti ./src/cli.ts",
     "fresh": "pnpm artisan fresh",
     "update": "pnpm artisan update",
     "dev:components": "pnpm artisan dev:components",
@@ -78,7 +77,11 @@
     "test:coverage": "pnpm artisan test:coverage",
     "test:types": "pnpm artisan test:types",
     "types:fix": "pnpm artisan types:fix",
-    "generate:types": "pnpm artisan generate:types"
+    "generate:types": "pnpm artisan generate:types",
+    "a": "cd .stacks && jiti ./src/cli.ts",
+    "art": "cd .stacks && jiti ./src/cli.ts",
+    "stacks": "cd .stacks && jiti ./src/cli.ts",
+    "stx": "cd .stacks && jiti ./src/cli.ts"
   },
   "dependencies": {
     "@ow3/stacks-core": "workspace:*"

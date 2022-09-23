@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-import { bold, cyan, dim, red, yellow } from 'kolorist'
+import { bold, cyan, dim, red } from 'kolorist'
 import cac from 'cac'
+import consola from 'consola'
+import * as ezSpawn from '@jsdevtools/ez-spawn'
+import { resolve } from 'pathe'
 import { version } from '../package.json'
-import { stack as makeStack } from '../../src/scripts/make'
 
 const cli = cac('artisan-init')
 
@@ -23,12 +25,7 @@ cli
 cli
   .command('')
   .action(async (args: any) => {
-    const path = cli.args[0] || '.'
-
-    await makeStack(path)
-
-    // eslint-disable-next-line no-console
-    console.log('path is', path)
+    const name = cli.args[0] || args.name || '.'
 
     try {
       // eslint-disable-next-line no-console
@@ -38,11 +35,19 @@ cli
       // eslint-disable-next-line no-console
       console.log()
 
-      if (args.name) {
-        // eslint-disable-next-line no-console
-        console.log(yellow('Name option is set.'))
-        return
-      }
+      const path = resolve(process.cwd(), name)
+      await ezSpawn.async(`giget stacks ${path}`, { stdio: 'ignore' })
+      consola.success('Successfully scaffolded your project.')
+      // eslint-disable-next-line no-console
+      console.log()
+      consola.info('Getting started is easy. Run the following in your terminal:')
+      // eslint-disable-next-line no-console
+      console.log(`$ cd ${path} && pnpm install`)
+      // eslint-disable-next-line no-console
+      console.log()
+      consola.info('Click here to learn more')
+      // eslint-disable-next-line no-console
+      console.log('https://stacks.ow3.org/wip')
     }
     catch (e: any) {
       console.error(red(String(e)))
