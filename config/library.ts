@@ -39,4 +39,4 @@ const functionsLibrary: LibraryOptions = {
   shouldGenerateSourcemap: false,
 }
 
-export default { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, componentsLibrary, functionsLibrary, webComponentsLibrary }
+export { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, componentsLibrary, functionsLibrary, webComponentsLibrary }
