@@ -83,9 +83,21 @@ export function writeTextFile(file: TextFile): Promise<void> {
 }
 
 /**
- * Determine whether a folder has any files in it.
+ * Determine whether a path is a folder.
  */
-export function hasFile(path: string): boolean {
+export function isFolder(path: string): boolean {
+  try {
+    return fs.statSync(path).isDirectory()
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * Determine whether a path is a file.
+ */
+export function isFile(path: string): boolean {
   return fs.existsSync(path)
 }
 

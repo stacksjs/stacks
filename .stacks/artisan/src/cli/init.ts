@@ -5,6 +5,8 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
 import { bold, cyan, dim } from 'kolorist'
 import { version } from '../../package.json'
+import { isFolder } from '../../../src/core/fs'
+import { ExitCode } from './exit-code'
 
 // the logic to run to create/scaffold a new stack
 async function initCommands(artisan: CAC) {
@@ -26,24 +28,29 @@ async function initCommands(artisan: CAC) {
     .command('')
     .action(async (args: any) => {
       const name = artisan.args[0] || args.name || '.'
+      const path = resolve(process.cwd(), name)
 
       console.log()
       console.log(cyan(bold('Artisan CLI')) + dim(` v${version}`))
       console.log()
 
-      const path = resolve(process.cwd(), name)
+      if (await isFolder(path)) {
+        consola.error(`Path ${path} already exists`)
+        process.exit(ExitCode.FatalError)
+      }
 
       consola.info('Setting up your stack.')
       await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' })
-      consola.success(`Successfully scaffolded your project at ${cyan(path)}.`)
+      consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       // now we need to cd into the path and run the command initialize the code
-      await ezSpawn.async(`cd ${path} && echo 'hello' && pnpm install`, { stdio: 'inherit' })
+      await ezSpawn.async(`cd ${name} && pnpm install`, { stdio: 'inherit' })
 
       console.log()
-      consola.info('Welcome to Stacks! You are now successfully setup:')
-      console.log(`code ${path}`)
-      consola.info('To learn more, visit https://stacks.ow3.org/wip')
+      consola.log('Welcome to Stacks! You are now successfully set up:')
+      console.log(`cd ${path} && code .`)
+      console.log()
+      consola.log('To learn more, visit https://stacks.ow3.org/wip')
     })
 }
 

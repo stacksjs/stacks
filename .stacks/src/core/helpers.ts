@@ -1,7 +1,7 @@
-import { hasFile, readTextFile } from './fs'
+import { isFile, readTextFile } from './fs'
 
 export async function isInitialized(path: string) {
-  if (hasFile('.env')) {
+  if (isFile('.env')) {
     const env = await readTextFile('.env', path)
     const lines = env.data.split('\n')
     const appKey = lines.find(line => line.startsWith('APP_KEY='))
