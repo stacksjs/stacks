@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.32.18",
   "packageManager": "pnpm@7.12.2",
-  "description": "The easy way to build your component and/or function libraries & APIs.",
+  "description": "The easy way to build your next app or library.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks#readme",

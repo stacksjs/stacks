@@ -2,7 +2,7 @@ import type { CAC } from 'cac'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-import { bold, cyan, dim, red } from 'kolorist'
+import { bold, cyan, dim } from 'kolorist'
 import { version } from '../../package.json'
 
 // the logic to run to create/scaffold a new stack
@@ -26,34 +26,28 @@ async function initCommands(artisan: CAC) {
     .action(async (args: any) => {
       const name = artisan.args[0] || args.name || '.'
 
-      try {
       // eslint-disable-next-line no-console
-        console.log()
-        // eslint-disable-next-line no-console
-        console.log(cyan(bold('Artisan CLI')) + dim(` v${version}`))
-        // eslint-disable-next-line no-console
-        console.log()
+      console.log()
+      // eslint-disable-next-line no-console
+      console.log(cyan(bold('Artisan CLI')) + dim(` v${version}`))
+      // eslint-disable-next-line no-console
+      console.log()
 
-        const path = resolve(process.cwd(), name)
-        await ezSpawn.async(`giget stacks ${path}`, { stdio: 'ignore' })
-        consola.success('Successfully scaffolded your project.')
-        // eslint-disable-next-line no-console
-        console.log()
-        consola.info('Getting started is easy. Run the following in your terminal:')
-        // eslint-disable-next-line no-console
-        console.log(`$ cd ${path} && pnpm install`)
-        // eslint-disable-next-line no-console
-        console.log()
-        consola.info('Click here to learn more')
-        // eslint-disable-next-line no-console
-        console.log('https://stacks.ow3.org/wip')
-      }
-      catch (e: any) {
-        console.error(red(String(e)))
-        if (e?.stack)
-          console.error(dim(e.stack?.split('\n').slice(1).join('\n')))
-        process.exit(1)
-      }
+      const path = resolve(process.cwd(), name)
+      // eslint-disable-next-line no-console
+      console.log(`Creating stack at path ${cyan(path)}`)
+      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'inherit' })
+      consola.success('Successfully scaffolded your project.')
+      // eslint-disable-next-line no-console
+      console.log()
+      consola.info('Getting started is easy. Run the following in your terminal:')
+      // eslint-disable-next-line no-console
+      console.log(`$ cd ${path} && pnpm install`)
+      // eslint-disable-next-line no-console
+      console.log()
+      consola.info('Click here to learn more')
+      // eslint-disable-next-line no-console
+      console.log('https://stacks.ow3.org/wip')
     })
 }
 

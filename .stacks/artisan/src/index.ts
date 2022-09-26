@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { buildCommands, devCommands, exampleCommands, initCommands, makeCommands, testCommands, utilityCommands } from './cli/index'
+import { buildCommands, devCommands, exampleCommands, initCommands, makeCommands, testCommands, utilityCommands } from './cli'
 import { ExitCode } from './cli/exit-code'
 
 const artisan = cac('artisan')

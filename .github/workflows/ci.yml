@@ -45,7 +45,7 @@ jobs:
         run: pnpm install
 
       - name: Lint
-        run: pnpm run lint
+        run: cd .stacks && pnpm run lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
