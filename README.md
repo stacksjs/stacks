@@ -200,6 +200,7 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
 - [Table](https://github.com/ow3org/table-stack) (Q3 - Data tables with ease)
+- [K-Bar](https://github.com/ow3org/k-bar) (Q3 - `cmd + k` for the web)
 - [Date Picker](https://github.com/ow3org/date-picker-stack) (Q3 - Beautiful, modern date picker)
 - [File Manager](https://github.com/ow3org/file-manager-stack) (Q3 - Build your own file manager—like Dropbox or Google Drive)
 - [Image](https://github.com/ow3org/image-stack) (Q3 - Modern image experience)
