@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.32.17",
   "packageManager": "pnpm@7.12.2",
-  "description": "Artisan framework init.",
+  "description": "Artisan core.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/ow3org/stacks/tree/main/.stacks/artisan#readme",

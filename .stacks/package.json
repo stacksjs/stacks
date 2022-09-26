@@ -61,7 +61,7 @@
     "build:components": "vite build -c ./src/build/components.ts",
     "build:web-components": "vite build -c ./src/build/web-components.ts",
     "build:functions": "vite build -c ./src/build/functions.ts",
-    "build:cli": "unbuild",
+    "build:cli": "cd ./artisan && unbuild",
     "build:stacks": "wip",
     "build": "pnpm run test:types && pnpm artisan build",
     "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../components/dist dist && vite serve -c ../../src/build/example-vue.ts",
