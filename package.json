@@ -38,7 +38,7 @@
     "pnpm": ">=7.12.2"
   },
   "scripts": {
-    "artisan": "cd .stacks && jiti ./artisan/src/cli.ts",
+    "artisan": "cd .stacks && jiti ./artisan/src/index.ts",
     "fresh": "pnpm artisan fresh",
     "update": "pnpm artisan update",
     "dev:components": "pnpm artisan dev:components",
@@ -72,10 +72,8 @@
     "types:fix": "pnpm artisan types:fix",
     "generate:types": "pnpm artisan generate:types",
     "key:generate": "pnpm artisan key:generate",
-    "a": "cd .stacks && jiti ./artisan/src/cli.ts",
-    "art": "cd .stacks && jiti ./artisan/src/cli.ts",
-    "stacks": "cd .stacks && jiti ./artisan/src/cli.ts",
-    "stx": "cd .stacks && jiti ./artisan/src/cli.ts"
+    "a": "cd .stacks && jiti ./artisan/src/index.ts.ts",
+    "art": "cd .stacks && jiti ./artisan/src/index.ts.ts"
   },
   "dependencies": {
     "@ow3/stacks-core": "workspace:*"

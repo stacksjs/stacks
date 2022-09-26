@@ -1,8 +1,8 @@
 {
   "name": "@ow3/hello-world-elements",
   "type": "module",
-  "packageManager": "pnpm@7.12.2",
   "version": "0.32.18",
+  "packageManager": "pnpm@7.12.2",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",

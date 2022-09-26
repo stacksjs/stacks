@@ -1,5 +1,6 @@
 #!/bin/bash
-# thanks to: https://fnm.vercel.app/install
+# thanks to: https://raw.githubusercontent.com/Schniz/fnm/master/.ci/install.sh
+
 set -e
 
 INSTALL_DIR="$HOME/.fnm"
@@ -85,7 +86,7 @@ download_fnm() {
     mkdir -p "$INSTALL_DIR" &>/dev/null
 
     if ! curl --progress-bar --fail -L "$URL" -o "$DOWNLOAD_DIR/$FILENAME.zip"; then
-      echo "Download failed. Check that the release/filename are correct."
+      echo "Download failed.  Check that the release/filename are correct."
       exit 1
     fi
 
