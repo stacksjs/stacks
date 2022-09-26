@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
-import { writeTextFile } from '../../src/core/fs'
+import { writeTextFile } from '../../../src/core/fs'
 
 export async function component(name: string) {
   consola.info('Creating your component...')

@@ -5,27 +5,27 @@ import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
 import { version } from '../package.json'
-import { startDevelopmentServer } from './dev'
-import { startBuildProcess } from './build'
-import { reinstallNpmDependencies } from './fresh'
-import { lint, lintFix } from './lint'
-import { updateNpmDependencies } from './update'
-import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from './make'
-import { generateTestCoverageReport, runTestSuite, typecheck } from './test'
-import { release } from './release'
-import { commit } from './commit'
-import { generateTypes } from './generate'
-import { runExample } from './examples'
+import { startDevelopmentServer } from './scripts/dev'
+import { startBuildProcess } from './scripts/build'
+import { reinstallNpmDependencies } from './scripts/fresh'
+import { lint, lintFix } from './scripts/lint'
+import { updateNpmDependencies } from './scripts/update'
+import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from './scripts/make'
+import { generateTestCoverageReport, runTestSuite, typecheck } from './scripts/test'
+import { release } from './scripts/release'
+import { commit } from './scripts/commit'
+import { generateTypes } from './scripts/generate'
+import { runExample } from './scripts/examples'
 import { ExitCode } from './cli/exit-code'
 
-const artisanInit = cac('artisan-init')
 const artisan = cac('artisan')
 
 // Setup global error handlers
 process.on('uncaughtException', errorHandler)
 process.on('unhandledRejection', errorHandler)
 
-artisanInit
+// the command to run to create a new stack
+artisan
   .version(version)
   .option('-n, --name <name>', 'Name of the stack')
   .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
@@ -39,10 +39,12 @@ artisanInit
   // .option('--auth', 'Scaffold an authentication?', { default: true })
   .help()
 
-artisanInit
+artisan
   .command('')
   .action(async (args: any) => {
-    const name = artisanInit.args[0] || args.name || '.'
+    // eslint-disable-next-line no-console
+    console.log('here???????')
+    const name = artisan.args[0] || args.name || '.'
 
     try {
       // eslint-disable-next-line no-console
@@ -74,8 +76,7 @@ artisanInit
     }
   })
 
-artisanInit.parse()
-
+// commands to be able to be executed prior to setup
 artisan
   .command('dev', 'Start the development server for any of the following packages')
   .option('-c, --components', 'Start the Components development server')
@@ -167,25 +168,25 @@ artisan
 artisan
   .command('make:component', 'Scaffolds a component.')
   .action(async () => {
-    await makeComponent(cli.args[0])
+    await makeComponent(artisan.args[0])
   })
 
 artisan
   .command('make:function', 'Scaffolds a function.')
   .action(async () => {
-    await makeFunction(cli.args[0])
+    await makeFunction(artisan.args[0])
   })
 
 artisan
   .command('make:lang', 'Scaffolds a language file.')
   .action(async () => {
-    await makeLanguage(cli.args[0])
+    await makeLanguage(artisan.args[0])
   })
 
 artisan
   .command('make:stack', 'Scaffolds a new stack.')
   .action(async () => {
-    await makeStack(cli.args[0])
+    await makeStack(artisan.args[0])
   })
 
 artisan
@@ -252,6 +253,7 @@ artisan
   .outputVersion()
 
 artisan.parse()
+// artisan.parse()
 
 function errorHandler(error: Error): void {
   let message = error.message || String(error)

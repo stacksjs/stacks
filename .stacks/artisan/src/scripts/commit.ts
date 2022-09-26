@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { NpmScript } from '../../src/types'
+import { NpmScript } from '../../../src/types'
 import { runNpmScript } from './run-npm-script'
 
 export async function commit() {

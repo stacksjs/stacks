@@ -52,72 +52,72 @@ npx artisan-init
 The following list is of some of the most common ways to interact with the Stacks API. Meet the Artisan Toolkit:
 
 ```bash
-npx artisan install # installs all dependencies
-npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-npx artisan build # follow CLI prompts to select which library (or server) to build
-npx artisan commit # follow CLI prompts for committing changes
-npx artisan release # creates the releases for the stack & consequently, publishes them to npm
+pnpm artisan install # installs all dependencies
+pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm artisan build # follow CLI prompts to select which library (or server) to build
+pnpm artisan commit # follow CLI prompts for committing changes
+pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
 
-npx artisan make:component HelloWorld # bootstraps a HelloWorld component
-npx artisan make:function HelloWorld # bootstraps a HelloWorld function
-npx artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
+pnpm artisan make:component HelloWorld # bootstraps a HelloWorld component
+pnpm artisan make:function HelloWorld # bootstraps a HelloWorld function
+pnpm artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
 
-npx artisan help
+pnpm artisan help
 ```
 
 <details>
 <summary>View the complete Stacks Artisan Toolkit</summary>
 
 ```bash
-npx artisan install # or `pnpm i`
-npx artisan fresh # fresh reinstall of all deps
+pnpm artisan install # or `pnpm i`
+pnpm artisan fresh # fresh reinstall of all deps
 
-npx artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-npx artisan dev:components # starts local playground dev server
-npx artisan dev:pages # starts local pages dev server
-npx artisan dev:docs # starts local docs dev server
+pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm artisan dev:components # starts local playground dev server
+pnpm artisan dev:pages # starts local pages dev server
+pnpm artisan dev:docs # starts local docs dev server
 
-npx artisan make:component HelloWorld
-npx artisan make:function hello-world
-npx artisan make:page hello-world
-npx artisan make:lang en
-npx artisan make:stack hello-world
+pnpm artisan make:component HelloWorld
+pnpm artisan make:function hello-world
+pnpm artisan make:page hello-world
+pnpm artisan make:lang en
+pnpm artisan make:stack hello-world
 
-npx artisan stub # stubs all the libraries
-npx artisan stub:components # stubs the component library
-npx artisan stub:functions # stubs the function library
-npx artisan stub:pages # stubs the pages
+pnpm artisan stub # stubs all the libraries
+pnpm artisan stub:components # stubs the component library
+pnpm artisan stub:functions # stubs the function library
+pnpm artisan stub:pages # stubs the pages
 
-npx artisan lint # runs linter
-npx artisan lint:fix # runs linter and fixes issues
+pnpm artisan lint # runs linter
+pnpm artisan lint:fix # runs linter and fixes issues
 
-npx artisan commit # follow CLI prompts for committing staged changes
-npx artisan release # creates the releases for the stack & triggers the Release Action (workflow)
-npx artisan changelog # generates CHANGELOG.md
+pnpm artisan commit # follow CLI prompts for committing staged changes
+pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
+pnpm artisan changelog # generates CHANGELOG.md
 
 # building for production (e.g. npm)
-npx artisan build # select a specific build (follow CLI prompts)
-npx artisan build:components # builds component libraries
-npx artisan build:functions # builds function library
-npx artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-npx artisan build:components # builds Vue 2 & 3 compatible libraries
+pnpm artisan build # select a specific build (follow CLI prompts)
+pnpm artisan build:components # builds component libraries
+pnpm artisan build:functions # builds function library
+pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+pnpm artisan build:components # builds Vue 2 & 3 compatible libraries
 
 
 # when building for Vercel, Netlify, and more
-npx artisan deploy:docs
+pnpm artisan deploy:docs
 
 # creates a server to be deployed into any VPS
-npx artisan server:functions # wip
-npx artisan server:pages # wip
+pnpm artisan server:functions # wip
+pnpm artisan server:pages # wip
 
-npx artisan example # select the example to run (follow CLI prompts)
+pnpm artisan example # select the example to run (follow CLI prompts)
 
 # test your stack
-npx artisan test # runs test suite
-npx artisan test:unit # runs unit tests
-npx artisan test:e2e # runs e2e tests
-npx artisan test:coverage # runs test coverage
-npx artisan test:types # runs typecheck
+pnpm artisan test # runs test suite
+pnpm artisan test:unit # runs unit tests
+pnpm artisan test:e2e # runs e2e tests
+pnpm artisan test:coverage # runs test coverage
+pnpm artisan test:types # runs typecheck
 ```
 
 </details>

@@ -1,45 +1,45 @@
 # The CLI API
 
 ```bash
-# npx artisan make:component HelloWorld # bootstraps HelloWorld.vue component
-# npx artisan make:function hello-world # bootstraps hello-world.ts function
-# npx artisan make:stack hello-world # bootstraps component & function
+# pnpm artisan make:component HelloWorld # bootstraps HelloWorld.vue component
+# pnpm artisan make:function hello-world # bootstraps hello-world.ts function
+# pnpm artisan make:stack hello-world # bootstraps component & function
 
-# npx artisan install # installs all deps
-# npx artisan update # updates the stack to the latest version
-# npx artisan clean # cleans all deps & dist folders
-# npx artisan fresh # cleans & reinstalls all deps
+# pnpm artisan install # installs all deps
+# pnpm artisan update # updates the stack to the latest version
+# pnpm artisan clean # cleans all deps & dist folders
+# pnpm artisan fresh # cleans & reinstalls all deps
 
-# npx artisan dev # stubs everything & and starts smart dev server
-# npx artisan dev:components # stubs components
-# npx artisan dev:web-components # stubs components
-# npx artisan dev:docs # starts docs dev server & opens docs in browser
+# pnpm artisan dev # stubs everything & and starts smart dev server
+# pnpm artisan dev:components # stubs components
+# pnpm artisan dev:web-components # stubs components
+# pnpm artisan dev:docs # starts docs dev server & opens docs in browser
 
-# npx artisan build # runs typecheck & builds the project
-# npx artisan build:components # builds component library
-# npx artisan build:functions # builds function library
-# npx artisan build:web-components # builds web components/custom elements library
-# npx artisan build:docs # builds the docs
+# pnpm artisan build # runs typecheck & builds the project
+# pnpm artisan build:components # builds component library
+# pnpm artisan build:functions # builds function library
+# pnpm artisan build:web-components # builds web components/custom elements library
+# pnpm artisan build:docs # builds the docs
 
-# npx artisan deploy:functions # zero-config: Netlify, Vercel, AWS, Cloudflare (and more)
-# npx artisan deploy:docs # zero-config: Netlify & Vercel
+# pnpm artisan deploy:functions # zero-config: Netlify, Vercel, AWS, Cloudflare (and more)
+# pnpm artisan deploy:docs # zero-config: Netlify & Vercel
 
-# npx artisan commit # Be a good commitizen. GUI for git commits.
-# npx artisan release # GUI for releasing the libraries & triggers npm releases
-# npx artisan changelog # automatically generates changelog
+# pnpm artisan commit # Be a good commitizen. GUI for git commits.
+# pnpm artisan release # GUI for releasing the libraries & triggers npm releases
+# pnpm artisan changelog # automatically generates changelog
 
-# npx artisan lint # lints the codebase
-# npx artisan lint:fix # auto-fixes lint errors
-# npx artisan test:types # runs typecheck
-# npx artisan types:fix # wip
+# pnpm artisan lint # lints the codebase
+# pnpm artisan lint:fix # auto-fixes lint errors
+# pnpm artisan test:types # runs typecheck
+# pnpm artisan types:fix # wip
 
-# npx artisan test # runs whole test suite
-# npx artisan test:e2e # runs e2e tests
-# npx artisan test:unit # runs unit tests
-# npx artisan test:coverage # runs test coverage
+# pnpm artisan test # runs whole test suite
+# pnpm artisan test:e2e # runs e2e tests
+# pnpm artisan test:unit # runs unit tests
+# pnpm artisan test:coverage # runs test coverage
 
-# npx artisan example # run an example script (follow prompts)
+# pnpm artisan example # run an example script (follow prompts)
 
-# npx artisan preinstall # the preinstall hook that ensures proper node & pnpm versions are installed
-# npx artisan postinstall # the postinstall hook that ensures git hooks are configured after initial install
+# pnpm artisan preinstall # the preinstall hook that ensures proper node & pnpm versions are installed
+# pnpm artisan postinstall # the postinstall hook that ensures git hooks are configured after initial install
 ```
