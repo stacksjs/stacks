@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { CAC } from 'cac'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
@@ -26,28 +27,23 @@ async function initCommands(artisan: CAC) {
     .action(async (args: any) => {
       const name = artisan.args[0] || args.name || '.'
 
-      // eslint-disable-next-line no-console
       console.log()
-      // eslint-disable-next-line no-console
       console.log(cyan(bold('Artisan CLI')) + dim(` v${version}`))
-      // eslint-disable-next-line no-console
       console.log()
 
       const path = resolve(process.cwd(), name)
-      // eslint-disable-next-line no-console
-      console.log(`Creating stack at path ${cyan(path)}`)
-      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'inherit' })
-      consola.success('Successfully scaffolded your project.')
-      // eslint-disable-next-line no-console
+
+      consola.info('Setting up your stack.')
+      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' })
+      consola.success(`Successfully scaffolded your project at ${cyan(path)}.`)
+
+      // now we need to cd into the path and run the command initialize the code
+      await ezSpawn.async(`cd ${path} && echo 'hello' && pnpm install`, { stdio: 'inherit' })
+
       console.log()
-      consola.info('Getting started is easy. Run the following in your terminal:')
-      // eslint-disable-next-line no-console
-      console.log(`$ cd ${path} && pnpm install`)
-      // eslint-disable-next-line no-console
-      console.log()
-      consola.info('Click here to learn more')
-      // eslint-disable-next-line no-console
-      console.log('https://stacks.ow3.org/wip')
+      consola.info('Welcome to Stacks! You are now successfully setup:')
+      console.log(`code ${path}`)
+      consola.info('To learn more, visit https://stacks.ow3.org/wip')
     })
 }
 

@@ -1,23 +1,32 @@
 #!/usr/bin/env node
 import cac from 'cac'
+import { isInitialized } from '../../src/core/helpers'
 import { buildCommands, devCommands, exampleCommands, initCommands, makeCommands, testCommands, utilityCommands } from './cli'
 import { ExitCode } from './cli/exit-code'
 
 const artisan = cac('artisan')
 
-// Setup global error handlers
+// setup global error handlers
 process.on('uncaughtException', errorHandler)
 process.on('unhandledRejection', errorHandler)
 
-initCommands(artisan)
-devCommands(artisan)
-buildCommands(artisan)
-utilityCommands(artisan)
-makeCommands(artisan)
-exampleCommands(artisan)
-testCommands(artisan)
+async function main() {
+  if (!await isInitialized(process.cwd())) {
+    await initCommands(artisan)
+  }
+  else {
+    await devCommands(artisan)
+    await buildCommands(artisan)
+    await utilityCommands(artisan)
+    await makeCommands(artisan)
+    await exampleCommands(artisan)
+    await testCommands(artisan)
+  }
 
-artisan.parse()
+  artisan.parse()
+}
+
+main()
 
 function errorHandler(error: Error): void {
   let message = error.message || String(error)
