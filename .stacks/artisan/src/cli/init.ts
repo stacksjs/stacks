@@ -44,7 +44,7 @@ async function initCommands(artisan: CAC) {
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       // now we need to cd into the path and run the command initialize the code
-      await ezSpawn.async(`cd ${name} && pnpm install`, { stdio: 'inherit' })
+      await ezSpawn.async('pnpm install', { stdio: 'inherit', cwd: path })
 
       console.log()
       consola.log('Welcome to Stacks! You are now successfully set up:')
