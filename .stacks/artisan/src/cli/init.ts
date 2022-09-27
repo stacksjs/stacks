@@ -39,18 +39,29 @@ async function initCommands(artisan: CAC) {
         process.exit(ExitCode.FatalError)
       }
 
+      const online = useOnline()
+      if (!online) {
+        consola.info('It appears you are disconnected from the internet.')
+        process.exit(ExitCode.FatalError)
+      }
+
       consola.info('Setting up your stack.')
       await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' })
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
-      // now we need to cd into the path and run the command initialize the code
+      consola.info('Ensuring your environment is ready.')
+      await ezSpawn.async('fnm use', { stdio: 'inherit', cwd: path })
+      consola.success('Environment is ready.')
+
+      consola.info(`Installing your ${dim('dependencies')}.`)
       await ezSpawn.async('pnpm install', { stdio: 'inherit', cwd: path })
+      consola.success('Installed & set-up.')
 
       console.log()
-      consola.log('Welcome to Stacks! You are now successfully set up:')
+      consola.log('Welcome to Stacks!')
       console.log(`cd ${path} && code .`)
       console.log()
-      consola.log('To learn more, visit https://stacks.ow3.org/wip')
+      consola.log(dim('To learn more, visit https://stacks.ow3.org/wip'))
     })
 }
 

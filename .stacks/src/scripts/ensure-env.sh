@@ -1,11 +1,44 @@
 #!/bin/bash
-# thanks to: https://raw.githubusercontent.com/Schniz/fnm/master/.ci/install.sh
+# many thanks to: https://raw.githubusercontent.com/Schniz/fnm/master/.ci/install.sh
 
 set -e
+
+# check if node/corepack & pnpm is installed
+if which node > /dev/null
+  then
+    # check if Node version is over 16.17 or else install it & enable corepack,  if it is
+    # not >= 16.17, we will need to update by auto-detecting whether the a node manager used
+    wip
+  else
+    if which fnm > /dev/null
+      then
+        # use fnm to install a specified Node version
+        echo 'testing here'
+        echo ${pwd}
+        fnm use
+    elif which nvm > /dev/null
+      # use nvm to install correct node version
+      cp .node-version .nvmrc
+      nvm use
+    fi
+  fi
+else
+  # install node (abstract above into a function)
+
+# check if fnm is installed, if it is, assume it's used
+  then
+      nvm use
+
+
+
+# check if nvm is installed
+
 
 INSTALL_DIR="$HOME/.fnm"
 RELEASE="latest"
 OS="$(uname -s)"
+
+
 
 # Parse Flags
 parse_args() {
