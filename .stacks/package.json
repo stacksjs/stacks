@@ -1,7 +1,7 @@
 {
   "name": "@ow3/stacks-core",
   "type": "module",
-  "version": "0.32.19",
+  "version": "0.32.20",
   "packageManager": "pnpm@7.12.2",
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
@@ -82,7 +82,7 @@
     "lint": "eslint ..",
     "lint:fix": "eslint .. --fix",
     "commit": "cd .. && git cz",
-    "release": "jiti ./src/scripts/generate-package-json.ts && bumpp ./package.json ./**/package.json ../apps/**/package.json ../package.json --execute 'pnpm run changelog' --all",
+    "release": "jiti ./src/scripts/generate-package-json.ts && bumpp ./package.json ./**/package.json ../package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "size": "esno src/scripts/size.ts",
     "test": "vitest --config vitest.config.ts",
