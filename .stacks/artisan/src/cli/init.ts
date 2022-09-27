@@ -47,15 +47,16 @@ async function initCommands(artisan: CAC) {
       }
 
       consola.info('Setting up your stack.')
-      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' })
+      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       consola.info('Ensuring your environment is ready.')
-      await ezSpawn.async('fnm use', { stdio: 'inherit', cwd: path })
+      await ezSpawn.async('fnm use', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
       consola.info(`Installing your ${dim('dependencies')}.`)
-      await ezSpawn.async('pnpm install', { stdio: 'inherit', cwd: path })
+      await ezSpawn.async('pnpm install', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('git init', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up.')
 
       console.log()

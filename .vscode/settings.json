@@ -245,7 +245,8 @@
     "unimport",
     "globalFroms",
     "npmrc",
-    "kolorist"
+    "kolorist",
+    "julr"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

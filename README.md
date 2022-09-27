@@ -41,11 +41,11 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-npx artisan-init
+npx artisan-init project
 ```
 
 > **Note**
-> Node.js v16.17 or higher required. _Stacks is `fnm` & `nvm` friendly._
+> Node.js v16.17 or higher required. _No worries, Artisan will guide you._
 
 ## 🤖 Usage
 
