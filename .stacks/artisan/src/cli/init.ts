@@ -7,6 +7,7 @@ import { bold, cyan, dim } from 'kolorist'
 import { useOnline } from '@vueuse/core'
 import { version } from '../../package.json'
 import { isFolder } from '../../../src/core/fs'
+import { generate as generateAppKey } from '../scripts/key'
 import { ExitCode } from './exit-code'
 
 // the logic to run to create/scaffold a new stack
@@ -42,7 +43,7 @@ async function initCommands(artisan: CAC) {
 
       const online = useOnline()
       if (!online) {
-        consola.info('It appears you are disconnected from the internet.')
+        consola.info('It appears you are disconnected from the internet. The Stacks setup requires a brief internet connection for setup.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -54,13 +55,15 @@ async function initCommands(artisan: CAC) {
       await ezSpawn.async('fnm use', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
-      consola.info('Installing your dependencies.')
+      consola.info('Installing & setting up Stacks.')
       await ezSpawn.async('pnpm install', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('cp .env.example .env', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await generateAppKey(path)
       await ezSpawn.async('git init', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up.')
 
       console.log()
-      consola.info(bold('Welcome to Stacks! ⚛️'))
+      consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
       console.log(`cd ${path} && code .`)
       console.log()
       consola.log(dim('To learn more, visit https://stacks.ow3.org/wip'))
