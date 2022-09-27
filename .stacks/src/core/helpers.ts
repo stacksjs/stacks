@@ -6,7 +6,7 @@ export async function isInitialized(path: string) {
     const lines = env.data.split('\n')
     const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
-    if (appKey && appKey.length > 8)
+    if (appKey && appKey.length > 16)
       return true
   }
 

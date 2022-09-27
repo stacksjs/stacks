@@ -12,18 +12,15 @@ export async function runNpmScript(script: NpmScript) {
   let path = resolve(process.cwd(), '.')
 
   // in this case, the artisan command was called from the root folder
-  // but since the CLI script is store in the .stacks folder, we need to
-  // go up one level to find the package.json file
+  // but since the CLI script is stored inside the .stacks folder,
+  // we need to go up one level to find the package.json file
   if (!path.includes('.stacks'))
-    path = resolve(path, '.stacks/artisan')
-
-  // eslint-disable-next-line no-console
-  console.log('path', path)
+    path = resolve(path, '.stacks')
 
   const { data: manifest } = await readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script))
-    await ezSpawn.async('npm', ['run', script], { stdio: 'inherit' })
+    await ezSpawn.async('pnpm', ['run', script], { stdio: 'inherit', cwd: path })
 
   else
     consola.error('Error running your Artisan script.')

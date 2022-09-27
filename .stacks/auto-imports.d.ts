@@ -4,10 +4,12 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
+  const app: typeof import('../config/app')['default']
   const assert: typeof import('vitest')['assert']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const author: typeof import('../config/library')['author']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const bcrypt: typeof import('../config/hashing')['bcrypt']
   const beforeAll: typeof import('vitest')['beforeAll']
   const beforeEach: typeof import('vitest')['beforeEach']
   const chai: typeof import('vitest')['chai']
@@ -39,6 +41,7 @@ declare global {
   const defineComponent: typeof import('vue')['defineComponent']
   const describe: typeof import('vitest')['describe']
   const docs: typeof import('../config/docs')['default']
+  const driver: typeof import('../config/hashing')['driver']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const expect: typeof import('vitest')['expect']
@@ -60,7 +63,6 @@ declare global {
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
   const it: typeof import('vitest')['it']
-  const library: typeof import('../config/library')['default']
   const libraryName: typeof import('../config/library')['libraryName']
   const license: typeof import('../config/library')['license']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
@@ -304,10 +306,12 @@ declare module '@vue/runtime-core' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
+    readonly app: UnwrapRef<typeof import('../config/app')['default']>
     readonly assert: UnwrapRef<typeof import('vitest')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly author: UnwrapRef<typeof import('../config/library')['author']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly bcrypt: UnwrapRef<typeof import('../config/hashing')['bcrypt']>
     readonly beforeAll: UnwrapRef<typeof import('vitest')['beforeAll']>
     readonly beforeEach: UnwrapRef<typeof import('vitest')['beforeEach']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
@@ -339,6 +343,7 @@ declare module '@vue/runtime-core' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
+    readonly driver: UnwrapRef<typeof import('../config/hashing')['driver']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
@@ -360,7 +365,6 @@ declare module '@vue/runtime-core' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly it: UnwrapRef<typeof import('vitest')['it']>
-    readonly library: UnwrapRef<typeof import('../config/library')['default']>
     readonly libraryName: UnwrapRef<typeof import('../config/library')['libraryName']>
     readonly license: UnwrapRef<typeof import('../config/library')['license']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
