@@ -1,7 +1,7 @@
 {
   "name": "@ow3/hello-world-vue",
   "type": "module",
-  "version": "0.33.0",
+  "version": "0.33.1",
   "packageManager": "pnpm@7.12.2",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",

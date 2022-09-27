@@ -1,3 +1,7 @@
+## [0.33.1](https://github.com/ow3org/stacks/compare/v0.33.0...v0.33.1) (2022-09-27)
+
+
+
 # [0.33.0](https://github.com/ow3org/stacks/compare/v0.32.20...v0.33.0) (2022-09-27)
 
 

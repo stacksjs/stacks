@@ -54,13 +54,13 @@ async function initCommands(artisan: CAC) {
       await ezSpawn.async('fnm use', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
-      consola.info(`Installing your ${dim('dependencies')}.`)
+      consola.info('Installing your dependencies.')
       await ezSpawn.async('pnpm install', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       await ezSpawn.async('git init', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up.')
 
       console.log()
-      consola.log('Welcome to Stacks!')
+      consola.info(bold('Welcome to Stacks! ⚛️'))
       console.log(`cd ${path} && code .`)
       console.log()
       consola.log(dim('To learn more, visit https://stacks.ow3.org/wip'))
