@@ -130,10 +130,10 @@ Because we optimize toward the development of easily reusable & composable compo
 
 By default, Stacks realizes whether your Stack includes components, functions, and/or pages. Based on that determination, Stacks builds your outputs.
 
-The UI libraries that automatically get built are a Web Component (Custom Elements) & Vue Component library.
+The UI libraries that automatically get built are: a Web Component (Custom Elements) & Vue Component library.
 
 <details>
-<summary>Custom Element usage</summary>
+<summary>Web Component usage</summary>
 
 ```bash
 npm install my-awesome-library
@@ -183,7 +183,7 @@ npm install hello-world-library
 After you installed your Stacks generated library, you can use your functions in the following way:
 
 ```ts
-import { count, increment } from 'hello-world-library'
+import { count, increment } from 'hello-world-fx'
 
 console.log('count is', count)
 
@@ -200,7 +200,7 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
 - [Table](https://github.com/ow3org/table-stack) (Q3 - Data tables with ease)
-- [K-Bar](https://github.com/ow3org/k-bar) (Q3 - `cmd + k` for the web)
+- [Command Palette](https://github.com/ow3org/command-palette) (Q3 - `cmd + k` for the web)
 - [Date Picker](https://github.com/ow3org/date-picker-stack) (Q3 - Beautiful, modern date picker)
 - [File Manager](https://github.com/ow3org/file-manager-stack) (Q3 - Build your own file manager—like Dropbox or Google Drive)
 - [Image](https://github.com/ow3org/image-stack) (Q3 - Modern image experience)

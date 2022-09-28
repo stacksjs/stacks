@@ -246,7 +246,8 @@
     "globalFroms",
     "npmrc",
     "kolorist",
-    "julr"
+    "julr",
+    "chrisbbreuer"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

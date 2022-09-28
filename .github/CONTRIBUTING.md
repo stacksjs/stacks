@@ -1,22 +1,22 @@
 # Contributing
 
-First off, thank you for taking the time to contribute to the Open Web Foundation ❤️
+First off, thank you for taking the time to contribute to Open Web ❤️
 
 ## 💭 Knowledge
 
 ### TypeScript
 
-It's important to note early on that this project is written with [TypeScript][typescript]. If you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
+It's important to note early on that these projects are written with [TypeScript][typescript]. If you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
 
-Don't be discouraged, because you likely will get by and learning TypeScript on the fly as you view some of the component examples within the codebase.
+Don't be discouraged, because you likely will get by learning TypeScript on-the-fly as you view some of the component examples within the codebase. It's easy getting started—the code is very readable!
 
-### Vue 3.2 & Vite
+### Stacks
 
-This project uses [Vue][vue] & [Vite][vite] to build [Vue components][vue-components], Web Components, and "composable functions".
+This project uses Stacks as its framework/engine. Under the hood, it is powered by [Vue][vue] & [Vite][vite] to build [Vue components][vue-components], Web Components, and "composable functions".
 
 ### Architecture
 
-An understanding of the library architecture and design will help if you're looking to contribute long-term, or you are working on a big PR. Browse the source and read our documentation to get a better idea on how it is structured. Feel free to ask any question, we would love to elaborate.
+An understanding of the library architecture and design will help if you're looking to contribute long-term, or you are working on a big PR. Browse the source and read our documentation to get a better idea on how it is structured. Feel free to ask any question _(Twitter, Discord, or GitHub Discussions)_, we would love to elaborate.
 
 ## 🎒 Getting Started
 
@@ -56,6 +56,73 @@ git branch --set-upstream-to=upstream/main main
 # Run this when we want to update our version of main.
 git pull
 ```
+
+## Artisan Toolkit
+
+The following list is of some of the most common ways to interact with the Stacks API. Meet Artisan:
+
+```bash
+pnpm artisan install # installs all dependencies
+pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm artisan build # follow CLI prompts to select which library (or server) to build
+pnpm artisan commit # follow CLI prompts for committing changes
+pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
+
+pnpm artisan make:component HelloWorld # bootstraps a HelloWorld component
+pnpm artisan make:function HelloWorld # bootstraps a HelloWorld function
+pnpm artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
+
+pnpm artisan help
+```
+
+<details>
+<summary>View the complete Artisan Toolkit</summary>
+
+```bash
+pnpm artisan install # or `pnpm i`
+pnpm artisan fresh # fresh reinstall of all deps
+
+pnpm artisan dev # starts one of the dev servers (components, functions, or docs)
+pnpm artisan dev:components # starts local playground dev server
+pnpm artisan dev:docs # starts local docs dev server
+
+pnpm artisan make:component HelloWorld
+pnpm artisan make:function hello-world
+
+pnpm artisan stub # stubs all the libraries
+pnpm artisan stub:components # stubs the component library
+pnpm artisan stub:functions # stubs the function library
+
+pnpm artisan lint # runs linter
+pnpm artisan lint:fix # runs linter and fixes issues
+
+pnpm artisan commit # follow CLI prompts for committing staged changes
+pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
+pnpm artisan changelog # generates CHANGELOG.md
+
+# building for production (e.g. npm)
+pnpm artisan build # select a specific build (follow CLI prompts)
+pnpm artisan build:components # builds component libraries
+pnpm artisan build:functions # builds function library
+pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+
+# when building for Vercel, Netlify, and more
+pnpm artisan deploy:docs
+
+# creates a server to be deployed into any VPS
+pnpm artisan server:functions # wip
+
+pnpm artisan example # select the example to run (follow CLI prompts)
+
+# test your stack
+pnpm artisan test # runs test suite
+pnpm artisan test:unit # runs unit tests
+pnpm artisan test:e2e # runs e2e tests
+pnpm artisan test:coverage # runs test coverage
+pnpm artisan test:types # runs typecheck
+```
+
+</details>
 
 ## 🧪 Test
 
