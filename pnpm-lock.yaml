@@ -17,7 +17,6 @@ importers:
       '@julr/unocss-preset-forms': ^0.0.2
       '@ow3/eslint-config': ^0.29.1
       '@rollup/pluginutils': ^4.2.1
-      '@stacksjs/framework': latest
       '@types/bcrypt': ^5.0.0
       '@types/crypto-js': ^4.1.1
       '@types/fs-extra': ^9.0.13
@@ -77,7 +76,6 @@ importers:
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.26
       '@ow3/eslint-config': 0.29.1_ypn2ylkkyfa5i233caldtndbqa
       '@rollup/pluginutils': 4.2.1
-      '@stacksjs/framework': 'link:'
       '@types/bcrypt': 5.0.0
       '@types/crypto-js': 4.1.1
       '@types/fs-extra': 9.0.13
