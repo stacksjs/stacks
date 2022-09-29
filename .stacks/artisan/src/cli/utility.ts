@@ -1,7 +1,6 @@
 import type { CAC } from 'cac'
 import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
-import { updateNpmDependencies } from '../scripts/update'
 import { release } from '../scripts/release'
 import { commit } from '../scripts/commit'
 import { generateTypes } from '../scripts/generate'
@@ -11,12 +10,6 @@ async function utilityCommands(artisan: CAC) {
     .command('fresh', 'Reinstalls your npm dependencies.')
     .action(async () => {
       await reinstallNpmDependencies()
-    })
-
-  artisan
-    .command('update', 'Updates your npm dependencies to their latest version based on the specified range.')
-    .action(async () => {
-      await updateNpmDependencies()
     })
 
   artisan
