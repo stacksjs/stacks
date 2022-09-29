@@ -23,6 +23,9 @@
       "stacks": [
         ".stacks/src/index.ts"
       ],
+      "stacks/*": [
+        ".stacks/*"
+      ],
       "components/*": [
         "./components/*"
       ],

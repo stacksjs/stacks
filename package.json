@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.33.5",
   "packageManager": "pnpm@7.12.2",
-  "description": "The easy way to build your next app or library.",
+  "description": "Develop modern framework-agnostic web apps & libraries, faster.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks#readme",

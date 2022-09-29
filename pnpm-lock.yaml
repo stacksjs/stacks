@@ -17,6 +17,7 @@ importers:
       '@julr/unocss-preset-forms': ^0.0.2
       '@ow3/eslint-config': ^0.29.1
       '@rollup/pluginutils': ^4.2.1
+      '@stacksjs/framework': latest
       '@types/bcrypt': ^5.0.0
       '@types/crypto-js': ^4.1.1
       '@types/fs-extra': ^9.0.13
@@ -76,6 +77,7 @@ importers:
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.26
       '@ow3/eslint-config': 0.29.1_ypn2ylkkyfa5i233caldtndbqa
       '@rollup/pluginutils': 4.2.1
+      '@stacksjs/framework': 'link:'
       '@types/bcrypt': 5.0.0
       '@types/crypto-js': 4.1.1
       '@types/fs-extra': 9.0.13
@@ -123,7 +125,7 @@ importers:
       unplugin-vue-components: 0.22.7_vue@3.2.40
       vite: 3.1.4
       vite-plugin-inspect: 0.7.4_vite@3.1.4
-      vitepress: 1.0.0-alpha.17
+      vitepress: 1.0.0-alpha.17_tbpndr44ulefs3hehwpi2mkf2y
       vitest: 0.23.4
       vue: 3.2.40
       vue-tsc: 0.40.13_typescript@4.8.4
@@ -171,16 +173,14 @@ packages:
       '@algolia/autocomplete-shared': 1.7.1
     dev: false
 
-  /@algolia/autocomplete-preset-algolia/1.7.1_algoliasearch@4.14.2:
+  /@algolia/autocomplete-preset-algolia/1.7.1_qs6lk5nhygj2o3hj4sf6xnr724:
     resolution: {integrity: sha512-pJwmIxeJCymU1M6cGujnaIYcY3QPOVYZOXhFkWVM7IxKzy272BwCvMFMyc5NpG/QmiObBxjo7myd060OeTNJXg==}
     peerDependencies:
       '@algolia/client-search': ^4.9.1
       algoliasearch: ^4.9.1
-    peerDependenciesMeta:
-      '@algolia/client-search':
-        optional: true
     dependencies:
       '@algolia/autocomplete-shared': 1.7.1
+      '@algolia/client-search': 4.14.2
       algoliasearch: 4.14.2
     dev: false
 
@@ -549,10 +549,10 @@ packages:
     resolution: {integrity: sha512-gaP6TxxwQC+K8D6TRx5WULUWKrcbzECOPA2KCVMuI+6C7dNiGUk5yXXzVhc5sld79XKYLnO9DRTI4mjXDYkh+g==}
     dev: false
 
-  /@docsearch/js/3.2.1:
+  /@docsearch/js/3.2.1_tbpndr44ulefs3hehwpi2mkf2y:
     resolution: {integrity: sha512-H1PekEtSeS0msetR2YGGey2w7jQ2wAKfGODJvQTygSwMgUZ+2DHpzUgeDyEBIXRIfaBcoQneqrzsljM62pm6Xg==}
     dependencies:
-      '@docsearch/react': 3.2.1
+      '@docsearch/react': 3.2.1_tbpndr44ulefs3hehwpi2mkf2y
       preact: 10.11.0
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -561,7 +561,7 @@ packages:
       - react-dom
     dev: false
 
-  /@docsearch/react/3.2.1:
+  /@docsearch/react/3.2.1_tbpndr44ulefs3hehwpi2mkf2y:
     resolution: {integrity: sha512-EzTQ/y82s14IQC5XVestiK/kFFMe2aagoYFuTAIfIb/e+4FU7kSMKonRtLwsCiLQHmjvNQq+HO+33giJ5YVtaQ==}
     peerDependencies:
       '@types/react': '>= 16.8.0 < 19.0.0'
@@ -576,7 +576,7 @@ packages:
         optional: true
     dependencies:
       '@algolia/autocomplete-core': 1.7.1
-      '@algolia/autocomplete-preset-algolia': 1.7.1_algoliasearch@4.14.2
+      '@algolia/autocomplete-preset-algolia': 1.7.1_qs6lk5nhygj2o3hj4sf6xnr724
       '@docsearch/css': 3.2.1
       algoliasearch: 4.14.2
     transitivePeerDependencies:
@@ -7278,12 +7278,12 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress/1.0.0-alpha.17:
+  /vitepress/1.0.0-alpha.17_tbpndr44ulefs3hehwpi2mkf2y:
     resolution: {integrity: sha512-8qsR0PPcvxZFDKSU7b7VenxDoqlEbWuWgogeyRhp1pQ96QIAlWPS9BbGGHWlnEfgdtLVDxEfAmCBRE0YJX/Thg==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.2.1
-      '@docsearch/js': 3.2.1
+      '@docsearch/js': 3.2.1_tbpndr44ulefs3hehwpi2mkf2y
       '@vitejs/plugin-vue': 3.1.0_vite@3.1.4+vue@3.2.40
       '@vue/devtools-api': 6.4.2
       '@vueuse/core': 9.3.0_vue@3.2.40
