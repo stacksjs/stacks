@@ -1,4 +1,4 @@
-# @ow3/stacks-core
+# @stacksjs/framework
 
 This package contains the "core" logic of the framework/monorepo setup, e.g. the build logic (excluding the IDE setup).
 
@@ -24,7 +24,7 @@ And all of this in a zero-config, yet configurable, way.
 If you want to use Stacks outside of this framework, install it as a dev dependency:
 
 ```bash
-pnpm i -D @ow3/stacks
+pnpm i -D @stacksjs/framework
 ```
 
 Now, you can use it in your project:
@@ -41,7 +41,7 @@ import {
   inspect,
   resolve,
   uiEngine
-} from '@ow3/stacks'
+} from '@stacksjs/framework'
 
 // you are now free to use any of the imported methods
 ```

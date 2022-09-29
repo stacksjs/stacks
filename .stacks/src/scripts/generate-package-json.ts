@@ -78,7 +78,7 @@ export async function generatePackageJson(type: string) {
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@ow3/stacks-core": "workspace:*"
+    "@stacksjs/framework": "workspace:*"
   }
 }
 `,
