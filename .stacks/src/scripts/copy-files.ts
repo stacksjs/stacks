@@ -9,7 +9,7 @@ const destinations = [
 ]
 
 // copy files and/or folders from src to dest
-export const copyFiles = (src: string, dest: string) => {
+export const copyFiles = async (src: string, dest: string) => {
   if (!existsSync(src))
     return
 

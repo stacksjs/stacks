@@ -246,11 +246,11 @@ The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 Made with ❤️
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/@ow3/hello-world-vue?style=flat-square
-[npm-version-href]: https://npmjs.com/package/@ow3/hello-world-vue
+[npm-version-src]: https://img.shields.io/npm/v/@stacksjs/stacks?style=flat-square
+[npm-version-href]: https://npmjs.com/package/@stacksjs/stacks
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
-[npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
+[npm-downloads-src]: https://img.shields.io/npm/dm/@stacksjs/stacks?style=flat-square
+[npm-downloads-href]: https://npmjs.com/package/@stacksjs/stacks
 
 [github-actions-src]: https://img.shields.io/github/workflow/status/stacksjs/stacks/CI/main?style=flat-square
 [github-actions-href]: https://github.com/stacksjs/stacks/actions?query=workflow%3Aci
