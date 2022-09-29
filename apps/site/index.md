@@ -14,7 +14,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/ow3org/stacks
+      link: https://github.com/stacksjs/stacks
 
 features:
   - title: Best-in-Class DX

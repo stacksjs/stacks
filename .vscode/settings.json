@@ -247,7 +247,8 @@
     "npmrc",
     "kolorist",
     "julr",
-    "chrisbbreuer"
+    "chrisbbreuer",
+    "stacksjs"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

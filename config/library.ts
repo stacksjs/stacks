@@ -11,7 +11,7 @@ import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LibraryOpt
 const libraryName: LibraryName = 'hello-world'
 const organizationName: OrganizationName = '@ow3'
 const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
-const repository: Repository = 'ow3org/stacks'
+const repository: Repository = 'stacksjs/stacks'
 const host: Hosts = 'netlify'
 
 const license: LicenseType = 'MIT'

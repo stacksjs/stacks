@@ -45,7 +45,7 @@ pull requests from the forked branch.
 
 ```bash
 # Add the original repository as a "remote" called "upstream".
-git remote add upstream git@github.com:ow3org/stacks.git
+git remote add upstream git@github.com:stacksjs/stacks.git
 
 # Fetch the git information from the remote.
 git fetch upstream
@@ -160,6 +160,6 @@ contribution is appreciated more than you can imagine, and even a failed PR can 
 [vue]: https://vuejs.org/
 [vite]: https://vitejs.dev/
 [vue-components]: https://vuejs.org/guide/essentials/component-basics.html
-[stacks]: https://github.com/ow3org/stacks
+[stacks]: https://github.com/stacksjs/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [pr-beginner-series]: https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github

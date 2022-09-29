@@ -199,18 +199,19 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/ow3org/table-stack) (Q3 - Data tables with ease)
+- [Table](https://github.com/ow3org/table) (Q3 - Data tables with ease)
+- [Calendar](https://github.com/ow3org/calendar) (Q3 - Add to Calendar utilities—iCal, Google, and more)
 - [Command Palette](https://github.com/ow3org/command-palette) (Q3 - `cmd + k` for the web)
-- [Date Picker](https://github.com/ow3org/date-picker-stack) (Q3 - Beautiful, modern date picker)
-- [File Manager](https://github.com/ow3org/file-manager-stack) (Q3 - Build your own file manager—like Dropbox or Google Drive)
-- [Image](https://github.com/ow3org/image-stack) (Q3 - Modern image experience)
-- [Video](https://github.com/ow3org/video-stack) (Q3 - Modern video experience)
-- [Audio](https://github.com/ow3org/audio-stack) (Q3 - Modern audio experience)
-- [Web3](https://github.com/ow3org/web3-stack) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
+- [Date Picker](https://github.com/ow3org/date-picker) (Q3 - Beautiful, modern date picker)
+- [File Manager](https://github.com/ow3org/file-manager) (Q3 - Build your own file manager—like Dropbox or Google Drive)
+- [Image](https://github.com/ow3org/image) (Q3 - Modern image experience)
+- [Video](https://github.com/ow3org/video) (Q3 - Modern video experience)
+- [Audio](https://github.com/ow3org/audio) (Q3 - Modern audio experience)
+- [Web3](https://github.com/ow3org/web3) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
   - [Wallets](https://github.com/ow3org/wallets) (Q3 - Wallet Authentication)
-  - [NFT](https://github.com/ow3org/nft-stack) (Q3 - NFTs, Candy Machine mechanisms, and more.)
-  - [DeFi](https://github.com/ow3org/defi-stack) (Q4 - Cross-chain DeFi engine, including staking support)
-  - [DAO](https://github.com/ow3org/dao-stack) (Q4 - Powerful toolkit for DAO governance)
+  - [NFT](https://github.com/ow3org/nft) (Q3 - NFTs, Candy Machine mechanisms, and more.)
+  - [DeFi](https://github.com/ow3org/defi) (Q4 - Cross-chain DeFi engine, including staking support)
+  - [DAO](https://github.com/ow3org/dao) (Q4 - Powerful toolkit for DAO governance)
 
 These stacks make great examples. Find more awesome Stacks [here](https://github.com/ow3org/awesome-stacks).
 
@@ -222,7 +223,7 @@ pnpm test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/ow3org/stacks/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
 ## 💪🏼 Contributing
 
@@ -232,7 +233,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
-[Discussions on GitHub](https://github.com/ow3org/stacks/discussions)
+[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
 
 For casual chit-chat with others using this package:
 
@@ -251,8 +252,8 @@ Made with ❤️
 [npm-downloads-src]: https://img.shields.io/npm/dm/@ow3/hello-world-vue?style=flat-square
 [npm-downloads-href]: https://npmjs.com/package/@ow3/hello-world-vue
 
-[github-actions-src]: https://img.shields.io/github/workflow/status/ow3org/stacks/CI/main?style=flat-square
-[github-actions-href]: https://github.com/ow3org/stacks/actions?query=workflow%3Aci
+[github-actions-src]: https://img.shields.io/github/workflow/status/stacksjs/stacks/CI/main?style=flat-square
+[github-actions-href]: https://github.com/stacksjs/stacks/actions?query=workflow%3Aci
 
-<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/ow3org/stacks/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/ow3org/stacks -->
+<!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/stacks/main?style=flat-square
+[codecov-href]: https://codecov.io/gh/stacksjs/stacks -->

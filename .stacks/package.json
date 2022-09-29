@@ -1,19 +1,19 @@
 {
-  "name": "@ow3/stacks-core",
+  "name": "@stacksjs/framework",
   "type": "module",
   "version": "0.33.3",
   "packageManager": "pnpm@7.12.2",
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/ow3org/stacks/tree/main/.stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ow3org/stacks.git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./.stacks"
   },
   "bugs": {
-    "url": "https://github.com/ow3org/stacks/issues"
+    "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
     "framework",

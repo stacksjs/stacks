@@ -1,18 +1,18 @@
 {
-  "name": "@ow3/stacks",
+  "name": "@stacksjs/stacks",
   "type": "module",
   "version": "0.33.3",
   "packageManager": "pnpm@7.12.2",
   "description": "The easy way to build your next app or library.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/ow3org/stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ow3org/stacks.git"
+    "url": "git+https://github.com/stacksjs/stacks.git"
   },
   "bugs": {
-    "url": "https://github.com/ow3org/stacks/issues"
+    "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
     "monorepo",
