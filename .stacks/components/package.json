@@ -1,5 +1,5 @@
 {
-  "name": "@ow3/hello-world-vue",
+  "name": "@stacksjs/hello-world-vue",
   "type": "module",
   "version": "0.33.5",
   "packageManager": "pnpm@7.12.2",

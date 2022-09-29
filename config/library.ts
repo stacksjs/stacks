@@ -9,7 +9,7 @@
 import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LibraryOptions, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
 
 const libraryName: LibraryName = 'hello-world'
-const organizationName: OrganizationName = '@ow3'
+const organizationName: OrganizationName = '@stacksjs'
 const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
 const repository: Repository = 'stacksjs/stacks'
 const host: Hosts = 'netlify'

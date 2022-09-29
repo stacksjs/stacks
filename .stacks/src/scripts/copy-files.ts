@@ -18,7 +18,8 @@ export const copyFiles = async (src: string, dest: string) => {
       mkdirSync(dest, { recursive: true })
 
     readdirSync(src).forEach((file) => {
-      copyFiles(join(src, file), join(dest, file))
+      if (file !== 'node_modules') // no need to ever copy node_modules
+        copyFiles(join(src, file), join(dest, file))
     })
 
     return
