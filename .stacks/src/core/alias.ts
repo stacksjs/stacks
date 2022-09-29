@@ -1,7 +1,5 @@
 /**
  * The following configuration references local aliases.
- *
- * TODO: the future "artisan setup"-command will set up these aliases.
  */
 
 import { fileURLToPath } from 'node:url'
@@ -15,9 +13,10 @@ const r = (p: string) => resolve(_dirname, p)
 
 const alias: Record<string, string> = {
   '~/': r('../../..'),
-  'stacks': r('./index.ts'),
-  'functions': r('../../../functions'),
-  'components': r('../../../components'),
+  'stacks': r('../index.ts'),
+  'stacks/*': r('../../*'),
+  'functions/*': r('../../../functions/*'),
+  'components/*': r('../../../components/*'),
   'config': r('./config.ts'),
 }
 
