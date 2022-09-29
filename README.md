@@ -201,7 +201,7 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 
 - [Table](https://github.com/ow3org/table) (Q3 - Data tables with ease)
 - [Calendar](https://github.com/ow3org/calendar) (Q3 - Add to Calendar utilities—iCal, Google, and more)
-- [Command Palette](https://github.com/ow3org/command-palette) (Q3 - `cmd + k` for the web)
+- [Command Palette](https://github.com/ow3org/command-palette) (Q3 - `⌘ + k` for the web)
 - [Date Picker](https://github.com/ow3org/date-picker) (Q3 - Beautiful, modern date picker)
 - [File Manager](https://github.com/ow3org/file-manager) (Q3 - Build your own file manager—like Dropbox or Google Drive)
 - [Image](https://github.com/ow3org/image) (Q3 - Modern image experience)
