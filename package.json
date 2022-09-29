@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stacks",
   "type": "module",
-  "version": "0.33.3",
+  "version": "0.33.4",
   "packageManager": "pnpm@7.12.2",
   "description": "The easy way to build your next app or library.",
   "author": "Chris Breuer",
