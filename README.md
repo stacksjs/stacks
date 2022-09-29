@@ -199,21 +199,21 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/ow3org/table) (Q3 - Data tables with ease)
-- [Calendar](https://github.com/ow3org/calendar) (Q3 - Add to Calendar utilities—iCal, Google, and more)
-- [Command Palette](https://github.com/ow3org/command-palette) (Q3 - `⌘ + k` for the web)
-- [Date Picker](https://github.com/ow3org/date-picker) (Q3 - Beautiful, modern date picker)
-- [File Manager](https://github.com/ow3org/file-manager) (Q3 - Build your own file manager—like Dropbox or Google Drive)
-- [Image](https://github.com/ow3org/image) (Q3 - Modern image experience)
-- [Video](https://github.com/ow3org/video) (Q3 - Modern video experience)
-- [Audio](https://github.com/ow3org/audio) (Q3 - Modern audio experience)
-- [Web3](https://github.com/ow3org/web3) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
-  - [Wallets](https://github.com/ow3org/wallets) (Q3 - Wallet Authentication)
-  - [NFT](https://github.com/ow3org/nft) (Q3 - NFTs, Candy Machine mechanisms, and more.)
-  - [DeFi](https://github.com/ow3org/defi) (Q4 - Cross-chain DeFi engine, including staking support)
-  - [DAO](https://github.com/ow3org/dao) (Q4 - Powerful toolkit for DAO governance)
+- [Table](https://github.com/stacksjs/table) (Q3 - Data tables with ease)
+- [Calendar](https://github.com/stacksjs/calendar) (Q3 - Add to Calendar utilities—iCal, Google, and more)
+- [Command Palette](https://github.com/stacksjs/command-palette) (Q3 - `⌘ + k` for the web)
+- [Date Picker](https://github.com/stacksjs/date-picker) (Q3 - Beautiful, modern date picker)
+- [File Manager](https://github.com/stacksjs/file-manager) (Q3 - Build your own file manager—like Dropbox or Google Drive)
+- [Image](https://github.com/stacksjs/image) (Q3 - Modern image experience)
+- [Video](https://github.com/stacksjs/video) (Q3 - Modern video experience)
+- [Audio](https://github.com/stacksjs/audio) (Q3 - Modern audio experience)
+- [Web3](https://github.com/stacksjs/web3) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
+  - [Wallets](https://github.com/stacksjs/wallets) (Q3 - Wallet Authentication)
+  - [NFT](https://github.com/stacksjs/nft) (Q3 - NFTs, Candy Machine mechanisms, and more.)
+  - [DeFi](https://github.com/stacksjs/defi) (Q4 - Cross-chain DeFi engine, including staking support)
+  - [DAO](https://github.com/stacksjs/dao) (Q4 - Powerful toolkit for DAO governance)
 
-These stacks make great examples. Find more awesome Stacks [here](https://github.com/ow3org/awesome-stacks).
+These stacks make great examples. Find more awesome Stacks [here](https://github.com/stacksjs/awesome-stacks).
 
 ## 🧪 Testing
 
