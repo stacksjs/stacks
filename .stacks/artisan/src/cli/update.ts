@@ -1,5 +1,4 @@
 import type { CAC } from 'cac'
-import consola from 'consola'
 import { stacks as update } from '../scripts/update'
 
 async function updateCommands(artisan: CAC) {
@@ -10,7 +9,6 @@ async function updateCommands(artisan: CAC) {
     .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
     .action(async (options: any) => {
       await update(options)
-      consola.success('Updated Stacks & its dependencies.')
     })
 }
 
