@@ -12,6 +12,7 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./.stacks"
   },
+  "funding": "https://github.com/sponsors/chrisbbreuer",
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
