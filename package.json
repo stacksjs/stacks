@@ -11,6 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git"
   },
+  "funding": "https://github.com/sponsors/chrisbbreuer",
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
