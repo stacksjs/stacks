@@ -1,21 +1,33 @@
-import consola from 'consola'
+// import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
-import { NpmScript, copyFiles, deleteFolder } from '../../../src'
-import { runNpmScript } from './run-npm-script'
+// import { NpmScript, copyFiles, deleteFolder } from '../../../src'
+// import { runNpmScript } from './run-npm-script'
 
 export async function stacks(options: any) {
-  if (options.dependencies)
-    await runNpmScript(NpmScript.Update)
+  // if (options.dependencies)
+  //   await runNpmScript(NpmScript.Update)
 
   if (options.framework) {
-    consola.success('Downloading framework updates...')
-    await ezSpawn.async('giget stacks updates', { stdio: 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
-    await copyFiles('./updates/.stacks', './.stacks') // overwrite the core framework files
+    // check if the .stacks folder has any updates
+    try {
+      // https://carlosbecker.com/posts/git-changed/
+      const t = await ezSpawn.async('git diff --quiet HEAD $REF -- ./.stacks', { stdio: 'ignore' })
+      // eslint-disable-next-line no-console
+      console.log('t is', t)
+    }
+    catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error)
+    }
+
+    // consola.success('Downloading framework updates...')
+    // await ezSpawn.async('giget stacks updates', { stdio: 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
+    // await copyFiles('./updates/.stacks', './.stacks') // overwrite the core framework files
 
     // cleanup
-    await deleteFolder('./updates')
+    // await deleteFolder('./updates')
 
-    consola.success('Updated the Stacks framework.')
+    // consola.success('Updated the Stacks framework.')
   }
 
   // TODO: how to gracefully handle potential overwrites?

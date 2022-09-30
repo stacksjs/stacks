@@ -13,7 +13,6 @@ import { ExitCode } from './exit-code'
 // the logic to run to create/scaffold a new stack
 async function initCommands(artisan: CAC) {
   artisan
-    .version(version)
     .option('-n, --name <name>', 'Name of the stack')
     .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', 'Are you building UI components?', { default: true }) // if no, -v and -w would be false
@@ -24,7 +23,6 @@ async function initCommands(artisan: CAC) {
     .option('-a, --api', 'Are you building an API?', { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', 'Do you need a database?', { default: true })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .help()
 
   artisan
     .command('')

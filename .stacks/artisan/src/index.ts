@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import { isInitialized } from '../../src/core/helpers'
+import { version } from '../../../package.json'
 import { buildCommands, devCommands, exampleCommands, initCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './cli'
 import { ExitCode } from './cli/exit-code'
 import { generate as generateAppKey } from './scripts/key'
@@ -32,6 +33,9 @@ async function main() {
     await exampleCommands(artisan)
     await testCommands(artisan)
   }
+
+  artisan.help()
+  artisan.version(version)
 
   artisan.parse()
 }
