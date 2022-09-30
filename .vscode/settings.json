@@ -248,7 +248,8 @@
     "kolorist",
     "julr",
     "chrisbbreuer",
-    "stacksjs"
+    "stacksjs",
+    "compat"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
