@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
@@ -53,7 +53,7 @@ export function readTextFile(name: string, cwd: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
     const filePath = join(cwd, name)
 
-    fs.readFile(filePath, 'utf8', (err, text) => {
+    readFile(filePath, 'utf8', (err, text) => {
       if (err) {
         reject(err)
       }
@@ -72,7 +72,7 @@ export function readTextFile(name: string, cwd: string): Promise<TextFile> {
  */
 export function writeTextFile(file: TextFile): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.writeFile(file.path, file.data, (err: any) => {
+    writeFile(file.path, file.data, (err: any) => {
       if (err)
         reject(err)
 
@@ -98,14 +98,37 @@ export function isFolder(path: string): boolean {
  * Determine whether a path is a file.
  */
 export function isFile(path: string): boolean {
-  return fs.existsSync(path)
+  return existsSync(path)
 }
 
 /**
  * Determine whether a folder has any files in it.
  */
 export function hasFiles(folder: string): boolean {
-  return fs.readdirSync(folder).length > 0
+  return readdirSync(folder).length > 0
+}
+
+export const copyFiles = async (src: string, dest: string) => {
+  if (!existsSync(src))
+    return
+
+  if (statSync(src).isDirectory()) {
+    if (!existsSync(dest))
+      mkdirSync(dest, { recursive: true })
+
+    readdirSync(src).forEach((file) => {
+      if (file !== 'node_modules') // no need to ever copy node_modules
+        copyFiles(join(src, file), join(dest, file))
+    })
+
+    return
+  }
+
+  copyFileSync(src, dest)
+}
+
+export const deleteFolder = async (path: string) => {
+  await rmSync(path, { recursive: true, force: true })
 }
 
 export const _dirname = typeof __dirname !== 'undefined'
