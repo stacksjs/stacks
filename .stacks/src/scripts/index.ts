@@ -1,1 +1,1 @@
-export { copyFiles } from './copy-files'
+export { copyFiles, deleteFolder } from './copy-files'

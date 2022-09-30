@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'fs'
 import { join, resolve } from 'pathe'
 
 // relative to scripts directory
@@ -26,6 +26,10 @@ export const copyFiles = async (src: string, dest: string) => {
   }
 
   copyFileSync(src, dest)
+}
+
+export const deleteFolder = async (path: string) => {
+  await rmSync(path, { recursive: true, force: true })
 }
 
 destinations.forEach(([src, dest]) => {

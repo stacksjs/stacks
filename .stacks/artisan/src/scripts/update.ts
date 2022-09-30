@@ -1,6 +1,6 @@
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
-import { NpmScript, copyFiles } from '../../../src'
+import { NpmScript, copyFiles, deleteFolder } from '../../../src'
 import { runNpmScript } from './run-npm-script'
 
 export async function stacks(options: any) {
@@ -10,7 +10,11 @@ export async function stacks(options: any) {
   if (options.framework) {
     consola.success('Downloading framework updates...')
     await ezSpawn.async('giget stacks updates', { stdio: 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
-    copyFiles('./updates/.stacks', '../../../../.stacks') // overwrite the core framework files
+    await copyFiles('./updates/.stacks', './.stacks') // overwrite the core framework files
+
+    // cleanup
+    await deleteFolder('./updates')
+
     consola.success('Updated the Stacks framework.')
   }
 
