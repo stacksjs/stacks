@@ -26,6 +26,8 @@ export const enum NpmScript {
   TestTypes = 'test:types',
   TestCoverage = 'test:coverage',
   GenerateTypes = 'generate:types',
+  generateEntries = 'generate:entries',
+  generateVueCompat = 'generate:vue-compatibility',
   Release = 'release',
   Commit = 'commit',
   ExampleVue = 'example:vue',

@@ -2,7 +2,7 @@
 import cac from 'cac'
 import { isInitialized } from '../../core'
 import { version } from '../../../package.json'
-import { buildCommands, devCommands, exampleCommands, initCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './cli'
+import { buildCommands, devCommands, exampleCommands, generateCommands, initCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './cli'
 import { ExitCode } from './cli/exit-code'
 import { generate as generateAppKey } from './scripts/key'
 
@@ -26,6 +26,7 @@ async function main() {
   }
   else {
     await updateCommands(artisan)
+    await generateCommands(artisan)
     await devCommands(artisan)
     await buildCommands(artisan)
     await utilityCommands(artisan)

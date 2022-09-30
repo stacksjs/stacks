@@ -6,5 +6,6 @@ import { exampleCommands } from './example'
 import { testCommands } from './test'
 import { initCommands } from './init'
 import { updateCommands } from './update'
+import { generateCommands } from './generate'
 
-export { devCommands, buildCommands, utilityCommands, makeCommands, exampleCommands, testCommands, initCommands, updateCommands }
+export { devCommands, buildCommands, utilityCommands, makeCommands, exampleCommands, testCommands, initCommands, updateCommands, generateCommands }

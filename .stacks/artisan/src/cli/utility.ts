@@ -3,7 +3,6 @@ import { reinstallNpmDependencies } from '../scripts/fresh'
 import { lint, lintFix } from '../scripts/lint'
 import { release } from '../scripts/release'
 import { commit } from '../scripts/commit'
-import { generateTypes } from '../scripts/generate'
 
 async function utilityCommands(artisan: CAC) {
   artisan
@@ -34,12 +33,6 @@ async function utilityCommands(artisan: CAC) {
     .command('commit', 'Commit your stashed changes.')
     .action(async () => {
       await commit()
-    })
-
-  artisan
-    .command('generate:types', 'Generates the types of your library/libraries.')
-    .action(async () => {
-      await generateTypes()
     })
 }
 

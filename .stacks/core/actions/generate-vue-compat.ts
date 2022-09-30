@@ -8,7 +8,7 @@
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 
-export async function useVueDemi(paths: string[]) {
+export async function generateVueCompat(paths: string[]) {
   const files = await fg(paths, {
     onlyFiles: true,
   })
@@ -23,4 +23,4 @@ export async function useVueDemi(paths: string[]) {
   }
 }
 
-// useVueDemi()
+// generateVueCompat()
