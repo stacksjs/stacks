@@ -6,7 +6,7 @@ node_modules
 .pnpm-debug.log
 .stacks/.nitro
 .stacks/.output
-.stacks/src/components/.vite-inspect/*
+.stacks/core/components/.vite-inspect/*
 .stacks/components/dist/*
 .stacks/web-components/dist/*
 .stacks/docs/dist/*

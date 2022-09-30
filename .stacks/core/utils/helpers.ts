@@ -1,4 +1,4 @@
-import { isFile, readTextFile } from './'
+import { isFile, readTextFile } from '.'
 
 export async function isInitialized(path: string) {
   if (isFile('.env')) {

@@ -74,7 +74,7 @@ export async function generatePackageJson(type: string) {
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../src/build/${config}.ts",
+    "build": "vite build -c ../core/build/${config}.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

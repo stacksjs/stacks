@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 import { resolve } from 'pathe'
 import consola from 'consola'
-import { hasFiles, writeTextFile } from '..'
+import { hasComponents, hasFunctions, writeTextFile } from '..'
 
 /**
  * Based on the config values, this method
  * will generate the library entry points.
  * @param type
  */
-export async function generateLibEntries(type: 'components' | 'functions') {
+export async function generateLibEntry(type: 'components' | 'functions') {
   consola.info('Creating the library entry points...')
 
-  const path = resolve(process.cwd(), `./${type}/package.json`)
+  const path = resolve(process.cwd(), `../../core/build/entries/${type}.ts`)
 
   try {
     await writeTextFile({
@@ -24,7 +24,7 @@ export { default as Demo } from '../components/Demo.vue'
 `,
     })
 
-    consola.success(`Created the ${type} library entrypoint.`)
+    consola.success(`Created the ${type} library entrypoint/s.`)
   }
   catch (err) {
     consola.error(err)
@@ -32,13 +32,11 @@ export { default as Demo } from '../components/Demo.vue'
 }
 
 export async function generate() {
-  if (hasFiles(resolve(process.cwd(), './components'))) {
-    await generatePackageJson('components')
-    await generatePackageJson('web-components')
-  }
+  if (hasComponents())
+    await generateLibEntry('components')
 
-  if (hasFiles(resolve(process.cwd(), './functions')))
-    await generatePackageJson('functions')
+  if (hasFunctions())
+    await generateLibEntry('functions')
 }
 
 generate()

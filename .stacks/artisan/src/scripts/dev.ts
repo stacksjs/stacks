@@ -1,6 +1,6 @@
 import Prompts from 'prompts'
 import consola from 'consola'
-import { NpmScript } from '../../../src/types'
+import { NpmScript } from '../../../core/types'
 import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
 

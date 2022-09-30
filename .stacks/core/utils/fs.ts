@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'fs'
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 
@@ -87,7 +87,7 @@ export function writeTextFile(file: TextFile): Promise<void> {
  */
 export function isFolder(path: string): boolean {
   try {
-    return fs.statSync(path).isDirectory()
+    return statSync(path).isDirectory()
   }
   catch {
     return false
@@ -106,6 +106,14 @@ export function isFile(path: string): boolean {
  */
 export function hasFiles(folder: string): boolean {
   return readdirSync(folder).length > 0
+}
+
+export function hasComponents(): boolean {
+  return hasFiles(resolve(process.cwd(), './components'))
+}
+
+export function hasFunctions(): boolean {
+  return hasFiles(resolve(process.cwd(), './functions'))
 }
 
 export const copyFiles = async (src: string, dest: string) => {

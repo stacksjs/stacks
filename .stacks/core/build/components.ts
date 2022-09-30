@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import { componentsLibrary } from '../../../config/library'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
-import alias from '../core/alias'
+import alias from '../alias'
 import { _dirname } from '../utils'
 
 const config: ViteConfig = {
