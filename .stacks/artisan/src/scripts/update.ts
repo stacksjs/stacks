@@ -3,17 +3,21 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import Prompts from 'prompts'
 import { ExitCode } from '../cli/exit-code'
-import { copyFiles, deleteFolder } from '../../../src'
+import { NpmScript, copyFiles, deleteFolder } from '../../../src'
+import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts
 
 export async function stacks(options: any) {
-  // if (options.dependencies)
-  //   await runNpmScript(NpmScript.Update)
+  if (options.dependencies) {
+    consola.info('Updating dependencies...')
+    await runNpmScript(NpmScript.Update)
+    consola.success('Updated dependencies.')
+  }
 
   if (options.framework) {
-    // check if the .stacks folder has any updates
     try {
+      // check if the .stacks folder has any updates
       // https://carlosbecker.com/posts/git-changed/
       await ezSpawn.async('git diff --quiet HEAD -- ./.stacks', { stdio: 'inherit', cwd: process.cwd() })
     }
@@ -32,23 +36,21 @@ export async function stacks(options: any) {
           // @ts-expect-error the answer object type expects to return a void type but it returns boolean
           if (!answer) {
             consola.info('The framework was not updated.')
+            consola.info('Note: if you commit your changes and replay the update, you will see what has changed.')
             process.exit(ExitCode.Success)
           }
         }
       }
     }
 
-    consola.success('Downloading framework updates...')
+    consola.info('Downloading framework updates...')
     await ezSpawn.async('giget stacks updates', { stdio: 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
     await copyFiles('./updates/.stacks', './.stacks') // overwrite the core framework files
 
     // cleanup
     await deleteFolder('./updates')
-
     consola.success('Updated the Stacks framework.')
   }
 
-  // configurations, when they do, how should they be handled?
-
-  // TODO: also update CI files & other files, possibly
+  // TODO: also update CI files & configurations, and other files, possibly
 }

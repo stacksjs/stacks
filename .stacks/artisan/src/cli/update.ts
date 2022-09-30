@@ -9,7 +9,6 @@ async function updateCommands(artisan: CAC) {
     .option('-d, --dependencies', 'Update your dependencies', { default: true })
     .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
     .action(async (options: any) => {
-      consola.info('Updating Stacks & its dependencies...')
       await update(options)
       consola.success('Updated Stacks & its dependencies.')
     })
