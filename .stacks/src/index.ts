@@ -1,4 +1,5 @@
 export { atomicCssEngine, autoImports, components, inspect, uiEngine, Stacks } from './core/stacks'
+export { hasFiles, isFile, isFolder, readJsonFile, readTextFile, writeJsonFile, writeTextFile, _dirname, isInitialized, isManifest } from './utils'
 export { componentsBuildOptions, webComponentsBuildOptions } from './build'
 export { copyFiles, deleteFolder } from './scripts'
 export * from './types'

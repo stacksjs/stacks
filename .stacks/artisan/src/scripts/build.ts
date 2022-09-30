@@ -1,8 +1,8 @@
 import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
-import { NpmScript } from '../../../src/types'
-import { hasFiles } from '../../../src/core/fs'
+import { generateLibEntries } from 'stacks/src/scripts/generate-lib-entries'
+import { NpmScript, hasFiles } from '../../../src'
 import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
 import { generateTypes } from './generate'
@@ -10,6 +10,7 @@ import { generateTypes } from './generate'
 const { prompts } = Prompts
 
 export async function buildComponentLibraries() {
+  await generateLibEntries('components')
   await buildVueComponentLibrary()
   await buildWebComponentLibrary()
 }

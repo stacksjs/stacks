@@ -5,7 +5,7 @@ import type { ViteConfig } from '../types'
 import { functionsLibrary } from '../../../config/library'
 import { autoImports } from '..'
 import alias from '../core/alias'
-import { _dirname } from '../core/fs'
+import { _dirname } from '../utils'
 
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),

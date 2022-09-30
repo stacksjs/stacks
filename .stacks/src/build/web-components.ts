@@ -5,7 +5,7 @@ import type { ViteConfig } from '../types'
 import alias from '../core/alias'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
 import { webComponentsLibrary } from '../../../config/library'
-import { _dirname } from '../core/fs'
+import { _dirname } from '../utils'
 
 const isWebComponent = true
 

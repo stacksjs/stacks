@@ -31,6 +31,19 @@ const webComponentsLibrary: LibraryOptions = {
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
 }
 
+/**
+ * This is where you define the components that need to
+ * be included in your library. Ensure that those
+ * component names exist in ../components/**
+ */
+const components = [
+  ['Counter', 'Counting'],
+  'ToggleDark',
+  'Logo',
+  'HelloWorld',
+  'Demo',
+]
+
 const functionsLibrary: LibraryOptions = {
   name: `${stackName}-fx`,
   description: 'Your function library description.',
@@ -39,4 +52,14 @@ const functionsLibrary: LibraryOptions = {
   shouldGenerateSourcemap: false,
 }
 
-export { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, componentsLibrary, functionsLibrary, webComponentsLibrary }
+/**
+ * This is where you define the functions/composables that
+ * need to be included in your library. Ensure that
+ * those function names exist in ../functions/**
+ */
+const functions = [
+  'counter',
+  'dark',
+]
+
+export { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, components, functions, componentsLibrary, functionsLibrary, webComponentsLibrary }

@@ -5,7 +5,7 @@ import type { ViteConfig } from '../types'
 import { componentsLibrary } from '../../../config/library'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
 import alias from '../core/alias'
-import { _dirname } from '../core/fs'
+import { _dirname } from '../utils'
 
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),
@@ -46,7 +46,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     outDir: resolve(_dirname, '../../components/dist'),
     emptyOutDir: true,
     lib: {
-      entry: resolve(_dirname, '../../../config/components.ts'),
+      entry: resolve(_dirname, './entries/components.ts'),
       name: componentsLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

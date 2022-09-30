@@ -1,4 +1,3 @@
-// import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import Prompts from 'prompts'
