@@ -91,7 +91,7 @@
     "test:types": "vue-tsc --noEmit",
     "types:fix": "esno core/actions/fix-types.ts",
     "generate:types": "vue-tsc --declaration --emitDeclarationOnly && jiti core/actions/copy-files.ts",
-    "generate:entries": "jiti core/actions/generate-package-json.ts",
+    "generate:entries": "jiti core/actions/generate-lib-entries.ts",
     "generate:vue-compatibility": "jiti core/actions/generate-vue-compat.ts",
     "key:generate": "pnpm artisan key:generate"
   },

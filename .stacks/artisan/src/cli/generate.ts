@@ -16,11 +16,13 @@ async function generateCommands(artisan: CAC) {
       await generateLibEntry('functions')
     })
 
-  // artisan
-  //   .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
-  //   .action(async () => {
-  //     await generateVueCompat()
-  //   })
+  artisan
+    .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
+    .action(async () => {
+      // eslint-disable-next-line no-console
+      console.log('wip')
+      // await generateVueCompat()
+    })
 }
 
 export { generateCommands }
