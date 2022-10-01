@@ -72,6 +72,8 @@
     "test:types": "pnpm artisan test:types",
     "types:fix": "pnpm artisan types:fix",
     "generate:types": "pnpm artisan generate:types",
+    "generate:entries": "pnpm artisan generate:entries",
+    "generate:vue-compat": "pnpm artisan generate:vue-compat",
     "key:generate": "pnpm artisan key:generate",
     "a": "pnpm artisan",
     "art": "pnpm artisan"

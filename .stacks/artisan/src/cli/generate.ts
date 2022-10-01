@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateLibEntry, generateVueCompat } from '../../../core'
+import { generateLibEntry } from '../../../core'
 import { generateTypes } from '../scripts/generate'
 
 async function generateCommands(artisan: CAC) {
@@ -16,11 +16,11 @@ async function generateCommands(artisan: CAC) {
       await generateLibEntry('functions')
     })
 
-  artisan
-    .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
-    .action(async () => {
-      await generateVueCompat()
-    })
+  // artisan
+  //   .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
+  //   .action(async () => {
+  //     await generateVueCompat()
+  //   })
 }
 
 export { generateCommands }
