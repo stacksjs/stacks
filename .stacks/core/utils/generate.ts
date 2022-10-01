@@ -128,18 +128,18 @@ function generateEntryPointData(type: 'components' | 'functions'): string {
   if (type === 'functions') {
     for (const fx of functions) {
       if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '../functions/${fx[0]}'`)
+        arr.push(`export * as ${fx[1]} from '../../../../functions/${fx[0]}'`)
       else
-        arr.push(`export * from '../functions/${fx}'`)
+        arr.push(`export * from '../../../../functions/${fx}'`)
     }
   }
 
   else if (type === 'components') {
     for (const component of components) {
       if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '../components/${component[0]}.vue'`)
+        arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       else
-        arr.push(`export { default as ${component} } from '../components/${component}.vue'`)
+        arr.push(`export { default as ${component} } from '../../../../components/${component}.vue'`)
     }
   }
 
