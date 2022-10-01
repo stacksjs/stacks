@@ -3,8 +3,8 @@ import fs from 'fs-extra'
 import consola from 'consola'
 import { enc } from 'crypto-js'
 import { resolve } from 'pathe'
-import { isFile } from 'stacks'
 import ezSpawn from '@jsdevtools/ez-spawn'
+import { isFile } from '../../../core/utils'
 
 export async function generate(path: string) {
   // if the .env file does not exist, ensure it is created
