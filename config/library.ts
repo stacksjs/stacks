@@ -32,16 +32,13 @@ const webComponentsLibrary: LibraryOptions = {
 }
 
 /**
- * This is where you define the components that need to
- * be included in your library. Ensure that those
- * component names exist in ../components/**
+ * This is where you define the components that need to be included in
+ * your library. For example, including your `HelloWorld` to be built
+ * would require `../components/HelloWorld.vue` to be present.
  */
 const components = [
-  ['Counter', 'Counting'],
-  'ToggleDark',
-  'Logo',
-  'HelloWorld',
-  'Demo',
+  ['HelloWorld', 'HalloWelt'], // export { default as HalloWelt } from '../components/HelloWorld.vue'
+  'Demo', // // export { default as Demo } from '../components/Demo.vue'
 ]
 
 const functionsLibrary: LibraryOptions = {
@@ -53,9 +50,9 @@ const functionsLibrary: LibraryOptions = {
 }
 
 /**
- * This is where you define the functions/composables that
- * need to be included in your library. Ensure that
- * those function names exist in ../functions/**
+ * This is where you define the functions/composables that need to be included
+ * in your library. For example, including your `counter` function to be built
+ * would require `../functions/counter.ts` to be present.
  */
 const functions = [
   'counter',

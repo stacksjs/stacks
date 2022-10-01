@@ -6,13 +6,13 @@
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
   "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./.stacks"
   },
-  "funding": "https://github.com/sponsors/chrisbbreuer",
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },

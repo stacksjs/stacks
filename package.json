@@ -6,12 +6,12 @@
   "description": "Develop modern framework-agnostic web apps & libraries, faster.",
   "author": "Chris Breuer",
   "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git"
   },
-  "funding": "https://github.com/sponsors/chrisbbreuer",
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
