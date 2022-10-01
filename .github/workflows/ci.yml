@@ -44,6 +44,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Set Application Key
+        run: pnpm artisan key:generate
+
       - name: Lint
         run: pnpm artisan lint
 
@@ -70,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Set Application Key
+        run: pnpm artisan key:generate
+
       - name: Typecheck
         run: pnpm artisan test:types
 
@@ -95,6 +101,9 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
+
+      - name: Set Application Key
+        run: pnpm artisan key:generate
 
       - name: Test Suite
         run: pnpm run test
@@ -124,6 +133,9 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
+
+      - name: Set Application Key
+        run: pnpm artisan key:generate
 
       - name: Prepare Git User
         run: |
