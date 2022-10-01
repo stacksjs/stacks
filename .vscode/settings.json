@@ -1,6 +1,7 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -10,9 +11,7 @@
   "editor.quickSuggestions": {
     "strings": true
   },
-  "eslint.format.enable": true,
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "editor.formatOnSave": true,
   "git.enableSmartCommit": true,
   "css.validate": false,
   "npm.enableRunFromFolder": true,
