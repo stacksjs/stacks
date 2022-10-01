@@ -7,11 +7,11 @@ import ezSpawn from '@jsdevtools/ez-spawn'
 import { isFile } from '../../../core/utils'
 
 export async function generate(path: string) {
+  consola.info('Setting random application key.')
+
   // if the .env file does not exist, ensure it is created
   if (!isFile('.env'))
     await ezSpawn.async('cp .env.example .env', { stdio: 'inherit' })
-
-  consola.info('Setting random application key.')
 
   const random = crypto.getRandomValues(new Uint8Array(32))
   const encodedWord = enc.Utf8.parse(random.toString())

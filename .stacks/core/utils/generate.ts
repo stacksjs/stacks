@@ -4,15 +4,15 @@ import fg from 'fast-glob'
 import fs from 'fs-extra'
 import { packageManager } from '../../package.json'
 import { author, components, componentsLibrary, contributors, functions, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
-import { writeTextFile } from '.'
+import { kebabCase, writeTextFile } from '.'
 
 /**
  * Based on the config values, this method
  * will generate the library entry points.
  * @param type
  */
-export async function generateLibEntry(type: 'components' | 'functions') {
-  if (type === 'components')
+export async function generateLibEntry(type: 'components' | 'web-components' | 'functions') {
+  if (type.includes('components'))
     consola.info('Creating the component library entry points...')
   else
     consola.info('Creating the function library entry point...')
@@ -122,7 +122,7 @@ export async function generatePackageJson(type: string) {
   }
 }
 
-function generateEntryPointData(type: 'components' | 'functions'): string {
+function generateEntryPointData(type: 'components' | 'web-components' | 'functions'): string {
   const arr = []
 
   if (type === 'functions') {
@@ -132,15 +132,48 @@ function generateEntryPointData(type: 'components' | 'functions'): string {
       else
         arr.push(`export * from '../../../../functions/${fx}'`)
     }
+
+    // join the array into a string with each element being on a new line
+    return arr.join('\r\n')
   }
 
-  else if (type === 'components') {
+  if (type === 'components') {
     for (const component of components) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       else
         arr.push(`export { default as ${component} } from '../../../../components/${component}.vue'`)
     }
+
+    // join the array into a string with each element being on a new line
+    return arr.join('\r\n')
+  }
+
+  // else (type === 'web-components') {
+  arr.push('import { defineCustomElement } from \'vue\'')
+
+  // first, lets do the imports
+  for (const component of components) {
+    if (Array.isArray(component))
+      arr.push(`import { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
+    else
+      arr.push(`import { default as ${component} } from '../../../../components/${component}.vue'`)
+  }
+
+  // next, let's declare the definitions
+  for (const component of components) {
+    if (Array.isArray(component))
+      arr.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
+    else
+      arr.push(`const ${component}CustomElement = defineCustomElement(${component})`)
+  }
+
+  // last, let's create the definitions
+  for (const component of components) {
+    if (Array.isArray(component))
+      arr.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
+    else
+      arr.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
   }
 
   // join the array into a string with each element being on a new line

@@ -11,7 +11,7 @@ const isWebComponent = true
 
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),
-
+  envDir: resolve(_dirname, '../../../'),
   envPrefix: 'STACKS_',
 
   server: {
@@ -43,7 +43,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     outDir: resolve(_dirname, '../../web-components/dist'),
     emptyOutDir: true,
     lib: {
-      entry: resolve(_dirname, '../../../config/web-components.ts'),
+      entry: resolve(_dirname, '../build/entries/web-components.ts'),
       name: webComponentsLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
