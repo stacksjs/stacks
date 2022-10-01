@@ -45,7 +45,7 @@ jobs:
         run: pnpm install
 
       - name: Lint
-        run: cd .stacks && pnpm run lint
+        run: pnpm artisan lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -71,7 +71,7 @@ jobs:
         run: pnpm install
 
       - name: Typecheck
-        run: pnpm run test:types
+        run: pnpm artisan test:types
 
   test:
     runs-on: ${{ matrix.os }}
