@@ -3,7 +3,7 @@ import { resolve } from 'pathe'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 import { packageManager } from '../../package.json'
-import { author, componentsLibrary, contributors, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
+import { author, components, componentsLibrary, contributors, functions, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
 import { writeTextFile } from '.'
 
 /**
@@ -12,22 +12,24 @@ import { writeTextFile } from '.'
  * @param type
  */
 export async function generateLibEntry(type: 'components' | 'functions') {
-  consola.info(`Creating the ${type} entry point/s...`)
+  if (type === 'components')
+    consola.info('Creating the component library entry points...')
+  else
+    consola.info('Creating the function library entry point...')
 
   const path = resolve(process.cwd(), `./.stacks/core/build/entries/${type}.ts`)
+  const data = generateEntryPointData(type)
 
   try {
     await writeTextFile({
       path,
-      data: `export { default as Counter } from '../components/Buttons/Counter.vue'
-export { default as ToggleDark } from '../components/Buttons/ToggleDark.vue'
-export { default as Logo } from '../components/Logo.vue'
-export { default as HelloWorld } from '../components/HelloWorld.vue'
-export { default as Demo } from '../components/Demo.vue'
-`,
+      data,
     })
 
-    consola.success(`Created the ${type} library entrypoint/s.`)
+    if (type === 'components')
+      consola.success('Created the component library entry points.')
+    else
+      consola.success('Created the function library entry point.')
   }
   catch (err) {
     consola.error(err)
@@ -118,6 +120,31 @@ export async function generatePackageJson(type: string) {
   catch (err) {
     consola.error(err)
   }
+}
+
+function generateEntryPointData(type: 'components' | 'functions'): string {
+  const arr = []
+
+  if (type === 'functions') {
+    for (const fx of functions) {
+      if (Array.isArray(fx))
+        arr.push(`export * as ${fx[1]} from '../functions/${fx[0]}'`)
+      else
+        arr.push(`export * from '../functions/${fx}'`)
+    }
+  }
+
+  else if (type === 'components') {
+    for (const component of components) {
+      if (Array.isArray(component))
+        arr.push(`export { default as ${component[1]} } from '../components/${component[0]}.vue'`)
+      else
+        arr.push(`export { default as ${component} } from '../components/${component}.vue'`)
+    }
+  }
+
+  // join the array into a string with each element being on a new line
+  return arr.join('\r\n')
 }
 
 export async function generateVueCompat(paths: string[]) {

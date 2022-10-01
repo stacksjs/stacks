@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { generateLibEntry, hasComponents, hasFunctions } from '..'
 
 async function generate() {
