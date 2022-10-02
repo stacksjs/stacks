@@ -12,6 +12,5 @@ declare module '@vue/runtime-core' {
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     Logo: typeof import('./../components/Logo.vue')['default']
     ToggleDark: typeof import('./../components/Buttons/ToggleDark.vue')['default']
-    ToggleLanguage: typeof import('./../components/Buttons/ToggleLanguage.vue')['default']
   }
 }

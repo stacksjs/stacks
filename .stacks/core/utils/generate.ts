@@ -11,9 +11,11 @@ import { kebabCase, writeTextFile } from '.'
  * will generate the library entry points.
  * @param type
  */
-export async function generateLibEntry(type: 'components' | 'web-components' | 'functions') {
-  if (type.includes('components'))
-    consola.info('Creating the component library entry points...')
+export async function generateLibEntry(type: 'vue-components' | 'web-components' | 'functions') {
+  if (type === 'vue-components')
+    consola.info('Creating the Vue component library entry point...')
+  else if (type === 'web-components')
+    consola.info('Creating the Web Component library entry point...')
   else
     consola.info('Creating the function library entry point...')
 
@@ -26,8 +28,10 @@ export async function generateLibEntry(type: 'components' | 'web-components' | '
       data,
     })
 
-    if (type === 'components')
-      consola.success('Created the component library entry points.')
+    if (type === 'vue-components')
+      consola.success('Created the Vue component library entry point.')
+    else if (type === 'web-components')
+      consola.success('Created the Web Component library entry point.')
     else
       consola.success('Created the function library entry point.')
   }
@@ -122,7 +126,7 @@ export async function generatePackageJson(type: string) {
   }
 }
 
-function generateEntryPointData(type: 'components' | 'web-components' | 'functions'): string {
+function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
   const arr = []
 
   if (type === 'functions') {
@@ -137,7 +141,7 @@ function generateEntryPointData(type: 'components' | 'web-components' | 'functio
     return arr.join('\r\n')
   }
 
-  if (type === 'components') {
+  if (type === 'vue-components') {
     for (const component of components) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
@@ -149,35 +153,26 @@ function generateEntryPointData(type: 'components' | 'web-components' | 'functio
     return arr.join('\r\n')
   }
 
-  // else (type === 'web-components') {
-  arr.push('import { defineCustomElement } from \'vue\'')
+  // at this point, we know it is a Web Component we are building
+  const imports = ['import { defineCustomElement } from \'vue\'']
+  const declarations = []
+  const definitions = []
 
-  // first, lets do the imports
   for (const component of components) {
-    if (Array.isArray(component))
-      arr.push(`import { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
-    else
-      arr.push(`import { default as ${component} } from '../../../../components/${component}.vue'`)
-  }
-
-  // next, let's declare the definitions
-  for (const component of components) {
-    if (Array.isArray(component))
-      arr.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
-    else
-      arr.push(`const ${component}CustomElement = defineCustomElement(${component})`)
-  }
-
-  // last, let's create the definitions
-  for (const component of components) {
-    if (Array.isArray(component))
-      arr.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
-    else
-      arr.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
+    if (Array.isArray(component)) {
+      imports.push(`import { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
+      declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
+      definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
+    }
+    else {
+      imports.push(`import { default as ${component} } from '../../../../components/${component}.vue'`)
+      declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
+      definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
+    }
   }
 
   // join the array into a string with each element being on a new line
-  return arr.join('\r\n')
+  return [...imports, ...declarations, ...definitions].join('\r\n')
 }
 
 export async function generateVueCompat(paths: string[]) {

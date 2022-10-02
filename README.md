@@ -126,7 +126,7 @@ Read more here about the Stacks CLI in the documentation.
 
 ## 📚 Utilizing the Built Libraries
 
-Because we optimize toward the development of easily reusable & composable component & function libraries, our primary intention is to always _keep it simple, yet configurable._
+Because Stacks optimizes the development of easily reusable & composable component & function libraries, the primary intention is to always _keep it simple, yet configurable._
 
 By default, Stacks realizes whether your Stack includes components, functions, and/or pages. Based on that determination, Stacks builds your outputs.
 

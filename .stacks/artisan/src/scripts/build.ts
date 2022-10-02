@@ -9,7 +9,8 @@ import { generateTypes } from './generate'
 const { prompts } = Prompts
 
 export async function buildComponentLibraries() {
-  await generateLibEntry('components')
+  await generateLibEntry('vue-components')
+  await generateLibEntry('web-components')
   await buildVueComponentLibrary()
   await buildWebComponentLibrary()
 }

@@ -12,7 +12,8 @@ async function generateCommands(artisan: CAC) {
   artisan
     .command('generate:entries', 'Generates the entry points for your libraries')
     .action(async () => {
-      await generateLibEntry('components')
+      await generateLibEntry('vue-components')
+      await generateLibEntry('web-components')
       await generateLibEntry('functions')
     })
 
