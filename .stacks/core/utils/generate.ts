@@ -56,7 +56,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     description = componentsLibrary.description
     directory = 'components'
     keywords = componentsLibrary.keywords
-    config = 'components'
+    config = 'vue-components'
   }
 
   else if (type === 'web-components') {
@@ -64,7 +64,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     description = webComponentsLibrary.description
     directory = 'components'
     keywords = webComponentsLibrary.keywords
-    config = 'components' // TODO: this should be web-components
+    config = 'web-components'
   }
 
   else if (type === 'functions') {
