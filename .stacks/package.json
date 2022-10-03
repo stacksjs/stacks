@@ -65,7 +65,7 @@
     "build:cli": "cd ./artisan && unbuild",
     "build:stacks": "wip",
     "build": "pnpm run test:types && pnpm artisan build",
-    "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../components/dist dist && vite serve -c ../../core/build/example-vue.ts",
+    "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../vue-components/dist dist && vite serve -c ../../core/build/example-vue.ts",
     "example:web-components": "pnpm run build:web-components && cd examples/web-components && ln -sf ../../web-components/dist dist && vite serve -c ../../core/build/example-wc.ts",
     "nitro:build": "nitro build",
     "make:component": "pnpm artisan make:component",

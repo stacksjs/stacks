@@ -43,7 +43,7 @@ const config: ViteConfig = {
 
 export function componentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(_dirname, '../../components/dist'),
+    outDir: resolve(_dirname, '../../vue-components/dist'),
     emptyOutDir: true,
     lib: {
       entry: resolve(_dirname, '../build/entries/vue-components.ts'),
