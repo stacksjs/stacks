@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Set Application Key
+        run: pnpm artisan key:generate
+
       - name: Generate library entry points
         run: pnpm artisan generate:entry-points
 
