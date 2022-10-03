@@ -16,7 +16,7 @@ export async function buildComponentLibraries() {
 }
 
 export async function buildVueComponentLibrary() {
-  consola.info('Building your component library for production use & npm/CDN distribution...')
+  consola.info('Building your component library...')
 
   if (hasFiles(resolve(process.cwd(), './components'))) {
     try {
@@ -39,10 +39,10 @@ export async function buildWebComponentLibrary() {
   if (hasFiles(resolve(process.cwd(), './components'))) {
     try {
       await runNpmScript(NpmScript.BuildWebComponents)
-      consola.success('Your web component library was built successfully.')
+      consola.success('Your Web Component library was built successfully.')
     }
     catch (error) {
-      consola.error('There was an error building your web component library.')
+      consola.error('There was an error building your Web Component library.')
       consola.error(error)
     }
   }

@@ -24,15 +24,15 @@ export async function testComponentExample() {
 }
 
 export async function testWebComponentExample() {
-  consola.info('Building your web component library for production use & npm/CDN distribution...')
+  consola.info('Building your Web Component library...')
 
   if (hasFiles(resolve(process.cwd(), './components'))) {
     try {
       await runNpmScript(NpmScript.BuildWebComponents)
-      consola.success('Your web component library was built successfully.')
+      consola.success('Your Web Component library was built successfully.')
     }
     catch (error) {
-      consola.error('There was an error building your web component library.')
+      consola.error('There was an error building your Web Component library.')
       consola.error(error)
     }
   }
