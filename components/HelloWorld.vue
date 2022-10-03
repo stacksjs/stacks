@@ -168,41 +168,46 @@ onMounted(() => {
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
                   Stacks’s robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
-                    href="https://github.com/ow3org/table"
+                    href="https://github.stacksjsow3org/table"
                     class="underline text-blue-600 dark:text-blue-200"
-                  >Tables</a>, <a
-                    href="https://github.com/ow3org/date-picker"
-                    class="underline text-blue-600 dark:text-blue-200"
-                  >Date Picker</a>,
+                  >Tables</a>,
                   <a
-                    href="https://github.com/ow3org/file-manager"
+                    href="https://github.com/stacksjs/date-picker"
+                    class="underline text-blue-600 dark:text-blue-200"
+                  >Command Palettes</a>,
+                  <a
+                    href="https://github.com/stacksjs/date-picker"
+                    class="underline text-blue-600 dark:text-blue-200"
+                  >Date Pickers</a>,
+                  <a
+                    href="https://github.com/stacksjsfile-manager"
                     class="underline text-blue-600 dark:text-blue-200"
                   >File Manager</a>,
                   <a
-                    href="https://github.com/ow3org/image"
+                    href="https://github.stacksjsow3org/image"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Images</a>,
                   <a
-                    href="https://github.com/ow3org/video"
+                    href="https://github.stacksjsow3org/video"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Videos</a>,
                   <a
-                    href="https://github.com/ow3org/audio"
+                    href="https://github.stacksjsow3org/audio"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Audios</a>,
                   and
                   <a
-                    href="https://github.com/ow3org/web3"
+                    href="https://github.stacksjs/ow3org/web3"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Web3</a>
                   libraries, such as <a
-                    href="https://github.com/ow3org/daos"
+                    href="https://github.stacksjs/ow3org/daos"
                     class="underline text-blue-600 dark:text-blue-200"
                   >DAO</a>, <a
-                    href="https://github.com/ow3org/nfts"
+                    href="https://github.stacksjs/ow3org/nfts"
                     class="underline text-blue-600 dark:text-blue-200"
                   >NFTs</a>, <a
-                    href="https://github.com/ow3org/defi"
+                    href="https://github.stacksjs/ow3org/defi"
                     class="underline text-blue-600 dark:text-blue-200"
                   >DeFi</a>
                   stacks, and more—we got you covered.

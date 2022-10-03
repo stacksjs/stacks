@@ -22,6 +22,18 @@
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
+  "markdownlint.config": {
+    "default": true,
+    "MD033": {
+      "allowed_elements": ["details", "summary"]
+    },
+    "MD041": false,
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+  },
   "search.exclude": {
     "**/*.cjs": true,
     "**/*.mjs": true,

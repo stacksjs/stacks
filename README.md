@@ -1,22 +1,22 @@
-<p align="center"><img src=".github/art/social.png" alt="Social Card of Stacks"></p>
+![Social Card of Stacks](.github/art/social.png)
+
+# Atomic Full Stack
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-<!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# The Atomic UI/FX Engine
-
-The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. The Stacks build system allows you to easily & automatically build highly-composable & scalable framework agnostic libraries—in beginner & expert-friendly ways—embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. The Stacks build system automatically builds highly-composable & scalable, framework-agnostic libraries—in beginner & expert-friendly ways, embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
 
 ![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
-**🤖 Zero-config, by design**
+🤖 **Zero-config, by design**
 
 The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library or API, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite & Nitro engines in a zero-config way._
 
-**🎨 Style with ease**
+🎨 **Style with ease**
 
 Create your own style guide using conventions you are familiar with. Stacks' UnoCSS atomic engine allows for just that, in a blazing-fast, on-demand way. Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more to choose from.
 
@@ -24,11 +24,11 @@ Create your own style guide using conventions you are familiar with. Stacks' Uno
 
 Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, a powerful, yet simple, CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured examples... _Stacks has it all._
 
-**💡 First-class VS Code integration**
+💡 **First-class VS Code integration**
 
 IDE Capabilities, such as type hints, code completion, code formatting, and more—all natively built-into Stacks. _And without the need of Prettier._
 
-**🧙🏼‍♀️ Extremely beginner & expert-friendly**
+🧙🏼‍♀️ **Extremely beginner & expert-friendly**
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework.
 
@@ -41,11 +41,14 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-npx artisan-init project
+npx artisan-init my-project
+
+# alternatively, if unsure about your Node/pnpm setup, run:
+curl -fsSL https://stacksjs.dev/setup | bash
 ```
 
 > **Note**
-> Node.js v16.17 or higher required. _No worries, Artisan will guide you._
+> Node.js v18.10 or higher required. _Artisan will set you up._
 
 ## 🤖 Usage
 
@@ -96,28 +99,32 @@ pnpm artisan release # creates the releases for the stack & triggers the Release
 pnpm artisan changelog # generates CHANGELOG.md
 
 # building for production (e.g. npm)
+
 pnpm artisan build # select a specific build (follow CLI prompts)
 pnpm artisan build:components # builds component libraries
 pnpm artisan build:functions # builds function library
 pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 pnpm artisan build:components # builds Vue 2 & 3 compatible libraries
 
-
 # when building for Vercel, Netlify, and more
+
 pnpm artisan deploy:docs
 
 # creates a server to be deployed into any VPS
+
 pnpm artisan server:functions # wip
 pnpm artisan server:pages # wip
 
 pnpm artisan example # select the example to run (follow CLI prompts)
 
 # test your stack
+
 pnpm artisan test # runs test suite
 pnpm artisan test:unit # runs unit tests
 pnpm artisan test:e2e # runs e2e tests
 pnpm artisan test:coverage # runs test coverage
 pnpm artisan test:types # runs typecheck
+
 ```
 
 </details>
@@ -149,6 +156,7 @@ After you installed your Stacks generated library, you can use a "Custom Element
   </body>
 </html>
 ```
+
 </details>
 
 <details>
@@ -169,6 +177,7 @@ import HelloWorld from 'my-awesome-library'
   <HelloWorld name="J Doe" />
 </template>
 ```
+
 </details>
 
 _A function library may also be automatically generated._
@@ -191,6 +200,7 @@ increment()
 
 console.log('increased count is', count)
 ```
+
 </details>
 
 You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best-practices, to reach one of the broadest user bases possible.
