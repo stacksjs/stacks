@@ -79,7 +79,7 @@
     "art": "pnpm artisan"
   },
   "dependencies": {
-    "@stacksjs/framework": "workspace:*"
+    "@stacksjs/framework": "workspace:0.33.7"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
