@@ -4,6 +4,7 @@ import fg from 'fast-glob'
 import fs from 'fs-extra'
 import { packageManager } from '../../package.json'
 import { author, components, componentsLibrary, contributors, functions, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
+import { reset } from '../../../config/ui'
 import { kebabCase, writeTextFile } from '.'
 
 /**
@@ -127,7 +128,7 @@ export async function generatePackageJson(type: string) {
 }
 
 function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
-  const arr = []
+  let arr = []
 
   if (type === 'functions') {
     for (const fx of functions) {
@@ -142,6 +143,8 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   }
 
   if (type === 'vue-components') {
+    arr = determineResetPreset()
+
     for (const component of components) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
@@ -154,7 +157,8 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   }
 
   // at this point, we know it is a Web Component we are building
-  const imports = ['import { defineCustomElement } from \'vue\'']
+  arr = determineResetPreset()
+  const imports = [...arr, 'import { defineCustomElement } from \'vue\'']
   const declarations = []
   const definitions = []
 
@@ -188,4 +192,25 @@ export async function generateVueCompat(paths: string[]) {
       .replace(/'vue'/g, '\'vue-demi\'')
     await fs.writeFile(f, changed, 'utf-8')
   }
+}
+
+/**
+ * @url https://www.npmjs.com/package/@unocss/reset
+ * @param preset
+ */
+export function determineResetPreset(preset?: string) {
+  if (reset)
+    preset = reset
+
+  if (preset === 'tailwind')
+    return ['import \'@unocss/reset/tailwind.css\'']
+  else if (preset === 'normalize')
+    return ['import \'@unocss/reset/normalize.css\'']
+  else if (preset === 'sanitize')
+    return ['import \'@unocss/reset/sanitize/sanitize.css\'', 'import \'@unocss/reset/sanitize/assets.css']
+  else if (preset === 'eric-meyer')
+    return ['import \'@unocss/reset/eric-meyer.css\'']
+  else if (preset === 'antfu')
+    return ['import \'@unocss/reset/antfu.css\'']
+  else return []
 }
