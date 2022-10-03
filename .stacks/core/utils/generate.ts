@@ -156,9 +156,9 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
 
     for (const component of components) {
       if (Array.isArray(component))
-        arr.push(`export ${component[1]} from '../../../../components/${component[0]}.vue'`)
+        arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       else
-        arr.push(`export ${component} from '../../../../components/${component}.vue'`)
+        arr.push(`export { default as ${component} } from '../../../../components/${component}.vue'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -173,12 +173,12 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
 
   for (const component of components) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '../../../../components/${component[0]}.vue'`)
+      imports.push(`import { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
     }
     else {
-      imports.push(`import ${component} from '../../../../components/${component}.vue'`)
+      imports.push(`import { default as ${component} } from '../../../../components/${component}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }
