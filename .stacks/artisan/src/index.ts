@@ -14,7 +14,7 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // before running any commands, check if the key:generate
-  // command is run or if the project is already initialized
+  // command is run and if the project is already initialized
   artisan
     .command('key:generate', 'Generates & sets the application key.')
     .action(async () => {

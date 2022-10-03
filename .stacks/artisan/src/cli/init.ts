@@ -49,7 +49,7 @@ async function initCommands(artisan: CAC) {
       await ezSpawn.async(`giget stacks ${name}`, { stdio: 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
-      consola.info('Ensuring your environment is ready.')
+      consola.info('Ensuring your environment is ready...')
       await ezSpawn.async('fnm use', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
