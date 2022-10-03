@@ -46,12 +46,12 @@ export async function generateLibEntry(type: 'vue-components' | 'web-components'
   }
 }
 
-export async function generatePackageJson(type: string) {
+export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   consola.info(`Creating the ${type} package.json needed to publish package...`)
 
   let name, description, directory, keywords, config
 
-  if (type === 'components') {
+  if (type === 'vue-components') {
     name = componentsLibrary.name
     description = componentsLibrary.description
     directory = 'components'

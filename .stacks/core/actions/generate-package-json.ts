@@ -4,7 +4,7 @@ import { generatePackageJson, hasFiles } from '..'
 
 async function generate() {
   if (hasFiles(resolve(process.cwd(), './components'))) {
-    await generatePackageJson('components')
+    await generatePackageJson('vue-components')
     await generatePackageJson('web-components')
   }
 
