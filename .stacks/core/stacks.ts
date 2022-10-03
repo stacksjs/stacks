@@ -30,6 +30,7 @@ const autoImports = AutoImport({
   vueTemplate: true,
   eslintrc: {
     enabled: true,
+    filepath: resolve(_dirname, '../../.eslintrc-auto-import.json'),
   },
 })
 

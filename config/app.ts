@@ -7,7 +7,8 @@ const debug = process.env.APP_DEBUG || true
 const timezone = 'UTC'
 const locale = 'en'
 const fallbackLocale = 'en'
+const editor = 'vscode'
 
 const cipher = 'aes-256-cbc'
 
-export default { name, env, key, cipher, url, debug, timezone, locale, fallbackLocale }
+export default { name, env, key, cipher, url, debug, timezone, locale, fallbackLocale, editor }
