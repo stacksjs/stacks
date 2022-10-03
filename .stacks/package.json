@@ -58,8 +58,8 @@
   "scripts": {
     "preinstall": "only-allow pnpm",
     "artisan": "jiti ./artisan/src/index.ts",
-    "dev:components": "vite serve ./core/components -c ./core/build/components.ts",
-    "build:components": "vite build -c ./core/build/components.ts",
+    "dev:components": "vite serve ./core/components -c ./core/build/vue-components.ts",
+    "build:components": "vite build -c ./core/build/vue-components.ts",
     "build:web-components": "vite build -c ./core/build/web-components.ts",
     "build:functions": "vite build -c ./core/build/functions.ts",
     "build:cli": "cd ./artisan && unbuild",

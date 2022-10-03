@@ -1,4 +1,4 @@
-import { componentsBuildOptions } from './components'
+import { componentsBuildOptions } from './vue-components'
 import { webComponentsBuildOptions } from './web-components'
 import { functionsBuildOptions } from './functions'
 
