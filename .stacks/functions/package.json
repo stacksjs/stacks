@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-fx",
   "type": "module",
-  "version": "0.33.14",
+  "version": "0.33.15",
   "packageManager": "pnpm@7.13.0",
   "description": "Your function library description.",
   "author": "Chris Breuer",
