@@ -1,6 +1,6 @@
 packages:
   - ./.stacks/artisan
-  - ./.stacks/components
+  - ./.stacks/vue-components
   - ./.stacks/web-components
   - ./.stacks/functions
   - ./.stacks
