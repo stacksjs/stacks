@@ -3,7 +3,7 @@ import type { CAC } from 'cac'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-import { bold, cyan, dim } from 'kolorist'
+import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
 import { version } from '../../package.json'
 import { isFolder } from '../../../core'
@@ -62,9 +62,9 @@ async function initCommands(artisan: CAC) {
 
       console.log()
       consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
-      console.log(`cd ${path} && code .`)
+      console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
-      consola.log(dim('To learn more, visit https://stacks.ow3.org/wip'))
+      consola.log('To learn more, visit https://stacks.ow3.org/wip')
     })
 }
 
