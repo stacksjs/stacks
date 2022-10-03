@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, sta
 import { dirname, join, resolve } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
+import { contains } from './array'
 
 /**
  * Describes a plain-text file.
@@ -124,8 +125,10 @@ export const copyFiles = async (src: string, dest: string) => {
     if (!existsSync(dest))
       mkdirSync(dest, { recursive: true })
 
+    const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts']
+
     readdirSync(src).forEach((file) => {
-      if (file !== 'node_modules' && file !== 'package.json') // no need to copy node_modules & package.json
+      if (contains(file, pathsToExclude)) // no need to copy node_modules & package.json
         copyFiles(join(src, file), join(dest, file))
     })
 

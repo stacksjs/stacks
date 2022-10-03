@@ -2,6 +2,7 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
+  const _dirname: typeof import('./core/utils/fs')['_dirname']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
   const app: typeof import('../config/app')['default']
@@ -22,9 +23,11 @@ declare global {
   const computedEager: typeof import('@vueuse/core')['computedEager']
   const computedInject: typeof import('@vueuse/core')['computedInject']
   const computedWithControl: typeof import('@vueuse/core')['computedWithControl']
+  const contains: typeof import('./core/utils/array')['contains']
   const contributors: typeof import('../config/library')['contributors']
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
+  const copyFiles: typeof import('./core/utils/fs')['copyFiles']
   const count: typeof import('../functions/counter')['count']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
@@ -39,7 +42,9 @@ declare global {
   const defaultLanguage: typeof import('../config/library')['defaultLanguage']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
+  const deleteFolder: typeof import('./core/utils/fs')['deleteFolder']
   const describe: typeof import('vitest')['describe']
+  const determineResetPreset: typeof import('./core/utils/generate')['determineResetPreset']
   const docs: typeof import('../config/docs')['default']
   const driver: typeof import('../config/hashing')['driver']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
@@ -48,9 +53,15 @@ declare global {
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const functions: typeof import('../config/library')['functions']
   const functionsLibrary: typeof import('../config/library')['functionsLibrary']
+  const generateLibEntry: typeof import('./core/utils/generate')['generateLibEntry']
+  const generatePackageJson: typeof import('./core/utils/generate')['generatePackageJson']
+  const generateVueCompat: typeof import('./core/utils/generate')['generateVueCompat']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const h: typeof import('vue')['h']
+  const hasComponents: typeof import('./core/utils/fs')['hasComponents']
+  const hasFiles: typeof import('./core/utils/fs')['hasFiles']
+  const hasFunctions: typeof import('./core/utils/fs')['hasFunctions']
   const hooks: typeof import('../config/git')['hooks']
   const host: typeof import('../config/library')['host']
   const icons: typeof import('../config/ui')['icons']
@@ -59,11 +70,16 @@ declare global {
   const inject: typeof import('vue')['inject']
   const isDark: typeof import('../functions/dark')['isDark']
   const isDefined: typeof import('@vueuse/core')['isDefined']
+  const isFile: typeof import('./core/utils/fs')['isFile']
+  const isFolder: typeof import('./core/utils/fs')['isFolder']
+  const isInitialized: typeof import('./core/utils/helpers')['isInitialized']
+  const isManifest: typeof import('./core/utils/manifest')['isManifest']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
   const it: typeof import('vitest')['it']
+  const kebabCase: typeof import('./core/utils/string')['kebabCase']
   const libraryName: typeof import('../config/library')['libraryName']
   const license: typeof import('../config/library')['license']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
@@ -95,6 +111,8 @@ declare global {
   const reactiveComputed: typeof import('@vueuse/core')['reactiveComputed']
   const reactiveOmit: typeof import('@vueuse/core')['reactiveOmit']
   const reactivePick: typeof import('@vueuse/core')['reactivePick']
+  const readJsonFile: typeof import('./core/utils/fs')['readJsonFile']
+  const readTextFile: typeof import('./core/utils/fs')['readTextFile']
   const readonly: typeof import('vue')['readonly']
   const ref: typeof import('vue')['ref']
   const refAutoReset: typeof import('@vueuse/core')['refAutoReset']
@@ -300,12 +318,15 @@ declare global {
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
   const webComponentsLibrary: typeof import('../config/library')['webComponentsLibrary']
   const whenever: typeof import('@vueuse/core')['whenever']
+  const writeJsonFile: typeof import('./core/utils/fs')['writeJsonFile']
+  const writeTextFile: typeof import('./core/utils/fs')['writeTextFile']
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly _dirname: UnwrapRef<typeof import('./core/utils/fs')['_dirname']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
     readonly app: UnwrapRef<typeof import('../config/app')['default']>
@@ -326,9 +347,11 @@ declare module '@vue/runtime-core' {
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('@vueuse/core')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
+    readonly contains: UnwrapRef<typeof import('./core/utils/array')['contains']>
     readonly contributors: UnwrapRef<typeof import('../config/library')['contributors']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
+    readonly copyFiles: UnwrapRef<typeof import('./core/utils/fs')['copyFiles']>
     readonly count: UnwrapRef<typeof import('../functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
@@ -343,7 +366,9 @@ declare module '@vue/runtime-core' {
     readonly defaultLanguage: UnwrapRef<typeof import('../config/library')['defaultLanguage']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
+    readonly deleteFolder: UnwrapRef<typeof import('./core/utils/fs')['deleteFolder']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
+    readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/generate')['determineResetPreset']>
     readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
     readonly driver: UnwrapRef<typeof import('../config/hashing')['driver']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
@@ -352,9 +377,15 @@ declare module '@vue/runtime-core' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly functions: UnwrapRef<typeof import('../config/library')['functions']>
     readonly functionsLibrary: UnwrapRef<typeof import('../config/library')['functionsLibrary']>
+    readonly generateLibEntry: UnwrapRef<typeof import('./core/utils/generate')['generateLibEntry']>
+    readonly generatePackageJson: UnwrapRef<typeof import('./core/utils/generate')['generatePackageJson']>
+    readonly generateVueCompat: UnwrapRef<typeof import('./core/utils/generate')['generateVueCompat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly hasComponents: UnwrapRef<typeof import('./core/utils/fs')['hasComponents']>
+    readonly hasFiles: UnwrapRef<typeof import('./core/utils/fs')['hasFiles']>
+    readonly hasFunctions: UnwrapRef<typeof import('./core/utils/fs')['hasFunctions']>
     readonly hooks: UnwrapRef<typeof import('../config/git')['hooks']>
     readonly host: UnwrapRef<typeof import('../config/library')['host']>
     readonly icons: UnwrapRef<typeof import('../config/ui')['icons']>
@@ -363,11 +394,16 @@ declare module '@vue/runtime-core' {
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isDark: UnwrapRef<typeof import('../functions/dark')['isDark']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
+    readonly isFile: UnwrapRef<typeof import('./core/utils/fs')['isFile']>
+    readonly isFolder: UnwrapRef<typeof import('./core/utils/fs')['isFolder']>
+    readonly isInitialized: UnwrapRef<typeof import('./core/utils/helpers')['isInitialized']>
+    readonly isManifest: UnwrapRef<typeof import('./core/utils/manifest')['isManifest']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly it: UnwrapRef<typeof import('vitest')['it']>
+    readonly kebabCase: UnwrapRef<typeof import('./core/utils/string')['kebabCase']>
     readonly libraryName: UnwrapRef<typeof import('../config/library')['libraryName']>
     readonly license: UnwrapRef<typeof import('../config/library')['license']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
@@ -399,6 +435,8 @@ declare module '@vue/runtime-core' {
     readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
     readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
+    readonly readJsonFile: UnwrapRef<typeof import('./core/utils/fs')['readJsonFile']>
+    readonly readTextFile: UnwrapRef<typeof import('./core/utils/fs')['readTextFile']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
@@ -604,5 +642,7 @@ declare module '@vue/runtime-core' {
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
     readonly webComponentsLibrary: UnwrapRef<typeof import('../config/library')['webComponentsLibrary']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
+    readonly writeJsonFile: UnwrapRef<typeof import('./core/utils/fs')['writeJsonFile']>
+    readonly writeTextFile: UnwrapRef<typeof import('./core/utils/fs')['writeTextFile']>
   }
 }

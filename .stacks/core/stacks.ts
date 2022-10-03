@@ -16,12 +16,13 @@ const inspect = Inspect()
 const components = Components({
   dirs: [resolve(_dirname, '../../components')],
   extensions: ['vue'],
-  dts: '../.stacks/components.d.ts',
+  dts: '../../components.d.ts',
 })
 
 const autoImports = AutoImport({
   imports: ['vue', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
   dirs: [
+    resolve(_dirname, './utils'),
     resolve(_dirname, '../../functions'),
     resolve(_dirname, '../../components'),
     resolve(_dirname, '../../config'),
@@ -30,7 +31,7 @@ const autoImports = AutoImport({
   vueTemplate: true,
   eslintrc: {
     enabled: true,
-    filepath: resolve(_dirname, '../../.eslintrc-auto-import.json'),
+    filepath: resolve(_dirname, '../.eslintrc-auto-import.json'),
   },
 })
 
