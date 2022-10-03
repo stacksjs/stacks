@@ -34,7 +34,7 @@ export function functionsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     sourcemap: functionsLibrary.shouldGenerateSourcemap,
     lib: {
-      entry: resolve(_dirname, './build/entries/functions.ts'),
+      entry: resolve(_dirname, '../build/entries/functions.ts'),
       name: functionsLibrary.name,
       formats: functionsLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
