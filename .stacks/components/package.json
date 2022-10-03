@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-vue",
   "type": "module",
-  "version": "0.33.7",
+  "version": "0.33.8",
   "packageManager": "pnpm@7.13.0",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",
@@ -44,6 +44,6 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@stacksjs/framework": "workspace:0.33.7"
+    "@stacksjs/framework": "workspace:*"
   }
 }
