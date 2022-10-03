@@ -2,7 +2,7 @@
   "name": "@stacksjs/framework",
   "type": "module",
   "version": "0.33.7",
-  "packageManager": "pnpm@7.12.2",
+  "packageManager": "pnpm@7.13.0",
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -53,7 +53,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.12.2"
+    "pnpm": ">=7.13.0"
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
@@ -112,7 +112,7 @@
     "@unocss/preset-icons": "^0.45.26",
     "@unocss/transformer-compile-class": "^0.45.26",
     "@unocss/vite": "^0.45.26",
-    "@vitejs/plugin-vue": "^3.1.0",
+    "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.23.4",
     "@vueuse/core": "^9.3.0",
     "artisan-init": "workspace:0.33.5",
@@ -150,7 +150,7 @@
     "unplugin-vue-components": "^0.22.7",
     "vite": "^3.1.4",
     "vite-plugin-inspect": "^0.7.4",
-    "vitepress": "1.0.0-alpha.17",
+    "vitepress": "1.0.0-alpha.19",
     "vitest": "^0.23.4",
     "vue": "^3.2.40",
     "vue-tsc": "^0.40.13"
