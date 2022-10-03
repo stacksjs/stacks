@@ -7,7 +7,7 @@ node_modules
 .stacks/.nitro
 .stacks/.output
 .stacks/core/components/.vite-inspect/*
-.stacks/components/dist/*
+.stacks/vue-components/dist/*
 .stacks/web-components/dist/*
 .stacks/docs/dist/*
 .stacks/functions/dist/*
