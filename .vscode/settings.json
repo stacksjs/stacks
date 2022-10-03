@@ -27,7 +27,7 @@
     "MD033": {
       "allowed_elements": ["details", "summary"]
     },
-    "MD041": false,
+    "MD041": false
   },
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
