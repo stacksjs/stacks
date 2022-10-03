@@ -115,7 +115,7 @@
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.23.4",
     "@vueuse/core": "^9.3.0",
-    "artisan-init": "workspace:0.33.7",
+    "artisan-init": "workspace:*",
     "bcrypt": "^5.0.1",
     "bumpp": "^8.2.1",
     "cac": "^6.7.14",

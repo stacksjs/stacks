@@ -4,7 +4,7 @@ importers:
 
   .:
     specifiers:
-      '@stacksjs/framework': workspace:0.33.7
+      '@stacksjs/framework': workspace:*
     dependencies:
       '@stacksjs/framework': link:.stacks
 
@@ -29,7 +29,7 @@ importers:
       '@vitejs/plugin-vue': ^3.1.2
       '@vitest/coverage-istanbul': ^0.23.4
       '@vueuse/core': ^9.3.0
-      artisan-init: workspace:0.33.7
+      artisan-init: workspace:*
       bcrypt: ^5.0.1
       bumpp: ^8.2.1
       cac: ^6.7.14
@@ -64,7 +64,7 @@ importers:
       unplugin-vue-components: ^0.22.7
       vite: ^3.1.4
       vite-plugin-inspect: ^0.7.4
-      vitepress: 1.0.0-alpha.17
+      vitepress: 1.0.0-alpha.19
       vitest: ^0.23.4
       vue: ^3.2.40
       vue-tsc: ^0.40.13
@@ -123,7 +123,7 @@ importers:
       unplugin-vue-components: 0.22.7_vue@3.2.40
       vite: 3.1.4
       vite-plugin-inspect: 0.7.4_vite@3.1.4
-      vitepress: 1.0.0-alpha.17
+      vitepress: 1.0.0-alpha.19
       vitest: 0.23.4
       vue: 3.2.40
       vue-tsc: 0.40.13_typescript@4.8.4
@@ -147,19 +147,19 @@ importers:
 
   .stacks/components:
     specifiers:
-      '@stacksjs/framework': workspace:0.33.7
+      '@stacksjs/framework': workspace:*
     devDependencies:
       '@stacksjs/framework': link:..
 
   .stacks/functions:
     specifiers:
-      '@stacksjs/framework': workspace:0.33.7
+      '@stacksjs/framework': workspace:*
     devDependencies:
       '@stacksjs/framework': link:..
 
   .stacks/web-components:
     specifiers:
-      '@stacksjs/framework': workspace:0.33.7
+      '@stacksjs/framework': workspace:*
     devDependencies:
       '@stacksjs/framework': link:..
 
@@ -5490,10 +5490,6 @@ packages:
       set-blocking: 2.0.0
     dev: false
 
-  /nprogress/0.2.0:
-    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
-    dev: false
-
   /nth-check/2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
     dependencies:
@@ -7164,8 +7160,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress/1.0.0-alpha.17:
-    resolution: {integrity: sha512-8qsR0PPcvxZFDKSU7b7VenxDoqlEbWuWgogeyRhp1pQ96QIAlWPS9BbGGHWlnEfgdtLVDxEfAmCBRE0YJX/Thg==}
+  /vitepress/1.0.0-alpha.19:
+    resolution: {integrity: sha512-0FIUZB6JGXio7SELDDUkyQoMjmO/UAXqDXmznzOsBKsdZ3EHlyb6NaP/V/BMfN5S8+GV88ScbIL0jd/pDzkLBg==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.2.1
@@ -7174,7 +7170,6 @@ packages:
       '@vue/devtools-api': 6.4.3
       '@vueuse/core': 9.3.0_vue@3.2.40
       body-scroll-lock: 4.0.0-beta.0
-      nprogress: 0.2.0
       shiki: 0.11.1
       vite: 3.1.4
       vue: 3.2.40
