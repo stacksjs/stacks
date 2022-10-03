@@ -1,3 +1,12 @@
+## [0.33.6](https://github.com/stacksjs/stacks/compare/v0.33.5...v0.33.6) (2022-10-03)
+
+
+### Features
+
+* add determineResetPreset logic ([17ca7d0](https://github.com/stacksjs/stacks/commit/17ca7d0216a0c3d05cadadc6a676d5823a69405d))
+
+
+
 ## [0.33.5](https://github.com/stacksjs/stacks/compare/v0.33.4...v0.33.5) (2022-09-29)
 
 

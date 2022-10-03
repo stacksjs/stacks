@@ -20,7 +20,12 @@ export async function generateLibEntry(type: 'vue-components' | 'web-components'
   else
     consola.info('Creating the function library entry point...')
 
-  const path = resolve(process.cwd(), `./.stacks/core/build/entries/${type}.ts`)
+  let path = process.cwd()
+  if (path.includes('.stacks'))
+    path = resolve(path, `./core/build/entries/${type}.ts`)
+  else
+    path = resolve(path, `./.stacks/core/build/entries/${type}.ts`)
+
   const data = generateEntryPointData(type)
 
   try {
@@ -70,7 +75,11 @@ export async function generatePackageJson(type: string) {
     config = 'functions'
   }
 
-  const path = resolve(process.cwd(), `./.stacks/${type}/package.json`)
+  let path = process.cwd()
+  if (path.includes('.stacks'))
+    path = resolve(path, `./${type}/package.json`)
+  else
+    path = resolve(path, `./.stacks/${type}/package.json`)
 
   try {
     // the version does not have to be set here,
