@@ -5,8 +5,10 @@ importers:
   .:
     specifiers:
       '@stacksjs/framework': workspace:*
+      artisan-init: workspace:*
     dependencies:
       '@stacksjs/framework': link:.stacks
+      artisan-init: link:.stacks/artisan
 
   .stacks:
     specifiers:
