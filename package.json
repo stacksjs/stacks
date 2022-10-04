@@ -87,7 +87,8 @@
   },
   "config": {
     "commitizen": {
-      "path": "node_modules/cz-git"
+      "path": ".stacks/node_modules/cz-git",
+      "czConfig": ".stacks/commitlint.config.cjs"
     }
   }
 }

@@ -11,4 +11,4 @@ const editor = 'vscode'
 
 const cipher = 'aes-256-cbc'
 
-export default { name, env, key, cipher, url, debug, timezone, locale, fallbackLocale, editor }
+export { name, env, key, cipher, url, debug, timezone, locale, fallbackLocale, editor }

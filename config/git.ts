@@ -6,9 +6,8 @@
 
 import type { GitHooks } from 'stacks'
 
-export const hooks: GitHooks = {
+const hooks: GitHooks = {
   'pre-commit': 'lint-staged',
-  'commit-msg': 'npx --no -- commitlint --edit $1',
 }
 
 /**
@@ -17,8 +16,8 @@ export const hooks: GitHooks = {
  * list to your needs as your scopes may be project-specific.
  */
 const scopes = [
-  '', 'ci', 'core', 'cli', 'config', 'deps', 'docs', 'dx',
+  '', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx',
   'example', 'release', 'readme', 'build', 'scripts', 'test',
 ]
 
-export { scopes }
+export { hooks, scopes }

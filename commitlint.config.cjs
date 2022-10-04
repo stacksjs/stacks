@@ -1,18 +1,25 @@
 const { readdirSync } = require('fs')
 const { resolve } = require('path')
-const configPath = resolve(__dirname, './config/git.ts')
 const { paramCase } = require('change-case')
-const jiti = require('jiti')(configPath, { debug: true })
+const jiti = require('jiti')(__filename)
+const config = jiti('./config/git.ts')
+
+const toDelete = ['readme-md']
 
 const components = readdirSync(resolve(__dirname, './components'))
   .map(item => paramCase(item.replace(/.vue/g, '')))
+  .filter(item => !toDelete.includes(item))
 
 const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
+  .filter(item => !toDelete.includes(item))
 
-const scopes = ['', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx', 'example', 'release', 'readme', 'build', 'scripts', 'test', ...components, ...functions]
+const scopes = [...config.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
+console.log('uniqueScopes', uniqueScopes)
+
+/** @type {import('cz-git').UserConfig} */
 module.exports = {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
@@ -49,7 +56,7 @@ module.exports = {
     ],
     useEmoji: false,
     themeColorCode: '',
-    scopes,
+    scopes: uniqueScopes,
     allowCustomScopes: true,
     allowEmptyScopes: true,
     customScopesAlign: 'bottom',
@@ -74,6 +81,6 @@ module.exports = {
     defaultBody: '',
     defaultIssues: '',
     defaultScope: '',
-    defaultSubject: '',
+    defaultSubject: 'wip',
   },
 }

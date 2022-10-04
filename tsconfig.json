@@ -54,7 +54,7 @@
     "./.stacks/nitro.config.ts",
     "./.stacks/vitest.config.ts",
     "./apps/site/**",
-    "commitlint.config.cjs",
+    ".github/commitlint.config.cjs",
     "**/README.md",
     "**/dist/**",
     "**/node_modules/**"
