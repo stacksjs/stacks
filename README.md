@@ -44,7 +44,7 @@ It's incredibly easy to get started with this framework. Simply run the followin
 npx artisan-init my-project
 
 # alternatively, if unsure about your Node/pnpm setup, run:
-curl -fsSL https://stacksjs.dev/setup | bash
+curl -fsSL https://stacksjs.dev/setup | sh
 ```
 
 > **Note**
