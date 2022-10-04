@@ -27,9 +27,9 @@ const docs: DocsConfig = {
     },
 
     socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/ow3org' },
+      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
       { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      { icon: 'discord', link: 'https://twitter.com/ow3org' },
+      { icon: 'discord', link: 'https://twitter.com/stacksjs' },
     ],
 
     footer: {
