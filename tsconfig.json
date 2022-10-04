@@ -48,7 +48,7 @@
     "./components/**/*",
     "./functions/**/*",
     "./pages/**/*"
-, "simple-git-hooks.cjs"  ],
+  ],
   "exclude": [
     "./.stacks/examples/*",
     "./.stacks/nitro.config.ts",
