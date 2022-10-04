@@ -79,6 +79,6 @@ module.exports = {
     defaultBody: '',
     defaultIssues: '',
     defaultScope: '',
-    defaultSubject: 'wip',
+    defaultSubject: '',
   },
 }
