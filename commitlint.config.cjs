@@ -17,8 +17,6 @@ const functions = readdirSync(resolve(__dirname, './functions'))
 const scopes = [...config.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
-console.log('uniqueScopes', uniqueScopes)
-
 /** @type {import('cz-git').UserConfig} */
 module.exports = {
   rules: {
