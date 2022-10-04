@@ -34,14 +34,14 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "engines": {
-    "node": ">=v18.10.0",
-    "pnpm": ">=7.13.0"
-  },
   "files": [
     "dist",
     "*.mjs"
   ],
+  "engines": {
+    "node": ">=v18.10.0",
+    "pnpm": ">=7.13.0"
+  },
   "scripts": {
     "artisan": "pnpm run dev && node cli.mjs",
     "artisan-init": "pnpm run dev && node cli.mjs",
