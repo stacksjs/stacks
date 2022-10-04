@@ -34,6 +34,10 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "engines": {
+    "node": ">=v18.10.0",
+    "pnpm": ">=7.13.0"
+  },
   "files": [
     "dist",
     "*.mjs"
