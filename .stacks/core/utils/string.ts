@@ -1,5 +1,14 @@
-export function kebabCase(string: string): string {
-  return string.replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase()
-}
+export {
+  camelCase,
+  capitalCase,
+  constantCase,
+  dotCase,
+  headerCase,
+  noCase,
+  paramCase,
+  pascalCase,
+  pathCase,
+  pathCase as kebabCase,
+  sentenceCase,
+  snakeCase,
+} from 'change-case'

@@ -11,6 +11,4 @@ import Demo from '../../../components/Demo.vue'
 //     }),
 // )
 
-// console.log('messages', messages)
-
 createApp(Demo).mount('#app')

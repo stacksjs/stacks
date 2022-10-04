@@ -33,12 +33,14 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
+    "artisan",
+    "core",
     "dist",
+    "examples",
+    "functions",
+    "scripts",
     "vue-components",
     "web-components",
-    "functions",
-    "core",
-    "examples",
     ".gitignore",
     "custom-elements.json",
     "nitro.config.ts",

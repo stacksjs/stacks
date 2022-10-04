@@ -79,6 +79,7 @@
     "art": "pnpm artisan"
   },
   "dependencies": {
+    "@stacksjs/artisan-init": "workspace:*",
     "@stacksjs/framework": "workspace:*"
   },
   "lint-staged": {
