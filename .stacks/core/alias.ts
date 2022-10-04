@@ -2,12 +2,8 @@
  * The following configuration references local aliases.
  */
 
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'pathe'
-
-const _dirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : dirname(fileURLToPath(import.meta.url))
+import { resolve } from 'pathe'
+import { _dirname } from './utils'
 
 const r = (p: string) => resolve(_dirname, p)
 

@@ -58,13 +58,13 @@ async function initCommands(artisan: CAC) {
       await ezSpawn.async('cp .env.example .env', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       await generateAppKey(path)
       await ezSpawn.async('git init', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      consola.success('Installed & set-up.')
+      consola.success('Installed & set-up 🚀')
 
       console.log()
       consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
       console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
-      consola.log('To learn more, visit https://stacks.ow3.org/wip')
+      consola.log('To learn more, visit https://stacksjs.dev')
     })
 }
 

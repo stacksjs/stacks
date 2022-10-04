@@ -1,15 +1,11 @@
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import type { PluginOption } from 'vite'
-
-const _dirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : dirname(fileURLToPath(import.meta.url))
+import { _dirname } from './utils'
 
 const inspect = Inspect()
 

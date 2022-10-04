@@ -217,7 +217,7 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Image](https://github.com/stacksjs/image) (Q3 - Modern image experience)
 - [Video](https://github.com/stacksjs/video) (Q3 - Modern video experience)
 - [Audio](https://github.com/stacksjs/audio) (Q3 - Modern audio experience)
-- [Web3](https://github.com/stacksjs/web3) (Q3 - Solana support, cross-chain core _Ethereum & Cardano drivers coming._)
+- [Web3](https://github.com/stacksjs/web3) (Q3 - Solana support, cross-chain core. _Ethereum & Cardano drivers coming._)
   - [Wallets](https://github.com/stacksjs/wallets) (Q3 - Wallet Authentication)
   - [NFT](https://github.com/stacksjs/nft) (Q3 - NFTs, Candy Machine mechanisms, and more.)
   - [DeFi](https://github.com/stacksjs/defi) (Q4 - Cross-chain DeFi engine, including staking support)
