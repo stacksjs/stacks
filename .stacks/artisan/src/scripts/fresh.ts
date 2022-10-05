@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { NpmScript } from '../../../core/types'
+import { NpmScript } from '../../../core/types/cli'
 import { runNpmScript } from './run-npm-script'
 
 export async function reinstallNpmDependencies() {

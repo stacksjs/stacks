@@ -3,7 +3,7 @@ import consola from 'consola'
 import Prompts from 'prompts'
 import { ExitCode } from '../cli/exit-code'
 import { copyFiles, deleteFolder } from '../../../core/utils/fs'
-import { NpmScript } from '../../../core/types'
+import { NpmScript } from '../../../core/types/cli'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts
