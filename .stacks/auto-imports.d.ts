@@ -5,17 +5,19 @@ declare global {
   const _dirname: typeof import('./core/utils/fs')['_dirname']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
-  const app: typeof import('../config/app')['default']
   const assert: typeof import('vitest')['assert']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const author: typeof import('../config/library')['author']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
-  const bcrypt: typeof import('../config/hashing')['bcrypt']
+  const bcrypt: typeof import('./core/security/hash')['bcrypt']
+  const bcryptOptions: typeof import('../config/hashing')['bcryptOptions']
   const beforeAll: typeof import('vitest')['beforeAll']
   const beforeEach: typeof import('vitest')['beforeEach']
   const camelCase: typeof import('./core/utils/string')['camelCase']
   const capitalCase: typeof import('./core/utils/string')['capitalCase']
   const chai: typeof import('vitest')['chai']
+  const checkIfAppKeyIsSet: typeof import('./core/utils/helpers')['checkIfAppKeyIsSet']
+  const cipher: typeof import('../config/app')['cipher']
   const classPrefix: typeof import('../config/ui')['classPrefix']
   const collect: typeof import('collect.js')['collect']
   const components: typeof import('../config/library')['components']
@@ -42,6 +44,8 @@ declare global {
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
+  const debug: typeof import('../config/app')['debug']
+  const decryptString: typeof import('./core/security/crypt')['decryptString']
   const defaultLanguage: typeof import('../config/library')['defaultLanguage']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
@@ -52,9 +56,13 @@ declare global {
   const dotCase: typeof import('./core/utils/string')['dotCase']
   const driver: typeof import('../config/hashing')['driver']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
+  const editor: typeof import('../config/app')['editor']
   const effectScope: typeof import('vue')['effectScope']
+  const encryptString: typeof import('./core/security/crypt')['encryptString']
+  const env: typeof import('../config/app')['env']
   const expect: typeof import('vitest')['expect']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const fallbackLocale: typeof import('../config/app')['fallbackLocale']
   const functions: typeof import('../config/library')['functions']
   const functionsLibrary: typeof import('../config/library')['functionsLibrary']
   const generateLibEntry: typeof import('./core/utils/generate')['generateLibEntry']
@@ -85,10 +93,15 @@ declare global {
   const isRef: typeof import('vue')['isRef']
   const it: typeof import('vitest')['it']
   const kebabCase: typeof import('./core/utils/string')['kebabCase']
+  const key: typeof import('../config/app')['key']
   const libraryName: typeof import('../config/library')['libraryName']
   const license: typeof import('../config/library')['license']
+  const locale: typeof import('../config/app')['locale']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
+  const makeHash: typeof import('./core/security/hash')['makeHash']
   const markRaw: typeof import('vue')['markRaw']
+  const md5: typeof import('./core/security/hash')['md5']
+  const name: typeof import('../config/app')['name']
   const nextTick: typeof import('vue')['nextTick']
   const noCase: typeof import('./core/utils/string')['noCase']
   const onActivated: typeof import('vue')['onActivated']
@@ -150,6 +163,7 @@ declare global {
   const test: typeof import('vitest')['test']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
+  const timezone: typeof import('../config/app')['timezone']
   const toRaw: typeof import('vue')['toRaw']
   const toReactive: typeof import('@vueuse/core')['toReactive']
   const toRef: typeof import('vue')['toRef']
@@ -165,6 +179,7 @@ declare global {
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
+  const url: typeof import('../config/app')['url']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
@@ -340,17 +355,19 @@ declare module '@vue/runtime-core' {
     readonly _dirname: UnwrapRef<typeof import('./core/utils/fs')['_dirname']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
-    readonly app: UnwrapRef<typeof import('../config/app')['default']>
     readonly assert: UnwrapRef<typeof import('vitest')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly author: UnwrapRef<typeof import('../config/library')['author']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
-    readonly bcrypt: UnwrapRef<typeof import('../config/hashing')['bcrypt']>
+    readonly bcrypt: UnwrapRef<typeof import('./core/security/hash')['bcrypt']>
+    readonly bcryptOptions: UnwrapRef<typeof import('../config/hashing')['bcryptOptions']>
     readonly beforeAll: UnwrapRef<typeof import('vitest')['beforeAll']>
     readonly beforeEach: UnwrapRef<typeof import('vitest')['beforeEach']>
     readonly camelCase: UnwrapRef<typeof import('./core/utils/string')['camelCase']>
     readonly capitalCase: UnwrapRef<typeof import('./core/utils/string')['capitalCase']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
+    readonly checkIfAppKeyIsSet: UnwrapRef<typeof import('./core/utils/helpers')['checkIfAppKeyIsSet']>
+    readonly cipher: UnwrapRef<typeof import('../config/app')['cipher']>
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
     readonly components: UnwrapRef<typeof import('../config/library')['components']>
@@ -377,6 +394,8 @@ declare module '@vue/runtime-core' {
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
+    readonly debug: UnwrapRef<typeof import('../config/app')['debug']>
+    readonly decryptString: UnwrapRef<typeof import('./core/security/crypt')['decryptString']>
     readonly defaultLanguage: UnwrapRef<typeof import('../config/library')['defaultLanguage']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
@@ -387,9 +406,13 @@ declare module '@vue/runtime-core' {
     readonly dotCase: UnwrapRef<typeof import('./core/utils/string')['dotCase']>
     readonly driver: UnwrapRef<typeof import('../config/hashing')['driver']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
+    readonly editor: UnwrapRef<typeof import('../config/app')['editor']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
+    readonly encryptString: UnwrapRef<typeof import('./core/security/crypt')['encryptString']>
+    readonly env: UnwrapRef<typeof import('../config/app')['env']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly fallbackLocale: UnwrapRef<typeof import('../config/app')['fallbackLocale']>
     readonly functions: UnwrapRef<typeof import('../config/library')['functions']>
     readonly functionsLibrary: UnwrapRef<typeof import('../config/library')['functionsLibrary']>
     readonly generateLibEntry: UnwrapRef<typeof import('./core/utils/generate')['generateLibEntry']>
@@ -420,10 +443,15 @@ declare module '@vue/runtime-core' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly it: UnwrapRef<typeof import('vitest')['it']>
     readonly kebabCase: UnwrapRef<typeof import('./core/utils/string')['kebabCase']>
+    readonly key: UnwrapRef<typeof import('../config/app')['key']>
     readonly libraryName: UnwrapRef<typeof import('../config/library')['libraryName']>
     readonly license: UnwrapRef<typeof import('../config/library')['license']>
+    readonly locale: UnwrapRef<typeof import('../config/app')['locale']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
+    readonly makeHash: UnwrapRef<typeof import('./core/security/hash')['makeHash']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly md5: UnwrapRef<typeof import('./core/security/hash')['md5']>
+    readonly name: UnwrapRef<typeof import('../config/app')['name']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly noCase: UnwrapRef<typeof import('./core/utils/string')['noCase']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
@@ -485,6 +513,7 @@ declare module '@vue/runtime-core' {
     readonly test: UnwrapRef<typeof import('vitest')['test']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
+    readonly timezone: UnwrapRef<typeof import('../config/app')['timezone']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
     readonly toReactive: UnwrapRef<typeof import('@vueuse/core')['toReactive']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
@@ -500,6 +529,7 @@ declare module '@vue/runtime-core' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
+    readonly url: UnwrapRef<typeof import('../config/app')['url']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>

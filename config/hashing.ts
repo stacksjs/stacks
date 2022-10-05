@@ -24,7 +24,7 @@ const driver = 'bcrypt'
 |
 */
 
-const bcrypt = {
+const bcryptOptions = {
   rounds: 10,
 }
 
@@ -44,4 +44,4 @@ const bcrypt = {
 //   time: 1, // default to env.ARGON_TIME
 // }
 
-export { driver, bcrypt }
+export { driver, bcryptOptions }

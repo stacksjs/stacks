@@ -21,6 +21,8 @@ export async function generate(path: string) {
   await setEnvValue('APP_KEY', APP_KEY, path)
 
   consola.success('Application key set.')
+
+  return true
 }
 
 async function setEnvValue(key: string, value: string, path?: string) {

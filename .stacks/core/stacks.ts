@@ -7,10 +7,13 @@ import Inspect from 'vite-plugin-inspect'
 import type { PluginOption } from 'vite'
 import { _dirname } from './utils'
 
+// it is important to note that path references within this file
+// are relative to the ./build folder
+
 const inspect = Inspect()
 
 const components = Components({
-  dirs: [resolve(_dirname, '../../components')],
+  dirs: [resolve(_dirname, '../../../components')],
   extensions: ['vue'],
   dts: '../../components.d.ts',
 })
@@ -18,22 +21,23 @@ const components = Components({
 const autoImports = AutoImport({
   imports: ['vue', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
   dirs: [
-    resolve(_dirname, './utils'),
-    resolve(_dirname, '../../functions'),
-    resolve(_dirname, '../../components'),
-    resolve(_dirname, '../../config'),
+    resolve(_dirname, '../utils'),
+    resolve(_dirname, '../security'),
+    resolve(_dirname, '../../../functions'),
+    resolve(_dirname, '../../../components'),
+    resolve(_dirname, '../../../config'),
   ],
-  dts: resolve(_dirname, '../auto-imports.d.ts'),
+  dts: resolve(_dirname, '../../auto-imports.d.ts'),
   vueTemplate: true,
   eslintrc: {
     enabled: true,
-    filepath: resolve(_dirname, '../.eslintrc-auto-import.json'),
+    filepath: resolve(_dirname, '../../.eslintrc-auto-import.json'),
   },
 })
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: resolve(_dirname, './unocss.ts'),
+    configFile: resolve(_dirname, '../unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
@@ -54,13 +58,9 @@ function uiEngine(isWebComponent = false) {
 
 const Stacks = (isWebComponent = false) => <PluginOption>[
   inspect,
-
   uiEngine(isWebComponent),
-
   atomicCssEngine(isWebComponent),
-
   autoImports,
-
   components,
 ]
 
