@@ -22,6 +22,7 @@ async function initCommands(artisan: CAC) {
     .option('-f, --functions', 'Are you developing functions/composables?', { default: true }) // if no, API would be false
     .option('-a, --api', 'Are you building an API?', { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', 'Do you need a database?', { default: true })
+    .option('--debug', 'Add additional debug logs', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
 
   artisan
@@ -46,18 +47,18 @@ async function initCommands(artisan: CAC) {
       }
 
       consola.info('Setting up your stack.')
-      await ezSpawn.async(`giget stacks ${name}`, { stdio: 'inherit' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async(`giget stacks ${name}`, { stdio: args.debug ? 'inherit' : 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       consola.info('Ensuring your environment is ready...')
-      await ezSpawn.async('fnm use', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('fnm use', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
       consola.info('Installing & setting up Stacks.')
-      await ezSpawn.async('pnpm install', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      await ezSpawn.async('cp .env.example .env', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('pnpm install', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('cp .env.example .env', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       await generateAppKey(path)
-      await ezSpawn.async('git init', { stdio: 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await ezSpawn.async('git init', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up 🚀')
 
       console.log()
