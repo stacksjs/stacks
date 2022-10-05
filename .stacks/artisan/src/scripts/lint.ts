@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { NpmScript } from '../types'
+import { NpmScript } from '../../../core/types'
 import { runNpmScript } from './run-npm-script'
 
 export async function lint() {

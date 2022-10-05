@@ -4,8 +4,8 @@ import consola from 'consola'
 import { paramCase as kebabCase } from 'change-case'
 import { components, functions } from '../../../config/library'
 import { reset } from '../../../config/ui'
-import { isFile, readTextFile, writeTextFile } from './fs'
-import type { Manifest } from './types'
+import { isFile, readTextFile, writeTextFile } from '../../core/utils/fs'
+import type { Manifest } from '../../core/types'
 
 export async function isInitialized(path: string) {
   if (isFile('.env'))

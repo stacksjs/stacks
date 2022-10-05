@@ -2,8 +2,8 @@ import { resolve } from 'pathe'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import { isManifest } from '../helpers'
-import { readJsonFile } from '../fs'
-import type { Manifest, NpmScript } from '../types'
+import { readJsonFile } from '../../../core/utils/fs'
+import type { Manifest, NpmScript } from '../../../core/types'
 
 /**
  * Runs the specified NPM script in the package.json file.
