@@ -52,7 +52,7 @@ curl -fsSL https://stacksjs.dev/setup | sh
 
 ## 🤖 Usage
 
-The following list is of some of the most common ways to interact with the Stacks API. Meet the Artisan Toolkit:
+Meet the Artisan Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
 
 ```bash
 pnpm artisan install # installs all dependencies
@@ -61,11 +61,11 @@ pnpm artisan build # follow CLI prompts to select which library (or server) to b
 pnpm artisan commit # follow CLI prompts for committing changes
 pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
 
-pnpm artisan make:component HelloWorld # bootstraps a HelloWorld component
-pnpm artisan make:function HelloWorld # bootstraps a HelloWorld function
-pnpm artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
+pnpm artisan make:component HelloWorld # scaffolds a component
+pnpm artisan make:function HelloWorld # scaffolds a function
+pnpm artisan make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-pnpm artisan help
+pnpm artisan --help
 ```
 
 <details>
@@ -195,9 +195,7 @@ After you installed your Stacks generated library, you can use your functions in
 import { count, increment } from 'hello-world-fx'
 
 console.log('count is', count)
-
 increment()
-
 console.log('increased count is', count)
 ```
 

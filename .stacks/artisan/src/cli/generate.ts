@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateLibEntry } from '../../../core'
+import { generateLibEntry } from '../helpers'
 import { generateTypes } from '../scripts/generate'
 
 async function generateCommands(artisan: CAC) {

@@ -138,7 +138,6 @@ importers:
       kolorist: ^1.6.0
       pathe: ^0.3.8
       unbuild: ^0.8.11
-      vite: ^3.1.4
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
       cac: 6.7.14
@@ -147,7 +146,6 @@ importers:
       pathe: 0.3.8
     devDependencies:
       unbuild: 0.8.11
-      vite: 3.1.4
 
   .stacks/functions:
     specifiers:
@@ -1962,7 +1960,7 @@ packages:
       caniuse-lite: 1.0.30001416
       electron-to-chromium: 1.4.272
       node-releases: 2.0.6
-      update-browserslist-db: 1.0.9_browserslist@4.21.4
+      update-browserslist-db: 1.0.10_browserslist@4.21.4
 
   /buffer-crc32/0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
@@ -2117,8 +2115,8 @@ packages:
       supports-color: 7.2.0
     dev: false
 
-  /chalk/5.0.1:
-    resolution: {integrity: sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w==}
+  /chalk/5.1.0:
+    resolution: {integrity: sha512-56zD4khRTBoIyzUYAFgDDaPhUMN/fC/rySe6aZGqbj/VWiU2eI3l6ZLOtYGFZAV5v02mwPjtpzlrOveJiz5eZQ==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   /change-case/4.1.2:
@@ -4233,7 +4231,7 @@ packages:
       source-map: 0.6.1
       wordwrap: 1.0.0
     optionalDependencies:
-      uglify-js: 3.17.2
+      uglify-js: 3.17.3
     dev: false
 
   /hard-rejection/2.1.0:
@@ -5325,6 +5323,7 @@ packages:
     resolution: {integrity: sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+    dev: false
 
   /natural-compare/1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -5352,7 +5351,7 @@ packages:
       '@vercel/nft': 0.22.1
       archiver: 5.3.1
       c12: 0.2.13
-      chalk: 5.0.1
+      chalk: 5.1.0
       chokidar: 3.5.3
       consola: 2.15.3
       cookie-es: 0.5.0
@@ -5855,6 +5854,7 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: false
 
   /preact/10.11.1:
     resolution: {integrity: sha512-1Wz5PCRm6Fg+6BTXWJHhX4wRK9MZbZBHuwBqfZlOdVm2NqPe8/rjYpufvYCwJSGb9layyzB2jTTXfpCTynLqFQ==}
@@ -6172,6 +6172,7 @@ packages:
     hasBin: true
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
 
   /rollup/2.79.1:
     resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
@@ -6404,6 +6405,7 @@ packages:
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+    dev: false
 
   /source-map-support/0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
@@ -6867,8 +6869,8 @@ packages:
   /ufo/0.8.5:
     resolution: {integrity: sha512-e4+UtA5IRO+ha6hYklwj6r7BjiGMxS0O+UaSg9HbaTefg4kMkzj4tXzEBajRR+wkxf+golgAWKzLbytCUDMJAA==}
 
-  /uglify-js/3.17.2:
-    resolution: {integrity: sha512-bbxglRjsGQMchfvXZNusUcYgiB9Hx2K4AHYXQy2DITZ9Rd+JzhX7+hoocE5Winr7z2oHvPsekkBwXtigvxevXg==}
+  /uglify-js/3.17.3:
+    resolution: {integrity: sha512-JmMFDME3iufZnBpyKL+uS78LRiC+mK55zWfM5f/pWBJfpOttXAqYfdDGRukYhJuyRinvPVAtUhvy7rlDybNtFg==}
     engines: {node: '>=0.8.0'}
     hasBin: true
     requiresBuild: true
@@ -6894,7 +6896,7 @@ packages:
       '@rollup/plugin-node-resolve': 13.3.0_rollup@2.79.1
       '@rollup/plugin-replace': 4.0.0_rollup@2.79.1
       '@rollup/pluginutils': 4.2.1
-      chalk: 5.0.1
+      chalk: 5.1.0
       consola: 2.15.3
       defu: 6.1.0
       esbuild: 0.15.10
@@ -7080,8 +7082,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /update-browserslist-db/1.0.9_browserslist@4.21.4:
-    resolution: {integrity: sha512-/xsqn21EGVdXI3EXSum1Yckj3ZVZugqyOZQ/CxYPBD/R+ko9NSUScf8tFF4dOKY+2pvSSJA/S+5B8s4Zr4kyvg==}
+  /update-browserslist-db/1.0.10_browserslist@4.21.4:
+    resolution: {integrity: sha512-OztqDenkfFkbSG+tRxBeAnCVPckDBcvibKd35yDONx6OU8N7sqgwc7rCbkJ/WcYtVRZ4ba68d6byhC21GFh7sQ==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
@@ -7172,6 +7174,7 @@ packages:
       rollup: 2.78.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
 
   /vitepress/1.0.0-alpha.19:
     resolution: {integrity: sha512-0FIUZB6JGXio7SELDDUkyQoMjmO/UAXqDXmznzOsBKsdZ3EHlyb6NaP/V/BMfN5S8+GV88ScbIL0jd/pDzkLBg==}

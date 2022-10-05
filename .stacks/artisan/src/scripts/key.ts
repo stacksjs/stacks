@@ -4,7 +4,7 @@ import consola from 'consola'
 import { enc } from 'crypto-js'
 import { resolve } from 'pathe'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import { isFile } from '../../../core/utils'
+import { isFile } from '../helpers'
 
 export async function generate(path?: string) {
   consola.info('Setting random application key.')
@@ -13,11 +13,8 @@ export async function generate(path?: string) {
     path = process.cwd()
 
   // if the .env file does not exist, ensure it is created
-  if (!isFile('.env')) {
-    // eslint-disable-next-line no-console
-    console.log('here')
+  if (!isFile('.env'))
     await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: path })
-  }
 
   const random = crypto.getRandomValues(new Uint8Array(32))
   const encodedWord = enc.Utf8.parse(random.toString())

@@ -45,7 +45,6 @@
   "scripts": {
     "artisan": "pnpm run dev && node cli.mjs",
     "artisan-init": "pnpm run build && node cli.mjs",
-    "test": "vite build",
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
@@ -59,7 +58,6 @@
     "pathe": "^0.3.8"
   },
   "devDependencies": {
-    "unbuild": "^0.8.11",
-    "vite": "^3.1.4"
+    "unbuild": "^0.8.11"
   }
 }

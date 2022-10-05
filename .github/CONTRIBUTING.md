@@ -68,9 +68,9 @@ pnpm artisan build # follow CLI prompts to select which library (or server) to b
 pnpm artisan commit # follow CLI prompts for committing changes
 pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
 
-pnpm artisan make:component HelloWorld # bootstraps a HelloWorld component
-pnpm artisan make:function HelloWorld # bootstraps a HelloWorld function
-pnpm artisan make:page hello-world # bootstraps a HelloWorld page (https://127.0.0.1/hello-world)
+pnpm artisan make:component HelloWorld # scaffolds a component
+pnpm artisan make:function HelloWorld # scaffolds a function
+pnpm artisan make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
 pnpm artisan help
 ```
