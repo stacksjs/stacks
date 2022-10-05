@@ -1,3 +1,12 @@
+# [0.34.0](https://github.com/stacksjs/stacks/compare/v0.33.39...v0.34.0) (2022-10-05)
+
+
+### Features
+
+* **cli:** add debug option for initial setup ([13ddab5](https://github.com/stacksjs/stacks/commit/13ddab5dd0ff6d9c70b2e15b6bbc9271d74d9157))
+
+
+
 ## [0.33.39](https://github.com/stacksjs/stacks/compare/v0.33.38...v0.33.39) (2022-10-05)
 
 
