@@ -1,4 +1,5 @@
 import { isFile, readTextFile } from '../utils'
+import { generate as generateAppKey } from '../../artisan/src/scripts/key'
 
 export async function isInitialized(path: string) {
   if (isFile('.env')) {
@@ -8,6 +9,12 @@ export async function isInitialized(path: string) {
 
     if (appKey && appKey.length > 16)
       return true
+  }
+
+  if (isFile('.env.example')) {
+    await generateAppKey(process.cwd())
+
+    return true
   }
 
   return false
