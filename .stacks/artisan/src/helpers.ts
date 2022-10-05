@@ -4,6 +4,7 @@ import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, sta
 import consola from 'consola'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
+import { paramCase as kebabCase } from 'change-case'
 import { components, functions } from '../../../config/library'
 import { reset } from '../../../config/ui'
 
