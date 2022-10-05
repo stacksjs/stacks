@@ -2,7 +2,8 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import Prompts from 'prompts'
 import { ExitCode } from '../cli/exit-code'
-import { NpmScript, copyFiles, deleteFolder } from '../helpers'
+import { copyFiles, deleteFolder } from '../fs'
+import { NpmScript } from '../types'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts

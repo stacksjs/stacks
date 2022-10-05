@@ -1,48 +1,11 @@
-import { join, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'fs-extra'
 import consola from 'consola'
-import detectIndent from 'detect-indent'
-import { detectNewline } from 'detect-newline'
 import { paramCase as kebabCase } from 'change-case'
 import { components, functions } from '../../../config/library'
 import { reset } from '../../../config/ui'
-
-/**
- * Describes a plain-text file.
- */
-export interface TextFile {
-  path: string
-  data: string
-}
-
-/**
- * Determine whether a path is a file.
- */
-export function isFile(path: string): boolean {
-  return existsSync(path)
-}
-
-/**
- * Reads a text file and returns its contents.
- */
-export function readTextFile(name: string, cwd: string): Promise<TextFile> {
-  return new Promise((resolve, reject) => {
-    const filePath = join(cwd, name)
-
-    readFile(filePath, 'utf8', (err, text) => {
-      if (err) {
-        reject(err)
-      }
-      else {
-        resolve({
-          path: filePath,
-          data: text,
-        })
-      }
-    })
-  })
-}
+import { isFile, readTextFile } from './fs'
+import type { Manifest } from './types'
 
 export async function isInitialized(path: string) {
   if (isFile('.env'))
@@ -107,21 +70,6 @@ export async function generateLibEntry(type: 'vue-components' | 'web-components'
   catch (err) {
     consola.error(err)
   }
-}
-
-/**
- * Writes the given text to the specified file.
- */
-export function writeTextFile(file: TextFile): Promise<void> {
-  return new Promise((resolve, reject) => {
-    writeFile(file.path, file.data, (err: any) => {
-      if (err)
-        reject(err)
-
-      else
-        resolve()
-    })
-  })
 }
 
 function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
@@ -197,73 +145,6 @@ export function determineResetPreset(preset?: string) {
   else return []
 }
 
-export const enum NpmScript {
-  Build = 'build',
-  BuildComponents = 'build:components',
-  BuildWebComponents = 'build:web-components',
-  BuildFunctions = 'build:functions',
-  BuildDocs = 'build:docs',
-  BuildStacks = 'build:stacks',
-  Dev = 'dev',
-  DevComponents = 'dev:components',
-  DevDocs = 'dev:docs',
-  Fresh = 'fresh',
-  Update = 'update',
-  Lint = 'lint',
-  LintFix = 'lint:fix',
-  MakeStack = 'make:stack',
-  Test = 'test',
-  TestTypes = 'test:types',
-  TestCoverage = 'test:coverage',
-  GenerateTypes = 'generate:types',
-  generateEntries = 'generate:entries',
-  generateVueCompat = 'generate:vue-compatibility',
-  Release = 'release',
-  Commit = 'commit',
-  ExampleVue = 'example:vue',
-  ExampleWebComponents = 'example:web-components',
-  KeyGenerate = 'key:generate',
-}
-
-/**
- * Determine whether a folder has any files in it.
- */
-export function hasFiles(folder: string): boolean {
-  return readdirSync(folder).length > 0
-}
-
-/**
- * Describes a JSON file.
- */
-interface JsonFile {
-  path: string
-  data: unknown
-  indent: string
-  newline: string | undefined
-}
-
-/**
- * Reads a JSON file and returns the parsed data.
- */
-export async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
-  const file = await readTextFile(name, cwd)
-  const data = JSON.parse(file.data) as unknown
-  const indent = detectIndent(file.data).indent
-  const newline = detectNewline(file.data)
-
-  return { ...file, data, indent, newline }
-}
-
-/**
- * The npm package manifest (package.json)
- */
-export interface Manifest {
-  name: string
-  version: string
-  description: string
-  [key: string]: unknown
-}
-
 /**
  * Determines whether the specified value is a package manifest.
  */
@@ -283,41 +164,4 @@ function isOptionalString(value: any): value is string | undefined {
   return value === null
     || type === 'undefined'
     || type === 'string'
-}
-
-export const copyFiles = async (src: string, dest: string) => {
-  if (!existsSync(src))
-    return
-
-  if (statSync(src).isDirectory()) {
-    if (!existsSync(dest))
-      mkdirSync(dest, { recursive: true })
-
-    const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts']
-
-    readdirSync(src).forEach((file) => {
-      if (contains(file, pathsToExclude)) // no need to copy node_modules & package.json
-        copyFiles(join(src, file), join(dest, file))
-    })
-
-    return
-  }
-
-  copyFileSync(src, dest)
-}
-
-export const deleteFolder = async (path: string) => {
-  await rmSync(path, { recursive: true, force: true })
-}
-
-/**
- * Determine whether a path is a folder.
- */
-export function isFolder(path: string): boolean {
-  try {
-    return statSync(path).isDirectory()
-  }
-  catch {
-    return false
-  }
 }
