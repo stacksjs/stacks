@@ -6,7 +6,7 @@ import { resolve } from 'pathe'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
 import { version } from '../../package.json'
-import { isFolder } from '../helpers'
+import { isFolder } from '../fs'
 import { generate as generateAppKey } from '../scripts/key'
 import { ExitCode } from './exit-code'
 
