@@ -6,7 +6,7 @@ export async function isInitialized(path: string) {
     return await checkIfAppKeyIsSet(path)
 
   if (isFile('.env.example')) {
-    await ezSpawn.async('pnpm artisan key:generate', { stdio: 'inherit', cwd: path })
+    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: path })
     return await checkIfAppKeyIsSet(path)
   }
 

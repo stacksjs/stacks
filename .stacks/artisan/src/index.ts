@@ -13,11 +13,12 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // before running any commands, check if the project is already initialized
+  await keyCommands(artisan)
+
   if (!await isInitialized(process.cwd())) {
     await initCommands(artisan)
   }
   else {
-    await keyCommands(artisan)
     await updateCommands(artisan)
     await generateCommands(artisan)
     await devCommands(artisan)
