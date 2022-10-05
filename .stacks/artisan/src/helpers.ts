@@ -4,7 +4,7 @@ import consola from 'consola'
 import { paramCase as kebabCase } from 'change-case'
 import { components, functions } from '../../../config/library'
 import { reset } from '../../../config/ui'
-import { isFile, readTextFile } from './fs'
+import { isFile, readTextFile, writeTextFile } from './fs'
 import type { Manifest } from './types'
 
 export async function isInitialized(path: string) {
