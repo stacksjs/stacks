@@ -1,3 +1,7 @@
+## [0.34.1](https://github.com/stacksjs/stacks/compare/v0.34.0...v0.34.1) (2022-10-06)
+
+
+
 # [0.34.0](https://github.com/stacksjs/stacks/compare/v0.33.39...v0.34.0) (2022-10-05)
 
 
