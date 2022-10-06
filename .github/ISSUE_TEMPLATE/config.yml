@@ -1,0 +1,10 @@
+contact_links:
+  - name: 🙌 Contribution Guide
+    url: https://github.com/stacksjs/contribute
+    about: Please read through before making contributions.
+  - name: 💬 Stacks Discord Server
+    url: https://discord.ow3.org/
+    about: Want to discuss / chat with the community? Here you go!
+  - name: ⁉️ Why & how to create a reproduction?
+    url: https://antfu.me/posts/why-reproductions-are-required
+    about: A reproduction is very important for maintainers to help on your issues!
