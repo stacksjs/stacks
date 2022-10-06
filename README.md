@@ -247,6 +247,10 @@ For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
 
+## 📄 Sponsors
+
+Once we launch a usable Stacks version, we hope people will start enjoying it! Coming soon.
+
 ## 📄 License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
