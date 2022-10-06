@@ -9,6 +9,7 @@ async function buildCommands(artisan: CAC) {
     .option('-e, --elements', 'An alias to the -w flag')
     .option('-f, --functions', 'Build your function library')
     .option('-d, --docs', 'Build your documentation site')
+    .option('--debug', 'Add additional debug logs', { default: false })
     // .option('-p, --pages', 'Build your pages')
     .action(async (options: any) => {
       await startBuildProcess(options)

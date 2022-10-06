@@ -36,7 +36,7 @@ declare global {
   const contributors: typeof import('../config/library')['contributors']
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
-  const copyFiles: typeof import('./core/utils/fs')['copyFiles']
+  const copyFolder: typeof import('./core/utils/fs')['copyFolder']
   const count: typeof import('../functions/counter')['count']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
@@ -426,7 +426,7 @@ declare module '@vue/runtime-core' {
     readonly contributors: UnwrapRef<typeof import('../config/library')['contributors']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
-    readonly copyFiles: UnwrapRef<typeof import('./core/utils/fs')['copyFiles']>
+    readonly copyFolder: UnwrapRef<typeof import('./core/utils/fs')['copyFolder']>
     readonly count: UnwrapRef<typeof import('../functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>

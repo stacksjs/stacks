@@ -35,7 +35,7 @@
     "contributors": true,
     "controlledComputed": true,
     "controlledRef": true,
-    "copyFiles": true,
+    "copyFolder": true,
     "count": true,
     "createApp": true,
     "createEventHook": true,

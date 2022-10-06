@@ -7,6 +7,7 @@ async function updateCommands(artisan: CAC) {
     .option('-c, --framework', 'Update the Stacks core/framework', { default: true })
     .option('-d, --dependencies', 'Update your dependencies', { default: true })
     .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
+    .option('--debug', 'Add additional debug logs', { default: false })
     .action(async (options: any) => {
       await update(options)
     })

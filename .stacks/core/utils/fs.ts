@@ -117,25 +117,26 @@ export function hasFunctions(): boolean {
   return hasFiles(resolve(process.cwd(), './functions'))
 }
 
-export const copyFiles = async (src: string, dest: string) => {
-  if (!existsSync(src))
-    return
+const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
-  if (statSync(src).isDirectory()) {
-    if (!existsSync(dest))
-      mkdirSync(dest, { recursive: true })
+export function copyFolder(src: string, dest: string): void {
+  if (!existsSync(dest))
+    mkdirSync(dest, { recursive: true })
 
-    const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts']
-
+  if (existsSync(src)) {
     readdirSync(src).forEach((file) => {
-      if (contains(file, pathsToExclude)) // no need to copy node_modules & package.json
-        copyFiles(join(src, file), join(dest, file))
+      if (!contains(file, pathsToExclude)) {
+        const srcPath = join(src, file)
+        const destPath = join(dest, file)
+
+        if (statSync(srcPath).isDirectory())
+          copyFolder(srcPath, destPath)
+
+        else
+          copyFileSync(srcPath, destPath)
+      }
     })
-
-    return
   }
-
-  copyFileSync(src, dest)
 }
 
 export const deleteFolder = async (path: string) => {

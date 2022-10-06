@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from 'pathe'
-import { copyFiles } from '../utils'
+import { copyFolder } from '../utils'
 
 // relative to scripts directory
 const destinations = [
@@ -12,5 +12,5 @@ destinations.forEach(([src, dest]) => {
   const srcPath = resolve(__filename, '..', src)
   const destPath = resolve(__filename, '..', dest)
 
-  copyFiles(srcPath, destPath)
+  copyFolder(srcPath, destPath)
 })
