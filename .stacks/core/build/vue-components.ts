@@ -10,7 +10,7 @@ import { _dirname } from '../utils'
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../components'),
   envDir: resolve(_dirname, '../../../'),
-  envPrefix: 'STACKS_',
+  envPrefix: 'APP_',
 
   server: {
     port: 3333,

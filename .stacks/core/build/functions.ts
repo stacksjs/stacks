@@ -10,7 +10,7 @@ import { _dirname } from '../utils'
 const config: ViteConfig = {
   root: resolve(_dirname, '../../../functions'),
   envDir: resolve(_dirname, '../../../'),
-  envPrefix: 'STACKS_',
+  envPrefix: 'APP_',
 
   resolve: {
     // dedupe: ['vue'],

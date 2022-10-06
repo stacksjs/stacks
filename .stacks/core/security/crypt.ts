@@ -1,13 +1,13 @@
 import { AES, enc } from 'crypto-js'
 
-const passphrase = process.env.APP_KEY as string
+const passphrase = import.meta.env.APP_KEY as string
 
-function encryptString(message: string): string {
+function encrypt(message: string): string {
   return AES.encrypt(message, passphrase).toString()
 }
 
-function decryptString(encrypted: string): string {
+function decrypt(encrypted: string): string {
   return AES.decrypt(encrypted, passphrase).toString(enc.Utf8)
 }
 
-export { encryptString, decryptString }
+export { encrypt, decrypt }

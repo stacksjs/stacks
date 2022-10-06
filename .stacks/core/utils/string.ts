@@ -6,9 +6,9 @@ export {
   headerCase,
   noCase,
   paramCase,
+  paramCase as kebabCase,
   pascalCase,
   pathCase,
-  pathCase as kebabCase,
   sentenceCase,
   snakeCase,
 } from 'change-case'

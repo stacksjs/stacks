@@ -19,7 +19,11 @@ const components = Components({
 })
 
 const autoImports = AutoImport({
-  imports: ['vue', '@vueuse/core', 'vitest', { 'collect.js': ['collect'] }],
+  imports: [
+    'vue', '@vueuse/core', '@vueuse/math', 'vitest',
+    { 'collect.js': ['collect'] },
+    { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+  ],
   dirs: [
     resolve(_dirname, '../utils'),
     resolve(_dirname, '../security'),

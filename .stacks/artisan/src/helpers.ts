@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
-import { paramCase as kebabCase } from 'change-case'
+import { kebabCase } from '../../core/utils/string'
 import { components, functions } from '../../../config/library'
 import { reset } from '../../../config/ui'
 import { isFile, readTextFile, writeTextFile } from '../../core/utils/fs'
