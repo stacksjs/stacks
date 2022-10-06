@@ -2,7 +2,7 @@
   "name": "@stacksjs/stacks",
   "type": "module",
   "version": "0.34.0",
-  "packageManager": "pnpm@7.13.1",
+  "packageManager": "pnpm@7.13.2",
   "description": "Develop modern framework-agnostic web apps & libraries, faster.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,7 +36,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.1"
+    "pnpm": ">=7.13.2"
   },
   "scripts": {
     "artisan": "jiti .stacks/artisan/src/index.ts",
