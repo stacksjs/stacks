@@ -72,24 +72,45 @@ pnpm artisan --help
 <summary>View the complete Stacks Artisan Toolkit</summary>
 
 ```bash
-pnpm artisan install # or `pnpm i`
+pnpm artisan # view help menu
+pnpm artisan install # installs your dependencies
 pnpm artisan fresh # fresh reinstall of all deps
+pnpm artisan update # auto-update deps & the Stacks framework
+
+pnpm artisan --version # get the Stacks version
+pnpm artisan --help # view help menu
+
+# if you need any more info on any command listed here, you may suffix
+# any of them via the "help option", i.e. `pnpm artisan ... --help`
 
 pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
 pnpm artisan dev:components # starts local playground dev server
-pnpm artisan dev:pages # starts local pages dev server
+pnpm artisan dev:pages # starts local playground pages dev server
+pnpm artisan dev:functions # stubs local the functions
 pnpm artisan dev:docs # starts local docs dev server
 
+# for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
+pnpm artisan serve # starts one of the dev servers (components, functions, pages, or docs)
+pnpm artisan serve:components # starts local playground dev server
+pnpm artisan serve:pages # starts local playground pages dev server
+pnpm artisan serve:functions # stubs local the functions
+pnpm artisan serve:docs # starts local docs dev server
+
+# sets your application key
+pnpm artisan key:generate
+
+pnpm artisan make:stack project
 pnpm artisan make:component HelloWorld
 pnpm artisan make:function hello-world
 pnpm artisan make:page hello-world
-pnpm artisan make:lang en
-pnpm artisan make:stack hello-world
+pnpm artisan make:lang de
+pnpm artisan make:database cars
+pnpm artisan make:table brands
+pnpm artisan make:migration create_cars_table
+pnpm artisan make:factory cars
 
 pnpm artisan stub # stubs all the libraries
-pnpm artisan stub:components # stubs the component library
 pnpm artisan stub:functions # stubs the function library
-pnpm artisan stub:pages # stubs the pages
 
 pnpm artisan lint # runs linter
 pnpm artisan lint:fix # runs linter and fixes issues
@@ -98,33 +119,28 @@ pnpm artisan commit # follow CLI prompts for committing staged changes
 pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
 pnpm artisan changelog # generates CHANGELOG.md
 
-# building for production (e.g. npm)
-
+# building for production (e.g. npm, Vercel, Netlify, et al.)
 pnpm artisan build # select a specific build (follow CLI prompts)
-pnpm artisan build:components # builds component libraries
+pnpm artisan build:components # builds Vue component library & Web Component library
 pnpm artisan build:functions # builds function library
+pnpm artisan build:vue-components # builds Vue 2 & 3-ready Component library
 pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-pnpm artisan build:components # builds Vue 2 & 3 compatible libraries
+pnpm artisan build:pages # builds pages
 
-# when building for Vercel, Netlify, and more
-
+# when deploying your app/s to a remote server or cloud provider
 pnpm artisan deploy:docs
+pnpm artisan deploy:functions
+pnpm artisan deploy:pages
 
-# creates a server to be deployed into any VPS
-
-pnpm artisan server:functions # wip
-pnpm artisan server:pages # wip
-
-pnpm artisan example # select the example to run (follow CLI prompts)
+# select the example to run (follow CLI prompts)
+pnpm artisan example
 
 # test your stack
-
 pnpm artisan test # runs test suite
 pnpm artisan test:unit # runs unit tests
 pnpm artisan test:e2e # runs e2e tests
 pnpm artisan test:coverage # runs test coverage
 pnpm artisan test:types # runs typecheck
-
 ```
 
 </details>
