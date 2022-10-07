@@ -123,7 +123,7 @@ export function copyFolder(src: string, dest: string, pathsToExclude?: string[])
 
   if (existsSync(src)) {
     readdirSync(src).forEach((file) => {
-      if (!contains(file, pathsToExclude as string[])) {
+      if (!contains(join(src, file), pathsToExclude as string[])) {
         const srcPath = join(src, file)
         const destPath = join(dest, file)
 

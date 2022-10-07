@@ -25,8 +25,9 @@ export async function stacks(options: any) {
     catch (error: any) {
       if (error.status === 1) {
         // even though the ./.stacks folder should not be edited, instead config values should be adjusted,
-        // there is a chance that users may apply local core edits, as it's totally acceptable,
-        // as long as the user knows what they are doing.
+        // there is a chance that users may apply local core edits, as it's totally acceptable, as long as
+        // the user knows what they are doing. There is also a change that simply the deps within .stacks
+        // folder have been updated and that could produce a diff.
         if (!options.force) {
           const answer = await prompts.confirm({
             type: 'select',
@@ -49,9 +50,9 @@ export async function stacks(options: any) {
     consola.success('Downloaded framework updates.')
 
     consola.info('Updating framework...')
-    const from = resolve('./updates/.stacks', process.cwd())
-    const to = resolve('.stacks', process.cwd())
-    const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
+    const from = resolve(process.cwd(), './updates/.stacks')
+    const to = resolve(process.cwd(), '.stacks')
+    const pathsToExclude = ['node_modules', 'functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
     await copyFolder(from, to, pathsToExclude) // overwrite the core framework files
 
     consola.info('Cleanup...')
