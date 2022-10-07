@@ -1,5 +1,5 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
-import { isFile, readTextFile } from '../utils'
+import { isFile, readTextFile } from '../utils/fs'
 
 export async function isInitialized(path: string) {
   if (isFile('.env'))

@@ -5,7 +5,8 @@ import fs from 'fs-extra'
 import { packageManager } from '../../package.json'
 import { author, components, componentsLibrary, contributors, functions, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
 import { reset } from '../../../config/ui'
-import { kebabCase, writeTextFile } from '../utils'
+import { writeTextFile } from '../utils/fs'
+import { kebabCase } from '../utils/string'
 
 /**
  * Based on the config values, this method
