@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, rmdir, statSync, writeFile } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rm, rmSync, statSync, writeFile } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
@@ -148,7 +148,7 @@ export function deleteEmptyFolders(dir: string) {
       const path = join(dir, file)
       if (statSync(path).isDirectory()) {
         if (readdirSync(path).length === 0) {
-          rmdir(path, { recursive: true }, (err) => {
+          rm(path, { recursive: true }, (err) => {
             if (err)
               throw err
           })
