@@ -55,7 +55,7 @@
     "cac": "^6.7.14",
     "giget": "^0.1.7",
     "kolorist": "^1.6.0",
-    "pathe": "^0.3.8"
+    "pathe": "^0.3.9"
   },
   "devDependencies": {
     "unbuild": "^0.8.11"
