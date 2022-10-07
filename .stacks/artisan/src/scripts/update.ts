@@ -51,7 +51,8 @@ export async function stacks(options: any) {
     consola.info('Updating framework...')
     const from = resolve('./updates/.stacks', process.cwd())
     const to = resolve('.stacks', process.cwd())
-    await copyFolder(from, to) // overwrite the core framework files
+    const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
+    await copyFolder(from, to, pathsToExclude) // overwrite the core framework files
 
     consola.info('Cleanup...')
     await deleteFolder('./updates')
@@ -59,4 +60,7 @@ export async function stacks(options: any) {
   }
 
   // TODO: also update CI files & configurations, and other files, possibly
+  // ideally we want this to be smart enough to update only the files that have changed
+
+  // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
 }

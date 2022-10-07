@@ -117,20 +117,18 @@ export function hasFunctions(): boolean {
   return hasFiles(resolve(process.cwd(), './functions'))
 }
 
-const pathsToExclude = ['node_modules', 'functions/package.json', 'components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
-
-export function copyFolder(src: string, dest: string): void {
+export function copyFolder(src: string, dest: string, pathsToExclude?: string[]): void {
   if (!existsSync(dest))
     mkdirSync(dest, { recursive: true })
 
   if (existsSync(src)) {
     readdirSync(src).forEach((file) => {
-      if (!contains(file, pathsToExclude)) {
+      if (!contains(file, pathsToExclude as string[])) {
         const srcPath = join(src, file)
         const destPath = join(dest, file)
 
         if (statSync(srcPath).isDirectory())
-          copyFolder(srcPath, destPath)
+          copyFolder(srcPath, destPath, pathsToExclude)
 
         else
           copyFileSync(srcPath, destPath)
