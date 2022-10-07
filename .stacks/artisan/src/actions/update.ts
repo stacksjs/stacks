@@ -3,8 +3,8 @@ import consola from 'consola'
 import Prompts from 'prompts'
 import { resolve } from 'pathe'
 import { ExitCode } from '../cli/exit-code'
-import { copyFolder, deleteFolder } from '../../../core/utils/fs'
-import { NpmScript } from '../../../core/types'
+import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder } from '../../../core/utils/fs'
+// import { NpmScript } from '../../../core/types'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts
@@ -46,10 +46,16 @@ export async function stacks(options: any) {
     consola.success('Downloaded framework updates.')
 
     consola.info('Updating framework...')
+    const exclude = ['node_modules', 'functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
+    await deleteFiles('./.stacks', exclude)
+
+    // loop 5 times to make sure all "deep empty" folders are deleted
+    for (let i = 0; i < 5; i++)
+      await deleteEmptyFolders('./.stacks')
+
     const from = resolve(process.cwd(), './updates/.stacks')
     const to = resolve(process.cwd(), '.stacks')
-    const pathsToExclude = ['node_modules', 'functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
-    await copyFolder(from, to, pathsToExclude) // overwrite the core framework files
+    await copyFolder(from, to)
 
     consola.info('Cleanup...')
     await deleteFolder('./updates')

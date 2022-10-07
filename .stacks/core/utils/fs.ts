@@ -1,27 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, rmdir, statSync, writeFile } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
+import type { JsonFile, TextFile } from '../types'
 import { contains } from './array'
-
-/**
- * Describes a plain-text file.
- */
-export interface TextFile {
-  path: string
-  data: string
-}
-
-/**
- * Describes a JSON file.
- */
-interface JsonFile {
-  path: string
-  data: unknown
-  indent: string
-  newline: string | undefined
-}
 
 /**
  * Reads a JSON file and returns the parsed data.
@@ -117,18 +100,18 @@ export function hasFunctions(): boolean {
   return hasFiles(resolve(process.cwd(), './functions'))
 }
 
-export function copyFolder(src: string, dest: string, pathsToExclude?: string[]): void {
+export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
   if (!existsSync(dest))
     mkdirSync(dest, { recursive: true })
 
   if (existsSync(src)) {
     readdirSync(src).forEach((file) => {
-      if (!contains(join(src, file), pathsToExclude as string[])) {
+      if (!contains(join(src, file), exclude)) {
         const srcPath = join(src, file)
         const destPath = join(dest, file)
 
         if (statSync(srcPath).isDirectory())
-          copyFolder(srcPath, destPath, pathsToExclude)
+          copyFolder(srcPath, destPath, exclude)
 
         else
           copyFileSync(srcPath, destPath)
@@ -137,8 +120,44 @@ export function copyFolder(src: string, dest: string, pathsToExclude?: string[])
   }
 }
 
-export const deleteFolder = async (path: string) => {
-  await rmSync(path, { recursive: true, force: true })
+export async function deleteFolder(path: string) {
+  if (statSync(path).isDirectory())
+    await rmSync(path, { recursive: true, force: true })
+}
+
+export function deleteFiles(dir: string, exclude: string[] = []) {
+  if (existsSync(dir)) {
+    readdirSync(dir).forEach((file) => {
+      const path = join(dir, file)
+      if (statSync(path).isDirectory()) {
+        if (readdirSync(path).length === 0)
+          rmSync(path, { recursive: true, force: true })
+
+        else
+          deleteFiles(path, exclude)
+      }
+
+      else if (!contains(path, exclude)) { rmSync(path) }
+    })
+  }
+}
+
+export function deleteEmptyFolders(dir: string) {
+  if (existsSync(dir)) {
+    readdirSync(dir).forEach((file) => {
+      const path = join(dir, file)
+      if (statSync(path).isDirectory()) {
+        if (readdirSync(path).length === 0) {
+          rmdir(path, { recursive: true }, (err) => {
+            if (err)
+              throw err
+          })
+        }
+
+        else { deleteEmptyFolders(path) }
+      }
+    })
+  }
 }
 
 export const _dirname = typeof __dirname !== 'undefined'
