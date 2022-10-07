@@ -39,6 +39,8 @@ export const classPrefix = 'stx-'
  * this value to `null` if you prefer not using any.
  *
  * @url https://www.npmjs.com/package/@unocss/reset
+ *
+ * TODO: the preset needs to be added via a Vite plugin on development & build
  */
 export const reset = 'tailwind'
 

@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { startDevelopmentServer } from '../scripts/dev'
+import { startDevelopmentServer } from '../actions/dev'
 
 async function devCommands(artisan: CAC) {
   artisan

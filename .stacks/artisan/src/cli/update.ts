@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { stacks as update } from '../scripts/update'
+import { stacks as update } from '../actions/update'
 
 async function updateCommands(artisan: CAC) {
   artisan

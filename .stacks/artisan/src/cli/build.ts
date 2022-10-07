@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { startBuildProcess } from '../scripts/build'
+import { startBuildProcess } from '../actions/build'
 
 async function buildCommands(artisan: CAC) {
   artisan

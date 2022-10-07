@@ -7,7 +7,7 @@ import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
 import { version } from '../../package.json'
 import { isFolder } from '../../../core/utils/fs'
-import { generate as generateAppKey } from '../scripts/key'
+import { generate as generateAppKey } from '../actions/key'
 import { ExitCode } from './exit-code'
 
 // the logic to run to create/scaffold a new stack

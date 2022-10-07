@@ -1,6 +1,5 @@
 import type { CAC } from 'cac'
-import { generateLibEntry } from '../helpers'
-import { generateTypes } from '../scripts/generate'
+import { generateLibEntries, generateTypes, generateVueCompat } from '../actions/generate'
 
 async function generateCommands(artisan: CAC) {
   artisan
@@ -12,17 +11,14 @@ async function generateCommands(artisan: CAC) {
   artisan
     .command('generate:entries', 'Generates the entry points for your libraries')
     .action(async () => {
-      await generateLibEntry('vue-components')
-      await generateLibEntry('web-components')
-      await generateLibEntry('functions')
+      // run the generate:entries command
+      await generateLibEntries()
     })
 
   artisan
     .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
     .action(async () => {
-      // eslint-disable-next-line no-console
-      console.log('wip')
-      // await generateVueCompat()
+      await generateVueCompat()
     })
 }
 

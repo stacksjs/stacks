@@ -15,7 +15,7 @@ export async function generateTypes() {
 
 export async function generateLibEntries() {
   try {
-    await runNpmScript(NpmScript.generateEntries)
+    await runNpmScript(NpmScript.GenerateEntries)
     consola.success('Library entry points were generated successfully.')
   }
   catch (error) {
@@ -26,7 +26,7 @@ export async function generateLibEntries() {
 
 export async function generateVueCompat() {
   try {
-    await runNpmScript(NpmScript.generateVueCompat)
+    await runNpmScript(NpmScript.GenerateVueCompat)
     consola.success('Vue 2 & 3 compatibility was generated successfully.')
   }
   catch (error) {

@@ -41,14 +41,14 @@ Develop beautiful, reactive, composable UIs & functions without learning a new s
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-npx artisan-init my-project
-
-# alternatively, if unsure about your Node/pnpm setup, run:
 curl -fsSL https://stacksjs.dev/setup | sh
+
+# alternatively, if you know your setup is ready, install a new stack via:
+npx artisan-init my-project
 ```
 
 > **Note**
-> Node.js v18.10 or higher required. _Artisan will set you up._
+> Node.js v18.10 & pnpm 7.13 or higher required. _Artisan will set you up._
 
 ## 🤖 Usage
 

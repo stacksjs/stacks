@@ -11,6 +11,7 @@ const { prompts } = Prompts
 
 export async function stacks(options: any) {
   // first, we need to update the framework, if updates available
+  // TODO: need to delete all files except the whitelisted ones
   if (options.framework) {
     try {
       // check if the .stacks folder has any updates

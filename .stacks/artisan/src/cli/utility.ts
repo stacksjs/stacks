@@ -1,8 +1,8 @@
 import type { CAC } from 'cac'
-import { reinstallNpmDependencies } from '../scripts/fresh'
-import { lint, lintFix } from '../scripts/lint'
-import { release } from '../scripts/release'
-import { commit } from '../scripts/commit'
+import { reinstallNpmDependencies } from '../actions/fresh'
+import { lint, lintFix } from '../actions/lint'
+import { release } from '../actions/release'
+import { commit } from '../actions/commit'
 
 async function utilityCommands(artisan: CAC) {
   artisan

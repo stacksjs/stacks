@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateTestCoverageReport, runTestSuite, typecheck } from '../scripts/test'
+import { generateTestCoverageReport, runTestSuite, typecheck } from '../actions/test'
 
 async function testCommands(artisan: CAC) {
   artisan
