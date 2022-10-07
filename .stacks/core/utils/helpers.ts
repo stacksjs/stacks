@@ -26,3 +26,24 @@ export async function checkIfAppKeyIsSet(path?: string) {
 
   return false
 }
+
+/**
+ * @url https://www.npmjs.com/package/@unocss/reset
+ * @param preset
+ */
+export function determineResetPreset(preset?: string) {
+  if (reset)
+    preset = reset
+
+  if (preset === 'tailwind')
+    return ['import \'@unocss/reset/tailwind.css\'']
+  else if (preset === 'normalize')
+    return ['import \'@unocss/reset/normalize.css\'']
+  else if (preset === 'sanitize')
+    return ['import \'@unocss/reset/sanitize/sanitize.css\'', 'import \'@unocss/reset/sanitize/assets.css']
+  else if (preset === 'eric-meyer')
+    return ['import \'@unocss/reset/eric-meyer.css\'']
+  else if (preset === 'antfu')
+    return ['import \'@unocss/reset/antfu.css\'']
+  else return []
+}

@@ -57,7 +57,7 @@ declare global {
   const defineComponent: typeof import('vue')['defineComponent']
   const deleteFolder: typeof import('./core/utils/fs')['deleteFolder']
   const describe: typeof import('vitest')['describe']
-  const determineResetPreset: typeof import('./core/utils/generate')['determineResetPreset']
+  const determineResetPreset: typeof import('./core/utils/helpers')['determineResetPreset']
   const docs: typeof import('../config/docs')['default']
   const dotCase: typeof import('./core/utils/string')['dotCase']
   const driver: typeof import('../config/hashing')['driver']
@@ -71,9 +71,9 @@ declare global {
   const fallbackLocale: typeof import('../config/app')['fallbackLocale']
   const functions: typeof import('../config/library')['functions']
   const functionsLibrary: typeof import('../config/library')['functionsLibrary']
-  const generateLibEntry: typeof import('./core/utils/generate')['generateLibEntry']
-  const generatePackageJson: typeof import('./core/utils/generate')['generatePackageJson']
-  const generateVueCompat: typeof import('./core/utils/generate')['generateVueCompat']
+  const generateLibEntry: typeof import('./core/generate/lib-entries')['generateLibEntry']
+  const generatePackageJson: typeof import('./core/generate/package-json')['generatePackageJson']
+  const generateVueCompat: typeof import('./core/generate/vue-compat')['generateVueCompat']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const h: typeof import('vue')['h']
@@ -445,7 +445,7 @@ declare module '@vue/runtime-core' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly deleteFolder: UnwrapRef<typeof import('./core/utils/fs')['deleteFolder']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
-    readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/generate')['determineResetPreset']>
+    readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/helpers')['determineResetPreset']>
     readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
     readonly dotCase: UnwrapRef<typeof import('./core/utils/string')['dotCase']>
     readonly driver: UnwrapRef<typeof import('../config/hashing')['driver']>
@@ -459,9 +459,9 @@ declare module '@vue/runtime-core' {
     readonly fallbackLocale: UnwrapRef<typeof import('../config/app')['fallbackLocale']>
     readonly functions: UnwrapRef<typeof import('../config/library')['functions']>
     readonly functionsLibrary: UnwrapRef<typeof import('../config/library')['functionsLibrary']>
-    readonly generateLibEntry: UnwrapRef<typeof import('./core/utils/generate')['generateLibEntry']>
-    readonly generatePackageJson: UnwrapRef<typeof import('./core/utils/generate')['generatePackageJson']>
-    readonly generateVueCompat: UnwrapRef<typeof import('./core/utils/generate')['generateVueCompat']>
+    readonly generateLibEntry: UnwrapRef<typeof import('./core/generate/lib-entries')['generateLibEntry']>
+    readonly generatePackageJson: UnwrapRef<typeof import('./core/generate/package-json')['generatePackageJson']>
+    readonly generateVueCompat: UnwrapRef<typeof import('./core/generate/vue-compat')['generateVueCompat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>

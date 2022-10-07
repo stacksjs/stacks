@@ -25,6 +25,7 @@ const autoImports = AutoImport({
     { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
   ],
   dirs: [
+    resolve(_dirname, '../generate'),
     resolve(_dirname, '../utils'),
     resolve(_dirname, '../security'),
     resolve(_dirname, '../../../functions'),
