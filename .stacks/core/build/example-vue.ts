@@ -4,7 +4,7 @@ import type { ViteConfig } from '..'
 import { uiEngine } from '..'
 
 const config: ViteConfig = {
-  root: resolve(__dirname, '../../examples/vue'),
+  root: resolve(__dirname, '../../examples/vue-components'),
 
   server: {
     port: 3333,
