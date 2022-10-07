@@ -29,7 +29,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.45.26
       '@unocss/vite': ^0.45.26
       '@vitejs/plugin-vue': ^3.1.2
-      '@vitest/coverage-istanbul': ^0.23.4
+      '@vitest/coverage-istanbul': ^0.24.0
       '@vueuse/core': ^9.3.0
       '@vueuse/shared': ^9.3.0
       artisan-init: workspace:*
@@ -69,7 +69,7 @@ importers:
       vite: ^3.1.6
       vite-plugin-inspect: ^0.7.5
       vitepress: 1.0.0-alpha.19
-      vitest: ^0.23.4
+      vitest: ^0.24.0
       vue: ^3.2.40
       vue-tsc: ^1.0.0
     dependencies:
@@ -90,7 +90,7 @@ importers:
       '@unocss/transformer-compile-class': 0.45.26
       '@unocss/vite': 0.45.26_vite@3.1.6
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.6+vue@3.2.40
-      '@vitest/coverage-istanbul': 0.23.4
+      '@vitest/coverage-istanbul': 0.24.0
       '@vueuse/core': 9.3.0_vue@3.2.40
       '@vueuse/shared': 9.3.0_vue@3.2.40
       artisan-init: link:artisan
@@ -130,7 +130,7 @@ importers:
       vite: 3.1.6
       vite-plugin-inspect: 0.7.5_vite@3.1.6
       vitepress: 1.0.0-alpha.19_tbpndr44ulefs3hehwpi2mkf2y
-      vitest: 0.23.4
+      vitest: 0.24.0
       vue: 3.2.40
       vue-tsc: 1.0.0_typescript@4.8.4
 
@@ -1442,8 +1442,8 @@ packages:
       vue: 3.2.40
     dev: false
 
-  /@vitest/coverage-istanbul/0.23.4:
-    resolution: {integrity: sha512-vl+c682jwCkthdOomO7aBRY/H2bXfxjYAo+WZoGktdWEiSBfwhFUOcJJW3+Ery9i8ja+M1Jd19HrqYriLixGPw==}
+  /@vitest/coverage-istanbul/0.24.0:
+    resolution: {integrity: sha512-H93pxVdG1/VqqpAeA2cuw5XTYBg0/dy0RPdsluQMSjlcmBVaV4c76XqBmTKJRZh21/qIs+YT8YTRnl4IdwQ8Zg==}
     dependencies:
       istanbul-lib-coverage: 3.2.0
       istanbul-lib-instrument: 5.2.1
@@ -1451,7 +1451,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       test-exclude: 6.0.0
-      vitest: 0.23.4
+      vitest: 0.24.0
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@vitest/browser'
@@ -7205,8 +7205,8 @@ packages:
       - terser
     dev: false
 
-  /vitest/0.23.4:
-    resolution: {integrity: sha512-iukBNWqQAv8EKDBUNntspLp9SfpaVFbmzmM0sNcnTxASQZMzRw3PsM6DMlsHiI+I6GeO5/sYDg3ecpC+SNFLrQ==}
+  /vitest/0.24.0:
+    resolution: {integrity: sha512-k5j3FPTor+MJx2x0pDW2gtVk+s9VC6nSHT3SoqOIk9Je5fFpPgict+Xy2eAVXUogvSixs45Ya1oZk+oK93BO0w==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
