@@ -2,7 +2,6 @@ import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
 import { hasFiles } from '../../../core/utils/fs'
-import { generateLibEntry } from '../../../core/utils/generate'
 import { NpmScript } from '../../../core/types'
 import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
@@ -11,10 +10,15 @@ import { generateTypes } from './generate'
 const { prompts } = Prompts
 
 export async function buildComponentLibraries() {
-  await generateLibEntry('vue-components')
-  await generateLibEntry('web-components')
-  await buildVueComponentLibrary()
-  await buildWebComponentLibrary()
+  try {
+    await runNpmScript(NpmScript.GenerateEntries)
+    await buildVueComponentLibrary()
+    await buildWebComponentLibrary()
+  }
+  catch (error) {
+    consola.error('There was an error building your component libraries.')
+    consola.error(error)
+  }
 }
 
 export async function buildVueComponentLibrary() {
