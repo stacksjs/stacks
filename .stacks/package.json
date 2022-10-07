@@ -115,7 +115,7 @@
     "@unocss/transformer-compile-class": "^0.45.26",
     "@unocss/vite": "^0.45.26",
     "@vitejs/plugin-vue": "^3.1.2",
-    "@vitest/coverage-istanbul": "^0.23.4",
+    "@vitest/coverage-istanbul": "^0.24.0",
     "@vueuse/core": "^9.3.0",
     "@vueuse/shared": "^9.3.0",
     "artisan-init": "workspace:*",
@@ -155,7 +155,7 @@
     "vite": "^3.1.6",
     "vite-plugin-inspect": "^0.7.5",
     "vitepress": "1.0.0-alpha.19",
-    "vitest": "^0.23.4",
+    "vitest": "^0.24.0",
     "vue": "^3.2.40",
     "vue-tsc": "^1.0.0"
   },
