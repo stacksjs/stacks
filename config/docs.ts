@@ -8,7 +8,7 @@ import { resolve } from 'pathe'
 import type { DocsConfig } from 'stacks'
 
 const docs: DocsConfig = {
-  outDir: resolve(__dirname, '../.stacks/docs/dist'),
+  outDir: resolve(_dirname, '../.stacks/docs/dist'),
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',
