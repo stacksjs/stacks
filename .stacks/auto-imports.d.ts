@@ -67,8 +67,6 @@ declare global {
   const encrypt: typeof import('./core/security/crypt')['encrypt']
   const env: typeof import('../config/app')['env']
   const expect: typeof import('vitest')['expect']
-  const exportCalendarApple: typeof import('../functions/calendar-links')['exportCalendarApple']
-  const exportCalendarGoogle: typeof import('../functions/calendar-links')['exportCalendarGoogle']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const fallbackLocale: typeof import('../config/app')['fallbackLocale']
   const functions: typeof import('../config/library')['functions']
@@ -457,8 +455,6 @@ declare module '@vue/runtime-core' {
     readonly encrypt: UnwrapRef<typeof import('./core/security/crypt')['encrypt']>
     readonly env: UnwrapRef<typeof import('../config/app')['env']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
-    readonly exportCalendarApple: UnwrapRef<typeof import('../functions/calendar-links')['exportCalendarApple']>
-    readonly exportCalendarGoogle: UnwrapRef<typeof import('../functions/calendar-links')['exportCalendarGoogle']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly fallbackLocale: UnwrapRef<typeof import('../config/app')['fallbackLocale']>
     readonly functions: UnwrapRef<typeof import('../config/library')['functions']>
