@@ -10,12 +10,7 @@ import { runNpmScript } from './run-npm-script'
 const { prompts } = Prompts
 
 export async function stacks(options: any) {
-  if (options.dependencies) {
-    consola.info('Updating dependencies...')
-    await runNpmScript(NpmScript.Update)
-    consola.success('Updated dependencies.')
-  }
-
+  // first, we need to update the framework, if updates available
   if (options.framework) {
     try {
       // check if the .stacks folder has any updates
@@ -58,6 +53,13 @@ export async function stacks(options: any) {
     consola.info('Cleanup...')
     await deleteFolder('./updates')
     consola.success('Framework updated.')
+  }
+
+  // then, we need to update the project's & framework's dependencies, if updates available
+  if (options.dependencies) {
+    consola.info('Updating dependencies...')
+    await runNpmScript(NpmScript.Update)
+    consola.success('Updated dependencies.')
   }
 
   // TODO: also update CI files & configurations, and other files, possibly
