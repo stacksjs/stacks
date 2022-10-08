@@ -3,7 +3,7 @@ import consola from 'consola'
 import Prompts from 'prompts'
 import { resolve } from 'pathe'
 import { ExitCode } from '../cli/exit-code'
-import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder } from '../../../core/utils/fs'
+import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder, doesFolderExist } from '../../../core/utils/fs'
 import { NpmScript } from '../../../core/types'
 import { runNpmScript } from './run-npm-script'
 
@@ -42,26 +42,32 @@ export async function stacks(options: any) {
     }
 
     consola.info('Downloading framework updates...')
-    await ezSpawn.async('giget stacks updates', { stdio: options.debug ? 'inherit' : 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
+
+    const tempFolderName = 'updates'
+    const tempUpdatePath = resolve(process.cwd(), tempFolderName)
+    if (doesFolderExist(tempUpdatePath))
+      await deleteFolder(tempUpdatePath)
+
+    await ezSpawn.async(`giget stacks ${tempFolderName}`, { stdio: options.debug ? 'inherit' : 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
     consola.success('Downloaded framework updates.')
 
     consola.info('Updating framework...')
 
-    const stacksPath = resolve(process.cwd(), '.stacks')
+    const frameworkPath = resolve(process.cwd(), '.stacks')
     const exclude = ['functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
-    await deleteFiles(stacksPath, exclude)
+    await deleteFiles(frameworkPath, exclude)
 
     // loop 5 times to make sure all "deep empty" folders are deleted
     for (let i = 0; i < 5; i++)
-      await deleteEmptyFolders('./.stacks')
+      await deleteEmptyFolders(frameworkPath)
 
     const from = resolve(process.cwd(), './updates/.stacks')
-    const to = stacksPath
+    const to = frameworkPath
     await copyFolder(from, to, exclude)
 
     consola.info('Cleanup...')
-    await deleteFolder('./updates')
+    await deleteFolder(tempUpdatePath)
     consola.success('Framework updated.')
   }
 
