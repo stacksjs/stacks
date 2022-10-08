@@ -7,7 +7,7 @@
 | passwords for your application. By default, the bcrypt algorithm is
 | used; however, you remain free to modify this option if you wish.
 |
-| Supported: "bcrypt", "argon"
+| Supported: "bcrypt", "argon", "base64"
 |
 */
 

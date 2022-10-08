@@ -93,11 +93,38 @@ export function hasFiles(folder: string): boolean {
 }
 
 export function hasComponents(): boolean {
-  return hasFiles(resolve(process.cwd(), './components'))
+  return hasFiles(componentsPath())
 }
 
 export function hasFunctions(): boolean {
-  return hasFiles(resolve(process.cwd(), './functions'))
+  return hasFiles(functionsPath())
+}
+
+export function componentsPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '../components')
+
+  return resolve(path, './components')
+}
+
+export function functionsPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '../functions')
+
+  return resolve(path, './functions')
+}
+
+export function workspacesPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '../pnpm-workspace.yaml')
+
+  return resolve(path, './pnpm-workspace.yaml')
 }
 
 export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
