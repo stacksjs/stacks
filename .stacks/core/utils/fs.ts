@@ -156,6 +156,10 @@ export function deleteEmptyFolders(dir: string) {
   }
 }
 
+export function doesFolderExist(path: string) {
+  return existsSync(path)
+}
+
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : dirname(fileURLToPath(import.meta.url))
