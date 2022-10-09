@@ -135,6 +135,12 @@ pnpm artisan deploy:pages
 # select the example to run (follow CLI prompts)
 pnpm artisan example
 
+# you likely won't need to run these commands as they are auto-triggered, but they are available
+pnpm artisan generate:types
+pnpm artisan generate:entries
+pnpm artisan generate:vue-compat
+pnpm artisan generate:web-types
+
 # test your stack
 pnpm artisan test # runs test suite
 pnpm artisan test:unit # runs unit tests
