@@ -72,7 +72,7 @@ pnpm artisan --help
 <summary>View the complete Stacks Artisan Toolkit</summary>
 
 ```bash
-pnpm artisan # view help menu
+pnpm artisan --help # view help menu
 pnpm artisan install # installs your dependencies
 pnpm artisan fresh # fresh reinstall of all deps
 pnpm artisan update # auto-update deps & the Stacks framework
