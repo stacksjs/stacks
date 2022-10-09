@@ -1,8 +1,8 @@
 import consola from 'consola'
-import { resolve } from 'pathe'
 import { packageManager } from '../../package.json'
-import { author, componentsLibrary, contributors, functionsLibrary, repository, webComponentsLibrary } from '../../../config/library'
+import { author, componentLibrary, contributors, functionLibrary, repository, webComponentLibrary } from '../../../config/library'
 import { writeTextFile } from '../utils'
+import { packageJsonPath } from '../helpers'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   consola.info(`Creating the ${type} package.json needed to publish package...`)
@@ -10,40 +10,34 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   let name, description, directory, keywords, config
 
   if (type === 'vue-components') {
-    name = componentsLibrary.name
-    description = componentsLibrary.description
+    name = componentLibrary.name
+    description = componentLibrary.description
     directory = 'components'
-    keywords = componentsLibrary.keywords
+    keywords = componentLibrary.keywords
     config = 'vue-components'
   }
 
   else if (type === 'web-components') {
-    name = webComponentsLibrary.name
-    description = webComponentsLibrary.description
+    name = webComponentLibrary.name
+    description = webComponentLibrary.description
     directory = 'components'
-    keywords = webComponentsLibrary.keywords
+    keywords = webComponentLibrary.keywords
     config = 'web-components'
   }
 
   else if (type === 'functions') {
-    name = functionsLibrary.name
-    description = functionsLibrary.description
+    name = functionLibrary.name
+    description = functionLibrary.description
     directory = 'functions'
-    keywords = functionsLibrary.keywords
+    keywords = functionLibrary.keywords
     config = 'functions'
   }
-
-  let path = process.cwd()
-  if (path.includes('.stacks'))
-    path = resolve(path, `./${type}/package.json`)
-  else
-    path = resolve(path, `./.stacks/${type}/package.json`)
 
   try {
     // the version does not have to be set here,
     // it will be set automatically by the release script
     await writeTextFile({
-      path,
+      path: packageJsonPath(type),
       data: `{
   "name": "${name}",
   "type": "module",

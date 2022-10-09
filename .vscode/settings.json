@@ -260,7 +260,8 @@
     "julr",
     "chrisbbreuer",
     "stacksjs",
-    "compat"
+    "compat",
+    "docgen"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

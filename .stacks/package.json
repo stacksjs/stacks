@@ -95,6 +95,7 @@
     "generate:types": "vue-tsc --declaration --emitDeclarationOnly && jiti core/actions/copy-files.ts",
     "generate:entries": "jiti core/actions/generate-lib-entries.ts",
     "generate:vue-compatibility": "jiti core/actions/generate-vue-compat.ts",
+    "generate:web-types": "jiti core/actions/generate-vue-compat.ts",
     "key:generate": "pnpm artisan key:generate"
   },
   "dependencies": {
@@ -159,6 +160,9 @@
     "vue": "^3.2.40",
     "vue-tsc": "^1.0.1"
   },
+  "devDependencies": {
+    "vue-docgen-web-types": "^0.1.8"
+  },
   "pnpm": {
     "peerDependencyRules": {
       "ignoreMissing": [
@@ -174,7 +178,5 @@
       "path": "node_modules/cz-git"
     }
   },
-  "devDependencies": {
-    "vue-docgen-web-types": "^0.1.8"
-  }
+  "web-types": "./web-types.json"
 }

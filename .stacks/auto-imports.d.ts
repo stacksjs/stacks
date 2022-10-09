@@ -19,7 +19,7 @@ declare global {
   const camelCase: typeof import('./core/utils/string')['camelCase']
   const capitalCase: typeof import('./core/utils/string')['capitalCase']
   const chai: typeof import('vitest')['chai']
-  const checkIfAppKeyIsSet: typeof import('./core/utils/helpers')['checkIfAppKeyIsSet']
+  const checkIfAppKeyIsSet: typeof import('./core/helpers')['checkIfAppKeyIsSet']
   const cipher: typeof import('../config/app')['cipher']
   const clamp: typeof import('@vueuse/shared')['clamp']
   const classPrefix: typeof import('../config/ui')['classPrefix']
@@ -57,7 +57,7 @@ declare global {
   const defineComponent: typeof import('vue')['defineComponent']
   const deleteFolder: typeof import('./core/utils/fs')['deleteFolder']
   const describe: typeof import('vitest')['describe']
-  const determineResetPreset: typeof import('./core/utils/helpers')['determineResetPreset']
+  const determineResetPreset: typeof import('./core/helpers')['determineResetPreset']
   const docs: typeof import('../config/docs')['default']
   const dotCase: typeof import('./core/utils/string')['dotCase']
   const driver: typeof import('../config/hashing')['driver']
@@ -97,7 +97,7 @@ declare global {
   const isFolder: typeof import('./core/utils/fs')['isFolder']
   const isFunction: typeof import('@vueuse/shared')['isFunction']
   const isIOS: typeof import('@vueuse/shared')['isIOS']
-  const isInitialized: typeof import('./core/utils/helpers')['isInitialized']
+  const isInitialized: typeof import('./core/helpers')['isInitialized']
   const isManifest: typeof import('./core/utils/manifest')['isManifest']
   const isNumber: typeof import('@vueuse/shared')['isNumber']
   const isObject: typeof import('@vueuse/shared')['isObject']
@@ -407,7 +407,7 @@ declare module '@vue/runtime-core' {
     readonly camelCase: UnwrapRef<typeof import('./core/utils/string')['camelCase']>
     readonly capitalCase: UnwrapRef<typeof import('./core/utils/string')['capitalCase']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
-    readonly checkIfAppKeyIsSet: UnwrapRef<typeof import('./core/utils/helpers')['checkIfAppKeyIsSet']>
+    readonly checkIfAppKeyIsSet: UnwrapRef<typeof import('./core/helpers')['checkIfAppKeyIsSet']>
     readonly cipher: UnwrapRef<typeof import('../config/app')['cipher']>
     readonly clamp: UnwrapRef<typeof import('@vueuse/shared')['clamp']>
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
@@ -445,7 +445,7 @@ declare module '@vue/runtime-core' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly deleteFolder: UnwrapRef<typeof import('./core/utils/fs')['deleteFolder']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
-    readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/helpers')['determineResetPreset']>
+    readonly determineResetPreset: UnwrapRef<typeof import('./core/helpers')['determineResetPreset']>
     readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
     readonly dotCase: UnwrapRef<typeof import('./core/utils/string')['dotCase']>
     readonly driver: UnwrapRef<typeof import('../config/hashing')['driver']>
@@ -485,7 +485,7 @@ declare module '@vue/runtime-core' {
     readonly isFolder: UnwrapRef<typeof import('./core/utils/fs')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('@vueuse/shared')['isFunction']>
     readonly isIOS: UnwrapRef<typeof import('@vueuse/shared')['isIOS']>
-    readonly isInitialized: UnwrapRef<typeof import('./core/utils/helpers')['isInitialized']>
+    readonly isInitialized: UnwrapRef<typeof import('./core/helpers')['isInitialized']>
     readonly isManifest: UnwrapRef<typeof import('./core/utils/manifest')['isManifest']>
     readonly isNumber: UnwrapRef<typeof import('@vueuse/shared')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('@vueuse/shared')['isObject']>

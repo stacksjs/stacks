@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { customElementsDataPath } from '../utils/helpers'
+import { customElementsDataPath } from '../helpers'
 import { tags } from '../../../config/components'
 
 export async function generateComponentInfo() {

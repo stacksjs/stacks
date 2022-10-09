@@ -26,7 +26,7 @@ Whether it is the simplistic artisan setup & maintenance, the toolkit of accessi
 
 💡 **First-class VS Code integration**
 
-IDE Capabilities, such as type hints, code completion, code formatting, and more—all natively built-into Stacks. _And without the need of Prettier._
+IDE Capabilities, fully-typed, code completion, automatic web-types & custom HTML data generations, code formatting, and more—all natively built-into Stacks _And without the need of Prettier._
 
 🧙🏼‍♀️ **Extremely beginner & expert-friendly**
 

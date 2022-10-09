@@ -1,6 +1,6 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-import { isFile, readTextFile } from '../utils/fs'
+import { isFile, readTextFile } from './utils/fs'
 
 export async function isInitialized(path: string) {
   if (isFile('.env'))
@@ -83,4 +83,22 @@ export function functionsPath() {
     return resolve(path, '../functions')
 
   return resolve(path, './functions')
+}
+
+export function frameworkPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '.')
+
+  return resolve(path, './.stacks')
+}
+
+export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, `./${type}/package.json`)
+
+  return resolve(path, `./.stacks/${type}/package.json`)
 }

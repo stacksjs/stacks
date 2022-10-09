@@ -1,5 +1,5 @@
 export * from './array'
 export * from './fs'
-export * from './helpers'
+export * from '../helpers'
 export * from './manifest'
 export * from './string'

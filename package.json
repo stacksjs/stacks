@@ -89,5 +89,6 @@
     "commitizen": {
       "path": ".stacks/node_modules/cz-git"
     }
-  }
+  },
+  "web-types": "./.stacks/web-types.json"
 }
