@@ -34,3 +34,14 @@ export async function generateVueCompat() {
     consola.error(error)
   }
 }
+
+export async function generateWebTypes() {
+  try {
+    await runNpmScript(NpmScript.GenerateVueCompat)
+    consola.success('Successfully generated web-types.json.')
+  }
+  catch (error) {
+    consola.error('There was an error generating web-types.json')
+    consola.error(error)
+  }
+}

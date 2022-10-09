@@ -74,6 +74,7 @@
     "generate:types": "pnpm artisan generate:types",
     "generate:entries": "pnpm artisan generate:entries",
     "generate:vue-compat": "pnpm artisan generate:vue-compat",
+    "generate:web-types": "pnpm artisan generate:web-types",
     "key:generate": "pnpm artisan key:generate",
     "a": "pnpm artisan",
     "art": "pnpm artisan"

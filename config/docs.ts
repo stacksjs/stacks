@@ -6,6 +6,7 @@
 
 import { resolve } from 'pathe'
 import type { DocsConfig } from 'stacks'
+import { _dirname } from '../.stacks/core/utils/fs'
 
 const docs: DocsConfig = {
   outDir: resolve(_dirname, '../.stacks/docs/dist'),

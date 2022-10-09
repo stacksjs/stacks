@@ -1,0 +1,67 @@
+{
+  "framework": "vue",
+  "name": "hello-world",
+  "version": "0.34.9",
+  "contributions": {
+    "html": {
+      "description-markup": "markdown",
+      "types-syntax": "typescript",
+      "tags": [
+        {
+          "name": "Counter",
+          "description": "",
+          "source": {
+            "module": "../components/Buttons/Counter.vue"
+          }
+        },
+        {
+          "name": "Demo",
+          "description": "",
+          "source": {
+            "module": "../components/Demo.vue"
+          }
+        },
+        {
+          "name": "HelloWorld",
+          "description": "",
+          "attributes": [
+            {
+              "name": "greeting",
+              "required": true,
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              }
+            },
+            {
+              "name": "showButtons",
+              "required": true,
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              }
+            }
+          ],
+          "source": {
+            "module": "../components/HelloWorld.vue",
+            "symbol": "default"
+          }
+        },
+        {
+          "name": "Logo",
+          "description": "",
+          "source": {
+            "module": "../components/Logo.vue"
+          }
+        },
+        {
+          "name": "ToggleDark",
+          "description": "",
+          "source": {
+            "module": "../components/Buttons/ToggleDark.vue"
+          }
+        }
+      ]
+    }
+  }
+}

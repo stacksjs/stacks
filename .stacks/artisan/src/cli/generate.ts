@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateLibEntries, generateTypes, generateVueCompat } from '../actions/generate'
+import { generateLibEntries, generateTypes, generateVueCompat, generateWebTypes } from '../actions/generate'
 
 async function generateCommands(artisan: CAC) {
   artisan
@@ -19,6 +19,12 @@ async function generateCommands(artisan: CAC) {
     .command('generate:vue-compatibility', 'Generates Vue 2 & 3 compatibility')
     .action(async () => {
       await generateVueCompat()
+    })
+
+  artisan
+    .command('generate:web-types', 'Generates web-types.json for IDEs')
+    .action(async () => {
+      await generateWebTypes()
     })
 }
 
