@@ -2,7 +2,7 @@
   "name": "@stacksjs/framework",
   "type": "module",
   "version": "0.34.9",
-  "packageManager": "pnpm@7.13.2",
+  "packageManager": "pnpm@7.13.3",
   "description": "The Stacks framework core.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -55,7 +55,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.2"
+    "pnpm": ">=7.13.3"
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
@@ -173,5 +173,8 @@
     "commitizen": {
       "path": "node_modules/cz-git"
     }
+  },
+  "devDependencies": {
+    "vue-docgen-web-types": "^0.1.8"
   }
 }

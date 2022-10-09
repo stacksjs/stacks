@@ -1,4 +1,5 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
+import { resolve } from 'pathe'
 import { isFile, readTextFile } from '../utils/fs'
 
 export async function isInitialized(path: string) {
@@ -46,4 +47,40 @@ export function determineResetPreset(preset?: string) {
   else if (preset === 'antfu')
     return ['import \'@unocss/reset/antfu.css\'']
   else return []
+}
+
+export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'functions') {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, `core/build/entries/${type}.ts`)
+
+  return resolve(path, `./.stacks/core/build/entries/${type}.ts`)
+}
+
+export function customElementsDataPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, 'custom-elements.json')
+
+  return resolve(path, './.stacks/custom-elements.json')
+}
+
+export function componentsPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '../components')
+
+  return resolve(path, './components')
+}
+
+export function functionsPath() {
+  const path = process.cwd()
+
+  if (path.includes('.stacks'))
+    return resolve(path, '../functions')
+
+  return resolve(path, './functions')
 }

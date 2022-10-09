@@ -1,6 +1,5 @@
 import consola from 'consola'
-import { resolve } from 'pathe'
-import { determineResetPreset, kebabCase } from '../utils'
+import { determineResetPreset, kebabCase, libraryEntryPath } from '../utils'
 import { components, functions } from '../../../config/library'
 
 /**
@@ -16,17 +15,11 @@ export async function generateLibEntry(type: 'vue-components' | 'web-components'
   else
     consola.info('Creating the function library entry point...')
 
-  let path = process.cwd()
-  if (path.includes('.stacks'))
-    path = resolve(path, `./core/build/entries/${type}.ts`)
-  else
-    path = resolve(path, `./.stacks/core/build/entries/${type}.ts`)
-
   const data = generateEntryPointData(type)
 
   try {
     await writeTextFile({
-      path,
+      path: libraryEntryPath(type),
       data,
     })
 

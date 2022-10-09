@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'node:url'
 import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'node:fs'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '../types'
 import { contains } from './array'
+import { componentsPath, functionsPath } from './helpers'
 
 /**
  * Reads a JSON file and returns the parsed data.
@@ -98,33 +99,6 @@ export function hasComponents(): boolean {
 
 export function hasFunctions(): boolean {
   return hasFiles(functionsPath())
-}
-
-export function componentsPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, '../components')
-
-  return resolve(path, './components')
-}
-
-export function functionsPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, '../functions')
-
-  return resolve(path, './functions')
-}
-
-export function workspacesPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, '../pnpm-workspace.yaml')
-
-  return resolve(path, './pnpm-workspace.yaml')
 }
 
 export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
