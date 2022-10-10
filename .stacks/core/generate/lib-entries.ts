@@ -1,6 +1,7 @@
 import consola from 'consola'
 import { determineResetPreset, kebabCase, libraryEntryPath } from '../utils'
-import { components, functions } from '../../../config/library'
+import { tags } from '../../../config/components'
+import { functions } from '../../../config/functions'
 
 /**
  * Based on the config values, this method
@@ -15,12 +16,10 @@ export async function generateLibEntry(type: 'vue-components' | 'web-components'
   else
     consola.info('Creating the function library entry point...')
 
-  const data = generateEntryPointData(type)
-
   try {
     await writeTextFile({
       path: libraryEntryPath(type),
-      data,
+      data: generateEntryPointData(type),
     })
 
     if (type === 'vue-components')
@@ -52,6 +51,8 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
 
   if (type === 'vue-components') {
     arr = determineResetPreset()
+
+    const components = tags.map(tag => tag.name)
 
     for (const component of components) {
       if (Array.isArray(component))

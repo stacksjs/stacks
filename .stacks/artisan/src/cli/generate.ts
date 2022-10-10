@@ -1,7 +1,20 @@
 import type { CAC } from 'cac'
-import { generateIdeHelpers, generateLibEntries, generateTypes, generateVsCodeCustomData, generateVueCompat, generateWebTypes } from '../actions/generate'
+import { generateIdeHelpers, generateLibEntries, generateTypes, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from '../actions/generate'
 
 async function generateCommands(artisan: CAC) {
+  artisan
+    .command('generate', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
+    .option('-t, --types', 'Generate your TypeScript types')
+    .option('-e, --entries', 'Generate your function & component library entry points')
+    .option('-w, --web-types', 'Generate web-types.json for IDEs')
+    .option('-c, --custom-data', 'Generate VS Code custom data (custom-elements.json) for IDEs')
+    .option('-i, --ide-helpers', 'Generate IDE helpers')
+    .option('-v, --vue-compatibility', 'Generate Vue 2 & 3 compatibility')
+    .option('--debug', 'Add additional debug logs', { default: false })
+    .action(async (options: any) => {
+      await startGenerationProcess(options)
+    })
+
   artisan
     .command('generate:types', 'Generate the types of & for your library/libraries')
     .action(async () => {
@@ -28,7 +41,7 @@ async function generateCommands(artisan: CAC) {
     })
 
   artisan
-    .command('generate:vscode-custom-data', 'Generate custom-elements.json for IDEs')
+    .command('generate:vscode-custom-data', 'Generate VS Code custom data (custom-elements.json) for IDEs')
     .action(async () => {
       await generateVsCodeCustomData()
     })

@@ -9,13 +9,13 @@ import { frameworkPath } from '../../../core/helpers'
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript) {
+export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit' = 'inherit') {
   const path = frameworkPath()
 
   const { data: manifest } = await readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
-    await ezSpawn.async('pnpm', ['run', script], { stdio: 'inherit', cwd: path })
+    await ezSpawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })
   }
 
   else {

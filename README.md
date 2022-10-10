@@ -26,7 +26,7 @@ Whether it is the simplistic artisan setup & maintenance, the toolkit of accessi
 
 💡 **First-class VS Code integration**
 
-IDE Capabilities, fully-typed, code completion, automatic web-types & custom HTML data generations, code formatting, and more—all natively built-into Stacks _And without the need of Prettier._
+IDE Capabilities, fully-typed, code completion, automatic web-types & custom HTML data generations, code formatting, and more—all natively built-into Stacks _And without the need for Prettier._
 
 🧙🏼‍♀️ **Extremely beginner & expert-friendly**
 
@@ -136,6 +136,7 @@ pnpm artisan deploy:pages
 pnpm artisan example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
+pnpm artisan generate
 pnpm artisan generate:types
 pnpm artisan generate:entries
 pnpm artisan generate:vue-compat
@@ -225,7 +226,7 @@ console.log('increased count is', count)
 
 </details>
 
-You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best-practices, to reach one of the broadest user bases possible.
+You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
 
 ## 🚙 Roadmap
 

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-elements",
   "type": "module",
-  "version": "0.34.9",
+  "version": "",
   "packageManager": "pnpm@7.13.3",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
@@ -15,17 +15,8 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "custom-elements",
-    "web-components",
-    "library",
-    "framework-agnostic",
-    "typescript",
-    "javascript"
-  ],
-  "contributors": [
-    "Chris Breuer <chris@ow3.org>"
-  ],
+  "keywords": ["custom-elements","web-components","library","framework-agnostic","typescript","javascript"],
+  "contributors": ["Chris Breuer <chris@ow3.org>"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
