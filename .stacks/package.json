@@ -99,7 +99,7 @@
     "key:generate": "pnpm artisan key:generate"
   },
   "dependencies": {
-    "@babel/types": "^7.19.3",
+    "@babel/types": "^7.19.4",
     "@iconify-json/heroicons-outline": "^1.1.4",
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@jsdevtools/ez-spawn": "^3.0.4",
