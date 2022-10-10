@@ -50,55 +50,38 @@ export function determineResetPreset(preset?: string) {
 }
 
 export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'functions') {
-  const path = process.cwd()
+  return resolve(buildEntriesPath(), `./${type}.ts`)
+}
 
-  if (path.includes('.stacks'))
-    return resolve(path, `core/build/entries/${type}.ts`)
-
-  return resolve(path, `./.stacks/core/build/entries/${type}.ts`)
+export function buildEntriesPath() {
+  return resolve(frameworkPath(), 'core/build/entries/')
 }
 
 export function customElementsDataPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, 'custom-elements.json')
-
-  return resolve(path, './.stacks/custom-elements.json')
+  return resolve(frameworkPath(), './custom-elements.json')
 }
 
 export function componentsPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, '../components')
-
-  return resolve(path, './components')
+  return resolve(projectPath(), './components')
 }
 
 export function functionsPath() {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, '../functions')
-
-  return resolve(path, './functions')
+  return resolve(projectPath(), './functions')
 }
 
 export function frameworkPath() {
+  return resolve(projectPath(), './.stacks')
+}
+
+export function projectPath() {
   const path = process.cwd()
 
   if (path.includes('.stacks'))
-    return resolve(path, '.')
+    return resolve(path, '..')
 
-  return resolve(path, './.stacks')
+  return resolve(path, '.')
 }
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
-  const path = process.cwd()
-
-  if (path.includes('.stacks'))
-    return resolve(path, `./${type}/package.json`)
-
-  return resolve(path, `./.stacks/${type}/package.json`)
+  return resolve(frameworkPath(), `./${type}/package.json`)
 }
