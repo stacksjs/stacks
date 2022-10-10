@@ -5,8 +5,6 @@ import { writeTextFile } from '../utils'
 import { packageJsonPath } from '../helpers'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
-  consola.info(`Creating the ${type} package.json needed to publish package...`)
-
   let name, description, directory, keywords, config
 
   if (type === 'vue-components') {

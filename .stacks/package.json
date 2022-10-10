@@ -96,6 +96,8 @@
     "generate:entries": "jiti core/actions/generate-lib-entries.ts",
     "generate:vue-compatibility": "jiti core/actions/generate-vue-compat.ts",
     "generate:web-types": "vue-docgen-web-types -c ./core/web-types.config.cjs",
+    "generate:vscode-custom-data": "jiti core/actions/generate-vscode-custom-data.ts",
+    "generate:ide-helpers": "jiti core/actions/generate-ide-helpers.ts",
     "key:generate": "pnpm artisan key:generate"
   },
   "dependencies": {

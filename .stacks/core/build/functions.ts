@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
-import { functionsLibrary } from '../../../config/library'
+import { functionLibrary } from '../../../config/library'
 import { autoImports } from '..'
 import alias from '../alias'
 import { _dirname } from '../utils'
@@ -32,11 +32,11 @@ export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: resolve(_dirname, '../../functions/dist'),
     emptyOutDir: true,
-    sourcemap: functionsLibrary.shouldGenerateSourcemap,
+    sourcemap: functionLibrary.shouldGenerateSourcemap,
     lib: {
       entry: resolve(_dirname, '../build/entries/functions.ts'),
-      name: functionsLibrary.name,
-      formats: functionsLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
+      name: functionLibrary.name,
+      formats: functionLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'

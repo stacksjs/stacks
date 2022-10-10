@@ -1,15 +1,4 @@
 {
   "version": 1.1,
-  "tags": [
-    {
-      "name": "hello-world",
-      "description": "The Hello World custom element, built via this framework. (You will want to keep adding to this list of attributes. Soon, this file will be automatically generated. See https://github.com/stacksjs/stacks/issues/103)",
-      "attributes": [
-        {
-          "name": "greeting",
-          "description": "The greeting."
-        }
-      ]
-    }
-  ]
+  "tags": [{ "name": ["HelloWorld", "AppHelloWorld"], "description": "The Hello World custom element, built via this framework.", "attributes": [{ "name": "greeting", "description": "The greeting." }] }, { "name": "Demo", "description": "A Demo components." }]
 }

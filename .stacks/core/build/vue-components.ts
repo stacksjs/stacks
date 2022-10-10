@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
-import { componentsLibrary } from '../../../config/library'
+import { componentLibrary } from '../../../config/library'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
 import alias from '../alias'
 import { _dirname } from '../utils'
@@ -43,7 +43,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: resolve(_dirname, '../build/entries/vue-components.ts'),
-      name: componentsLibrary.name,
+      name: componentLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

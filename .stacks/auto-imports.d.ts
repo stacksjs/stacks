@@ -25,7 +25,7 @@ declare global {
   const classPrefix: typeof import('../config/ui')['classPrefix']
   const collect: typeof import('collect.js')['collect']
   const components: typeof import('../config/library')['components']
-  const componentsLibrary: typeof import('../config/library')['componentsLibrary']
+  const componentLibrary: typeof import('../config/library')['componentLibrary']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -70,7 +70,7 @@ declare global {
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const fallbackLocale: typeof import('../config/app')['fallbackLocale']
   const functions: typeof import('../config/library')['functions']
-  const functionsLibrary: typeof import('../config/library')['functionsLibrary']
+  const functionLibrary: typeof import('../config/library')['functionLibrary']
   const generateLibEntry: typeof import('./core/generate/lib-entries')['generateLibEntry']
   const generatePackageJson: typeof import('./core/generate/package-json')['generatePackageJson']
   const generateVueCompat: typeof import('./core/generate/vue-compat')['generateVueCompat']
@@ -380,7 +380,7 @@ declare global {
   const watchThrottled: typeof import('@vueuse/core')['watchThrottled']
   const watchTriggerable: typeof import('@vueuse/core')['watchTriggerable']
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
-  const webComponentsLibrary: typeof import('../config/library')['webComponentsLibrary']
+  const webComponentLibrary: typeof import('../config/library')['webComponentLibrary']
   const whenever: typeof import('@vueuse/core')['whenever']
   const writeJsonFile: typeof import('./core/utils/fs')['writeJsonFile']
   const writeTextFile: typeof import('./core/utils/fs')['writeTextFile']
@@ -413,7 +413,7 @@ declare module '@vue/runtime-core' {
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
     readonly components: UnwrapRef<typeof import('../config/library')['components']>
-    readonly componentsLibrary: UnwrapRef<typeof import('../config/library')['componentsLibrary']>
+    readonly componentLibrary: UnwrapRef<typeof import('../config/library')['componentLibrary']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -458,7 +458,7 @@ declare module '@vue/runtime-core' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly fallbackLocale: UnwrapRef<typeof import('../config/app')['fallbackLocale']>
     readonly functions: UnwrapRef<typeof import('../config/library')['functions']>
-    readonly functionsLibrary: UnwrapRef<typeof import('../config/library')['functionsLibrary']>
+    readonly functionLibrary: UnwrapRef<typeof import('../config/library')['functionLibrary']>
     readonly generateLibEntry: UnwrapRef<typeof import('./core/generate/lib-entries')['generateLibEntry']>
     readonly generatePackageJson: UnwrapRef<typeof import('./core/generate/package-json')['generatePackageJson']>
     readonly generateVueCompat: UnwrapRef<typeof import('./core/generate/vue-compat')['generateVueCompat']>
@@ -768,7 +768,7 @@ declare module '@vue/runtime-core' {
     readonly watchThrottled: UnwrapRef<typeof import('@vueuse/core')['watchThrottled']>
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
-    readonly webComponentsLibrary: UnwrapRef<typeof import('../config/library')['webComponentsLibrary']>
+    readonly webComponentLibrary: UnwrapRef<typeof import('../config/library')['webComponentLibrary']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
     readonly writeJsonFile: UnwrapRef<typeof import('./core/utils/fs')['writeJsonFile']>
     readonly writeTextFile: UnwrapRef<typeof import('./core/utils/fs')['writeTextFile']>

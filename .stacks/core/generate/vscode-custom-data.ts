@@ -1,10 +1,8 @@
 import consola from 'consola'
-import { customElementsDataPath } from '../helpers'
+import { customElementsDataPath, writeTextFile } from '..'
 import { tags } from '../../../config/components'
 
-export async function generateComponentInfo() {
-  consola.info('Generating your component info...')
-
+export async function generateVsCodeCustomData() {
   try {
     // the version does not have to be set here,
     // it will be set automatically by the release script
@@ -12,8 +10,6 @@ export async function generateComponentInfo() {
       path: customElementsDataPath(),
       data: generateComponentInfoData(),
     })
-
-    consola.success('Generated the component info.')
   }
   catch (err) {
     consola.error(err)

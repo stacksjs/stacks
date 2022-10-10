@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import alias from '../alias'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
-import { webComponentsLibrary } from '../../../config/library'
+import { webComponentLibrary } from '../../../config/library'
 import { _dirname } from '../utils'
 
 const isWebComponent = true
@@ -44,7 +44,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: resolve(_dirname, '../build/entries/web-components.ts'),
-      name: webComponentsLibrary.name,
+      name: webComponentLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

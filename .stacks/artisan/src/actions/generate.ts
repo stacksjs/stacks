@@ -37,11 +37,22 @@ export async function generateVueCompat() {
 
 export async function generateWebTypes() {
   try {
-    await runNpmScript(NpmScript.GenerateVueCompat)
-    consola.success('Successfully generated web-types.json.')
+    await runNpmScript(NpmScript.GenerateWebTypes)
+    consola.success('Successfully generated the web-types.json file.')
   }
   catch (error) {
-    consola.error('There was an error generating web-types.json')
+    consola.error('There was an error generating the web-types.json file')
+    consola.error(error)
+  }
+}
+
+export async function generateVsCodeCustomData() {
+  try {
+    await runNpmScript(NpmScript.GenerateVsCodeCustomData)
+    consola.success('Successfully generated the custom-elements.json file.')
+  }
+  catch (error) {
+    consola.error('There was an error generating the custom-elements.json file')
     consola.error(error)
   }
 }
