@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-vue",
   "type": "module",
-  "version": "",
+  "version": "0.35.0",
   "packageManager": "pnpm@7.13.3",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",
@@ -15,8 +15,17 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["component","library","vue","vite","typescript","javascript"],
-  "contributors": ["Chris Breuer <chris@ow3.org>"],
+  "keywords": [
+    "component",
+    "library",
+    "vue",
+    "vite",
+    "typescript",
+    "javascript"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
