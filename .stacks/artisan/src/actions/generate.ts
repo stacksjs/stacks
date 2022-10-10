@@ -1,5 +1,6 @@
 import consola from 'consola'
 import { NpmScript } from '../../../core/types'
+import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
 
 export async function generateTypes() {
@@ -43,6 +44,7 @@ export async function generateWebTypes() {
   catch (error) {
     consola.error('There was an error generating the web-types.json file')
     consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -54,5 +56,18 @@ export async function generateVsCodeCustomData() {
   catch (error) {
     consola.error('There was an error generating the custom-elements.json file')
     consola.error(error)
+    process.exit(ExitCode.FatalError)
+  }
+}
+
+export async function generateIdeHelpers() {
+  try {
+    await runNpmScript(NpmScript.GenerateIdeHelpers)
+    consola.success('Successfully generated IDE helpers.')
+  }
+  catch (error) {
+    consola.error('There was an error generating IDE helpers.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }

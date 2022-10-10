@@ -2,6 +2,7 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "editor.formatOnSave": false,
+  "eslint.format.enable": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -12,9 +13,18 @@
     "strings": true
   },
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[jsonc]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+  },
   "git.enableSmartCommit": true,
   "css.validate": false,
   "npm.enableRunFromFolder": true,
+  "eslint.packageManager": "pnpm",
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "windicss.sortOnSave": true,
@@ -28,11 +38,6 @@
       "allowed_elements": ["details", "summary"]
     },
     "MD041": false
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": true
   },
   "search.exclude": {
     "**/*.cjs": true,

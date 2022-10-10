@@ -140,6 +140,8 @@ pnpm artisan generate:types
 pnpm artisan generate:entries
 pnpm artisan generate:vue-compat
 pnpm artisan generate:web-types
+pnpm artisan generate:vscode-custom-data
+pnpm artisan generate:ide-helpers
 
 # test your stack
 pnpm artisan test # runs test suite

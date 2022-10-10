@@ -30,6 +30,7 @@ export const enum NpmScript {
   GenerateVueCompat = 'generate:vue-compatibility',
   GenerateWebTypes = 'generate:web-types',
   GenerateVsCodeCustomData = 'generate:vscode-custom-data',
+  GenerateIdeHelpers = 'generate:ide-helpers',
   Release = 'release',
   Commit = 'commit',
   ExampleVue = 'example:vue',
