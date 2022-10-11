@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { determineResetPreset, kebabCase, libraryEntryPath } from '../utils'
-import { components } from '../../../config/components'
+import { tags as components } from '../../../config/components'
 import { functions } from '../../../config/functions'
 
 /**

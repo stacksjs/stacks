@@ -19,21 +19,21 @@ import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pag
 // are relative to the ./build folder
 
 const inspect = Inspect()
-
 const preview = Preview
-
 const layouts = Layouts()
 
-const components = Components({
+function components() {
+  return Components({
   // also allow auto-loading markdown components
-  extensions: ['vue', 'md'],
-  include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-  dirs: [
-    componentsPath(),
-    pagesPath(),
-  ],
-  dts: frameworkPath('components.d.ts'),
-})
+    extensions: ['vue', 'md'],
+    include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+    dirs: [
+      componentsPath(),
+      pagesPath(),
+    ],
+    dts: frameworkPath('components.d.ts'),
+  })
+}
 
 // https://github.com/hannoeru/vite-plugin-pages
 const pages = Pages({
@@ -78,8 +78,8 @@ const autoImports = AutoImport({
   dts: frameworkPath('auto-imports.d.ts'),
   vueTemplate: true,
   eslintrc: {
-    enabled: true,
-    filepath: frameworkPath('.eslintrc-auto-import.json'),
+    enabled: false,
+    // filepath: frameworkPath('.eslintrc-auto-import.json'),
   },
 })
 

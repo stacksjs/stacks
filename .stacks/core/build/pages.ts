@@ -1,31 +1,26 @@
-import { resolve } from 'pathe'
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 import type { ViteConfig } from '../types'
-import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, preview, pwa, uiEngine } from '..'
+import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '..'
 import alias from '../alias'
-import { _dirname } from '../utils'
+import { functionsPath, projectPath } from '../utils'
 
 const config: ViteConfig = {
-  root: resolve(_dirname, '../../../functions'),
-  envDir: resolve(_dirname, '../../../'),
+  root: functionsPath(),
+  envDir: projectPath(),
   envPrefix: 'APP_',
 
   resolve: {
-    // dedupe: ['vue'],
     alias,
   },
-
-  // optimizeDeps: {
-  //   exclude: ['vue'],
-  // },
 
   plugins: [
     preview,
     inspect,
     uiEngine(),
+    pages,
     atomicCssEngine(),
-    components,
+    components(),
     layouts,
     i18n,
     markdown,

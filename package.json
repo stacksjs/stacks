@@ -49,6 +49,7 @@
     "build:web-components": "pnpm artisan build:web-components",
     "build:functions": "pnpm artisan build:functions",
     "build:docs": "pnpm artisan build:docs",
+    "build:pages": "pnpm artisan build:pages",
     "lint": "pnpm artisan lint",
     "lint:fix": "pnpm artisan lint:fix",
     "make:component": "pnpm artisan make:component",

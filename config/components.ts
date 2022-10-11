@@ -4,7 +4,7 @@
  * would require `../components/HelloWorld.vue` to be present.
  */
 
-export const components = [{
+export const tags = [{
   name: ['HelloWorld', 'AppHelloWorld'], // export { default as AppHelloWorld } from '../components/HelloWorld.vue'
   description: 'The Hello World custom element, built via this framework.',
   attributes: [{

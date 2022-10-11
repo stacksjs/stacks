@@ -1,25 +1,19 @@
-import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import { functionLibrary } from '../../../config/library'
 import { autoImports } from '..'
 import alias from '../alias'
-import { _dirname } from '../utils'
+import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from '../utils'
 
 const config: ViteConfig = {
-  root: resolve(_dirname, '../../../functions'),
-  envDir: resolve(_dirname, '../../../'),
+  root: functionsPath(),
+  envDir: projectPath(),
   envPrefix: 'APP_',
 
   resolve: {
-    // dedupe: ['vue'],
     alias,
   },
-
-  // optimizeDeps: {
-  //   exclude: ['vue'],
-  // },
 
   plugins: [
     autoImports,
@@ -30,11 +24,11 @@ const config: ViteConfig = {
 
 export function functionsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(_dirname, '../../functions/dist'),
+    outDir: frameworkPath('functions/dist'),
     emptyOutDir: true,
     sourcemap: functionLibrary.shouldGenerateSourcemap,
     lib: {
-      entry: resolve(_dirname, '../build/entries/functions.ts'),
+      entry: buildEntriesPath('functions.ts'),
       name: functionLibrary.name,
       formats: functionLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
@@ -50,18 +44,6 @@ export function functionsBuildOptions(): ViteBuildOptions {
         return 'index.?.js'
       },
     },
-
-    // rollupOptions: {
-    // external: ['vue'],
-    // output: {
-    //   // exports: 'named',
-    //   globals: {
-    //     vue: 'Vue',
-    //   },
-    // },
-    // },
-
-    // minify: false,
   }
 }
 

@@ -4,7 +4,7 @@ import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '../types'
-import { componentsPath, functionsPath } from './helpers'
+import { componentsPath, functionsPath, projectPath } from './helpers'
 import { contains } from './array'
 
 /**
@@ -83,7 +83,9 @@ export function isFolder(path: string): boolean {
  * Determine whether a path is a file.
  */
 export function isFile(path: string): boolean {
-  return existsSync(path)
+  // eslint-disable-next-line no-console
+  console.log('__dirname', projectPath(path))
+  return existsSync(projectPath(path))
 }
 
 /**

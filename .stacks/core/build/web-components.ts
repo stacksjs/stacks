@@ -1,17 +1,16 @@
-import { resolve } from 'pathe'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import alias from '../alias'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
 import { webComponentLibrary } from '../../../config/library'
-import { _dirname } from '../utils'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../utils'
 
 const isWebComponent = true
 
 const config: ViteConfig = {
-  root: resolve(_dirname, '../../../components'),
-  envDir: resolve(_dirname, '../../../'),
+  root: componentsPath(),
+  envDir: projectPath(),
   envPrefix: 'APP_',
 
   server: {
@@ -25,14 +24,10 @@ const config: ViteConfig = {
 
   plugins: [
     inspect,
-
     uiEngine(isWebComponent),
-
     atomicCssEngine(isWebComponent),
-
     autoImports,
-
-    components,
+    components(),
   ],
 
   build: webComponentsBuildOptions(),
@@ -40,10 +35,10 @@ const config: ViteConfig = {
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: resolve(_dirname, '../../web-components/dist'),
+    outDir: frameworkPath('web-components/dist'),
     emptyOutDir: true,
     lib: {
-      entry: resolve(_dirname, '../build/entries/web-components.ts'),
+      entry: buildEntriesPath('web-components.ts'),
       name: webComponentLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {

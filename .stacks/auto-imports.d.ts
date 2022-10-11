@@ -33,7 +33,6 @@ declare global {
   const classPrefix: typeof import('../config/ui')['classPrefix']
   const collect: typeof import('collect.js')['collect']
   const componentLibrary: typeof import('../config/library')['componentLibrary']
-  const components: typeof import('../config/components')['components']
   const componentsPath: typeof import('./core/utils/helpers')['componentsPath']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
@@ -79,6 +78,7 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const encrypt: typeof import('./core/security/crypt')['encrypt']
   const env: typeof import('./core/utils/helpers')['env']
+  const examplesPath: typeof import('./core/utils/helpers')['examplesPath']
   const expect: typeof import('vitest')['expect']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const frameworkPath: typeof import('./core/utils/helpers')['frameworkPath']
@@ -200,6 +200,7 @@ declare global {
   const suite: typeof import('vitest')['suite']
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
+  const tags: typeof import('../config/components')['tags']
   const templateRef: typeof import('@vueuse/core')['templateRef']
   const test: typeof import('vitest')['test']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
@@ -441,7 +442,6 @@ declare module '@vue/runtime-core' {
     readonly classPrefix: UnwrapRef<typeof import('../config/ui')['classPrefix']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
     readonly componentLibrary: UnwrapRef<typeof import('../config/library')['componentLibrary']>
-    readonly components: UnwrapRef<typeof import('../config/components')['components']>
     readonly componentsPath: UnwrapRef<typeof import('./core/utils/helpers')['componentsPath']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
@@ -487,6 +487,7 @@ declare module '@vue/runtime-core' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly encrypt: UnwrapRef<typeof import('./core/security/crypt')['encrypt']>
     readonly env: UnwrapRef<typeof import('./core/utils/helpers')['env']>
+    readonly examplesPath: UnwrapRef<typeof import('./core/utils/helpers')['examplesPath']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly frameworkPath: UnwrapRef<typeof import('./core/utils/helpers')['frameworkPath']>
@@ -608,6 +609,7 @@ declare module '@vue/runtime-core' {
     readonly suite: UnwrapRef<typeof import('vitest')['suite']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
+    readonly tags: UnwrapRef<typeof import('../config/components')['tags']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly test: UnwrapRef<typeof import('vitest')['test']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>

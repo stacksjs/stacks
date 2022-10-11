@@ -83,18 +83,26 @@ pnpm artisan --help # view help menu
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `pnpm artisan ... --help`
 
-pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan dev:components # starts local playground dev server
-pnpm artisan dev:pages # starts local playground pages dev server
-pnpm artisan dev:functions # stubs local the functions
-pnpm artisan dev:docs # starts local docs dev server
+pnpm artisan dev # start one of the dev servers (components, functions, pages, or docs)
+pnpm artisan dev:components # start local playground dev server
+pnpm artisan dev:pages # start local playground pages dev server
+pnpm artisan dev:functions # stub local the functions
+pnpm artisan dev:docs # start local docs dev server
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-pnpm artisan serve # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan serve:components # starts local playground dev server
-pnpm artisan serve:pages # starts local playground pages dev server
-pnpm artisan serve:functions # stubs local the functions
-pnpm artisan serve:docs # starts local docs dev server
+pnpm artisan serve # start one of the dev servers (components, functions, pages, or docs)
+pnpm artisan serve:components # start local playground dev server
+pnpm artisan serve:pages # start local playground pages dev server
+pnpm artisan serve:functions # stub local the functions
+pnpm artisan serve:docs # start local docs dev server
+
+# building for production (e.g. npm, Vercel, Netlify, et al.)
+pnpm artisan build # select a specific build (follow CLI prompts)
+pnpm artisan build:components # build Vue component library & Web Component library
+pnpm artisan build:functions # build function library
+pnpm artisan build:vue-components # build Vue 2 & 3-ready Component library
+pnpm artisan build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
+pnpm artisan build:pages # build SSG pages
 
 # sets your application key
 pnpm artisan key:generate
@@ -118,14 +126,6 @@ pnpm artisan lint:fix # runs linter and fixes issues
 pnpm artisan commit # follow CLI prompts for committing staged changes
 pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
 pnpm artisan changelog # generates CHANGELOG.md
-
-# building for production (e.g. npm, Vercel, Netlify, et al.)
-pnpm artisan build # select a specific build (follow CLI prompts)
-pnpm artisan build:components # builds Vue component library & Web Component library
-pnpm artisan build:functions # builds function library
-pnpm artisan build:vue-components # builds Vue 2 & 3-ready Component library
-pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-pnpm artisan build:pages # builds pages
 
 # when deploying your app/s to a remote server or cloud provider
 pnpm artisan deploy:docs

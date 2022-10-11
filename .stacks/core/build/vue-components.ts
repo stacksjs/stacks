@@ -30,7 +30,7 @@ const config: ViteConfig = {
     uiEngine(),
     atomicCssEngine(),
     autoImports,
-    components,
+    components(),
   ],
 
   build: {

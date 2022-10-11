@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { customElementsDataPath, writeTextFile } from '..'
-import { components } from '../../../config/components'
+import { tags as components } from '../../../config/components'
 
 export async function generateVsCodeCustomData() {
   try {

@@ -5,21 +5,16 @@ import { isFile, readTextFile } from './fs'
 
 export async function isInitialized(path: string) {
   if (isFile('.env'))
-    return await checkIfAppKeyIsSet(path)
+    return await checkIfAppKeyIsSet()
 
-  if (isFile('.env.example')) {
+  if (isFile('.env.example'))
     await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: path })
-    return await checkIfAppKeyIsSet(path)
-  }
 
-  return await checkIfAppKeyIsSet(path)
+  return await checkIfAppKeyIsSet()
 }
 
-export async function checkIfAppKeyIsSet(path?: string) {
-  if (!path)
-    path = process.cwd()
-
-  const env = await readTextFile('.env', path)
+export async function checkIfAppKeyIsSet() {
+  const env = await readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
@@ -90,13 +85,17 @@ export function frameworkPath(path?: string) {
   return resolve(projectPath(), `./.stacks/${path || ''}`)
 }
 
-export function projectPath() {
+export function projectPath(filePath = '') {
   const path = process.cwd()
 
   if (path.includes('.stacks'))
-    return resolve(path, '..')
+    return resolve(path, '..', filePath)
 
-  return resolve(path, '.')
+  return resolve(path, '.', filePath)
+}
+
+export function examplesPath(type: 'vue-components' | 'web-components') {
+  return resolve(frameworkPath(), `./examples/${type || ''}`)
 }
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
