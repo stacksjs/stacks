@@ -269,7 +269,8 @@
     "docgen",
     "colorette",
     "shiki",
-    "noopener"
+    "noopener",
+    "nprogress"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

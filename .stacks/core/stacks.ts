@@ -38,6 +38,9 @@ const components = Components({
 // https://github.com/hannoeru/vite-plugin-pages
 const pages = Pages({
   extensions: ['vue', 'md'],
+  dirs: [
+    pagesPath(),
+  ],
 })
 
 const markdown = Markdown({
@@ -82,7 +85,7 @@ const autoImports = AutoImport({
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: frameworkPath('unocss.ts'),
+    configFile: frameworkPath('core/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
