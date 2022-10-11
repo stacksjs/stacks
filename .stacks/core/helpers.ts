@@ -1,5 +1,6 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
+// import * as configArr from '../core/config'
 import { isFile, readTextFile } from './utils/fs'
 
 export async function isInitialized(path: string) {
@@ -53,24 +54,40 @@ export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'fu
   return resolve(buildEntriesPath(), `./${type}.ts`)
 }
 
-export function buildEntriesPath() {
-  return resolve(frameworkPath(), 'core/build/entries/')
+export function buildEntriesPath(path?: string) {
+  return resolve(frameworkPath(), `./core/build/entries/${path || ''}`)
 }
 
 export function customElementsDataPath() {
   return resolve(frameworkPath(), './custom-elements.json')
 }
 
-export function componentsPath() {
-  return resolve(projectPath(), './components')
+export function componentsPath(path?: string) {
+  return resolve(projectPath(), `./components/${path || ''}`)
 }
 
-export function functionsPath() {
-  return resolve(projectPath(), './functions')
+export function pagesPath(path?: string) {
+  return resolve(projectPath(), `./pages/${path || ''}`)
 }
 
-export function frameworkPath() {
-  return resolve(projectPath(), './.stacks')
+export function functionsPath(path?: string) {
+  return resolve(projectPath(), `./functions/${path || ''}`)
+}
+
+export function configPath(path?: string) {
+  return resolve(projectPath(), `./config/${path || ''}`)
+}
+
+export function routesPath(path?: string) {
+  return resolve(projectPath(), `./routes/${path || ''}`)
+}
+
+export function langPath(path?: string) {
+  return resolve(projectPath(), `./lang/${path || ''}`)
+}
+
+export function frameworkPath(path?: string) {
+  return resolve(projectPath(), `./.stacks/${path || ''}`)
 }
 
 export function projectPath() {
@@ -84,4 +101,16 @@ export function projectPath() {
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
   return resolve(frameworkPath(), `./${type}/package.json`)
+}
+
+export function env(key?: string, fallback?: string) {
+  // eslint-disable-next-line no-console
+  console.log('key', key, 'fallback', fallback)
+  // return key ? import.meta.env[key] : fallback
+}
+
+export function config(key?: string, fallback?: string) {
+  // eslint-disable-next-line no-console
+  console.log('key', key, 'fallback', fallback)
+  // return key ? configArr[key as string] : fallback
 }

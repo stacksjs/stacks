@@ -4,52 +4,130 @@ import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
+import Pages from 'vite-plugin-pages'
+import Layouts from 'vite-plugin-vue-layouts'
+import VueI18n from '@intlify/vite-plugin-vue-i18n'
+import Preview from 'vite-plugin-vue-component-preview'
 import type { PluginOption } from 'vite'
-import { _dirname } from './utils'
+import Markdown from 'vite-plugin-vue-markdown'
+import LinkAttributes from 'markdown-it-link-attributes'
+import Shiki from 'markdown-it-shiki'
+import { VitePWA } from 'vite-plugin-pwa'
+import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './helpers'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
 
 const inspect = Inspect()
 
+const preview = Preview()
+
+const layouts = Layouts()
+
 const components = Components({
-  dirs: [resolve(_dirname, '../../../components')],
-  extensions: ['vue'],
-  dts: '../../components.d.ts',
+  // also allow auto-loading markdown components
+  extensions: ['vue', 'md'],
+  include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+  dirs: [
+    componentsPath(),
+    pagesPath(),
+  ],
+  dts: `${frameworkPath}components.d.ts`,
+})
+
+// https://github.com/hannoeru/vite-plugin-pages
+const pages = Pages({
+  extensions: ['vue', 'md'],
+})
+
+const markdown = Markdown({
+  wrapperClasses: 'prose prose-sm m-auto text-left',
+  headEnabled: true,
+  markdownItSetup(md) {
+    // https://prismjs.com/
+    md.use(Shiki, {
+      theme: {
+        light: 'stacks-light',
+        dark: 'stacks-dark',
+      },
+    })
+    md.use(LinkAttributes, {
+      matcher: (link: string) => /^https?:\/\//.test(link),
+      attrs: {
+        target: '_blank',
+        rel: 'noopener',
+      },
+    })
+  },
 })
 
 const autoImports = AutoImport({
   imports: [
-    'vue', '@vueuse/core', '@vueuse/math', 'vitest',
-    { 'collect.js': ['collect'] },
+    'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
     { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+    { 'collect.js': ['collect'] },
   ],
   dirs: [
-    resolve(_dirname, '../generate'),
-    resolve(_dirname, '../utils'),
-    resolve(_dirname, '../security'),
-    resolve(_dirname, '../../../functions'),
-    resolve(_dirname, '../../../components'),
-    resolve(_dirname, '../../../config'),
+    frameworkPath('./generate'),
+    frameworkPath('./utils'),
+    frameworkPath('./security'),
+    functionsPath(),
+    componentsPath(),
+    configPath(),
   ],
-  dts: resolve(_dirname, '../../auto-imports.d.ts'),
+  dts: frameworkPath('./auto-imports.d.ts'),
   vueTemplate: true,
   eslintrc: {
     enabled: true,
-    filepath: resolve(_dirname, '../../.eslintrc-auto-import.json'),
+    filepath: frameworkPath('./.eslintrc-auto-import.json'),
   },
 })
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: resolve(_dirname, '../unocss.ts'),
+    configFile: frameworkPath('./unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
 
+const pwa = VitePWA({
+  registerType: 'autoUpdate',
+  includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
+  manifest: {
+    name: 'Stacks',
+    short_name: 'Stacks',
+    theme_color: '#ffffff',
+    icons: [
+      {
+        src: '/pwa-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        src: '/pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
+      {
+        src: '/pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any maskable',
+      },
+    ],
+  },
+})
+
+const i18n = VueI18n({
+  runtimeOnly: true,
+  compositionOnly: true,
+  include: [langPath('./**')],
+})
+
 function uiEngine(isWebComponent = false) {
   if (isWebComponent) {
     return Vue({
+      include: [/\.vue$/, /\.md$/],
       template: {
         compilerOptions: {
           isCustomElement: () => true,
@@ -58,15 +136,27 @@ function uiEngine(isWebComponent = false) {
     })
   }
 
-  return Vue()
+  return Vue({
+    include: [/\.vue$/, /\.md$/],
+  })
 }
 
-const Stacks = (isWebComponent = false) => <PluginOption>[
+const componentPreset = (isWebComponent = false) => <PluginOption>[
   inspect,
   uiEngine(isWebComponent),
   atomicCssEngine(isWebComponent),
   autoImports,
   components,
+  markdown,
 ]
 
-export { resolve, Stacks, uiEngine, autoImports, atomicCssEngine, components, inspect }
+// const pagesPreset = (isWebComponent = false) => <PluginOption>[
+//   //
+// ]
+
+// const functionsPreset = () => <PluginOption>[
+//   //
+// ]
+
+export { resolve, componentPreset, uiEngine, autoImports, atomicCssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }
+// export { resolve, componentPreset, pagesPreset, functionsPreset, uiEngine, autoImports, atomicCssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }

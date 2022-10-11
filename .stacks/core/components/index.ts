@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import Demo from '../../../components/Demo.vue'
+import Demo from '../../../pages/Demo.vue'
 
 // prepare the messages object from the yaml language files
 // const messages = Object.fromEntries(
