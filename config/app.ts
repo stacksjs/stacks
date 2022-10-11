@@ -1,14 +1,14 @@
-const name = import.meta.env.APP_NAME || 'Stacks'
-const key = import.meta.env.APP_KEY
-const env = import.meta.env.APP_ENV || 'local'
-const url = import.meta.env.APP_URL || 'http://localhost:3333'
-const debug = import.meta.env.APP_DEBUG || true
-
-const timezone = 'UTC'
-const locale = 'en'
-const fallbackLocale = 'en'
-const editor = 'vscode'
-
-const cipher = 'aes-256-cbc'
-
-export { name, env, key, cipher, url, debug, timezone, locale, fallbackLocale, editor }
+export const app = {
+  name: import.meta.env.APP_NAME || 'Stacks',
+  env: import.meta.env.APP_ENV || 'local',
+  url: import.meta.env.APP_URL || 'http://localhost:3333',
+  debug: import.meta.env.APP_DEBUG || true,
+  port: process.env.PORT || 3333,
+  host: process.env.HOST || '',
+  key: import.meta.env.APP_KEY,
+  timezone: 'UTC',
+  locale: 'en',
+  fallbackLocale: 'en',
+  editor: 'vscode',
+  cipher: 'aes-256-cbc',
+}

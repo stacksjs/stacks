@@ -1,15 +1,13 @@
-import { resolve } from 'pathe'
-import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../types'
 import { componentLibrary } from '../../../config/library'
-import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '..'
+import { atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from '..'
 import alias from '../alias'
-import { _dirname } from '../utils'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../utils/helpers'
 
 const config: ViteConfig = {
-  root: resolve(_dirname, '../../../components'),
-  envDir: resolve(_dirname, '../../../'),
+  root: componentsPath(),
+  envDir: projectPath(),
   envPrefix: 'APP_',
 
   server: {
@@ -27,6 +25,7 @@ const config: ViteConfig = {
   },
 
   plugins: [
+    preview(),
     inspect,
     uiEngine(),
     atomicCssEngine(),
@@ -34,15 +33,11 @@ const config: ViteConfig = {
     components,
   ],
 
-  build: componentsBuildOptions(),
-}
-
-export function componentsBuildOptions(): ViteBuildOptions {
-  return {
-    outDir: resolve(_dirname, '../../vue-components/dist'),
+  build: {
+    outDir: frameworkPath('vue-components/dist'),
     emptyOutDir: true,
     lib: {
-      entry: resolve(_dirname, '../build/entries/vue-components.ts'),
+      entry: buildEntriesPath('vue-components.ts'),
       name: componentLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
@@ -64,7 +59,7 @@ export function componentsBuildOptions(): ViteBuildOptions {
         },
       },
     },
-  }
+  },
 }
 
 export default defineConfig(({ command }) => {

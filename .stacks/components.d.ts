@@ -7,10 +7,16 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    404: typeof import('./../pages/layouts/404.vue')['default']
     Counter: typeof import('./../components/Buttons/Counter.vue')['default']
-    Demo: typeof import('../pages/Demo.vue')['default']
+    Default: typeof import('./../pages/layouts/default.vue')['default']
+    Demo: typeof import('./../pages/demo.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
+    Home: typeof import('./../pages/layouts/home.vue')['default']
     Logo: typeof import('./../components/Logo.vue')['default']
+    README: typeof import('./../components/README.md')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
     ToggleDark: typeof import('./../components/Buttons/ToggleDark.vue')['default']
   }
 }

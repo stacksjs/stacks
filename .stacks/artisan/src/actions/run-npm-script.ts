@@ -4,7 +4,7 @@ import { isManifest } from '../../../core/utils/manifest'
 import { readJsonFile } from '../../../core/utils/fs'
 import type { Manifest, NpmScript } from '../../../core/types'
 import { ExitCode } from '../cli/exit-code'
-import { frameworkPath } from '../../../core/helpers'
+import { frameworkPath } from '../../../core/utils/helpers'
 
 /**
  * Runs the specified NPM script in the package.json file.

@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { version } from '../vue-components/package.json'
-import { componentsPath, frameworkPath } from './helpers'
+import { componentsPath, frameworkPath } from './utils/helpers'
 import { libraryName } from './config'
 
 export default <WebTypesBuilderConfig> {

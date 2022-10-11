@@ -13,14 +13,14 @@ import Markdown from 'vite-plugin-vue-markdown'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
-import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './helpers'
+import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './utils/helpers'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
 
 const inspect = Inspect()
 
-const preview = Preview()
+const preview = Preview
 
 const layouts = Layouts()
 
@@ -32,7 +32,7 @@ const components = Components({
     componentsPath(),
     pagesPath(),
   ],
-  dts: `${frameworkPath}components.d.ts`,
+  dts: frameworkPath('components.d.ts'),
 })
 
 // https://github.com/hannoeru/vite-plugin-pages
@@ -46,10 +46,7 @@ const markdown = Markdown({
   markdownItSetup(md) {
     // https://prismjs.com/
     md.use(Shiki, {
-      theme: {
-        light: 'stacks-light',
-        dark: 'stacks-dark',
-      },
+      theme: 'nord',
     })
     md.use(LinkAttributes, {
       matcher: (link: string) => /^https?:\/\//.test(link),
@@ -68,24 +65,24 @@ const autoImports = AutoImport({
     { 'collect.js': ['collect'] },
   ],
   dirs: [
-    frameworkPath('./generate'),
-    frameworkPath('./utils'),
-    frameworkPath('./security'),
+    frameworkPath('core/generate'),
+    frameworkPath('core/utils'),
+    frameworkPath('core/security'),
     functionsPath(),
     componentsPath(),
     configPath(),
   ],
-  dts: frameworkPath('./auto-imports.d.ts'),
+  dts: frameworkPath('auto-imports.d.ts'),
   vueTemplate: true,
   eslintrc: {
     enabled: true,
-    filepath: frameworkPath('./.eslintrc-auto-import.json'),
+    filepath: frameworkPath('.eslintrc-auto-import.json'),
   },
 })
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: frameworkPath('./unocss.ts'),
+    configFile: frameworkPath('unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }

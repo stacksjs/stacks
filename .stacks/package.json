@@ -174,6 +174,7 @@
     "vitest": "^0.24.1",
     "vue": "^3.2.40",
     "vue-docgen-web-types": "^0.1.8",
+    "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.5",
     "vue-tsc": "^1.0.3"
   },

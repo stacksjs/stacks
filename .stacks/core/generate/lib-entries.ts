@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { determineResetPreset, kebabCase, libraryEntryPath } from '../utils'
-import { tags } from '../../../config/components'
+import { components } from '../../../config/components'
 import { functions } from '../../../config/functions'
 
 /**
@@ -52,9 +52,7 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   if (type === 'vue-components') {
     arr = determineResetPreset()
 
-    const components = tags.map(tag => tag.name)
-
-    for (const component of components) {
+    for (const component of components.map(tag => tag.name)) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       else
@@ -71,7 +69,7 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   const declarations = []
   const definitions = []
 
-  for (const component of components) {
+  for (const component of components.map(tag => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '../../../../components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)

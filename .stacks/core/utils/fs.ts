@@ -4,7 +4,7 @@ import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '../types'
-import { componentsPath, functionsPath } from '../helpers'
+import { componentsPath, functionsPath } from './helpers'
 import { contains } from './array'
 
 /**
