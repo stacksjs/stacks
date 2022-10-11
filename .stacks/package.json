@@ -166,6 +166,7 @@
     "vite-plugin-pages": "^0.26.0",
     "vite-plugin-pwa": "^0.13.1",
     "vite-plugin-vue-component-preview": "^0.3.3",
+    "vite-plugin-vue-layouts": "^0.7.0",
     "vite-plugin-vue-markdown": "^0.22.1",
     "vite-ssg": "^0.21.1",
     "vite-ssg-sitemap": "^0.4.3",

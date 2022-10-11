@@ -266,7 +266,10 @@
     "chrisbbreuer",
     "stacksjs",
     "compat",
-    "docgen"
+    "docgen",
+    "colorette",
+    "shiki",
+    "noopener"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

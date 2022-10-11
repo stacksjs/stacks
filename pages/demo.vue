@@ -1,5 +1,5 @@
 <!--
-  This file is used for demo purposes of your component library only.
+  You may reuse this file to demo your component library.
   All of your components & functions are automatically imported.
   It is rendered when you run `pnpm artisan dev:components`.
 -->
