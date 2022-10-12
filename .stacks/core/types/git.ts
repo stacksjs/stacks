@@ -54,4 +54,33 @@ export interface GitOptions {
    * @see https://stacksjs.dev/docs/git/scopes
    */
   scopes: string[]
+
+  /**
+   * The git commit types to use.
+   * @default array
+   * @see https://stacksjs.dev/docs/git/types
+   * @see https://www.conventionalcommits.org/en/v1.0.0/
+   */
+  types: {
+    value: string
+    name: string
+    emoji: string
+  }[]
+
+  /**
+   * The git messages/prompts to use.
+   * @default object
+   */
+  messages: {
+    type: string
+    scope: string
+    customScope: string
+    subject: string
+    body: string
+    breaking: string
+    footerPrefixsSelect: string
+    customFooterPrefixs: string
+    footer: string
+    confirmCommit: string
+  }
 }
