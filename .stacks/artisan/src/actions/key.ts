@@ -1,36 +1,35 @@
 import crypto from 'node:crypto'
 import fs from 'fs-extra'
 import consola from 'consola'
-import * as cryptojs from 'crypto-js'
-import { resolve } from 'pathe'
+import { enc } from 'crypto-js'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { isFile } from '../../../src/utils/fs'
+import { projectPath } from '../../../src/utils/helpers'
 
-export async function generate(path?: string) {
+export async function generate() {
   consola.info('Setting random application key.')
-
-  if (!path)
-    path = process.cwd()
 
   // if the .env file does not exist, ensure it is created
   if (!isFile('.env'))
-    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: path })
+    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
-  const random = crypto.getRandomValues(new Uint8Array(32))
-  const encodedWord = cryptojs.enc.Utf8.parse(random.toString())
-  const key = cryptojs.enc.Base64.stringify(encodedWord)
-  const APP_KEY = `base64:${key}`
-
-  await setEnvValue('APP_KEY', APP_KEY, path)
+  await setEnvValue('APP_KEY', await generateAppKey())
 
   consola.success('Application key set.')
 
   return true
 }
 
-async function setEnvValue(key: string, value: string, path?: string) {
-  path = resolve(path ?? process.cwd(), '.env')
+export async function generateAppKey() {
+  const random = crypto.getRandomValues(new Uint8Array(32))
+  const encodedWord = enc.Utf8.parse(random.toString())
+  const key = enc.Base64.stringify(encodedWord)
 
+  return `base64:${key}`
+}
+
+async function setEnvValue(key: string, value: string) {
+  const path = projectPath('.env')
   const raw = await fs.readFile(path, 'utf-8')
   const changed = raw.replace(/APP_KEY=/g, `APP_KEY=${value}`)
 

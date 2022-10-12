@@ -277,7 +277,8 @@
     "defu",
     "kibibytes",
     "encrypter",
-    "prefixs" // TODO: remove once cz-git releases fixes
+    "prefixs", // TODO: remove once cz-git releases fixes
+    "cryptojs"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
