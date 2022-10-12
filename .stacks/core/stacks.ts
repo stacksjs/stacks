@@ -15,7 +15,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './utils/helpers'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, PwaOptions } from './types'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from './types'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -122,8 +122,8 @@ function atomicCssEngine(isWebComponent = false) {
   })
 }
 
-function pwa(options?: PwaOptions) {
-  const defaultOptions: AutoImportsOptions = {
+function pwa() {
+  return VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
     manifest: {
@@ -149,11 +149,7 @@ function pwa(options?: PwaOptions) {
         },
       ],
     },
-  }
-
-  const newOptions = defu(options, defaultOptions)
-
-  return VitePWA(newOptions)
+  })
 }
 
 const i18n = VueI18n({
@@ -197,4 +193,3 @@ const componentPreset = (isWebComponent = false) => <PluginOption>[
 // ]
 
 export { resolve, componentPreset, uiEngine, autoImports, atomicCssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }
-// export { resolve, componentPreset, pagesPreset, functionsPreset, uiEngine, autoImports, atomicCssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }
