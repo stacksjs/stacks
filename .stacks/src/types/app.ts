@@ -1,3 +1,10 @@
+/**
+ * Application Options
+ *
+ * This type defines all of your Stacks' "application options." Because Stacks is full-typed,
+ * you may hover over any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
 export interface AppOptions {
   /**
    * Application Name
@@ -101,7 +108,12 @@ export interface AppOptions {
   fallbackLocale: 'en'
 
   /**
-   * The utilized IDE.
+   * Integrated Development Environment
+   *
+   * Currently, only VS Code is fully supported. While you may use Stacks with
+   * any editor, some of its tooling is VS Code specific. Hence, for the
+   * best experience, VS Code is currently the recommended editor.
+   *
    * @default string "vscode"
    */
   editor: string

@@ -1,6 +1,6 @@
-import type { AppOptions } from 'stacks'
+import type { AppOptions as Options } from 'stacks'
 
-export const app: AppOptions = {
+export const app: Options = {
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),

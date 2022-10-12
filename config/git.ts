@@ -1,6 +1,6 @@
-import type { GitOptions } from 'stacks/src'
+import type { GitOptions as Options } from 'stacks'
 
-export const git: GitOptions = {
+export const git: Options = {
   hooks: {
     'pre-commit': 'lint-staged',
   },
