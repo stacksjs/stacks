@@ -30,3 +30,28 @@ interface Hooks {
 }
 
 export interface GitHooks extends Hooks {}
+
+export interface GitOptions {
+  /**
+   * The git hooks to use.
+   * @default object
+   * @see https://git-scm.com/docs/githooks
+   * @example
+   * hooks: {
+   *  'pre-commit': 'lint-staged',
+   * }
+   */
+  hooks: GitHooks
+
+  /**
+   * The git commit scopes to use.
+   * @default array
+   * @example
+   * scopes: [
+   *   '', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx',
+   *   'example', 'release', 'readme', 'build', 'scripts', 'test',
+   * ]
+   * @see https://stacksjs.dev/docs/git/scopes
+   */
+  scopes: string[]
+}

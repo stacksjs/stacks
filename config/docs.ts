@@ -7,7 +7,7 @@
 import type { DocsConfig } from 'stacks'
 import { frameworkPath } from '../.stacks/core/utils/helpers'
 
-const docs: DocsConfig = {
+export default <DocsConfig> {
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',
   title: 'Stacks',
@@ -98,5 +98,3 @@ function sidebarGuide() {
     },
   ]
 }
-
-export default docs

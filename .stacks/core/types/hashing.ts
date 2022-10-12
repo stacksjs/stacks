@@ -1,10 +1,21 @@
+/**
+ * The Stacks runtime provides secure Bcrypt & Argon2 hashing for storing user passwords.
+ * If you are using one of the Laravel application starter kits, Bcrypt will be used for
+ * registration and authentication by default.
+ *
+ * Bcrypt is a great choice for hashing passwords because its "work factor" is adjustable, which
+ * means that the time it takes to generate a hash can be increased as hardware power increases.
+ * When hashing passwords, slow is good. The longer an algorithm takes to hash a password, the
+ * longer it takes malicious users to generate "rainbow tables" of all possible string hash
+ * values that may be used in brute force attacks against applications.
+ */
 export interface HashingOptions {
   /**
    * This option controls the default hash driver that will be used to hash
    * passwords for your application. By default, the bcrypt algorithm is
    * used; however, you remain free to modify this option if you wish.
    */
-  driver: 'argon' | 'bcrypt' | 'base64'
+  driver: 'argon' | 'bcrypt'
 
   /**
    * Here you may specify the configuration options that should be used when

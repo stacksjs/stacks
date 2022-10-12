@@ -1,5 +1,5 @@
-import type { Hosts } from 'stacks'
+import type { DeployOptions } from 'stacks'
 
-export const deploy = {
-  host: <Hosts> 'netlify',
+export const deploy: DeployOptions = {
+  host: 'netlify',
 }

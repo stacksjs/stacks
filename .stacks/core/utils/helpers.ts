@@ -102,10 +102,8 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
   return resolve(frameworkPath(), `./${type}/package.json`)
 }
 
-export function env(key?: string, fallback?: string) {
-  // eslint-disable-next-line no-console
-  console.log('key', key, 'fallback', fallback)
-  // return key ? import.meta.env[key] : fallback
+export function env(key?: string, fallback?: any) {
+  return key ? import.meta.env[key] : fallback
 }
 
 export function config(key?: string, fallback?: string) {

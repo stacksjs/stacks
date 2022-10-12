@@ -4,6 +4,9 @@ const { paramCase } = require('change-case')
 const jiti = require('jiti')(__filename)
 const config = jiti('./config/git.ts')
 
+// eslint-disable-next-line no-console
+console.log('config', config)
+
 const toDelete = ['readme-md']
 
 const components = readdirSync(resolve(__dirname, './components'))
@@ -14,7 +17,7 @@ const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
   .filter(item => !toDelete.includes(item))
 
-const scopes = [...config.scopes, ...components, ...functions]
+const scopes = [...config.git.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
 /** @type {import('cz-git').UserConfig} */
