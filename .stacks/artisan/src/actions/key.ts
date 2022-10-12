@@ -1,7 +1,8 @@
 import crypto from 'node:crypto'
 import fs from 'fs-extra'
 import consola from 'consola'
-import { enc } from 'crypto-js'
+import encUtf8 from 'crypto-js/enc-utf8'
+import encBase64 from 'crypto-js/enc-base64'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { isFile } from '../../../src/utils/fs'
 import { projectPath } from '../../../src/utils/helpers'
@@ -22,8 +23,8 @@ export async function generate() {
 
 export async function generateAppKey() {
   const random = crypto.getRandomValues(new Uint8Array(32))
-  const encodedWord = enc.Utf8.parse(random.toString())
-  const key = enc.Base64.stringify(encodedWord)
+  const encodedWord = encUtf8.parse(random.toString())
+  const key = encBase64.stringify(encodedWord)
 
   return `base64:${key}`
 }
