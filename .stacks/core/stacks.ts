@@ -13,18 +13,28 @@ import Markdown from 'vite-plugin-vue-markdown'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
+import { defu } from 'defu'
 import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './utils/helpers'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, PwaOptions } from './types'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
 
-const inspect = Inspect()
-const preview = Preview
-const layouts = Layouts()
+function inspect(options?: InspectOptions) {
+  return Inspect(options)
+}
 
-function components() {
-  return Components({
-  // also allow auto-loading markdown components
+function preview() {
+  return Preview
+}
+
+function layouts(options?: LayoutOptions) {
+  return Layouts(options)
+}
+
+function components(options?: ComponentOptions) {
+  const defaultOptions = {
+    // also allow auto-loading markdown components
     extensions: ['vue', 'md'],
     include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
@@ -32,56 +42,78 @@ function components() {
       pagesPath(),
     ],
     dts: frameworkPath('components.d.ts'),
-  })
+  }
+
+  const newOptions = defu(options, defaultOptions)
+
+  return Components(newOptions)
 }
 
 // https://github.com/hannoeru/vite-plugin-pages
-const pages = Pages({
-  extensions: ['vue', 'md'],
-  dirs: [
-    pagesPath(),
-  ],
-})
+function pages(options?: PagesOptions) {
+  const defaultOptions: PagesOptions = {
+    extensions: ['vue', 'md'],
+    dirs: [
+      pagesPath(),
+    ],
+  }
 
-const markdown = Markdown({
-  wrapperClasses: 'prose prose-sm m-auto text-left',
-  headEnabled: true,
-  markdownItSetup(md) {
+  const newOptions = defu(options, defaultOptions)
+
+  return Pages(newOptions)
+}
+
+function markdown(options?: MarkdownOptions) {
+  const defaultOptions: MarkdownOptions = {
+    wrapperClasses: 'prose prose-sm m-auto text-left',
+    headEnabled: true,
+    markdownItSetup(md) {
     // https://prismjs.com/
-    md.use(Shiki, {
-      theme: 'nord',
-    })
-    md.use(LinkAttributes, {
-      matcher: (link: string) => /^https?:\/\//.test(link),
-      attrs: {
-        target: '_blank',
-        rel: 'noopener',
-      },
-    })
-  },
-})
+      md.use(Shiki, {
+        theme: 'nord',
+      })
+      md.use(LinkAttributes, {
+        matcher: (link: string) => /^https?:\/\//.test(link),
+        attrs: {
+          target: '_blank',
+          rel: 'noopener',
+        },
+      })
+    },
+  }
 
-const autoImports = AutoImport({
-  imports: [
-    'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
-    { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
-    { 'collect.js': ['collect'] },
-  ],
-  dirs: [
-    frameworkPath('core/generate'),
-    frameworkPath('core/utils'),
-    frameworkPath('core/security'),
-    functionsPath(),
-    componentsPath(),
-    configPath(),
-  ],
-  dts: frameworkPath('auto-imports.d.ts'),
-  vueTemplate: true,
-  eslintrc: {
-    enabled: false,
-    // filepath: frameworkPath('.eslintrc-auto-import.json'),
-  },
-})
+  const newOptions = defu(options, defaultOptions)
+
+  return Markdown(newOptions)
+}
+
+function autoImports(options?: AutoImportsOptions) {
+  const defaultOptions: AutoImportsOptions = {
+    imports: [
+      'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
+      { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+      { 'collect.js': ['collect'] },
+    ],
+    dirs: [
+      frameworkPath('core/generate'),
+      frameworkPath('core/utils'),
+      frameworkPath('core/security'),
+      functionsPath(),
+      componentsPath(),
+      configPath(),
+    ],
+    dts: frameworkPath('auto-imports.d.ts'),
+    vueTemplate: true,
+    eslintrc: {
+      enabled: false,
+      // filepath: frameworkPath('.eslintrc-auto-import.json'),
+    },
+  }
+
+  const newOptions = defu(options, defaultOptions)
+
+  return AutoImport(newOptions)
+}
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
@@ -90,33 +122,39 @@ function atomicCssEngine(isWebComponent = false) {
   })
 }
 
-const pwa = VitePWA({
-  registerType: 'autoUpdate',
-  includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
-  manifest: {
-    name: 'Stacks',
-    short_name: 'Stacks',
-    theme_color: '#ffffff',
-    icons: [
-      {
-        src: '/pwa-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/pwa-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-      {
-        src: '/pwa-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any maskable',
-      },
-    ],
-  },
-})
+function pwa(options?: PwaOptions) {
+  const defaultOptions: AutoImportsOptions = {
+    registerType: 'autoUpdate',
+    includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
+    manifest: {
+      name: 'Stacks',
+      short_name: 'Stacks',
+      theme_color: '#ffffff',
+      icons: [
+        {
+          src: '/pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: '/pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+        {
+          src: '/pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable',
+        },
+      ],
+    },
+  }
+
+  const newOptions = defu(options, defaultOptions)
+
+  return VitePWA(newOptions)
+}
 
 const i18n = VueI18n({
   runtimeOnly: true,

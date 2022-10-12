@@ -270,7 +270,11 @@
     "colorette",
     "shiki",
     "noopener",
-    "nprogress"
+    "nprogress",
+    "mdit",
+    "itemprop",
+    "pinia",
+    "defu"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

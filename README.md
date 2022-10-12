@@ -43,12 +43,12 @@ It's incredibly easy to get started with this framework. Simply run the followin
 ```bash
 curl -fsSL https://stacksjs.dev/setup | sh
 
-# alternatively, if you know your setup is ready, install a new stack via:
+# alternatively, if you know pnpm is already installed, get started via:
 npx artisan-init my-project
 ```
 
 > **Note**
-> Node.js v18.10 & pnpm 7.13 or higher required. _Artisan will set you up._
+> pnpm 7.13 or higher required. _Run the setup script & Artisan would set you up._
 
 ## 🤖 Usage
 

@@ -1,3 +1,5 @@
+import type { InspectOptions } from 'stacks'
+
 export const app = {
   name: import.meta.env.APP_NAME || 'Stacks',
   env: import.meta.env.APP_ENV || 'local',
@@ -11,4 +13,5 @@ export const app = {
   fallbackLocale: 'en',
   editor: 'vscode',
   cipher: 'aes-256-cbc',
+  inspect: <InspectOptions>{},
 }
