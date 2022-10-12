@@ -1,9 +1,9 @@
 import Prompts from 'prompts'
 import consola from 'consola'
-import { hasFiles } from '../../../core/utils/fs'
-import { NpmScript } from '../../../core/types'
+import { hasFiles } from '../../../src/utils/fs'
+import { NpmScript } from '../../../src/types'
 import { ExitCode } from '../cli/exit-code'
-import { componentsPath, functionsPath } from '../../../core/utils/helpers'
+import { componentsPath, functionsPath } from '../../../src/utils/helpers'
 import { runNpmScript } from './run-npm-script'
 import { generateTypes } from './generate'
 

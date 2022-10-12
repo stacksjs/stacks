@@ -4,8 +4,8 @@
  * see the DocsConfig type definition.
  */
 
-import type { DocsConfig } from 'stacks'
-import { frameworkPath } from '../.stacks/core/utils/helpers'
+import type { DocsConfig } from 'stacks/src'
+import { frameworkPath } from '../.stacks/src/utils/helpers'
 
 export default <DocsConfig> {
   outDir: frameworkPath('docs/dist'),

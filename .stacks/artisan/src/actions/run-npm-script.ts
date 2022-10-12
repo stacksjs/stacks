@@ -1,10 +1,10 @@
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
-import { isManifest } from '../../../core/utils/manifest'
-import { readJsonFile } from '../../../core/utils/fs'
-import type { Manifest, NpmScript } from '../../../core/types'
+import { isManifest } from '../../../src/utils/manifest'
+import { readJsonFile } from '../../../src/utils/fs'
+import type { Manifest, NpmScript } from '../../../src/types'
 import { ExitCode } from '../cli/exit-code'
-import { frameworkPath } from '../../../core/utils/helpers'
+import { frameworkPath } from '../../../src/utils/helpers'
 
 /**
  * Runs the specified NPM script in the package.json file.

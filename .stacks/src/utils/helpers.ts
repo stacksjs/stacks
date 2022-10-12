@@ -1,6 +1,6 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-// import * as configArr from '../core/config'
+// import * as configArr from '../src/config'
 import { isFile, readTextFile } from './fs'
 
 export async function isInitialized(path: string) {
@@ -50,7 +50,7 @@ export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'fu
 }
 
 export function buildEntriesPath(path?: string) {
-  return resolve(frameworkPath(), `./core/build/entries/${path || ''}`)
+  return resolve(frameworkPath(), `./src/build/entries/${path || ''}`)
 }
 
 export function customElementsDataPath() {

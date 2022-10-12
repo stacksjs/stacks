@@ -1,7 +1,6 @@
-import { resolve } from 'pathe'
 import { defineNitroConfig } from 'nitropack'
-import { _dirname } from './core'
+import { projectPath } from './src'
 
 export default defineNitroConfig({
-  srcDir: resolve(_dirname, '..'),
+  srcDir: projectPath(),
 })

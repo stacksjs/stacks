@@ -3,8 +3,8 @@ import consola from 'consola'
 import Prompts from 'prompts'
 import { resolve } from 'pathe'
 import { ExitCode } from '../cli/exit-code'
-import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder, doesFolderExist } from '../../../core/utils/fs'
-import { NpmScript } from '../../../core/types'
+import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder, doesFolderExist } from '../../../src/utils/fs'
+import { NpmScript } from '../../../src/types'
 import { runNpmScript } from './run-npm-script'
 
 const { prompts } = Prompts

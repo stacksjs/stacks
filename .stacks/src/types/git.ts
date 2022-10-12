@@ -48,8 +48,8 @@ export interface GitOptions {
    * @default array
    * @example
    * scopes: [
-   *   '', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx',
-   *   'example', 'release', 'readme', 'build', 'scripts', 'test',
+   *   '', 'ci', 'config', 'deps', 'cli', 'docs', 'dx',  'example',
+   *   'release', 'readme', 'build', 'scripts', 'test',
    * ]
    * @see https://stacksjs.dev/docs/git/scopes
    */

@@ -95,9 +95,9 @@ function autoImports(options?: AutoImportsOptions) {
       { 'collect.js': ['collect'] },
     ],
     dirs: [
-      frameworkPath('core/generate'),
-      frameworkPath('core/utils'),
-      frameworkPath('core/security'),
+      frameworkPath('src/generate'),
+      frameworkPath('src/utils'),
+      frameworkPath('src/security'),
       functionsPath(),
       componentsPath(),
       configPath(),
@@ -117,7 +117,7 @@ function autoImports(options?: AutoImportsOptions) {
 
 function atomicCssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: frameworkPath('core/unocss.ts'),
+    configFile: frameworkPath('src/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }

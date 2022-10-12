@@ -39,7 +39,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../core/build/functions.ts",
+    "build": "vite build -c ../src/build/functions.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

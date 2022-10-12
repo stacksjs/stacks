@@ -28,7 +28,7 @@
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "windicss.sortOnSave": true,
-  "unocss.root": "./.stacks/core/unocss.ts",
+  "unocss.root": "./.stacks/src/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],

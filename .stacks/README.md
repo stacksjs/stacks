@@ -1,6 +1,6 @@
 # @stacksjs/framework
 
-This package contains the "core" logic of the framework/monorepo setup, e.g. the build logic (excluding the IDE setup).
+This framework contains the "core" Stacks logic, its runtime & helpers, excluding the IDE setup.
 
 ## ☘️ Features
 

@@ -1,7 +1,7 @@
 .nitro
 .output
 src/components/.vite-inspect
-core/build/entries/*.ts
+src/build/entries/*.ts
 **/dist/*.cjs
 **/dist/*.mjs
 **/dist/*.css

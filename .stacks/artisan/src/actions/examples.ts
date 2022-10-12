@@ -1,8 +1,8 @@
 import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
-import { hasFiles } from '../../../core/utils/fs'
-import { NpmScript } from '../../../core/types'
+import { hasFiles } from '../../../src/utils/fs'
+import { NpmScript } from '../../../src/types'
 import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
 

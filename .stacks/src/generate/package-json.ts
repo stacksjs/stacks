@@ -69,7 +69,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../core/build/${config}.ts",
+    "build": "vite build -c ../src/build/${config}.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

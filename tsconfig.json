@@ -21,7 +21,7 @@
     "outDir": ".stacks/dist/types",
     "paths": {
       "stacks": [
-        ".stacks/core/index.ts"
+        ".stacks/src/index.ts"
       ],
       "stacks/*": [
         ".stacks/*"

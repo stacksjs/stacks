@@ -1,4 +1,4 @@
-import type { GitOptions } from 'stacks'
+import type { GitOptions } from 'stacks/src'
 
 export const git: GitOptions = {
   hooks: {
@@ -6,8 +6,8 @@ export const git: GitOptions = {
   },
 
   scopes: [
-    '', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx',
-    'example', 'release', 'readme', 'build', 'scripts', 'test',
+    '', 'ci', 'config', 'deps', 'cli', 'docs', 'dx', 'example',
+    'release', 'readme', 'build', 'scripts', 'test',
   ],
 
   messages: {

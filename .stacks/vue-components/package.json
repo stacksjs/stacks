@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../core/build/vue-components.ts",
+    "build": "vite build -c ../src/build/vue-components.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
