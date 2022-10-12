@@ -122,7 +122,7 @@
     "@unocss/vite": "^0.45.29",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.24.1",
-    "@vueuse/src": "^9.3.0",
+    "@vueuse/core": "^9.3.0",
     "@vueuse/head": "^0.9.8",
     "@vueuse/shared": "^9.3.0",
     "artisan-init": "workspace:*",
