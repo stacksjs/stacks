@@ -276,7 +276,8 @@
     "pinia",
     "defu",
     "kibibytes",
-    "encrypter"
+    "encrypter",
+    "prefixs" // TODO: remove once cz-git releases fixes
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
