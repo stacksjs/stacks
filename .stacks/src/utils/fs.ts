@@ -83,8 +83,6 @@ export function isFolder(path: string): boolean {
  * Determine whether a path is a file.
  */
 export function isFile(path: string): boolean {
-  // eslint-disable-next-line no-console
-  console.log('__dirname', projectPath(path))
   return existsSync(projectPath(path))
 }
 

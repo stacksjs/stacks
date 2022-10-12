@@ -15,7 +15,7 @@ async function main() {
   // before running any commands, check if the project is already initialized
   await keyCommands(artisan)
 
-  if (!await isInitialized(process.cwd())) {
+  if (!await isInitialized()) {
     await initCommands(artisan)
   }
   else {

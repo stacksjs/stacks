@@ -1,14 +1,13 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-// import * as configArr from '../src/config'
 import { isFile, readTextFile } from './fs'
 
-export async function isInitialized(path: string) {
+export async function isInitialized() {
   if (isFile('.env'))
     return await checkIfAppKeyIsSet()
 
   if (isFile('.env.example'))
-    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: path })
+    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await checkIfAppKeyIsSet()
 }
@@ -104,6 +103,8 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 
 export function env(key?: string, fallback?: any) {
   return key ? import.meta.env[key] : fallback
+
+  return 'wip'
 }
 
 export function config(key?: string, fallback?: string) {
