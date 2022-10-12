@@ -1,39 +1,64 @@
 export interface AppOptions {
   /**
-   * The name of your application.
+   * Application Name
+   *
+   * This value is the name of your application. This value is used when the
+   * framework needs to place the application's name in a log or any
+   * other location as required by the application or its packages.
+   *
+   * @default string "Stacks"
    */
   name: string
 
   /**
-   * The application environment.
+   * Application Environment
+   *
+   * This value determines the "environment" your application is currently
+   * running in. This may determine how you prefer to configure various
+   * services the application utilizes. Set this in your ".env" file
+   *
    * @default "local"
    */
   env?: 'development' | 'production' | 'local'
 
   /**
-   * The application URL.
-   * @default "http://localhost:3333"
+   * Application URL
+   *
+   * This URL is used by the console to properly generate URLs when using
+   * the Artisan command line tool. You should set this to the root of
+   * your application so that it is used when running Artisan tasks.
+   *
+   * @default string "https://localhost"
+   * @example
+   * https://hello-world.test
    */
   url?: string
 
   /**
-   * Should the application be in debug mode?
+   * Application Debug Mode
+   *
+   * When your application is in debug mode, detailed error messages with
+   * stack traces will be shown on every error that occurs within your
+   * application. If disabled, a simple generic error page is shown.
+   *
    * @default false
    */
   debug: boolean
 
   /**
-   * What should the application port be?
+   * Application Port
+   *
+   * This port is used when Stacks creates a server you. You should set
+   * a port that's not already in use by your machine. Stacks defaults
+   * to a memorable port that likely is free on your end: 3333.
+   *
    * @default number 3333
    */
   port: number
 
   /**
-   * This application host.
-   */
-  host?: string
-
-  /**
+   * Encryption Key
+   *
    * This key is used by the Stacks encrypter service and should be set to
    * a random, 32 character string, otherwise these encrypted strings will
    * not be safe. Please do this before deploying an application!
@@ -41,19 +66,36 @@ export interface AppOptions {
   key?: string
 
   /**
-   * The application's timezone.
+   * Application Timezone
+   *
+   * Here you may specify the default timezone for your application, which
+   * will be used by Stacks and date-time functions. We have gone ahead
+   * and set this to a sensible default for you out of the box.
+   *
    * @default string "UTC"
    */
   timezone?: string
 
   /**
-   * The application's locale.
+   * Application Locale Configuration
+   *
+   * The application locale determines the default locale that will be used
+   * by the translation service provider. You are free to set this value
+   * to any of the locales which will be supported by the application.
+   *
    * @default string "en"
+   * @example
+   * de // ./lang/de.yml needs to be present for this
    */
   locale?: string
 
   /**
-   * The application's fallback locale.
+   * Application Fallback Locale
+   *
+   * The fallback locale determines the locale to use when the current one
+   * is not available. You may change the value to correspond to any of
+   * the language folders that are provided through your application.
+   *
    * @default string "en"
    */
   fallbackLocale: 'en'
@@ -65,7 +107,8 @@ export interface AppOptions {
   editor: string
 
   /**
-   * The cipher.
+   * Cipher
+   *
    * @default string "aes-256-cbc"
    */
   cipher: string
