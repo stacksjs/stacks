@@ -6,37 +6,38 @@
  * future releases. Read more in its documentation:
  */
 
-import type { Author, Contributors, Hosts, LanguageCode, LibraryName, LibraryOptions, LicenseType, OrganizationName, Repository, StackName } from 'stacks'
+import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacks'
 
-const libraryName: LibraryName = 'hello-world'
-const organizationName: OrganizationName = '@stacksjs'
-const stackName: StackName = organizationName ? `${organizationName}/${libraryName}` : libraryName
-const repository: Repository = 'stacksjs/stacks'
-const host: Hosts = 'netlify'
+export const library: Options = {
+  name: 'hello-world',
+  parentName: '@stacksjs',
+  repository: 'stacksjs/stacks',
+  license: 'MIT',
+  author: 'Chris Breuer',
+  contributors: ['Chris Breuer <chris@ow3.org>'],
+  defaultLanguage: 'en',
+}
 
-const license: LicenseType = 'MIT'
-const author: Author = 'Chris Breuer'
-const contributors: Contributors = ['Chris Breuer <chris@ow3.org>']
-const defaultLanguage: LanguageCode = 'en'
+export const stackName: StackName = library.parentName
+  ? `${library.parentName}/${library.name}`
+  : library.name
 
-const components: LibraryOptions = {
+export const componentLibrary: BuildOptions = {
   name: `${stackName}-vue`,
   description: 'Your Vue component library description',
   keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
 }
 
-const webComponents: LibraryOptions = {
+export const webComponentLibrary: BuildOptions = {
   name: `${stackName}-elements`,
   description: 'Your framework agnostic web component library description.',
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
 }
 
-const functions: LibraryOptions = {
+export const functionLibrary: BuildOptions = {
   name: `${stackName}-fx`,
   description: 'Your function library description.',
   keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
   shouldBuildIife: false,
   shouldGenerateSourcemap: false,
 }
-
-export { defaultLanguage, license, author, contributors, organizationName, libraryName, host, stackName, repository, components as componentLibrary, functions as functionLibrary, webComponents as webComponentLibrary }

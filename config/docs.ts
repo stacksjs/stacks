@@ -4,12 +4,11 @@
  * see the DocsConfig type definition.
  */
 
-import { resolve } from 'pathe'
 import type { DocsConfig } from 'stacks'
-import { _dirname } from '../.stacks/core/utils/fs'
+import { frameworkPath } from '../.stacks/core/utils/helpers'
 
 const docs: DocsConfig = {
-  outDir: resolve(_dirname, '../.stacks/docs/dist'),
+  outDir: frameworkPath('docs/dist'),
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',
@@ -50,8 +49,6 @@ const docs: DocsConfig = {
     },
   },
 }
-
-export default docs
 
 function nav() {
   return [
@@ -101,3 +98,5 @@ function sidebarGuide() {
     },
   ]
 }
+
+export default docs

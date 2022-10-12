@@ -274,7 +274,9 @@
     "mdit",
     "itemprop",
     "pinia",
-    "defu"
+    "defu",
+    "kibibytes",
+    "encrypter"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

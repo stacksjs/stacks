@@ -4,9 +4,7 @@
  * would require `../functions/counter.ts` to be present.
  */
 
-const functions = [
+export const functions = [
   'counter',
   'dark',
 ]
-
-export { functions }

@@ -6,7 +6,7 @@
 
 import type { GitHooks } from 'stacks'
 
-const hooks: GitHooks = {
+export const hooks: GitHooks = {
   'pre-commit': 'lint-staged',
 }
 
@@ -15,9 +15,7 @@ const hooks: GitHooks = {
  * category of commits that share commonalities. Feel free to edit this
  * list to your needs as your scopes may be project-specific.
  */
-const scopes = [
+export const scopes = [
   '', 'ci', 'core', 'config', 'deps', 'cli', 'docs', 'dx',
   'example', 'release', 'readme', 'build', 'scripts', 'test',
 ]
-
-export { hooks, scopes }
