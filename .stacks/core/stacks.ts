@@ -15,7 +15,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './utils/helpers'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from './types'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from './types'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -152,11 +152,17 @@ function pwa() {
   })
 }
 
-const i18n = VueI18n({
-  runtimeOnly: true,
-  compositionOnly: true,
-  include: [langPath('./**')],
-})
+function i18n(options?: i18nOptions) {
+  const defaultOptions: i18nOptions = {
+    runtimeOnly: true,
+    compositionOnly: true,
+    include: [langPath('./**')],
+  }
+
+  const newOptions = defu(options, defaultOptions)
+
+  return VueI18n(newOptions)
+}
 
 function uiEngine(isWebComponent = false) {
   if (isWebComponent) {

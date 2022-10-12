@@ -26,11 +26,11 @@ const config: ViteConfig = {
 
   plugins: [
     preview(),
-    inspect,
     uiEngine(),
     atomicCssEngine(),
-    autoImports,
+    autoImports(),
     components(),
+    inspect(),
   ],
 
   build: {

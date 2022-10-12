@@ -15,17 +15,17 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    preview,
-    inspect,
+    preview(),
     uiEngine(),
-    pages,
+    pages(),
     atomicCssEngine(),
     components(),
-    layouts,
-    i18n,
-    markdown,
-    autoImports,
-    pwa,
+    layouts(),
+    i18n(),
+    markdown(),
+    autoImports(),
+    pwa(),
+    inspect(),
   ],
 
   // https://github.com/antfu/vite-ssg

@@ -16,7 +16,7 @@ const config: ViteConfig = {
   },
 
   plugins: [
-    autoImports,
+    autoImports(),
   ],
 
   build: functionsBuildOptions(),
