@@ -85,12 +85,24 @@ export function frameworkPath(path?: string) {
 }
 
 export function projectPath(filePath = '') {
-  const path = process.cwd()
+  let path = process.cwd()
+
+  // workaround: run the follow command a few times because there is chance
+  // that the cwd is a few dirs up, like in the case when a release happens
+  // from a GitHub Action/workflow
+  if (path.includes('.stacks'))
+    path = resolve(path, '..', filePath)
 
   if (path.includes('.stacks'))
-    return resolve(path, '..', filePath)
+    path = resolve(path, '..', filePath)
 
-  return resolve(path, '.', filePath)
+  if (path.includes('.stacks'))
+    path = resolve(path, '..', filePath)
+
+  if (!path.includes('.stacks'))
+    path = resolve(path, '.', filePath)
+
+  return path
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {
