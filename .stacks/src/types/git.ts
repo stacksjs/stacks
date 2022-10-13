@@ -47,9 +47,11 @@ export interface GitOptions {
    * The git commit scopes to use.
    * @default array
    * @example
-   * scopes: [
-   *   '', 'ci', 'config', 'deps', 'cli', 'docs', 'dx',  'example',
-   *   'release', 'readme', 'build', 'scripts', 'test',
+   * git: [
+   *   scopes: [
+   *     '', 'ci', 'config', 'deps', 'cli', 'docs', 'dx',  'example',
+   *     'release', 'readme', 'build', 'scripts', 'test',
+   *   ]
    * ]
    * @see https://stacksjs.dev/docs/git/scopes
    */

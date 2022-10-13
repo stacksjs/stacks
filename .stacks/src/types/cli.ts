@@ -7,6 +7,9 @@ export interface StacksOptions {
   extensions?: string[]
 }
 
+/**
+ * The available npm scripts within the Stacks toolkit.
+ */
 export const enum NpmScript {
   Build = 'build',
   BuildComponents = 'build:components',

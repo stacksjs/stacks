@@ -43,10 +43,17 @@ export const webComponentLibrary: BuildOptions = {
   name: `${stackName}-elements`,
   description: 'Your framework agnostic web component library description.',
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-  functions: [
-    'counter',
-    'dark',
-  ],
+  tags: [{
+    name: ['HelloWorld', 'AppHelloWorld'],
+    description: 'The Hello World custom element, built via this framework.',
+    attributes: [{
+      name: 'greeting',
+      description: 'The greeting.',
+    }],
+  }, {
+    name: 'Demo',
+    description: 'A Demo components.',
+  }],
 }
 
 export const functionLibrary: BuildOptions = {

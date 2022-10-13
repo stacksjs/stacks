@@ -1,5 +1,5 @@
 /**
- * Application Options
+ * ### Application Options
  *
  * This type defines all of your Stacks' "application options." Because Stacks is full-typed,
  * you may hover over any of the options below and the definitions will be provided. In case
@@ -7,7 +7,7 @@
  */
 export interface AppOptions {
   /**
-   * Application Name
+   * ### Application Name
    *
    * This value is the name of your application. This value is used when the
    * framework needs to place the application's name in a log or any
@@ -18,7 +18,7 @@ export interface AppOptions {
   name: string
 
   /**
-   * Application Environment
+   * ### Application Environment
    *
    * This value determines the "environment" your application is currently
    * running in. This may determine how you prefer to configure various
@@ -29,7 +29,7 @@ export interface AppOptions {
   env?: 'development' | 'production' | 'local'
 
   /**
-   * Application URL
+   * ### Application URL
    *
    * This URL is used by the console to properly generate URLs when using
    * the Artisan command line tool. You should set this to the root of
@@ -42,7 +42,7 @@ export interface AppOptions {
   url?: string
 
   /**
-   * Application Debug Mode
+   * ### Application Debug Mode
    *
    * When your application is in debug mode, detailed error messages with
    * stack traces will be shown on every error that occurs within your
@@ -53,7 +53,7 @@ export interface AppOptions {
   debug: boolean
 
   /**
-   * Application Port
+   * ### Application Port
    *
    * This port is used when Stacks creates a server you. You should set
    * a port that's not already in use by your machine. Stacks defaults
@@ -64,7 +64,7 @@ export interface AppOptions {
   port: number
 
   /**
-   * Encryption Key
+   * ### Encryption Key
    *
    * This key is used by the Stacks encrypter service and should be set to
    * a random, 32 character string, otherwise these encrypted strings will
@@ -73,7 +73,7 @@ export interface AppOptions {
   key?: string
 
   /**
-   * Application Timezone
+   * ### Application Timezone
    *
    * Here you may specify the default timezone for your application, which
    * will be used by Stacks and date-time functions. We have gone ahead
@@ -84,7 +84,7 @@ export interface AppOptions {
   timezone?: string
 
   /**
-   * Application Locale Configuration
+   * ### Application Locale Configuration
    *
    * The application locale determines the default locale that will be used
    * by the translation service provider. You are free to set this value
@@ -97,7 +97,7 @@ export interface AppOptions {
   locale?: string
 
   /**
-   * Application Fallback Locale
+   * ### Application Fallback Locale
    *
    * The fallback locale determines the locale to use when the current one
    * is not available. You may change the value to correspond to any of
@@ -108,7 +108,7 @@ export interface AppOptions {
   fallbackLocale: 'en'
 
   /**
-   * Integrated Development Environment
+   * ### Integrated Development Environment
    *
    * Currently, only VS Code is fully supported. While you may use Stacks with
    * any editor, some of its tooling is VS Code specific. Hence, for the
@@ -119,7 +119,9 @@ export interface AppOptions {
   editor: string
 
   /**
-   * Cipher
+   * ### Cipher
+   *
+   * Description WIP.
    *
    * @default string "aes-256-cbc"
    */

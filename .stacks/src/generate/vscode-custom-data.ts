@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { customElementsDataPath, writeTextFile } from '..'
-import { tags as components } from '../../../config/components'
+import { componentLibrary } from '../../../config/library'
 
 export async function generateVsCodeCustomData() {
   try {
@@ -17,7 +17,7 @@ export async function generateVsCodeCustomData() {
 }
 
 function generateComponentInfoData() {
-  const componentsData = JSON.stringify(components)
+  const componentsData = JSON.stringify(componentLibrary.tags)
 
   return `{
   "version": 1.1,

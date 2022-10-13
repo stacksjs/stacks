@@ -188,4 +188,11 @@ export interface MarkdownEnv extends MarkdownItEnv {
   id: string
 }
 
+/**
+ * ### Markdown Options
+ *
+ * The Markdown options.
+ *
+ * @see https://github.com/mdit-vue/vite-plugin-vue-markdown/blob/main/src/types.ts
+ */
 export type MarkdownOptions = Options

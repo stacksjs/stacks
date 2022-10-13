@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { packageManager } from '../../package.json'
-import { author, componentLibrary, contributors, functionLibrary, repository, webComponentLibrary } from '../../../config/library'
+import { componentLibrary, functionLibrary, library, webComponentLibrary } from '../../../config/library'
 import { writeTextFile } from '../utils'
 import { packageJsonPath } from '../utils/helpers'
 
@@ -42,19 +42,19 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   "version": "",
   "packageManager": "${packageManager}",
   "description": "${description}",
-  "author": "${author}",
+  "author": "${library.author}",
   "license": "MIT",
   "homepage": "https://github.com/${repository}/tree/main/${directory}#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/${repository}.git",
+    "url": "git+https://github.com/${library.repository}.git",
     "directory": "${directory}"
   },
   "bugs": {
     "url": "https://github.com/${repository}/issues"
   },
   "keywords": ${JSON.stringify(keywords)},
-  "contributors": ${JSON.stringify(contributors)},
+  "contributors": ${JSON.stringify(library.contributors)},
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

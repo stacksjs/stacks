@@ -12,14 +12,19 @@ export interface LibraryOptions {
   parentName: string | null
 
   /**
-   * The path of your repository. For example, if you store your
-   * repo on GitHub, the path would be "your-org/your-repo"
+   * The path of your repository.
+   *
+   * @example
+   * "your-org/your-repo"
    */
   repository: string
 
   /**
    * The list of accepted SPDX licenses.
    * When developing OS packages, you may want to utilize an OSI approved license.
+   *
+   * @example
+   * "MIT"
    * @see https://opensource.org/licenses
    */
   license: LicenseType
@@ -84,17 +89,17 @@ export interface LibraryBuildOptions {
    * your library. For example, including your `HelloWorld` to be built
    * would require `../components/HelloWorld.vue` to be present.
    *
-   * @example results in `export { default as HelloWorld } from './components/HelloWorld.vue'`
+   * @example
    * {
    *   tags: [{
-   *     name: 'HelloWorld'
+   *     name: 'HelloWorld' // export { default as HelloWorld } from './components/HelloWorld.vue'
    *   }]
    * }
    *
-   * @example results in `export { default as AppHelloWorld } from './components/HelloWorld.vue'`
+   * @example
    * {
    *   tags: [{
-   *     name: ['HelloWorld', 'AppHelloWorld']
+   *     name: ['HelloWorld', 'AppHelloWorld'] // export { default as AppHelloWorld } from './components/HelloWorld.vue'
    *   }]
    * }
    */

@@ -1,12 +1,13 @@
 import consola from 'consola'
+import { ExitCode } from '../../cli/src/cli/exit-code'
 import { determineResetPreset, kebabCase, libraryEntryPath } from '../utils'
-import { tags as components } from '../../../config/components'
-import { functions } from '../../../config/functions'
+import { componentLibrary, functionLibrary } from '../../../config/library'
 
 /**
  * Based on the config values, this method
  * will generate the library entry points.
- * @param type
+ *
+ * @param type string
  */
 export async function generateLibEntry(type: 'vue-components' | 'web-components' | 'functions') {
   if (type === 'vue-components')
@@ -38,7 +39,12 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   let arr = []
 
   if (type === 'functions') {
-    for (const fx of functions) {
+    if (!functionLibrary.functions) {
+      consola.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
+      process.exit(ExitCode.FatalError)
+    }
+
+    for (const fx of functionLibrary.functions) {
       if (Array.isArray(fx))
         arr.push(`export * as ${fx[1]} from '../../../../functions/${fx[0]}'`)
       else
@@ -50,9 +56,14 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   }
 
   if (type === 'vue-components') {
+    if (!componentLibrary.tags) {
+      consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+      process.exit(ExitCode.FatalError)
+    }
+
     arr = determineResetPreset()
 
-    for (const component of components.map(tag => tag.name)) {
+    for (const component of componentLibrary.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
       else
@@ -69,7 +80,12 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   const declarations = []
   const definitions = []
 
-  for (const component of components.map(tag => tag.name)) {
+  if (!webComponentLibrary.tags) {
+    consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  for (const component of webComponentLibrary.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '../../../../components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
