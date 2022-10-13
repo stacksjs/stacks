@@ -31,7 +31,7 @@ jobs:
         run: pnpm artisan key:generate
 
       - name: Publish to npm
-        run: pnpm artisan generate:entries && pnpm --filter './' --filter './.stacks' --filter './.stacks/artisan' --filter './.stacks/vue-components' --filter './.stacks/web-components' --filter './.stacks/functions' publish --access public --no-git-checks
+        run: pnpm artisan generate:entries && pnpm --filter './' --filter './.stacks' --filter './.stacks/cli' --filter './.stacks/vue-components' --filter './.stacks/web-components' --filter './.stacks/functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

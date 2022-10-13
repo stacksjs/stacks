@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/framework",
   "type": "module",
-  "version": "0.36.0",
+  "version": "0.36.1",
   "packageManager": "pnpm@7.13.4",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
