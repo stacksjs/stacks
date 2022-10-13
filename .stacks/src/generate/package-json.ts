@@ -44,14 +44,14 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   "description": "${description}",
   "author": "${library.author}",
   "license": "MIT",
-  "homepage": "https://github.com/${repository}/tree/main/${directory}#readme",
+  "homepage": "https://github.com/${library.repository}/tree/main/${directory}#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/${library.repository}.git",
     "directory": "${directory}"
   },
   "bugs": {
-    "url": "https://github.com/${repository}/issues"
+    "url": "https://github.com/${library.repository}/issues"
   },
   "keywords": ${JSON.stringify(keywords)},
   "contributors": ${JSON.stringify(library.contributors)},
