@@ -8,9 +8,10 @@ const alias: Record<string, string> = {
   '~/': projectPath(),
   'stacks': frameworkPath('src/index.ts'),
   'stacks/*': frameworkPath('*'),
-  'functions/*': functionsPath('*'),
-  'components/*': componentsPath('*'),
   'config': frameworkPath('src/config.ts'),
+  'config/*': frameworkPath('*'),
+  'components/*': componentsPath('*'),
+  'functions/*': functionsPath('*'),
 }
 
 export default alias

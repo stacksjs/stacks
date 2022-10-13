@@ -29,6 +29,12 @@
       "components/*": [
         "./components/*"
       ],
+      "config": [
+        ".stacks/src/config.ts"
+      ],
+      "config/*": [
+        "./config/*"
+      ],
       "functions/*": [
         "./functions/*"
       ],
