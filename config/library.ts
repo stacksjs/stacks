@@ -33,9 +33,6 @@ export const componentLibrary: BuildOptions = {
       name: 'greeting',
       description: 'The greeting.',
     }],
-  }, {
-    name: 'Demo',
-    description: 'A Demo components.',
   }],
 }
 
