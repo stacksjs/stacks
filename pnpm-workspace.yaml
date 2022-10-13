@@ -1,5 +1,5 @@
 packages:
-  - ./.stacks/artisan
+  - ./.stacks/cli
   - ./.stacks/vue-components
   - ./.stacks/web-components
   - ./.stacks/functions

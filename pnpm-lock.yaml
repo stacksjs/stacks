@@ -8,7 +8,7 @@ importers:
       artisan-init: workspace:*
     dependencies:
       '@stacksjs/framework': link:.stacks
-      artisan-init: link:.stacks/artisan
+      artisan-init: link:.stacks/cli
 
   .stacks:
     specifiers:
@@ -99,7 +99,7 @@ importers:
       '@jsdevtools/ez-spawn': 3.0.4
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.29
       '@ow3/eslint-config': 0.30.2_z4bbprzjrhnsfa24uvmcbu7f5q
-      '@rollup/pluginutils': 5.0.0_rollup@2.79.1
+      '@rollup/pluginutils': 5.0.1_rollup@2.79.1
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
       '@types/fs-extra': 9.0.13
@@ -116,7 +116,7 @@ importers:
       '@vueuse/core': 9.3.0_vue@3.2.40
       '@vueuse/head': 0.9.8_vue@3.2.40
       '@vueuse/shared': 9.3.0_vue@3.2.40
-      artisan-init: link:artisan
+      artisan-init: link:cli
       bcryptjs: 2.4.3
       bumpp: 8.2.1
       cac: 6.7.14
@@ -172,7 +172,7 @@ importers:
       vue-router: 4.1.5_vue@3.2.40
       vue-tsc: 1.0.7_typescript@4.8.4
 
-  .stacks/artisan:
+  .stacks/cli:
     specifiers:
       '@jsdevtools/ez-spawn': ^3.0.4
       cac: ^6.7.14
@@ -2231,8 +2231,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@rollup/pluginutils/5.0.0_rollup@2.79.1:
-    resolution: {integrity: sha512-LJAlpJhSH4cAoNrh5G4mQ7VJJgmGVN1A91Skwpd6uMT4CGmDbrZ59RQWwNB08WkLtKOzTHFj6pKgVn18zlDFrQ==}
+  /@rollup/pluginutils/5.0.1_rollup@2.79.1:
+    resolution: {integrity: sha512-4HaCVEXXuObvcPUaUlLt4faHYHCeQOOWNj8NKFGaRSrw3ZLD0TWeAFZicV9vXjnE2nkNuaVTfTuwAnjR+6uc9A==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0
@@ -2240,6 +2240,7 @@ packages:
       rollup:
         optional: true
     dependencies:
+      '@types/estree': 1.0.0
       estree-walker: 2.0.2
       picomatch: 2.3.1
       rollup: 2.79.1

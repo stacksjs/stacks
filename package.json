@@ -39,7 +39,7 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "artisan": "esno .stacks/artisan/src/index.ts",
+    "artisan": "esno .stacks/cli/src/index.ts",
     "fresh": "pnpm artisan fresh",
     "update": "pnpm artisan update",
     "dev:components": "pnpm artisan dev:components",
