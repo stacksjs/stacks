@@ -45,43 +45,43 @@ export function determineResetPreset(preset?: string) {
 }
 
 export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'functions') {
-  return resolve(buildEntriesPath(), `./${type}.ts`)
+  return buildEntriesPath(`${type}.ts`)
 }
 
 export function buildEntriesPath(path?: string) {
-  return resolve(frameworkPath(), `./src/build/entries/${path || ''}`)
+  return frameworkPath(`src/build/entries/${path || ''}`)
 }
 
 export function customElementsDataPath() {
-  return resolve(frameworkPath(), './custom-elements.json')
+  return frameworkPath('custom-elements.json')
 }
 
 export function componentsPath(path?: string) {
-  return resolve(projectPath(), `./components/${path || ''}`)
+  return projectPath(`components/${path || ''}`)
 }
 
 export function pagesPath(path?: string) {
-  return resolve(projectPath(), `./pages/${path || ''}`)
+  return projectPath(`pages/${path || ''}`)
 }
 
 export function functionsPath(path?: string) {
-  return resolve(projectPath(), `./functions/${path || ''}`)
+  return projectPath(`functions/${path || ''}`)
 }
 
 export function configPath(path?: string) {
-  return resolve(projectPath(), `./config/${path || ''}`)
+  return projectPath(`config/${path || ''}`)
 }
 
 export function routesPath(path?: string) {
-  return resolve(projectPath(), `./routes/${path || ''}`)
+  return projectPath(`routes/${path || ''}`)
 }
 
 export function langPath(path?: string) {
-  return resolve(projectPath(), `./lang/${path || ''}`)
+  return projectPath(`lang/${path || ''}`)
 }
 
 export function frameworkPath(path?: string) {
-  return resolve(projectPath(), `./.stacks/${path || ''}`)
+  return projectPath(`.stacks/${path || ''}`)
 }
 
 export function projectPath(filePath = '') {
@@ -94,11 +94,11 @@ export function projectPath(filePath = '') {
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {
-  return resolve(frameworkPath(), `./examples/${type || ''}`)
+  return frameworkPath(`examples/${type || ''}`)
 }
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
-  return resolve(frameworkPath(), `./${type}/package.json`)
+  return frameworkPath(`./${type}/package.json`)
 }
 
 export function env(key?: string, fallback?: any) {
