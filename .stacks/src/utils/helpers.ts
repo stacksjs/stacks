@@ -57,8 +57,6 @@ export function customElementsDataPath() {
 }
 
 export function componentsPath(path?: string) {
-  // eslint-disable-next-line no-console
-  console.log('projectPath', projectPath())
   return projectPath(`components/${path || ''}`)
 }
 
@@ -93,18 +91,18 @@ export function projectPath(filePath = '') {
   // that the cwd is a few dirs up, like in the case when a release happens
   // from a GitHub Action/workflow
   if (path.includes('.stacks'))
-    path = resolve(path, '..', filePath)
+    path = resolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = resolve(path, '..', filePath)
+    path = resolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = resolve(path, '..', filePath)
+    path = resolve(path, '..')
 
   if (!path.includes('.stacks'))
-    path = resolve(path, '.', filePath)
+    path = resolve(path, '.')
 
-  return path
+  return resolve(path, filePath)
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {

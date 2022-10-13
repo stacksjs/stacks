@@ -94,8 +94,6 @@ export function hasFiles(folder: string): boolean {
 }
 
 export function hasComponents(): boolean {
-  // eslint-disable-next-line no-console
-  console.log('componentsPath()', componentsPath())
   return hasFiles(componentsPath())
 }
 
