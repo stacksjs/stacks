@@ -69,7 +69,7 @@ pnpm artisan --help
 ```
 
 <details>
-<summary>View the complete Stacks Artisan Toolkit</summary>
+<summary>View the complete Stacks Toolkit</summary>
 
 ```bash
 pnpm artisan --help # view help menu
