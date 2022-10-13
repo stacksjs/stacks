@@ -98,6 +98,7 @@
     "generate:web-types": "vue-docgen-web-types -c ./src/web-types.config.cjs",
     "generate:vscode-custom-data": "esno src/actions/generate-vscode-custom-data.ts",
     "generate:ide-helpers": "esno src/actions/generate-ide-helpers.ts",
+    "generate:component-meta": "esno src/actions/component-meta.ts",
     "key:generate": "pnpm artisan key:generate"
   },
   "devDependencies": {
@@ -176,6 +177,7 @@
     "vitepress": "1.0.0-alpha.20",
     "vitest": "^0.24.1",
     "vue": "^3.2.40",
+    "vue-component-meta": "^1.0.7",
     "vue-docgen-web-types": "^0.1.8",
     "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.5",

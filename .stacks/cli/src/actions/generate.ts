@@ -78,6 +78,19 @@ export async function generateIdeHelpers() {
   }
 }
 
+export async function generateComponentMeta() {
+  try {
+    await runNpmScript(NpmScript.GenerateComponentMeta, 'ignore')
+    await lintFix('ignore') // the created json file needs to be linted
+    consola.success('Successfully generated component meta.')
+  }
+  catch (error) {
+    consola.error('There was an error generating your component meta information.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
+  }
+}
+
 export async function startGenerationProcess(options: any) {
   if (options.types || options === 'types') {
     await generateTypes()
@@ -103,6 +116,10 @@ export async function startGenerationProcess(options: any) {
     await generateVueCompat()
   }
 
+  else if (options.componentMeta || options === 'component-meta') {
+    await generateComponentMeta()
+  }
+
   else {
     const answer = await prompts.select({
       type: 'select',
@@ -115,6 +132,7 @@ export async function startGenerationProcess(options: any) {
         { title: '4.) VS Code Custom Data', value: 'custom-data' },
         { title: '5.) IDE Helpers', value: 'ide-helpers' },
         { title: '6.) Vue 2 & 3 Compatibility', value: 'vue-compatibility' },
+        { title: '7.) Component Meta', value: 'component-meta' },
       ],
       initial: 0,
     })
@@ -142,6 +160,10 @@ export async function startGenerationProcess(options: any) {
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     else if (answer === 'vue-compatibility')
       await generateVueCompat()
+
+    // @ts-expect-error the answer object type expects to return a void type but it returns a string
+    else if (answer === 'component-meta')
+      await generateComponentMeta()
 
     else process.exit(ExitCode.InvalidArgument)
   }

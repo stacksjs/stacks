@@ -35,6 +35,7 @@ export const enum NpmScript {
   GenerateWebTypes = 'generate:web-types',
   GenerateVsCodeCustomData = 'generate:vscode-custom-data',
   GenerateIdeHelpers = 'generate:ide-helpers',
+  GenerateComponentMeta = 'generate:component-meta',
   Release = 'release',
   Commit = 'commit',
   ExampleVue = 'example:vue',

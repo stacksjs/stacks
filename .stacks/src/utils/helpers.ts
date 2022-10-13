@@ -102,9 +102,10 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 }
 
 export function env(key?: string, fallback?: any) {
-  return key ? import.meta.env[key] : fallback
+  if (key && import.meta?.env)
+    return import.meta.env[key]
 
-  return 'wip'
+  return fallback
 }
 
 export function config(key?: string, fallback?: string) {

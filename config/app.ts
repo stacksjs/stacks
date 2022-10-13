@@ -1,4 +1,5 @@
 import type { AppOptions as Options } from 'stacks'
+import { env } from 'stacks'
 
 export const app: Options = {
   name: env('APP_NAME', 'Stacks'),

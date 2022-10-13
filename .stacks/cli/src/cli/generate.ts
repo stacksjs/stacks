@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateIdeHelpers, generateLibEntries, generateTypes, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from '../actions/generate'
+import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateTypes, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from '../actions/generate'
 
 async function generateCommands(artisan: CAC) {
   artisan
@@ -10,6 +10,7 @@ async function generateCommands(artisan: CAC) {
     .option('-c, --custom-data', 'Generate VS Code custom data (custom-elements.json) for IDEs')
     .option('-i, --ide-helpers', 'Generate IDE helpers')
     .option('-v, --vue-compatibility', 'Generate Vue 2 & 3 compatibility')
+    .option('-c, --component-meta', 'Generate component meta information')
     .option('--debug', 'Add additional debug logs', { default: false })
     .action(async (options: any) => {
       await startGenerationProcess(options)
@@ -50,6 +51,12 @@ async function generateCommands(artisan: CAC) {
     .command('generate:ide-helpers', 'Generate IDE helpers')
     .action(async () => {
       await generateIdeHelpers()
+    })
+
+  artisan
+    .command('generate:component-meta', 'Generate component meta information')
+    .action(async () => {
+      await generateComponentMeta()
     })
 }
 
