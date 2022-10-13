@@ -1,5 +1,6 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
+import { ui } from '../config'
 import { isFile, readTextFile } from './fs'
 
 export async function isInitialized() {
@@ -28,8 +29,8 @@ export async function checkIfAppKeyIsSet() {
  * @param preset
  */
 export function determineResetPreset(preset?: string) {
-  if (reset)
-    preset = reset
+  if (ui.reset)
+    preset = ui.reset
 
   if (preset === 'tailwind')
     return ['import \'@unocss/reset/tailwind.css\'']
