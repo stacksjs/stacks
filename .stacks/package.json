@@ -108,7 +108,7 @@
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@julr/unocss-preset-forms": "^0.0.2",
     "@ow3/eslint-config": "^0.30.2",
-    "@rollup/pluginutils": "^5.0.0",
+    "@rollup/pluginutils": "^5.0.1",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
     "@types/fs-extra": "^9.0.13",
