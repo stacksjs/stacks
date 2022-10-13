@@ -84,14 +84,14 @@ export interface LibraryBuildOptions {
    * your library. For example, including your `HelloWorld` to be built
    * would require `../components/HelloWorld.vue` to be present.
    *
-   * @example
+   * @example results in `export { default as HelloWorld } from './components/HelloWorld.vue'`
    * {
    *   tags: [{
    *     name: 'HelloWorld'
    *   }]
    * }
    *
-   * @example
+   * @example results in `export { default as AppHelloWorld } from './components/HelloWorld.vue'`
    * {
    *   tags: [{
    *     name: ['HelloWorld', 'AppHelloWorld']

@@ -78,7 +78,8 @@
     "generate:web-types": "pnpm artisan generate:web-types",
     "key:generate": "pnpm artisan key:generate",
     "a": "pnpm artisan",
-    "art": "pnpm artisan"
+    "art": "pnpm artisan",
+    "stacks": "pnpm artisan"
   },
   "dependencies": {
     "@stacksjs/framework": "workspace:*",

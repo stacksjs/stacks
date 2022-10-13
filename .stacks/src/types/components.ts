@@ -8,10 +8,16 @@ export interface TagOption {
    *
    * @example
    * {
-   *   name: 'HelloWorld' // export { default as HelloWorld } from '../components/HelloWorld.vue'
+   *   tags: [{
+   *     name: 'HelloWorld' // results in `export { default as HelloWorld } from './components/HelloWorld.vue'`
+   *   }]
    * }
+   *
+   * @example
    * {
-   *   name: ['HelloWorld', 'AppHelloWorld'] // export { default as AppHelloWorld } from '../components/HelloWorld.vue'
+   *   tags: [{
+   *     name: ['HelloWorld', 'AppHelloWorld'] // results in `export { default as AppHelloWorld } from './components/HelloWorld.vue'`
+   *   }]
    * }
    */
   name: string | string[]
