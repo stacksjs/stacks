@@ -2,18 +2,15 @@
  * The following configuration references local aliases.
  */
 
-import { resolve } from 'pathe'
-import { _dirname } from './utils'
-
-const r = (p: string) => resolve(_dirname, p)
+import { componentsPath, frameworkPath, functionsPath, projectPath } from './utils'
 
 const alias: Record<string, string> = {
-  '~/': r('../../..'),
-  'stacks': r('../index.ts'),
-  'stacks/*': r('../../*'),
-  'functions/*': r('../../../functions/*'),
-  'components/*': r('../../../components/*'),
-  'config': r('./config.ts'),
+  '~/': projectPath(),
+  'stacks': frameworkPath('src/index.ts'),
+  'stacks/*': frameworkPath('*'),
+  'functions/*': functionsPath('*'),
+  'components/*': componentsPath('*'),
+  'config': frameworkPath('src/config.ts'),
 }
 
 export default alias
