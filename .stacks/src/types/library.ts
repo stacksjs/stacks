@@ -103,7 +103,7 @@ export interface LibraryBuildOptions {
    *   }]
    * }
    */
-  tags?: TagsOptions[]
+  tags?: TagsOptions
 }
 
 /**
