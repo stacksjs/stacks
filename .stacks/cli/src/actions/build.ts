@@ -1,9 +1,8 @@
 import Prompts from 'prompts'
 import consola from 'consola'
-import { hasFiles } from '../../../src/utils/fs'
+import { hasComponents, hasFunctions } from '../../../src/utils/fs'
 import { NpmScript } from '../../../src/types'
 import { ExitCode } from '../cli/exit-code'
-import { componentsPath, functionsPath } from '../../../src/utils/helpers'
 import { runNpmScript } from './run-npm-script'
 import { generateTypes } from './generate'
 
@@ -24,7 +23,7 @@ export async function buildComponentLibraries() {
 export async function buildVueComponentLibrary() {
   consola.info('Building your component library...')
 
-  if (hasFiles(componentsPath())) {
+  if (hasComponents()) {
     try {
       await runNpmScript(NpmScript.BuildComponents)
       consola.success('Your component library was built successfully.')
@@ -42,7 +41,7 @@ export async function buildVueComponentLibrary() {
 export async function buildWebComponentLibrary() {
   consola.info('Building your component library for production use & npm/CDN distribution...')
 
-  if (hasFiles(componentsPath())) {
+  if (hasComponents()) {
     try {
       await runNpmScript(NpmScript.BuildWebComponents)
       consola.success('Your Web Component library was built successfully.')
@@ -86,7 +85,7 @@ export async function buildStacks() {
 export async function buildFunctionsLibrary() {
   consola.info('Building your functions library for production use & npm/CDN distribution...')
 
-  if (hasFiles(functionsPath())) {
+  if (hasFunctions()) {
     try {
       await runNpmScript(NpmScript.BuildFunctions)
       consola.success('Your functions library was built successfully.')
