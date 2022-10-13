@@ -165,7 +165,7 @@ importers:
       vite-plugin-vue-markdown: 0.22.1_vite@3.1.8
       vite-ssg: 0.21.1_hg7azww6nql3gjzxogw5uotrau
       vite-ssg-sitemap: 0.4.3
-      vitepress: 1.0.0-alpha.20_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.20
       vitest: 0.24.1
       vue: 3.2.40
       vue-component-meta: 1.0.7_typescript@4.8.4
@@ -217,14 +217,16 @@ packages:
       '@algolia/autocomplete-shared': 1.7.1
     dev: true
 
-  /@algolia/autocomplete-preset-algolia/1.7.1_qs6lk5nhygj2o3hj4sf6xnr724:
+  /@algolia/autocomplete-preset-algolia/1.7.1_algoliasearch@4.14.2:
     resolution: {integrity: sha512-pJwmIxeJCymU1M6cGujnaIYcY3QPOVYZOXhFkWVM7IxKzy272BwCvMFMyc5NpG/QmiObBxjo7myd060OeTNJXg==}
     peerDependencies:
       '@algolia/client-search': ^4.9.1
       algoliasearch: ^4.9.1
+    peerDependenciesMeta:
+      '@algolia/client-search':
+        optional: true
     dependencies:
       '@algolia/autocomplete-shared': 1.7.1
-      '@algolia/client-search': 4.14.2
       algoliasearch: 4.14.2
     dev: true
 
@@ -1454,7 +1456,7 @@ packages:
     resolution: {integrity: sha512-EXpLCrk55f+cYqmHsSR+yD/0gAIMxxA9QK9lnQWzhMCvt+YmoBN7Zx94s++Kv0+unHk39vxNO8t+CMA2WSS3wA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      regenerator-runtime: 0.13.9
+      regenerator-runtime: 0.13.10
     dev: true
 
   /@babel/standalone/7.19.5:
@@ -1575,10 +1577,10 @@ packages:
     resolution: {integrity: sha512-gaP6TxxwQC+K8D6TRx5WULUWKrcbzECOPA2KCVMuI+6C7dNiGUk5yXXzVhc5sld79XKYLnO9DRTI4mjXDYkh+g==}
     dev: true
 
-  /@docsearch/js/3.2.1_tbpndr44ulefs3hehwpi2mkf2y:
+  /@docsearch/js/3.2.1:
     resolution: {integrity: sha512-H1PekEtSeS0msetR2YGGey2w7jQ2wAKfGODJvQTygSwMgUZ+2DHpzUgeDyEBIXRIfaBcoQneqrzsljM62pm6Xg==}
     dependencies:
-      '@docsearch/react': 3.2.1_tbpndr44ulefs3hehwpi2mkf2y
+      '@docsearch/react': 3.2.1
       preact: 10.11.1
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -1587,7 +1589,7 @@ packages:
       - react-dom
     dev: true
 
-  /@docsearch/react/3.2.1_tbpndr44ulefs3hehwpi2mkf2y:
+  /@docsearch/react/3.2.1:
     resolution: {integrity: sha512-EzTQ/y82s14IQC5XVestiK/kFFMe2aagoYFuTAIfIb/e+4FU7kSMKonRtLwsCiLQHmjvNQq+HO+33giJ5YVtaQ==}
     peerDependencies:
       '@types/react': '>= 16.8.0 < 19.0.0'
@@ -1602,7 +1604,7 @@ packages:
         optional: true
     dependencies:
       '@algolia/autocomplete-core': 1.7.1
-      '@algolia/autocomplete-preset-algolia': 1.7.1_qs6lk5nhygj2o3hj4sf6xnr724
+      '@algolia/autocomplete-preset-algolia': 1.7.1_algoliasearch@4.14.2
       '@docsearch/css': 3.2.1
       algoliasearch: 4.14.2
     transitivePeerDependencies:
@@ -8250,8 +8252,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /recast/0.21.1:
-    resolution: {integrity: sha512-PF61BHLaOGF5oIKTpSrDM6Qfy2d7DIx5qblgqG+wjqHuFH97OgAqBYFIJwEuHTrM6pQGT17IJ8D0C/jVu/0tig==}
+  /recast/0.21.5:
+    resolution: {integrity: sha512-hjMmLaUXAm1hIuTqOdeYObMslq/q+Xff6QE3Y2P+uoHAg2nmVlLBps2hzh1UJDdMtDTMXOFewK6ky51JQIeECg==}
     engines: {node: '>= 4'}
     dependencies:
       ast-types: 0.15.2
@@ -8291,8 +8293,8 @@ packages:
     resolution: {integrity: sha512-zrceR/XhGYU/d/opr2EKO7aRHUeiBI8qjtfHqADTwZd6Szfy16la6kqD0MIUs5z5hx6AaKa+PixpPrR289+I0A==}
     dev: true
 
-  /regenerator-runtime/0.13.9:
-    resolution: {integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==}
+  /regenerator-runtime/0.13.10:
+    resolution: {integrity: sha512-KepLsg4dU12hryUO7bp/axHAKvwGOCV0sGloQtpagJ12ai+ojVDqkeGSiRX1zlq+kjIMZ1t7gpze+26QqtdGqw==}
     dev: true
 
   /regenerator-transform/0.15.0:
@@ -9824,12 +9826,12 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitepress/1.0.0-alpha.20_tbpndr44ulefs3hehwpi2mkf2y:
+  /vitepress/1.0.0-alpha.20:
     resolution: {integrity: sha512-8WXPQbWsoAckdS9FqhZ8MQWLDhq6DQG8dhuEtwsZmPMYtl/ezRYWoV/8gJD0T0xUbz6O6vJ8Sddq7OvEwLFUFA==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.2.1
-      '@docsearch/js': 3.2.1_tbpndr44ulefs3hehwpi2mkf2y
+      '@docsearch/js': 3.2.1
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.40
       '@vue/devtools-api': 6.4.4
       '@vueuse/core': 9.3.0_vue@3.2.40
@@ -9933,8 +9935,8 @@ packages:
       vue: 3.2.40
     dev: true
 
-  /vue-docgen-api/4.52.0_vue@3.2.40:
-    resolution: {integrity: sha512-2HSt9KLQ/ehJiwV4+6LgOjRqzh37vtUv6sKhSIp3CAPlwSd4/Bq2uvbs0+GJxdfrMnVquwY5DOavgNSEHsPA2w==}
+  /vue-docgen-api/4.54.2_vue@3.2.40:
+    resolution: {integrity: sha512-KWFjSfoD/mJ8wQX1vvj0IvJCyRFGo+Fymy3J5qzOeYLIQfknkZ7ssZX4cqH25ks4TD0OIBrZI4D5ZiyKlMK2YQ==}
     dependencies:
       '@babel/parser': 7.19.4
       '@babel/types': 7.19.4
@@ -9944,7 +9946,7 @@ packages:
       hash-sum: 1.0.2
       lru-cache: 4.1.5
       pug: 3.0.2
-      recast: 0.21.1
+      recast: 0.21.5
       ts-map: 1.0.3
       vue-inbrowser-compiler-independent-utils: 4.54.1_vue@3.2.40
     transitivePeerDependencies:
@@ -9962,7 +9964,7 @@ packages:
       lodash: 4.17.21
       mkdirp: 1.0.4
       vue: 3.2.40
-      vue-docgen-api: 4.52.0_vue@3.2.40
+      vue-docgen-api: 4.54.2_vue@3.2.40
     dev: true
 
   /vue-eslint-parser/9.1.0_eslint@8.25.0:

@@ -85,7 +85,7 @@
   },
   "dependencies": {
     "@stacksjs/framework": "workspace:*",
-    "stacks-init": "workspace:*"
+    "artisan-init": "workspace:*"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
