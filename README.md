@@ -48,11 +48,11 @@ npx artisan-init my-project
 ```
 
 > **Note**
-> pnpm 7.13 or higher required. _Run the setup script & Artisan would set you up._
+> pnpm 7.13 or higher required. _Run the setup script & Stacks Artisan will set you up._
 
 ## 🤖 Usage
 
-Meet the Artisan Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
+Meet the Stacks Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
 
 ```bash
 pnpm artisan install # installs all dependencies
