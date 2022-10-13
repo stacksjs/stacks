@@ -69,6 +69,10 @@ export function functionsPath(path?: string) {
   return projectPath(`functions/${path || ''}`)
 }
 
+export function cliPath(path?: string) {
+  return frameworkPath(`cli/${path || ''}`)
+}
+
 export function configPath(path?: string) {
   return projectPath(`config/${path || ''}`)
 }

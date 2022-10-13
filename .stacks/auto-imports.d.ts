@@ -28,6 +28,7 @@ declare global {
   const chai: typeof import('vitest')['chai']
   const checkIfAppKeyIsSet: typeof import('./src/utils/helpers')['checkIfAppKeyIsSet']
   const clamp: typeof import('@vueuse/shared')['clamp']
+  const cliPath: typeof import('./src/utils/helpers')['cliPath']
   const collect: typeof import('collect.js')['collect']
   const componentLibrary: typeof import('../config/library')['componentLibrary']
   const componentsPath: typeof import('./src/utils/helpers')['componentsPath']
@@ -424,6 +425,7 @@ declare module '@vue/runtime-core' {
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly checkIfAppKeyIsSet: UnwrapRef<typeof import('./src/utils/helpers')['checkIfAppKeyIsSet']>
     readonly clamp: UnwrapRef<typeof import('@vueuse/shared')['clamp']>
+    readonly cliPath: UnwrapRef<typeof import('./src/utils/helpers')['cliPath']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
     readonly componentLibrary: UnwrapRef<typeof import('../config/library')['componentLibrary']>
     readonly componentsPath: UnwrapRef<typeof import('./src/utils/helpers')['componentsPath']>
