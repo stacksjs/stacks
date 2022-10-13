@@ -1,6 +1,6 @@
 ![Social Card of the Stacks CLI](assets/cover_cli.png)
 
-# Artisan CLI
+# Stacks CLI
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]

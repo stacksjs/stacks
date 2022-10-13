@@ -6,7 +6,7 @@
  */
 
 import consola from 'consola'
-import { generateVsCodeCustomData, generateWebTypes } from '../../artisan/src/actions/generate'
+import { generateVsCodeCustomData, generateWebTypes } from '../../cli/src/actions/generate'
 import { hasComponents } from '..'
 
 async function generate() {
