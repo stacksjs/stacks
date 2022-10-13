@@ -1,7 +1,6 @@
-import { resolve } from 'pathe'
 import Prompts from 'prompts'
 import consola from 'consola'
-import { hasFiles } from '../../../src/utils/fs'
+import { hasComponents } from '../../../src/utils/fs'
 import { NpmScript } from '../../../src/types'
 import { ExitCode } from '../cli/exit-code'
 import { runNpmScript } from './run-npm-script'
@@ -9,7 +8,7 @@ import { runNpmScript } from './run-npm-script'
 const { prompts } = Prompts
 
 export async function testComponentExample() {
-  if (hasFiles(resolve(process.cwd(), './components'))) {
+  if (hasComponents()) {
     try {
       await runNpmScript(NpmScript.ExampleVue)
       consola.success('Your component library was built successfully.')
@@ -27,7 +26,7 @@ export async function testComponentExample() {
 export async function testWebComponentExample() {
   consola.info('Building your Web Component library...')
 
-  if (hasFiles(resolve(process.cwd(), './components'))) {
+  if (hasComponents()) {
     try {
       await runNpmScript(NpmScript.BuildWebComponents)
       consola.success('Your Web Component library was built successfully.')
