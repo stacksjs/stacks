@@ -1,3 +1,5 @@
+import type { TagsOptions } from '.'
+
 export interface LibraryOptions {
   /**
    * The base name of your library/libraries.
@@ -69,6 +71,34 @@ export interface LibraryBuildOptions {
    * @default false
    */
   shouldGenerateSourcemap?: boolean
+
+  /**
+   * This is where you define the functions/composables that need to be included
+   * in your library. For example, including your `counter` function to be
+   * built would require `../functions/counter.ts` to be present.
+   */
+  functions?: string[]
+
+  /**
+   * This is where you define the components that need to be included in
+   * your library. For example, including your `HelloWorld` to be built
+   * would require `../components/HelloWorld.vue` to be present.
+   *
+   * @example
+   * {
+   *   tags: [{
+   *     name: 'HelloWorld'
+   *   }]
+   * }
+   *
+   * @example
+   * {
+   *   tags: [{
+   *     name: ['HelloWorld', 'AppHelloWorld']
+   *   }]
+   * }
+   */
+  tags?: TagsOptions[]
 }
 
 /**

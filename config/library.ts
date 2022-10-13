@@ -6,7 +6,7 @@
  * future releases. Read more in its documentation:
  */
 
-import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacks/src'
+import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacks'
 
 export const library: Options = {
   name: 'hello-world',
@@ -26,12 +26,27 @@ export const componentLibrary: BuildOptions = {
   name: `${stackName}-vue`,
   description: 'Your Vue component library description',
   keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
+  tags: [{
+    name: ['HelloWorld', 'AppHelloWorld'],
+    description: 'The Hello World custom element, built via this framework.',
+    attributes: [{
+      name: 'greeting',
+      description: 'The greeting.',
+    }],
+  }, {
+    name: 'Demo',
+    description: 'A Demo components.',
+  }],
 }
 
 export const webComponentLibrary: BuildOptions = {
   name: `${stackName}-elements`,
   description: 'Your framework agnostic web component library description.',
   keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
+  functions: [
+    'counter',
+    'dark',
+  ],
 }
 
 export const functionLibrary: BuildOptions = {
@@ -40,4 +55,8 @@ export const functionLibrary: BuildOptions = {
   keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
   shouldBuildIife: false,
   shouldGenerateSourcemap: false,
+  functions: [
+    'counter',
+    'dark',
+  ],
 }

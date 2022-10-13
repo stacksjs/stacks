@@ -1,7 +1,5 @@
 export * from '../../config/app'
-export * from '../../config/components'
 export * as docs from '../../config/docs'
-export * from '../../config/functions'
 export * from '../../config/git'
 export * from '../../config/hashing'
 export * from '../../config/library'
