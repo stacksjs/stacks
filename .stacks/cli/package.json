@@ -58,6 +58,6 @@
     "pathe": "^0.3.9"
   },
   "devDependencies": {
-    "unbuild": "^0.8.11"
+    "unbuild": "^0.9.1"
   }
 }
