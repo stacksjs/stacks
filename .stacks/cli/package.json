@@ -3,14 +3,14 @@
   "type": "module",
   "version": "0.36.2",
   "packageManager": "pnpm@7.13.4",
-  "description": "Artisan core.",
+  "description": "Stacks CLI core.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/artisan#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": ".stacks/artisan"
+    "directory": ".stacks/cli"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

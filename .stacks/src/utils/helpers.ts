@@ -57,6 +57,8 @@ export function customElementsDataPath() {
 }
 
 export function componentsPath(path?: string) {
+  // eslint-disable-next-line no-console
+  console.log('projectPath', projectPath())
   return projectPath(`components/${path || ''}`)
 }
 

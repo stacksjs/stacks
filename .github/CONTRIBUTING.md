@@ -62,92 +62,92 @@ git pull
 The following list is of some of the most common ways to interact with the Stacks API. Meet Artisan:
 
 ```bash
-pnpm artisan install # installs all dependencies
-pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan build # follow CLI prompts to select which library (or server) to build
-pnpm artisan commit # follow CLI prompts for committing changes
-pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
+pnpm stacks install # installs all dependencies
+pnpm stacks dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm stacks build # follow CLI prompts to select which library (or server) to build
+pnpm stacks commit # follow CLI prompts for committing changes
+pnpm stacks release # creates the releases for the stack & consequently, publishes them to npm
 
-pnpm artisan make:component HelloWorld # scaffolds a component
-pnpm artisan make:function HelloWorld # scaffolds a function
-pnpm artisan make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+pnpm stacks make:component HelloWorld # scaffolds a component
+pnpm stacks make:function HelloWorld # scaffolds a function
+pnpm stacks make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-pnpm artisan help
+pnpm stacks help
 ```
 
 <details>
 <summary>View the complete Artisan Toolkit</summary>
 
 ```bash
-pnpm artisan --help # view help menu
-pnpm artisan install # installs your dependencies
-pnpm artisan fresh # fresh reinstall of all deps
-pnpm artisan update # auto-update deps & the Stacks framework
+pnpm stacks --help # view help menu
+pnpm stacks install # installs your dependencies
+pnpm stacks fresh # fresh reinstall of all deps
+pnpm stacks update # auto-update deps & the Stacks framework
 
-pnpm artisan --version # get the Stacks version
-pnpm artisan --help # view help menu
+pnpm stacks --version # get the Stacks version
+pnpm stacks --help # view help menu
 
 # if you need any more info to any command listed here, you may suffix
-# any of them via the "help option", i.e. `pnpm artisan ... --help`
+# any of them via the "help option", i.e. `pnpm stacks ... --help`
 
-pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan dev:components # starts local playground dev server
-pnpm artisan dev:pages # starts local playground pages dev server
-pnpm artisan dev:functions # stubs local the functions
-pnpm artisan dev:docs # starts local docs dev server
+pnpm stacks dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm stacks dev:components # starts local playground dev server
+pnpm stacks dev:pages # starts local playground pages dev server
+pnpm stacks dev:functions # stubs local the functions
+pnpm stacks dev:docs # starts local docs dev server
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-pnpm artisan serve # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan serve:components # starts local playground dev server
-pnpm artisan serve:pages # starts local playground pages dev server
-pnpm artisan serve:functions # stubs local the functions
-pnpm artisan serve:docs # starts local docs dev server
+pnpm stacks serve # starts one of the dev servers (components, functions, pages, or docs)
+pnpm stacks serve:components # starts local playground dev server
+pnpm stacks serve:pages # starts local playground pages dev server
+pnpm stacks serve:functions # stubs local the functions
+pnpm stacks serve:docs # starts local docs dev server
 
 # sets your application key
-pnpm artisan key:generate
+pnpm stacks key:generate
 
-pnpm artisan make:stack project
-pnpm artisan make:component HelloWorld
-pnpm artisan make:function hello-world
-pnpm artisan make:page hello-world
-pnpm artisan make:lang de
-pnpm artisan make:database cars
-pnpm artisan make:table brands
-pnpm artisan make:migration create_cars_table
-pnpm artisan make:factory cars
+pnpm stacks make:stack project
+pnpm stacks make:component HelloWorld
+pnpm stacks make:function hello-world
+pnpm stacks make:page hello-world
+pnpm stacks make:lang de
+pnpm stacks make:database cars
+pnpm stacks make:table brands
+pnpm stacks make:migration create_cars_table
+pnpm stacks make:factory cars
 
-pnpm artisan stub # stubs all the libraries
-pnpm artisan stub:functions # stubs the function library
+pnpm stacks stub # stubs all the libraries
+pnpm stacks stub:functions # stubs the function library
 
-pnpm artisan lint # runs linter
-pnpm artisan lint:fix # runs linter and fixes issues
+pnpm stacks lint # runs linter
+pnpm stacks lint:fix # runs linter and fixes issues
 
-pnpm artisan commit # follow CLI prompts for committing staged changes
-pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
-pnpm artisan changelog # generates CHANGELOG.md
+pnpm stacks commit # follow CLI prompts for committing staged changes
+pnpm stacks release # creates the releases for the stack & triggers the Release Action (workflow)
+pnpm stacks changelog # generates CHANGELOG.md
 
 # building for production (e.g. npm, Vercel, Netlify, et al.)
-pnpm artisan build # select a specific build (follow CLI prompts)
-pnpm artisan build:components # builds Vue component library & Web Component library
-pnpm artisan build:functions # builds function library
-pnpm artisan build:vue-components # builds Vue 2 & 3-ready Component library
-pnpm artisan build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-pnpm artisan build:pages # builds pages
+pnpm stacks build # select a specific build (follow CLI prompts)
+pnpm stacks build:components # builds Vue component library & Web Component library
+pnpm stacks build:functions # builds function library
+pnpm stacks build:vue-components # builds Vue 2 & 3-ready Component library
+pnpm stacks build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+pnpm stacks build:pages # builds pages
 
 # when deploying your app/s
-pnpm artisan deploy:docs
-pnpm artisan deploy:functions
-pnpm artisan deploy:pages
+pnpm stacks deploy:docs
+pnpm stacks deploy:functions
+pnpm stacks deploy:pages
 
 # select the example to run (follow CLI prompts)
-pnpm artisan example
+pnpm stacks example
 
 # test your stack
-pnpm artisan test # runs test suite
-pnpm artisan test:unit # runs unit tests
-pnpm artisan test:e2e # runs e2e tests
-pnpm artisan test:coverage # runs test coverage
-pnpm artisan test:types # runs typecheck
+pnpm stacks test # runs test suite
+pnpm stacks test:unit # runs unit tests
+pnpm stacks test:e2e # runs e2e tests
+pnpm stacks test:coverage # runs test coverage
+pnpm stacks test:types # runs typecheck
 ```
 
 </details>

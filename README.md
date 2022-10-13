@@ -48,113 +48,113 @@ npx artisan-init my-project
 ```
 
 > **Note**
-> pnpm 7.13 or higher required. _Run the setup script & Stacks Artisan will set you up._
+> pnpm 7.13 or higher required. _Run the setup script & Stacks will set you up._
 
 ## 🤖 Usage
 
 Meet the Stacks Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
 
 ```bash
-pnpm artisan install # installs all dependencies
-pnpm artisan dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm artisan build # follow CLI prompts to select which library (or server) to build
-pnpm artisan commit # follow CLI prompts for committing changes
-pnpm artisan release # creates the releases for the stack & consequently, publishes them to npm
+pnpm stacks install # installs all dependencies
+pnpm stacks dev # starts one of the dev servers (components, functions, pages, or docs)
+pnpm stacks build # follow CLI prompts to select which library (or server) to build
+pnpm stacks commit # follow CLI prompts for committing changes
+pnpm stacks release # creates the releases for the stack & consequently, publishes them to npm
 
-pnpm artisan make:component HelloWorld # scaffolds a component
-pnpm artisan make:function HelloWorld # scaffolds a function
-pnpm artisan make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+pnpm stacks make:component HelloWorld # scaffolds a component
+pnpm stacks make:function HelloWorld # scaffolds a function
+pnpm stacks make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-pnpm artisan --help
+pnpm stacks --help
 ```
 
 <details>
 <summary>View the complete Stacks Toolkit</summary>
 
 ```bash
-pnpm artisan --help # view help menu
-pnpm artisan install # installs your dependencies
-pnpm artisan fresh # fresh reinstall of all deps
-pnpm artisan update # auto-update deps & the Stacks framework
+pnpm stacks --help # view help menu
+pnpm stacks install # installs your dependencies
+pnpm stacks fresh # fresh reinstall of all deps
+pnpm stacks update # auto-update deps & the Stacks framework
 
-pnpm artisan --version # get the Stacks version
-pnpm artisan --help # view help menu
+pnpm stacks --version # get the Stacks version
+pnpm stacks --help # view help menu
 
 # if you need any more info on any command listed here, you may suffix
-# any of them via the "help option", i.e. `pnpm artisan ... --help`
+# any of them via the "help option", i.e. `pnpm stacks ... --help`
 
-pnpm artisan dev # start one of the dev servers (components, functions, pages, or docs)
-pnpm artisan dev:components # start local playground dev server
-pnpm artisan dev:pages # start local playground pages dev server
-pnpm artisan dev:functions # stub local the functions
-pnpm artisan dev:docs # start local docs dev server
+pnpm stacks dev # start one of the dev servers (components, functions, pages, or docs)
+pnpm stacks dev:components # start local playground dev server
+pnpm stacks dev:pages # start local playground pages dev server
+pnpm stacks dev:functions # stub local the functions
+pnpm stacks dev:docs # start local docs dev server
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-pnpm artisan serve # start one of the dev servers (components, functions, pages, or docs)
-pnpm artisan serve:components # start local playground dev server
-pnpm artisan serve:pages # start local playground pages dev server
-pnpm artisan serve:functions # stub local the functions
-pnpm artisan serve:docs # start local docs dev server
+pnpm stacks serve # start one of the dev servers (components, functions, pages, or docs)
+pnpm stacks serve:components # start local playground dev server
+pnpm stacks serve:pages # start local playground pages dev server
+pnpm stacks serve:functions # stub local the functions
+pnpm stacks serve:docs # start local docs dev server
 
 # building for production (e.g. npm, Vercel, Netlify, et al.)
-pnpm artisan build # select a specific build (follow CLI prompts)
-pnpm artisan build:components # build Vue component library & Web Component library
-pnpm artisan build:functions # build function library
-pnpm artisan build:vue-components # build Vue 2 & 3-ready Component library
-pnpm artisan build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-pnpm artisan build:pages # build SSG pages
+pnpm stacks build # select a specific build (follow CLI prompts)
+pnpm stacks build:components # build Vue component library & Web Component library
+pnpm stacks build:functions # build function library
+pnpm stacks build:vue-components # build Vue 2 & 3-ready Component library
+pnpm stacks build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
+pnpm stacks build:pages # build SSG pages
 
 # sets your application key
-pnpm artisan key:generate
+pnpm stacks key:generate
 
-pnpm artisan make:stack project
-pnpm artisan make:component HelloWorld
-pnpm artisan make:function hello-world
-pnpm artisan make:page hello-world
-pnpm artisan make:lang de
-pnpm artisan make:database cars
-pnpm artisan make:table brands
-pnpm artisan make:migration create_cars_table
-pnpm artisan make:factory cars
+pnpm stacks make:stack project
+pnpm stacks make:component HelloWorld
+pnpm stacks make:function hello-world
+pnpm stacks make:page hello-world
+pnpm stacks make:lang de
+pnpm stacks make:database cars
+pnpm stacks make:table brands
+pnpm stacks make:migration create_cars_table
+pnpm stacks make:factory cars
 
-pnpm artisan stub # stubs all the libraries
-pnpm artisan stub:functions # stubs the function library
+pnpm stacks stub # stubs all the libraries
+pnpm stacks stub:functions # stubs the function library
 
-pnpm artisan lint # runs linter
-pnpm artisan lint:fix # runs linter and fixes issues
+pnpm stacks lint # runs linter
+pnpm stacks lint:fix # runs linter and fixes issues
 
-pnpm artisan commit # follow CLI prompts for committing staged changes
-pnpm artisan release # creates the releases for the stack & triggers the Release Action (workflow)
-pnpm artisan changelog # generates CHANGELOG.md
+pnpm stacks commit # follow CLI prompts for committing staged changes
+pnpm stacks release # creates the releases for the stack & triggers the Release Action (workflow)
+pnpm stacks changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
-pnpm artisan deploy:docs
-pnpm artisan deploy:functions
-pnpm artisan deploy:pages
+pnpm stacks deploy:docs
+pnpm stacks deploy:functions
+pnpm stacks deploy:pages
 
 # select the example to run (follow CLI prompts)
-pnpm artisan example
+pnpm stacks example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
-pnpm artisan generate
-pnpm artisan generate:types
-pnpm artisan generate:entries
-pnpm artisan generate:vue-compat
-pnpm artisan generate:web-types
-pnpm artisan generate:vscode-custom-data
-pnpm artisan generate:ide-helpers
+pnpm stacks generate
+pnpm stacks generate:types
+pnpm stacks generate:entries
+pnpm stacks generate:vue-compat
+pnpm stacks generate:web-types
+pnpm stacks generate:vscode-custom-data
+pnpm stacks generate:ide-helpers
 
 # test your stack
-pnpm artisan test # runs test suite
-pnpm artisan test:unit # runs unit tests
-pnpm artisan test:e2e # runs e2e tests
-pnpm artisan test:coverage # runs test coverage
-pnpm artisan test:types # runs typecheck
+pnpm stacks test # runs test suite
+pnpm stacks test:unit # runs unit tests
+pnpm stacks test:e2e # runs e2e tests
+pnpm stacks test:coverage # runs test coverage
+pnpm stacks test:types # runs typecheck
 ```
 
 </details>
 
-Read more here about the Stacks CLI in the documentation.
+Read more here about the Stacks CLI in the documentation. _As a Laravel fan, you may enjoy the `artisan` alias._
 
 ## 📚 Utilizing the Built Libraries
 
