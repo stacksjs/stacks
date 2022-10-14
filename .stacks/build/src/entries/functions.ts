@@ -1,2 +1,2 @@
-export * from '../../../functions/counter'
-export * from '../../../functions/dark'
+export * from '../../../../functions/counter'
+export * from '../../../../functions/dark'

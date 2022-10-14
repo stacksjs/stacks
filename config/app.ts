@@ -1,5 +1,5 @@
-import type { AppOptions as Options } from 'stacks'
-import { env } from 'stacks'
+import type { AppOptions as Options } from '@stacksjs/types'
+import { env } from '@stacksjs/security'
 
 export const app: Options = {
   name: env('APP_NAME', 'Stacks'),

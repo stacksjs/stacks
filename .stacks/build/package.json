@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/security"
+    "directory": "./.stacks/build"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -40,7 +40,7 @@
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
-    "artisan": "esno ./artisan/src/index.ts"
+    "artisan": "esno ./cli/src/index.ts"
   },
   "devDependencies": {
     "detect-indent": "^7.0.1",

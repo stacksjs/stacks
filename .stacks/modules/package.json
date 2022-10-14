@@ -40,7 +40,7 @@
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
-    "artisan": "esno ./artisan/src/index.ts"
+    "artisan": "esno ./cli/src/index.ts"
   },
   "devDependencies": {
     "detect-indent": "^7.0.1",

@@ -30,7 +30,7 @@
         "./components/*"
       ],
       "config": [
-        ".stacks/src/config.ts"
+        ".stacks/config/config.ts"
       ],
       "config/*": [
         "./config/*"

@@ -2,7 +2,9 @@ packages:
   - ./.stacks/actions
   - ./.stacks/build
   - ./.stacks/cli
+  - ./.stacks/config
   - ./.stacks/modules
+  - ./.stacks/router
   - ./.stacks/utils
   - ./.stacks/security
   - ./.stacks/vue-components

@@ -1,7 +1,7 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-import { isFile, readTextFile } from '../../utils/fs'
-import { ui } from './config'
+import { isFile, readTextFile } from '@stacksjs/utils'
+import { ui } from '@stacksjs/config'
 
 export async function isInitialized() {
   if (isFile('.env'))

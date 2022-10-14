@@ -1,7 +1,7 @@
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { version } from '../vue-components/package.json'
+import { library } from '../config/src'
 import { componentsPath, frameworkPath } from './helpers'
-import { library } from './config'
 
 export default <WebTypesBuilderConfig> {
   cwd: process.cwd(),

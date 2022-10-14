@@ -42,7 +42,7 @@
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
-    "artisan": "esno ./artisan/src/index.ts",
+    "artisan": "esno ./cli/src/index.ts",
     "dev:components": "vite serve ./src/components -c ./src/build/vue-components.ts",
     "build:components": "vite build -c ./src/build/vue-components.ts",
     "build:web-components": "vite build -c ./src/build/web-components.ts",
