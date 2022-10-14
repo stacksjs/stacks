@@ -1,8 +1,8 @@
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
-import type { Manifest, NpmScript } from '../src/types'
-import { ExitCode } from '../cli/src/commands/exit-code'
-import { frameworkPath } from '../src/utils/helpers'
+import type { Manifest, NpmScript } from '@stacksjs/types'
+import { ExitCode } from '../../cli/src/commands/exit-code'
+import { frameworkPath } from '../../core/helpers'
 import { isManifest } from './manifest'
 import { readJsonFile } from './fs'
 

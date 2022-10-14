@@ -1,8 +1,8 @@
 import consola from 'consola'
+import { packageJsonPath } from '@stacksjs/framework'
+import { componentLibrary, functionLibrary, library, webComponentLibrary } from '@stacksjs/config'
+import { writeTextFile } from '@stacksjs/utils'
 import { packageManager } from '../../../package.json'
-import { componentLibrary, functionLibrary, library, webComponentLibrary } from '../../../../config/library'
-import { writeTextFile } from '../../../utils/src'
-import { packageJsonPath } from '../../../src/helpers'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config
@@ -69,7 +69,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../src/build/${config}.ts",
+    "build": "vite build -c ../build/${config}.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

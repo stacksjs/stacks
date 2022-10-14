@@ -2,14 +2,14 @@
  * The following configuration references local aliases.
  */
 
-import { componentsPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/utils'
+import { componentsPath, configPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/utils'
 
 const alias: Record<string, string> = {
   '~/': projectPath(),
-  'stacks': frameworkPath('src/index.ts'),
+  'stacks': frameworkPath('core/index.ts'),
   'stacks/*': frameworkPath('*'),
-  'config': frameworkPath('src/config.ts'),
-  'config/*': frameworkPath('*'),
+  'config': configPath(),
+  'config/*': configPath('*'),
   'components/*': componentsPath('*'),
   'functions/*': functionsPath('*'),
 }

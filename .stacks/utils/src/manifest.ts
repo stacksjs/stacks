@@ -1,4 +1,4 @@
-import type { Manifest } from '../src/types'
+import type { Manifest } from '@stacksjs/types'
 
 /**
  * Determines whether the specified value is a package manifest.

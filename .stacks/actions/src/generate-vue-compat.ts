@@ -5,6 +5,6 @@
  * https://github.com/vueuse/vueuse/blob/main/scripts/fix-types.ts
  */
 
-import { generateVueCompat } from '../src/generate'
+import { generateVueCompat } from './generate'
 
 generateVueCompat(['wip'])

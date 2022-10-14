@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
-import type { ViteConfig } from '../../types'
-import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '../src'
-import alias from '../src/alias'
-import { functionsPath, projectPath } from '../utils/src'
+import type { ViteConfig } from '@stacksjs/types'
+import { functionsPath, projectPath } from '@stacksjs/utils'
+import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '../../core/stacks'
+import alias from '../../core/alias'
 
 const config: ViteConfig = {
   root: functionsPath(),

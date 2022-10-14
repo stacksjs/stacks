@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { determineResetPreset, kebabCase, libraryEntryPath, writeTextFile } from '@stacksjs/utils'
-import { ExitCode } from '../../../cli/src/commands/exit-code'
-import { componentLibrary, functionLibrary, webComponentLibrary } from '../../../../config/library'
+import { componentLibrary, functionLibrary, webComponentLibrary } from '@stacksjs/docs'
+import { ExitCode } from 'stacks-init/src/exit-code'
 
 /**
  * Based on the config values, this method

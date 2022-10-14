@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import { version } from '../../../package.json'
-import { isInitialized } from '../../src/helpers'
-import { buildCommands, devCommands, exampleCommands, generateCommands, initCommands, keyCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './commands'
+import { isInitialized } from '../../core/helpers'
+import { build, dev, example, generate, init, key, make, test, update, utility } from './commands'
 import { ExitCode } from './commands/exit-code'
 
 const artisan = cac('artisan')
@@ -13,20 +13,20 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // before running any commands, check if the project is already initialized
-  await keyCommands(artisan)
+  await key(artisan)
 
   if (!await isInitialized()) {
-    await initCommands(artisan)
+    await init(artisan)
   }
   else {
-    await updateCommands(artisan)
-    await generateCommands(artisan)
-    await devCommands(artisan)
-    await buildCommands(artisan)
-    await utilityCommands(artisan)
-    await makeCommands(artisan)
-    await exampleCommands(artisan)
-    await testCommands(artisan)
+    await update(artisan)
+    await generate(artisan)
+    await dev(artisan)
+    await build(artisan)
+    await utility(artisan)
+    await make(artisan)
+    await example(artisan)
+    await test(artisan)
   }
 
   artisan.help()

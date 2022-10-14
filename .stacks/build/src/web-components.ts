@@ -1,10 +1,10 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '../../types'
-import alias from '../src/alias'
-import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../src'
-import { webComponentLibrary } from '../../config/library'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../utils/src'
+import type { ViteConfig } from '@stacksjs/types'
+import { webComponentLibrary } from '@stacksjs/config'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/utils'
+import alias from '../../core/alias'
+import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../../core/stacks'
 
 const isWebComponent = true
 

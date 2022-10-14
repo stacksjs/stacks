@@ -3,8 +3,8 @@ import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, sta
 import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
-import type { JsonFile, TextFile } from '../../types'
-import { componentsPath, functionsPath, projectPath } from '../../src/helpers'
+import type { JsonFile, TextFile } from '@stacksjs/types'
+import { componentsPath, functionsPath, projectPath } from '../../core/helpers'
 import { contains } from './array'
 
 /**
