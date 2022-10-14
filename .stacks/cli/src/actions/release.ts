@@ -1,6 +1,6 @@
 import consola from 'consola'
-import { NpmScript } from '../../../src/types'
-import { runNpmScript } from './run-npm-script'
+import { NpmScript } from '../../../types'
+import { runNpmScript } from '../../../utils/run-npm-script'
 
 export async function release() {
   consola.info('Releasing...')

@@ -278,7 +278,8 @@
     "kibibytes",
     "encrypter",
     "prefixs", // TODO: remove once cz-git releases fixes
-    "cryptojs"
+    "cryptojs",
+    "frontmatter"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

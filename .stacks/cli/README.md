@@ -7,7 +7,7 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-The `npx artisan-init` source is stored here.
+The `npx stacks-init` source is stored here.
 
 To learn more about how to get started, check out the [documentation](https://stacks.ow3org.com).
 
@@ -32,11 +32,11 @@ The MIT License (MIT). Please see [LICENSE](../LICENSE.md) for more information.
 Made with ❤️
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/artisan-init?style=flat-square
-[npm-version-href]: https://npmjs.com/package/artisan-init
+[npm-version-src]: https://img.shields.io/npm/v/stacks-init?style=flat-square
+[npm-version-href]: https://npmjs.com/package/stacks-init
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/artisan-init?style=flat-square
-[npm-downloads-href]: https://npmjs.com/package/artisan-init
+[npm-downloads-src]: https://img.shields.io/npm/dm/stacks-init?style=flat-square
+[npm-downloads-href]: https://npmjs.com/package/stacks-init
 
 [github-actions-src]: https://img.shields.io/github/workflow/status/stacksjs/stacks/CI/main?style=flat-square
 [github-actions-href]: https://github.com/stacksjs/stacks/actions?query=workflow%3Aci

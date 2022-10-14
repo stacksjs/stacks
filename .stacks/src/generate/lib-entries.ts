@@ -1,6 +1,6 @@
 import consola from 'consola'
-import { ExitCode } from '../../cli/src/cli/exit-code'
-import { determineResetPreset, kebabCase, libraryEntryPath, writeTextFile } from '../utils'
+import { ExitCode } from '../../cli/src/commands/exit-code'
+import { determineResetPreset, kebabCase, libraryEntryPath, writeTextFile } from '../../utils/src'
 import { componentLibrary, functionLibrary, webComponentLibrary } from '../../../config/library'
 
 /**

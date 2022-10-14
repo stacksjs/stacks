@@ -1,8 +1,8 @@
 import consola from 'consola'
 import { packageManager } from '../../package.json'
 import { componentLibrary, functionLibrary, library, webComponentLibrary } from '../../../config/library'
-import { writeTextFile } from '../utils'
-import { packageJsonPath } from '../utils/helpers'
+import { writeTextFile } from '../../utils/src'
+import { packageJsonPath } from '../helpers'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config

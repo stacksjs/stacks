@@ -5,7 +5,7 @@
  */
 
 import type { DocsConfig } from 'stacks/src'
-import { frameworkPath } from '../.stacks/src/utils/helpers'
+import { frameworkPath } from '../.stacks/src/helpers'
 
 export default <DocsConfig> {
   outDir: frameworkPath('docs/dist'),

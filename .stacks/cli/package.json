@@ -1,9 +1,9 @@
 {
-  "name": "artisan-init",
+  "name": "stacks-init",
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
-  "description": "Stacks CLI core.",
+  "description": "Stacks CLI source.",
   "author": "Chris Breuer",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/artisan#readme",
@@ -25,11 +25,11 @@
   ],
   "sideEffects": false,
   "bin": {
-    "artisan-init": "./cli.mjs",
-    "artisan": "./cli.mjs",
-    "art": "./cli.mjs",
     "stacks": "./cli.mjs",
-    "stx": "./cli.mjs"
+    "stacks-init": "./cli.mjs",
+    "artisan": "./cli.mjs",
+    "stx": "./cli.mjs",
+    "art": "./cli.mjs"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -43,8 +43,9 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "artisan": "pnpm run dev && node cli.mjs",
-    "artisan-init": "pnpm run build && node cli.mjs",
+    "stacks": "pnpm run dev && node cli.mjs",
+    "artisan": "pnpm run stacks",
+    "stacks-init": "pnpm run build && node cli.mjs",
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",

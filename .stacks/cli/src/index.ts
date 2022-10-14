@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import { version } from '../../../package.json'
-import { isInitialized } from '../../src/utils'
-import { buildCommands, devCommands, exampleCommands, generateCommands, initCommands, keyCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './cli'
-import { ExitCode } from './cli/exit-code'
+import { isInitialized } from '../../src/helpers'
+import { buildCommands, devCommands, exampleCommands, generateCommands, initCommands, keyCommands, makeCommands, testCommands, updateCommands, utilityCommands } from './commands'
+import { ExitCode } from './commands/exit-code'
 
 const artisan = cac('artisan')
 

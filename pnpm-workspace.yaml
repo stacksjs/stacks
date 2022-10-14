@@ -1,5 +1,8 @@
 packages:
+  - ./.stacks/actions
   - ./.stacks/cli
+  - ./.stacks/utils
+  - ./.stacks/security
   - ./.stacks/vue-components
   - ./.stacks/web-components
   - ./.stacks/functions

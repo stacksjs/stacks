@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '../types'
+import type { ViteConfig } from '../../types'
 import { componentLibrary } from '../../../config/library'
 import { atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from '..'
 import alias from '../alias'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../utils/helpers'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../helpers'
 
 const config: ViteConfig = {
   root: componentsPath(),
