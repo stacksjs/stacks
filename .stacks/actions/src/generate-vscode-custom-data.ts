@@ -6,7 +6,7 @@
  */
 
 import consola from 'consola'
-import { generateVsCodeCustomData, hasComponents } from '../src'
+import { generateVsCodeCustomData, hasComponents } from '@stacksjs/utils'
 
 async function generate() {
   if (hasComponents())

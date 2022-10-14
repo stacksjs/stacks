@@ -39,7 +39,6 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
     "stacks": "esno ./cli/src/index.ts"
   },
   "devDependencies": {

@@ -17,23 +17,17 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "security",
     "framework",
     "typescript",
-    "javascript",
-    "vite",
-    "nitro",
-    "vue",
-    "functions",
-    "components",
-    "library",
-    "starter",
-    "kit"
+    "javascript"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
     "dist",
+    "src",
     "README.md"
   ],
   "engines": {
@@ -41,8 +35,7 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
-    "artisan": "esno ./cli/src/index.ts"
+    "stacks": "esno ./cli/src/index.ts"
   },
   "devDependencies": {
     "vue-tsc": "^1.0.7"

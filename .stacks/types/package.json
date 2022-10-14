@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/security"
+    "directory": "./.stacks/types"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -33,10 +33,10 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
-    "artisan": "esno ./cli/src/index.ts"
+    "build": "unbuild",
+    "dev": "unbuild --stub"
   },
-  "devDependencies": {
+  "dependencies": {
     "@mdit-vue/plugin-component": "^0.11.1",
     "@mdit-vue/plugin-frontmatter": "^0.11.1",
     "@mdit-vue/types": "^0.11.0",
@@ -50,5 +50,8 @@
     "vite-plugin-inspect": "^0.7.5",
     "vite-plugin-vue-layouts": "^0.7.0",
     "vitepress": "1.0.0-alpha.20"
+  },
+  "devDependencies": {
+    "unbuild": "^0.9.1"
   }
 }

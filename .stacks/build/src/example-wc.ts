@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '../src'
+import type { UserConfig as ViteConfig } from 'vite'
+import { examplesPath } from '@stacksjs/utils'
 import { uiEngine } from '../src'
-import { examplesPath } from '../utils/src'
 
 const config: ViteConfig = {
   root: examplesPath('web-components'),

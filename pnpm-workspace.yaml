@@ -7,6 +7,7 @@ packages:
   - ./.stacks/router
   - ./.stacks/utils
   - ./.stacks/security
+  - ./.stacks/types
   - ./.stacks/vue-components
   - ./.stacks/web-components
   - ./.stacks/functions

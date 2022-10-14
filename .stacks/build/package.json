@@ -42,9 +42,16 @@
     "preinstall": "only-allow pnpm",
     "artisan": "esno ./cli/src/index.ts"
   },
-  "devDependencies": {
+  "dependencies": {
+    "@stacksjs/config": "workspace:^0.36.6",
+    "@stacksjs/types": "workspace:^0.36.6",
+    "@stacksjs/utils": "workspace:^0.36.6",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",
-    "pathe": "^0.3.9"
+    "pathe": "^0.3.9",
+    "vite": "^3.1.8"
+  },
+  "devDependencies": {
+    "unbuild": "^0.9.1"
   }
 }

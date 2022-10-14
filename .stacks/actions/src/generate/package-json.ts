@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { packageJsonPath } from '@stacksjs/framework'
+import { packageJsonPath } from '@stacksjs/framework/core/helpers'
 import { componentLibrary, functionLibrary, library, webComponentLibrary } from '@stacksjs/config'
 import { writeTextFile } from '@stacksjs/utils'
 import { packageManager } from '../../../package.json'

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
-  "description": "The Stacks framework utilities.",
+  "description": "The Stacks framework modules.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/security"
+    "directory": "./.stacks/modules"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -39,8 +39,7 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
-    "artisan": "esno ./cli/src/index.ts"
+    "stacks": "esno ./cli/src/index.ts"
   },
   "devDependencies": {
     "detect-indent": "^7.0.1",
