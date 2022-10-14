@@ -6,8 +6,8 @@
  */
 
 import consola from 'consola'
-import { generateVsCodeCustomData, generateWebTypes } from '../cli/actions/generate'
-import { hasComponents } from '../src'
+import { hasComponents } from '@stacksjs/utils'
+import { generateVsCodeCustomData, generateWebTypes } from './generate/vscode-custom-data'
 
 async function generate() {
   if (hasComponents()) {

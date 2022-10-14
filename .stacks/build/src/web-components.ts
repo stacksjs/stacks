@@ -1,9 +1,12 @@
+import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../../types'
-import { componentLibrary } from '../../../config/library'
-import { atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from '..'
-import alias from '../alias'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../helpers'
+import alias from '../src/alias'
+import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../src'
+import { webComponentLibrary } from '../../config/library'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../utils/src'
+
+const isWebComponent = true
 
 const config: ViteConfig = {
   root: componentsPath(),
@@ -16,29 +19,27 @@ const config: ViteConfig = {
   },
 
   resolve: {
-    dedupe: ['vue'],
     alias,
   },
 
-  optimizeDeps: {
-    exclude: ['vue'],
-  },
-
   plugins: [
-    preview(),
-    uiEngine(),
-    atomicCssEngine(),
+    inspect(),
+    uiEngine(isWebComponent),
+    atomicCssEngine(isWebComponent),
     autoImports(),
     components(),
-    inspect(),
   ],
 
-  build: {
-    outDir: frameworkPath('vue-components/dist'),
+  build: webComponentsBuildOptions(),
+}
+
+export function webComponentsBuildOptions(): ViteBuildOptions {
+  return {
+    outDir: frameworkPath('web-components/dist'),
     emptyOutDir: true,
     lib: {
-      entry: buildEntriesPath('vue-components.ts'),
-      name: componentLibrary.name,
+      entry: buildEntriesPath('web-components.ts'),
+      name: webComponentLibrary.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
@@ -50,16 +51,7 @@ const config: ViteConfig = {
         return 'index.?.js'
       },
     },
-
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        globals: {
-          vue: 'Vue',
-        },
-      },
-    },
-  },
+  }
 }
 
 export default defineConfig(({ command }) => {

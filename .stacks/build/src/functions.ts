@@ -1,10 +1,10 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '../../types'
-import { functionLibrary } from '../../../config/library'
-import { autoImports } from '..'
-import alias from '../alias'
-import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from '../../utils/src'
+import { functionLibrary } from '../../config/library'
+import { autoImports } from '../src'
+import alias from '../src/alias'
+import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from '../utils/src'
 
 const config: ViteConfig = {
   root: functionsPath(),

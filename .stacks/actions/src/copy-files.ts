@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from 'pathe'
-import { copyFolder } from '../../utils/src'
+import { copyFolder } from '@stacksjs/utils'
 
 // relative to scripts directory
 const destinations = [

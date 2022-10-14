@@ -80,11 +80,11 @@ declare global {
   const frameworkPath: typeof import('./src/helpers')['frameworkPath']
   const functionLibrary: typeof import('../config/library')['functionLibrary']
   const functionsPath: typeof import('./src/helpers')['functionsPath']
-  const generateComponentMeta: typeof import('./src/generate/component-meta')['generateComponentMeta']
-  const generateLibEntry: typeof import('./src/generate/lib-entries')['generateLibEntry']
-  const generatePackageJson: typeof import('./src/generate/package-json')['generatePackageJson']
-  const generateVsCodeCustomData: typeof import('./src/generate/vscode-custom-data')['generateVsCodeCustomData']
-  const generateVueCompat: typeof import('./src/generate/vue-compat')['generateVueCompat']
+  const generateComponentMeta: typeof import('./actions/src/generate/component-meta')['generateComponentMeta']
+  const generateLibEntry: typeof import('./actions/src/generate/lib-entries')['generateLibEntry']
+  const generatePackageJson: typeof import('./actions/src/generate/package-json')['generatePackageJson']
+  const generateVsCodeCustomData: typeof import('./actions/src/generate/vscode-custom-data')['generateVsCodeCustomData']
+  const generateVueCompat: typeof import('./actions/src/generate/vue-compat')['generateVueCompat']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const git: typeof import('../config/git')['git']
@@ -477,11 +477,11 @@ declare module '@vue/runtime-core' {
     readonly frameworkPath: UnwrapRef<typeof import('./src/helpers')['frameworkPath']>
     readonly functionLibrary: UnwrapRef<typeof import('../config/library')['functionLibrary']>
     readonly functionsPath: UnwrapRef<typeof import('./src/helpers')['functionsPath']>
-    readonly generateComponentMeta: UnwrapRef<typeof import('./src/generate/component-meta')['generateComponentMeta']>
-    readonly generateLibEntry: UnwrapRef<typeof import('./src/generate/lib-entries')['generateLibEntry']>
-    readonly generatePackageJson: UnwrapRef<typeof import('./src/generate/package-json')['generatePackageJson']>
-    readonly generateVsCodeCustomData: UnwrapRef<typeof import('./src/generate/vscode-custom-data')['generateVsCodeCustomData']>
-    readonly generateVueCompat: UnwrapRef<typeof import('./src/generate/vue-compat')['generateVueCompat']>
+    readonly generateComponentMeta: UnwrapRef<typeof import('./actions/src/generate/component-meta')['generateComponentMeta']>
+    readonly generateLibEntry: UnwrapRef<typeof import('./actions/src/generate/lib-entries')['generateLibEntry']>
+    readonly generatePackageJson: UnwrapRef<typeof import('./actions/src/generate/package-json')['generatePackageJson']>
+    readonly generateVsCodeCustomData: UnwrapRef<typeof import('./actions/src/generate/vscode-custom-data')['generateVsCodeCustomData']>
+    readonly generateVueCompat: UnwrapRef<typeof import('./actions/src/generate/vue-compat')['generateVueCompat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly git: UnwrapRef<typeof import('../config/git')['git']>

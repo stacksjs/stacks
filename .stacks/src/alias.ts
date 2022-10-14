@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import { componentsPath, frameworkPath, functionsPath, projectPath } from '../utils/src'
+import { componentsPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/utils'
 
 const alias: Record<string, string> = {
   '~/': projectPath(),
