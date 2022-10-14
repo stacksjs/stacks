@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../src/build/web-components.ts",
+    "build": "vite build -c ../build/web-components.ts",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

@@ -79,7 +79,7 @@ export function cliPath(path?: string) {
 }
 
 export function configPath(path?: string) {
-  return projectPath(`config/${path || ''}`)
+  return frameworkPath(`config/${path || ''}`)
 }
 
 export function routesPath(path?: string) {

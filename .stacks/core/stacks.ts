@@ -95,9 +95,9 @@ function autoImports(options?: AutoImportsOptions) {
       { 'collect.js': ['collect'] },
     ],
     dirs: [
-      frameworkPath('src/generate'),
-      frameworkPath('src/utils'),
-      frameworkPath('src/security'),
+      frameworkPath('generate/src'),
+      frameworkPath('utils/src'),
+      frameworkPath('security/src'),
       functionsPath(),
       componentsPath(),
       configPath(),
