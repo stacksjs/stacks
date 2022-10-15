@@ -35,9 +35,13 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "stacks": "esno ./cli/src/index.ts"
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "vue-tsc": "^1.0.8"
+    "vue-tsc": "^1.0.8",
+    "mkdist": "^0.3.13"
   }
 }

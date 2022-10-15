@@ -39,10 +39,14 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "stacks": "esno ./cli/src/index.ts"
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/security": "workspace:*"
+    "@stacksjs/security": "workspace:*",
+    "mkdist": "^0.3.13"
   }
 }

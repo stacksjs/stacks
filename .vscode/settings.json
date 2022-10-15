@@ -279,7 +279,8 @@
     "encrypter",
     "prefixs", // TODO: remove once cz-git releases fixes
     "cryptojs",
-    "frontmatter"
+    "frontmatter",
+    "mkdist"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

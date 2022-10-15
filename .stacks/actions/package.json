@@ -32,26 +32,28 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=v18.10.0",
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "stacks": "esno ./cli/src/index.ts"
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/fs-extra": "^9.0.13",
     "@stacksjs/utils": "workspace:*",
+    "@types/fs-extra": "^9.0.13",
     "consola": "^2.15.3",
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
     "markdown-it": "^13.0.1",
-    "pathe": "^0.3.9",
     "vue-component-meta": "^1.0.8"
   },
   "devDependencies": {
-    "unbuild": "^0.9.2"
+    "mkdist": "^0.3.13"
   }
 }
