@@ -3,11 +3,11 @@
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
-  "description": "The Stacks framework utilities.",
+  "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/build#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -17,16 +17,14 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "utilities",
+    "build",
     "stacks",
     "framework",
     "typescript",
     "javascript",
     "vite",
     "nitro",
-    "vue",
-    "components",
-    "library"
+    "vue"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -39,19 +37,20 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
-    "artisan": "esno ./cli/src/index.ts"
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:^0.36.6",
-    "@stacksjs/types": "workspace:^0.36.6",
-    "@stacksjs/utils": "workspace:^0.36.6",
-    "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.0",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "pathe": "^0.3.9",
-    "vite": "^3.1.8"
+    "vite": "^3.1.8",
+    "vite-ssg-sitemap": "^0.4.3"
   },
   "devDependencies": {
-    "unbuild": "^0.9.2"
+    "mkdist": "^0.3.13"
   }
 }
