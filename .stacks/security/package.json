@@ -38,6 +38,6 @@
     "stacks": "esno ./cli/src/index.ts"
   },
   "devDependencies": {
-    "vue-tsc": "^1.0.7"
+    "vue-tsc": "^1.0.8"
   }
 }
