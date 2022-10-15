@@ -6,7 +6,7 @@ export default defineBuildConfig({
   entries: [
     './src/index',
   ],
-  declaration: false,
+  declaration: true,
   clean: true,
   rollup: {
     inlineDependencies: true,

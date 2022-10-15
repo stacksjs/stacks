@@ -5,8 +5,8 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
+import { isFolder } from '@stacksjs/utils'
 import { version } from '../../package.json'
-import { isFolder } from '../../../utils/fs'
 import { generate as generateAppKey } from '../actions/key'
 import { ExitCode } from './exit-code'
 
@@ -57,7 +57,7 @@ async function init(artisan: CAC) {
       consola.info('Installing & setting up Stacks.')
       await ezSpawn.async('pnpm install', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       await ezSpawn.async('cp .env.example .env', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      await generateAppKey(path)
+      await generateAppKey()
       await ezSpawn.async('git init', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up 🚀')
 

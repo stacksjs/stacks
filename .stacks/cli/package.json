@@ -6,7 +6,7 @@
   "description": "Stacks CLI source.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/artisan#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/cli#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -25,19 +25,19 @@
   ],
   "sideEffects": false,
   "bin": {
-    "stacks": "./cli.mjs",
-    "stacks-init": "./cli.mjs",
-    "artisan": "./cli.mjs",
-    "stx": "./cli.mjs",
-    "art": "./cli.mjs"
+    "stacks": "./bin/cli.mjs",
+    "stacks-init": "./bin/cli.mjs",
+    "artisan": "./bin/cli.mjs",
+    "stx": "./bin/cli.mjs",
+    "art": "./bin/cli.mjs"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
+    "bin",
     "dist",
-    "src",
-    "*.mjs"
+    "src"
   ],
   "engines": {
     "node": ">=v18.10.0",
@@ -45,6 +45,7 @@
   },
   "scripts": {
     "stacks": "pnpm run dev && node cli.mjs",
+    "stx": "pnpm run stacks",
     "artisan": "pnpm run stacks",
     "stacks-init": "pnpm run build && node cli.mjs",
     "build": "unbuild",
@@ -54,6 +55,7 @@
   },
   "dependencies": {
     "@jsdevtools/ez-spawn": "^3.0.4",
+    "@stacksjs/utils": "workspace:*",
     "cac": "^6.7.14",
     "giget": "^0.1.7",
     "kolorist": "^1.6.0",

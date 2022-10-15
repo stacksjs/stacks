@@ -209,6 +209,7 @@ importers:
   .stacks/cli:
     specifiers:
       '@jsdevtools/ez-spawn': ^3.0.4
+      '@stacksjs/utils': workspace:*
       cac: ^6.7.14
       giget: ^0.1.7
       kolorist: ^1.6.0
@@ -216,6 +217,7 @@ importers:
       unbuild: ^0.9.2
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
+      '@stacksjs/utils': link:../utils
       cac: 6.7.14
       giget: 0.1.7
       kolorist: 1.6.0

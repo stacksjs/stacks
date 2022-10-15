@@ -69,7 +69,7 @@
     "build:functions": "vite build -c ./build/functions.ts",
     "build:pages": "vite-ssg build ./pages -c ./build/pages.ts",
     "build:cli": "cd ./artisan && unbuild",
-    "build:stacks": "wip",
+    "build:stacks": " pnpm --filter './actions' --filter './build' --filter './cli' --filter './config' --filter './modules' --filter './router' --filter './security' --filter './types' --filter './utils' build",
     "build": "pnpm run test:types && pnpm stacks build",
     "example:vue": "pnpm run build:components && cd examples/vue-components && ln -sf ../../vue-components/dist dist && vite serve -c ../../build/example-vue.ts",
     "example:web-components": "pnpm run build:web-components && cd examples/web-components && ln -sf ../../web-components/dist dist && vite serve -c ../../build/example-wc.ts",
