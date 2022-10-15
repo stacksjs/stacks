@@ -49,9 +49,9 @@
     "vite": "^3.1.8",
     "vite-plugin-inspect": "^0.7.5",
     "vite-plugin-vue-layouts": "^0.7.0",
-    "vitepress": "1.0.0-alpha.20"
+    "vitepress": "1.0.0-alpha.21"
   },
   "devDependencies": {
-    "unbuild": "^0.9.1"
+    "unbuild": "^0.9.2"
   }
 }
