@@ -45,8 +45,8 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@stacksjs/types": "workspace:*",
     "@stacksjs/security": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "mkdist": "^0.3.13"
   }
 }

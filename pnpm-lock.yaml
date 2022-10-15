@@ -251,12 +251,10 @@ importers:
     specifiers:
       mkdist: ^0.3.13
       pathe: ^0.3.9
-      unbuild: ^0.9.2
     dependencies:
       pathe: 0.3.9
     devDependencies:
-      mkdist: 0.3.13_typescript@4.8.4
-      unbuild: 0.9.2
+      mkdist: 0.3.13
 
   .stacks/security:
     specifiers:

@@ -4,6 +4,7 @@ core/vue-components/.vite-inspect
 build/entries/*.ts
 **/dist/*.cjs
 **/dist/*.mjs
+**/dist/**/*.mjs
 **/dist/*.css
 **/dist/**/*.d.ts
 **/dist/**/*.d.cts
