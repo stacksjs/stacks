@@ -1,6 +1,6 @@
 import consola from 'consola'
-import { NpmScript } from '../../../types'
-import { runNpmScript } from '../../../utils/run-npm-script'
+import { runNpmScript } from '@stacksjs/utils'
+import { NpmScript } from '@stacksjs/types'
 
 export async function reinstallNpmDependencies() {
   consola.info('Reinstalling your npm dependencies...')

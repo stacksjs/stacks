@@ -24,12 +24,15 @@
     "typescript"
   ],
   "sideEffects": false,
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "bin": {
-    "stacks": "./bin/cli.mjs",
-    "stacks-init": "./bin/cli.mjs",
-    "artisan": "./bin/cli.mjs",
-    "stx": "./bin/cli.mjs",
-    "art": "./bin/cli.mjs"
+    "stacks": "./bin/stacks.mjs",
+    "stacks-init": "./bin/stacks.mjs",
+    "artisan": "./bin/stacks.mjs",
+    "stx": "./bin/stacks.mjs",
+    "art": "./bin/stacks.mjs"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -44,10 +47,10 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "stacks": "pnpm run dev && node cli.mjs",
+    "stacks": "pnpm run dev && node ./bin/stacks.mjs",
     "stx": "pnpm run stacks",
     "artisan": "pnpm run stacks",
-    "stacks-init": "pnpm run build && node cli.mjs",
+    "stacks-init": "pnpm run dev",
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
@@ -56,6 +59,7 @@
   "dependencies": {
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "cac": "^6.7.14",
     "giget": "^0.1.7",
     "kolorist": "^1.6.0",
