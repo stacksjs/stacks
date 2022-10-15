@@ -112,7 +112,7 @@
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@julr/unocss-preset-forms": "^0.0.2",
-    "@ow3/eslint-config": "^0.30.2",
+    "@ow3/eslint-config": "^0.31.0",
     "@rollup/pluginutils": "^5.0.1",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/utils": "workspace:*",
