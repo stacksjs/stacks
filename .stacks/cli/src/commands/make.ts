@@ -3,6 +3,10 @@ import { component as makeComponent, fx as makeFunction, language as makeLanguag
 
 async function make(artisan: CAC) {
   artisan
+    .command('make', 'Make help menu.')
+    .outputHelp()
+
+  artisan
     .command('make:component', 'Scaffolds a component.')
     .action(async () => {
       await makeComponent(artisan.args[0])

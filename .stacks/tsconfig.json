@@ -1,0 +1,63 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "useDefineForClassFields": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "outDir": "./dist/types",
+    "paths": {
+      "stacks": [
+        "./src/index.ts"
+      ],
+      "components/*": [
+        "../components/*"
+      ],
+      "config": [
+        "./config/src/index.ts"
+      ],
+      "config/*": [
+        "../config/*"
+      ],
+      "functions/*": [
+        "../functions/*"
+      ],
+      "~/*": [
+        "../*"
+      ]
+    },
+    "lib": [
+      "ESNext",
+      "DOM"
+    ]
+  },
+  "include": [
+    "./**.d.ts",
+    "./**/*",
+    "../components/**/*",
+    "../functions/**/*",
+    "../pages/**/*"
+  ],
+  "exclude": [
+    "./examples/*",
+    "./nitro.config.ts",
+    "./vitest.config.ts",
+    "../.github/commitlint.config.cjs",
+    "../**/README.md",
+    "../**/dist/**",
+    "../**/node_modules/**"
+  ]
+}

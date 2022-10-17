@@ -77,6 +77,12 @@ export async function stacks(options: any) {
     consola.success('Updated dependencies.')
   }
 
+  if (options.packageManager) {
+    consola.info('Updating pnpm...')
+    const version = await runNpmScript(NpmScript.UpdatePackageManager)
+    consola.success('Successfully updated pnpm to: ', version)
+  }
+
   // TODO: also update CI files & configurations, and other files, possibly
   // ideally we want this to be smart enough to update only the files that have changed
 

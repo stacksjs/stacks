@@ -303,6 +303,8 @@ importers:
 
   .stacks/utils:
     specifiers:
+      '@stacksjs/config': workspace:*
+      '@stacksjs/utils': workspace:*
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
       mkdist: ^0.3.13
@@ -312,6 +314,8 @@ importers:
       detect-newline: 4.0.0
       pathe: 0.3.9
     devDependencies:
+      '@stacksjs/config': link:../config
+      '@stacksjs/utils': 'link:'
       mkdist: 0.3.13
 
   .stacks/utils/arrays:

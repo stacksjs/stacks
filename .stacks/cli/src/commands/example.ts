@@ -7,13 +7,13 @@ async function example(artisan: CAC) {
     .option('-c, --components', 'Test your Vue component library')
     .option('-v, --vue', 'Test your Vue component library')
     .option('-w, --web-components', 'Test your web component library')
-    .option('-e, --elements', 'An alias to the -w flag')
     .action(async (options) => {
       await runExample(options)
     })
 
   artisan
     .command('example:vue', 'Test your Vue component library.')
+    .alias('example:components')
     .action(async () => {
       await runExample('vue')
     })
