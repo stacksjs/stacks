@@ -1,4 +1,4 @@
-# @stacksjs/framework
+# Stacks.js Framework
 
 This framework contains the "core" Stacks logic, its runtime & helpers, excluding the IDE setup.
 
@@ -24,7 +24,7 @@ And all of this in a zero-config, yet configurable, way.
 If you want to use Stacks outside of this framework, install it as a dev dependency:
 
 ```bash
-pnpm i -D @stacksjs/framework
+pnpm i -D stacksjs
 ```
 
 Now, you can use it in your project:
@@ -41,7 +41,7 @@ import {
   inspect,
   resolve,
   uiEngine
-} from '@stacksjs/framework'
+} from 'stacksjs'
 
 // you are now free to use any of the imported methods
 ```

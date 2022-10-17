@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { functionLibrary } from '@stacksjs/config'
 import { cliPath, projectPath } from '@stacksjs/utils'
-import { alias, autoImports } from '@stacksjs/framework'
+import { alias, autoImports } from 'stacksjs'
 
 const config: ViteConfig = {
   root: cliPath(),

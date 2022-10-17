@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { componentLibrary } from '@stacksjs/config'
-import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from '@stacksjs/framework'
+import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from 'stacksjs'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../../src/helpers'
 
 const config: ViteConfig = {

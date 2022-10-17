@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { packageJsonPath } from '@stacksjs/framework/core/helpers'
+import { packageJsonPath } from 'stacksjs/core/helpers'
 import { componentLibrary, functionLibrary, library, webComponentLibrary } from '@stacksjs/config'
 import { writeTextFile } from '@stacksjs/utils'
 import { packageManager } from '../../../package.json'
@@ -73,7 +73,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@stacksjs/framework": "workspace:*"
+    "stacksjs": "workspace:*"
   }
 }
 `,

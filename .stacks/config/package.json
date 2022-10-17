@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
-  "description": "The Stacks framework configurations.",
+  "description": "The default Stacks framework configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

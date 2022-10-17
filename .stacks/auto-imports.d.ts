@@ -9,7 +9,7 @@ declare global {
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
   const EffectScope: typeof import('vue')['EffectScope']
-  const _dirname: typeof import('./utils/fs')['_dirname']
+  const _dirname: typeof import('./utils/fs/src')['_dirname']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
   const app: typeof import('../config/app')['app']
@@ -43,7 +43,7 @@ declare global {
   const contains: typeof import('./utils/src/array')['contains']
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
-  const copyFolder: typeof import('./utils/fs')['copyFolder']
+  const copyFolder: typeof import('./utils/fs/src')['copyFolder']
   const count: typeof import('../functions/counter')['count']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
@@ -61,14 +61,14 @@ declare global {
   const decrypt: typeof import('./security/src/crypt')['decrypt']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
-  const deleteEmptyFolders: typeof import('./utils/fs')['deleteEmptyFolders']
-  const deleteFiles: typeof import('./utils/fs')['deleteFiles']
-  const deleteFolder: typeof import('./utils/fs')['deleteFolder']
+  const deleteEmptyFolders: typeof import('./utils/fs/src')['deleteEmptyFolders']
+  const deleteFiles: typeof import('./utils/fs/src')['deleteFiles']
+  const deleteFolder: typeof import('./utils/fs/src')['deleteFolder']
   const deploy: typeof import('../config/deploy')['deploy']
   const describe: typeof import('vitest')['describe']
   const determineResetPreset: typeof import('./src/helpers')['determineResetPreset']
   const docs: typeof import('../config/docs')['default']
-  const doesFolderExist: typeof import('./utils/fs')['doesFolderExist']
+  const doesFolderExist: typeof import('./utils/fs/src')['doesFolderExist']
   const dotCase: typeof import('./utils/string')['dotCase']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
@@ -89,9 +89,9 @@ declare global {
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const git: typeof import('../config/git')['git']
   const h: typeof import('vue')['h']
-  const hasComponents: typeof import('./utils/fs')['hasComponents']
-  const hasFiles: typeof import('./utils/fs')['hasFiles']
-  const hasFunctions: typeof import('./utils/fs')['hasFunctions']
+  const hasComponents: typeof import('./utils/fs/src')['hasComponents']
+  const hasFiles: typeof import('./utils/fs/src')['hasFiles']
+  const hasFunctions: typeof import('./utils/fs/src')['hasFunctions']
   const hasOwn: typeof import('@vueuse/shared')['hasOwn']
   const hashing: typeof import('../config/hashing')['hashing']
   const headerCase: typeof import('./utils/string')['headerCase']
@@ -103,8 +103,8 @@ declare global {
   const isDark: typeof import('../functions/dark')['isDark']
   const isDef: typeof import('@vueuse/shared')['isDef']
   const isDefined: typeof import('@vueuse/core')['isDefined']
-  const isFile: typeof import('./utils/fs')['isFile']
-  const isFolder: typeof import('./utils/fs')['isFolder']
+  const isFile: typeof import('./utils/fs/src')['isFile']
+  const isFolder: typeof import('./utils/fs/src')['isFolder']
   const isFunction: typeof import('@vueuse/shared')['isFunction']
   const isIOS: typeof import('@vueuse/shared')['isIOS']
   const isInitialized: typeof import('./src/helpers')['isInitialized']
@@ -166,8 +166,8 @@ declare global {
   const reactiveComputed: typeof import('@vueuse/core')['reactiveComputed']
   const reactiveOmit: typeof import('@vueuse/core')['reactiveOmit']
   const reactivePick: typeof import('@vueuse/core')['reactivePick']
-  const readJsonFile: typeof import('./utils/fs')['readJsonFile']
-  const readTextFile: typeof import('./utils/fs')['readTextFile']
+  const readJsonFile: typeof import('./utils/fs/src')['readJsonFile']
+  const readTextFile: typeof import('./utils/fs/src')['readTextFile']
   const readonly: typeof import('vue')['readonly']
   const ref: typeof import('vue')['ref']
   const refAutoReset: typeof import('@vueuse/core')['refAutoReset']
@@ -391,8 +391,8 @@ declare global {
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
   const webComponentLibrary: typeof import('../config/library')['webComponentLibrary']
   const whenever: typeof import('@vueuse/core')['whenever']
-  const writeJsonFile: typeof import('./utils/fs')['writeJsonFile']
-  const writeTextFile: typeof import('./utils/fs')['writeTextFile']
+  const writeJsonFile: typeof import('./utils/fs/src')['writeJsonFile']
+  const writeTextFile: typeof import('./utils/fs/src')['writeTextFile']
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -406,7 +406,7 @@ declare module '@vue/runtime-core' {
     readonly $shallowRef: UnwrapRef<typeof import('vue/macros')['$shallowRef']>
     readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
-    readonly _dirname: UnwrapRef<typeof import('./utils/fs')['_dirname']>
+    readonly _dirname: UnwrapRef<typeof import('./utils/fs/src')['_dirname']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
     readonly app: UnwrapRef<typeof import('../config/app')['app']>
@@ -440,7 +440,7 @@ declare module '@vue/runtime-core' {
     readonly contains: UnwrapRef<typeof import('./utils/src/array')['contains']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
-    readonly copyFolder: UnwrapRef<typeof import('./utils/fs')['copyFolder']>
+    readonly copyFolder: UnwrapRef<typeof import('./utils/fs/src')['copyFolder']>
     readonly count: UnwrapRef<typeof import('../functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
@@ -458,14 +458,14 @@ declare module '@vue/runtime-core' {
     readonly decrypt: UnwrapRef<typeof import('./security/src/crypt')['decrypt']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
-    readonly deleteEmptyFolders: UnwrapRef<typeof import('./utils/fs')['deleteEmptyFolders']>
-    readonly deleteFiles: UnwrapRef<typeof import('./utils/fs')['deleteFiles']>
-    readonly deleteFolder: UnwrapRef<typeof import('./utils/fs')['deleteFolder']>
+    readonly deleteEmptyFolders: UnwrapRef<typeof import('./utils/fs/src')['deleteEmptyFolders']>
+    readonly deleteFiles: UnwrapRef<typeof import('./utils/fs/src')['deleteFiles']>
+    readonly deleteFolder: UnwrapRef<typeof import('./utils/fs/src')['deleteFolder']>
     readonly deploy: UnwrapRef<typeof import('../config/deploy')['deploy']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly determineResetPreset: UnwrapRef<typeof import('./src/helpers')['determineResetPreset']>
     readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
-    readonly doesFolderExist: UnwrapRef<typeof import('./utils/fs')['doesFolderExist']>
+    readonly doesFolderExist: UnwrapRef<typeof import('./utils/fs/src')['doesFolderExist']>
     readonly dotCase: UnwrapRef<typeof import('./utils/string')['dotCase']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
@@ -486,9 +486,9 @@ declare module '@vue/runtime-core' {
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly git: UnwrapRef<typeof import('../config/git')['git']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
-    readonly hasComponents: UnwrapRef<typeof import('./utils/fs')['hasComponents']>
-    readonly hasFiles: UnwrapRef<typeof import('./utils/fs')['hasFiles']>
-    readonly hasFunctions: UnwrapRef<typeof import('./utils/fs')['hasFunctions']>
+    readonly hasComponents: UnwrapRef<typeof import('./utils/fs/src')['hasComponents']>
+    readonly hasFiles: UnwrapRef<typeof import('./utils/fs/src')['hasFiles']>
+    readonly hasFunctions: UnwrapRef<typeof import('./utils/fs/src')['hasFunctions']>
     readonly hasOwn: UnwrapRef<typeof import('@vueuse/shared')['hasOwn']>
     readonly hashing: UnwrapRef<typeof import('../config/hashing')['hashing']>
     readonly headerCase: UnwrapRef<typeof import('./utils/string')['headerCase']>
@@ -500,8 +500,8 @@ declare module '@vue/runtime-core' {
     readonly isDark: UnwrapRef<typeof import('../functions/dark')['isDark']>
     readonly isDef: UnwrapRef<typeof import('@vueuse/shared')['isDef']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
-    readonly isFile: UnwrapRef<typeof import('./utils/fs')['isFile']>
-    readonly isFolder: UnwrapRef<typeof import('./utils/fs')['isFolder']>
+    readonly isFile: UnwrapRef<typeof import('./utils/fs/src')['isFile']>
+    readonly isFolder: UnwrapRef<typeof import('./utils/fs/src')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('@vueuse/shared')['isFunction']>
     readonly isIOS: UnwrapRef<typeof import('@vueuse/shared')['isIOS']>
     readonly isInitialized: UnwrapRef<typeof import('./src/helpers')['isInitialized']>
@@ -563,8 +563,8 @@ declare module '@vue/runtime-core' {
     readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
     readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
-    readonly readJsonFile: UnwrapRef<typeof import('./utils/fs')['readJsonFile']>
-    readonly readTextFile: UnwrapRef<typeof import('./utils/fs')['readTextFile']>
+    readonly readJsonFile: UnwrapRef<typeof import('./utils/fs/src')['readJsonFile']>
+    readonly readTextFile: UnwrapRef<typeof import('./utils/fs/src')['readTextFile']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
@@ -788,7 +788,7 @@ declare module '@vue/runtime-core' {
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
     readonly webComponentLibrary: UnwrapRef<typeof import('../config/library')['webComponentLibrary']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
-    readonly writeJsonFile: UnwrapRef<typeof import('./utils/fs')['writeJsonFile']>
-    readonly writeTextFile: UnwrapRef<typeof import('./utils/fs')['writeTextFile']>
+    readonly writeJsonFile: UnwrapRef<typeof import('./utils/fs/src')['writeJsonFile']>
+    readonly writeTextFile: UnwrapRef<typeof import('./utils/fs/src')['writeTextFile']>
   }
 }

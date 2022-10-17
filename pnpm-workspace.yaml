@@ -10,6 +10,7 @@ packages:
   - ./.stacks/utils/collections
   - ./.stacks/utils/objects
   - ./.stacks/utils/strings
+  - ./.stacks/utils/fs
   - ./.stacks/security
   - ./.stacks/types
   - ./.stacks/vue-components

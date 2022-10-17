@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/framework",
+  "name": "stacksjs",
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
@@ -124,7 +124,6 @@
     "@rollup/pluginutils": "^5.0.1",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/types": "workspace:*",
