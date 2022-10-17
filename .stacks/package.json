@@ -2,7 +2,7 @@
   "name": "stacksjs",
   "type": "module",
   "version": "0.36.6",
-  "packageManager": "pnpm@7.13.4",
+  "packageManager": "pnpm@7.13.5",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -65,7 +65,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.4"
+    "pnpm": ">=7.13.5"
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
@@ -140,9 +140,9 @@
     "@unocss/vite": "^0.45.29",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.24.3",
-    "@vueuse/core": "^9.3.0",
+    "@vueuse/core": "^9.3.1",
     "@vueuse/head": "^0.9.8",
-    "@vueuse/shared": "^9.3.0",
+    "@vueuse/shared": "^9.3.1",
     "bcryptjs": "^2.4.3",
     "bumpp": "^8.2.1",
     "cac": "^6.7.14",
@@ -171,7 +171,7 @@
     "pathe": "^0.3.9",
     "pinia": "^2.0.23",
     "rimraf": "^3.0.2",
-    "simple-git-hooks": "^2.8.0",
+    "simple-git-hooks": "^2.8.1",
     "stacks-init": "workspace:*",
     "typescript": "^4.8.4",
     "unbuild": "^0.9.4",
