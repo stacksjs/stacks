@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { examplesPath } from '@stacksjs/utils'
-import { uiEngine } from '../src'
+import type { ViteConfig } from 'types'
+import { examplesPath } from 'helpers'
+import { uiEngine } from 'stacks'
 
 const config: ViteConfig = {
   root: examplesPath('vue-components'),

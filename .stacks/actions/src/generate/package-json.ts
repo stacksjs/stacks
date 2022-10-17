@@ -1,8 +1,8 @@
 import consola from 'consola'
-import { packageJsonPath } from 'stacksjs/core/helpers'
-import { componentLibrary, functionLibrary, library, webComponentLibrary } from '@stacksjs/config'
-import { writeTextFile } from '@stacksjs/utils'
-import { packageManager } from '../../../package.json'
+import { packageJsonPath } from 'stacks'
+import { componentLibrary, functionLibrary, library, webComponentLibrary } from 'config'
+import { writeTextFile } from 'utils'
+import { packageManager } from 'framework/package.json'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { version } from '../../../package.json'
-import { isInitialized } from '../../src/helpers'
+import { isInitialized } from 'stacks'
+import { version } from 'framework/package.json'
+import { ExitCode } from 'types'
 import { build, dev, example, generate, init, key, make, test, update, utility } from './commands'
-import { ExitCode } from './commands/exit-code'
 
 const artisan = cac('artisan')
 

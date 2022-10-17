@@ -1,8 +1,7 @@
 import consola from 'consola'
 import Prompts from 'prompts'
-import { runNpmScript } from '@stacksjs/utils'
-import { NpmScript } from '@stacksjs/types'
-import { ExitCode } from '../commands/exit-code'
+import { runNpmScript } from 'utils'
+import { ExitCode, NpmScript } from 'types'
 import { lintFix } from './lint'
 
 const { prompts } = Prompts

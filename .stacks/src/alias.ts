@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import { componentsPath, configPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/utils'
+import { componentsPath, configPath, frameworkPath, functionsPath, projectPath } from 'stacks'
 
 const alias: Record<string, string> = {
   '~/': projectPath(),
@@ -14,4 +14,4 @@ const alias: Record<string, string> = {
   'functions/*': functionsPath('*'),
 }
 
-export default alias
+export { alias }

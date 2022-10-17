@@ -1,15 +1,15 @@
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
 import Previewer from 'virtual:vue-component-preview'
-import type { UserModule } from '@stacksjs/types'
-import { reset } from '@stacksjs/config'
+import type { UserModule } from 'types'
+import { ui } from 'config'
 import App from './App.vue'
 import generatedRoutes from '~pages'
 
 import './styles/main.css'
 import 'uno.css'
 
-await import(`@unocss/reset/${reset}.js`) // import '@unocss/reset/tailwind.css'
+await import(`@unocss/reset/${ui.reset}.js`) // import '@unocss/reset/tailwind.css'
 
 const routes = setupLayouts(generatedRoutes)
 

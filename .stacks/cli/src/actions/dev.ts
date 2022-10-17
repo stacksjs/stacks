@@ -2,7 +2,7 @@ import Prompts from 'prompts'
 import consola from 'consola'
 import { runNpmScript } from '@stacksjs/utils'
 import { NpmScript } from '@stacksjs/types'
-import { ExitCode } from '../commands/exit-code'
+import { ExitCode } from '../../../types/src/exit-code'
 
 const { prompts } = Prompts
 

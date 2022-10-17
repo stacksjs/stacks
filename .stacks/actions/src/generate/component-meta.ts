@@ -4,7 +4,7 @@ import fg from 'fast-glob'
 import MarkdownIt from 'markdown-it'
 import type { ComponentMeta, MetaCheckerOptions } from 'vue-component-meta'
 import { createComponentMetaChecker } from 'vue-component-meta'
-import { frameworkPath, projectPath } from '@stacksjs/utils'
+import { frameworkPath, projectPath } from 'stacks'
 
 const md = new MarkdownIt()
 

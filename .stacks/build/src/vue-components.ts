@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { componentLibrary } from '@stacksjs/config'
-import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from 'stacksjs'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '../../src/helpers'
+import type { ViteConfig } from 'types'
+import { componentLibrary } from 'config'
+import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from 'stacks'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'helpers'
 
 const config: ViteConfig = {
   root: componentsPath(),

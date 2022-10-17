@@ -1,9 +1,9 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { webComponentLibrary } from '@stacksjs/config'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/utils'
-import { alias, atomicCssEngine, autoImports, components, inspect, uiEngine } from 'stacksjs'
+import type { ViteConfig } from 'types'
+import { webComponentLibrary } from 'config'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'helpers'
+import { alias, atomicCssEngine, autoImports, components, inspect, uiEngine } from 'stacks'
 
 const isWebComponent = true
 

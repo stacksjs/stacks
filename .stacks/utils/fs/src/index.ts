@@ -3,9 +3,9 @@ import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, sta
 import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
-import type { JsonFile, TextFile } from '@stacksjs/types'
-import { componentsPath, functionsPath, projectPath } from 'stacksjs'
-import { contains } from '@stacksjs/arrays'
+import type { JsonFile, TextFile } from 'types'
+import { componentsPath, functionsPath, projectPath } from 'stacks'
+import { contains } from 'arrays'
 
 /**
  * Reads a JSON file and returns the parsed data.
