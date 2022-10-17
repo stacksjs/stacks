@@ -1,6 +1,7 @@
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
-import { isFile, readTextFile } from '@stacksjs/utils'
+import type { Manifest } from '@stacksjs/types'
+import { isFile, readTextFile } from '@stacksjs/fs'
 import { ui } from '@stacksjs/config'
 
 export async function isInitialized() {
@@ -136,4 +137,25 @@ export function config(key?: string, fallback?: string) {
   // eslint-disable-next-line no-console
   console.log('key', key, 'fallback', fallback)
   // return key ? configArr[key as string] : fallback
+}
+
+/**
+ * Determines whether the specified value is a package manifest.
+ */
+export function isManifest(obj: any): obj is Manifest {
+  return obj
+    && typeof obj === 'object'
+    && isOptionalString(obj.name)
+    && isOptionalString(obj.version)
+    && isOptionalString(obj.description)
+}
+
+/**
+ * Determines whether the specified value is a string, null, or undefined.
+ */
+function isOptionalString(value: any): value is string | undefined {
+  const type = typeof value
+  return value === null
+    || type === 'undefined'
+    || type === 'string'
 }

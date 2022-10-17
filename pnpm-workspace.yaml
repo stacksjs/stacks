@@ -3,6 +3,7 @@ packages:
   - ./.stacks/build
   - ./.stacks/cli
   - ./.stacks/config
+  - ./.stacks/css
   - ./.stacks/modules
   - ./.stacks/router
   - ./.stacks/utils

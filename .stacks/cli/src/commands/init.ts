@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 import type { CAC } from 'cac'
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
-import { isFolder } from '@stacksjs/utils'
+import { isFolder } from '@stacksjs/fs'
 import { version } from '../../package.json'
 import { generate as generateAppKey } from '../actions/key'
 import { ExitCode } from './exit-code'

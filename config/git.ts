@@ -1,4 +1,4 @@
-import type { GitOptions as Options } from 'stacks/src'
+import type { GitOptions as Options } from 'stacksjs'
 
 export const git: Options = {
   hooks: {

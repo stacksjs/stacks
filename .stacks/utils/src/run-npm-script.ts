@@ -27,7 +27,7 @@ export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit
 /**
  * Determines whether the specified NPM script exists in the given manifest.
  */
-function hasScript(manifest: Manifest, script: NpmScript): boolean {
+export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   const scripts = manifest.scripts as Record<NpmScript, string> | undefined
 
   if (scripts && typeof scripts === 'object')

@@ -6,7 +6,7 @@
  * future releases. Read more in its documentation:
  */
 
-import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacks/src'
+import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacksjs'
 
 export const library: Options = {
   name: 'hello-world',

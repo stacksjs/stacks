@@ -40,14 +40,13 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.0",
-    "pathe": "^0.3.9"
-  },
   "devDependencies": {
+    "@stacksjs/arrays": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/fs": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "mkdist": "^0.3.13"
+    "mkdist": "^0.3.13",
+    "pathe": "^0.3.9"
   }
 }

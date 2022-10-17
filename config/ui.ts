@@ -3,7 +3,7 @@
  * your project-specific style guide.
  */
 
-import type { Shortcuts } from 'stacks/src'
+import type { Shortcuts } from 'stacksjs'
 
 export const ui = {
   /**

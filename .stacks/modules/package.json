@@ -7,7 +7,7 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/modules#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -17,16 +17,11 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "utilities",
+    "modules",
     "stacks",
     "framework",
     "typescript",
-    "javascript",
-    "vite",
-    "nitro",
-    "vue",
-    "components",
-    "library"
+    "javascript"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -45,7 +40,12 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@intlify/vite-plugin-vue-i18n": "^6.0.3",
+    "@stacksjs/types": "workspace:*",
+    "@types/nprogress": "^0.2.0",
     "mkdist": "^0.3.13",
-    "pathe": "^0.3.9"
+    "nprogress": "^0.2.0",
+    "pathe": "^0.3.9",
+    "vue-i18n": "^9.2.2"
   }
 }
