@@ -4,8 +4,7 @@ import consola from 'consola'
 import encUtf8 from 'crypto-js/enc-utf8'
 import encBase64 from 'crypto-js/enc-base64'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import { isFile } from 'utils'
-import { projectPath } from 'stacks'
+import { isFile, projectPath } from 'stacks'
 
 export async function generate() {
   consola.info('Setting random application key.')

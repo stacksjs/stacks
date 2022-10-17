@@ -1,6 +1,6 @@
-# Stacks Router
+# Stacks Actions
 
-This package contains the Stacks Security.
+This package contains the Stacks Actions.
 
 ## ☘️ Features
 
@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/security
+pnpm i -D @stacksjs/actions
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/security'
+import * from '@stacksjs/actions/generate'
 
 // wip
 ```

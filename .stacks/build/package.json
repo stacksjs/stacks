@@ -43,10 +43,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
     "pathe": "^0.3.9",
+    "stacksjs": "workspace:*",
     "vite": "^3.1.8",
     "vite-ssg-sitemap": "^0.4.3"
   },

@@ -1,12 +1,13 @@
-# Stacks Router
+# Stacks UI
 
-This package contains the Stacks Security.
+This package contains the Stacks UI engine.
 
 ## ☘️ Features
 
 wip
 
-- ⚡️
+- ⚡️ Vue
+- ⚡️ UnoCSS
 
 wip
 

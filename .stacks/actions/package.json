@@ -45,12 +45,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/utils": "workspace:*",
     "@types/fs-extra": "^9.0.13",
     "consola": "^2.15.3",
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
     "markdown-it": "^13.0.1",
+    "stacksjs": "workspace:*",
     "vue-component-meta": "^1.0.8"
   },
   "devDependencies": {

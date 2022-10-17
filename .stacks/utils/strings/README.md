@@ -1,6 +1,6 @@
-# Stacks Router
+# Stacks Strings
 
-This package contains the Stacks Security.
+This package contains the Stacks Strings source.
 
 ## ☘️ Features
 
@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/security
+pnpm i -D @stacksjs/strings
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/security'
+import * from '@stacksjs/strings'
 
 // wip
 ```

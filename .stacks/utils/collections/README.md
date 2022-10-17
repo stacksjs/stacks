@@ -1,6 +1,6 @@
-# Stacks Router
+# Stacks Collections
 
-This package contains the Stacks Security.
+This package contains the Stacks Collections source.
 
 ## ☘️ Features
 
@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/security
+pnpm i -D @stacksjs/collections
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/security'
+import * from '@stacksjs/collections'
 
 // wip
 ```

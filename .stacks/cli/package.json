@@ -58,8 +58,6 @@
   },
   "dependencies": {
     "@jsdevtools/ez-spawn": "^3.0.4",
-    "@stacksjs/fs": "workspace:*",
-    "@stacksjs/types": "workspace:*",
     "consola": "^2.15.3",
     "cac": "^6.7.14",
     "giget": "^0.1.7",
