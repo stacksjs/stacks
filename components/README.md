@@ -1,6 +1,6 @@
 # Your Component Library
 
-This is the where you create your components.
+This is where you create your components.
 
 > **Note**
 > If your project does not require any UI components, you can remove this folder. If your library does include components, you may use this readme as the boilerplate of your component library.

@@ -14,7 +14,7 @@ import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '../types'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '@stacksjs/types'
 import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath } from './helpers'
 
 // it is important to note that path references within this file
@@ -92,7 +92,7 @@ function autoImports(options?: AutoImportsOptions) {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
       { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
-      { 'collect.js': ['collect'] },
+      { 'collect.js': ['collect', 'Collection'] },
     ],
     dirs: [
       frameworkPath('generate/src'),

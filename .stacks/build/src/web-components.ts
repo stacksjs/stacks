@@ -3,8 +3,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { webComponentLibrary } from '@stacksjs/config'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/utils'
-import alias from '../../core/alias'
-import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '../../core/stacks'
+import { alias, atomicCssEngine, autoImports, components, inspect, uiEngine } from '@stacksjs/framework'
 
 const isWebComponent = true
 

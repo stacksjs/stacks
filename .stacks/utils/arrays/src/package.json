@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs",
+  "name": "@stacksjs/arrays",
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
@@ -7,19 +7,19 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils/arrays#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/utils"
+    "directory": "./.stacks/utils/arrays"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "objects",
-    "strings",
     "arrays",
+    "collections",
+    "contains",
     "utilities",
     "functions",
     "stacks"
@@ -46,6 +46,7 @@
     "pathe": "^0.3.9"
   },
   "devDependencies": {
+    "@stacksjs/collections": "workspaces:*",
     "mkdist": "^0.3.13"
   }
 }

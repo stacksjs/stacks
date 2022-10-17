@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import { version } from '../../../package.json'
-import { isInitialized } from '../../core/helpers'
+import { isInitialized } from '../../src/helpers'
 import { build, dev, example, generate, init, key, make, test, update, utility } from './commands'
 import { ExitCode } from './commands/exit-code'
 

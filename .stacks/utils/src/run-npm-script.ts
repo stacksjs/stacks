@@ -2,7 +2,7 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import type { Manifest, NpmScript } from '@stacksjs/types'
 import { ExitCode } from 'stacks-init/src/commands/exit-code'
-import { frameworkPath } from '../../core/helpers'
+import { frameworkPath } from '../../src/helpers'
 import { isManifest } from './manifest'
 import { readJsonFile } from './fs'
 

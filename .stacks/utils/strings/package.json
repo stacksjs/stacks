@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs",
+  "name": "@stacksjs/strings",
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.4",
@@ -7,19 +7,29 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils/strings#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/utils"
+    "directory": "./.stacks/utils/strings"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "objects",
     "strings",
-    "arrays",
+    "camel case",
+    "capital case",
+    "constant case",
+    "dot case",
+    "header case",
+    "no case",
+    "param case",
+    "kebab case",
+    "pascal case",
+    "path case",
+    "sentence case",
+    "snake case",
     "utilities",
     "functions",
     "stacks"

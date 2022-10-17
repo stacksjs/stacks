@@ -4,8 +4,8 @@ import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
-import { componentsPath, functionsPath, projectPath } from '../../core/helpers'
-import { contains } from './array'
+import { componentsPath, functionsPath, projectPath } from '@stacksjs/framework'
+import { contains } from '@stacksjs/array'
 
 /**
  * Reads a JSON file and returns the parsed data.

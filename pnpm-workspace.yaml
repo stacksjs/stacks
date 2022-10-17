@@ -6,6 +6,10 @@ packages:
   - ./.stacks/modules
   - ./.stacks/router
   - ./.stacks/utils
+  - ./.stacks/utils/arrays
+  - ./.stacks/utils/collections
+  - ./.stacks/utils/objects
+  - ./.stacks/utils/strings
   - ./.stacks/security
   - ./.stacks/types
   - ./.stacks/vue-components
