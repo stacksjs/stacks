@@ -1,6 +1,12 @@
-import type { AppOptions as Options } from 'stacks'
-import { env } from 'stacks'
+import { type AppOptions as Options, env } from 'stacks'
 
+/**
+ * ### Application Options
+ *
+ * This configuration defines all of your application options. Because Stacks is full-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
 export const app: Options = {
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),

@@ -7,7 +7,7 @@ import { alias, atomicCssEngine, autoImports, components, inspect, uiEngine } fr
 
 const isWebComponent = true
 
-const config: ViteConfig = {
+export const webComponentsConfig: ViteConfig = {
   root: componentsPath(),
   envDir: projectPath(),
   envPrefix: 'APP_',
@@ -55,8 +55,8 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return config
+    return webComponentsConfig
 
   // command === 'build'
-  return config
+  return webComponentsConfig
 })

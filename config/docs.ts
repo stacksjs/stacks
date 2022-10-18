@@ -4,8 +4,7 @@
  * see the DocsConfig type definition.
  */
 
-import type { DocsConfig } from 'stacks'
-import { frameworkPath } from 'stacks'
+import { type DocsConfig, frameworkPath } from 'stacks'
 
 export default <DocsConfig> {
   outDir: frameworkPath('docs/dist'),

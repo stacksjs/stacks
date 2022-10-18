@@ -74,6 +74,6 @@ For casual chit-chat with others using this package:
 
 ## 📄 License
 
-The MIT License (MIT). Please see [LICENSE](../../LICENSE.md) for more information.
+The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with ❤️

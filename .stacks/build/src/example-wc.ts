@@ -3,7 +3,7 @@ import type { UserConfig as ViteConfig } from 'vite'
 import { examplesPath } from 'helpers'
 import { uiEngine } from 'stacks'
 
-const config: ViteConfig = {
+export const webComponentsExampleConfig: ViteConfig = {
   root: examplesPath('web-components'),
 
   server: {
@@ -17,5 +17,5 @@ const config: ViteConfig = {
 }
 
 export default defineConfig(() => {
-  return config
+  return webComponentsExampleConfig
 })

@@ -4,7 +4,7 @@ import type { ViteConfig } from 'types'
 import { functionsPath, projectPath } from 'helpers'
 import { alias, atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from 'stacks'
 
-const config: ViteConfig = {
+export const pagesConfig: ViteConfig = {
   root: functionsPath(),
   envDir: projectPath(),
   envPrefix: 'APP_',
@@ -42,8 +42,8 @@ const config: ViteConfig = {
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return config
+    return pagesConfig
 
   // command === 'build'
-  return config
+  return pagesConfig
 })

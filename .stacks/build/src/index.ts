@@ -1,4 +1,6 @@
-import { webComponentsBuildOptions } from './web-components'
-import { functionsBuildOptions } from './functions'
-
-export { webComponentsBuildOptions, functionsBuildOptions }
+export * from './example-vue'
+export * from './example-wc'
+export * from './functions'
+export * from './pages'
+export * from './vue-components'
+export * from './web-components'

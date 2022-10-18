@@ -5,7 +5,7 @@ import { functionLibrary } from 'config'
 import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from 'helpers'
 import { alias, autoImports } from 'stacks'
 
-const config: ViteConfig = {
+export const functionsConfig: ViteConfig = {
   root: functionsPath(),
   envDir: projectPath(),
   envPrefix: 'APP_',
@@ -48,8 +48,8 @@ export function functionsBuildOptions(): ViteBuildOptions {
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return config
+    return functionsConfig
 
   // command === 'build'
-  return config
+  return functionsConfig
 })

@@ -1,55 +1,20 @@
+import type { UiOptions } from 'stacks'
+
 /**
- * This configuration is used to define
- * your project-specific style guide.
+ * ### UI Engine Options
+ *
+ * This configuration defines all of your UI Engine options. Because Stacks is full-typed, you
+ * may hover any of the options below and the definitions will be provided. In case you
+ * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-
-import type { Shortcuts } from 'stacks'
-
-export const ui = {
-  /**
-   * Shortcuts provide you with the ability to combine
-   * utility names for reusability purposes.
-   */
-  shortcuts: <Shortcuts> [
+export const ui: UiOptions = {
+  shortcuts: [
     ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
   ],
-
-  /**
-   * Use the `safelist` option to ensure the generation of
-   * those utility classes. This is useful when certain
-   * class names don’t exist in your content files.
-   */
   safelist: 'prose prose-sm m-auto text-left',
-
-  /**
-   * The trigger defines the class name markup
-   * you want to add into your components.
-   */
   trigger: ':stx:',
-
-  /**
-   * When transforming all utility classes
-   * into a single class, this prefix will
-   * be added to the generated class.
-   */
   classPrefix: 'stx-',
-
-  /**
-   * Define a standard of reset CSS stylesheets. By default,
-   * the Tailwind reset styles are utilized. You may set
-   * this value to `null` if you prefer not using any.
-   *
-   * @url https://www.npmjs.com/package/@unocss/reset
-   *
-   * TODO: the preset needs to be added via a Vite plugin on development & build
-   */
   reset: 'tailwind',
-
-  /**
-   * Define any of the icon collections you like to use via "icons in pure css."
-   * See https://stacks.ow3.org/config/icons for a list of available icon sets.
-   * TODO: create automatic generator for this
-   */
   icons: {
     'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
     'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),

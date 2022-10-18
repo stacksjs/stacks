@@ -1,13 +1,21 @@
 import type { GitOptions as Options } from 'stacks'
 
+/**
+ * ### Git Options
+ *
+ * This configuration defines all of your git options. Because Stacks is full-typed, you may
+ * hover any of the options below and the definitions will be provided. In case you
+ * have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
 export const git: Options = {
   hooks: {
     'pre-commit': 'lint-staged',
   },
 
   scopes: [
-    '', 'ci', 'config', 'deps', 'cli', 'docs', 'dx', 'example',
-    'release', 'readme', 'build', 'scripts', 'test',
+    '', 'ci', 'deps', 'dx', 'release', 'readme', 'test', 'actions', 'build', 'cli', 'config',
+    'examples', 'functions', 'modules', 'pages', 'router', 'scripts', 'security',
+    'ui', 'utils', 'arrays', 'collections', 'fs', 'objects', 'strings',
   ],
 
   messages: {

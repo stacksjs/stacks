@@ -27,7 +27,7 @@
         "./actions/src/*"
       ],
       "build": [
-        "./build/src/index.ts"
+        "builds/src/index.ts"
       ],
       "cli": [
         "./cli/src/index.ts"

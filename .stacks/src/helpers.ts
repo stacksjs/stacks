@@ -26,6 +26,8 @@ export async function checkIfAppKeyIsSet() {
 }
 
 /**
+ * Determines the utilized reset preset.
+ *
  * @url https://www.npmjs.com/package/@unocss/reset
  * @param preset
  */
@@ -56,7 +58,39 @@ export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'fu
 }
 
 export function buildEntriesPath(path?: string) {
-  return frameworkPath(`src/build/entries/${path || ''}`)
+  return frameworkPath(`build/entries/${path || ''}`)
+}
+
+export function actionsPath(path?: string) {
+  return frameworkPath(`actions/${path || ''}`)
+}
+
+export function buildEnginePath(path?: string) {
+  return frameworkPath(`build/${path || ''}`)
+}
+
+export function modulesPath(path?: string) {
+  return frameworkPath(`modules/${path || ''}`)
+}
+
+export function pagesEnginePath(path?: string) {
+  return frameworkPath(`pages/${path || ''}`)
+}
+
+export function routerPath(path?: string) {
+  return frameworkPath(`router/${path || ''}`)
+}
+
+export function typesPath(path?: string) {
+  return frameworkPath(`types/${path || ''}`)
+}
+
+export function uiEnginePath(path?: string) {
+  return frameworkPath(`ui/${path || ''}`)
+}
+
+export function scriptsPath(path?: string) {
+  return frameworkPath(`scripts/${path || ''}`)
 }
 
 export function customElementsDataPath() {

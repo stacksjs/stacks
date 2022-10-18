@@ -3,8 +3,9 @@ import type { ViteConfig } from 'types'
 import { componentLibrary } from 'config'
 import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from 'stacks'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'helpers'
+import type { BuildOptions as ViteBuildOptions } from 'vite'
 
-const config: ViteConfig = {
+export const vueComponentsConfig: ViteConfig = {
   root: componentsPath(),
   envDir: projectPath(),
   envPrefix: 'APP_',
@@ -32,7 +33,11 @@ const config: ViteConfig = {
     inspect(),
   ],
 
-  build: {
+  build: vueComponentsBuildOptions(),
+}
+
+export function vueComponentsBuildOptions(): ViteBuildOptions {
+  return {
     outDir: frameworkPath('vue-components/dist'),
     emptyOutDir: true,
     lib: {
@@ -58,13 +63,13 @@ const config: ViteConfig = {
         },
       },
     },
-  },
+  }
 }
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return config
+    return vueComponentsConfig
 
   // command === 'build'
-  return config
+  return vueComponentsConfig
 })
