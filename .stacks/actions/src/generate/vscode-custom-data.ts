@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { writeTextFile } from 'utils'
 import { customElementsDataPath } from 'stacks'
-import { componentLibrary } from 'config'
+import { library } from 'config'
 
 export async function generateVsCodeCustomData() {
   try {
@@ -18,7 +18,7 @@ export async function generateVsCodeCustomData() {
 }
 
 function generateComponentInfoData() {
-  const componentsData = JSON.stringify(componentLibrary.tags)
+  const componentsData = JSON.stringify(library.vueComponents.tags)
 
   return `{
   "version": 1.1,

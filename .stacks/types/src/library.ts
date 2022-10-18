@@ -1,5 +1,12 @@
 import type { TagsOptions } from '.'
 
+/**
+ * ### Library Options
+ *
+ * This configuration defines all of your library options. Because Stacks is full-typed, you
+ * may hover any of the options below and the definitions will be provided. In case you
+ * have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
 export interface LibraryOptions {
   /**
    * The base name of your library/libraries.
@@ -43,6 +50,21 @@ export interface LibraryOptions {
    * The default language used within your stack.
    */
   defaultLanguage: LanguageCode
+
+  /**
+   * The Vue component library options.
+   */
+  vueComponents: LibraryBuildOptions
+
+  /**
+   * The Web Component library options.
+   */
+  webComponents: LibraryBuildOptions
+
+  /**
+   * The Web Component library options.
+   */
+  functions: LibraryBuildOptions
 }
 
 /**

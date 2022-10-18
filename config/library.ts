@@ -1,13 +1,12 @@
+import type { LibraryOptions as Options } from 'stacks'
+
 /**
- * Your component & function library variables.
+ * ### Library Options
  *
- * These values may be updated at any time, but if you update
- * the "library name," it will create a new npm package for
- * future releases. Read more in its documentation:
+ * This configuration defines all of your library options. Because Stacks is full-typed, you
+ * may hover any of the options below and the definitions will be provided. In case you
+ * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-
-import type { LibraryBuildOptions as BuildOptions, LibraryOptions as Options, StackName } from 'stacks'
-
 export const library: Options = {
   name: 'hello-world',
   parentName: '@stacksjs',
@@ -16,48 +15,44 @@ export const library: Options = {
   author: 'Chris Breuer',
   contributors: ['Chris Breuer <chris@ow3.org>'],
   defaultLanguage: 'en',
-}
 
-export const stackName: StackName = library.parentName
-  ? `${library.parentName}/${library.name}`
-  : library.name
-
-export const componentLibrary: BuildOptions = {
-  name: `${stackName}-vue`,
-  description: 'Your Vue component library description',
-  keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
-  tags: [{
-    name: ['HelloWorld', 'AppHelloWorld'],
-    description: 'The Hello World custom element, built via this framework.',
-    attributes: [{
-      name: 'greeting',
-      description: 'The greeting.',
+  vueComponents: {
+    name: 'hello-world-vue',
+    description: 'Your Vue component library description',
+    keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
+    tags: [{
+      name: ['HelloWorld', 'AppHelloWorld'],
+      description: 'The Hello World custom element, built via this framework.',
+      attributes: [{
+        name: 'greeting',
+        description: 'The greeting.',
+      }],
     }],
-  }],
-}
+  },
 
-export const webComponentLibrary: BuildOptions = {
-  name: `${stackName}-elements`,
-  description: 'Your framework agnostic web component library description.',
-  keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-  tags: [{
-    name: ['HelloWorld', 'AppHelloWorld'],
-    description: 'The Hello World custom element, built via this framework.',
-    attributes: [{
-      name: 'greeting',
-      description: 'The greeting.',
+  webComponents: {
+    name: 'hello-world-elements',
+    description: 'Your framework agnostic web component library description.',
+    keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
+    tags: [{
+      name: ['HelloWorld', 'AppHelloWorld'],
+      description: 'The Hello World custom element, built via this framework.',
+      attributes: [{
+        name: 'greeting',
+        description: 'The greeting.',
+      }],
     }],
-  }],
-}
+  },
 
-export const functionLibrary: BuildOptions = {
-  name: `${stackName}-fx`,
-  description: 'Your function library description.',
-  keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
-  shouldBuildIife: false,
-  shouldGenerateSourcemap: false,
-  functions: [
-    'counter',
-    'dark',
-  ],
+  functions: {
+    name: 'hello-world-fx',
+    description: 'Your function library description.',
+    keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
+    shouldBuildIife: false,
+    shouldGenerateSourcemap: false,
+    functions: [
+      'counter',
+      'dark',
+    ],
+  },
 }

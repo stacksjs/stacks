@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { kebabCase, writeTextFile } from 'utils'
 import { determineResetPreset, libraryEntryPath } from 'helpers'
-import { componentLibrary, functionLibrary, webComponentLibrary } from 'config'
+import { library } from 'config'
 import { ExitCode } from 'types'
 
 /**
@@ -40,16 +40,16 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   let arr = []
 
   if (type === 'functions') {
-    if (!functionLibrary.functions) {
+    if (!library.functions.functions) {
       consola.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit(ExitCode.FatalError)
     }
 
-    for (const fx of functionLibrary.functions) {
+    for (const fx of library.functions.functions) {
       if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '../../../../functions/${fx[0]}'`)
+        arr.push(`export * as ${fx[1]} from '../../../functions/${fx[0]}'`)
       else
-        arr.push(`export * from '../../../../functions/${fx}'`)
+        arr.push(`export * from '../../../functions/${fx}'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -57,18 +57,18 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   }
 
   if (type === 'vue-components') {
-    if (!componentLibrary.tags) {
+    if (!library.vueComponents.tags) {
       consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit(ExitCode.FatalError)
     }
 
     arr = determineResetPreset()
 
-    for (const component of componentLibrary.tags.map(tag => tag.name)) {
+    for (const component of library.vueComponents.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '../../../../components/${component[0]}.vue'`)
+        arr.push(`export { default as ${component[1]} } from '../../../components/${component[0]}.vue'`)
       else
-        arr.push(`export { default as ${component} } from '../../../../components/${component}.vue'`)
+        arr.push(`export { default as ${component} } from '../../../components/${component}.vue'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -81,19 +81,19 @@ function generateEntryPointData(type: 'vue-components' | 'web-components' | 'fun
   const declarations = []
   const definitions = []
 
-  if (!webComponentLibrary.tags) {
+  if (!library.webComponents.tags) {
     consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
     process.exit(ExitCode.FatalError)
   }
 
-  for (const component of webComponentLibrary.tags.map(tag => tag.name)) {
+  for (const component of library.webComponents.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '../../../../components/${component[0]}.vue'`)
+      imports.push(`import ${component[1]} from '../../../components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
     }
     else {
-      imports.push(`import ${component} from '../../../../components/${component}.vue'`)
+      imports.push(`import ${component} from '../../../components/${component}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }

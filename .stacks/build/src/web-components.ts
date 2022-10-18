@@ -1,7 +1,7 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
-import { webComponentLibrary } from 'config'
+import { library } from 'config'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'helpers'
 import { alias, atomicCssEngine, autoImports, components, inspect, uiEngine } from 'stacks'
 
@@ -38,7 +38,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: buildEntriesPath('web-components.ts'),
-      name: webComponentLibrary.name,
+      name: library.webComponents.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

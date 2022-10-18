@@ -27,7 +27,10 @@
         "./actions/src/*"
       ],
       "build": [
-        "builds/src/index.ts"
+        "./build/src/index.ts"
+      ],
+      "build/*": [
+        "./build/src/*"
       ],
       "cli": [
         "./cli/src/index.ts"
@@ -43,6 +46,9 @@
       ],
       "router": [
         "./router/src/index.ts"
+      ],
+      "router/*": [
+        "./router/src/*"
       ],
       "security": [
         "./security/src/index.ts"

@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { packageJsonPath } from 'stacks'
-import { componentLibrary, functionLibrary, library, webComponentLibrary } from 'config'
+import { library } from 'config'
 import { writeTextFile } from 'utils'
 import { packageManager } from 'framework/package.json'
 
@@ -8,26 +8,26 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   let name, description, directory, keywords, config
 
   if (type === 'vue-components') {
-    name = componentLibrary.name
-    description = componentLibrary.description
+    name = library.vueComponents.name
+    description = library.vueComponents.description
     directory = 'components'
-    keywords = componentLibrary.keywords
+    keywords = library.vueComponents.keywords
     config = 'vue-components'
   }
 
   else if (type === 'web-components') {
-    name = webComponentLibrary.name
-    description = webComponentLibrary.description
+    name = library.webComponents.name
+    description = library.webComponents.description
     directory = 'components'
-    keywords = webComponentLibrary.keywords
+    keywords = library.webComponents.keywords
     config = 'web-components'
   }
 
   else if (type === 'functions') {
-    name = functionLibrary.name
-    description = functionLibrary.description
+    name = library.functions.name
+    description = library.functions.description
     directory = 'functions'
-    keywords = functionLibrary.keywords
+    keywords = library.functions.keywords
     config = 'functions'
   }
 

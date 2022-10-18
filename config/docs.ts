@@ -1,11 +1,12 @@
-/**
- * This is the place where you define your documentation
- * configuration. For all available options,
- * see the DocsConfig type definition.
- */
-
 import { type DocsConfig, frameworkPath } from 'stacks'
 
+/**
+ * ### Documentation Options
+ *
+ * This configuration defines all of your documentation options. Because Stacks is full-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
 export default <DocsConfig> {
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',

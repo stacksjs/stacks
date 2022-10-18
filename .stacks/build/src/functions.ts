@@ -1,7 +1,7 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
-import { functionLibrary } from 'config'
+import { library } from 'config'
 import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from 'helpers'
 import { alias, autoImports } from 'stacks'
 
@@ -25,11 +25,11 @@ export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: frameworkPath('functions/dist'),
     emptyOutDir: true,
-    sourcemap: functionLibrary.shouldGenerateSourcemap,
+    sourcemap: library.functions.shouldGenerateSourcemap,
     lib: {
       entry: buildEntriesPath('functions.ts'),
-      name: functionLibrary.name,
-      formats: functionLibrary.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
+      name: library.functions.name,
+      formats: library.functions.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'
