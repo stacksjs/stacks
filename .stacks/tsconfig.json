@@ -24,79 +24,79 @@
         "./*"
       ],
       "actions/*": [
-        "./actions/src/*"
+        "./core/actions/src/*"
       ],
       "build": [
-        "./build/src/index.ts"
+        "./core/build/src/index.ts"
       ],
       "build/*": [
-        "./build/src/*"
+        "./core/build/src/*"
       ],
       "cli": [
-        "./cli/src/index.ts"
+        "./core/cli/src/index.ts"
       ],
       "cli/*": [
-        "./cli/src/*"
+        "./core/cli/src/*"
       ],
       "helpers": [
-        "utils/src/helpers.ts"
+        "./core/utils/src/helpers.ts"
       ],
       "modules/*": [
-        "./modules/src/*"
+        "./core/modules/src/*"
       ],
       "router": [
-        "./router/src/index.ts"
+        "./core/router/src/index.ts"
       ],
       "router/*": [
-        "./router/src/*"
+        "./core/router/src/*"
       ],
       "security": [
-        "./security/src/index.ts"
+        "./core/security/src/index.ts"
       ],
       "types": [
-        "./types/src/index.ts"
+        "./core/types/src/index.ts"
       ],
       "ui": [
-        "./ui/src/index.ts"
+        "./core/ui/src/index.ts"
       ],
       "arrays": [
-        "./utils/arrays/src/index.ts"
+        "./core/utils/arrays/src/index.tss"
       ],
       "collections": [
-        "./utils/collections/src/index.ts"
+        "./core/utils/collections/src/index.tss"
       ],
       "stacks:fs": [
-        "./utils/fs/src/index.ts"
+        "./core/utils/fs/src/index.tss"
       ],
       "objects": [
-        "./utils/objects/src/index.ts"
+        "./core/utils/objects/src/index.tss"
       ],
       "objects/*": [
-        "./utils/objects/src/*"
+        "./core/utils/objects/src/**"
       ],
       "paths": [
-        "./utils/paths/src/index.ts"
+        "./core/utils/paths/src/index.tss"
       ],
       "paths/*": [
-        "./utils/paths/src/*"
+        "./core/utils/paths/src/**"
       ],
       "strings": [
-        "./utils/strings/src/index.ts"
+        "./core/utils/strings/src/index.tss"
       ],
       "utils": [
-        "./utils/src/index.ts"
+        "./core/utils/src/index.ts"
       ],
       "stacks": [
-        "./src/index.ts"
+        "./core/stacks/src/index.ts"
       ],
       "stacks/*": [
-        "./src/*"
+        "./core/stacks/src/*"
       ],
       "components/*": [
         "../components/*"
       ],
       "config": [
-        "./config/src/index.ts"
+        "./core/config/src/index.ts"
       ],
       "config/*": [
         "../config/*"

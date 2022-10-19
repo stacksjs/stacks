@@ -1,21 +1,20 @@
 packages:
-  - ./.stacks/actions
-  - ./.stacks/build
-  - ./.stacks/cli
-  - ./.stacks/config
-  - ./.stacks/css
-  - ./.stacks/modules
-  - ./.stacks/router
-  - ./.stacks/ui
-  - ./.stacks/utils
-  - ./.stacks/utils/arrays
-  - ./.stacks/utils/collections
-  - ./.stacks/utils/objects
-  - ./.stacks/utils/strings
-  - ./.stacks/utils/fs
-  - ./.stacks/utils/paths
-  - ./.stacks/security
-  - ./.stacks/types
+  - ./.stacks/core/actions
+  - ./.stacks/core/build
+  - ./.stacks/core/stacks-init
+  - ./.stacks/core/config
+  - ./.stacks/core/modules
+  - ./.stacks/core/router
+  - ./.stacks/core/ui
+  - ./.stacks/core/utils
+  - ./.stacks/core/arrays
+  - ./.stacks/core/collections
+  - ./.stacks/core/objects
+  - ./.stacks/core/strings
+  - ./.stacks/core/fs
+  - ./.stacks/core/paths
+  - ./.stacks/core/security
+  - ./.stacks/core/types
   - ./.stacks/vue-components
   - ./.stacks/web-components
   - ./.stacks/functions

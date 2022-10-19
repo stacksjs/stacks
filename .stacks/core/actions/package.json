@@ -1,0 +1,61 @@
+{
+  "name": "@stacksjs/actions",
+  "type": "module",
+  "version": "0.36.6",
+  "packageManager": "pnpm@7.13.5",
+  "description": "The Stacks actions.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/actions"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "actions",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript",
+    "vite",
+    "nitro",
+    "vue",
+    "components",
+    "library"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=v18.10.0",
+    "pnpm": ">=7.13.5"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "consola": "^2.15.3",
+    "fast-glob": "^3.2.12",
+    "fs-extra": "^10.1.0",
+    "markdown-it": "^13.0.1",
+    "vue-component-meta": "^1.0.8"
+  },
+  "devDependencies": {
+    "mkdist": "^0.3.13"
+  }
+}

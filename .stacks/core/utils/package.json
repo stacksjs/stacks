@@ -1,0 +1,59 @@
+{
+  "name": "@stacksjs/utils",
+  "type": "module",
+  "version": "0.36.6",
+  "packageManager": "pnpm@7.13.5",
+  "description": "The Stacks utilities.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "objects",
+    "strings",
+    "arrays",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=v18.10.0",
+    "pnpm": ">=7.13.5"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jsdevtools/ez-spawn": "^3.0.4",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/collections": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/fs": "workspace:*",
+    "@stacksjs/objects": "workspace:*",
+    "@stacksjs/paths": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@vueuse/core": "^9.3.1",
+    "@vueuse/head": "^0.9.8",
+    "@vueuse/shared": "^9.3.1"
+  },
+  "devDependencies": {
+    "mkdist": "^0.3.13"
+  }
+}

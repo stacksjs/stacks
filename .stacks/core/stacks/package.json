@@ -33,36 +33,16 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "bin": {
+    "stacks": "./bin/stacks.mjs",
+    "stacks-init": "./bin/stacks.mjs",
+    "artisan": "./bin/stacks.mjs",
+    "stx": "./bin/stacks.mjs",
+    "art": "./bin/stacks.mjs"
+  },
   "files": [
-    "actions",
-    "build",
-    "cli",
-    "config",
-    "core",
     "dist",
-    "examples",
-    "functions",
-    "modules",
-    "pages",
-    "router",
-    "scripts",
-    "security",
-    "types",
-    "utils",
-    "vue-components",
-    "web-components",
-    ".gitignore",
-    "package.json",
-    "custom-elements.json",
-    "netlify.toml",
-    "nitro.config.ts",
-    "simple-git-hooks.cjs",
-    "vitest.config.ts",
-    "web-types.json",
-    "README.md",
-    "shims.d.ts",
-    "auto-imports.d.ts",
-    "components.d.ts"
+    "bin"
   ],
   "engines": {
     "node": ">=v18.10.0",
@@ -122,15 +102,64 @@
   },
   "devDependencies": {
     "@ow3/eslint-config": "^0.31.1",
+    "@rollup/pluginutils": "^5.0.1",
+    "@stacksjs/actions": "workspace:*",
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/modules": "workspace:*",
+    "@stacksjs/fs": "workspace:*",
+    "@stacksjs/security": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@types/markdown-it-link-attributes": "^3.0.1",
+    "@types/minimatch": "^5.1.2",
+    "@types/node": "^18.8.0",
+    "@vitejs/plugin-vue": "^3.1.2",
+    "@vitest/coverage-istanbul": "^0.24.3",
+    "bumpp": "^8.2.1",
+    "commitizen": "^4.2.5",
+    "consola": "^2.15.3",
+    "conventional-changelog-cli": "^2.2.2",
+    "cz-git": "^1.3.11",
+    "eslint": "^8.25.0",
+    "esno": "^0.16.3",
+    "events": "^3.3.0",
+    "giget": "^0.1.7",
+    "jiti": "^1.16.0",
     "lint-staged": "^13.0.3",
-    "only-allow": "^1.1.1",
-    "stacks": "workspace:*",
-    "typescript": "^4.8.4"
+    "local-pkg": "^0.4.2",
+    "minimatch": "^5.1.0",
+    "nitropack": "^0.6.0",
+    "pathe": "^0.3.9",
+    "pinia": "^2.0.23",
+    "rimraf": "^3.0.2",
+    "simple-git-hooks": "^2.8.1",
+    "stacks-init": "workspace:*",
+    "typescript": "^4.8.4",
+    "unbuild": "^0.9.4",
+    "unplugin-auto-import": "^0.11.2",
+    "unplugin-vue-components": "^0.22.8",
+    "vitepress": "1.0.0-alpha.21",
+    "vitest": "^0.24.3",
+    "vue": "^3.2.41",
+    "vue-docgen-web-types": "^0.1.8",
+    "vue-router": "^4.1.5",
+    "vue-tsc": "^1.0.8"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@algolia/client-search",
+        "react",
+        "react-dom",
+        "@types/react"
+      ]
+    }
   },
   "config": {
     "commitizen": {
       "path": "node_modules/cz-git"
     }
-  },
-  "web-types": "./web-types.json"
+  }
 }
