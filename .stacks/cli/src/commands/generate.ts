@@ -1,5 +1,6 @@
 import type { CAC } from 'cac'
-import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateTypes, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from '../actions/generate'
+import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from '../actions/generate'
+import { generateTypes } from '../actions/types'
 
 async function generate(artisan: CAC) {
   artisan

@@ -12,6 +12,7 @@ packages:
   - ./.stacks/utils/objects
   - ./.stacks/utils/strings
   - ./.stacks/utils/fs
+  - ./.stacks/utils/paths
   - ./.stacks/security
   - ./.stacks/types
   - ./.stacks/vue-components

@@ -39,13 +39,14 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.0",
-    "mkdist": "^0.3.13",
     "nprogress": "^0.2.0",
-    "pathe": "^0.3.9",
     "vue-i18n": "^9.2.2"
+  },
+  "devDependencies": {
+    "mkdist": "^0.3.13"
   }
 }

@@ -49,6 +49,7 @@
     "@iconify-json/heroicons-outline": "^1.1.4",
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@julr/unocss-preset-forms": "^0.0.2",
+    "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.45.29",
     "unocss": "^0.45.29"
   },

@@ -2,8 +2,8 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
 import { library } from 'config'
-import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from 'framework/utils/src/helpers'
-import { alias, autoImports } from 'stacks'
+import { alias, buildEntriesPath, frameworkPath, functionsPath, projectPath } from 'utils'
+import { autoImports } from './'
 
 export const functionsConfig: ViteConfig = {
   root: functionsPath(),

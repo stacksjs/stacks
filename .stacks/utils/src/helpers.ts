@@ -3,17 +3,17 @@ import ezSpawn from '@jsdevtools/ez-spawn'
 import type { Manifest } from 'types'
 import { ui } from 'config'
 
-export async function isInitialized() {
+export async function isAppInitialized() {
   if (isFile('.env'))
-    return await checkIfAppKeyIsSet()
+    return await isAppKeySet()
 
   if (isFile('.env.example'))
     await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
-  return await checkIfAppKeyIsSet()
+  return await isAppKeySet()
 }
 
-export async function checkIfAppKeyIsSet() {
+export async function isAppKeySet() {
   const env = await readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))

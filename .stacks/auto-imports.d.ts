@@ -26,7 +26,7 @@ declare global {
   const camelCase: typeof import('./utils/string')['camelCase']
   const capitalCase: typeof import('./utils/string')['capitalCase']
   const chai: typeof import('vitest')['chai']
-  const checkIfAppKeyIsSet: typeof import('./utils/src/helpers')['checkIfAppKeyIsSet']
+  const isAppKeySet: typeof import('./utils/src/helpers')['isAppKeySet']
   const clamp: typeof import('@vueuse/shared')['clamp']
   const cliPath: typeof import('./utils/src/helpers')['cliPath']
   const collect: typeof import('collect.js')['collect']
@@ -107,7 +107,7 @@ declare global {
   const isFolder: typeof import('./utils/fs/src')['isFolder']
   const isFunction: typeof import('@vueuse/shared')['isFunction']
   const isIOS: typeof import('@vueuse/shared')['isIOS']
-  const isInitialized: typeof import('./utils/src/helpers')['isInitialized']
+  const isAppInitialized: typeof import('./utils/src/helpers')['isAppInitialized']
   const isManifest: typeof import('./utils/manifest')['isManifest']
   const isNumber: typeof import('@vueuse/shared')['isNumber']
   const isObject: typeof import('@vueuse/shared')['isObject']
@@ -423,7 +423,7 @@ declare module '@vue/runtime-core' {
     readonly camelCase: UnwrapRef<typeof import('./utils/string')['camelCase']>
     readonly capitalCase: UnwrapRef<typeof import('./utils/string')['capitalCase']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
-    readonly checkIfAppKeyIsSet: UnwrapRef<typeof import('./utils/src/helpers')['checkIfAppKeyIsSet']>
+    readonly isAppKeySet: UnwrapRef<typeof import('./utils/src/helpers')['isAppKeySet']>
     readonly clamp: UnwrapRef<typeof import('@vueuse/shared')['clamp']>
     readonly cliPath: UnwrapRef<typeof import('./utils/src/helpers')['cliPath']>
     readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
@@ -504,7 +504,7 @@ declare module '@vue/runtime-core' {
     readonly isFolder: UnwrapRef<typeof import('./utils/fs/src')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('@vueuse/shared')['isFunction']>
     readonly isIOS: UnwrapRef<typeof import('@vueuse/shared')['isIOS']>
-    readonly isInitialized: UnwrapRef<typeof import('./utils/src/helpers')['isInitialized']>
+    readonly isAppInitialized: UnwrapRef<typeof import('./utils/src/helpers')['isAppInitialized']>
     readonly isManifest: UnwrapRef<typeof import('./utils/manifest')['isManifest']>
     readonly isNumber: UnwrapRef<typeof import('@vueuse/shared')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('@vueuse/shared')['isObject']>

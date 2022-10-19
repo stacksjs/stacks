@@ -71,6 +71,15 @@
       "objects": [
         "./utils/objects/src/index.ts"
       ],
+      "objects/*": [
+        "./utils/objects/src/*"
+      ],
+      "paths": [
+        "./utils/paths/src/index.ts"
+      ],
+      "paths/*": [
+        "./utils/paths/src/*"
+      ],
       "strings": [
         "./utils/strings/src/index.ts"
       ],

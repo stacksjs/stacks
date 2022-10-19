@@ -3,9 +3,30 @@ import Prompts from 'prompts'
 import { runNpmScript } from 'utils'
 import { ExitCode, NpmScript } from 'types'
 import { lintFix } from './lint'
-import { generateTypes } from './types'
 
 const { prompts } = Prompts
+
+export async function generateTypes() {
+  try {
+    await runNpmScript(NpmScript.TypesGenerate, 'ignore')
+    consola.success('Types were generated successfully.')
+  }
+  catch (error) {
+    consola.error('There was an error generating your types.')
+    consola.error(error)
+  }
+}
+
+export async function fixTypes() {
+  try {
+    await runNpmScript(NpmScript.TypesFix, 'ignore')
+    consola.success('Types were generated successfully.')
+  }
+  catch (error) {
+    consola.error('There was an error generating your types.')
+    consola.error(error)
+  }
+}
 
 export async function generateLibEntries() {
   try {

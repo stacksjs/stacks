@@ -2,7 +2,7 @@ import Prompts from 'prompts'
 import consola from 'consola'
 import { hasComponents, hasFunctions, runNpmScript } from 'utils'
 import { ExitCode, NpmScript } from 'types'
-import { generateTypes } from './generate'
+import { generateTypes } from './types'
 
 const { prompts } = Prompts
 

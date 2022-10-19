@@ -1,5 +1,7 @@
 import { resolve } from 'pathe'
 
+export * from 'pathe'
+
 /**
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action

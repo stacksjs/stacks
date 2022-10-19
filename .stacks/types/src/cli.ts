@@ -32,7 +32,6 @@ export const enum NpmScript {
   TestTypes = 'test:types',
   TestCoverage = 'test:coverage',
   Generate = 'generate',
-  GenerateTypes = 'generate:types',
   GenerateEntries = 'generate:entries',
   GenerateVueCompat = 'generate:vue-compatibility',
   GenerateWebTypes = 'generate:web-types',
@@ -45,4 +44,6 @@ export const enum NpmScript {
   ExampleVue = 'example:vue',
   ExampleWebComponents = 'example:web-components',
   KeyGenerate = 'key:generate',
+  TypesFix = 'types:fix',
+  TypesGenerate = 'types:generate',
 }

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
 import { examplesPath } from 'utils'
-import { uiEngine } from 'build'
+import { uiEngine } from './'
 
 export const vueComponentsExampleConfig: ViteConfig = {
   root: examplesPath('vue-components'),

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { isInitialized } from 'stacks'
+import { isAppInitialized } from 'utils'
 import { version } from 'framework/package.json'
 import { ExitCode } from 'types'
 import { build, dev, example, generate, init, key, make, test, update, utility } from './commands'
@@ -15,7 +15,7 @@ async function main() {
   // before running any commands, check if the project is already initialized
   await key(artisan)
 
-  if (!await isInitialized()) {
+  if (!await isAppInitialized()) {
     await init(artisan)
   }
   else {
