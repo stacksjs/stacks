@@ -90,12 +90,44 @@ export function routerPath(path?: string) {
   return frameworkPath(`router/${path || ''}`)
 }
 
+export function securityPath(path?: string) {
+  return frameworkPath(`security/${path || ''}`)
+}
+
 export function typesPath(path?: string) {
   return frameworkPath(`types/${path || ''}`)
 }
 
-export function uiEnginePath(path?: string) {
+export function uiPath(path?: string) {
   return frameworkPath(`ui/${path || ''}`)
+}
+
+export function utilsPath(path?: string) {
+  return frameworkPath(`utils/${path || ''}`)
+}
+
+export function arraysPath(path?: string) {
+  return utilsPath(`arrays/${path || ''}`)
+}
+
+export function collectionsPath(path?: string) {
+  return utilsPath(`collections/${path || ''}`)
+}
+
+export function pathsPath(path?: string) {
+  return utilsPath(`paths/${path || ''}`)
+}
+
+export function objectsPath(path?: string) {
+  return utilsPath(`objects/${path || ''}`)
+}
+
+export function stringsPath(path?: string) {
+  return utilsPath(`strings/${path || ''}`)
+}
+
+export function fsPath(path?: string) {
+  return utilsPath(`fs/${path || ''}`)
 }
 
 export function scriptsPath(path?: string) {

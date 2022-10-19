@@ -11,7 +11,6 @@ importers:
   .stacks:
     specifiers:
       '@babel/types': ^7.19.4
-      '@jsdevtools/ez-spawn': ^3.0.4
       '@ow3/eslint-config': ^0.31.0
       '@rollup/pluginutils': ^5.0.1
       '@stacksjs/actions': workspace:*
@@ -29,7 +28,6 @@ importers:
       '@vitejs/plugin-vue': ^3.1.2
       '@vitest/coverage-istanbul': ^0.24.3
       bumpp: ^8.2.1
-      cac: ^6.7.14
       commitizen: ^4.2.5
       consola: ^2.15.3
       conventional-changelog-cli: ^2.2.2
@@ -61,7 +59,6 @@ importers:
       vue-tsc: ^1.0.8
     devDependencies:
       '@babel/types': 7.19.4
-      '@jsdevtools/ez-spawn': 3.0.4
       '@ow3/eslint-config': 0.31.0_z4bbprzjrhnsfa24uvmcbu7f5q
       '@rollup/pluginutils': 5.0.1_rollup@3.2.3
       '@stacksjs/actions': link:actions
@@ -79,7 +76,6 @@ importers:
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       '@vitest/coverage-istanbul': 0.24.3
       bumpp: 8.2.1
-      cac: 6.7.14
       commitizen: 4.2.5
       consola: 2.15.3
       conventional-changelog-cli: 2.2.2
@@ -291,6 +287,7 @@ importers:
 
   .stacks/utils:
     specifiers:
+      '@jsdevtools/ez-spawn': ^3.0.4
       '@stacksjs/arrays': workspace:*
       '@stacksjs/collections': workspace:*
       '@stacksjs/config': workspace:*
@@ -301,8 +298,8 @@ importers:
       '@vueuse/head': ^0.9.8
       '@vueuse/shared': ^9.3.1
       mkdist: ^0.3.13
-      pathe: ^0.3.9
     dependencies:
+      '@jsdevtools/ez-spawn': 3.0.4
       '@stacksjs/arrays': link:arrays
       '@stacksjs/collections': link:collections
       '@stacksjs/config': link:../config
@@ -314,18 +311,13 @@ importers:
       '@vueuse/shared': 9.3.1_vue@3.2.41
     devDependencies:
       mkdist: 0.3.13
-      pathe: 0.3.9
 
   .stacks/utils/arrays:
     specifiers:
-      '@stacksjs/collections': workspace:*
       mkdist: ^0.3.13
-      pathe: ^0.3.9
       typescript: ^4.8.4
     devDependencies:
-      '@stacksjs/collections': link:../collections
       mkdist: 0.3.13_typescript@4.8.4
-      pathe: 0.3.9
       typescript: 4.8.4
 
   .stacks/utils/collections:
@@ -341,18 +333,16 @@ importers:
 
   .stacks/utils/fs:
     specifiers:
-      '@stacksjs/arrays': workspace:*
       '@stacksjs/types': workspace:*
+      '@stacksjs/utils': workspace:*
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
       mkdist: ^0.3.13
-      pathe: ^0.3.9
     dependencies:
-      '@stacksjs/arrays': link:../arrays
       '@stacksjs/types': link:../../types
+      '@stacksjs/utils': link:..
       detect-indent: 7.0.1
       detect-newline: 4.0.0
-      pathe: 0.3.9
     devDependencies:
       mkdist: 0.3.13
 
@@ -360,12 +350,11 @@ importers:
     specifiers:
       '@stacksjs/collections': workspace:*
       mkdist: ^0.3.13
-      pathe: ^0.3.9
       typescript: ^4.8.4
-    devDependencies:
+    dependencies:
       '@stacksjs/collections': link:../collections
+    devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
-      pathe: 0.3.9
       typescript: 4.8.4
 
   .stacks/utils/paths:
@@ -383,12 +372,11 @@ importers:
     specifiers:
       change-case: ^4.1.2
       mkdist: ^0.3.13
-      pathe: ^0.3.9
       typescript: ^4.8.4
-    devDependencies:
+    dependencies:
       change-case: 4.1.2
+    devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
-      pathe: 0.3.9
       typescript: 4.8.4
 
   .stacks/vue-components:
@@ -3447,7 +3435,7 @@ packages:
     dependencies:
       pascal-case: 3.1.2
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /camelcase-keys/6.2.2:
     resolution: {integrity: sha512-YrwaA0vEKazPBkn0ipTiMpSajYDSe+KjQfrjhcBMxJt/znbvlHd8Pw/Vamaz5EB4Wfhs3SUR3Z9mwRu/P3s3Yg==}
@@ -3472,7 +3460,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.4.0
       upper-case-first: 2.0.2
-    dev: true
+    dev: false
 
   /chai/4.3.6:
     resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
@@ -3530,7 +3518,7 @@ packages:
       sentence-case: 3.0.4
       snake-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /character-entities-legacy/1.1.4:
     resolution: {integrity: sha512-3Xnr+7ZFS1uxeiUDvV02wQ+QDbc55o97tIV5zHScSPJpcLm/r0DFPcoY3tYRp+VZukxuMeKgXYmsXQHO05zQeA==}
@@ -3786,7 +3774,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.4.0
       upper-case: 2.0.2
-    dev: true
+    dev: false
 
   /constantinople/4.0.1:
     resolution: {integrity: sha512-vCrqcSIq4//Gx74TXXCGnHpulY1dskqLTFGDmhrGxzeXL8lF8kvXv6mpNWlJj1uD4DW23D4ljAqbY4RRaaUZIw==}
@@ -4335,7 +4323,7 @@ packages:
     dependencies:
       no-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /dot-prop/5.3.0:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
@@ -5895,7 +5883,7 @@ packages:
     dependencies:
       capital-case: 1.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /homedir-polyfill/1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
@@ -6897,7 +6885,7 @@ packages:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /lru-cache/4.1.5:
     resolution: {integrity: sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==}
@@ -7312,7 +7300,7 @@ packages:
     dependencies:
       lower-case: 2.0.2
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /node-fetch-native/0.1.8:
     resolution: {integrity: sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==}
@@ -7617,7 +7605,7 @@ packages:
     dependencies:
       dot-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /parent-module/1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -7681,14 +7669,14 @@ packages:
     dependencies:
       no-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /path-case/3.0.4:
     resolution: {integrity: sha512-qO4qCFjXqVTrcbPt/hQfhTQ+VhFsqNKOPtytgNKkKxSoEp3XPUQ8ObFuePylOIok5gjn69ry8XiULxCwot3Wfg==}
     dependencies:
       dot-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /path-exists/3.0.0:
     resolution: {integrity: sha512-bpC7GYwiDYQ4wYLe+FA8lhRjhQCMcQGuSgGGqDkg/QerRWw9CmGRT0iSOVRSZJ29NMLZgIzqaljJ63oaL4NIJQ==}
@@ -8411,7 +8399,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.4.0
       upper-case-first: 2.0.2
-    dev: true
+    dev: false
 
   /serialize-javascript/4.0.0:
     resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
@@ -8540,7 +8528,7 @@ packages:
     dependencies:
       dot-case: 3.0.4
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
@@ -9337,7 +9325,7 @@ packages:
     resolution: {integrity: sha512-514ppYHBaKwfJRK/pNC6c/OxfGa0obSnAl106u97Ed0I625Nin96KAjttZF6ZL3e1XLtphxnqrOi9iWgm+u+bg==}
     dependencies:
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /upper-case/1.1.3:
     resolution: {integrity: sha512-WRbjgmYzgXkCV7zNVpy5YgrHgbBv126rMALQQMrmzOVC4GM2waQ9x7xtm8VU+1yF2kWyPzI9zbZ48n4vSxwfSA==}
@@ -9347,7 +9335,7 @@ packages:
     resolution: {integrity: sha512-KgdgDGJt2TpuwBUIjgG6lzw2GWFRCW9Qkfkiv0DxqHHLYJHmtmdUIKcZd8rHgFSjopVTlw6ggzCm1b8MFQwikg==}
     dependencies:
       tslib: 2.4.0
-    dev: true
+    dev: false
 
   /uri-js/4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}

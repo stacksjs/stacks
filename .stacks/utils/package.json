@@ -41,6 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@jsdevtools/ez-spawn": "^3.0.4",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -52,7 +53,6 @@
     "@vueuse/shared": "^9.3.1"
   },
   "devDependencies": {
-    "mkdist": "^0.3.13",
-    "pathe": "^0.3.9"
+    "mkdist": "^0.3.13"
   }
 }

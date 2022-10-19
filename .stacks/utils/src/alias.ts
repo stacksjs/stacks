@@ -2,64 +2,38 @@
  * The following configuration references local aliases.
  */
 
-import { actionsPath, componentsPath, configPath, frameworkPath, functionsPath, projectPath } from 'stacks'
+import { actionsPath, arraysPath, buildPath, componentsPath, configPath, frameworkPath, functionsPath, modulesPath, projectPath, routerPath, securityPath, typesPath, uiPath } from './'
 
 const alias: Record<string, string> = {
   '~/': projectPath(),
-  'actions': actionsPath(),
-  'actions/*': actionsPath(),
+  'actions': actionsPath('src/index.ts'),
+  'actions/*': actionsPath('src/*'),
+  'build': buildPath('src/index.ts'),
+  'build/*': buildPath('src/*'),
+  'cli': cliPath('src/index.ts'),
+  'cli/*': cliPath('src/*'),
   'framework': frameworkPath(),
-  'framework/*': frameworkPath(),
+  'framework/*': frameworkPath('*'),
   'stacks': frameworkPath('src/index.ts'),
   'stacks/*': frameworkPath('*'),
-  'config': configPath(),
-  'config/*': configPath('*'),
+  'config': configPath('src/index.ts'),
+  'config/*': projectPath('config/*'),
   'components/*': componentsPath('*'),
   'functions/*': functionsPath('*'),
+  'modules/*': modulesPath('src/*'),
+  'helpers': frameworkPath('src/helpers.ts'),
+  'router': routerPath('src/index.ts'),
+  'router/*': routerPath('src/*'),
+  'security': securityPath('src/index.ts'),
+  'security/*': securityPath('src/*'),
+  'types': typesPath('src/index.ts'),
+  'types/*': typesPath('src/*'),
+  'ui': uiPath('src/index.ts'),
+  'ui/*': uiPath('src/*'),
+  'arrays': arraysPath('src/index.ts'),
+  'arrays/*': arraysPath('src/*'),
 }
 
-//  "framework/*": [
-//         "./*"
-//       ],
-//       "actions/*": [
-//         "./actions/src/*"
-//       ],
-//       "build": [
-//         "./build/src/index.ts"
-//       ],
-//       "build/*": [
-//         "./build/src/*"
-//       ],
-//       "cli": [
-//         "./cli/src/index.ts"
-//       ],
-//       "cli/*": [
-//         "./cli/src/*"
-//       ],
-//       "helpers": [
-//         "./src/helpers.ts"
-//       ],
-//       "modules/*": [
-//         "./modules/src/*"
-//       ],
-//       "router": [
-//         "./router/src/index.ts"
-//       ],
-//       "router/*": [
-//         "./router/src/*"
-//       ],
-//       "security": [
-//         "./security/src/index.ts"
-//       ],
-//       "types": [
-//         "./types/src/index.ts"
-//       ],
-//       "ui": [
-//         "./ui/src/index.ts"
-//       ],
-//       "arrays": [
-//         "./utils/arrays/src/index.ts"
-//       ],
 //       "collections": [
 //         "./utils/collections/src/index.ts"
 //       ],

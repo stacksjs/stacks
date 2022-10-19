@@ -121,7 +121,6 @@
   },
   "devDependencies": {
     "@babel/types": "^7.19.4",
-    "@jsdevtools/ez-spawn": "^3.0.4",
     "@ow3/eslint-config": "^0.31.0",
     "@rollup/pluginutils": "^5.0.1",
     "@stacksjs/actions": "workspace:*",
@@ -139,7 +138,6 @@
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.24.3",
     "bumpp": "^8.2.1",
-    "cac": "^6.7.14",
     "commitizen": "^4.2.5",
     "consola": "^2.15.3",
     "conventional-changelog-cli": "^2.2.2",
