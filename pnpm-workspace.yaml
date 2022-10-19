@@ -6,6 +6,7 @@ packages:
   - ./.stacks/css
   - ./.stacks/modules
   - ./.stacks/router
+  - ./.stacks/ui
   - ./.stacks/utils
   - ./.stacks/utils/arrays
   - ./.stacks/utils/collections
