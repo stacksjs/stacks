@@ -1,7 +1,5 @@
 import consola from 'consola'
-import { packageJsonPath } from 'stacks'
-import { library } from 'config'
-import { writeTextFile } from 'utils'
+import { library, packageJsonPath, writeTextFile } from 'stacks'
 import { packageManager } from 'framework/package.json'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {

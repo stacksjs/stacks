@@ -1,3 +1,6 @@
+export * from './alias'
+export * from './helpers'
+export * from './paths'
 export * from 'arrays'
 export * from 'objects'
 export * from 'strings'

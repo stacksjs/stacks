@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
-import { examplesPath } from 'helpers'
+import { examplesPath } from 'framework/utils/src/helpers'
 import { uiEngine } from 'stacks'
 
 export const vueComponentsExampleConfig: ViteConfig = {

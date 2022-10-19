@@ -2,7 +2,7 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
 import { ExitCode } from 'types'
 import type { Manifest, NpmScript } from 'types'
-import { frameworkPath, isManifest } from 'helpers'
+import { frameworkPath, isManifest } from 'framework/utils/src/helpers'
 import { readJsonFile } from 'stacks:fs'
 
 /**

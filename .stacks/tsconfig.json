@@ -39,7 +39,7 @@
         "./cli/src/*"
       ],
       "helpers": [
-        "./src/helpers.ts"
+        "utils/src/helpers.ts"
       ],
       "modules/*": [
         "./modules/src/*"

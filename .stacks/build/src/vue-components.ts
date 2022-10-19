@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from 'types'
-import { library } from 'config'
-import { alias, atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from 'stacks'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'helpers'
+import { alias, atomicCssEngine, autoImports, components, inspect, library, preview, uiEngine } from 'stacks'
+import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from 'framework/utils/src/helpers'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 
 export const vueComponentsConfig: ViteConfig = {

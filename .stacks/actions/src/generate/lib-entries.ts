@@ -1,7 +1,5 @@
 import consola from 'consola'
-import { kebabCase, writeTextFile } from 'utils'
-import { determineResetPreset, libraryEntryPath } from 'helpers'
-import { library } from 'config'
+import { determineResetPreset, kebabCase, library, libraryEntryPath, writeTextFile } from 'stacks'
 import { ExitCode } from 'types'
 
 /**

@@ -44,9 +44,14 @@
   },
   "dependencies": {
     "pathe": "^0.3.9",
-    "stacksjs": "workspace:*",
     "vite": "^3.1.8",
-    "vite-ssg-sitemap": "^0.4.3"
+    "vite-plugin-inspect": "^0.7.5",
+    "vite-plugin-pages": "^0.26.0",
+    "vite-plugin-pwa": "^0.13.1",
+    "vite-plugin-vue-component-preview": "^0.3.3",
+    "vite-plugin-vue-layouts": "^0.7.0",
+    "vite-plugin-vue-markdown": "^0.22.1",
+    "vite-ssg": "^0.21.1"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"
