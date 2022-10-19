@@ -50,8 +50,8 @@
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@julr/unocss-preset-forms": "^0.0.2",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.45.29",
-    "unocss": "^0.45.29"
+    "@unocss/transformer-compile-class": "^0.45.30",
+    "unocss": "^0.45.30"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",
