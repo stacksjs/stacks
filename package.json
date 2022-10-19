@@ -77,7 +77,7 @@
     "test:coverage": "pnpm stacks test:coverage",
     "test:types": "pnpm stacks test:types",
     "types:fix": "pnpm stacks types:fix",
-    "generate:types": "pnpm stacks generate:types",
+    "types:generate": "pnpm stacks types:generate",
     "generate:entries": "pnpm stacks generate:entries",
     "generate:vue-compat": "pnpm stacks generate:vue-compat",
     "generate:web-types": "pnpm stacks generate:web-types",

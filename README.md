@@ -137,12 +137,15 @@ pnpm stacks example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
 pnpm stacks generate
-pnpm stacks generate:types
 pnpm stacks generate:entries
 pnpm stacks generate:vue-compat
 pnpm stacks generate:web-types
 pnpm stacks generate:vscode-custom-data
 pnpm stacks generate:ide-helpers
+
+# generate your TypeScript declarations
+pnpm stacks types:generate
+pnpm stacks types:fix
 
 # test your stack
 pnpm stacks test # runs test suite

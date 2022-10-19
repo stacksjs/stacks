@@ -1,10 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, parse } from 'pathe'
 import fg from 'fast-glob'
 import MarkdownIt from 'markdown-it'
-import type { ComponentMeta, MetaCheckerOptions } from 'vue-component-meta'
-import { createComponentMetaChecker } from 'vue-component-meta'
-import { frameworkPath, projectPath } from 'stacks'
+import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
+import { frameworkPath, projectPath } from 'utils'
 
 const md = new MarkdownIt()
 

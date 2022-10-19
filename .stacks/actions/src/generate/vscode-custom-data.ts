@@ -1,6 +1,5 @@
 import consola from 'consola'
-import { writeTextFile } from 'utils'
-import { customElementsDataPath } from 'framework/utils/src/paths'
+import { customElementsDataPath, writeTextFile } from 'utils'
 import { library } from 'config'
 
 export async function generateVsCodeCustomData() {
