@@ -48,6 +48,7 @@
     "@stacksjs/helpers": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/fs-extra": "^9.0.13",
+    "@vueuse/core": "^9.3.1",
     "consola": "^2.15.3",
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",

@@ -106,10 +106,6 @@ export function uiPath(path?: string) {
   return corePath(`ui/${path || ''}`)
 }
 
-export function utilsPath(path?: string) {
-  return corePath(`utils/${path || ''}`)
-}
-
 export function arraysPath(path?: string) {
   return corePath(`arrays/${path || ''}`)
 }

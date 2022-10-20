@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import { actionsPath, aliasPath, arraysPath, buildPath, cliPath, collectionsPath, componentsPath, configPath, frameworkPath, fsPath, functionsPath, helpersPath, modulesPath, objectsPath, pagesPath, pathsPath, projectPath, routerPath, securityPath, stacksPath, stringsPath, typesPath, uiPath, utilsPath } from '@stacksjs/paths'
+import { actionsPath, aliasPath, arraysPath, buildPath, cliPath, collectionsPath, componentsPath, configPath, frameworkPath, fsPath, functionsPath, helpersPath, modulesPath, objectsPath, pagesPath, pathsPath, projectPath, routerPath, securityPath, stacksPath, stringsPath, typesPath, uiPath } from '@stacksjs/paths'
 
 const alias: Record<string, string> = {
   '~/*': projectPath('*'),
@@ -37,8 +37,6 @@ const alias: Record<string, string> = {
   '@stacksjs/types/*': typesPath('src/*'),
   '@stacksjs/ui': uiPath('src/index.ts'),
   '@stacksjs/ui/*': uiPath('src/*'),
-  '@stacksjs/utils': utilsPath('src/index.ts'),
-  '@stacksjs/utils/*': utilsPath('src/*'),
   'stacks': frameworkPath('src/index.ts'),
   'stacks/*': frameworkPath('src/*'),
   'config/*': projectPath('config/*'),

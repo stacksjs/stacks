@@ -1,7 +1,8 @@
 import consola from 'consola'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { generateAppKey } from '@stacksjs/security'
-import { projectPath, setEnvValue } from '@stacksjs/utils'
+import { projectPath } from '@stacksjs/paths'
+import { setEnvValue } from '@stacksjs/helpers'
 
 export async function generate() {
   consola.info('Setting random application key.')
