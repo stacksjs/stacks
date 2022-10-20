@@ -1,10 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'node:fs'
-import { dirname, join } from 'pathe'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from 'types'
-import { componentsPath, functionsPath, projectPath } from 'utils'
+import { componentsPath, dirname, functionsPath, join, projectPath } from 'paths'
 import { contains } from 'arrays'
 
 /**

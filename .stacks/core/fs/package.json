@@ -41,8 +41,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@stacksjs/arrays": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/paths": "workspace:*",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0"
   },
