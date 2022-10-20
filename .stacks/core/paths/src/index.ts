@@ -31,7 +31,7 @@ export function actionsPath(path?: string) {
  * ```
  */
 export function buildPath(path?: string) {
-  return frameworkPath(`build/${path || ''}`)
+  return corePath(`build/${path || ''}`)
 }
 
 export function buildEnginePath(path?: string) {
@@ -43,7 +43,7 @@ export function buildEntriesPath(path?: string) {
 }
 
 export function cliPath(path?: string) {
-  return frameworkPath(`cli/${path || ''}`)
+  return corePath(`cli/${path || ''}`)
 }
 
 export function customElementsDataPath() {
@@ -55,7 +55,7 @@ export function componentsPath(path?: string) {
 }
 
 export function configPath(path?: string) {
-  return frameworkPath(`config/${path || ''}`)
+  return corePath(`config/${path || ''}`)
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {
@@ -64,6 +64,10 @@ export function examplesPath(type: 'vue-components' | 'web-components') {
 
 export function frameworkPath(path?: string) {
   return projectPath(`.stacks/${path || ''}`)
+}
+
+export function corePath(path?: string) {
+  return frameworkPath(`core/${path || ''}`)
 }
 
 export function functionsPath(path?: string) {
@@ -79,55 +83,51 @@ export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'fu
 }
 
 export function modulesPath(path?: string) {
-  return frameworkPath(`modules/${path || ''}`)
-}
-
-export function pagesEnginePath(path?: string) {
-  return frameworkPath(`pages/${path || ''}`)
+  return corePath(`modules/${path || ''}`)
 }
 
 export function routerPath(path?: string) {
-  return frameworkPath(`router/${path || ''}`)
+  return corePath(`router/${path || ''}`)
 }
 
 export function securityPath(path?: string) {
-  return frameworkPath(`security/${path || ''}`)
+  return corePath(`security/${path || ''}`)
 }
 
 export function typesPath(path?: string) {
-  return frameworkPath(`types/${path || ''}`)
+  return corePath(`types/${path || ''}`)
 }
 
 export function uiPath(path?: string) {
-  return frameworkPath(`ui/${path || ''}`)
+  return corePath(`ui/${path || ''}`)
 }
 
 export function utilsPath(path?: string) {
-  return frameworkPath(`utils/${path || ''}`)
+  return corePath(`utils/${path || ''}`)
 }
 
 export function arraysPath(path?: string) {
-  return utilsPath(`arrays/${path || ''}`)
+  return corePath(`arrays/${path || ''}`)
 }
 
 export function collectionsPath(path?: string) {
-  return utilsPath(`collections/${path || ''}`)
+  return corePath(`collections/${path || ''}`)
 }
 
 export function pathsPath(path?: string) {
-  return utilsPath(`paths/${path || ''}`)
+  return corePath(`paths/${path || ''}`)
 }
 
 export function objectsPath(path?: string) {
-  return utilsPath(`objects/${path || ''}`)
+  return corePath(`objects/${path || ''}`)
 }
 
 export function stringsPath(path?: string) {
-  return utilsPath(`strings/${path || ''}`)
+  return corePath(`strings/${path || ''}`)
 }
 
 export function fsPath(path?: string) {
-  return utilsPath(`fs/${path || ''}`)
+  return corePath(`fs/${path || ''}`)
 }
 
 export function scriptsPath(path?: string) {
@@ -139,7 +139,7 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 }
 
 export function pagesPath(path?: string) {
-  return projectPath(`pages/${path || ''}`)
+  return corePath(`pages/${path || ''}`)
 }
 
 export function projectPath(filePath = '') {

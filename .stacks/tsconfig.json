@@ -60,37 +60,37 @@
         "./core/ui/src/index.ts"
       ],
       "arrays": [
-        "./core/utils/arrays/src/index.tss"
+        "./core/arrays/src/index.ts"
       ],
       "collections": [
-        "./core/utils/collections/src/index.tss"
+        "./core/collections/src/index.ts"
       ],
       "stacks:fs": [
-        "./core/utils/fs/src/index.tss"
+        "./core/fs/src/index.ts"
       ],
       "objects": [
-        "./core/utils/objects/src/index.tss"
+        "./core/objects/src/index.ts"
       ],
       "objects/*": [
-        "./core/utils/objects/src/**"
+        "./core/objects/src/*"
       ],
       "paths": [
-        "./core/utils/paths/src/index.tss"
+        "./core/paths/src/index.ts"
       ],
       "paths/*": [
-        "./core/utils/paths/src/**"
+        "./core/paths/src/*"
       ],
       "strings": [
-        "./core/utils/strings/src/index.tss"
+        "./core/strings/src/index.ts"
       ],
       "utils": [
         "./core/utils/src/index.ts"
       ],
       "stacks": [
-        "stacks/src/index.ts"
+        "./src/index.ts"
       ],
       "stacks/*": [
-        "stacks/src/*"
+        "./src/*"
       ],
       "components/*": [
         "../components/*"
