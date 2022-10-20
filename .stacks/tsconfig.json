@@ -32,7 +32,27 @@
       "vite-plugin-vue-layouts/client",
       "vite-plugin-pwa/client",
       "./core/types",
-    ]
+    ],
+    "paths": {
+      "~/*": ["../*"],
+      "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/arrays": ["./core/arrays/src/index.ts"],
+      "@stacksjs/build": ["./core/build/src/index.ts"],
+      "@stacksjs/cli": ["./core/cli/src/index.ts"],
+      "@stacksjs/collections": ["./core/collections/src/index.ts"],
+      "@stacksjs/config": ["./core/config/src/index.ts"],
+      "@stacksjs/fs": ["./core/fs/src/index.ts"],
+      "@stacksjs/modules/*": ["./core/modules/src/*"],
+      "@stacksjs/objects": ["./core/objects/src/index.ts"],
+      "@stacksjs/paths": ["./core/paths/src/index.ts"],
+      "@stacksjs/router": ["./core/router/src/index.ts"],
+      "@stacksjs/security": ["./core/security/src/index.ts"],
+      "@stacksjs/strings": ["./core/strings/src/index.ts"],
+      "@stacksjs/types": ["./core/types/src/index.ts"],
+      "@stacksjs/ui": ["./core/ui/src/index.ts"],
+      "@stacksjs/utils": ["./core/utils/src/index.ts"],
+      "stacks": ["./src/index.ts"],
+    }
   },
   "include": [
     "./**.d.ts",
@@ -42,10 +62,10 @@
     "../pages/**/*"
   ],
   "exclude": [
-    "./examples/*",
     "./nitro.config.ts",
     "./vitest.config.ts",
-    "../.github/commitlint.config.cjs",
+    "./examples/**",
+    "../commitlint.config.cjs",
     "../**/README.md",
     "../**/dist/**",
     "../**/node_modules/**"
