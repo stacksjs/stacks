@@ -1,6 +1,7 @@
 export * from './alias'
 export * from './helpers'
 export * from './run-npm-script'
+export * from '@stacksjs/config'
 export * from '@stacksjs/strings'
 export * from '@stacksjs/objects'
 export * from '@stacksjs/strings'

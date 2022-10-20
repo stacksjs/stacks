@@ -39,6 +39,7 @@
       "@stacksjs/cli": ["src/cli/cli.ts"],
       "@stacksjs/collections": ["./core/collections/src/index.ts"],
       "@stacksjs/config": ["./core/config/src/index.ts"],
+      "@stacksjs/config/*": ["../config/*"],
       "@stacksjs/fs": ["./core/fs/src/index.ts"],
       "@stacksjs/modules/*": ["./core/modules/src/*"],
       "@stacksjs/objects": ["./core/objects/src/index.ts"],

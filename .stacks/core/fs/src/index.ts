@@ -4,7 +4,7 @@ import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/paths'
-import { contains } from '@stacksjs/strings'
+import { contains } from '@stacksjs/arrays'
 
 /**
  * Reads a JSON file and returns the parsed data.
