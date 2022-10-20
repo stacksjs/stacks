@@ -7,11 +7,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/router#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/router#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/router"
+    "directory": "./.stacks/core/router"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -27,8 +27,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=v18.10.0",
@@ -39,9 +38,6 @@
     "dev": "mkdist -d",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "pathe": "^0.3.9"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"

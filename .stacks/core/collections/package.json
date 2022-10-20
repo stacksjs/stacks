@@ -7,7 +7,7 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils/collections#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/collections#readme",
   "sideEffects": false,
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -15,13 +15,15 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/utils/collections"
+    "directory": "./.stacks/core/collections"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
     "collections",
+    "laravel",
+    "collectjs",
     "utilities",
     "functions",
     "stacks"

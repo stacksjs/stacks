@@ -1,7 +1,7 @@
 packages:
   - ./.stacks/core/actions
   - ./.stacks/core/build
-  - ./.stacks/core/stacks-init
+  - ./.stacks/core/cli
   - ./.stacks/core/config
   - ./.stacks/core/modules
   - ./.stacks/core/router

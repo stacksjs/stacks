@@ -6,21 +6,21 @@
   "description": "Stacks CLI source.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/cli#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/cli#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": ".stacks/cli"
+    "directory": ".stacks/core/cli"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "stacks",
+    "cli",
     "artisan",
     "init",
-    "cli",
     "starter-kit",
-    "stacks",
     "typescript"
   ],
   "sideEffects": false,
@@ -32,8 +32,7 @@
   ],
   "files": [
     "bin",
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=v18.10.0",

@@ -7,11 +7,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils/arrays#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/arrays#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/utils/arrays"
+    "directory": "./.stacks/core/arrays"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

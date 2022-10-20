@@ -7,11 +7,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/actions#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/actions"
+    "directory": "./.stacks/core/actions"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -45,10 +45,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/fs-extra": "^9.0.13",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@types/fs-extra": "^9.0.13",
     "consola": "^2.15.3",
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",

@@ -7,11 +7,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/utils/paths#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/paths#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/utils/paths"
+    "directory": "./.stacks/core/paths"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

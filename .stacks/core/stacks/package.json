@@ -8,11 +8,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/stacks#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks"
+    "directory": "./.stacks/core/stacks"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -68,7 +68,7 @@
     "example:vue": "pnpm run build:components && cd examples/vue-components && ln -sf ../../vue-components/dist dist && vite serve -c ../../build/example-vue.ts",
     "example:web-components": "pnpm run build:web-components && cd examples/web-components && ln -sf ../../web-components/dist dist && vite serve -c ../../build/example-wc.ts",
     "fresh": "pnpm run clean && pnpm i",
-    "clean": "rimraf ../pnpm-lock.yaml ./node_modules ./**/node_modules ../node_modules/ ../**/node_modules",
+    "clean": "rimraf ../../pnpm-lock.yaml ../../node_modules/ ../../**/node_modules",
     "make": "pnpm stacks make",
     "make:component": "pnpm stacks make:component",
     "make:function": "pnpm stacks make:function",
@@ -102,7 +102,6 @@
   },
   "devDependencies": {
     "@ow3/eslint-config": "^0.31.1",
-    "@rollup/pluginutils": "^5.0.1",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -112,7 +111,6 @@
     "@stacksjs/security": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.8.0",
     "@vitejs/plugin-vue": "^3.1.2",
@@ -127,17 +125,13 @@
     "events": "^3.3.0",
     "giget": "^0.1.7",
     "jiti": "^1.16.0",
-    "lint-staged": "^13.0.3",
     "local-pkg": "^0.4.2",
     "minimatch": "^5.1.0",
     "nitropack": "^0.6.0",
-    "pathe": "^0.3.9",
     "pinia": "^2.0.23",
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.1",
     "stacks-init": "workspace:*",
-    "typescript": "^4.8.4",
-    "unbuild": "^0.9.4",
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.8",
     "vitepress": "1.0.0-alpha.21",
