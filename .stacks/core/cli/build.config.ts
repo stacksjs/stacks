@@ -1,5 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
-import { alias } from 'framework/core/stacks/src'
+import { alias } from 'stacks'
 
 export default defineBuildConfig({
   alias,

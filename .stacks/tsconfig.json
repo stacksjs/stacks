@@ -87,10 +87,10 @@
         "./core/utils/src/index.ts"
       ],
       "stacks": [
-        "./core/stacks/src/index.ts"
+        "stacks/src/index.ts"
       ],
       "stacks/*": [
-        "./core/stacks/src/*"
+        "stacks/src/*"
       ],
       "components/*": [
         "../components/*"
