@@ -1,7 +1,8 @@
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { alias, buildEntriesPath, frameworkPath, functionsPath, library, projectPath } from '@stacksjs/utils'
+import { alias, buildEntriesPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/utils'
+import { library } from '@stacksjs/config'
 import { autoImports } from '.'
 
 export const functionsConfig: ViteConfig = {

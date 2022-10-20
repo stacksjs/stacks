@@ -45,7 +45,6 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/fs": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/strings": "workspace:*",

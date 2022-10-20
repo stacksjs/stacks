@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { hasComponents, hasFunctions } from '@stacksjs/utils'
+import { hasComponents, hasFunctions } from '@stacksjs/fs'
 import { generatePackageJson } from './generate/package-json'
 
 async function generate() {

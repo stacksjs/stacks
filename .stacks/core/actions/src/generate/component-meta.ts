@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import fg from 'fast-glob'
 import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
-import { frameworkPath, join, parse, projectPath } from '@stacksjs/utils'
+import { frameworkPath, join, parse, projectPath } from '@stacksjs/paths'
 
 const md = new MarkdownIt()
 

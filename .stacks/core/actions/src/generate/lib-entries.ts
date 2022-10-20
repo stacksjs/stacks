@@ -1,5 +1,9 @@
 import consola from 'consola'
-import { determineResetPreset, kebabCase, library, libraryEntryPath, writeTextFile } from '@stacksjs/utils'
+import { kebabCase } from '@stacksjs/strings'
+import { library } from '@stacksjs/config'
+import { libraryEntryPath } from '@stacksjs/paths'
+import { writeTextFile } from '@stacksjs/fs'
+import { determineResetPreset } from '@stacksjs/utils/helpers'
 import { ExitCode } from '@stacksjs/types'
 
 /**

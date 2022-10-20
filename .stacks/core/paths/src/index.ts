@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve as nodeResolve } from 'node:path'
 
 export * from 'pathe'
 
@@ -153,18 +153,18 @@ export function projectPath(filePath = '') {
   // that the cwd is a few dirs up, like in the case when a release happens
   // from a GitHub Action/workflow
   if (path.includes('.stacks'))
-    path = resolve(path, '..')
+    path = nodeResolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = resolve(path, '..')
+    path = nodeResolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = resolve(path, '..')
+    path = nodeResolve(path, '..')
 
   if (!path.includes('.stacks'))
-    path = resolve(path, '.')
+    path = nodeResolve(path, '.')
 
-  return resolve(path, filePath)
+  return nodeResolve(path, filePath)
 }
 
 export function routesPath(path?: string) {

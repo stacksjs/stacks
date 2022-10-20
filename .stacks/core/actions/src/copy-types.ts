@@ -4,7 +4,8 @@
  * This action copies all the generated types.
  */
 
-import { copyFolder, frameworkPath } from '@stacksjs/utils'
+import { frameworkPath } from '@stacksjs/paths'
+import { copyFolder } from '@stacksjs/fs'
 
 // relative to scripts directory
 const destinations = [

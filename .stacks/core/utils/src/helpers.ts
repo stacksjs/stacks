@@ -1,6 +1,9 @@
-import { isFile, readTextFile, writeTextFile } from '@stacksjs/fs'
+import consola from 'consola'
+import { ExitCode } from '@stacksjs/types'
+import type { Manifest, NpmScript } from '@stacksjs/types'
+import { frameworkPath } from '@stacksjs/paths'
+import { isFile, readJsonFile, readTextFile, writeTextFile } from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import type { Manifest } from '@stacksjs/types'
 import { ui } from '@stacksjs/config'
 
 export async function isAppInitialized() {
@@ -94,4 +97,34 @@ export async function setEnvValue(key: string, value: string) {
     path: projectPath('.env'),
     data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
   })
+}
+
+/**
+ * Runs the specified NPM script in the package.json file.
+ */
+export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit' = 'inherit') {
+  const path = frameworkPath()
+
+  const { data: manifest } = await readJsonFile('package.json', path)
+
+  if (isManifest(manifest) && hasScript(manifest, script)) {
+    await ezSpawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })
+  }
+
+  else {
+    consola.error('Error running your Artisan script.')
+    process.exit(ExitCode.FatalError)
+  }
+}
+
+/**
+ * Determines whether the specified NPM script exists in the given manifest.
+ */
+export function hasScript(manifest: Manifest, script: NpmScript): boolean {
+  const scripts = manifest.scripts as Record<NpmScript, string> | undefined
+
+  if (scripts && typeof scripts === 'object')
+    return Boolean(scripts[script])
+
+  return false
 }
