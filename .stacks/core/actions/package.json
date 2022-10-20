@@ -45,7 +45,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/fs-extra": "^9.0.13",

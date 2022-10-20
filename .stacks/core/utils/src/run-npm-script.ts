@@ -1,9 +1,9 @@
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import consola from 'consola'
-import { ExitCode } from 'types'
-import type { Manifest, NpmScript } from 'types'
-import { frameworkPath, isManifest } from 'utils'
-import { readJsonFile } from 'stacks:fs'
+import { ExitCode } from '@stacksjs/types'
+import type { Manifest, NpmScript } from '@stacksjs/types'
+import { frameworkPath, isManifest } from '@stacksjs/utils'
+import { readJsonFile } from '@stacksjs/fs'
 
 /**
  * Runs the specified NPM script in the package.json file.

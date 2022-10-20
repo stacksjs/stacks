@@ -1,7 +1,6 @@
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { version } from 'framework/vue-components/package.json'
-import { library } from 'config'
-import { componentsPath, frameworkPath } from 'utils'
+import { componentsPath, frameworkPath, library } from '@stacksjs/utils'
 
 export default <WebTypesBuilderConfig> {
   cwd: process.cwd(),

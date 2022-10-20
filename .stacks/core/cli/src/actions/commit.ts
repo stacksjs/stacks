@@ -1,6 +1,6 @@
 import consola from 'consola'
-import { runNpmScript } from 'utils'
-import { NpmScript } from 'types'
+import { runNpmScript } from '@stacksjs/utils'
+import { NpmScript } from '@stacksjs/types'
 
 export async function commit() {
   consola.info('Committing...')

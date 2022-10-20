@@ -19,101 +19,19 @@
     "strictNullChecks": true,
     "baseUrl": ".",
     "outDir": "./dist/types",
-    "paths": {
-      "framework/*": [
-        "./*"
-      ],
-      "actions/*": [
-        "./core/actions/src/*"
-      ],
-      "build": [
-        "./core/build/src/index.ts"
-      ],
-      "build/*": [
-        "./core/build/src/*"
-      ],
-      "cli": [
-        "./core/cli/src/index.ts"
-      ],
-      "cli/*": [
-        "./core/cli/src/*"
-      ],
-      "helpers": [
-        "./core/utils/src/helpers.ts"
-      ],
-      "modules/*": [
-        "./core/modules/src/*"
-      ],
-      "router": [
-        "./core/router/src/index.ts"
-      ],
-      "router/*": [
-        "./core/router/src/*"
-      ],
-      "security": [
-        "./core/security/src/index.ts"
-      ],
-      "types": [
-        "./core/types/src/index.ts"
-      ],
-      "ui": [
-        "./core/ui/src/index.ts"
-      ],
-      "arrays": [
-        "./core/arrays/src/index.ts"
-      ],
-      "collections": [
-        "./core/collections/src/index.ts"
-      ],
-      "stacks:fs": [
-        "./core/fs/src/index.ts"
-      ],
-      "objects": [
-        "./core/objects/src/index.ts"
-      ],
-      "objects/*": [
-        "./core/objects/src/*"
-      ],
-      "paths": [
-        "./core/paths/src/index.ts"
-      ],
-      "paths/*": [
-        "./core/paths/src/*"
-      ],
-      "strings": [
-        "./core/strings/src/index.ts"
-      ],
-      "utils": [
-        "./core/utils/src/index.ts"
-      ],
-      "stacks": [
-        "./src/index.ts"
-      ],
-      "stacks/*": [
-        "./src/*"
-      ],
-      "components/*": [
-        "../components/*"
-      ],
-      "config": [
-        "./core/config/src/index.ts"
-      ],
-      "config/*": [
-        "../config/*"
-      ],
-      "functions/*": [
-        "../functions/*"
-      ],
-      "pages/*": [
-        "../pages/*"
-      ],
-      "~/*": [
-        "../*"
-      ]
-    },
     "lib": [
       "ESNext",
       "DOM"
+    ],
+    "types": [
+      "vitest",
+      "vite/client",
+      "vue/ref-macros",
+      "vite-plugin-pages/client",
+      "vite-plugin-vue-component-preview/client",
+      "vite-plugin-vue-layouts/client",
+      "vite-plugin-pwa/client",
+      "./core/types",
     ]
   },
   "include": [

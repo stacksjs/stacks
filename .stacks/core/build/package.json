@@ -43,7 +43,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@types/markdown-it-link-attributes": "^3.0.1",

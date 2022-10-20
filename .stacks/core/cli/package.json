@@ -49,16 +49,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/utils": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@types/prompts": "^2.4.1",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "consola": "^2.15.3",
     "cac": "^6.7.14",
     "giget": "^0.1.7",
-    "kolorist": "^1.6.0",
-    "fs-extra": "^10.1.0"
+    "kolorist": "^1.6.0"
   },
   "devDependencies": {
     "unbuild": "^0.9.4"

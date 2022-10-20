@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve } from 'path'
 
 export * from 'pathe'
 

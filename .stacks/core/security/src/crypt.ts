@@ -1,14 +1,14 @@
-import AES from 'crypto-js/aes'
-import encUtf8 from 'crypto-js/enc-utf8'
+import aes from 'crypto-js/aes'
+import utf8 from 'crypto-js/enc-utf8'
 
 const passphrase = import.meta.env.APP_KEY as string
 
 function encrypt(message: string): string {
-  return AES.encrypt(message, passphrase).toString()
+  return aes.encrypt(message, passphrase).toString()
 }
 
 function decrypt(encrypted: string): string {
-  return AES.decrypt(encrypted, passphrase).toString(encUtf8)
+  return aes.decrypt(encrypted, passphrase).toString(utf8)
 }
 
 export { encrypt, decrypt }

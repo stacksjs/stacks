@@ -98,7 +98,6 @@ importers:
 
   .stacks/core/actions:
     specifiers:
-      '@stacksjs/config': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       '@types/fs-extra': ^9.0.13
@@ -109,7 +108,6 @@ importers:
       mkdist: ^0.3.13
       vue-component-meta: ^1.0.8
     dependencies:
-      '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       '@types/fs-extra': 9.0.13
@@ -131,7 +129,6 @@ importers:
 
   .stacks/core/build:
     specifiers:
-      '@stacksjs/config': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       '@types/markdown-it-link-attributes': ^3.0.1
@@ -150,7 +147,6 @@ importers:
       vite-ssg: ^0.21.1
       vite-ssg-sitemap: ^0.4.3
     dependencies:
-      '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       '@types/markdown-it-link-attributes': 3.0.1
@@ -283,6 +279,7 @@ importers:
 
   .stacks/core/security:
     specifiers:
+      '@stacksjs/config': workspace:*
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
       bcryptjs: ^2.4.3
@@ -290,6 +287,7 @@ importers:
       js-base64: ^3.7.2
       mkdist: ^0.3.13
     dependencies:
+      '@stacksjs/config': link:../config
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
       bcryptjs: 2.4.3

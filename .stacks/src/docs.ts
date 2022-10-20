@@ -1,4 +1,4 @@
 import { defineConfig } from 'vitepress'
-import docs from 'config'
+import docs from '@stacksjs/config'
 
 export default defineConfig(docs)

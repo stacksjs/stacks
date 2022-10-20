@@ -1,7 +1,7 @@
-import { isFile, readTextFile } from 'stacks:fs'
+import { isFile, readTextFile, writeTextFile } from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import type { Manifest } from 'types'
-import { ui } from 'config'
+import type { Manifest } from '@stacksjs/types'
+import { ui } from '@stacksjs/config'
 
 export async function isAppInitialized() {
   if (isFile('.env'))
@@ -85,4 +85,13 @@ function isOptionalString(value: any): value is string | undefined {
   return value === null
     || type === 'undefined'
     || type === 'string'
+}
+
+export async function setEnvValue(key: string, value: string) {
+  const file = await readTextFile(projectPath('.env'))
+
+  await writeTextFile({
+    path: projectPath('.env'),
+    data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
+  })
 }

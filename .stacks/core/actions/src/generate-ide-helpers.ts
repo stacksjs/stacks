@@ -6,7 +6,7 @@
  */
 
 import consola from 'consola'
-import { hasComponents } from 'utils'
+import { hasComponents } from '@stacksjs/utils'
 import { generateVsCodeCustomData, generateWebTypes } from './generate/vscode-custom-data'
 
 async function generate() {

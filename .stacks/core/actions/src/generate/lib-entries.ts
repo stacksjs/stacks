@@ -1,7 +1,6 @@
 import consola from 'consola'
-import { determineResetPreset, kebabCase, libraryEntryPath, writeTextFile } from 'utils'
-import { library } from 'config'
-import { ExitCode } from 'types'
+import { determineResetPreset, kebabCase, library, libraryEntryPath, writeTextFile } from '@stacksjs/utils'
+import { ExitCode } from '@stacksjs/types'
 
 /**
  * Based on the config values, this method

@@ -1,1 +1,1 @@
-export { Collection, collect } from 'collections'
+export { Collection, collect } from '@stacksjs/collections'

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { isAppInitialized } from 'utils'
+import { isAppInitialized } from '@stacksjs/utils'
 import { version } from 'framework/package.json'
-import { ExitCode } from 'types'
+import { ExitCode } from '@stacksjs/types'
 import { build, dev, example, generate, init, key, make, test, update, utility } from './commands'
 
 const artisan = cac('artisan')

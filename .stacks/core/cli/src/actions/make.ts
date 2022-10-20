@@ -1,6 +1,6 @@
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
-import { resolve, writeTextFile } from 'utils'
+import { resolve, writeTextFile } from '@stacksjs/utils'
 
 export async function component(name: string) {
   consola.info('Creating your component...')

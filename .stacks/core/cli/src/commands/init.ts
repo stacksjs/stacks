@@ -4,9 +4,9 @@ import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { resolve } from 'pathe'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
-import { isFolder } from 'stacks:fs'
+import { isFolder } from '@stacksjs/fs'
 import { version } from 'framework/package.json'
-import { ExitCode } from 'types'
+import { ExitCode } from '@stacksjs/types'
 import { generate as generateAppKey } from '../actions/key'
 
 // the logic to run to create/scaffold a new stack

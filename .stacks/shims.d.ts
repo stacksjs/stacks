@@ -1,12 +1,3 @@
-/// <reference types="vitest" />
-/// <reference types="vite/client" />
-/// <reference types="vue/ref-macros" />
-/// <reference types="vite-plugin-pages/client" />
-/// <reference types="vite-plugin-vue-component-preview/client" />
-/// <reference types="vite-plugin-vue-layouts/client" />
-/// <reference types="vite-plugin-pwa/client" />
-/// <reference types="@stacksjs/types" />
-
 interface ImportMetaEnv {
   readonly APP_NAME: string
   readonly APP_ENV: string

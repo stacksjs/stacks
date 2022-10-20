@@ -2,9 +2,9 @@ import { fileURLToPath } from 'node:url'
 import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'node:fs'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
-import type { JsonFile, TextFile } from 'types'
-import { componentsPath, dirname, functionsPath, join, projectPath } from 'paths'
-import { contains } from 'arrays'
+import type { JsonFile, TextFile } from '@stacksjs/types'
+import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/paths'
+import { contains } from '@stacksjs/strings'
 
 /**
  * Reads a JSON file and returns the parsed data.
@@ -33,9 +33,14 @@ export async function writeJsonFile(file: JsonFile): Promise<void> {
 /**
  * Reads a text file and returns its contents.
  */
-export function readTextFile(name: string, cwd: string): Promise<TextFile> {
+export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
-    const filePath = join(cwd, name)
+    let filePath: string
+
+    if (cwd)
+      filePath = join(cwd, name)
+    else
+      filePath = name
 
     readFile(filePath, 'utf8', (err, text) => {
       if (err) {

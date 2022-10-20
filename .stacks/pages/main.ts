@@ -1,8 +1,8 @@
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
 import Previewer from 'virtual:vue-component-preview'
-import type { UserModule } from 'types'
-import { ui } from 'config'
+import type { UserModule } from '@stacksjs/types'
+import { ui } from '@stacksjs/config'
 import App from './App.vue'
 import generatedRoutes from '~pages'
 

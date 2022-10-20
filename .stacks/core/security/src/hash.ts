@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs'
 import { Base64 } from 'js-base64'
-import { MD5 } from 'crypto-js'
-import { bcryptOptions } from '../../../../config/hashing'
+import md5 from 'crypto-js/md5'
+import { hashing } from 'config/hashing'
 
 async function make(password: string, algorithm = 'bcrypt') {
   if (algorithm === 'bcrypt')
@@ -24,7 +24,10 @@ async function verify(password: string, hash: string, algorithm = 'bcrypt') {
 }
 
 async function bcryptEncode(password: string) {
-  const salt = await bcryptjs.genSaltSync(bcryptOptions.rounds)
+  if (!hashing.bcrypt)
+    throw new Error('Bcrypt hashing is not configured')
+
+  const salt = await bcryptjs.genSaltSync(hashing.bcrypt.rounds)
   const hash = await bcryptjs.hash(password, salt)
 
   return hash
@@ -43,7 +46,7 @@ async function base64Verify(password: string, hash: string) {
 }
 
 async function md5Encode(password: string) {
-  return MD5(password)
+  return md5(password)
 }
 
 export { make as makeHash, verify as verifyHash, base64Encode, base64Verify, bcryptEncode, bcryptVerify, md5Encode }
