@@ -43,7 +43,11 @@ export function buildEntriesPath(path?: string) {
 }
 
 export function cliPath(path?: string) {
-  return corePath(`cli/${path || ''}`)
+  return stacksPath(`cli/${path || ''}`)
+}
+
+export function stacksPath(path?: string) {
+  return frameworkPath(`src/${path || ''}`)
 }
 
 export function customElementsDataPath() {

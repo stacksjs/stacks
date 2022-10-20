@@ -2,10 +2,46 @@
  * The following configuration references local aliases.
  */
 
-import { projectPath } from '.'
+import { actionsPath, arraysPath, buildPath, collectionsPath, componentsPath, configPath, frameworkPath, fsPath, functionsPath, modulesPath, objectsPath, pagesPath, pathsPath, projectPath, routerPath, securityPath, stacksPath, stringsPath, typesPath, uiPath, utilsPath } from '.'
 
 const alias: Record<string, string> = {
   '~/*': projectPath('*'),
+  '@stacksjs/actions/*': actionsPath('src/*'),
+  '@stacksjs/arrays': arraysPath('src/index.ts'),
+  '@stacksjs/arrays/*': arraysPath('src/*'),
+  '@stacksjs/build': buildPath('src/index.ts'),
+  '@stacksjs/build/*': buildPath('src/*'),
+  '@stacksjs/cli': stacksPath('cli.ts'),
+  '@stacksjs/cli/*': cliPath('*'),
+  '@stacksjs/collections': collectionsPath('src/index.ts'),
+  '@stacksjs/collections/*': collectionsPath('src/*'),
+  '@stacksjs/config': configPath('src/index.ts'),
+  '@stacksjs/fs': fsPath('src/index.ts'),
+  '@stacksjs/fs/*': fsPath('src/*'),
+  '@stacksjs/modules/*': modulesPath('src/*'),
+  '@stacksjs/objects': objectsPath('src/index.ts'),
+  '@stacksjs/objects/*': objectsPath('src/*'),
+  '@stacksjs/paths': pathsPath('src/index.ts'),
+  '@stacksjs/paths/*': pathsPath('src/*'),
+  '@stacksjs/router': routerPath('src/index.ts'),
+  '@stacksjs/router/*': routerPath('src/*'),
+  '@stacksjs/security': securityPath('src/index.ts'),
+  '@stacksjs/security/*': securityPath('src/*'),
+  '@stacksjs/strings': stringsPath('src/index.ts'),
+  '@stacksjs/strings/*': stringsPath('src/*'),
+  '@stacksjs/types': typesPath('src/index.ts'),
+  '@stacksjs/types/*': typesPath('src/*'),
+  '@stacksjs/ui': uiPath('src/index.ts'),
+  '@stacksjs/ui/*': uiPath('src/*'),
+  '@stacksjs/utils': utilsPath('src/index.ts'),
+  '@stacksjs/utils/*': utilsPath('src/*'),
+  '@stacksjs/helpers': frameworkPath('src/helpers.ts'),
+  'stacks': frameworkPath('src/index.ts'),
+  'stacks/*': frameworkPath('src/*'),
+  'config/*': projectPath('config/*'),
+  'components/*': componentsPath('*'),
+  'functions/*': functionsPath('*'),
+  'pages/*': pagesPath('*'),
 }
 
 export { alias }
