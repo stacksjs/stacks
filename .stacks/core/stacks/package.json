@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "version": "0.36.6",
-  "packageManager": "pnpm@7.13.5",
+  "packageManager": "pnpm@7.13.6",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -46,7 +46,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.5"
+    "pnpm": ">=7.13.6"
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
@@ -101,7 +101,7 @@
     "key:generate": "pnpm stacks key:generate"
   },
   "devDependencies": {
-    "@ow3/eslint-config": "^0.31.1",
+    "@ow3/eslint-config": "^0.31.2",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",

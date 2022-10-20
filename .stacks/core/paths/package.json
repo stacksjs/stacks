@@ -2,7 +2,7 @@
   "name": "@stacksjs/paths",
   "type": "module",
   "version": "0.36.6",
-  "packageManager": "pnpm@7.13.5",
+  "packageManager": "pnpm@7.13.6",
   "description": "The Stacks paths.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -30,7 +30,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.5"
+    "pnpm": ">=7.13.6"
   },
   "scripts": {
     "build": "mkdist -d",
