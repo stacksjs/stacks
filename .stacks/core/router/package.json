@@ -39,6 +39,9 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "vue-router": "^4.1.5"
+  },
   "devDependencies": {
     "mkdist": "^0.3.13"
   }

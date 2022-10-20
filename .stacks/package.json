@@ -131,12 +131,11 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/ui": "workspace:*",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.8.0",
     "@types/prompts": "^2.4.1",
-    "@vitejs/plugin-vue": "^3.1.2",
     "@vitest/coverage-istanbul": "^0.24.3",
     "bumpp": "^8.2.1",
     "commitizen": "^4.2.5",
@@ -156,15 +155,8 @@
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.1",
     "typescript": "^4.8.4",
-    "unbuild": "^0.9.4",
-    "unplugin-auto-import": "^0.11.2",
-    "unplugin-vue-components": "^0.22.8",
     "vitepress": "1.0.0-alpha.21",
-    "vitest": "^0.24.3",
-    "vue": "^3.2.41",
-    "vue-docgen-web-types": "^0.1.8",
-    "vue-router": "^4.1.5",
-    "vue-tsc": "^1.0.8"
+    "vitest": "^0.24.3"
   },
   "config": {
     "commitizen": {
