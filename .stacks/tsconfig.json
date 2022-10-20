@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "useDefineForClassFields": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "strict": true,
@@ -30,15 +29,14 @@
       "vite-plugin-pages/client",
       "vite-plugin-vue-component-preview/client",
       "vite-plugin-vue-layouts/client",
-      "vite-plugin-pwa/client",
-      "./core/types",
+      "vite-plugin-pwa/client"
     ],
     "paths": {
       "~/*": ["../*"],
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/arrays": ["./core/arrays/src/index.ts"],
       "@stacksjs/build": ["./core/build/src/index.ts"],
-      "@stacksjs/cli": ["./core/cli/src/index.ts"],
+      "@stacksjs/cli": ["src/cli/cli.ts"],
       "@stacksjs/collections": ["./core/collections/src/index.ts"],
       "@stacksjs/config": ["./core/config/src/index.ts"],
       "@stacksjs/fs": ["./core/fs/src/index.ts"],
@@ -52,6 +50,8 @@
       "@stacksjs/ui": ["./core/ui/src/index.ts"],
       "@stacksjs/utils": ["./core/utils/src/index.ts"],
       "stacks": ["./src/index.ts"],
+      "stacks/*": ["./src/*"],
+      "framework/*": ["./*"],
     }
   },
   "include": [

@@ -20,6 +20,31 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "files": [
+    "bin",
+    "core",
+    "dist",
+    "examples",
+    "functions",
+    "pages",
+    "scripts",
+    "src",
+    "vue-components",
+    "web-components",
+    ".gitignore",
+    "package.json",
+    "custom-elements.json",
+    "netlify.toml",
+    "nitro.config.ts",
+    "simple-git-hooks.cjs",
+    "tsconfig.json",
+    "vitest.config.ts",
+    "web-types.json",
+    "README.md",
+    "shims.d.ts",
+    "auto-imports.d.ts",
+    "components.d.ts"
+  ],
   "engines": {
     "node": ">=v18.10.0",
     "pnpm": ">=7.13.6"
@@ -47,7 +72,7 @@
     "build:functions": "vite build -c ./core/build/src/functions.ts",
     "build:docs": "vitepress build ../apps/site",
     "build:pages": "vite-ssg build ./pages -c ./build/src/pages.ts",
-    "build:cli": "cd ./cli && unbuild",
+    "build:cli": "unbuild",
     "build:stacks": "pnpm --filter './actions' --filter './build' --filter './cli' --filter './config' --filter './modules' --filter './router' --filter './security' --filter './types' --filter './utils' build",
     "build:all": "wip",
     "prod": "pnpm run build",
@@ -133,7 +158,6 @@
     "pinia": "^2.0.23",
     "rimraf": "^3.0.2",
     "simple-git-hooks": "^2.8.1",
-    "stacks-init": "workspace:*",
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.8",
     "vitepress": "1.0.0-alpha.21",

@@ -1,10 +1,10 @@
 import { defineBuildConfig } from 'unbuild'
-import { alias } from 'stacks'
+import { alias } from '@stacksjs/utils'
 
 export default defineBuildConfig({
   alias,
   entries: [
-    './src/index',
+    './src/cli.ts',
   ],
   declaration: true,
   clean: true,

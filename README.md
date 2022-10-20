@@ -44,7 +44,7 @@ It's incredibly easy to get started with this framework. Simply run the followin
 curl -fsSL https://stacksjs.dev/setup | sh
 
 # alternatively, if you know pnpm is already installed, get started via:
-npx stacks-init my-project
+npx stacks create my-project
 ```
 
 > **Note**
