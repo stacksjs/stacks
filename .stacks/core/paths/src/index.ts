@@ -1,4 +1,4 @@
-import { resolve as nodeResolve } from 'node:path'
+import { resolve as r } from 'pathe'
 
 export * from 'pathe'
 
@@ -134,6 +134,14 @@ export function fsPath(path?: string) {
   return corePath(`fs/${path || ''}`)
 }
 
+export function helpersPath(path?: string) {
+  return corePath(`helpers/${path || ''}`)
+}
+
+export function aliasPath(path?: string) {
+  return corePath(`alias/${path || ''}`)
+}
+
 export function scriptsPath(path?: string) {
   return frameworkPath(`scripts/${path || ''}`)
 }
@@ -153,18 +161,18 @@ export function projectPath(filePath = '') {
   // that the cwd is a few dirs up, like in the case when a release happens
   // from a GitHub Action/workflow
   if (path.includes('.stacks'))
-    path = nodeResolve(path, '..')
+    path = r(path, '..')
 
   if (path.includes('.stacks'))
-    path = nodeResolve(path, '..')
+    path = r(path, '..')
 
   if (path.includes('.stacks'))
-    path = nodeResolve(path, '..')
+    path = r(path, '..')
 
   if (!path.includes('.stacks'))
-    path = nodeResolve(path, '.')
+    path = r(path, '.')
 
-  return nodeResolve(path, filePath)
+  return r(path, filePath)
 }
 
 export function routesPath(path?: string) {

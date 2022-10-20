@@ -1,27 +1,23 @@
 {
-  "name": "@stacksjs/utils",
+  "name": "@stacksjs/alias",
   "type": "module",
   "version": "0.36.6",
   "packageManager": "pnpm@7.13.6",
-  "description": "The Stacks utilities.",
+  "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/alias#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/utils"
+    "directory": "./.stacks/core/alias"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "objects",
-    "strings",
-    "arrays",
-    "utilities",
-    "functions",
+    "alias",
     "stacks"
   ],
   "contributors": [
@@ -41,17 +37,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/collections": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/helpers": "workspace:*",
-    "@stacksjs/objects": "workspace:*",
-    "@stacksjs/paths": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@vueuse/core": "^9.3.1",
-    "@vueuse/head": "^0.9.8",
-    "@vueuse/shared": "^9.3.1"
+    "@stacksjs/paths": "workspace:*"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"

@@ -1,5 +1,5 @@
-export * from './alias'
-export * from './helpers'
+export * from '@stacksjs/alias'
+export * from '@stacksjs/helpers'
 export * from '@stacksjs/strings'
 export * from '@stacksjs/objects'
 export * from '@stacksjs/strings'

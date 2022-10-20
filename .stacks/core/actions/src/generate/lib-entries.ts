@@ -3,7 +3,7 @@ import { kebabCase } from '@stacksjs/strings'
 import { library } from '@stacksjs/config'
 import { libraryEntryPath } from '@stacksjs/paths'
 import { writeTextFile } from '@stacksjs/fs'
-import { determineResetPreset } from '@stacksjs/utils/helpers'
+import { determineResetPreset } from '@stacksjs/helpers'
 import { ExitCode } from '@stacksjs/types'
 
 /**

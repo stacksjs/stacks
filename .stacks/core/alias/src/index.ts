@@ -2,11 +2,13 @@
  * The following configuration references local aliases.
  */
 
-import { actionsPath, arraysPath, buildPath, cliPath, collectionsPath, componentsPath, configPath, frameworkPath, fsPath, functionsPath, modulesPath, objectsPath, pagesPath, pathsPath, projectPath, routerPath, securityPath, stacksPath, stringsPath, typesPath, uiPath, utilsPath } from '@stacksjs/paths'
+import { actionsPath, aliasPath, arraysPath, buildPath, cliPath, collectionsPath, componentsPath, configPath, frameworkPath, fsPath, functionsPath, helpersPath, modulesPath, objectsPath, pagesPath, pathsPath, projectPath, routerPath, securityPath, stacksPath, stringsPath, typesPath, uiPath, utilsPath } from '@stacksjs/paths'
 
 const alias: Record<string, string> = {
   '~/*': projectPath('*'),
   '@stacksjs/actions/*': actionsPath('src/*'),
+  '@stacksjs/alias': aliasPath('src/index.ts'),
+  '@stacksjs/alias/*': aliasPath('src/*'),
   '@stacksjs/arrays': arraysPath('src/index.ts'),
   '@stacksjs/arrays/*': arraysPath('src/*'),
   '@stacksjs/build': buildPath('src/index.ts'),
@@ -18,6 +20,8 @@ const alias: Record<string, string> = {
   '@stacksjs/config': configPath('src/index.ts'),
   '@stacksjs/fs': fsPath('src/index.ts'),
   '@stacksjs/fs/*': fsPath('src/*'),
+  '@stacksjs/helpers': helpersPath('src/index.ts'),
+  '@stacksjs/helpers/*': helpersPath('src/*'),
   '@stacksjs/modules/*': modulesPath('src/*'),
   '@stacksjs/objects': objectsPath('src/index.ts'),
   '@stacksjs/objects/*': objectsPath('src/*'),
