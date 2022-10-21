@@ -22,8 +22,12 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "bin": {
+    "stacks": "bin/stacks.mjs",
+    "stx": "bin/stacks.mjs",
+    "artisan": "bin/stacks.mjs"
+  },
   "files": [
-    "bin",
     "core",
     "dist",
     "examples",

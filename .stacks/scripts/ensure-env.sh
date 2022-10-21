@@ -3,11 +3,12 @@
 
 set -e
 
-# check if node/corepack & pnpm is installed
+# check if node is installed
 if which node > /dev/null
   then
-    # check if Node version is over 16.17 or else install it & enable corepack,  if it is
-    # not >= 16.17, we will need to update by auto-detecting whether the a node manager used
+    # check if Node version is over 16.17 or else install it & enable corepack,
+    # if it is not >= 16.17, we will need to update by auto-detecting whether
+    # a node manager used
     wip
   else
     if which fnm > /dev/null
