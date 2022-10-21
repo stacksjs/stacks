@@ -57,7 +57,7 @@
   },
   "scripts": {
     "preinstall": "only-allow pnpm",
-    "stacks": "esno ./src/cli.ts",
+    "stacks": "esno ./bin/stacks.mjs",
     "artisan": "pnpm run stacks",
     "fresh": "pnpm run clean && pnpm i",
     "clean": "rimraf ../pnpm-lock.yaml ../node_modules/ ../**/node_modules",

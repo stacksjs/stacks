@@ -18,7 +18,7 @@ The Stacks framework automagically bundles & builds your code. A Web Component l
 
 🎨 **Style with ease**
 
-Create your own style guide using conventions you are familiar with. Stacks' UnoCSS atomic engine allows for just that, in a blazing-fast, on-demand way. Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more to choose from.
+Create your own style guide using conventions you are familiar with. Stacks' UnoCSS atomic engine allows for just that, in an instant, on-demand way. Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more to choose from.
 
 **✨ Next-gen Developer Experience _(DX)_**
 

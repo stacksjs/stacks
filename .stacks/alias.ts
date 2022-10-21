@@ -7,6 +7,7 @@ import { actionsPath, aliasPath, arraysPath, buildPath, cliPath, collectionsPath
 const alias: Record<string, string> = {
   '~/*': projectPath('*'),
   '@stacksjs/actions/*': actionsPath('src/*'),
+  '@stacksjs/actions/generate': actionsPath('src/generate/index.ts'),
   '@stacksjs/alias': aliasPath(),
   '@stacksjs/arrays': arraysPath('src/index.ts'),
   '@stacksjs/arrays/*': arraysPath('src/*'),
@@ -36,6 +37,7 @@ const alias: Record<string, string> = {
   '@stacksjs/types/*': typesPath('src/*'),
   '@stacksjs/ui': uiPath('src/index.ts'),
   '@stacksjs/ui/*': uiPath('src/*'),
+  'framework/*': frameworkPath('*'),
   'stacks': frameworkPath('src/index.ts'),
   'stacks/*': frameworkPath('src/*'),
   'config/*': projectPath('config/*'),

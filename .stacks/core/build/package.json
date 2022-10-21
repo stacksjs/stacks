@@ -63,7 +63,8 @@
     "vite-plugin-vue-markdown": "^0.22.1",
     "vite-ssg": "^0.21.1",
     "vite-ssg-sitemap": "^0.4.3",
-    "vue-docgen-web-types": "^0.1.8"
+    "vue-docgen-web-types": "^0.1.8",
+    "vue-i18n": "^9.2.2"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"

@@ -10,12 +10,14 @@ export * from 'pathe'
  * @returns string - absolute path to the file or directory
  * @example
  * ```ts
+ * import { buildPath } from '@stacks/paths'
+ *
  * buildPath('functions.vue')
- * buildPath('vue-components.ts')
+ * buildPath('any-path.ts')
  * ```
  */
 export function actionsPath(path?: string) {
-  return frameworkPath(`actions/${path || ''}`)
+  return corePath(`actions/${path || ''}`)
 }
 
 /**

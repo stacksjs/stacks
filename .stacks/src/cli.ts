@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import { isProjectCreated } from '@stacksjs/helpers'
-import { version } from 'framework/package.json'
 import { ExitCode } from '@stacksjs/types'
+import { version } from '../package.json'
 import { build, dev, example, generate, init, key, make, test, update, utility } from './cli/'
 
 const cli = cac('stacks')
