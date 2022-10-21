@@ -1,6 +1,5 @@
 packages:
   - ./.stacks/core/actions
-  - ./.stacks/core/alias
   - ./.stacks/core/build
   - ./.stacks/core/config
   - ./.stacks/core/helpers

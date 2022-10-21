@@ -34,7 +34,7 @@
     "paths": {
       "~/*": ["../*"],
       "@stacksjs/actions/*": ["./core/actions/src/*"],
-      "@stacksjs/alias": ["./core/alias/src/index.ts"],
+      "@stacksjs/alias": ["./alias.ts"],
       "@stacksjs/alias/*": ["./core/alias/src/*"],
       "@stacksjs/arrays/*": ["./core/arrays/src/*"],
       "@stacksjs/arrays": ["./core/arrays/src/index.ts"],

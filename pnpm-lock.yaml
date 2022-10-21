@@ -12,7 +12,6 @@ importers:
     specifiers:
       '@ow3/eslint-config': ^0.31.3
       '@stacksjs/actions': workspace:*
-      '@stacksjs/alias': workspace:*
       '@stacksjs/arrays': workspace:*
       '@stacksjs/build': workspace:*
       '@stacksjs/collections': workspace:*
@@ -56,7 +55,6 @@ importers:
     devDependencies:
       '@ow3/eslint-config': 0.31.3_z4bbprzjrhnsfa24uvmcbu7f5q
       '@stacksjs/actions': link:core/actions
-      '@stacksjs/alias': link:core/alias
       '@stacksjs/arrays': link:core/arrays
       '@stacksjs/build': link:core/build
       '@stacksjs/collections': link:core/collections
@@ -100,7 +98,11 @@ importers:
 
   .stacks/core/actions:
     specifiers:
+      '@stacksjs/config': workspace:*
+      '@stacksjs/fs': workspace:*
       '@stacksjs/helpers': workspace:*
+      '@stacksjs/paths': workspace:*
+      '@stacksjs/strings': workspace:*
       '@stacksjs/types': workspace:*
       '@types/fs-extra': ^9.0.13
       '@vueuse/core': ^9.3.1
@@ -111,7 +113,11 @@ importers:
       mkdist: ^0.3.13
       vue-component-meta: ^1.0.8
     dependencies:
+      '@stacksjs/config': link:../config
+      '@stacksjs/fs': link:../fs
       '@stacksjs/helpers': link:../helpers
+      '@stacksjs/paths': link:../paths
+      '@stacksjs/strings': link:../strings
       '@stacksjs/types': link:../types
       '@types/fs-extra': 9.0.13
       '@vueuse/core': 9.3.1_vue@3.2.41
@@ -123,15 +129,6 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
 
-  .stacks/core/alias:
-    specifiers:
-      '@stacksjs/paths': workspace:*
-      mkdist: ^0.3.13
-    dependencies:
-      '@stacksjs/paths': link:../paths
-    devDependencies:
-      mkdist: 0.3.13
-
   .stacks/core/arrays:
     specifiers:
       mkdist: ^0.3.13
@@ -142,7 +139,7 @@ importers:
 
   .stacks/core/build:
     specifiers:
-      '@stacksjs/alias': workspace:*
+      '@intlify/vite-plugin-vue-i18n': ^6.0.3
       '@stacksjs/config': workspace:*
       '@stacksjs/paths': workspace:*
       '@stacksjs/types': workspace:*
@@ -166,7 +163,7 @@ importers:
       vite-ssg-sitemap: ^0.4.3
       vue-docgen-web-types: ^0.1.8
     dependencies:
-      '@stacksjs/alias': link:../alias
+      '@intlify/vite-plugin-vue-i18n': 6.0.3_vite@3.1.8
       '@stacksjs/config': link:../config
       '@stacksjs/paths': link:../paths
       '@stacksjs/types': link:../types
@@ -204,11 +201,9 @@ importers:
 
   .stacks/core/config:
     specifiers:
-      '@stacksjs/security': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^0.3.13
     dependencies:
-      '@stacksjs/security': link:../security
       '@stacksjs/types': link:../types
     devDependencies:
       mkdist: 0.3.13
@@ -251,14 +246,12 @@ importers:
 
   .stacks/core/modules:
     specifiers:
-      '@intlify/vite-plugin-vue-i18n': ^6.0.3
       '@stacksjs/types': workspace:*
       '@types/nprogress': ^0.2.0
       mkdist: ^0.3.13
       nprogress: ^0.2.0
       vue-i18n: ^9.2.2
     dependencies:
-      '@intlify/vite-plugin-vue-i18n': 6.0.3_vue-i18n@9.2.2
       '@stacksjs/types': link:../types
       '@types/nprogress': 0.2.0
       nprogress: 0.2.0
@@ -1874,7 +1867,7 @@ packages:
       - supports-color
     dev: false
 
-  /@intlify/bundle-utils/3.2.1_vue-i18n@9.2.2:
+  /@intlify/bundle-utils/3.2.1:
     resolution: {integrity: sha512-rf4cLBOnbqmpXVcCdcYHilZpMt1m82syh3WLBJlZvGxN2KkH9HeHVH4+bnibF/SDXCHNh6lM6wTpS/qw+PkcMg==}
     engines: {node: '>= 12'}
     peerDependencies:
@@ -1890,7 +1883,6 @@ packages:
       '@intlify/shared': 9.3.0-beta.6
       jsonc-eslint-parser: 1.4.1
       source-map: 0.6.1
-      vue-i18n: 9.2.2_vue@3.2.41
       yaml-eslint-parser: 0.3.2
     dev: false
 
@@ -1937,7 +1929,7 @@ packages:
     engines: {node: '>= 14'}
     dev: false
 
-  /@intlify/vite-plugin-vue-i18n/6.0.3_vue-i18n@9.2.2:
+  /@intlify/vite-plugin-vue-i18n/6.0.3_vite@3.1.8:
     resolution: {integrity: sha512-6SgNzPAOCR90wvt368lKzi7f/5ZEWJn22UCGvhFsP3XvKqlF3cVzojahgQ6o+LTdCkExeM6wPgd+haFf28E9VQ==}
     engines: {node: '>= 14.6'}
     peerDependencies:
@@ -1952,13 +1944,13 @@ packages:
       vue-i18n:
         optional: true
     dependencies:
-      '@intlify/bundle-utils': 3.2.1_vue-i18n@9.2.2
+      '@intlify/bundle-utils': 3.2.1
       '@intlify/shared': 9.3.0-beta.6
       '@rollup/pluginutils': 4.2.1
       debug: 4.3.4
       fast-glob: 3.2.12
       source-map: 0.6.1
-      vue-i18n: 9.2.2_vue@3.2.41
+      vite: 3.1.8
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -3586,7 +3578,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001422
+      caniuse-lite: 1.0.30001423
       electron-to-chromium: 1.4.284
       node-releases: 2.0.6
       update-browserslist-db: 1.0.10_browserslist@4.21.4
@@ -3698,8 +3690,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite/1.0.30001422:
-    resolution: {integrity: sha512-hSesn02u1QacQHhaxl/kNMZwqVG35Sz/8DgvmgedxSH8z9UUpcDYSPYgsj3x5dQNRcNp6BwpSfQfVzYUTm+fog==}
+  /caniuse-lite/1.0.30001423:
+    resolution: {integrity: sha512-09iwWGOlifvE1XuHokFMP7eR38a0JnajoyL3/i87c8ZjRWRrdKo1fqjNfugfBD0UDBIOz0U+jtNhJ0EPm1VleQ==}
 
   /capital-case/1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}

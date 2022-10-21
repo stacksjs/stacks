@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
+    "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/paths": "workspace:*",

@@ -45,7 +45,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/security": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {

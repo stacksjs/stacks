@@ -126,7 +126,6 @@
   "devDependencies": {
     "@ow3/eslint-config": "^0.31.3",
     "@stacksjs/actions": "workspace:*",
-    "@stacksjs/alias": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/collections": "workspace:*",
