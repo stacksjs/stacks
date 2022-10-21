@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { runExample } from '../actions/examples'
+import { runExample } from './actions/examples'
 
 async function example(artisan: CAC) {
   artisan

@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generate as generateAppKey } from '../actions/key'
+import { generate as generateAppKey } from './actions/key'
 
 async function key(artisan: CAC) {
   artisan

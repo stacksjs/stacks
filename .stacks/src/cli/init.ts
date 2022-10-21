@@ -7,7 +7,7 @@ import { useOnline } from '@vueuse/core'
 import { isFolder } from '@stacksjs/fs'
 import { version } from 'framework/package.json'
 import { ExitCode } from '@stacksjs/types'
-import { generate as generateAppKey } from '../actions/key'
+import { generate as generateAppKey } from './actions/key'
 
 // the logic to run to create/scaffold a new stack
 async function init(artisan: CAC) {

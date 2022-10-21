@@ -4,7 +4,7 @@ import { libraryEntryPath } from '@stacksjs/paths'
 import { writeTextFile } from '@stacksjs/fs'
 import { determineResetPreset } from '@stacksjs/helpers'
 import { ExitCode } from '@stacksjs/types'
-import { library } from '../../../config'
+import { library } from '../../../../config'
 
 /**
  * Based on the config values, this method

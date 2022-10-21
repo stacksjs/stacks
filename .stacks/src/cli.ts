@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { isAppInitialized } from '@stacksjs/helpers'
+import { isProjectCreated } from '@stacksjs/helpers'
 import { version } from 'framework/package.json'
 import { ExitCode } from '@stacksjs/types'
-import { build, dev, example, generate, init, key, make, test, update, utility } from './cli/commands'
+import { build, dev, example, generate, init, key, make, test, update, utility } from './cli/'
 
-const artisan = cac('artisan')
+const cli = cac('stacks')
 
 // setup global error handlers
 process.on('uncaughtException', errorHandler)
@@ -13,26 +13,26 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // before running any commands, check if the project is already initialized
-  await key(artisan)
+  await key(cli)
 
-  if (!await isAppInitialized()) {
-    await init(artisan)
+  if (!await isProjectCreated()) {
+    await init(cli)
   }
   else {
-    await update(artisan)
-    await generate(artisan)
-    await dev(artisan)
-    await build(artisan)
-    await utility(artisan)
-    await make(artisan)
-    await example(artisan)
-    await test(artisan)
+    await update(cli)
+    await generate(cli)
+    await dev(cli)
+    await build(cli)
+    await utility(cli)
+    await make(cli)
+    await example(cli)
+    await test(cli)
   }
 
-  artisan.help()
-  artisan.version(version)
+  cli.help()
+  cli.version(version)
 
-  artisan.parse()
+  cli.parse()
 }
 
 main()

@@ -5,7 +5,7 @@ import { isFile, readJsonFile, readTextFile, writeTextFile } from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { ui } from '../../../config'
 
-export async function isAppInitialized() {
+export async function isProjectCreated() {
   if (isFile('.env'))
     return await isAppKeySet()
 

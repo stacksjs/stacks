@@ -102,7 +102,7 @@ declare global {
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const increment: typeof import('../functions/counter')['increment']
   const inject: typeof import('vue')['inject']
-  const isAppInitialized: typeof import('./core/helpers/src/index')['isAppInitialized']
+  const isProjectCreated: typeof import('./core/helpers/src/index')['isProjectCreated']
   const isAppKeySet: typeof import('./core/helpers/src/index')['isAppKeySet']
   const isBoolean: typeof import('@vueuse/shared')['isBoolean']
   const isClient: typeof import('@vueuse/shared')['isClient']
@@ -515,7 +515,7 @@ declare module '@vue/runtime-core' {
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
-    readonly isAppInitialized: UnwrapRef<typeof import('./core/helpers/src/index')['isAppInitialized']>
+    readonly isProjectCreated: UnwrapRef<typeof import('./core/helpers/src/index')['isProjectCreated']>
     readonly isAppKeySet: UnwrapRef<typeof import('./core/helpers/src/index')['isAppKeySet']>
     readonly isBoolean: UnwrapRef<typeof import('@vueuse/shared')['isBoolean']>
     readonly isClient: UnwrapRef<typeof import('@vueuse/shared')['isClient']>

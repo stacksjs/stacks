@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from '../actions/make'
+import { component as makeComponent, fx as makeFunction, language as makeLanguage, stack as makeStack } from './actions/make'
 
 async function make(artisan: CAC) {
   artisan

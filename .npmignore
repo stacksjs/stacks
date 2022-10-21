@@ -11,5 +11,4 @@ node_modules
 .stacks/web-components/dist/*
 .stacks/docs/dist/*
 .stacks/functions/dist/*
-.stacks/stacks/dist/*
 !.stacks/dist/*

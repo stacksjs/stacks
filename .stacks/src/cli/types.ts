@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import { generateTypes } from '../actions/types'
+import { generateTypes } from './actions/types'
 
 async function types(artisan: CAC) {
   artisan
