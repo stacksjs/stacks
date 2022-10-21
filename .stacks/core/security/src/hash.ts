@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs'
 import { Base64 } from 'js-base64'
 import md5 from 'crypto-js/md5'
-import { hashing } from '@stacksjs/config'
+import { hashing } from '../../../config'
 
 async function make(password: string, algorithm = 'bcrypt') {
   if (algorithm === 'bcrypt')

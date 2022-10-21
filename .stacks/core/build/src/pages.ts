@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 import type { ViteConfig } from '@stacksjs/types'
-import { alias } from '@stacksjs/alias'
 import { functionsPath, projectPath } from '@stacksjs/paths'
+import { alias } from '../../../alias'
 import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '.'
 
 export const pagesConfig: ViteConfig = {

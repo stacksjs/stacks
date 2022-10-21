@@ -1,7 +1,6 @@
 packages:
   - ./.stacks/core/actions
   - ./.stacks/core/build
-  - ./.stacks/core/config
   - ./.stacks/core/helpers
   - ./.stacks/core/modules
   - ./.stacks/core/router

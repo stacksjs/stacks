@@ -44,6 +44,7 @@ importers:
       lint-staged: ^13.0.3
       local-pkg: ^0.4.2
       minimatch: ^5.1.0
+      mkdist: ^0.3.13
       nitropack: ^0.6.0
       only-allow: ^1.1.1
       pinia: ^2.0.23
@@ -87,6 +88,7 @@ importers:
       lint-staged: 13.0.3
       local-pkg: 0.4.2
       minimatch: 5.1.0
+      mkdist: 0.3.13_typescript@4.8.4
       nitropack: 0.6.0
       only-allow: 1.1.1
       pinia: 2.0.23_l7r24p6nevbtlimqmqcwa3ouhu
@@ -98,7 +100,6 @@ importers:
 
   .stacks/core/actions:
     specifiers:
-      '@stacksjs/config': workspace:*
       '@stacksjs/fs': workspace:*
       '@stacksjs/helpers': workspace:*
       '@stacksjs/paths': workspace:*
@@ -113,7 +114,6 @@ importers:
       mkdist: ^0.3.13
       vue-component-meta: ^1.0.8
     dependencies:
-      '@stacksjs/config': link:../config
       '@stacksjs/fs': link:../fs
       '@stacksjs/helpers': link:../helpers
       '@stacksjs/paths': link:../paths
@@ -140,7 +140,6 @@ importers:
   .stacks/core/build:
     specifiers:
       '@intlify/vite-plugin-vue-i18n': ^6.0.3
-      '@stacksjs/config': workspace:*
       '@stacksjs/paths': workspace:*
       '@stacksjs/types': workspace:*
       '@types/markdown-it-link-attributes': ^3.0.1
@@ -164,7 +163,6 @@ importers:
       vue-docgen-web-types: ^0.1.8
     dependencies:
       '@intlify/vite-plugin-vue-i18n': 6.0.3_vite@3.1.8
-      '@stacksjs/config': link:../config
       '@stacksjs/paths': link:../paths
       '@stacksjs/types': link:../types
       '@types/markdown-it-link-attributes': 3.0.1
@@ -199,15 +197,6 @@ importers:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
 
-  .stacks/core/config:
-    specifiers:
-      '@stacksjs/types': workspace:*
-      mkdist: ^0.3.13
-    dependencies:
-      '@stacksjs/types': link:../types
-    devDependencies:
-      mkdist: 0.3.13
-
   .stacks/core/fs:
     specifiers:
       '@stacksjs/arrays': workspace:*
@@ -228,7 +217,6 @@ importers:
   .stacks/core/helpers:
     specifiers:
       '@jsdevtools/ez-spawn': ^3.0.4
-      '@stacksjs/config': workspace:*
       '@stacksjs/fs': workspace:*
       '@stacksjs/paths': workspace:*
       '@stacksjs/types': workspace:*
@@ -236,7 +224,6 @@ importers:
       mkdist: ^0.3.13
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
-      '@stacksjs/config': link:../config
       '@stacksjs/fs': link:../fs
       '@stacksjs/paths': link:../paths
       '@stacksjs/types': link:../types
@@ -292,7 +279,6 @@ importers:
 
   .stacks/core/security:
     specifiers:
-      '@stacksjs/config': workspace:*
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
       bcryptjs: ^2.4.3
@@ -300,7 +286,6 @@ importers:
       js-base64: ^3.7.2
       mkdist: ^0.3.13
     dependencies:
-      '@stacksjs/config': link:../config
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
       bcryptjs: 2.4.3
@@ -354,7 +339,6 @@ importers:
       '@iconify-json/heroicons-outline': ^1.1.4
       '@iconify-json/heroicons-solid': ^1.1.5
       '@julr/unocss-preset-forms': ^0.0.2
-      '@stacksjs/config': workspace:*
       '@unocss/transformer-compile-class': ^0.45.30
       '@vitejs/plugin-vue': ^3.1.2
       mkdist: ^0.3.13
@@ -366,7 +350,6 @@ importers:
       '@iconify-json/heroicons-outline': 1.1.4
       '@iconify-json/heroicons-solid': 1.1.5
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.30
-      '@stacksjs/config': link:../config
       '@unocss/transformer-compile-class': 0.45.30
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       unocss: 0.45.30_vite@3.1.8

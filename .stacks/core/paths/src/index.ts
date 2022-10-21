@@ -58,8 +58,8 @@ export function componentsPath(path?: string) {
   return projectPath(`components/${path || ''}`)
 }
 
-export function configPath(path?: string) {
-  return corePath(`config/${path || ''}`)
+export function configPath() {
+  return frameworkPath('config.ts')
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {
@@ -134,8 +134,8 @@ export function helpersPath(path?: string) {
   return corePath(`helpers/${path || ''}`)
 }
 
-export function aliasPath(path?: string) {
-  return corePath(`alias/${path || ''}`)
+export function aliasPath() {
+  return frameworkPath('alias.ts')
 }
 
 export function scriptsPath(path?: string) {

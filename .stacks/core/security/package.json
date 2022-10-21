@@ -8,6 +8,9 @@
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/security#readme",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -41,7 +44,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:*",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
     "bcryptjs": "^2.4.3",

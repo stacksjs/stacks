@@ -7,7 +7,7 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/ui#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/ui#readme",
   "sideEffects": false,
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -15,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/ui"
+    "directory": "./.stacks/core/ui"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -49,7 +49,6 @@
     "@iconify-json/heroicons-outline": "^1.1.4",
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@julr/unocss-preset-forms": "^0.0.2",
-    "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.45.30",
     "@vitejs/plugin-vue": "^3.1.2",
     "unocss": "^0.45.30",

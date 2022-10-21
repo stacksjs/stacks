@@ -8,6 +8,9 @@
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/helpers#readme",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -44,7 +47,6 @@
   },
   "dependencies": {
     "@jsdevtools/ez-spawn": "^3.0.4",
-    "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",
