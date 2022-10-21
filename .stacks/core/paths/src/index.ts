@@ -147,7 +147,7 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 }
 
 export function pagesPath(path?: string) {
-  return corePath(`pages/${path || ''}`)
+  return projectPath(`pages/${path || ''}`)
 }
 
 export function projectPath(filePath = '') {

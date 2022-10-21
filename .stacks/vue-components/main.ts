@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import Previewer from 'virtual:vue-component-preview'
-import Demo from 'pages/demo.vue'
+// import Previewer from 'virtual:vue-component-preview'
+import Demo from '../../components/Demo.vue'
 
 // prepare the messages object from the yaml language files
 // const messages = Object.fromEntries(
@@ -14,5 +14,5 @@ import Demo from 'pages/demo.vue'
 
 const app = createApp(Demo)
 
-app.use(Previewer)
+// app.use(Previewer)
 app.mount('#app')

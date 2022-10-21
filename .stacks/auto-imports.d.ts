@@ -8,25 +8,48 @@ declare global {
   const $ref: typeof import('vue/macros')['$ref']
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
-  const Collection: typeof import('collect.js')['Collection']
+  const Collection: typeof import('./core/collections/src/index')['Collection']
   const EffectScope: typeof import('vue')['EffectScope']
+  const _dirname: typeof import('./core/fs/src/index')['_dirname']
+  const actionsPath: typeof import('./core/paths/src/index')['actionsPath']
   const afterAll: typeof import('vitest')['afterAll']
   const afterEach: typeof import('vitest')['afterEach']
+  const aliasPath: typeof import('./core/paths/src/index')['aliasPath']
+  const app: typeof import('../config/app')['app']
+  const arraysPath: typeof import('./core/paths/src/index')['arraysPath']
   const assert: typeof import('vitest')['assert']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const base64Encode: typeof import('./core/security/src/hash')['base64Encode']
+  const base64Verify: typeof import('./core/security/src/hash')['base64Verify']
+  const bcryptEncode: typeof import('./core/security/src/hash')['bcryptEncode']
+  const bcryptVerify: typeof import('./core/security/src/hash')['bcryptVerify']
   const beforeAll: typeof import('vitest')['beforeAll']
   const beforeEach: typeof import('vitest')['beforeEach']
+  const buildEnginePath: typeof import('./core/paths/src/index')['buildEnginePath']
+  const buildEntriesPath: typeof import('./core/paths/src/index')['buildEntriesPath']
+  const buildPath: typeof import('./core/paths/src/index')['buildPath']
+  const camelCase: typeof import('./core/strings/src/index')['camelCase']
+  const capitalCase: typeof import('./core/strings/src/index')['capitalCase']
   const chai: typeof import('vitest')['chai']
   const clamp: typeof import('@vueuse/shared')['clamp']
-  const collect: typeof import('collect.js')['collect']
+  const cliPath: typeof import('./core/paths/src/index')['cliPath']
+  const collect: typeof import('./core/collections/src/index')['collect']
+  const collectionsPath: typeof import('./core/paths/src/index')['collectionsPath']
+  const componentsPath: typeof import('./core/paths/src/index')['componentsPath']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
   const computedInject: typeof import('@vueuse/core')['computedInject']
   const computedWithControl: typeof import('@vueuse/core')['computedWithControl']
+  const config: typeof import('./core/helpers/src/index')['config']
+  const configPath: typeof import('./core/paths/src/index')['configPath']
+  const constantCase: typeof import('./core/strings/src/index')['constantCase']
+  const contains: typeof import('./core/arrays/src/index')['contains']
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
+  const copyFolder: typeof import('./core/fs/src/index')['copyFolder']
+  const corePath: typeof import('./core/paths/src/index')['corePath']
   const count: typeof import('../functions/counter')['count']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
@@ -37,30 +60,60 @@ declare global {
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
+  const customElementsDataPath: typeof import('./core/paths/src/index')['customElementsDataPath']
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
+  const decrypt: typeof import('./core/security/src/crypt')['decrypt']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
+  const deleteEmptyFolders: typeof import('./core/fs/src/index')['deleteEmptyFolders']
+  const deleteFiles: typeof import('./core/fs/src/index')['deleteFiles']
+  const deleteFolder: typeof import('./core/fs/src/index')['deleteFolder']
+  const deploy: typeof import('../config/deploy')['deploy']
   const describe: typeof import('vitest')['describe']
+  const determineResetPreset: typeof import('./core/helpers/src/index')['determineResetPreset']
+  const docs: typeof import('../config/docs')['default']
+  const doesFolderExist: typeof import('./core/fs/src/index')['doesFolderExist']
+  const dotCase: typeof import('./core/strings/src/index')['dotCase']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
+  const encrypt: typeof import('./core/security/src/crypt')['encrypt']
+  const env: typeof import('./core/helpers/src/index')['env']
+  const examplesPath: typeof import('./core/paths/src/index')['examplesPath']
   const expect: typeof import('vitest')['expect']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const frameworkPath: typeof import('./core/paths/src/index')['frameworkPath']
+  const fsPath: typeof import('./core/paths/src/index')['fsPath']
+  const functionsPath: typeof import('./core/paths/src/index')['functionsPath']
+  const generateAppKey: typeof import('./core/security/src/key')['generateAppKey']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const git: typeof import('../config/git')['git']
   const h: typeof import('vue')['h']
+  const hasComponents: typeof import('./core/fs/src/index')['hasComponents']
+  const hasFiles: typeof import('./core/fs/src/index')['hasFiles']
+  const hasFunctions: typeof import('./core/fs/src/index')['hasFunctions']
   const hasOwn: typeof import('@vueuse/shared')['hasOwn']
+  const hasScript: typeof import('./core/helpers/src/index')['hasScript']
+  const hashing: typeof import('../config/hashing')['hashing']
+  const headerCase: typeof import('./core/strings/src/index')['headerCase']
+  const helpersPath: typeof import('./core/paths/src/index')['helpersPath']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const increment: typeof import('../functions/counter')['increment']
   const inject: typeof import('vue')['inject']
+  const isAppInitialized: typeof import('./core/helpers/src/index')['isAppInitialized']
+  const isAppKeySet: typeof import('./core/helpers/src/index')['isAppKeySet']
   const isBoolean: typeof import('@vueuse/shared')['isBoolean']
   const isClient: typeof import('@vueuse/shared')['isClient']
   const isDark: typeof import('../functions/dark')['isDark']
   const isDef: typeof import('@vueuse/shared')['isDef']
   const isDefined: typeof import('@vueuse/core')['isDefined']
+  const isFile: typeof import('./core/fs/src/index')['isFile']
+  const isFolder: typeof import('./core/fs/src/index')['isFolder']
   const isFunction: typeof import('@vueuse/shared')['isFunction']
   const isIOS: typeof import('@vueuse/shared')['isIOS']
+  const isManifest: typeof import('./core/helpers/src/index')['isManifest']
   const isNumber: typeof import('@vueuse/shared')['isNumber']
   const isObject: typeof import('@vueuse/shared')['isObject']
   const isProxy: typeof import('vue')['isProxy']
@@ -70,14 +123,23 @@ declare global {
   const isString: typeof import('@vueuse/shared')['isString']
   const isWindow: typeof import('@vueuse/shared')['isWindow']
   const it: typeof import('vitest')['it']
+  const kebabCase: typeof import('./core/strings/src/index')['kebabCase']
+  const langPath: typeof import('./core/paths/src/index')['langPath']
+  const library: typeof import('../config/library')['library']
+  const libraryEntryPath: typeof import('./core/paths/src/index')['libraryEntryPath']
   const logicAnd: typeof import('@vueuse/math')['logicAnd']
   const logicNot: typeof import('@vueuse/math')['logicNot']
   const logicOr: typeof import('@vueuse/math')['logicOr']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
+  const makeHash: typeof import('./core/security/src/hash')['makeHash']
   const markRaw: typeof import('vue')['markRaw']
+  const md5Encode: typeof import('./core/security/src/hash')['md5Encode']
+  const modulesPath: typeof import('./core/paths/src/index')['modulesPath']
   const nextTick: typeof import('vue')['nextTick']
+  const noCase: typeof import('./core/strings/src/index')['noCase']
   const noop: typeof import('@vueuse/shared')['noop']
   const now: typeof import('@vueuse/shared')['now']
+  const objectsPath: typeof import('./core/paths/src/index')['objectsPath']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
@@ -95,8 +157,15 @@ declare global {
   const onStartTyping: typeof import('@vueuse/core')['onStartTyping']
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
+  const packageJsonPath: typeof import('./core/paths/src/index')['packageJsonPath']
+  const pagesPath: typeof import('./core/paths/src/index')['pagesPath']
+  const paramCase: typeof import('./core/strings/src/index')['paramCase']
+  const pascalCase: typeof import('./core/strings/src/index')['pascalCase']
+  const pathCase: typeof import('./core/strings/src/index')['pathCase']
+  const pathsPath: typeof import('./core/paths/src/index')['pathsPath']
   const pausableWatch: typeof import('@vueuse/core')['pausableWatch']
   const preferredDark: typeof import('../functions/dark')['preferredDark']
+  const projectPath: typeof import('./core/paths/src/index')['projectPath']
   const provide: typeof import('vue')['provide']
   const rand: typeof import('@vueuse/shared')['rand']
   const reactify: typeof import('@vueuse/core')['reactify']
@@ -105,6 +174,8 @@ declare global {
   const reactiveComputed: typeof import('@vueuse/core')['reactiveComputed']
   const reactiveOmit: typeof import('@vueuse/core')['reactiveOmit']
   const reactivePick: typeof import('@vueuse/core')['reactivePick']
+  const readJsonFile: typeof import('./core/fs/src/index')['readJsonFile']
+  const readTextFile: typeof import('./core/fs/src/index')['readTextFile']
   const readonly: typeof import('vue')['readonly']
   const ref: typeof import('vue')['ref']
   const refAutoReset: typeof import('@vueuse/core')['refAutoReset']
@@ -115,9 +186,20 @@ declare global {
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const router: typeof import('../config/router')['router']
+  const routerPath: typeof import('./core/paths/src/index')['routerPath']
+  const routesPath: typeof import('./core/paths/src/index')['routesPath']
+  const runNpmScript: typeof import('./core/helpers/src/index')['runNpmScript']
+  const scriptsPath: typeof import('./core/paths/src/index')['scriptsPath']
+  const securityPath: typeof import('./core/paths/src/index')['securityPath']
+  const sentenceCase: typeof import('./core/strings/src/index')['sentenceCase']
+  const setEnvValue: typeof import('./core/helpers/src/index')['setEnvValue']
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
+  const snakeCase: typeof import('./core/strings/src/index')['snakeCase']
+  const stacksPath: typeof import('./core/paths/src/index')['stacksPath']
+  const stringsPath: typeof import('./core/paths/src/index')['stringsPath']
   const suite: typeof import('vitest')['suite']
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
@@ -137,6 +219,9 @@ declare global {
   const tryOnMounted: typeof import('@vueuse/core')['tryOnMounted']
   const tryOnScopeDispose: typeof import('@vueuse/core')['tryOnScopeDispose']
   const tryOnUnmounted: typeof import('@vueuse/core')['tryOnUnmounted']
+  const typesPath: typeof import('./core/paths/src/index')['typesPath']
+  const ui: typeof import('../config/ui')['ui']
+  const uiPath: typeof import('./core/paths/src/index')['uiPath']
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
@@ -305,6 +390,7 @@ declare global {
   const useWindowFocus: typeof import('@vueuse/core')['useWindowFocus']
   const useWindowScroll: typeof import('@vueuse/core')['useWindowScroll']
   const useWindowSize: typeof import('@vueuse/core')['useWindowSize']
+  const verifyHash: typeof import('./core/security/src/hash')['verifyHash']
   const vi: typeof import('vitest')['vi']
   const vitest: typeof import('vitest')['vitest']
   const watch: typeof import('vue')['watch']
@@ -321,6 +407,8 @@ declare global {
   const watchTriggerable: typeof import('@vueuse/core')['watchTriggerable']
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
   const whenever: typeof import('@vueuse/core')['whenever']
+  const writeJsonFile: typeof import('./core/fs/src/index')['writeJsonFile']
+  const writeTextFile: typeof import('./core/fs/src/index')['writeTextFile']
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -333,25 +421,48 @@ declare module '@vue/runtime-core' {
     readonly $ref: UnwrapRef<typeof import('vue/macros')['$ref']>
     readonly $shallowRef: UnwrapRef<typeof import('vue/macros')['$shallowRef']>
     readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
-    readonly Collection: UnwrapRef<typeof import('collect.js')['Collection']>
+    readonly Collection: UnwrapRef<typeof import('./core/collections/src/index')['Collection']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly _dirname: UnwrapRef<typeof import('./core/fs/src/index')['_dirname']>
+    readonly actionsPath: UnwrapRef<typeof import('./core/paths/src/index')['actionsPath']>
     readonly afterAll: UnwrapRef<typeof import('vitest')['afterAll']>
     readonly afterEach: UnwrapRef<typeof import('vitest')['afterEach']>
+    readonly aliasPath: UnwrapRef<typeof import('./core/paths/src/index')['aliasPath']>
+    readonly app: UnwrapRef<typeof import('../config/app')['app']>
+    readonly arraysPath: UnwrapRef<typeof import('./core/paths/src/index')['arraysPath']>
     readonly assert: UnwrapRef<typeof import('vitest')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
+    readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
+    readonly bcryptEncode: UnwrapRef<typeof import('./core/security/src/hash')['bcryptEncode']>
+    readonly bcryptVerify: UnwrapRef<typeof import('./core/security/src/hash')['bcryptVerify']>
     readonly beforeAll: UnwrapRef<typeof import('vitest')['beforeAll']>
     readonly beforeEach: UnwrapRef<typeof import('vitest')['beforeEach']>
+    readonly buildEnginePath: UnwrapRef<typeof import('./core/paths/src/index')['buildEnginePath']>
+    readonly buildEntriesPath: UnwrapRef<typeof import('./core/paths/src/index')['buildEntriesPath']>
+    readonly buildPath: UnwrapRef<typeof import('./core/paths/src/index')['buildPath']>
+    readonly camelCase: UnwrapRef<typeof import('./core/strings/src/index')['camelCase']>
+    readonly capitalCase: UnwrapRef<typeof import('./core/strings/src/index')['capitalCase']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly clamp: UnwrapRef<typeof import('@vueuse/shared')['clamp']>
-    readonly collect: UnwrapRef<typeof import('collect.js')['collect']>
+    readonly cliPath: UnwrapRef<typeof import('./core/paths/src/index')['cliPath']>
+    readonly collect: UnwrapRef<typeof import('./core/collections/src/index')['collect']>
+    readonly collectionsPath: UnwrapRef<typeof import('./core/paths/src/index')['collectionsPath']>
+    readonly componentsPath: UnwrapRef<typeof import('./core/paths/src/index')['componentsPath']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('@vueuse/core')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
+    readonly config: UnwrapRef<typeof import('./core/helpers/src/index')['config']>
+    readonly configPath: UnwrapRef<typeof import('./core/paths/src/index')['configPath']>
+    readonly constantCase: UnwrapRef<typeof import('./core/strings/src/index')['constantCase']>
+    readonly contains: UnwrapRef<typeof import('./core/arrays/src/index')['contains']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
+    readonly copyFolder: UnwrapRef<typeof import('./core/fs/src/index')['copyFolder']>
+    readonly corePath: UnwrapRef<typeof import('./core/paths/src/index')['corePath']>
     readonly count: UnwrapRef<typeof import('../functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
@@ -362,30 +473,60 @@ declare module '@vue/runtime-core' {
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
+    readonly customElementsDataPath: UnwrapRef<typeof import('./core/paths/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
+    readonly decrypt: UnwrapRef<typeof import('./core/security/src/crypt')['decrypt']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
+    readonly deleteEmptyFolders: UnwrapRef<typeof import('./core/fs/src/index')['deleteEmptyFolders']>
+    readonly deleteFiles: UnwrapRef<typeof import('./core/fs/src/index')['deleteFiles']>
+    readonly deleteFolder: UnwrapRef<typeof import('./core/fs/src/index')['deleteFolder']>
+    readonly deploy: UnwrapRef<typeof import('../config/deploy')['deploy']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
+    readonly determineResetPreset: UnwrapRef<typeof import('./core/helpers/src/index')['determineResetPreset']>
+    readonly docs: UnwrapRef<typeof import('../config/docs')['default']>
+    readonly doesFolderExist: UnwrapRef<typeof import('./core/fs/src/index')['doesFolderExist']>
+    readonly dotCase: UnwrapRef<typeof import('./core/strings/src/index')['dotCase']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
+    readonly encrypt: UnwrapRef<typeof import('./core/security/src/crypt')['encrypt']>
+    readonly env: UnwrapRef<typeof import('./core/helpers/src/index')['env']>
+    readonly examplesPath: UnwrapRef<typeof import('./core/paths/src/index')['examplesPath']>
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly frameworkPath: UnwrapRef<typeof import('./core/paths/src/index')['frameworkPath']>
+    readonly fsPath: UnwrapRef<typeof import('./core/paths/src/index')['fsPath']>
+    readonly functionsPath: UnwrapRef<typeof import('./core/paths/src/index')['functionsPath']>
+    readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly git: UnwrapRef<typeof import('../config/git')['git']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly hasComponents: UnwrapRef<typeof import('./core/fs/src/index')['hasComponents']>
+    readonly hasFiles: UnwrapRef<typeof import('./core/fs/src/index')['hasFiles']>
+    readonly hasFunctions: UnwrapRef<typeof import('./core/fs/src/index')['hasFunctions']>
     readonly hasOwn: UnwrapRef<typeof import('@vueuse/shared')['hasOwn']>
+    readonly hasScript: UnwrapRef<typeof import('./core/helpers/src/index')['hasScript']>
+    readonly hashing: UnwrapRef<typeof import('../config/hashing')['hashing']>
+    readonly headerCase: UnwrapRef<typeof import('./core/strings/src/index')['headerCase']>
+    readonly helpersPath: UnwrapRef<typeof import('./core/paths/src/index')['helpersPath']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
+    readonly isAppInitialized: UnwrapRef<typeof import('./core/helpers/src/index')['isAppInitialized']>
+    readonly isAppKeySet: UnwrapRef<typeof import('./core/helpers/src/index')['isAppKeySet']>
     readonly isBoolean: UnwrapRef<typeof import('@vueuse/shared')['isBoolean']>
     readonly isClient: UnwrapRef<typeof import('@vueuse/shared')['isClient']>
     readonly isDark: UnwrapRef<typeof import('../functions/dark')['isDark']>
     readonly isDef: UnwrapRef<typeof import('@vueuse/shared')['isDef']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
+    readonly isFile: UnwrapRef<typeof import('./core/fs/src/index')['isFile']>
+    readonly isFolder: UnwrapRef<typeof import('./core/fs/src/index')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('@vueuse/shared')['isFunction']>
     readonly isIOS: UnwrapRef<typeof import('@vueuse/shared')['isIOS']>
+    readonly isManifest: UnwrapRef<typeof import('./core/helpers/src/index')['isManifest']>
     readonly isNumber: UnwrapRef<typeof import('@vueuse/shared')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('@vueuse/shared')['isObject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
@@ -395,14 +536,23 @@ declare module '@vue/runtime-core' {
     readonly isString: UnwrapRef<typeof import('@vueuse/shared')['isString']>
     readonly isWindow: UnwrapRef<typeof import('@vueuse/shared')['isWindow']>
     readonly it: UnwrapRef<typeof import('vitest')['it']>
+    readonly kebabCase: UnwrapRef<typeof import('./core/strings/src/index')['kebabCase']>
+    readonly langPath: UnwrapRef<typeof import('./core/paths/src/index')['langPath']>
+    readonly library: UnwrapRef<typeof import('../config/library')['library']>
+    readonly libraryEntryPath: UnwrapRef<typeof import('./core/paths/src/index')['libraryEntryPath']>
     readonly logicAnd: UnwrapRef<typeof import('@vueuse/math')['logicAnd']>
     readonly logicNot: UnwrapRef<typeof import('@vueuse/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('@vueuse/math')['logicOr']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
+    readonly makeHash: UnwrapRef<typeof import('./core/security/src/hash')['makeHash']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly md5Encode: UnwrapRef<typeof import('./core/security/src/hash')['md5Encode']>
+    readonly modulesPath: UnwrapRef<typeof import('./core/paths/src/index')['modulesPath']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly noCase: UnwrapRef<typeof import('./core/strings/src/index')['noCase']>
     readonly noop: UnwrapRef<typeof import('@vueuse/shared')['noop']>
     readonly now: UnwrapRef<typeof import('@vueuse/shared')['now']>
+    readonly objectsPath: UnwrapRef<typeof import('./core/paths/src/index')['objectsPath']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
@@ -420,8 +570,15 @@ declare module '@vue/runtime-core' {
     readonly onStartTyping: UnwrapRef<typeof import('@vueuse/core')['onStartTyping']>
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
+    readonly packageJsonPath: UnwrapRef<typeof import('./core/paths/src/index')['packageJsonPath']>
+    readonly pagesPath: UnwrapRef<typeof import('./core/paths/src/index')['pagesPath']>
+    readonly paramCase: UnwrapRef<typeof import('./core/strings/src/index')['paramCase']>
+    readonly pascalCase: UnwrapRef<typeof import('./core/strings/src/index')['pascalCase']>
+    readonly pathCase: UnwrapRef<typeof import('./core/strings/src/index')['pathCase']>
+    readonly pathsPath: UnwrapRef<typeof import('./core/paths/src/index')['pathsPath']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly preferredDark: UnwrapRef<typeof import('../functions/dark')['preferredDark']>
+    readonly projectPath: UnwrapRef<typeof import('./core/paths/src/index')['projectPath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly rand: UnwrapRef<typeof import('@vueuse/shared')['rand']>
     readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
@@ -430,6 +587,8 @@ declare module '@vue/runtime-core' {
     readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
     readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
+    readonly readJsonFile: UnwrapRef<typeof import('./core/fs/src/index')['readJsonFile']>
+    readonly readTextFile: UnwrapRef<typeof import('./core/fs/src/index')['readTextFile']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
@@ -440,9 +599,20 @@ declare module '@vue/runtime-core' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly router: UnwrapRef<typeof import('../config/router')['router']>
+    readonly routerPath: UnwrapRef<typeof import('./core/paths/src/index')['routerPath']>
+    readonly routesPath: UnwrapRef<typeof import('./core/paths/src/index')['routesPath']>
+    readonly runNpmScript: UnwrapRef<typeof import('./core/helpers/src/index')['runNpmScript']>
+    readonly scriptsPath: UnwrapRef<typeof import('./core/paths/src/index')['scriptsPath']>
+    readonly securityPath: UnwrapRef<typeof import('./core/paths/src/index')['securityPath']>
+    readonly sentenceCase: UnwrapRef<typeof import('./core/strings/src/index')['sentenceCase']>
+    readonly setEnvValue: UnwrapRef<typeof import('./core/helpers/src/index')['setEnvValue']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
+    readonly snakeCase: UnwrapRef<typeof import('./core/strings/src/index')['snakeCase']>
+    readonly stacksPath: UnwrapRef<typeof import('./core/paths/src/index')['stacksPath']>
+    readonly stringsPath: UnwrapRef<typeof import('./core/paths/src/index')['stringsPath']>
     readonly suite: UnwrapRef<typeof import('vitest')['suite']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
@@ -462,6 +632,9 @@ declare module '@vue/runtime-core' {
     readonly tryOnMounted: UnwrapRef<typeof import('@vueuse/core')['tryOnMounted']>
     readonly tryOnScopeDispose: UnwrapRef<typeof import('@vueuse/core')['tryOnScopeDispose']>
     readonly tryOnUnmounted: UnwrapRef<typeof import('@vueuse/core')['tryOnUnmounted']>
+    readonly typesPath: UnwrapRef<typeof import('./core/paths/src/index')['typesPath']>
+    readonly ui: UnwrapRef<typeof import('../config/ui')['ui']>
+    readonly uiPath: UnwrapRef<typeof import('./core/paths/src/index')['uiPath']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
@@ -630,6 +803,7 @@ declare module '@vue/runtime-core' {
     readonly useWindowFocus: UnwrapRef<typeof import('@vueuse/core')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('@vueuse/core')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('@vueuse/core')['useWindowSize']>
+    readonly verifyHash: UnwrapRef<typeof import('./core/security/src/hash')['verifyHash']>
     readonly vi: UnwrapRef<typeof import('vitest')['vi']>
     readonly vitest: UnwrapRef<typeof import('vitest')['vitest']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
@@ -646,5 +820,7 @@ declare module '@vue/runtime-core' {
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
+    readonly writeJsonFile: UnwrapRef<typeof import('./core/fs/src/index')['writeJsonFile']>
+    readonly writeTextFile: UnwrapRef<typeof import('./core/fs/src/index')['writeTextFile']>
   }
 }

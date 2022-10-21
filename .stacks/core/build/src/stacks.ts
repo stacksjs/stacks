@@ -14,7 +14,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '@stacksjs/types'
-import { componentsPath, configPath, frameworkPath, functionsPath, langPath, pagesPath, resolve } from '@stacksjs/paths'
+import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, helpersPath, langPath, pagesPath, pathsPath, projectPath, resolve, securityPath, stringsPath } from '@stacksjs/paths'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -91,15 +91,19 @@ function autoImports(options?: AutoImportsOptions) {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
       { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
-      { 'collect.js': ['collect', 'Collection'] },
     ],
     dirs: [
-      frameworkPath('generate/src'),
-      frameworkPath('utils/src'),
-      frameworkPath('security/src'),
       functionsPath(),
       componentsPath(),
-      configPath(),
+      projectPath('config'),
+      // auto imported utilities start here
+      arraysPath('src'),
+      stringsPath('src'),
+      collectionsPath('src'),
+      fsPath('src'),
+      helpersPath('src'),
+      pathsPath('src'),
+      securityPath('src'),
     ],
     dts: frameworkPath('auto-imports.d.ts'),
     vueTemplate: true,
