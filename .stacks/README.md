@@ -1,52 +1,40 @@
-# Stacks.js Framework
+# Rapid Application Development
 
-This framework contains the "core" Stacks logic, its runtime & helpers, excluding the IDE setup.
+This Stacks.js framework/package contains the core logic—its runtime, helpers, and CLI (excluding the IDE setup).
 
 ## ☘️ Features
 
-The ultimate goal of this framework, Stacks, is to _help you_ create a component and/or function library. Stacks is a toolkit of composables, methods, and other goodies required to build optimized libraries. A highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its TypeScript types.
+The ultimate goal of the framework is to _help you_ build applications rapidly. Whether it's APIs, a component and/or function library, or simply a statically generate site. Stacks is a toolkit of composables, methods, and other goodies required to build optimized outputs. It's a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its TypeScript types.
 
 Other included core features are:
 
-- ⚡️ Vite plugins to build the component library
-- 🏎 Blazing fast, empowered by a beautiful DX
+- ⚡️ Vite powered, optimized for speed
+- 🚜 Create one component, automatically generate a Vue & Web Component library
+- 🎨 Optimized CSS engine for Vue & Web Components, and SSG pages _(defaults to Tailwind CSS utility classes)_
 - 👣 Tiny foot-print in production builds
+- 🌳 Treeshaking for Vue & Web Components, and function libraries
 - 💬 Fully-typed TypeScript definitions
-- 🌳 Treeshaking for Vue & Web Components
-- 🎨 Optimized UnoCSS build for Vue & Web Components _(defaults to Tailwind CSS utility classes)_
+- 📰 Automatically publishes your libraries to npm & creates your changelogs
 - 🧙🏼‍♀️ Unified way to access hundreds of [icon sets](https://icon-sets.iconify.design)
  — [Icons in Pure CSS](https://antfu.me/posts/icons-in-pure-css)
 
-And all of this in a zero-config, yet configurable, way.
+And all of this in a zero-config, yet highly-configurable, way.
 
 ## 🤖 Usage
 
 If you want to use Stacks outside of this framework, install it as a dev dependency:
 
 ```bash
-pnpm i -D stacksjs
+pnpm i -D stacks
 ```
 
 Now, you can use it in your project:
 
-```js
-import {
-  Stacks,
-  atomicCssEngine,
-  autoImports,
-  components,
-  createApp,
-  defineConfig,
-  defineTestConfig,
-  inspect,
-  resolve,
-  uiEngine
-} from 'stacksjs'
-
-// you are now free to use any of the imported methods
+```ts
+import * as stacks from 'stacks'
 ```
 
-Learn more in the docs.
+You may easily import any of the exported methods. Learn more in the docs.
 
 ## 🧪 Testing
 
