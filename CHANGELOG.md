@@ -1,3 +1,12 @@
+# [0.37.0](https://github.com/stacksjs/stacks/compare/v0.36.6...v0.37.0) (2022-10-22)
+
+
+### Features
+
+* **ci:** add `export-size` workflow ([bea0802](https://github.com/stacksjs/stacks/commit/bea0802810cc698e785436b67d249a4b2005c7d8))
+
+
+
 ## [0.36.6](https://github.com/stacksjs/stacks/compare/v0.36.5...v0.36.6) (2022-10-13)
 
 
