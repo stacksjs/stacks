@@ -1,5 +1,5 @@
 {
-  "name": "this-could-be-your-package",
+  "name": "this-could-be-yours",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@7.13.6",
@@ -31,7 +31,6 @@
     "javascript",
     "starter kit"
   ],
-  "sideEffects": false,
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

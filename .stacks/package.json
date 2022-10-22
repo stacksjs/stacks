@@ -16,6 +16,22 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
+  "keywords": [
+    "vite",
+    "component",
+    "composables",
+    "functions",
+    "api",
+    "ssg",
+    "pwa",
+    "modern",
+    "library",
+    "vue",
+    "web components",
+    "typescript",
+    "javascript",
+    "starter kit"
+  ],
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -28,28 +44,7 @@
     "artisan": "bin/stacks.mjs"
   },
   "files": [
-    "core",
-    "dist",
-    "examples",
-    "functions",
-    "pages",
-    "scripts",
-    "src",
-    "vue-components",
-    "web-components",
-    ".gitignore",
-    "package.json",
-    "custom-elements.json",
-    "netlify.toml",
-    "nitro.config.ts",
-    "simple-git-hooks.cjs",
-    "tsconfig.json",
-    "vitest.config.ts",
-    "web-types.json",
-    "README.md",
-    "shims.d.ts",
-    "auto-imports.d.ts",
-    "components.d.ts"
+    "dist"
   ],
   "engines": {
     "node": ">=v18.10.0",
