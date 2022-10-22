@@ -1,10 +1,15 @@
 # Rapid Application Development
 
-This Stacks.js framework/package contains the core logic—its runtime, helpers, and CLI (excluding the IDE setup).
+Develop modern framework-agnostic web apps & libraries, faster. Stacks.js is a progressive full-stack framework with an approachable & easy-to-use onboarding experience.
 
 ## ☘️ Features
 
-The ultimate goal of the framework is to _help you_ build applications rapidly. Whether it's APIs, a component and/or function library, or simply a statically generate site. Stacks is a toolkit of composables, methods, and other goodies required to build optimized outputs. It's a highly optimized build process that automatically generates `.mjs` & `.cjs` library distributions for you, including its TypeScript types.
+The goal of the framework is to _help you_ build applications rapidly & more efficiently, removing the boilerplate wherever possible—and the learning curve! Whether it's APIs, a component and/or function library, or simply a statically generate site, Stacks is a toolkit of composables, methods, and other goodies, required to build optimized outputs.
+
+In other words, it's a highly optimized build process that automatically generates:
+
+- `.mjs` & `.cjs` library distributions, including its TypeScript types
+- a highly-performant JavaScript production-ready server to be deployed anywhere (e.g. Netlify, Vercel, AWS, etc.)
 
 Other included core features are:
 
