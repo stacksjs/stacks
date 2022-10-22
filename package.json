@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stacks",
   "type": "module",
-  "version": "0.37.2",
+  "version": "0.37.3",
   "packageManager": "pnpm@7.13.6",
   "description": "Develop modern framework-agnostic web apps & libraries, faster.",
   "author": "Chris Breuer",
