@@ -51,7 +51,7 @@
     "pnpm": ">=7.14.0"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
+    "preinstall": "npx only-allow pnpm",
     "prepublishOnly": "pnpm run build:stacks",
     "stacks": "esno ./src/cli.ts",
     "stx": "pnpm run stacks",
