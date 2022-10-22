@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.37.1",
+  "version": "0.37.2",
   "packageManager": "pnpm@7.13.6",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
@@ -116,7 +116,7 @@
     "key": "pnpm stacks key",
     "key:generate": "pnpm stacks key:generate",
     "commit": "git cz",
-    "release": "esno ./core/actions/src/generate-package-json.ts && bumpp ./package.json ./**/package.json ../package.json --execute 'pnpm run changelog' --all",
+    "release": "esno ./core/actions/src/generate-package-json.ts && bumpp ./package.json ./core/**/package.json ../package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm stacks generate",
     "generate:entries": "esno ./core/actions/src/generate-lib-entries.ts",
