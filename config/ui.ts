@@ -1,4 +1,4 @@
-import type { UiOptions as Options } from 'stacks'
+import type { UiOptions as Options } from '@stacksjs/types'
 
 /**
  * ### UI Engine Options

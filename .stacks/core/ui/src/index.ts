@@ -2,10 +2,25 @@ import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { ui } from '../../../config'
+// import { ui } from '../../../config'
+import type { UiOptions as Options } from '@stacksjs/types'
+
+const uis: Options = {
+  shortcuts: [
+    ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
+  ],
+  safelist: 'prose prose-sm m-auto text-left',
+  trigger: ':stx:',
+  classPrefix: 'stx-',
+  reset: 'tailwind',
+  icons: {
+    'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
+    'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
+  },
+}
 
 const config: UserConfig = defineConfig({
-  shortcuts: ui.shortcuts,
+  shortcuts: uis.shortcuts,
 
   presets: [
     presetWind(), // allows for Tailwind utility classes
@@ -14,7 +29,7 @@ const config: UserConfig = defineConfig({
     presetIcons({
       prefix: 'i-',
       warn: true,
-      collections: ui.icons,
+      collections: uis.icons,
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
@@ -32,14 +47,14 @@ const config: UserConfig = defineConfig({
 
   transformers: [
     transformerCompileClass({
-      classPrefix: ui.classPrefix,
-      trigger: ui.trigger,
+      classPrefix: uis.classPrefix,
+      trigger: uis.trigger,
     }),
     transformerDirectives(),
     transformerVariantGroup(),
   ],
 
-  safelist: ui.safelist.split(' '),
+  safelist: uis.safelist.split(' '),
 })
 
 export default config

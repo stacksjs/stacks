@@ -1,4 +1,4 @@
-import type { HashingOptions as Options } from 'stacks'
+import type { HashingOptions as Options } from '@stacksjs/types'
 
 export const hashing: Options = {
   driver: 'bcrypt',

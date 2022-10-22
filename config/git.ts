@@ -1,4 +1,4 @@
-import type { GitOptions as Options } from 'stacks'
+import type { GitOptions as Options } from '@stacksjs/types'
 
 /**
  * ### Git Options

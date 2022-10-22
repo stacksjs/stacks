@@ -1,4 +1,4 @@
-import type { LibraryOptions as Options } from 'stacks'
+import type { LibraryOptions as Options } from '@stacksjs/types'
 
 /**
  * ### Library Options

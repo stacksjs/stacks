@@ -1,4 +1,6 @@
-import { type DocsConfig, frameworkPath } from 'stacks'
+import { type DocsConfig } from '@stacksjs/types'
+import { frameworkPath } from '@stacksjs/paths'
+import { services } from './services'
 
 /**
  * ### Documentation Options
@@ -37,11 +39,7 @@ export default <DocsConfig> {
       copyright: 'Copyright © 2022-present Open Web Foundation',
     },
 
-    algolia: {
-      appId: '',
-      apiKey: '',
-      indexName: '',
-    },
+    algolia: services.algolia,
 
     carbonAds: {
       code: '',

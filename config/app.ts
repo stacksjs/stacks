@@ -1,4 +1,5 @@
-import { type AppOptions as Options, env } from 'stacks'
+import { type AppOptions as Options } from '@stacksjs/types'
+import { env } from '@stacksjs/helpers'
 
 /**
  * ### Application Options
