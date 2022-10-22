@@ -24,4 +24,19 @@ export const services = {
     appId: '',
     apiKey: '',
   },
+
+  planetScale: {
+    appId: '',
+    apiKey: '',
+  },
+
+  supabase: {
+    appId: '',
+    apiKey: '',
+  },
+
+  singleStore: {
+    appId: '',
+    apiKey: '',
+  },
 }

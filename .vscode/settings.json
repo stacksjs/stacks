@@ -281,7 +281,8 @@
     "cryptojs",
     "frontmatter",
     "mkdist",
-    "meilisearch"
+    "meilisearch",
+    "supabase"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
