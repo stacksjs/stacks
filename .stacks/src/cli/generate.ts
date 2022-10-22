@@ -2,8 +2,8 @@ import type { CAC } from 'cac'
 import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from './actions/generate'
 import { generateTypes } from './actions/types'
 
-async function generate(artisan: CAC) {
-  artisan
+async function generate(stacks: CAC) {
+  stacks
     .command('generate', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-t, --types', 'Generate your TypeScript types')
     .option('-e, --entries', 'Generate your function & component library entry points')
@@ -17,44 +17,44 @@ async function generate(artisan: CAC) {
       await startGenerationProcess(options)
     })
 
-  artisan
+  stacks
     .command('generate:types', 'Generate the types of & for your library/libraries')
     .action(async () => {
       await generateTypes()
     })
 
-  artisan
+  stacks
     .command('generate:entries', 'Generate the entry points for your libraries')
     .action(async () => {
       // run the generate:entries command
       await generateLibEntries()
     })
 
-  artisan
+  stacks
     .command('generate:vue-compatibility', 'Generate Vue 2 & 3 compatibility')
     .action(async () => {
       await generateVueCompat()
     })
 
-  artisan
+  stacks
     .command('generate:web-types', 'Generate web-types.json for IDEs')
     .action(async () => {
       await generateWebTypes()
     })
 
-  artisan
+  stacks
     .command('generate:vscode-custom-data', 'Generate VS Code custom data (custom-elements.json) for IDEs')
     .action(async () => {
       await generateVsCodeCustomData()
     })
 
-  artisan
+  stacks
     .command('generate:ide-helpers', 'Generate IDE helpers')
     .action(async () => {
       await generateIdeHelpers()
     })
 
-  artisan
+  stacks
     .command('generate:component-meta', 'Generate component meta information')
     .action(async () => {
       await generateComponentMeta()

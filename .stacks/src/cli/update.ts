@@ -1,8 +1,8 @@
 import type { CAC } from 'cac'
 import { stacks as updateStacks } from './actions/update'
 
-async function update(artisan: CAC) {
-  artisan
+async function update(stacks: CAC) {
+  stacks
     .command('update', 'Updates dependencies & framework.')
     .option('-c, --framework', 'Update the Stacks framework', { default: true })
     .option('-d, --dependencies', 'Update your dependencies', { default: true })

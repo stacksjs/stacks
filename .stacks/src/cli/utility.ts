@@ -4,32 +4,32 @@ import { lint, lintFix } from './actions/lint'
 import { release } from './actions/release'
 import { commit } from './actions/commit'
 
-async function utility(artisan: CAC) {
-  artisan
+async function utility(stacks: CAC) {
+  stacks
     .command('fresh', 'Reinstalls your npm dependencies.')
     .action(async () => {
       await reinstallNpmDependencies()
     })
 
-  artisan
+  stacks
     .command('lint', 'Automagically lints your codebase.')
     .action(async () => {
       await lint()
     })
 
-  artisan
+  stacks
     .command('lint:fix', 'Automagically fixes lint errors.')
     .action(async () => {
       await lintFix()
     })
 
-  artisan
+  stacks
     .command('release', 'Releases a new version of your libraries/packages.')
     .action(async () => {
       await release()
     })
 
-  artisan
+  stacks
     .command('commit', 'Commit your stashed changes.')
     .action(async () => {
       await commit()

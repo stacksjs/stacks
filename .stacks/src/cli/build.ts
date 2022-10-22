@@ -1,8 +1,8 @@
 import type { CAC } from 'cac'
 import { startBuildProcess } from './actions/build'
 
-async function build(artisan: CAC) {
-  artisan
+async function build(stacks: CAC) {
+  stacks
     .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-c, --components', 'Build your component library')
     .option('-w, --web-components', 'Build your framework agnostic web component library') // these are automatically built with your -c option as well
@@ -15,31 +15,31 @@ async function build(artisan: CAC) {
       await startBuildProcess(options)
     })
 
-  artisan
+  stacks
     .command('build:components', 'Automagically build your component libraries for production use & npm/CDN distribution.')
     .action(async () => {
       await startBuildProcess('components')
     })
 
-  artisan
+  stacks
     .command('build:functions', 'Automagically build your function library for production use & npm/CDN distribution.')
     .action(async () => {
       await startBuildProcess('functions')
     })
 
-  artisan
+  stacks
     .command('build:web-components', 'Automagically build web component library for production use & npm/CDN distribution.')
     .action(async () => {
       await startBuildProcess('web-components')
     })
 
-  artisan
+  stacks
     .command('build:docs', 'Automagically build your documentation site.')
     .action(async () => {
       await startBuildProcess('docs')
     })
 
-  artisan
+  stacks
     .command('build:stacks', 'Build the core Stacks framework.')
     .action(async () => {
       await startBuildProcess('stacks')

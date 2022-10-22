@@ -9,9 +9,8 @@ import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { generate as generateAppKey } from './actions/key'
 
-// the logic to run to create/scaffold a new stack
-async function init(artisan: CAC) {
-  artisan
+async function create(stack: CAC) {
+  stack
     .option('-n, --name <name>', 'Name of the stack')
     .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', 'Are you building UI components?', { default: true }) // if no, -v and -w would be false
@@ -24,14 +23,14 @@ async function init(artisan: CAC) {
     .option('--debug', 'Add additional debug logs', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
 
-  artisan
+  stack
     .command('')
     .action(async (args: any) => {
-      const name = artisan.args[0] || args.name || '.'
+      const name = stack.args[0] || args.name || '.'
       const path = resolve(process.cwd(), name)
 
       console.log()
-      console.log(cyan(bold('Artisan CLI')) + dim(` v${version}`))
+      console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
       console.log()
 
       if (await isFolder(path)) {
@@ -50,6 +49,7 @@ async function init(artisan: CAC) {
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       consola.info('Ensuring your environment is ready...')
+      // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
       await ezSpawn.async('fnm use', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
@@ -68,4 +68,4 @@ async function init(artisan: CAC) {
     })
 }
 
-export { init }
+export { create }

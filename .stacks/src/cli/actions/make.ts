@@ -29,6 +29,32 @@ console.log('Hello World component created')
   }
 }
 
+export async function page(name: string) {
+  consola.info('Creating your component...')
+
+  try {
+    await writeTextFile({
+      path: `./pages/${name}.vue`,
+      data: `<script setup lang="ts">
+// eslint-disable-next-line no-console
+console.log('Hello World page created')
+</script>
+
+<template>
+  <div>
+    Visit http://127.0.0.1/${name}
+  </div>
+</template>
+`,
+    })
+
+    consola.success(`Created the ${name} page.`)
+  }
+  catch (err) {
+    consola.error(err)
+  }
+}
+
 export async function fx(name: string) {
   consola.info('Creating your function...')
 

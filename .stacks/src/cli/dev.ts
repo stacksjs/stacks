@@ -1,8 +1,8 @@
 import type { CAC } from 'cac'
 import { startDevelopmentServer } from './actions/dev'
 
-async function dev(artisan: CAC) {
-  artisan
+async function dev(stacks: CAC) {
+  stacks
     .command('dev', 'Start the development server for any of the following packages')
     .option('-c, --components', 'Start the Components development server')
     .option('-f, --functions', 'Start the Functions development server')
@@ -12,13 +12,13 @@ async function dev(artisan: CAC) {
       await startDevelopmentServer(options)
     })
 
-  artisan
+  stacks
     .command('dev:components', 'Start the development server for your component library')
     .action(async () => {
       await startDevelopmentServer('components')
     })
 
-  artisan
+  stacks
     .command('dev:docs', 'Start the development server for your documentation')
     .action(async () => {
       await startDevelopmentServer('docs')

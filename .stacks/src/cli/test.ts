@@ -1,20 +1,20 @@
 import type { CAC } from 'cac'
 import { generateTestCoverageReport, runTestSuite, typecheck } from './actions/test'
 
-async function test(artisan: CAC) {
-  artisan
+async function test(stacks: CAC) {
+  stacks
     .command('test', 'Runs your test suite.')
     .action(async () => {
       await runTestSuite()
     })
 
-  artisan
+  stacks
     .command('test:types', 'Typechecks your codebase.')
     .action(async () => {
       await typecheck()
     })
 
-  artisan
+  stacks
     .command('test:coverage', 'Generates a test coverage report.')
     .action(async () => {
       await generateTestCoverageReport()
