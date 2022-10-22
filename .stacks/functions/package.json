@@ -1,7 +1,7 @@
 {
   "name": "hello-world-fx",
   "type": "module",
-  "version": "0.37.0",
+  "version": "0.37.1",
   "packageManager": "pnpm@7.13.6",
   "description": "Your function library description.",
   "author": "Chris Breuer",
