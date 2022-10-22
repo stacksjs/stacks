@@ -4,6 +4,7 @@ import ezSpawn from '@jsdevtools/ez-spawn'
 // import { generateAppKey } from '@stacksjs/security'
 import { projectPath } from '@stacksjs/paths'
 import { setEnvValue } from '@stacksjs/helpers'
+import { isFile } from '@stacksjs/fs'
 import utf8 from 'crypto-js/enc-utf8'
 import base64 from 'crypto-js/enc-base64'
 
