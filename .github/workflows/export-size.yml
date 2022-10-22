@@ -1,0 +1,15 @@
+name: Export Size
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: antfu/export-size-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          paths: .stacks,.stacks/core/actions,.stacks/core/arrays,.stacks/core/build,.stacks/core/collections,.stacks/core/fs,.stacks/core/helpers,.stacks/core/modules,.stacks/core/objects,.stacks/core/paths,.stacks/core/router,.stacks/core/security,.stacks/core/strings,.stacks/core/types,.stacks/core/ui
