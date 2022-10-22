@@ -2,7 +2,7 @@
   "name": "stacks",
   "type": "module",
   "version": "0.37.6",
-  "packageManager": "pnpm@7.13.6",
+  "packageManager": "pnpm@7.14.0",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -48,7 +48,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.6"
+    "pnpm": ">=7.14.0"
   },
   "scripts": {
     "preinstall": "only-allow pnpm",

@@ -2,7 +2,7 @@
   "name": "@stacksjs/helpers",
   "type": "module",
   "version": "0.37.6",
-  "packageManager": "pnpm@7.13.6",
+  "packageManager": "pnpm@7.14.0",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.13.6"
+    "pnpm": ">=7.14.0"
   },
   "scripts": {
     "build": "mkdist -d",
