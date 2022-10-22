@@ -112,7 +112,7 @@
     "key": "pnpm stacks key",
     "key:generate": "pnpm stacks key:generate",
     "commit": "git cz",
-    "release": "esno ./core/actions/src/generate-package-json.ts && bumpp ./package.json ./core/**/package.json --execute 'pnpm run changelog' --all",
+    "release": "esno ./core/actions/src/generate-package-json.ts && pnpm lint:fix && bumpp ./package.json ./core/**/package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm stacks generate",
     "generate:entries": "esno ./core/actions/src/generate-lib-entries.ts",
