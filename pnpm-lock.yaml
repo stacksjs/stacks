@@ -31,6 +31,7 @@ importers:
       '@vitest/coverage-istanbul': ^0.24.3
       '@vueuse/core': ^9.3.1
       '@vueuse/head': ^0.9.8
+      '@vueuse/math': ^9.3.1
       '@vueuse/shared': ^9.3.1
       bumpp: ^8.2.1
       cac: ^6.7.14
@@ -78,6 +79,7 @@ importers:
       '@vitest/coverage-istanbul': 0.24.3
       '@vueuse/core': 9.3.1_vue@3.2.41
       '@vueuse/head': 0.9.8_vue@3.2.41
+      '@vueuse/math': 9.3.1_vue@3.2.41
       '@vueuse/shared': 9.3.1_vue@3.2.41
       bumpp: 8.2.1
       cac: 6.7.14
@@ -3116,6 +3118,16 @@ packages:
       vue: 3.2.41
     transitivePeerDependencies:
       - '@vue/composition-api'
+
+  /@vueuse/math/9.3.1_vue@3.2.41:
+    resolution: {integrity: sha512-6ojNHKlhs57NViEzTOQMAOZ0QpBxRalx4kFgIV5M+5DHAwi2AAwZpYwtI+PKKHrIvfdB3fx+pkz7pcjnh9GBDQ==}
+    dependencies:
+      '@vueuse/shared': 9.3.1_vue@3.2.41
+      vue-demi: 0.13.11_vue@3.2.41
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: true
 
   /@vueuse/metadata/9.3.1:
     resolution: {integrity: sha512-G1BPhtx3OHaL/y4OZBofh6Xt02G1VA9PuOO8nac9sTKMkMqfyez5VfkF3D9GUjSRNO7cVWyH4rceeGXfr2wdMg==}

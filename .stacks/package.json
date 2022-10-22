@@ -153,6 +153,7 @@
     "@vitest/coverage-istanbul": "^0.24.3",
     "@vueuse/core": "^9.3.1",
     "@vueuse/head": "^0.9.8",
+    "@vueuse/math": "^9.3.1",
     "@vueuse/shared": "^9.3.1",
     "bumpp": "^8.2.1",
     "cac": "^6.7.14",
