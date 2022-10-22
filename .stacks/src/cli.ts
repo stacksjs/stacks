@@ -3,7 +3,7 @@ import cac from 'cac'
 import { isProjectCreated } from '@stacksjs/helpers'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
-import { build, dev, example, generate, init, key, make, test, update, utility } from './cli/'
+import { build, create, dev, example, generate, key, make, test, update, utility } from './cli/'
 
 const cli = cac('stacks')
 
@@ -16,7 +16,7 @@ async function main() {
   await key(cli)
 
   if (!await isProjectCreated()) {
-    await init(cli)
+    await create(cli)
   }
   else {
     await update(cli)
