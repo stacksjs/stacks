@@ -102,7 +102,6 @@ declare global {
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const increment: typeof import('../functions/counter')['increment']
   const inject: typeof import('vue')['inject']
-  const isProjectCreated: typeof import('./core/helpers/src/index')['isProjectCreated']
   const isAppKeySet: typeof import('./core/helpers/src/index')['isAppKeySet']
   const isBoolean: typeof import('@vueuse/shared')['isBoolean']
   const isClient: typeof import('@vueuse/shared')['isClient']
@@ -116,6 +115,7 @@ declare global {
   const isManifest: typeof import('./core/helpers/src/index')['isManifest']
   const isNumber: typeof import('@vueuse/shared')['isNumber']
   const isObject: typeof import('@vueuse/shared')['isObject']
+  const isProjectCreated: typeof import('./core/helpers/src/index')['isProjectCreated']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
@@ -515,7 +515,6 @@ declare module '@vue/runtime-core' {
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
-    readonly isProjectCreated: UnwrapRef<typeof import('./core/helpers/src/index')['isProjectCreated']>
     readonly isAppKeySet: UnwrapRef<typeof import('./core/helpers/src/index')['isAppKeySet']>
     readonly isBoolean: UnwrapRef<typeof import('@vueuse/shared')['isBoolean']>
     readonly isClient: UnwrapRef<typeof import('@vueuse/shared')['isClient']>
@@ -529,6 +528,7 @@ declare module '@vue/runtime-core' {
     readonly isManifest: UnwrapRef<typeof import('./core/helpers/src/index')['isManifest']>
     readonly isNumber: UnwrapRef<typeof import('@vueuse/shared')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('@vueuse/shared')['isObject']>
+    readonly isProjectCreated: UnwrapRef<typeof import('./core/helpers/src/index')['isProjectCreated']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>

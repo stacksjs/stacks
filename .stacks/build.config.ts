@@ -1,16 +1,16 @@
 import { defineBuildConfig } from 'unbuild'
 import { alias } from './alias'
 
-// eslint-disable-next-line no-console
-console.log('alias', alias)
+// console.log('alias', alias)
 
 export default defineBuildConfig({
   alias,
   entries: [
-    './src/cli.ts',
+    './src/cli',
   ],
-  declaration: true,
-  clean: true,
+  declaration: false,
+  clean: false,
+  externals: ['chokidar', '@intlify/shared', '@intlify/message-compiler', 'vite', 'gray-matter'],
   rollup: {
     inlineDependencies: true,
   },

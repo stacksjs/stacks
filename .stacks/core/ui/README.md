@@ -22,7 +22,7 @@ pnpm i -D @stacksjs/security
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/security'
+import * as ui from '@stacksjs/ui'
 
 // wip
 ```

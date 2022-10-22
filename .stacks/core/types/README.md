@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/types
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/types'
+// import * as types from '@stacksjs/types'
 
 // wip
 ```

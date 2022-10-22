@@ -11,7 +11,8 @@ export * from '@stacksjs/actions/generate'
 export * from '@stacksjs/types'
 
 // utilities
-export * from '@stacksjs/alias'
+export * from '../alias'
+export * from '../config'
 export * from '@stacksjs/helpers'
 export * from '@stacksjs/strings'
 export * from '@stacksjs/objects'

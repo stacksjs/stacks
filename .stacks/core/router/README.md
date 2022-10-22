@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/actions
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/router'
+import * as router from '@stacksjs/router'
 
 // wip
 ```

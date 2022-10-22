@@ -74,7 +74,7 @@
       "functions/*": ["../functions/*"],
       "config/*": ["../config/*"],
       "components/*": ["../components/*"],
-      "pages/*": ["../pages/*"],
+      "pages/*": ["../pages/*"]
     }
   },
   "include": [

@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/fs
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/fs'
+import * as fs from '@stacksjs/fs'
 
 // wip
 ```

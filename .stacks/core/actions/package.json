@@ -45,8 +45,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/helpers": "workspace:*",
     "@stacksjs/fs": "workspace:*",
+    "@stacksjs/helpers": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",

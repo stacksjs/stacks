@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/objects
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/objects'
+import * as objects from '@stacksjs/objects'
 
 // wip
 ```

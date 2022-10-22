@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/arrays
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/arrays'
+import * as arrays from '@stacksjs/arrays'
 
 // wip
 ```

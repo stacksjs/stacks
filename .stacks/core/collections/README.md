@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/collections
 Now, you can use it in your project:
 
 ```js
-import * from '@stacksjs/collections'
+import { collect } from '@stacksjs/collections'
 
 // wip
 ```
