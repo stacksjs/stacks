@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { customElementsDataPath } from '@stacksjs/paths'
 import { writeTextFile } from '@stacksjs/fs'
-import { library } from '../../../../config'
+import { library } from '@stacksjs/config'
 
 export async function generateVsCodeCustomData() {
   try {

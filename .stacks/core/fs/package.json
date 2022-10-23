@@ -31,7 +31,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=v18.10.0",
@@ -47,8 +48,10 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@types/fs-extra": "^9.0.13",
     "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.0"
+    "detect-newline": "^4.0.0",
+    "fs-extra": "^10.1.0"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"

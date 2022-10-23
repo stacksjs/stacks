@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import cac from 'cac'
-import { isProjectCreated } from '@stacksjs/helpers'
+import { isProjectCreated } from '@stacksjs/utils'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { build, create, dev, example, generate, key, make, test, update, utility } from './cli/'

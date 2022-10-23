@@ -1,27 +1,24 @@
 {
-  "name": "@stacksjs/router",
+  "name": "@stacksjs/config",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks framework router.",
+  "description": "The Stacks configuration.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/router#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/config#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/router"
+    "directory": "./.stacks/core/config"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "router",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript"
+    "configuration",
+    "stacks"
   ],
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -39,14 +36,17 @@
   },
   "scripts": {
     "build": "mkdist -d",
+    "build:unbuild": "unbuild",
     "dev": "mkdist -d",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "vue-router": "^4.1.5"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "mkdist": "^0.3.13"
+    "unbuild": "latest",
+    "mkdist": "^0.3.13",
+    "typescript": "^4.8.4"
   }
 }

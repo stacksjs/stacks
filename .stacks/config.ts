@@ -1,8 +1,0 @@
-export * from '../config/app'
-export * from '../config/deploy'
-export * as docs from '../config/docs'
-export * from '../config/git'
-export * from '../config/hashing'
-export * from '../config/library'
-export * from '../config/services'
-export * from '../config/ui'

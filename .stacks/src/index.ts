@@ -12,8 +12,8 @@ export * from '@stacksjs/types'
 
 // utilities
 export * from '../alias'
-export * from '../config'
-export * from '@stacksjs/helpers'
+export * from '@stacksjs/config'
+export * from '@stacksjs/utils'
 export * from '@stacksjs/strings'
 export * from '@stacksjs/objects'
 export * from '@stacksjs/paths'

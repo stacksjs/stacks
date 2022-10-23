@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { runNpmScript } from '@stacksjs/helpers'
+import { runNpmScript } from '@stacksjs/utils'
 import { NpmScript } from '@stacksjs/types'
 
 export async function typecheck() {

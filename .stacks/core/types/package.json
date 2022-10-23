@@ -29,7 +29,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=v18.10.0",

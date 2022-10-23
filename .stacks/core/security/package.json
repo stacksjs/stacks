@@ -30,7 +30,6 @@
   ],
   "files": [
     "dist",
-    "src",
     "README.md"
   ],
   "engines": {
@@ -44,6 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
     "bcryptjs": "^2.4.3",

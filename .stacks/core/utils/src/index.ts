@@ -3,7 +3,7 @@ import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/paths'
 import { isFile, readJsonFile, readTextFile, writeTextFile } from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
-import { ui } from '../../../config'
+import { ui } from '@stacksjs/config'
 
 export async function isProjectCreated() {
   if (isFile('.env'))

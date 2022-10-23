@@ -1,8 +1,8 @@
 import consola from 'consola'
 import { writeTextFile } from '@stacksjs/fs'
 import { packageJsonPath } from '@stacksjs/paths'
+import { library } from '@stacksjs/config'
 import { packageManager } from '../../package.json'
-import { library } from '../../../../config'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config
@@ -66,7 +66,8 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "vite build -c ../build/${config}.ts",

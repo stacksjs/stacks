@@ -1,10 +1,11 @@
 packages:
   - ./.stacks/core/actions
   - ./.stacks/core/build
-  - ./.stacks/core/helpers
+  - ./.stacks/core/config
   - ./.stacks/core/modules
   - ./.stacks/core/router
   - ./.stacks/core/ui
+  - ./.stacks/core/utils
   - ./.stacks/core/arrays
   - ./.stacks/core/collections
   - ./.stacks/core/objects
