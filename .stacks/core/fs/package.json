@@ -44,7 +44,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",

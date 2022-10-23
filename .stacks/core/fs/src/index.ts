@@ -1,15 +1,19 @@
 import { fileURLToPath } from 'node:url'
-import { copyFileSync, existsSync, mkdirSync, readFile, readdirSync, rmSync, statSync, writeFile } from 'node:fs'
+import fs from 'fs-extra'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
-import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/paths'
+import path from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
+
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Reads a JSON file and returns the parsed data.
  */
-export async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
+async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
   const data = JSON.parse(file.data) as unknown
   const indent = detectIndent(file.data).indent
@@ -21,7 +25,7 @@ export async function readJsonFile(name: string, cwd: string): Promise<JsonFile>
 /**
  * Writes the given data to the specified JSON file.
  */
-export async function writeJsonFile(file: JsonFile): Promise<void> {
+async function writeJsonFile(file: JsonFile): Promise<void> {
   let json = JSON.stringify(file.data, undefined, file.indent)
 
   if (file.newline)
@@ -33,16 +37,16 @@ export async function writeJsonFile(file: JsonFile): Promise<void> {
 /**
  * Reads a text file and returns its contents.
  */
-export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
+function readTextFile(name: string, cwd?: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
     let filePath: string
 
     if (cwd)
-      filePath = join(cwd, name)
+      filePath = path.path.join(cwd, name)
     else
       filePath = name
 
-    readFile(filePath, 'utf8', (err, text) => {
+    fs.readFile(filePath, 'utf8', (err, text) => {
       if (err) {
         reject(err)
       }
@@ -59,9 +63,9 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
 /**
  * Writes the given text to the specified file.
  */
-export function writeTextFile(file: TextFile): Promise<void> {
+function writeTextFile(file: TextFile): Promise<void> {
   return new Promise((resolve, reject) => {
-    writeFile(file.path, file.data, (err: any) => {
+    fs.writeFile(file.path, file.data, (err: any) => {
       if (err)
         reject(err)
 
@@ -74,9 +78,9 @@ export function writeTextFile(file: TextFile): Promise<void> {
 /**
  * Determine whether a path is a folder.
  */
-export function isFolder(path: string): boolean {
+function isFolder(path: string): boolean {
   try {
-    return statSync(path).isDirectory()
+    return fs.statSync(path).isDirectory()
   }
   catch {
     return false
@@ -86,85 +90,103 @@ export function isFolder(path: string): boolean {
 /**
  * Determine whether a path is a file.
  */
-export function isFile(path: string): boolean {
-  return existsSync(projectPath(path))
+function isFile(path: string): boolean {
+  return fs.existsSync(projectPath(path))
 }
 
 /**
  * Determine whether a folder has any files in it.
  */
-export function hasFiles(folder: string): boolean {
-  return readdirSync(folder).length > 0
+function hasFiles(folder: string): boolean {
+  return fs.readdirSync(folder).length > 0
 }
 
-export function hasComponents(): boolean {
+function hasComponents(): boolean {
   return hasFiles(componentsPath())
 }
 
-export function hasFunctions(): boolean {
+function hasFunctions(): boolean {
   return hasFiles(functionsPath())
 }
 
-export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
-  if (!existsSync(dest))
-    mkdirSync(dest, { recursive: true })
+function copyFolder(src: string, dest: string, exclude: string[] = []): void {
+  if (!fs.existsSync(dest))
+    fs.mkdirSync(dest, { recursive: true })
 
-  if (existsSync(src)) {
-    readdirSync(src).forEach((file) => {
-      if (!contains(join(src, file), exclude)) {
-        const srcPath = join(src, file)
-        const destPath = join(dest, file)
+  if (fs.existsSync(src)) {
+    fs.readdirSync(src).forEach((file) => {
+      if (!contains(path.join(src, file), exclude)) {
+        const srcPath = path.join(src, file)
+        const destPath = path.join(dest, file)
 
-        if (statSync(srcPath).isDirectory())
+        if (fs.statSync(srcPath).isDirectory())
           copyFolder(srcPath, destPath, exclude)
 
         else
-          copyFileSync(srcPath, destPath)
+          fs.copyFileSync(srcPath, destPath)
       }
     })
   }
 }
 
-export async function deleteFolder(path: string) {
-  if (statSync(path).isDirectory())
-    await rmSync(path, { recursive: true, force: true })
+async function deleteFolder(path: string) {
+  if (fs.statSync(path).isDirectory())
+    await fs.rmSync(path, { recursive: true, force: true })
 }
 
-export function deleteFiles(dir: string, exclude: string[] = []) {
-  if (existsSync(dir)) {
-    readdirSync(dir).forEach((file) => {
-      const path = join(dir, file)
-      if (statSync(path).isDirectory()) {
-        if (readdirSync(path).length === 0)
-          rmSync(path, { recursive: true, force: true })
+function deleteFiles(dir: string, exclude: string[] = []) {
+  if (fs.existsSync(dir)) {
+    fs.readdirSync(dir).forEach((file) => {
+      const p = path.join(dir, file)
+      if (fs.statSync(p).isDirectory()) {
+        if (fs.readdirSync(p).length === 0)
+          fs.rmSync(p, { recursive: true, force: true })
 
         else
-          deleteFiles(path, exclude)
+          deleteFiles(p, exclude)
       }
 
-      else if (!contains(path, exclude)) { rmSync(path) }
+      else if (!contains(p, exclude)) { fs.rmSync(p) }
     })
   }
 }
 
-export function deleteEmptyFolders(dir: string) {
-  if (existsSync(dir)) {
-    readdirSync(dir).forEach((file) => {
-      const path = join(dir, file)
-      if (statSync(path).isDirectory()) {
-        if (readdirSync(path).length === 0)
-          rmSync(path, { recursive: true, force: true })
+function deleteEmptyFolders(dir: string) {
+  if (fs.existsSync(dir)) {
+    fs.readdirSync(dir).forEach((file) => {
+      const p = path.join(dir, file)
+      if (fs.statSync(p).isDirectory()) {
+        if (fs.readdirSync(p).length === 0)
+          fs.rmSync(p, { recursive: true, force: true })
 
-        else deleteEmptyFolders(path)
+        else deleteEmptyFolders(p)
       }
     })
   }
 }
 
-export function doesFolderExist(path: string) {
-  return existsSync(path)
+function doesFolderExist(path: string) {
+  return fs.existsSync(path)
 }
 
-export const _dirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : dirname(fileURLToPath(import.meta.url))
+export default {
+  _dirname,
+  readJsonFile,
+  writeJsonFile,
+  readTextFile,
+  writeTextFile,
+  isFolder,
+  isFile,
+  hasFiles,
+  hasComponents,
+  hasFunctions,
+  copyFolder,
+  deleteFolder,
+  deleteFiles,
+  deleteEmptyFolders,
+  doesFolderExist,
+  ...fs,
+  detectIndent,
+  detectNewline,
+  fileURLToPath,
+}

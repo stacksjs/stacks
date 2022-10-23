@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import alias from './core/alias'
+import { alias } from './alias'
 
 export default defineConfig({
   root: '..',

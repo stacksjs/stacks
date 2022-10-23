@@ -40,7 +40,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.0",
     "nprogress": "^0.2.0",

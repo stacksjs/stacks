@@ -1,35 +1,22 @@
 import type { UserConfig } from 'unocss'
-import { defineConfig, presetIcons, presetTypography, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
+import cssEngine from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-// import { ui } from '../../../config'
-import type { UiOptions as Options } from '@stacksjs/types'
+import { ui as options } from '@stacksjs/config'
+import Vue from 'vue'
+import store from 'pinia'
 
-const uis: Options = {
-  shortcuts: [
-    ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
-  ],
-  safelist: 'prose prose-sm m-auto text-left',
-  trigger: ':stx:',
-  classPrefix: 'stx-',
-  reset: 'tailwind',
-  icons: {
-    'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
-    'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
-  },
-}
-
-const config: UserConfig = defineConfig({
-  shortcuts: uis.shortcuts,
+const config: UserConfig = cssEngine.defineConfig({
+  shortcuts: options.shortcuts,
 
   presets: [
-    presetWind(), // allows for Tailwind utility classes
+    cssEngine.presetWind(), // allows for Tailwind utility classes
     presetForms(), // allows for form Tailwind's form styling
-    presetTypography(),
-    presetIcons({
+    cssEngine.presetTypography(),
+    cssEngine.presetIcons({
       prefix: 'i-',
       warn: true,
-      collections: uis.icons,
+      collections: options.icons,
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
@@ -47,14 +34,22 @@ const config: UserConfig = defineConfig({
 
   transformers: [
     transformerCompileClass({
-      classPrefix: uis.classPrefix,
-      trigger: uis.trigger,
+      classPrefix: options.classPrefix,
+      trigger: options.trigger,
     }),
-    transformerDirectives(),
-    transformerVariantGroup(),
+    cssEngine.transformerDirectives(),
+    cssEngine.transformerVariantGroup(),
   ],
 
-  safelist: uis.safelist.split(' '),
+  safelist: options.safelist.split(' '),
 })
 
-export default config
+export default {
+  ...Vue,
+  ...cssEngine,
+  store,
+  presetForms,
+  transformerCompileClass,
+  config,
+  options,
+}

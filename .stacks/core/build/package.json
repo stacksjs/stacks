@@ -43,16 +43,16 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@vitejs/plugin-vue": "^3.1.2",
-    "jiti": "^1.16.0",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.5.1",
+    "nitropack": "^0.6.0",
     "unbuild": "^0.9.4",
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.8",

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks git utilities.",
+  "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -17,9 +17,8 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "arrays",
-    "collections",
-    "contains",
+    "git",
+    "github",
     "utilities",
     "functions",
     "stacks"

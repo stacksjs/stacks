@@ -36,7 +36,6 @@
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/actions/generate": ["./core/actions/src/generate/index.ts"],
       "@stacksjs/alias": ["./alias.ts"],
-      "@stacksjs/alias/*": ["./core/alias/src/*"],
       "@stacksjs/arrays/*": ["./core/arrays/src/*"],
       "@stacksjs/arrays": ["./core/arrays/src/index.ts"],
       "@stacksjs/build": ["./core/build/src/index.ts"],
@@ -52,8 +51,8 @@
       "@stacksjs/modules/*": ["./core/modules/src/*"],
       "@stacksjs/objects": ["./core/objects/src/index.ts"],
       "@stacksjs/objects/*": ["./core/objects/src/*"],
-      "@stacksjs/paths": ["./core/paths/src/index.ts"],
-      "@stacksjs/paths/*": ["./core/paths/src/*"],
+      "@stacksjs/path": ["./core/path/src/index.ts"],
+      "@stacksjs/path/*": ["./core/path/src/*"],
       "@stacksjs/router": ["./core/router/src/index.ts"],
       "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/security": ["./core/security/src/index.ts"],
@@ -83,7 +82,6 @@
     "../pages/**/*"
   ],
   "exclude": [
-    "./nitro.config.ts",
     "./vitest.config.ts",
     "./examples/**",
     "../commitlint.config.cjs",

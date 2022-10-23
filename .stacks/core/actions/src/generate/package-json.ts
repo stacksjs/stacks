@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { writeTextFile } from '@stacksjs/fs'
-import { packageJsonPath } from '@stacksjs/paths'
+import { packageJsonPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { packageManager } from '../../package.json'
 

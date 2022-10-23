@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { customElementsDataPath } from '@stacksjs/paths'
+import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/fs'
 import { library } from '@stacksjs/config'
 

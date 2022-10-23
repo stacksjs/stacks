@@ -45,7 +45,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "collect.js": "^4.34.3"
   },
   "devDependencies": {

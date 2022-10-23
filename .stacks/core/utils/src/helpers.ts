@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/paths'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { isFile, readJsonFile, readTextFile, writeTextFile } from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { ui } from '@stacksjs/config'

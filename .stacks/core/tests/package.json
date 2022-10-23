@@ -1,23 +1,26 @@
 {
-  "name": "@stacksjs/paths",
+  "name": "@stacksjs/tests",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks paths.",
+  "description": "The Stacks way to test.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/paths#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/tests#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/paths"
+    "directory": "./.stacks/core/tests"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "paths",
+    "tests",
+    "e2e",
+    "unit",
+    "testing",
     "utilities",
     "functions",
     "stacks"
@@ -43,7 +46,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "pathe": "^0.3.9"
+    "@vitest/coverage-istanbul": "^0.24.3",
+    "vitest": "^0.24.3"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",

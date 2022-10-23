@@ -130,37 +130,28 @@
     "test:types": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@ow3/eslint-config": "^0.31.3",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/docs": "workspace:*",
     "@stacksjs/fs": "workspace:*",
     "@stacksjs/git": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/strings": "workspace:*",
+    "@stacksjs/tests": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@vitest/coverage-istanbul": "^0.24.3",
-    "esno": "^0.16.3",
-    "events": "^3.3.0",
-    "lint-staged": "^13.0.3",
-    "local-pkg": "^0.4.2",
-    "minimatch": "^5.1.0",
-    "nitropack": "^0.6.0",
-    "only-allow": "^1.1.1",
-    "pinia": "^2.0.23",
-    "typescript": "^4.8.4",
-    "vitepress": "1.0.0-alpha.22",
-    "vitest": "^0.24.3",
-    "vue-component-meta": "^1.0.8",
-    "vue-docgen-web-types": "^0.1.8"
+    "@stacksjs/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
   },
   "config": {
     "commitizen": {

@@ -1,5 +1,5 @@
 import { type DocsConfig } from '@stacksjs/types'
-import { frameworkPath } from '@stacksjs/paths'
+import { frameworkPath } from '@stacksjs/path'
 import { services } from './services'
 
 /**
