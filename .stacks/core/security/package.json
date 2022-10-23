@@ -44,8 +44,7 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@types/bcryptjs": "^2.4.2",
-    "@types/crypto-js": "^4.1.1",
+    "@stacksjs/types": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
     "js-base64": "^3.7.2"

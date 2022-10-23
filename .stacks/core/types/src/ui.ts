@@ -15,11 +15,12 @@ export interface UiOptions {
    * utility names for reusability purposes.
    *
    * @example
-   * ```ts
+   * ```
    * shortcuts: {
    *   'btn': 'px-4 py-2 rounded text-white bg-blue-500',
    *   'btn-lg': 'btn px-6 py-3',
    * }
+   * ```
    */
   shortcuts: Shortcuts
 

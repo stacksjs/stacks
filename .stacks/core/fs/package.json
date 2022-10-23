@@ -48,9 +48,7 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/fs-extra": "^9.0.13",
-    "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.0",
+    "@stacksjs/utils": "workspace:*",
     "fs-extra": "^10.1.0"
   },
   "devDependencies": {

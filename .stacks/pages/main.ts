@@ -1,4 +1,4 @@
-import { ViteSSG } from 'vite-ssg'
+import { ViteSSG } from '@stacksjs/build'
 import { setupLayouts } from 'virtual:generated-layouts'
 import Previewer from 'virtual:vue-component-preview'
 import type { UserModule } from '@stacksjs/types'

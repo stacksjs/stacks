@@ -45,8 +45,8 @@
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "unbuild": "latest",
     "mkdist": "^0.3.13",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "unbuild": "latest"
   }
 }

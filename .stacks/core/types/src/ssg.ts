@@ -1,3 +1,3 @@
-import { type ViteSSGContext } from 'vite-ssg'
+import { type ViteSSGContext } from '@stacksjs/types'
 
 export type UserModule = (ctx: ViteSSGContext) => void

@@ -50,15 +50,18 @@
     "@jsdevtools/ez-spawn": "^3.0.4",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@vueuse/core": "^9.3.1",
     "@vueuse/head": "^0.9.8",
     "@vueuse/math": "^9.3.1",
     "@vueuse/shared": "^9.3.1",
     "cac": "^6.7.14",
-    "consola": "^2.15.3"
+    "consola": "^2.15.3",
+    "detect-indent": "^7.0.1",
+    "detect-newline": "^4.0.0",
+    "fast-glob": "^3.2.12"
   },
   "devDependencies": {
     "mkdist": "^0.3.13"

@@ -48,10 +48,10 @@
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
     "@stacksjs/paths": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
     "vue-component-meta": "^1.0.8"
   },

@@ -4,10 +4,8 @@ import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
 import { frameworkPath, join, parse, projectPath } from '@stacksjs/paths'
 
-const md = new MarkdownIt()
-
 /**
- * ℹ️ Useful links
+ * ℹ️ Useful Links
  *
  * vue-component-meta tests: https://github.com/johnsoncodehk/volar/blob/master/vue-language-tools/vue-component-meta/tests/index.spec.ts
  * Discord thread about improving vue-component-meta: https://discord.com/channels/793943652350427136/1027819645677350912
@@ -15,6 +13,8 @@ const md = new MarkdownIt()
  * Discord chat: https://discord.com/channels/793943652350427136/1027819645677350912
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
+
+const md = new MarkdownIt()
 
 export interface ComponentApiProps {
   name: ComponentMeta['props'][number]['name']
