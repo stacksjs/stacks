@@ -10,22 +10,14 @@ importers:
 
   .stacks:
     specifiers:
-      '@iconify-json/heroicons-outline': ^1.1.4
-      '@iconify-json/heroicons-solid': ^1.1.5
-      '@intlify/vite-plugin-vue-i18n': ^6.0.3
-      '@jsdevtools/ez-spawn': ^3.0.4
-      '@julr/unocss-preset-forms': ^0.0.2
-      '@mdit-vue/plugin-component': ^0.11.1
-      '@mdit-vue/plugin-frontmatter': ^0.11.1
-      '@mdit-vue/types': ^0.11.0
       '@ow3/eslint-config': ^0.31.3
-      '@rollup/pluginutils': ^5.0.2
       '@stacksjs/actions': workspace:*
       '@stacksjs/arrays': workspace:*
       '@stacksjs/build': workspace:*
       '@stacksjs/collections': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/fs': workspace:*
+      '@stacksjs/git': workspace:*
       '@stacksjs/modules': workspace:*
       '@stacksjs/objects': workspace:*
       '@stacksjs/paths': workspace:*
@@ -35,82 +27,30 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
-      '@types/bcryptjs': ^2.4.2
-      '@types/crypto-js': ^4.1.1
-      '@types/markdown-it-link-attributes': ^3.0.1
-      '@types/minimatch': ^5.1.2
-      '@types/node': ^18.8.0
-      '@types/prompts': ^2.4.1
-      '@unocss/transformer-compile-class': ^0.45.30
-      '@vitejs/plugin-vue': ^3.1.2
       '@vitest/coverage-istanbul': ^0.24.3
-      bcryptjs: ^2.4.3
-      bumpp: ^8.2.1
-      commitizen: ^4.2.5
-      conventional-changelog-cli: ^2.2.2
-      crypto-js: ^4.1.1
-      cz-git: ^1.3.12
-      defu: ^6.1.0
-      detect-indent: ^7.0.1
-      detect-newline: ^4.0.0
-      eslint: ^8.26.0
       esno: ^0.16.3
       events: ^3.3.0
-      giget: ^0.1.7
-      jiti: ^1.16.0
-      js-base64: ^3.7.2
-      kolorist: 1.6.0
       lint-staged: ^13.0.3
       local-pkg: ^0.4.2
-      markdown-it: ^13.0.1
-      markdown-it-link-attributes: ^4.0.1
-      markdown-it-shiki: ^0.5.1
       minimatch: ^5.1.0
-      mkdist: ^0.3.13
       nitropack: ^0.6.0
       only-allow: ^1.1.1
       pinia: ^2.0.23
-      rimraf: ^3.0.2
       simple-git-hooks: ^2.8.1
       typescript: ^4.8.4
-      unbuild: ^0.9.4
-      unocss: ^0.45.30
-      unplugin-auto-import: ^0.11.2
-      unplugin-vue-components: ^0.22.8
-      vite: ^3.1.8
-      vite-plugin-inspect: ^0.7.5
-      vite-plugin-pages: ^0.27.0
-      vite-plugin-pwa: ^0.13.1
-      vite-plugin-vue-component-preview: ^0.3.3
-      vite-plugin-vue-layouts: ^0.7.0
-      vite-plugin-vue-markdown: ^0.22.1
-      vite-ssg: ^0.21.1
-      vite-ssg-sitemap: ^0.4.3
       vitepress: 1.0.0-alpha.22
       vitest: ^0.24.3
-      vue: ^3.2.41
       vue-component-meta: ^1.0.8
       vue-docgen-web-types: ^0.1.8
-      vue-i18n: ^9.2.2
-      vue-router: 4.1.5
-      vue-tsc: ^1.0.8
     dependencies:
-      '@iconify-json/heroicons-outline': 1.1.4
-      '@iconify-json/heroicons-solid': 1.1.5
-      '@intlify/vite-plugin-vue-i18n': 6.0.3_vite@3.1.8+vue-i18n@9.2.2
-      '@jsdevtools/ez-spawn': 3.0.4
-      '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.30
-      '@mdit-vue/plugin-component': 0.11.1
-      '@mdit-vue/plugin-frontmatter': 0.11.1
-      '@mdit-vue/types': 0.11.0
       '@ow3/eslint-config': 0.31.3_wyqvi574yv7oiwfeinomdzmc3m
-      '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       '@stacksjs/actions': link:core/actions
       '@stacksjs/arrays': link:core/arrays
       '@stacksjs/build': link:core/build
       '@stacksjs/collections': link:core/collections
       '@stacksjs/config': link:core/config
       '@stacksjs/fs': link:core/fs
+      '@stacksjs/git': link:core/git
       '@stacksjs/modules': link:core/modules
       '@stacksjs/objects': link:core/objects
       '@stacksjs/paths': link:core/paths
@@ -120,65 +60,21 @@ importers:
       '@stacksjs/types': link:core/types
       '@stacksjs/ui': link:core/ui
       '@stacksjs/utils': link:core/utils
-      '@types/bcryptjs': 2.4.2
-      '@types/crypto-js': 4.1.1
-      '@types/markdown-it-link-attributes': 3.0.1
-      '@types/minimatch': 5.1.2
-      '@types/node': 18.11.3
-      '@types/prompts': 2.4.1
-      '@unocss/transformer-compile-class': 0.45.30
-      '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       '@vitest/coverage-istanbul': 0.24.3
-      bcryptjs: 2.4.3
-      bumpp: 8.2.1
-      commitizen: 4.2.5
-      conventional-changelog-cli: 2.2.2
-      crypto-js: 4.1.1
-      cz-git: 1.3.12
-      defu: 6.1.0
-      detect-indent: 7.0.1
-      detect-newline: 4.0.0
-      eslint: 8.26.0
       esno: 0.16.3
       events: 3.3.0
-      giget: 0.1.7
-      jiti: 1.16.0
-      js-base64: 3.7.2
-      kolorist: 1.6.0
       lint-staged: 13.0.3
       local-pkg: 0.4.2
-      markdown-it: 13.0.1
-      markdown-it-link-attributes: 4.0.1
-      markdown-it-shiki: 0.5.1
       minimatch: 5.1.0
-      mkdist: 0.3.13_typescript@4.8.4
       nitropack: 0.6.0
       only-allow: 1.1.1
       pinia: 2.0.23_l7r24p6nevbtlimqmqcwa3ouhu
-      rimraf: 3.0.2
       simple-git-hooks: 2.8.1
       typescript: 4.8.4
-      unbuild: 0.9.4
-      unocss: 0.45.30_rollup@2.79.1+vite@3.1.8
-      unplugin-auto-import: 0.11.2
-      unplugin-vue-components: 0.22.8_vue@3.2.41
-      vite: 3.1.8
-      vite-plugin-inspect: 0.7.5_vite@3.1.8
-      vite-plugin-pages: 0.27.0_vite@3.1.8
-      vite-plugin-pwa: 0.13.1_2txo4viysstjrz5b6oxcrxybay
-      vite-plugin-vue-component-preview: 0.3.3_vite@3.1.8
-      vite-plugin-vue-layouts: 0.7.0_nknaiyoma7qglenj4mb2pj2auq
-      vite-plugin-vue-markdown: 0.22.1_vite@3.1.8
-      vite-ssg: 0.21.1_3dlpmnjq3xaq6x2ip7web643qm
-      vite-ssg-sitemap: 0.4.3
       vitepress: 1.0.0-alpha.22
       vitest: 0.24.3
-      vue: 3.2.41
       vue-component-meta: 1.0.9_typescript@4.8.4
       vue-docgen-web-types: 0.1.8_vue@3.2.41
-      vue-i18n: 9.2.2_vue@3.2.41
-      vue-router: 4.1.5_vue@3.2.41
-      vue-tsc: 1.0.9_typescript@4.8.4
 
   .stacks/core/actions:
     specifiers:
@@ -190,6 +86,7 @@ importers:
       '@stacksjs/utils': workspace:*
       markdown-it: ^13.0.1
       mkdist: ^0.3.13
+      typescript: ^4.8.4
       vue-component-meta: ^1.0.8
     dependencies:
       '@stacksjs/config': link:../config
@@ -202,6 +99,7 @@ importers:
       vue-component-meta: 1.0.9_typescript@4.8.4
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/arrays:
     specifiers:
@@ -217,12 +115,14 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/paths': workspace:*
       '@stacksjs/types': workspace:*
-      '@types/markdown-it-link-attributes': ^3.0.1
-      defu: ^6.1.0
+      '@stacksjs/utils': workspace:*
+      '@vitejs/plugin-vue': ^3.1.2
       jiti: ^1.16.0
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.5.1
       mkdist: ^0.3.13
+      typescript: ^4.8.4
+      unbuild: ^0.9.4
       unplugin-auto-import: ^0.11.2
       unplugin-vue-components: ^0.22.8
       vite: ^3.1.8
@@ -241,16 +141,17 @@ importers:
       '@stacksjs/config': link:../config
       '@stacksjs/paths': link:../paths
       '@stacksjs/types': link:../types
-      '@types/markdown-it-link-attributes': 3.0.1
-      defu: 6.1.0
+      '@stacksjs/utils': link:../utils
+      '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       jiti: 1.16.0
       markdown-it-link-attributes: 4.0.1
       markdown-it-shiki: 0.5.1
+      unbuild: 0.9.4
       unplugin-auto-import: 0.11.2
       unplugin-vue-components: 0.22.8_vue@3.2.41
       vite: 3.1.8
       vite-plugin-inspect: 0.7.5_vite@3.1.8
-      vite-plugin-pages: 0.27.0_vite@3.1.8
+      vite-plugin-pages: 0.27.1_vite@3.1.8
       vite-plugin-pwa: 0.13.1_2txo4viysstjrz5b6oxcrxybay
       vite-plugin-vue-component-preview: 0.3.3_vite@3.1.8
       vite-plugin-vue-layouts: 0.7.0_nknaiyoma7qglenj4mb2pj2auq
@@ -260,7 +161,8 @@ importers:
       vue-docgen-web-types: 0.1.8_vue@3.2.41
       vue-i18n: 9.2.2_vue@3.2.41
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/collections:
     specifiers:
@@ -291,21 +193,36 @@ importers:
       '@stacksjs/arrays': workspace:*
       '@stacksjs/paths': workspace:*
       '@stacksjs/types': workspace:*
-      '@types/fs-extra': ^9.0.13
-      detect-indent: ^7.0.1
-      detect-newline: ^4.0.0
+      '@stacksjs/utils': workspace:*
       fs-extra: ^10.1.0
       mkdist: ^0.3.13
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/paths': link:../paths
       '@stacksjs/types': link:../types
-      '@types/fs-extra': 9.0.13
-      detect-indent: 7.0.1
-      detect-newline: 4.0.0
+      '@stacksjs/utils': link:../utils
       fs-extra: 10.1.0
     devDependencies:
       mkdist: 0.3.13
+
+  .stacks/core/git:
+    specifiers:
+      bumpp: ^8.2.1
+      commitizen: ^4.2.5
+      conventional-changelog-cli: ^2.2.2
+      cz-git: ^1.3.12
+      giget: ^0.1.7
+      mkdist: ^0.3.13
+      typescript: ^4.8.4
+    dependencies:
+      bumpp: 8.2.1
+      commitizen: 4.2.5
+      conventional-changelog-cli: 2.2.2
+      cz-git: 1.3.12
+      giget: 0.1.7
+    devDependencies:
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/modules:
     specifiers:
@@ -313,6 +230,7 @@ importers:
       '@types/nprogress': ^0.2.0
       mkdist: ^0.3.13
       nprogress: ^0.2.0
+      typescript: ^4.8.4
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -320,7 +238,8 @@ importers:
       nprogress: 0.2.0
       vue-i18n: 9.2.2_vue@3.2.41
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/objects:
     specifiers:
@@ -347,30 +266,32 @@ importers:
   .stacks/core/router:
     specifiers:
       mkdist: ^0.3.13
+      typescript: ^4.8.4
       vue-router: ^4.1.5
     dependencies:
       vue-router: 4.1.5_vue@3.2.41
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/security:
     specifiers:
       '@stacksjs/config': workspace:*
-      '@types/bcryptjs': ^2.4.2
-      '@types/crypto-js': ^4.1.1
+      '@stacksjs/types': workspace:*
       bcryptjs: ^2.4.3
       crypto-js: ^4.1.1
       js-base64: ^3.7.2
       mkdist: ^0.3.13
+      typescript: ^4.8.4
     dependencies:
       '@stacksjs/config': link:../config
-      '@types/bcryptjs': 2.4.2
-      '@types/crypto-js': 4.1.1
+      '@stacksjs/types': link:../types
       bcryptjs: 2.4.3
       crypto-js: 4.1.1
       js-base64: 3.7.2
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/strings:
     specifiers:
@@ -389,11 +310,19 @@ importers:
       '@mdit-vue/plugin-frontmatter': ^0.11.1
       '@mdit-vue/types': ^0.11.0
       '@rollup/pluginutils': ^5.0.2
+      '@stacksjs/build': workspace:*
+      '@types/bcryptjs': ^2.4.2
+      '@types/crypto-js': ^4.1.1
+      '@types/fs-extra': ^9.0.13
+      '@types/markdown-it-link-attributes': ^3.0.1
+      '@types/minimatch': ^5.1.2
+      '@types/node': ^18.8.0
+      '@types/prompts': ^2.4.1
       markdown-it: ^13.0.1
       mkdist: ^0.3.13
+      typescript: ^4.8.4
       unplugin-auto-import: ^0.11.2
       unplugin-vue-components: ^0.22.8
-      vite: ^3.1.8
       vite-plugin-inspect: ^0.7.5
       vite-plugin-vue-layouts: ^0.7.0
       vitepress: 1.0.0-alpha.22
@@ -402,23 +331,31 @@ importers:
       '@mdit-vue/plugin-frontmatter': 0.11.1
       '@mdit-vue/types': 0.11.0
       '@rollup/pluginutils': 5.0.2
+      '@stacksjs/build': link:../build
+      '@types/bcryptjs': 2.4.2
+      '@types/crypto-js': 4.1.1
+      '@types/fs-extra': 9.0.13
+      '@types/markdown-it-link-attributes': 3.0.1
+      '@types/minimatch': 5.1.2
+      '@types/node': 18.11.3
+      '@types/prompts': 2.4.1
       markdown-it: 13.0.1
       unplugin-auto-import: 0.11.2
       unplugin-vue-components: 0.22.8_vue@3.2.41
-      vite: 3.1.8
       vite-plugin-inspect: 0.7.5_vite@3.1.8
       vite-plugin-vue-layouts: 0.7.0_nknaiyoma7qglenj4mb2pj2auq
       vitepress: 1.0.0-alpha.22
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/core/ui:
     specifiers:
       '@iconify-json/heroicons-outline': ^1.1.4
       '@iconify-json/heroicons-solid': ^1.1.5
       '@julr/unocss-preset-forms': ^0.0.2
+      '@stacksjs/build': workspace:*
       '@unocss/transformer-compile-class': ^0.45.30
-      '@vitejs/plugin-vue': ^3.1.2
       mkdist: ^0.3.13
       typescript: ^4.8.4
       unocss: ^0.45.30
@@ -428,8 +365,8 @@ importers:
       '@iconify-json/heroicons-outline': 1.1.4
       '@iconify-json/heroicons-solid': 1.1.5
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.45.30
+      '@stacksjs/build': link:../build
       '@unocss/transformer-compile-class': 0.45.30
-      '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       unocss: 0.45.30_vite@3.1.8
       vue: 3.2.41
       vue-tsc: 1.0.9_typescript@4.8.4
@@ -451,7 +388,15 @@ importers:
       '@vueuse/shared': ^9.3.1
       cac: ^6.7.14
       consola: ^2.15.3
+      defu: ^6.1.0
+      detect-indent: ^7.0.1
+      detect-newline: ^4.0.0
+      eslint: ^8.26.0
+      fast-glob: ^3.2.12
+      kolorist: 1.6.0
       mkdist: ^0.3.13
+      rimraf: ^3.0.2
+      typescript: ^4.8.4
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
       '@stacksjs/config': link:../config
@@ -465,8 +410,16 @@ importers:
       '@vueuse/shared': 9.3.1_vue@3.2.41
       cac: 6.7.14
       consola: 2.15.3
+      defu: 6.1.0
+      detect-indent: 7.0.1
+      detect-newline: 4.0.0
+      eslint: 8.26.0
+      fast-glob: 3.2.12
+      kolorist: 1.6.0
+      rimraf: 3.0.2
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
 
   .stacks/functions:
     specifiers:
@@ -1688,7 +1641,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.3.3_@babel+core@7.19.6
       babel-plugin-polyfill-corejs3: 0.6.0_@babel+core@7.19.6
       babel-plugin-polyfill-regenerator: 0.4.1_@babel+core@7.19.6
-      core-js-compat: 3.25.5
+      core-js-compat: 3.26.0
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -1787,7 +1740,7 @@ packages:
       cosmiconfig-typescript-loader: 4.1.1_vfayau7oz5qy4giwqlppd3j3ti
       lodash: 4.17.21
       resolve-from: 5.0.0
-      ts-node: 10.9.1_lw7q66ikwuedwcorwkk4v6trsa
+      ts-node: 10.9.1_jcmx33t3olsvcxopqdljsohpme
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@swc/core'
@@ -2149,7 +2102,7 @@ packages:
       unocss: '>= 0.31.13 < 1'
     dependencies:
       mini-svg-data-uri: 1.4.4
-      unocss: 0.45.30_rollup@2.79.1+vite@3.1.8
+      unocss: 0.45.30_vite@3.1.8
     dev: false
 
   /@mapbox/node-pre-gyp/1.0.10:
@@ -2894,17 +2847,6 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: false
 
-  /@unocss/astro/0.45.30_rollup@2.79.1+vite@3.1.8:
-    resolution: {integrity: sha512-eF5FxSasaKveOAIFVJlHD0dlvKDmL7oBCFQihr6XR8RhbkkMI8mO0lJB0i6QK3PtJY7F6ceCSMe+bAht6Q067w==}
-    dependencies:
-      '@unocss/core': 0.45.30
-      '@unocss/reset': 0.45.30
-      '@unocss/vite': 0.45.30_rollup@2.79.1+vite@3.1.8
-    transitivePeerDependencies:
-      - rollup
-      - vite
-    dev: false
-
   /@unocss/astro/0.45.30_vite@3.1.8:
     resolution: {integrity: sha512-eF5FxSasaKveOAIFVJlHD0dlvKDmL7oBCFQihr6XR8RhbkkMI8mO0lJB0i6QK3PtJY7F6ceCSMe+bAht6Q067w==}
     dependencies:
@@ -2923,28 +2865,6 @@ packages:
     dependencies:
       '@ampproject/remapping': 2.2.0
       '@rollup/pluginutils': 5.0.2
-      '@unocss/config': 0.45.30
-      '@unocss/core': 0.45.30
-      '@unocss/preset-uno': 0.45.30
-      cac: 6.7.14
-      chokidar: 3.5.3
-      colorette: 2.0.19
-      consola: 2.15.3
-      fast-glob: 3.2.12
-      magic-string: 0.26.7
-      pathe: 0.3.9
-      perfect-debounce: 0.1.3
-    transitivePeerDependencies:
-      - rollup
-    dev: false
-
-  /@unocss/cli/0.45.30_rollup@2.79.1:
-    resolution: {integrity: sha512-QmaMx7w5Nc4R7Nm/oB7hb9xwQeZqjNaUpFejqLP0b8gKSdBxecAOw2aknOV+NH8YvKwsqLvTOoRzmpVmbI1Xqg==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dependencies:
-      '@ampproject/remapping': 2.2.0
-      '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       '@unocss/config': 0.45.30
       '@unocss/core': 0.45.30
       '@unocss/preset-uno': 0.45.30
@@ -3066,24 +2986,6 @@ packages:
     resolution: {integrity: sha512-c2t7Qy9KFgjTYIysMTkvFwH/sYpV6OJYZsaMUfSFT2rA92Jr3Wdoy8Z+oAE2TgurMB/I7OJm18cSYC8roIzWxA==}
     dependencies:
       '@unocss/core': 0.45.30
-    dev: false
-
-  /@unocss/vite/0.45.30_rollup@2.79.1+vite@3.1.8:
-    resolution: {integrity: sha512-4yx3W/SicS1ovpYdwbRQEGSdLZKxM76T5R0bGR9VRp6WcMoExY3Ph50LRCq1PIHT2L/GARSpJ/gGOW4hJ9lMYg==}
-    peerDependencies:
-      vite: ^2.9.0 || ^3.0.0-0
-    dependencies:
-      '@ampproject/remapping': 2.2.0
-      '@rollup/pluginutils': 5.0.2_rollup@2.79.1
-      '@unocss/config': 0.45.30
-      '@unocss/core': 0.45.30
-      '@unocss/inspector': 0.45.30
-      '@unocss/scope': 0.45.30
-      '@unocss/transformer-directives': 0.45.30
-      magic-string: 0.26.7
-      vite: 3.1.8
-    transitivePeerDependencies:
-      - rollup
     dev: false
 
   /@unocss/vite/0.45.30_vite@3.1.8:
@@ -3685,7 +3587,7 @@ packages:
     dependencies:
       '@babel/core': 7.19.6
       '@babel/helper-define-polyfill-provider': 0.3.3_@babel+core@7.19.6
-      core-js-compat: 3.25.5
+      core-js-compat: 3.26.0
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -4406,8 +4308,8 @@ packages:
     resolution: {integrity: sha512-RyZrFi6PNpBFbIaQjXDlFIhFVqV42QeKSZX1yQIl6ihImq6vcHNGMtqQ/QzY3RMPuYSkvsRwtnt5M9NeYxKt0g==}
     dev: false
 
-  /core-js-compat/3.25.5:
-    resolution: {integrity: sha512-ovcyhs2DEBUIE0MGEKHP4olCUW/XYte3Vroyxuh38rD1wAO4dHohsovUC4eAOuzFxE6b+RXvBU3UZ9o0YhUTkA==}
+  /core-js-compat/3.26.0:
+    resolution: {integrity: sha512-piOX9Go+Z4f9ZiBFLnZ5VrOpBl0h7IGCkiFUN11QTe6LjAvOT3ifL/5TdoizMh99hcGy5SoLyWbapIY/PIb/3A==}
     dependencies:
       browserslist: 4.21.4
     dev: false
@@ -4427,7 +4329,7 @@ packages:
     dependencies:
       '@types/node': 14.18.32
       cosmiconfig: 7.0.1
-      ts-node: 10.9.1_lw7q66ikwuedwcorwkk4v6trsa
+      ts-node: 10.9.1_jcmx33t3olsvcxopqdljsohpme
       typescript: 4.8.4
     dev: false
     optional: true
@@ -6299,7 +6201,7 @@ packages:
       source-map: 0.6.1
       wordwrap: 1.0.0
     optionalDependencies:
-      uglify-js: 3.17.3
+      uglify-js: 3.17.4
     dev: false
 
   /hard-rejection/2.1.0:
@@ -6407,7 +6309,7 @@ packages:
       he: 1.2.0
       param-case: 2.1.1
       relateurl: 0.2.7
-      uglify-js: 3.17.3
+      uglify-js: 3.17.4
     dev: false
 
   /html5parser/2.0.2:
@@ -9504,7 +9406,7 @@ packages:
     resolution: {integrity: sha512-vDWbsl26LIcPGmDpoVzjEP6+hvHZkBkLW7JpvwbCv/5IYPJlsbzCVXY3wsCeAxAUeTclNOUZxnLdGh3VBD/J6w==}
     dev: false
 
-  /ts-node/10.9.1_lw7q66ikwuedwcorwkk4v6trsa:
+  /ts-node/10.9.1_jcmx33t3olsvcxopqdljsohpme:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -9523,7 +9425,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.11.3
+      '@types/node': 14.18.32
       acorn: 8.8.0
       acorn-walk: 8.2.0
       arg: 4.1.3
@@ -9644,8 +9546,8 @@ packages:
   /ufo/0.8.6:
     resolution: {integrity: sha512-fk6CmUgwKCfX79EzcDQQpSCMxrHstvbLswFChHS0Vump+kFkw7nJBfTZoC1j0bOGoY9I7R3n2DGek5ajbcYnOw==}
 
-  /uglify-js/3.17.3:
-    resolution: {integrity: sha512-JmMFDME3iufZnBpyKL+uS78LRiC+mK55zWfM5f/pWBJfpOttXAqYfdDGRukYhJuyRinvPVAtUhvy7rlDybNtFg==}
+  /uglify-js/3.17.4:
+    resolution: {integrity: sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==}
     engines: {node: '>=0.8.0'}
     hasBin: true
     dev: false
@@ -9776,38 +9678,6 @@ packages:
   /universalify/2.0.0:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
-
-  /unocss/0.45.30_rollup@2.79.1+vite@3.1.8:
-    resolution: {integrity: sha512-6ODOL358gIS7IYdGmVc+DfsW881VZQPXACz5WySdSYcVgQnJvuvEVmvuXn670zN2K8TIEIP/22julybHtwDZ4Q==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@unocss/webpack': 0.45.30
-    peerDependenciesMeta:
-      '@unocss/webpack':
-        optional: true
-    dependencies:
-      '@unocss/astro': 0.45.30_rollup@2.79.1+vite@3.1.8
-      '@unocss/cli': 0.45.30_rollup@2.79.1
-      '@unocss/core': 0.45.30
-      '@unocss/preset-attributify': 0.45.30
-      '@unocss/preset-icons': 0.45.30
-      '@unocss/preset-mini': 0.45.30
-      '@unocss/preset-tagify': 0.45.30
-      '@unocss/preset-typography': 0.45.30
-      '@unocss/preset-uno': 0.45.30
-      '@unocss/preset-web-fonts': 0.45.30
-      '@unocss/preset-wind': 0.45.30
-      '@unocss/reset': 0.45.30
-      '@unocss/transformer-attributify-jsx': 0.45.30
-      '@unocss/transformer-compile-class': 0.45.30
-      '@unocss/transformer-directives': 0.45.30
-      '@unocss/transformer-variant-group': 0.45.30
-      '@unocss/vite': 0.45.30_rollup@2.79.1+vite@3.1.8
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
-      - vite
-    dev: false
 
   /unocss/0.45.30_vite@3.1.8:
     resolution: {integrity: sha512-6ODOL358gIS7IYdGmVc+DfsW881VZQPXACz5WySdSYcVgQnJvuvEVmvuXn670zN2K8TIEIP/22julybHtwDZ4Q==}
@@ -10005,8 +9875,8 @@ packages:
       - supports-color
     dev: false
 
-  /vite-plugin-pages/0.27.0_vite@3.1.8:
-    resolution: {integrity: sha512-fLuBd8U9jcfB+MXj9yEsq6AHa0AHCP4Fhi7LCcCWJeL28Lx3o5B0uoBUhCZ+xwsnNs4GZwPOfgBG3yHKMsMNnA==}
+  /vite-plugin-pages/0.27.1_vite@3.1.8:
+    resolution: {integrity: sha512-KXfeG9aQSNsSXBs1mPeeuC0rwkLti+MgoJ3GknrwRDNrdrojb9czcFAVlnoPNVdfuvTHcWdf5zqN7+vuvz2JZQ==}
     peerDependencies:
       '@vue/compiler-sfc': ^2.7.0 || ^3.0.0
       vite: ^2.0.0 || ^3.0.0-0

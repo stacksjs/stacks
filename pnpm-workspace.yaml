@@ -2,6 +2,7 @@ packages:
   - ./.stacks/core/actions
   - ./.stacks/core/build
   - ./.stacks/core/config
+  - ./.stacks/core/git
   - ./.stacks/core/modules
   - ./.stacks/core/router
   - ./.stacks/core/ui
