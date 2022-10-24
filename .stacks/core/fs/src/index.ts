@@ -169,7 +169,7 @@ function doesFolderExist(path: string) {
   return fs.existsSync(path)
 }
 
-export {
+const fsObject = {
   _dirname,
   readJsonFile,
   writeJsonFile,
@@ -185,6 +185,8 @@ export {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
-  fs, // todo: use ...fs
+  ...fs,
   fileURLToPath,
 }
+
+export default { ...fsObject }

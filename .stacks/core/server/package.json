@@ -1,33 +1,33 @@
 {
-  "name": "@stacksjs/actions",
+  "name": "@stacksjs/server",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks actions.",
+  "description": "The Stacks plug-n-play servers.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/actions#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/server#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/actions"
+    "directory": "./.stacks/core/server"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "actions",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript",
+    "server",
     "vite",
     "nitro",
-    "vue",
-    "components",
-    "library"
+    "automation",
+    "aws",
+    "google cloud",
+    "stacks"
   ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -46,14 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/fs": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.0.9"
+    "vitest": "^0.24.3"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",

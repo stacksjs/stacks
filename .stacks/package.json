@@ -142,7 +142,7 @@
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/objects": "workspace:*",
-    "@stacksjs/paths": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/strings": "workspace:*",

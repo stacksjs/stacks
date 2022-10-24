@@ -1,4 +1,5 @@
 export * from '@stacksjs/ui'
+export * from '@stacksjs/cli'
 export * from '@stacksjs/router'
 export * from '@stacksjs/fs'
 export * from '@stacksjs/arrays'

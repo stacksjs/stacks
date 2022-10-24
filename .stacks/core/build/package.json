@@ -46,7 +46,7 @@
   "peerDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/paths": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@vitejs/plugin-vue": "^3.1.2",

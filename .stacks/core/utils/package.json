@@ -50,7 +50,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
-    "@stacksjs/paths": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/lint": "workspace:*",

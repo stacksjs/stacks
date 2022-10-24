@@ -6,7 +6,7 @@ export default defineBuildConfig({
   ],
   declaration: true,
   clean: true,
-  externals: ['@stacksjs/utils', '@stacksjs/paths', '@stacksjs/types'],
+  externals: ['@stacksjs/utils', '@stacksjs/path', '@stacksjs/types'],
   rollup: {
     inlineDependencies: true,
   },

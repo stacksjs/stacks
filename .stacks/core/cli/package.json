@@ -47,7 +47,6 @@
   },
   "peerDependencies": {
     "@types/prompts": "^2.4.1",
-    "@stacks/ez-spawn": "^3.0.4",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "cac": "^6.7.14",
     "consola": "^2.15.3",

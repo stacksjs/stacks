@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/paths": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "fs-extra": "^10.1.0"

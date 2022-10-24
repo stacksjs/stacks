@@ -1,8 +1,7 @@
-import consola from 'consola'
+import { console as consola, spawn as ezSpawn } from '@stacksjs/cli'
 import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import p from '@stacksjs/path'
+import { path as p, projectPath } from '@stacksjs/path'
 import fs from '@stacksjs/fs'
-import ezSpawn from '@jsdevtools/ez-spawn'
 import { ui } from '@stacksjs/config'
 
 export * as detectIndent from 'detect-indent'
@@ -14,13 +13,13 @@ export async function isProjectCreated() {
     return await isAppKeySet()
 
   if (fs.isFile('.env.example'))
-    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: p.projectPath() })
+    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
 
 export async function isAppKeySet() {
-  const env = await fs.readTextFile('.env', p.projectPath())
+  const env = await fs.readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
