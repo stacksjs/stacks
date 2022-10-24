@@ -90,7 +90,7 @@
     "make:function": "pnpm stacks make:function",
     "make:database": "pnpm stacks make:migration",
     "make:migration": "pnpm stacks make:migration",
-    "make:faker": "pnpm stacks make:faker",
+    "make:factory": "pnpm stacks make:factory",
     "make:lang": "pnpm stacks make:lang",
     "make:stack": "pnpm stacks make:stack",
     "key": "pnpm stacks key",

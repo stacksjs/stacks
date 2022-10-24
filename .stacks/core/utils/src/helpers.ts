@@ -1,19 +1,18 @@
-import { console as consola, spawn as ezSpawn } from '@stacksjs/cli'
+import { console as consola, spawn } from '@stacksjs/cli'
 import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import { path as p, projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import fs from '@stacksjs/fs'
 import { ui } from '@stacksjs/config'
 
 export * as detectIndent from 'detect-indent'
 export { detectNewline } from 'detect-newline'
-export { cac as cli } from 'cac'
 
 export async function isProjectCreated() {
   if (fs.isFile('.env'))
     return await isAppKeySet()
 
   if (fs.isFile('.env.example'))
-    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+    await spawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
@@ -93,10 +92,10 @@ export function isOptionalString(value: any): value is string | undefined {
 }
 
 export async function setEnvValue(key: string, value: string) {
-  const file = await fs.readTextFile(p.projectPath('.env'))
+  const file = await fs.readTextFile(projectPath('.env'))
 
   await fs.writeTextFile({
-    path: p.projectPath('.env'),
+    path: projectPath('.env'),
     data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
   })
 }
@@ -105,12 +104,12 @@ export async function setEnvValue(key: string, value: string) {
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit' = 'inherit') {
-  const path = p.frameworkPath()
+  const path = frameworkPath()
 
   const { data: manifest } = await fs.readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
-    await ezSpawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })
+    await spawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })
   }
 
   else {

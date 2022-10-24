@@ -1,19 +1,19 @@
 import { fileURLToPath } from 'node:url'
-import fs from 'fs-extra'
+import * as fsExtra from 'fs-extra'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import path from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 
-const _dirname = typeof __dirname !== 'undefined'
+export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Reads a JSON file and returns the parsed data.
  */
-async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
+export async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
   const data = JSON.parse(file.data) as unknown
   const indent = detectIndent(file.data).indent
@@ -25,7 +25,7 @@ async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
 /**
  * Writes the given data to the specified JSON file.
  */
-async function writeJsonFile(file: JsonFile): Promise<void> {
+export async function writeJsonFile(file: JsonFile): Promise<void> {
   let json = JSON.stringify(file.data, undefined, file.indent)
 
   if (file.newline)
@@ -37,7 +37,7 @@ async function writeJsonFile(file: JsonFile): Promise<void> {
 /**
  * Reads a text file and returns its contents.
  */
-function readTextFile(name: string, cwd?: string): Promise<TextFile> {
+export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
     let filePath: string
 
@@ -46,7 +46,7 @@ function readTextFile(name: string, cwd?: string): Promise<TextFile> {
     else
       filePath = name
 
-    fs.readFile(filePath, 'utf8', (err, text) => {
+    fsExtra.readFile(filePath, 'utf8', (err, text) => {
       if (err) {
         reject(err)
       }
@@ -63,9 +63,9 @@ function readTextFile(name: string, cwd?: string): Promise<TextFile> {
 /**
  * Writes the given text to the specified file.
  */
-function writeTextFile(file: TextFile): Promise<void> {
+export function writeTextFile(file: TextFile): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.writeFile(file.path, file.data, (err: any) => {
+    fsExtra.writeFile(file.path, file.data, (err: any) => {
       if (err)
         reject(err)
 
@@ -78,9 +78,9 @@ function writeTextFile(file: TextFile): Promise<void> {
 /**
  * Determine whether a path is a folder.
  */
-function isFolder(path: string): boolean {
+export function isFolder(path: string): boolean {
   try {
-    return fs.statSync(path).isDirectory()
+    return fsExtra.statSync(path).isDirectory()
   }
   catch {
     return false
@@ -90,74 +90,74 @@ function isFolder(path: string): boolean {
 /**
  * Determine whether a path is a file.
  */
-function isFile(path: string): boolean {
-  return fs.existsSync(projectPath(path))
+export function isFile(path: string): boolean {
+  return fsExtra.existsSync(projectPath(path))
 }
 
 /**
  * Determine whether a folder has any files in it.
  */
-function hasFiles(folder: string): boolean {
-  return fs.readdirSync(folder).length > 0
+export function hasFiles(folder: string): boolean {
+  return fsExtra.readdirSync(folder).length > 0
 }
 
-function hasComponents(): boolean {
+export function hasComponents(): boolean {
   return hasFiles(componentsPath())
 }
 
-function hasFunctions(): boolean {
+export function hasFunctions(): boolean {
   return hasFiles(functionsPath())
 }
 
-function copyFolder(src: string, dest: string, exclude: string[] = []): void {
-  if (!fs.existsSync(dest))
-    fs.mkdirSync(dest, { recursive: true })
+export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
+  if (!fsExtra.existsSync(dest))
+    fsExtra.mkdirSync(dest, { recursive: true })
 
-  if (fs.existsSync(src)) {
-    fs.readdirSync(src).forEach((file) => {
+  if (fsExtra.existsSync(src)) {
+    fsExtra.readdirSync(src).forEach((file) => {
       if (!contains(path.join(src, file), exclude)) {
         const srcPath = path.join(src, file)
         const destPath = path.join(dest, file)
 
-        if (fs.statSync(srcPath).isDirectory())
+        if (fsExtra.statSync(srcPath).isDirectory())
           copyFolder(srcPath, destPath, exclude)
 
         else
-          fs.copyFileSync(srcPath, destPath)
+          fsExtra.copyFileSync(srcPath, destPath)
       }
     })
   }
 }
 
-async function deleteFolder(path: string) {
-  if (fs.statSync(path).isDirectory())
-    await fs.rmSync(path, { recursive: true, force: true })
+export async function deleteFolder(path: string) {
+  if (fsExtra.statSync(path).isDirectory())
+    await fsExtra.rmSync(path, { recursive: true, force: true })
 }
 
-function deleteFiles(dir: string, exclude: string[] = []) {
-  if (fs.existsSync(dir)) {
-    fs.readdirSync(dir).forEach((file) => {
+export function deleteFiles(dir: string, exclude: string[] = []) {
+  if (fsExtra.existsSync(dir)) {
+    fsExtra.readdirSync(dir).forEach((file) => {
       const p = path.join(dir, file)
-      if (fs.statSync(p).isDirectory()) {
-        if (fs.readdirSync(p).length === 0)
-          fs.rmSync(p, { recursive: true, force: true })
+      if (fsExtra.statSync(p).isDirectory()) {
+        if (fsExtra.readdirSync(p).length === 0)
+          fsExtra.rmSync(p, { recursive: true, force: true })
 
         else
           deleteFiles(p, exclude)
       }
 
-      else if (!contains(p, exclude)) { fs.rmSync(p) }
+      else if (!contains(p, exclude)) { fsExtra.rmSync(p) }
     })
   }
 }
 
-function deleteEmptyFolders(dir: string) {
-  if (fs.existsSync(dir)) {
-    fs.readdirSync(dir).forEach((file) => {
+export function deleteEmptyFolders(dir: string) {
+  if (fsExtra.existsSync(dir)) {
+    fsExtra.readdirSync(dir).forEach((file) => {
       const p = path.join(dir, file)
-      if (fs.statSync(p).isDirectory()) {
-        if (fs.readdirSync(p).length === 0)
-          fs.rmSync(p, { recursive: true, force: true })
+      if (fsExtra.statSync(p).isDirectory()) {
+        if (fsExtra.readdirSync(p).length === 0)
+          fsExtra.rmSync(p, { recursive: true, force: true })
 
         else deleteEmptyFolders(p)
       }
@@ -165,11 +165,11 @@ function deleteEmptyFolders(dir: string) {
   }
 }
 
-function doesFolderExist(path: string) {
-  return fs.existsSync(path)
+export function doesFolderExist(path: string) {
+  return fsExtra.existsSync(path)
 }
 
-const fsObject = {
+export const fs = {
   _dirname,
   readJsonFile,
   writeJsonFile,
@@ -185,8 +185,8 @@ const fsObject = {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
-  ...fs,
+  ...fsExtra,
   fileURLToPath,
 }
 
-export default { ...fsObject }
+export default fs

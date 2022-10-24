@@ -107,7 +107,7 @@
     "make:function": "pnpm stacks make:function",
     "make:database": "pnpm stacks make:migration",
     "make:migration": "pnpm stacks make:migration",
-    "make:faker": "pnpm stacks make:faker",
+    "make:factory": "pnpm stacks make:factory",
     "make:lang": "pnpm stacks make:lang",
     "make:stack": "pnpm stacks make:stack",
     "key": "pnpm stacks key",
@@ -126,6 +126,8 @@
     "types:generate": "vue-tsc --declaration --emitDeclarationOnly && esno ./core/actions/src/copy-types.ts",
     "types:fix": "esno actions/src/fix-types.ts",
     "test": "vitest --config vitest.config.ts",
+    "test:unit": "wip",
+    "test:e2e": "wip",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit"
   },

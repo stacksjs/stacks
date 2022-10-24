@@ -1,5 +1,5 @@
-import { prompts as Prompts, console as consola, spawn as ezSpawn } from '@stacksjs/cli'
-import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder, doesFolderExist } from '@stacksjs/fs'
+import { prompts as Prompts, console as consola, spawn } from '@stacksjs/cli'
+import fs from '@stacksjs/fs'
 import { path } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript } from '@stacksjs/types'
@@ -13,7 +13,7 @@ export async function stacks(options: any) {
     try {
       // check if the .stacks folder has any updates
       // https://carlosbecker.com/posts/git-changed/
-      await ezSpawn.async('git diff --quiet HEAD -- ./.stacks', { stdio: 'inherit', cwd: process.cwd() })
+      await spawn.async('git diff --quiet HEAD -- ./.stacks', { stdio: 'inherit', cwd: process.cwd() })
     }
     catch (error: any) {
       if (error.status === 1) {
@@ -42,10 +42,10 @@ export async function stacks(options: any) {
 
     const tempFolderName = 'updates'
     const tempUpdatePath = path.resolve(process.cwd(), tempFolderName)
-    if (doesFolderExist(tempUpdatePath))
+    if (fs.doesFolderExist(tempUpdatePath))
       await deleteFolder(tempUpdatePath)
 
-    await ezSpawn.async(`giget stacks ${tempFolderName}`, { stdio: options.debug ? 'inherit' : 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
+    await spawn.async(`giget stacks ${tempFolderName}`, { stdio: options.debug ? 'inherit' : 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
     consola.success('Downloaded framework updates.')
 
     consola.info('Updating framework...')
