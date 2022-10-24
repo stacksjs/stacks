@@ -47,7 +47,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@jsdevtools/ez-spawn": "^3.0.4",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
     "@stacksjs/paths": "workspace:*",
@@ -58,8 +58,6 @@
     "@vueuse/head": "^0.9.8",
     "@vueuse/math": "^9.3.1",
     "@vueuse/shared": "^9.3.1",
-    "cac": "^6.7.14",
-    "consola": "^2.15.3",
     "defu": "^6.1.0",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",

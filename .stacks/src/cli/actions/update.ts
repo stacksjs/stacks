@@ -1,8 +1,6 @@
-import * as ezSpawn from '@jsdevtools/ez-spawn'
-import consola from 'consola'
-import Prompts from 'prompts'
+import { prompts as Prompts, console as consola, spawn as ezSpawn } from '@stacksjs/cli'
 import { copyFolder, deleteEmptyFolders, deleteFiles, deleteFolder, doesFolderExist } from '@stacksjs/fs'
-import { resolve } from '@stacksjs/path'
+import { path } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
@@ -43,7 +41,7 @@ export async function stacks(options: any) {
     consola.info('Downloading framework updates...')
 
     const tempFolderName = 'updates'
-    const tempUpdatePath = resolve(process.cwd(), tempFolderName)
+    const tempUpdatePath = path.resolve(process.cwd(), tempFolderName)
     if (doesFolderExist(tempUpdatePath))
       await deleteFolder(tempUpdatePath)
 
@@ -52,7 +50,7 @@ export async function stacks(options: any) {
 
     consola.info('Updating framework...')
 
-    const frameworkPath = resolve(process.cwd(), '.stacks')
+    const frameworkPath = path.resolve(process.cwd(), '.stacks')
     const exclude = ['functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
     await deleteFiles(frameworkPath, exclude)
@@ -61,7 +59,7 @@ export async function stacks(options: any) {
     for (let i = 0; i < 5; i++)
       await deleteEmptyFolders(frameworkPath)
 
-    const from = resolve(process.cwd(), './updates/.stacks')
+    const from = path.resolve(process.cwd(), './updates/.stacks')
     const to = frameworkPath
     await copyFolder(from, to, exclude)
 

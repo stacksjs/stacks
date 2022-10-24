@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { startBuildProcess } from './actions/build'
 
-async function build(stacks: CAC) {
+async function build(stacks: CLI) {
   stacks
     .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-c, --components', 'Build your component library')

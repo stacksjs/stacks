@@ -4,6 +4,7 @@ packages:
   - ./.stacks/core/build
   - ./.stacks/core/collections
   - ./.stacks/core/config
+  - ./.stacks/core/cli
   - ./.stacks/core/docs
   - ./.stacks/core/fs
   - ./.stacks/core/git

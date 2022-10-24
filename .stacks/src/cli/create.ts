@@ -1,6 +1,6 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import consola from 'consola'
-import * as ezSpawn from '@jsdevtools/ez-spawn'
+import { spawn } from '@stacksjs/cli'
 import { resolve } from 'pathe'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@vueuse/core'
@@ -9,7 +9,7 @@ import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { generate as generateAppKey } from './actions/key'
 
-async function create(stack: CAC) {
+async function create(stack: CLI) {
   stack
     .option('-n, --name <name>', 'Name of the stack')
     .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
@@ -45,19 +45,19 @@ async function create(stack: CAC) {
       }
 
       consola.info('Setting up your stack.')
-      await ezSpawn.async(`giget stacks ${name}`, { stdio: args.debug ? 'inherit' : 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await spawn.async(`giget stacks ${name}`, { stdio: args.debug ? 'inherit' : 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
       consola.info('Ensuring your environment is ready...')
       // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-      await ezSpawn.async('fnm use', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await spawn.async('fnm use', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Environment is ready.')
 
       consola.info('Installing & setting up Stacks.')
-      await ezSpawn.async('pnpm install', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      await ezSpawn.async('cp .env.example .env', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await spawn.async('pnpm install', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await spawn.async('cp .env.example .env', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       await generateAppKey()
-      await ezSpawn.async('git init', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+      await spawn.async('git init', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
       consola.success('Installed & set-up 🚀')
 
       console.log()

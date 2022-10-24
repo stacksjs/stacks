@@ -54,7 +54,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "change-case": "^4.1.2"
   },
   "devDependencies": {

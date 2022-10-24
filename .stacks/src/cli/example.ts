@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { runExample } from './actions/examples'
 
-async function example(stacks: CAC) {
+async function example(stacks: CLI) {
   stacks
     .command('example', 'Test your libraries against your built bundle.')
     .option('-c, --components', 'Test your Vue component library')

@@ -1,5 +1,4 @@
-import Prompts from 'prompts'
-import consola from 'consola'
+import { prompts as Prompts, console as consola } from '@stacksjs/cli'
 import { hasComponents } from '@stacksjs/fs'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript } from '@stacksjs/types'

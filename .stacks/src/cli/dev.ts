@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { startDevelopmentServer } from './actions/dev'
 
-async function dev(stacks: CAC) {
+async function dev(stacks: CLI) {
   stacks
     .command('dev', 'Start the development server for any of the following packages')
     .option('-c, --components', 'Start the Components development server')

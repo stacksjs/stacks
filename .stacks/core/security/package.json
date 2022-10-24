@@ -42,7 +42,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "bcryptjs": "^2.4.3",

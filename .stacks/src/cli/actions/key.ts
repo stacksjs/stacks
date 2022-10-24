@@ -1,5 +1,5 @@
 import { getRandomValues } from 'node:crypto'
-import consola from 'consola'
+import { console as consola } from '@stacksjs/cli'
 import ezSpawn from '@jsdevtools/ez-spawn'
 // import { generateAppKey } from '@stacksjs/security'
 import { projectPath } from '@stacksjs/path'

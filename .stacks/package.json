@@ -133,6 +133,7 @@
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/build": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/docs": "workspace:*",

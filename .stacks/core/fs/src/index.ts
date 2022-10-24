@@ -42,7 +42,7 @@ function readTextFile(name: string, cwd?: string): Promise<TextFile> {
     let filePath: string
 
     if (cwd)
-      filePath = path.path.join(cwd, name)
+      filePath = path.join(cwd, name)
     else
       filePath = name
 
@@ -169,7 +169,7 @@ function doesFolderExist(path: string) {
   return fs.existsSync(path)
 }
 
-export default {
+export {
   _dirname,
   readJsonFile,
   writeJsonFile,
@@ -185,8 +185,6 @@ export default {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
-  ...fs,
-  detectIndent,
-  detectNewline,
+  fs, // todo: use ...fs
   fileURLToPath,
 }

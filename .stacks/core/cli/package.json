@@ -1,28 +1,28 @@
 {
-  "name": "@stacksjs/tests",
+  "name": "@stacksjs/cli",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks way to test.",
+  "description": "The Stacks way to create CLIs.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/tests#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/cli#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/tests"
+    "directory": "./.stacks/core/cli"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "tests",
-    "e2e",
-    "unit",
-    "testing",
-    "utilities",
-    "functions",
+    "cli",
+    "commands",
+    "command line interface",
+    "cac",
+    "consola",
+    "ez-spawn",
     "stacks"
   ],
   "main": "dist/index.mjs",
@@ -46,8 +46,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vitest/coverage-istanbul": "^0.24.3",
-    "vitest": "^0.24.3"
+    "@types/prompts": "^2.4.1",
+    "@stacks/ez-spawn": "^3.0.4",
+    "@jsdevtools/ez-spawn": "^3.0.4",
+    "cac": "^6.7.14",
+    "consola": "^2.15.3",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",

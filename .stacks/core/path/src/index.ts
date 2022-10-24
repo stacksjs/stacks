@@ -51,7 +51,7 @@ function buildEntriesPath(path?: string) {
 }
 
 function cliPath(path?: string) {
-  return stacksPath(`cli/${path || ''}`)
+  return corePath(`cli/${path || ''}`)
 }
 
 function collectionsPath(path?: string) {
@@ -191,7 +191,9 @@ function utilsPath(path?: string) {
   return corePath(`utils/${path || ''}`)
 }
 
-export default {
+const path = pathe
+
+export {
   actionsPath,
   aliasPath,
   arraysPath,
@@ -217,7 +219,7 @@ export default {
   objectsPath,
   packageJsonPath,
   pagesPath,
-  ...pathe,
+  path, // todo: use ...path
   pathPath,
   projectPath,
   routerPath,

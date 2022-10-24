@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { console as consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { NpmScript } from '@stacksjs/types'
 

@@ -1,22 +1,26 @@
 import consola from 'consola'
 import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/path'
-import { isFile, readJsonFile, readTextFile, writeTextFile } from '@stacksjs/fs'
+import p from '@stacksjs/path'
+import fs from '@stacksjs/fs'
 import ezSpawn from '@jsdevtools/ez-spawn'
 import { ui } from '@stacksjs/config'
 
+export * as detectIndent from 'detect-indent'
+export { detectNewline } from 'detect-newline'
+export { cac as cli } from 'cac'
+
 export async function isProjectCreated() {
-  if (isFile('.env'))
+  if (fs.isFile('.env'))
     return await isAppKeySet()
 
-  if (isFile('.env.example'))
-    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+  if (fs.isFile('.env.example'))
+    await ezSpawn.async('cp .env.example .env', { stdio: 'inherit', cwd: p.projectPath() })
 
   return await isAppKeySet()
 }
 
 export async function isAppKeySet() {
-  const env = await readTextFile('.env', projectPath())
+  const env = await fs.readTextFile('.env', p.projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
@@ -82,7 +86,7 @@ export function isManifest(obj: any): obj is Manifest {
 /**
  * Determines whether the specified value is a string, null, or undefined.
  */
-function isOptionalString(value: any): value is string | undefined {
+export function isOptionalString(value: any): value is string | undefined {
   const type = typeof value
   return value === null
     || type === 'undefined'
@@ -90,10 +94,10 @@ function isOptionalString(value: any): value is string | undefined {
 }
 
 export async function setEnvValue(key: string, value: string) {
-  const file = await readTextFile(projectPath('.env'))
+  const file = await fs.readTextFile(p.projectPath('.env'))
 
-  await writeTextFile({
-    path: projectPath('.env'),
+  await fs.writeTextFile({
+    path: p.projectPath('.env'),
     data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
   })
 }
@@ -102,9 +106,9 @@ export async function setEnvValue(key: string, value: string) {
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit' = 'inherit') {
-  const path = frameworkPath()
+  const path = p.frameworkPath()
 
-  const { data: manifest } = await readJsonFile('package.json', path)
+  const { data: manifest } = await fs.readJsonFile('package.json', path)
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
     await ezSpawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })

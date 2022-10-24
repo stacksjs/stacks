@@ -1,3 +1,7 @@
+import type { CAC } from 'cac'
+
+export type CLI = CAC
+
 /**
  * The parsed command-line arguments
  */
