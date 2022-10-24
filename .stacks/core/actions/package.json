@@ -53,7 +53,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.0.8"
+    "vue-component-meta": "^1.0.9"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",
