@@ -1,10 +1,10 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { reinstallNpmDependencies } from './actions/fresh'
 import { lint, lintFix } from './actions/lint'
 import { release } from './actions/release'
 import { commit } from './actions/commit'
 
-async function utility(stacks: CAC) {
+async function utility(stacks: CLI) {
   stacks
     .command('fresh', 'Reinstalls your npm dependencies.')
     .action(async () => {

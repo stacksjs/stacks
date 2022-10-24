@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { stacks as updateStacks } from './actions/update'
 
-async function update(stacks: CAC) {
+async function update(stacks: CLI) {
   stacks
     .command('update', 'Updates dependencies & framework.')
     .option('-c, --framework', 'Update the Stacks framework', { default: true })

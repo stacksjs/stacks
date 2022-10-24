@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { component as makeComponent, fx as makeFunction, language as makeLanguage, page as makePage, stack as makeStack } from './actions/make'
 
-async function make(stacks: CAC) {
+async function make(stacks: CLI) {
   stacks
     .command('make', 'Test your libraries against your built bundle.')
     .option('-c, --component', 'Scaffolds a component.')

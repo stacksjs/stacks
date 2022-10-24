@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { generateTestCoverageReport, runTestSuite, typecheck } from './actions/test'
 
-async function test(stacks: CAC) {
+async function test(stacks: CLI) {
   stacks
     .command('test', 'Runs your test suite.')
     .action(async () => {

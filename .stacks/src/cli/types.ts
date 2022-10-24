@@ -1,7 +1,7 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { generateTypes } from './actions/types'
 
-async function types(stacks: CAC) {
+async function types(stacks: CLI) {
   stacks
     .command('types:generate', 'Generate the types of & for your library/libraries')
     .action(async () => {

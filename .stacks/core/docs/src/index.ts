@@ -1,3 +1,4 @@
-export function contains(needle: string, haystack: string[]) {
-  return haystack.some(hay => needle.includes(hay))
-}
+import { defineConfig } from 'vitepress'
+import docs from 'config/docs'
+
+export default defineConfig(docs)

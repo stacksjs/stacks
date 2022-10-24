@@ -1,8 +1,8 @@
-import type { CAC } from 'cac'
+import type { CLI } from '@stacksjs/types'
 import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from './actions/generate'
 import { generateTypes } from './actions/types'
 
-async function generate(stacks: CAC) {
+async function generate(stacks: CLI) {
   stacks
     .command('generate', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-t, --types', 'Generate your TypeScript types')
