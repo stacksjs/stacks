@@ -3,12 +3,12 @@ import fs from 'fs-extra'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
-import path from '@stacksjs/path'
+import { dirname, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
-  : path.dirname(fileURLToPath(import.meta.url))
+  : dirname(fileURLToPath(import.meta.url))
 
 /**
  * Reads a JSON file and returns the parsed data.
@@ -42,7 +42,7 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
     let filePath: string
 
     if (cwd)
-      filePath = path.join(cwd, name)
+      filePath = join(cwd, name)
     else
       filePath = name
 
@@ -115,9 +115,9 @@ export function copyFolder(src: string, dest: string, exclude: string[] = []): v
 
   if (fs.existsSync(src)) {
     fs.readdirSync(src).forEach((file) => {
-      if (!contains(path.join(src, file), exclude)) {
-        const srcPath = path.join(src, file)
-        const destPath = path.join(dest, file)
+      if (!contains(join(src, file), exclude)) {
+        const srcPath = join(src, file)
+        const destPath = join(dest, file)
 
         if (fs.statSync(srcPath).isDirectory())
           copyFolder(srcPath, destPath, exclude)
@@ -137,7 +137,7 @@ export async function deleteFolder(path: string) {
 export function deleteFiles(dir: string, exclude: string[] = []) {
   if (fs.existsSync(dir)) {
     fs.readdirSync(dir).forEach((file) => {
-      const p = path.join(dir, file)
+      const p = join(dir, file)
       if (fs.statSync(p).isDirectory()) {
         if (fs.readdirSync(p).length === 0)
           fs.rmSync(p, { recursive: true, force: true })
@@ -154,7 +154,7 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
 export function deleteEmptyFolders(dir: string) {
   if (fs.existsSync(dir)) {
     fs.readdirSync(dir).forEach((file) => {
-      const p = path.join(dir, file)
+      const p = join(dir, file)
       if (fs.statSync(p).isDirectory()) {
         if (fs.readdirSync(p).length === 0)
           fs.rmSync(p, { recursive: true, force: true })
@@ -185,7 +185,8 @@ const filesystem = {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
-  ...fs,
+  fs, // potentially refactor to `...fs` but, currently, there is an issues when building @stacksjs/config
+  // the problem is relating to https://github.com/microsoft/TypeScript/issues/5711#issuecomment-157793294
   fileURLToPath,
 }
 

@@ -39,7 +39,7 @@
   },
   "scripts": {
     "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "mkdist": "^0.3.13",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "unbuild": "^0.9.4"
   }
 }

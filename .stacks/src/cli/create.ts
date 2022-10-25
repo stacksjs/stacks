@@ -3,7 +3,7 @@ import { console as consola, spawn } from '@stacksjs/cli'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/fs'
-import { path as p } from '@stacksjs/path'
+import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { generate as generateAppKey } from './actions/key'
@@ -26,7 +26,7 @@ async function create(stack: CLI) {
     .command('')
     .action(async (args: any) => {
       const name = stack.args[0] || args.name || '.'
-      const path = p.resolve(process.cwd(), name)
+      const path = resolve(process.cwd(), name)
 
       console.log()
       console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))

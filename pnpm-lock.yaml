@@ -25,6 +25,8 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/router': workspace:*
       '@stacksjs/security': workspace:*
+      '@stacksjs/server': workspace:*
+      '@stacksjs/serverless': workspace:*
       '@stacksjs/strings': workspace:*
       '@stacksjs/tests': workspace:*
       '@stacksjs/types': workspace:*
@@ -47,6 +49,8 @@ importers:
       '@stacksjs/path': link:core/path
       '@stacksjs/router': link:core/router
       '@stacksjs/security': link:core/security
+      '@stacksjs/server': link:core/server
+      '@stacksjs/serverless': link:core/serverless
       '@stacksjs/strings': link:core/strings
       '@stacksjs/tests': link:core/tests
       '@stacksjs/types': link:core/types
@@ -66,6 +70,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vue-component-meta: ^1.0.9
     dependencies:
       '@stacksjs/config': link:../config
@@ -79,19 +84,23 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/arrays:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/build:
     specifiers:
       '@intlify/vite-plugin-vue-i18n': ^6.0.3
       '@stacksjs/config': workspace:*
+      '@stacksjs/server': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       '@vitejs/plugin-vue': ^3.1.2
@@ -116,6 +125,7 @@ importers:
     dependencies:
       '@intlify/vite-plugin-vue-i18n': 6.0.3_vite@3.1.8+vue-i18n@9.2.2
       '@stacksjs/config': link:../config
+      '@stacksjs/server': link:../server
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
@@ -143,12 +153,14 @@ importers:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vitest: ^0.24.3
     dependencies:
       vitest: 0.24.3
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/cli:
     specifiers:
@@ -159,6 +171,7 @@ importers:
       mkdist: ^0.3.13
       prompts: ^2.4.2
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
       '@types/prompts': 2.4.1
@@ -168,6 +181,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/collections:
     specifiers:
@@ -185,7 +199,7 @@ importers:
       '@stacksjs/utils': workspace:*
       mkdist: ^0.3.13
       typescript: ^4.8.4
-      unbuild: latest
+      unbuild: ^0.9.4
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -197,23 +211,27 @@ importers:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vitest: ^0.24.3
     dependencies:
       vitest: 0.24.3
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/docs:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vitepress: 1.0.0-alpha.23
     dependencies:
       vitepress: 1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/fs:
     specifiers:
@@ -223,6 +241,8 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^10.1.0
       mkdist: ^0.3.13
+      typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/path': link:../path
@@ -230,7 +250,9 @@ importers:
       '@stacksjs/utils': link:../utils
       fs-extra: 10.1.0
     devDependencies:
-      mkdist: 0.3.13
+      mkdist: 0.3.13_typescript@4.8.4
+      typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/git:
     specifiers:
@@ -242,6 +264,7 @@ importers:
       mkdist: ^0.3.13
       simple-git-hooks: ^2.8.1
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       bumpp: 8.2.1
       commitizen: 4.2.5
@@ -252,6 +275,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/lint:
     specifiers:
@@ -261,6 +285,7 @@ importers:
       lint-staged: ^13.0.3
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@ow3/eslint-config': 0.31.3_wyqvi574yv7oiwfeinomdzmc3m
       '@types/eslint': 8.4.8
@@ -269,6 +294,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/modules:
     specifiers:
@@ -277,6 +303,7 @@ importers:
       mkdist: ^0.3.13
       nprogress: ^0.2.0
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -286,39 +313,46 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/objects:
     specifiers:
       '@stacksjs/collections': workspace:*
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/path:
     specifiers:
       mkdist: ^0.3.13
       pathe: ^0.3.9
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       pathe: 0.3.9
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/router:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.41
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/security:
     specifiers:
@@ -329,6 +363,7 @@ importers:
       js-base64: ^3.7.2
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -338,6 +373,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/server:
     specifiers:
@@ -345,6 +381,7 @@ importers:
       mkdist: ^0.3.13
       nitropack: ^0.6.0
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vite: ^3.1.8
     dependencies:
       '@stacksjs/path': link:../path
@@ -353,34 +390,40 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/serverless:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vitest: ^0.24.3
     dependencies:
       vitest: 0.24.3
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/strings:
     specifiers:
       change-case: ^4.1.2
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       change-case: 4.1.2
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/tests:
     specifiers:
       '@vitest/coverage-istanbul': ^0.24.3
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       vitest: ^0.24.3
     dependencies:
       '@vitest/coverage-istanbul': 0.24.3
@@ -388,6 +431,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/types:
     specifiers:
@@ -405,6 +449,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^0.3.13
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       unplugin-auto-import: ^0.11.3
       unplugin-vue-components: ^0.22.9
       vite-plugin-inspect: ^0.7.5
@@ -415,7 +460,7 @@ importers:
       '@mdit-vue/plugin-component': 0.11.1
       '@mdit-vue/plugin-frontmatter': 0.11.1
       '@mdit-vue/types': 0.11.0
-      '@rollup/pluginutils': 5.0.2
+      '@rollup/pluginutils': 5.0.2_rollup@3.2.3
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
       '@types/fs-extra': 9.0.13
@@ -426,8 +471,9 @@ importers:
       markdown-it: 13.0.1
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
-      unplugin-auto-import: 0.11.3
-      unplugin-vue-components: 0.22.9_vue@3.2.41
+      unbuild: 0.9.4
+      unplugin-auto-import: 0.11.3_rollup@3.2.3
+      unplugin-vue-components: 0.22.9_rollup@3.2.3+vue@3.2.41
       vite-plugin-inspect: 0.7.5_vite@3.1.8
       vite-plugin-vue-layouts: 0.7.0_ecdnvyvwgikoc66bazlhpeez6y
       vite-ssg: 0.21.1_k4rjhlpwipohfwbxgvguha2t4q
@@ -443,6 +489,7 @@ importers:
       mkdist: ^0.3.13
       pinia: ^2.0.23
       typescript: ^4.8.4
+      unbuild: ^0.9.4
       unocss: ^0.46.0
       vue: ^3.2.41
       vue-tsc: ^1.0.9
@@ -453,12 +500,13 @@ importers:
       '@stacksjs/build': link:../build
       '@unocss/transformer-compile-class': 0.46.0
       pinia: 2.0.23_l7r24p6nevbtlimqmqcwa3ouhu
-      unocss: 0.46.0_vite@3.1.8
+      unocss: 0.46.0_rollup@3.2.3+vite@3.1.8
       vue: 3.2.41
       vue-tsc: 1.0.9_typescript@4.8.4
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/core/utils:
     specifiers:
@@ -484,6 +532,7 @@ importers:
       only-allow: ^1.1.1
       rimraf: ^3.0.2
       typescript: ^4.8.4
+      unbuild: ^0.9.4
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -508,6 +557,7 @@ importers:
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
+      unbuild: 0.9.4
 
   .stacks/functions:
     specifiers:
@@ -2171,7 +2221,7 @@ packages:
       unocss: '>= 0.31.13 < 1'
     dependencies:
       mini-svg-data-uri: 1.4.4
-      unocss: 0.46.0_vite@3.1.8
+      unocss: 0.46.0_rollup@3.2.3+vite@3.1.8
     dev: false
 
   /@mapbox/node-pre-gyp/1.0.10:
@@ -2569,19 +2619,6 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
 
-  /@rollup/pluginutils/5.0.2:
-    resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      '@types/estree': 1.0.0
-      estree-walker: 2.0.2
-      picomatch: 2.3.1
-
   /@rollup/pluginutils/5.0.2_rollup@2.79.1:
     resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
     engines: {node: '>=14.0.0'}
@@ -2911,24 +2948,24 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: false
 
-  /@unocss/astro/0.46.0_vite@3.1.8:
+  /@unocss/astro/0.46.0_rollup@3.2.3+vite@3.1.8:
     resolution: {integrity: sha512-IHUQ5JpNjc2szW4Y+Vau6QpoZLc+4109R6QMFwjOXwFa88GVmh510GKKmNTIP0f3V/knPdlhu5TWzORNhQUhMw==}
     dependencies:
       '@unocss/core': 0.46.0
       '@unocss/reset': 0.46.0
-      '@unocss/vite': 0.46.0_vite@3.1.8
+      '@unocss/vite': 0.46.0_rollup@3.2.3+vite@3.1.8
     transitivePeerDependencies:
       - rollup
       - vite
     dev: false
 
-  /@unocss/cli/0.46.0:
+  /@unocss/cli/0.46.0_rollup@3.2.3:
     resolution: {integrity: sha512-WFd+atNlrnPCDwBOTw1wH6MJDt75SObQZbO47RJzR7Ek9mcwrEO+fll3K3oy18ftBUA1keZysNYLiRgExudqfA==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
       '@ampproject/remapping': 2.2.0
-      '@rollup/pluginutils': 5.0.2
+      '@rollup/pluginutils': 5.0.2_rollup@3.2.3
       '@unocss/config': 0.46.0
       '@unocss/core': 0.46.0
       '@unocss/preset-uno': 0.46.0
@@ -3052,13 +3089,13 @@ packages:
       '@unocss/core': 0.46.0
     dev: false
 
-  /@unocss/vite/0.46.0_vite@3.1.8:
+  /@unocss/vite/0.46.0_rollup@3.2.3+vite@3.1.8:
     resolution: {integrity: sha512-VF/GwY5aQFnUSWZBfTibOuqs0HR1HUWFyharVJf2ru1c7WE00hHKhLlaBbU41agTyTZUY1l3xVIg6coTEYHC6A==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0
     dependencies:
       '@ampproject/remapping': 2.2.0
-      '@rollup/pluginutils': 5.0.2
+      '@rollup/pluginutils': 5.0.2_rollup@3.2.3
       '@unocss/config': 0.46.0
       '@unocss/core': 0.46.0
       '@unocss/inspector': 0.46.0
@@ -7512,24 +7549,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /mkdist/0.3.13:
-    resolution: {integrity: sha512-+eCPpkr8l2X630y5PIlkts2tzYEsb+aGIgXdrQv9ZGtWE2bLlD6kVIFfI6FJwFpjjw4dPPyorxQc6Uhm/oXlvg==}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=4.7.4'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      defu: 6.1.0
-      esbuild: 0.14.54
-      fs-extra: 10.1.0
-      globby: 11.1.0
-      jiti: 1.16.0
-      mri: 1.2.0
-      pathe: 0.2.0
-    dev: true
-
   /mkdist/0.3.13_typescript@4.8.4:
     resolution: {integrity: sha512-+eCPpkr8l2X630y5PIlkts2tzYEsb+aGIgXdrQv9ZGtWE2bLlD6kVIFfI6FJwFpjjw4dPPyorxQc6Uhm/oXlvg==}
     hasBin: true
@@ -9608,7 +9627,7 @@ packages:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
 
-  /unocss/0.46.0_vite@3.1.8:
+  /unocss/0.46.0_rollup@3.2.3+vite@3.1.8:
     resolution: {integrity: sha512-AWO47Cgl0KdP+zUHEs3SXfPB7dyx/LhXtu5mSPxA3xjfXzuUOeVvJCjL7vPLFy8XEzhiP9iWmUVuj520R+hFUQ==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -9617,8 +9636,8 @@ packages:
       '@unocss/webpack':
         optional: true
     dependencies:
-      '@unocss/astro': 0.46.0_vite@3.1.8
-      '@unocss/cli': 0.46.0
+      '@unocss/astro': 0.46.0_rollup@3.2.3+vite@3.1.8
+      '@unocss/cli': 0.46.0_rollup@3.2.3
       '@unocss/core': 0.46.0
       '@unocss/preset-attributify': 0.46.0
       '@unocss/preset-icons': 0.46.0
@@ -9633,31 +9652,12 @@ packages:
       '@unocss/transformer-compile-class': 0.46.0
       '@unocss/transformer-directives': 0.46.0
       '@unocss/transformer-variant-group': 0.46.0
-      '@unocss/vite': 0.46.0_vite@3.1.8
+      '@unocss/vite': 0.46.0_rollup@3.2.3+vite@3.1.8
     transitivePeerDependencies:
       - rollup
       - supports-color
       - vite
     dev: false
-
-  /unplugin-auto-import/0.11.3:
-    resolution: {integrity: sha512-hYE7jgwytkstwixrwqcjYd7fLmhpfv3/sqZXN2fT6noZiY3eFhC5erFlHfrN5HLq8/4/sKS6+plvaCk3HB2Stw==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@vueuse/core': '*'
-    peerDependenciesMeta:
-      '@vueuse/core':
-        optional: true
-    dependencies:
-      '@antfu/utils': 0.6.0
-      '@rollup/pluginutils': 5.0.2
-      local-pkg: 0.4.2
-      magic-string: 0.26.7
-      unimport: 0.6.8
-      unplugin: 0.10.2
-    transitivePeerDependencies:
-      - rollup
-    dev: true
 
   /unplugin-auto-import/0.11.3_rollup@2.79.1:
     resolution: {integrity: sha512-hYE7jgwytkstwixrwqcjYd7fLmhpfv3/sqZXN2fT6noZiY3eFhC5erFlHfrN5HLq8/4/sKS6+plvaCk3HB2Stw==}
@@ -9677,6 +9677,25 @@ packages:
     transitivePeerDependencies:
       - rollup
     dev: false
+
+  /unplugin-auto-import/0.11.3_rollup@3.2.3:
+    resolution: {integrity: sha512-hYE7jgwytkstwixrwqcjYd7fLmhpfv3/sqZXN2fT6noZiY3eFhC5erFlHfrN5HLq8/4/sKS6+plvaCk3HB2Stw==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@vueuse/core': '*'
+    peerDependenciesMeta:
+      '@vueuse/core':
+        optional: true
+    dependencies:
+      '@antfu/utils': 0.6.0
+      '@rollup/pluginutils': 5.0.2_rollup@3.2.3
+      local-pkg: 0.4.2
+      magic-string: 0.26.7
+      unimport: 0.6.8
+      unplugin: 0.10.2
+    transitivePeerDependencies:
+      - rollup
+    dev: true
 
   /unplugin-vue-components/0.22.9_rollup@2.79.1+vue@3.2.41:
     resolution: {integrity: sha512-qBvooq3EgpjtYicxeccRUGUBBQCCw9rJ0kHPZPOSJd8TBZViSv86vuKLTRDHPyjWtclwOIkVStZJfPdJFhYUMw==}
@@ -9704,7 +9723,7 @@ packages:
       - supports-color
     dev: false
 
-  /unplugin-vue-components/0.22.9_vue@3.2.41:
+  /unplugin-vue-components/0.22.9_rollup@3.2.3+vue@3.2.41:
     resolution: {integrity: sha512-qBvooq3EgpjtYicxeccRUGUBBQCCw9rJ0kHPZPOSJd8TBZViSv86vuKLTRDHPyjWtclwOIkVStZJfPdJFhYUMw==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -9715,7 +9734,7 @@ packages:
         optional: true
     dependencies:
       '@antfu/utils': 0.6.0
-      '@rollup/pluginutils': 5.0.2
+      '@rollup/pluginutils': 5.0.2_rollup@3.2.3
       chokidar: 3.5.3
       debug: 4.3.4
       fast-glob: 3.2.12

@@ -14,7 +14,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '@stacksjs/types'
-import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, helpersPath, langPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath } from '@stacksjs/path'
+import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, langPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -101,7 +101,6 @@ function autoImports(options?: AutoImportsOptions) {
       stringsPath('src'),
       collectionsPath('src'),
       fsPath('src'),
-      helpersPath('src'),
       pathPath('src'),
       securityPath('src'),
     ],
