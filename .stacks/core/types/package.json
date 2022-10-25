@@ -62,6 +62,6 @@
     "vite-plugin-inspect": "^0.7.5",
     "vite-plugin-vue-layouts": "^0.7.0",
     "vite-ssg": "^0.21.1",
-    "vitepress": "1.0.0-alpha.22"
+    "vitepress": "1.0.0-alpha.23"
   }
 }
