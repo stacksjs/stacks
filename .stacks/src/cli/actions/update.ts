@@ -1,6 +1,6 @@
 import { prompts as Prompts, console as consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/fs'
-import { path } from '@stacksjs/path'
+import { projectPath, resolve } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
@@ -41,7 +41,8 @@ export async function stacks(options: any) {
     consola.info('Downloading framework updates...')
 
     const tempFolderName = 'updates'
-    const tempUpdatePath = path.resolve(process.cwd(), tempFolderName)
+    const tempUpdatePath = resolve(projectPath(), tempFolderName)
+
     if (fs.doesFolderExist(tempUpdatePath))
       await deleteFolder(tempUpdatePath)
 
@@ -50,7 +51,7 @@ export async function stacks(options: any) {
 
     consola.info('Updating framework...')
 
-    const frameworkPath = path.resolve(process.cwd(), '.stacks')
+    const frameworkPath = resolve(process.cwd(), '.stacks')
     const exclude = ['functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
     await deleteFiles(frameworkPath, exclude)
@@ -59,7 +60,7 @@ export async function stacks(options: any) {
     for (let i = 0; i < 5; i++)
       await deleteEmptyFolders(frameworkPath)
 
-    const from = path.resolve(process.cwd(), './updates/.stacks')
+    const from = resolve(projectPath(), './updates/.stacks')
     const to = frameworkPath
     await copyFolder(from, to, exclude)
 

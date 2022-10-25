@@ -1,4 +1,6 @@
-import pathe from 'pathe'
+import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
+
+export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
 
 /**
  * Returns the path to the `actions` directory. The actions directory
@@ -137,18 +139,18 @@ export function projectPath(filePath = '') {
   // that the cwd is a few dirs up, like in the case when a release happens
   // from a GitHub Action/workflow
   if (path.includes('.stacks'))
-    path = pathe.resolve(path, '..')
+    path = resolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = pathe.resolve(path, '..')
+    path = resolve(path, '..')
 
   if (path.includes('.stacks'))
-    path = pathe.resolve(path, '..')
+    path = resolve(path, '..')
 
   if (!path.includes('.stacks'))
-    path = pathe.resolve(path, '.')
+    path = resolve(path, '.')
 
-  return pathe.resolve(path, filePath)
+  return resolve(path, filePath)
 }
 
 export function routerPath(path?: string) {
@@ -191,7 +193,7 @@ export function utilsPath(path?: string) {
   return corePath(`utils/${path || ''}`)
 }
 
-export const path = {
+export default {
   actionsPath,
   aliasPath,
   arraysPath,
@@ -217,7 +219,6 @@ export const path = {
   objectsPath,
   packageJsonPath,
   pagesPath,
-  ...pathe,
   pathPath,
   projectPath,
   routerPath,
@@ -230,6 +231,21 @@ export const path = {
   typesPath,
   uiPath,
   utilsPath,
+
+  // path utils
+  basename,
+  delimiter,
+  dirname,
+  extname,
+  format,
+  isAbsolute,
+  join,
+  normalize,
+  normalizeString,
+  parse,
+  relative,
+  resolve,
+  sep,
+  toNamespacedPath,
 }
 
-export default path
