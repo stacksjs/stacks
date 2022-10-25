@@ -1,19 +1,19 @@
 import type { UserConfig } from 'unocss'
-import cssEngine from 'unocss'
+import * as CssEngine from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
 import { ui as options } from '@stacksjs/config'
-import Vue from 'vue'
-import store from 'pinia'
+import * as UiEngine from 'vue'
+import * as Store from 'pinia'
 
-const config: UserConfig = cssEngine.defineConfig({
+const config: UserConfig = CssEngine.defineConfig({
   shortcuts: options.shortcuts,
 
   presets: [
-    cssEngine.presetWind(), // allows for Tailwind utility classes
+    CssEngine.presetWind(), // allows for Tailwind utility classes
     presetForms(), // allows for form Tailwind's form styling
-    cssEngine.presetTypography(),
-    cssEngine.presetIcons({
+    CssEngine.presetTypography(),
+    CssEngine.presetIcons({
       prefix: 'i-',
       warn: true,
       collections: options.icons,
@@ -37,17 +37,17 @@ const config: UserConfig = cssEngine.defineConfig({
       classPrefix: options.classPrefix,
       trigger: options.trigger,
     }),
-    cssEngine.transformerDirectives(),
-    cssEngine.transformerVariantGroup(),
+    CssEngine.transformerDirectives(),
+    CssEngine.transformerVariantGroup(),
   ],
 
   safelist: options.safelist.split(' '),
 })
 
 export default {
-  ...Vue,
-  ...cssEngine,
-  store,
+  UiEngine,
+  CssEngine,
+  Store,
   presetForms,
   transformerCompileClass,
   config,
