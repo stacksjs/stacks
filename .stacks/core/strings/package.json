@@ -45,7 +45,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.10.0",
+    "node": ">=v18.11.0",
     "pnpm": ">=7.14.0"
   },
   "scripts": {
