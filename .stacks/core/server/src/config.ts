@@ -1,6 +1,4 @@
-export const exampleServer = {
+export const config = {
   port: 3333,
   open: true,
 }
-
-export default { exampleServer }

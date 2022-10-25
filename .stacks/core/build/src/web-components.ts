@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
+import { config as server } from '@stacksjs/server'
 import { alias } from '../../../alias'
 import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '.'
 
@@ -13,10 +14,7 @@ export const webComponentsConfig: ViteConfig = {
   envDir: projectPath(),
   envPrefix: 'APP_',
 
-  server: {
-    port: 3333,
-    open: true,
-  },
+  server,
 
   resolve: {
     alias,

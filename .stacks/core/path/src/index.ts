@@ -165,6 +165,14 @@ export function securityPath(path?: string) {
   return corePath(`security/${path || ''}`)
 }
 
+export function serverPath(path?: string) {
+  return corePath(`server/${path || ''}`)
+}
+
+export function serverlessPath(path?: string) {
+  return corePath(`serverless/${path || ''}`)
+}
+
 export function stacksPath(path?: string) {
   return frameworkPath(`src/${path || ''}`)
 }
@@ -225,6 +233,8 @@ export default {
   routesPath,
   scriptsPath,
   securityPath,
+  serverPath,
+  serverlessPath,
   stacksPath,
   stringsPath,
   testsPath,

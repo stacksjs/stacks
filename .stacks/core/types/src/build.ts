@@ -1,4 +1,2 @@
-import type { UserConfig } from 'vite'
-
-export { type ViteSSGContext } from '@stacksjs/build'
-export type ViteConfig = UserConfig
+export type { UserConfig as ViteConfig } from 'vite'
+export { type ViteSSGContext } from 'vite-ssg'
