@@ -29,6 +29,7 @@ export const enum NpmScript {
   UpdateDependencies = 'update:dependencies',
   UpdateFramework = 'update:framework',
   UpdatePackageManager = 'update:package-manager',
+  UpdateNode = 'update:node',
   Lint = 'lint',
   LintFix = 'lint:fix',
   MakeStack = 'make:stack',

@@ -81,6 +81,12 @@ export async function stacks(options: any) {
     consola.success('Successfully updated pnpm to: ', version)
   }
 
+  if (options.node || options === 'node') {
+    consola.info('Updating Node...')
+    await spawn.async('fnm use', { stdio: 'inherit', cwd: projectPath() })
+    consola.success('Updated Node.')
+  }
+
   // TODO: also update CI files & configurations, and other files, possibly
   // ideally we want this to be smart enough to update only the files that have changed
 

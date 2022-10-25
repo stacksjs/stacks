@@ -48,6 +48,7 @@
     "update:dependencies": "pnpm stacks update:dependencies",
     "update:framework": "pnpm stacks update:framework",
     "update:package-manager": "pnpm stacks update:package-manager",
+    "update:node": "pnpm stacks update:node",
     "dev": "pnpm stacks dev",
     "dev:components": "pnpm stacks dev:components",
     "dev:docs": "pnpm stacks dev:docs",
