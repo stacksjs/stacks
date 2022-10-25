@@ -208,9 +208,9 @@ importers:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
-      vitepress: 1.0.0-alpha.22
+      vitepress: 1.0.0-alpha.23
     dependencies:
-      vitepress: 1.0.0-alpha.22_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
@@ -410,7 +410,7 @@ importers:
       vite-plugin-inspect: ^0.7.5
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.21.1
-      vitepress: 1.0.0-alpha.22
+      vitepress: 1.0.0-alpha.23
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.1
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -431,7 +431,7 @@ importers:
       vite-plugin-inspect: 0.7.5_vite@3.1.8
       vite-plugin-vue-layouts: 0.7.0_ecdnvyvwgikoc66bazlhpeez6y
       vite-ssg: 0.21.1_k4rjhlpwipohfwbxgvguha2t4q
-      vitepress: 1.0.0-alpha.22_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y
 
   .stacks/core/ui:
     specifiers:
@@ -469,10 +469,10 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
-      '@vueuse/core': ^9.3.1
+      '@vueuse/core': ^9.4.0
       '@vueuse/head': ^0.9.8
-      '@vueuse/math': ^9.3.1
-      '@vueuse/shared': ^9.3.1
+      '@vueuse/math': ^9.4.0
+      '@vueuse/shared': ^9.4.0
       defu: ^6.1.0
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
@@ -492,10 +492,10 @@ importers:
       '@stacksjs/path': link:../path
       '@stacksjs/types': link:../types
       '@stacksjs/utils': 'link:'
-      '@vueuse/core': 9.3.1_vue@3.2.41
+      '@vueuse/core': 9.4.0_vue@3.2.41
       '@vueuse/head': 0.9.8_vue@3.2.41
-      '@vueuse/math': 9.3.1_vue@3.2.41
-      '@vueuse/shared': 9.3.1_vue@3.2.41
+      '@vueuse/math': 9.4.0_vue@3.2.41
+      '@vueuse/shared': 9.4.0_vue@3.2.41
       defu: 6.1.0
       detect-indent: 7.0.1
       detect-newline: 4.0.0
@@ -529,23 +529,23 @@ importers:
 
 packages:
 
-  /@algolia/autocomplete-core/1.7.1:
-    resolution: {integrity: sha512-eiZw+fxMzNQn01S8dA/hcCpoWCOCwcIIEUtHHdzN5TGB3IpzLbuhqFeTfh2OUhhgkE8Uo17+wH+QJ/wYyQmmzg==}
+  /@algolia/autocomplete-core/1.7.2:
+    resolution: {integrity: sha512-eclwUDC6qfApNnEfu1uWcL/rudQsn59tjEoUYZYE2JSXZrHLRjBUGMxiCoknobU2Pva8ejb0eRxpIYDtVVqdsw==}
     dependencies:
-      '@algolia/autocomplete-shared': 1.7.1
+      '@algolia/autocomplete-shared': 1.7.2
 
-  /@algolia/autocomplete-preset-algolia/1.7.1_qs6lk5nhygj2o3hj4sf6xnr724:
-    resolution: {integrity: sha512-pJwmIxeJCymU1M6cGujnaIYcY3QPOVYZOXhFkWVM7IxKzy272BwCvMFMyc5NpG/QmiObBxjo7myd060OeTNJXg==}
+  /@algolia/autocomplete-preset-algolia/1.7.2_qs6lk5nhygj2o3hj4sf6xnr724:
+    resolution: {integrity: sha512-+RYEG6B0QiGGfRb2G3MtPfyrl0dALF3cQNTWBzBX6p5o01vCCGTTinAm2UKG3tfc2CnOMAtnPLkzNZyJUpnVJw==}
     peerDependencies:
-      '@algolia/client-search': ^4.9.1
-      algoliasearch: ^4.9.1
+      '@algolia/client-search': '>= 4.9.1 < 6'
+      algoliasearch: '>= 4.9.1 < 6'
     dependencies:
-      '@algolia/autocomplete-shared': 1.7.1
+      '@algolia/autocomplete-shared': 1.7.2
       '@algolia/client-search': 4.14.2
       algoliasearch: 4.14.2
 
-  /@algolia/autocomplete-shared/1.7.1:
-    resolution: {integrity: sha512-eTmGVqY3GeyBTT8IWiB2K5EuURAqhnumfktAEoHxfDY2o7vg2rSnO16ZtIG0fMgt3py28Vwgq42/bVEuaQV7pg==}
+  /@algolia/autocomplete-shared/1.7.2:
+    resolution: {integrity: sha512-QCckjiC7xXHIUaIL3ektBtjJ0w7tTA3iqKcAE/Hjn1lZ5omp7i3Y4e09rAr9ZybqirL7AbxCLLq0Ra5DDPKeug==}
 
   /@algolia/cache-browser-local-storage/4.14.2:
     resolution: {integrity: sha512-FRweBkK/ywO+GKYfAWbrepewQsPTIEirhi1BdykX9mxvBPtGNKccYAxvGdDCumU1jL4r3cayio4psfzKMejBlA==}
@@ -1849,13 +1849,13 @@ packages:
     dev: false
     optional: true
 
-  /@docsearch/css/3.2.2:
-    resolution: {integrity: sha512-VB0Evx4ikS1ZlW1YVUw+vI9b3H/UXMCo4W/ZWy+n56Sho4KOqyCHcINVays91TJt7HTV/CKO3FCbm2VJg5Wipw==}
+  /@docsearch/css/3.3.0:
+    resolution: {integrity: sha512-rODCdDtGyudLj+Va8b6w6Y85KE85bXRsps/R4Yjwt5vueXKXZQKYw0aA9knxLBT6a/bI/GMrAcmCR75KYOM6hg==}
 
-  /@docsearch/js/3.2.2_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-YQQFsrKdvLjI9yvDBh7EuxnrLDElY5SofK1pvyHPvnGE5iB75uIXHC7w7I2zUL5Kj5Crv2L7jVq5j1TwX6Ho5A==}
+  /@docsearch/js/3.3.0_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-oFXWRPNvPxAzBhnFJ9UCFIYZiQNc3Yrv6912nZHw/UIGxsyzKpNRZgHq8HDk1niYmOSoLKtVFcxkccpQmYGFyg==}
     dependencies:
-      '@docsearch/react': 3.2.2_tbpndr44ulefs3hehwpi2mkf2y
+      '@docsearch/react': 3.3.0_tbpndr44ulefs3hehwpi2mkf2y
       preact: 10.11.2
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -1863,8 +1863,8 @@ packages:
       - react
       - react-dom
 
-  /@docsearch/react/3.2.2_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-1Hn2SNQUFVPrzqvaj+vxXZfsfn3rnW8CoyGAJ1LqXMY9py8GbxK8VfmJ5Z6z4LwG9849tGru/N6dp0cQO6r9Ag==}
+  /@docsearch/react/3.3.0_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-fhS5adZkae2SSdMYEMVg6pxI5a/cE+tW16ki1V0/ur4Fdok3hBRkmN/H8VvlXnxzggkQIIRIVvYPn00JPjen3A==}
     peerDependencies:
       '@types/react': '>= 16.8.0 < 19.0.0'
       react: '>= 16.8.0 < 19.0.0'
@@ -1877,9 +1877,9 @@ packages:
       react-dom:
         optional: true
     dependencies:
-      '@algolia/autocomplete-core': 1.7.1
-      '@algolia/autocomplete-preset-algolia': 1.7.1_qs6lk5nhygj2o3hj4sf6xnr724
-      '@docsearch/css': 3.2.2
+      '@algolia/autocomplete-core': 1.7.2
+      '@algolia/autocomplete-preset-algolia': 1.7.2_qs6lk5nhygj2o3hj4sf6xnr724
+      '@docsearch/css': 3.3.0
       algoliasearch: 4.14.2
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -3243,12 +3243,12 @@ packages:
   /@vue/shared/3.2.41:
     resolution: {integrity: sha512-W9mfWLHmJhkfAmV+7gDjcHeAWALQtgGT3JErxULl0oz6R6+3ug91I7IErs93eCFhPCZPHBs4QJS7YWEV7A3sxw==}
 
-  /@vueuse/core/9.3.1_vue@3.2.41:
-    resolution: {integrity: sha512-xriyD+v3D2ObH/UtnkEl+1sbcLBVHNaZaLi/rqoNEe/B92hggDEFQIGXoQUjdRzYOjASHSezf9uCDtmd7LeWyA==}
+  /@vueuse/core/9.4.0_vue@3.2.41:
+    resolution: {integrity: sha512-JzgenGj1ZF2BHOen5rsFiAyyI9sXAv7aKhNLlm9b7SwYQeKTcxTWdhudonURCSP3Egl9NQaRBzes2lv/1JUt/Q==}
     dependencies:
       '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.3.1
-      '@vueuse/shared': 9.3.1_vue@3.2.41
+      '@vueuse/metadata': 9.4.0
+      '@vueuse/shared': 9.4.0_vue@3.2.41
       vue-demi: 0.13.11_vue@3.2.41
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -3259,28 +3259,28 @@ packages:
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@vueuse/shared': 9.3.1_vue@3.2.41
+      '@vueuse/shared': 9.4.0_vue@3.2.41
       '@zhead/schema': 0.8.5
       '@zhead/schema-vue': 0.8.5_vue@3.2.41
       vue: 3.2.41
     transitivePeerDependencies:
       - '@vue/composition-api'
 
-  /@vueuse/math/9.3.1_vue@3.2.41:
-    resolution: {integrity: sha512-6ojNHKlhs57NViEzTOQMAOZ0QpBxRalx4kFgIV5M+5DHAwi2AAwZpYwtI+PKKHrIvfdB3fx+pkz7pcjnh9GBDQ==}
+  /@vueuse/math/9.4.0_vue@3.2.41:
+    resolution: {integrity: sha512-dugk8X+zrvpV9ATVg+s/NJjBhd6ZnzVTIZYRZRuJikqnNq5T4OIVH8iYVAS11ONAXj8KGfUeXnMvEpIq4cU6fw==}
     dependencies:
-      '@vueuse/shared': 9.3.1_vue@3.2.41
+      '@vueuse/shared': 9.4.0_vue@3.2.41
       vue-demi: 0.13.11_vue@3.2.41
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
     dev: false
 
-  /@vueuse/metadata/9.3.1:
-    resolution: {integrity: sha512-G1BPhtx3OHaL/y4OZBofh6Xt02G1VA9PuOO8nac9sTKMkMqfyez5VfkF3D9GUjSRNO7cVWyH4rceeGXfr2wdMg==}
+  /@vueuse/metadata/9.4.0:
+    resolution: {integrity: sha512-7GKMdGAsJyQJl35MYOz/RDpP0FxuiZBRDSN79QIPbdqYx4Sd0sVTnIC68KJ6Oln0t0SouvSUMvRHuno216Ud2Q==}
 
-  /@vueuse/shared/9.3.1_vue@3.2.41:
-    resolution: {integrity: sha512-YFu3qcnVeu0S2L4XdQJtBpDcjz6xwqHZtTv/XRhu66/yge1XVhxskUcc7VZbX52xF9A34V6KCfwncP9YDqYFiw==}
+  /@vueuse/shared/9.4.0_vue@3.2.41:
+    resolution: {integrity: sha512-fTuem51KwMCnqUKkI8B57qAIMcFovtGgsCtAeqxIzH3i6nE9VYge+gVfneNHAAy7lj8twbkNfqQSygOPJTm4tQ==}
     dependencies:
       vue-demi: 0.13.11_vue@3.2.41
     transitivePeerDependencies:
@@ -3297,7 +3297,7 @@ packages:
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@vueuse/shared': 9.3.1_vue@3.2.41
+      '@vueuse/shared': 9.4.0_vue@3.2.41
       '@zhead/schema': 0.8.5
       '@zhead/schema-raw': 0.8.5
       vue: 3.2.41
@@ -8821,6 +8821,13 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /shiki-processor/0.1.0_shiki@0.11.1:
+    resolution: {integrity: sha512-7ty3VouP7AQMlERKeiobVeyhjUW6rPMM1b+xFcFF/XwhkN4//Fg9Ju6hPfIOvO4ztylkbLqYufbJmLJmw7SfQA==}
+    peerDependencies:
+      shiki: ^0.11.1
+    dependencies:
+      shiki: 0.11.1
+
   /shiki/0.11.1:
     resolution: {integrity: sha512-EugY9VASFuDqOexOgXR18ZV+TbFrQHeCpEYaXamO+SZlsnT/2LxuLBX25GGtIrwaEVFXUAbUQ601SWE2rMwWHA==}
     dependencies:
@@ -9996,17 +10003,18 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.22_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-IWqnAxMDNaiyl6Bz+/79l40Ho6xsjrqxRp/WZw0+5BXR0BTZbmHyhGtI3XrH6oSn8MisLPjCccikaj3mcmCoWg==}
+  /vitepress/1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-q9RQdDO5yMEruDJSEHgRGkjfW95Bt5jckeZS8qM9R1AXv+lZVmDTjl47NHVgHeZLCNGR4ZNMv2yWtHC6LbZkvw==}
     hasBin: true
     dependencies:
-      '@docsearch/css': 3.2.2
-      '@docsearch/js': 3.2.2_tbpndr44ulefs3hehwpi2mkf2y
+      '@docsearch/css': 3.3.0
+      '@docsearch/js': 3.3.0_tbpndr44ulefs3hehwpi2mkf2y
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8+vue@3.2.41
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.3.1_vue@3.2.41
+      '@vueuse/core': 9.4.0_vue@3.2.41
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.11.1
+      shiki-processor: 0.1.0_shiki@0.11.1
       vite: 3.1.8
       vue: 3.2.41
     transitivePeerDependencies:
