@@ -72,87 +72,112 @@ pnpm stacks --help
 <summary>View the complete Stacks Toolkit</summary>
 
 ```bash
-pnpm stacks --help # view help menu
-pnpm stacks install # installs your dependencies
-pnpm stacks fresh # fresh reinstall of all deps
-pnpm stacks update # auto-update deps & the Stacks framework
+stacks --version # get the Stacks version
+stacks --help # view help menu
 
-pnpm stacks --version # get the Stacks version
-pnpm stacks --help # view help menu
+stacks install # installs your dependencies
+stacks fresh # fresh reinstall of all deps
+stacks clean # removes all your deps
+
+stacks update # auto-update deps & the Stacks framework
+stacks update:dependencies # auto-update deps & the Stacks framework
+stacks update:framework # auto-update deps & the Stacks framework
+stacks update:package-manager # auto-update deps & the Stacks framework
+stacks update:node # update to latest project-defined node version
 
 # if you need any more info on any command listed here, you may suffix
-# any of them via the "help option", i.e. `pnpm stacks ... --help`
+# any of them via the "help option", i.e. `stacks ... --help`
 
-pnpm stacks dev # start one of the dev servers (components, functions, pages, or docs)
-pnpm stacks dev:components # start local playground dev server
-pnpm stacks dev:pages # start local playground pages dev server
-pnpm stacks dev:functions # stub local the functions
-pnpm stacks dev:docs # start local docs dev server
+stacks dev # start one of the dev servers (components, functions, pages, or docs)
+stacks dev:components # start local playground dev server
+stacks dev:pages # start local playground pages dev server
+stacks dev:functions # stub local the functions
+stacks dev:docs # start local docs dev server
+stacks development # `stacks dev` alias
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-pnpm stacks serve # start one of the dev servers (components, functions, pages, or docs)
-pnpm stacks serve:components # start local playground dev server
-pnpm stacks serve:pages # start local playground pages dev server
-pnpm stacks serve:functions # stub local the functions
-pnpm stacks serve:docs # start local docs dev server
+stacks serve
+stacks serve:components
+stacks serve:pages
+stacks serve:functions
+stacks serve:docs
 
-# building for production (e.g. npm, Vercel, Netlify, et al.)
-pnpm stacks build # select a specific build (follow CLI prompts)
-pnpm stacks build:components # build Vue component library & Web Component library
-pnpm stacks build:functions # build function library
-pnpm stacks build:vue-components # build Vue 2 & 3-ready Component library
-pnpm stacks build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-pnpm stacks build:pages # build SSG pages
+# building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
+stacks build # select a specific build (follow CLI prompts)
+stacks build:components # build Vue component library & Web Component library
+stacks build:vue-components # build Vue 2 & 3-ready Component library
+stacks build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
+stacks build:functions # build function library
+stacks build:pages # build SSG pages
+stacks build:all # build all your code
+
+# `stacks build` aliases
+stacks production
+stacks production:components
+stacks production:vue-components
+stacks production:web-components
+stacks production:functions
+stacks production:pages
+stacks production:all
 
 # sets your application key
-pnpm stacks key:generate
+stacks key:generate
 
-pnpm stacks make:stack project
-pnpm stacks make:component HelloWorld
-pnpm stacks make:function hello-world
-pnpm stacks make:page hello-world
-pnpm stacks make:lang de
-pnpm stacks make:database cars
-pnpm stacks make:table brands
-pnpm stacks make:migration create_cars_table
-pnpm stacks make:factory cars
+stacks make:stack project
+stacks make:component HelloWorld
+stacks make:function hello-world
+stacks make:page hello-world
+stacks make:lang de
+stacks make:database cars
+stacks make:table brands
+stacks make:migration create_cars_table
+stacks make:factory cars
 
-pnpm stacks stub # stubs all the libraries
-pnpm stacks stub:functions # stubs the function library
+stacks stub # stubs all the libraries
+stacks stub:functions # stubs the function library
 
-pnpm stacks lint # runs linter
-pnpm stacks lint:fix # runs linter and fixes issues
+stacks lint # runs linter
+stacks lint:fix # runs linter and fixes issues
 
-pnpm stacks commit # follow CLI prompts for committing staged changes
-pnpm stacks release # creates the releases for the stack & triggers the Release Action (workflow)
-pnpm stacks changelog # generates CHANGELOG.md
+stacks commit # follow CLI prompts for committing staged changes
+stacks release # creates the releases for the stack & triggers the Release Action (workflow)
+stacks changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
-pnpm stacks deploy:docs
-pnpm stacks deploy:functions
-pnpm stacks deploy:pages
+stacks deploy
+stacks deploy:docs
+stacks deploy:functions
+stacks deploy:pages
+stacks deploy:all
 
 # select the example to run (follow CLI prompts)
-pnpm stacks example
+stacks example
+stacks example:vue
+stacks example:web-components
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
-pnpm stacks generate
-pnpm stacks generate:entries
-pnpm stacks generate:vue-compat
-pnpm stacks generate:web-types
-pnpm stacks generate:vscode-custom-data
-pnpm stacks generate:ide-helpers
+stacks generate
+stacks generate:entries
+stacks generate:vue-compat
+stacks generate:web-types
+stacks generate:vscode-custom-data
+stacks generate:ide-helpers
+stacks generate:component-meta
+stacks generate:all
+
+# generates your application key
+stacks key:generate
 
 # generate your TypeScript declarations
-pnpm stacks types:generate
-pnpm stacks types:fix
+stacks types:generate
+stacks types:fix
 
 # test your stack
-pnpm stacks test # runs test suite
-pnpm stacks test:unit # runs unit tests
-pnpm stacks test:e2e # runs e2e tests
-pnpm stacks test:coverage # runs test coverage
-pnpm stacks test:types # runs typecheck
+stacks test # runs test suite
+stacks test:unit # runs unit tests
+stacks test:e2e # runs e2e tests
+stacks test:coverage # runs test coverage
+stacks test:types # runs typecheck
 ```
 
 </details>
