@@ -1,7 +1,7 @@
 import consola from 'consola'
 import * as ezSpawn from '@jsdevtools/ez-spawn'
 import { writeTextFile } from '@stacksjs/fs'
-import { path as p } from '@stacksjs/path'
+import { resolve } from '@stacksjs/path'
 
 export async function component(name: string) {
   consola.info('Creating your component...')
@@ -105,7 +105,7 @@ export async function stack(name: string) {
   consola.info('Creating your stack...')
 
   try {
-    const path = p.resolve(process.cwd(), name)
+    const path = resolve(process.cwd(), name)
     await ezSpawn.async(`giget stacks ${path}`)
     consola.success('Successfully scaffolded your project.')
     consola.info(`cd ${path} && pnpm install`)
