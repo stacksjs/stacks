@@ -99,15 +99,15 @@ importers:
       '@stacksjs/server': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
-      '@vitejs/plugin-vue': ^3.1.2
+      '@vitejs/plugin-vue': ^3.2.0
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.6.0
       mkdist: ^0.3.13
       typescript: ^4.8.4
       unbuild: ^0.9.4
-      unplugin-auto-import: ^0.11.3
+      unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
-      vite: ^3.1.8
+      vite: ^3.2.0
       vite-plugin-inspect: ^0.7.5
       vite-plugin-pages: ^0.27.1
       vite-plugin-pwa: ^0.13.1
@@ -124,7 +124,7 @@ importers:
       '@stacksjs/server': link:../server
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
-      '@vitejs/plugin-vue': 3.1.2_vite@3.2.0+vue@3.2.41
+      '@vitejs/plugin-vue': 3.2.0_vite@3.2.0+vue@3.2.41
       markdown-it-link-attributes: 4.0.1
       markdown-it-shiki: 0.6.0
       unbuild: 0.9.4
@@ -214,9 +214,9 @@ importers:
     specifiers:
       mkdist: ^0.3.13
       typescript: ^4.8.4
-      vitepress: 1.0.0-alpha.23
+      vitepress: 1.0.0-alpha.25
     dependencies:
-      vitepress: 1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.25_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
       mkdist: 0.3.13_typescript@4.8.4
       typescript: 4.8.4
@@ -353,7 +353,7 @@ importers:
       mkdist: ^0.3.13
       nitropack: ^0.6.0
       typescript: ^4.8.4
-      vite: ^3.1.8
+      vite: ^3.2.0
     dependencies:
       '@stacksjs/path': link:../path
       nitropack: 0.6.0
@@ -408,17 +408,17 @@ importers:
       '@types/fs-extra': ^9.0.13
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
-      '@types/node': ^18.11.5
+      '@types/node': ^18.11.6
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^0.3.13
       typescript: ^4.8.4
-      unplugin-auto-import: ^0.11.3
+      unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
       vite-plugin-inspect: ^0.7.5
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.21.1
-      vitepress: 1.0.0-alpha.23
+      vitepress: 1.0.0-alpha.25
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.1
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -439,7 +439,7 @@ importers:
       vite-plugin-inspect: 0.7.5_vite@3.2.0
       vite-plugin-vue-layouts: 0.7.0_qmc6q4zdjz6y5zazi2ngr3srey
       vite-ssg: 0.21.1_y4vx5wq4wsxyphmr5ofz4did6y
-      vitepress: 1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.25_tbpndr44ulefs3hehwpi2mkf2y
 
   .stacks/core/ui:
     specifiers:
@@ -3098,8 +3098,8 @@ packages:
       - supports-color
     dev: false
 
-  /@vitejs/plugin-vue/3.1.2_vite@3.2.0+vue@3.2.41:
-    resolution: {integrity: sha512-3zxKNlvA3oNaKDYX0NBclgxTQ1xaFdL7PzwF6zj9tGFziKwmBa3Q/6XcJQxudlT81WxDjEhHmevvIC4Orc1LhQ==}
+  /@vitejs/plugin-vue/3.2.0_vite@3.2.0+vue@3.2.41:
+    resolution: {integrity: sha512-E0tnaL4fr+qkdCNxJ+Xd0yM31UwMkQje76fsDVBBUCoGOUPexu2VDUYHL8P4CwV+zMvWw6nlRw19OnRKmYAJpw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^3.0.0
@@ -10023,13 +10023,13 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.23_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-q9RQdDO5yMEruDJSEHgRGkjfW95Bt5jckeZS8qM9R1AXv+lZVmDTjl47NHVgHeZLCNGR4ZNMv2yWtHC6LbZkvw==}
+  /vitepress/1.0.0-alpha.25_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-qvKQ4aCArGL8nxP7BAeMBY/N9qm6fX5/dVNGESDvpkm/M8BQlIkOIEanlkAEPY9VOCMA1zcX3wtstcEcnjc5fA==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.0
       '@docsearch/js': 3.3.0_tbpndr44ulefs3hehwpi2mkf2y
-      '@vitejs/plugin-vue': 3.1.2_vite@3.2.0+vue@3.2.41
+      '@vitejs/plugin-vue': 3.2.0_vite@3.2.0+vue@3.2.41
       '@vue/devtools-api': 6.4.5
       '@vueuse/core': 9.4.0_vue@3.2.41
       body-scroll-lock: 4.0.0-beta.0
