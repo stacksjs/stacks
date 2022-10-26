@@ -14,20 +14,7 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
-#### Stacks Engine
-
-📫 **Automatic library npm distribution** _Component & function libraries_ <br>
-🚀 **Built-in production deployments** _Choose server, serverless, or service_ <br>
-📚 **Smart Bundler** _Vite powered_ <br>
-🤖 **CI/CD** _GitHub Actions ready to go_ <br>
-👩🏽‍🔧 **Linting & formatting** _Eslint pre-configured_ <br>
-🍀 **Auto-imported Goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._ <br>
-💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_ <br>
-🛠️ **Version control built-in** _including automatic changelog generations_ <br>
-
-Everything is zero-config, yet highly configurable.
-
-#### UI Engine
+## UI Engine
 
 🤖 **Components** _Automatically generate a Vue & Web Components_ <br>
 ⚡️ **Static Site Generation (SSG)** _Sites developed without breaking a sweat_ <br>
@@ -35,8 +22,6 @@ Everything is zero-config, yet highly configurable.
 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_ <br>
 0️⃣ **Zero-config PWA** <br>
 🍀 **Vue powered** <br>
-
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 #### FX Engine
 
@@ -48,6 +33,21 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 📢 **Notifications** _Send emails, SMSs, and webhooks simply_ <br>
 💨 **Cache** _Local Redis, or auto hosted & scaled_ <br>
 ⚙️ **Queues** _Run your heavy-workload in the background_ <br>
+
+#### Stacks Engine
+
+📚 **Smart Bundler** _Vite powered_ <br>
+📫 **Library npm distribution** _Automatically distribute components & functions_ <br>
+🚀 **Built-in production deployments** _Choose server, serverless, or service_ <br>
+🤖 **CI/CD** _GitHub Actions ready to go_ <br>
+👩🏽‍🔧 **Linting & formatting enabled by default** _And without setup. Eslint pre-configured._ <br>
+🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._ <br>
+💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_ <br>
+🛠️ **Version control built-in** _including automatic changelog generations_ <br>
+
+Everything is zero-config, yet highly configurable.
+
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
