@@ -8,7 +8,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends & backends. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs. Stacks helps you every step along the way, including the deployments and its infrastructure (server or serverless).
+The goal of the Stacks framework is to _help you_ create & maintain frontends & backends. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs. Stacks helps you every step along the way, including the deployments and the maintenance of its infrastructure (server or serverless).
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
@@ -16,38 +16,38 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ## UI Engine
 
-🤖 **Components** _Automatically generate a Vue & Web Components_ <br>
-⚡️ **Static Site Generation (SSG)** _Sites developed without breaking a sweat_ <br>
-🤖 **Deployments** _Pages can natively be deployed to Netlify, Vercel, or elsewhere_ <br>
-🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_ <br>
-0️⃣ **Zero-config PWA** <br>
-🍀 **Vue powered** <br>
+🧩 **Components** _Automatically generate Vue & Web Components_<br>
+⚡️ **Static Site Generation (SSG)** _Sites & layouts developed without breaking a sweat_<br>
+🤖 **Deployments** _Pages can natively be deployed to Netlify, Vercel, or elsewhere_<br>
+🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
+0️⃣ **Zero-config PWA**<br>
+🍀 **Vue powered**<br>
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ## FX Engine
 
-🤖 **Functions** _Develop functions more rapidly than ever_ <br>
-🤖 **APIs** _Automatically turn functions to endpoints_ <br>
-🧭 **Smart Routing** _File based or Laravel-like_ <br>
-☁️ **Deployments** _Stacks is a serverless deployment platform_ <br>
-📀 **Database** _Prisma, PlanetScale, Supabase, ..._ <br>
-📢 **Notifications** _Send emails, SMSs, and webhooks simply_ <br>
-💨 **Cache** _Local Redis, or auto hosted & scaled_ <br>
-⚙️ **Queues** _Run your heavy-workload in the background_ <br>
+🧩 **Functions** _Develop functions more rapidly than ever_<br>
+🤖 **APIs** _Automatically turn functions to endpoints_<br>
+🧭 **Smart Routing** _File based or Laravel-like_<br>
+☁️ **Deployments** _Stacks is a serverless deployment platform_<br>
+📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
+📢 **Notifications** _Send emails, SMSs, and webhooks simply_<br>
+💨 **Cache** _Redis or DynamoDB_<br>
+⚙️ **Queues**_Run your heavy-workload in the background_<br>
 
 Everything is zero-config, yet highly configurable.
 
 ## Stacks Engine
 
-📚 **Smart Bundler** _Vite powered_ <br>
-📫 **Library npm distribution** _Automatically distribute components & functions_ <br>
-🚀 **Built-in production deployments** _Choose server, serverless, or service_ <br>
-🤖 **CI/CD** _GitHub Actions ready to go_ <br>
-👩🏽‍🔧 **Linting & formatting enabled by default** _And without setup. Eslint pre-configured._ <br>
-🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._ <br>
-💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_ <br>
-🛠️ **Version control built-in** _including automatic changelog generations_ <br>
+📚 **Smart Bundler** _Vite powered_<br>
+📫 **Library npm distribution** _Automatically distribute components & functions_<br>
+🚀 **Built-in production deployments** _Choose server, serverless, or service_<br>
+🤖 **CI/CD** _GitHub Actions ready to go_<br>
+👩🏽‍🔧 **Linting & formatting enabled by default** _And without setup. Eslint pre-configured._<br>
+🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._<br>
+💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br>
+🛠️ **Version control built-in** _including automatic changelog generations_<br>
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
