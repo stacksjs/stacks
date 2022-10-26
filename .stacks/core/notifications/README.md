@@ -1,4 +1,4 @@
-# Stacks Serverless
+# Stacks Notifications
 
 wip
 
@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/serverless
+pnpm i -D @stacksjs/notifications
 ```
 
 Now, you can use it in your project:
 
 ```js
-import serverless from '@stacksjs/serverless'
+import notifications from '@stacksjs/notifications'
 
 // wip
 ```

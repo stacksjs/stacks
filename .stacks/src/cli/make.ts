@@ -1,5 +1,6 @@
 import type { CLI } from '@stacksjs/types'
 import { component as makeComponent, fx as makeFunction, language as makeLanguage, page as makePage, stack as makeStack } from './actions/make'
+// import { component as makeComponent, fx as makeFunction, language as makeLanguage, notification as makeNotification, page as makePage, stack as makeStack } from './actions/make'
 
 async function make(stacks: CLI) {
   stacks
@@ -8,6 +9,7 @@ async function make(stacks: CLI) {
     .option('-p, --page', 'Scaffolds a page.')
     .option('-f, --function', 'Scaffolds a function.')
     .option('-l, --language', 'Scaffolds a language.')
+    .option('-n, --notification', 'Scaffolds a notification.')
     .option('-s, --stack', 'Scaffolds a new stack.')
     .action(async (options) => {
       await runMake(stacks.args[0], options)
@@ -35,6 +37,12 @@ async function make(stacks: CLI) {
     .command('make:lang', 'Scaffolds a language file.')
     .action(async () => {
       await makeLanguage(stacks.args[0])
+    })
+
+  stacks
+    .command('make:notification', 'Scaffolds a language notification.')
+    .action(async () => {
+      // await makeNotification(stacks.args[0])
     })
 
   stacks
