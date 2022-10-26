@@ -3,7 +3,7 @@ import fs from 'fs-extra'
 import detectIndent from 'detect-indent'
 import { detectNewline } from 'detect-newline'
 import type { JsonFile, TextFile } from '@stacksjs/types'
-import { dirname, join, projectPath } from '@stacksjs/path'
+import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 
 export const _dirname = typeof __dirname !== 'undefined'
@@ -169,7 +169,7 @@ export function doesFolderExist(path: string) {
   return fs.existsSync(path)
 }
 
-const filesystem = {
+export const filesystem = {
   _dirname,
   readJsonFile,
   writeJsonFile,

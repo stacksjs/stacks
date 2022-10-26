@@ -85,6 +85,7 @@ declare global {
   const expect: typeof import('vitest')['expect']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const extname: typeof import('./core/path/src/index')['extname']
+  const filesystem: typeof import('./core/fs/src/index')['filesystem']
   const format: typeof import('./core/path/src/index')['format']
   const frameworkPath: typeof import('./core/path/src/index')['frameworkPath']
   const fsPath: typeof import('./core/path/src/index')['fsPath']
@@ -168,6 +169,7 @@ declare global {
   const paramCase: typeof import('./core/strings/src/index')['paramCase']
   const parse: typeof import('./core/path/src/index')['parse']
   const pascalCase: typeof import('./core/strings/src/index')['pascalCase']
+  const path: typeof import('./core/path/src/index')['path']
   const pathCase: typeof import('./core/strings/src/index')['pathCase']
   const pathPath: typeof import('./core/path/src/index')['pathPath']
   const pausableWatch: typeof import('@vueuse/core')['pausableWatch']
@@ -193,6 +195,7 @@ declare global {
   const relative: typeof import('./core/path/src/index')['relative']
   const resolve: typeof import('./core/path/src/index')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
+  const resolveDirective: typeof import('vue')['resolveDirective']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
   const routerPath: typeof import('./core/path/src/index')['routerPath']
@@ -427,7 +430,7 @@ declare global {
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     readonly $$: UnwrapRef<typeof import('vue/macros')['$$']>
     readonly $: UnwrapRef<typeof import('vue/macros')['$']>
@@ -513,6 +516,7 @@ declare module '@vue/runtime-core' {
     readonly expect: UnwrapRef<typeof import('vitest')['expect']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly extname: UnwrapRef<typeof import('./core/path/src/index')['extname']>
+    readonly filesystem: UnwrapRef<typeof import('./core/fs/src/index')['filesystem']>
     readonly format: UnwrapRef<typeof import('./core/path/src/index')['format']>
     readonly frameworkPath: UnwrapRef<typeof import('./core/path/src/index')['frameworkPath']>
     readonly fsPath: UnwrapRef<typeof import('./core/path/src/index')['fsPath']>
@@ -596,6 +600,7 @@ declare module '@vue/runtime-core' {
     readonly paramCase: UnwrapRef<typeof import('./core/strings/src/index')['paramCase']>
     readonly parse: UnwrapRef<typeof import('./core/path/src/index')['parse']>
     readonly pascalCase: UnwrapRef<typeof import('./core/strings/src/index')['pascalCase']>
+    readonly path: UnwrapRef<typeof import('./core/path/src/index')['path']>
     readonly pathCase: UnwrapRef<typeof import('./core/strings/src/index')['pathCase']>
     readonly pathPath: UnwrapRef<typeof import('./core/path/src/index')['pathPath']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
@@ -621,6 +626,7 @@ declare module '@vue/runtime-core' {
     readonly relative: UnwrapRef<typeof import('./core/path/src/index')['relative']>
     readonly resolve: UnwrapRef<typeof import('./core/path/src/index')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
+    readonly resolveDirective: UnwrapRef<typeof import('vue')['resolveDirective']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
     readonly routerPath: UnwrapRef<typeof import('./core/path/src/index')['routerPath']>

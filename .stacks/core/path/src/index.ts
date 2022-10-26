@@ -201,7 +201,7 @@ export function utilsPath(path?: string) {
   return corePath(`utils/${path || ''}`)
 }
 
-export default {
+export const path = {
   actionsPath,
   aliasPath,
   arraysPath,
@@ -258,4 +258,3 @@ export default {
   sep,
   toNamespacedPath,
 }
-
