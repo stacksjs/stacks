@@ -1,6 +1,6 @@
 ![Social Card of Stacks](.github/art/social.png)
 
-# Atomic Full Stack
+# Rapid App Development
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
@@ -8,48 +8,50 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. Convention over configuration is our mantra, while the Stacks build system automatically builds highly-composable & scalable framework-agnostic libraries—in beginner & expert-friendly ways, embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain frontends & backends. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs. Stacks helps you every step along the way, including the deployments and its infrastructure (server or serverless).
+
+Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
 ![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
-only list features, like all core packages plus other framework feats
+#### Stacks Engine
 
-Stacks Engine
-🤖 **Zero-config, yet highly configurable**
-🤖 **Vite powered**
-🤖 **Easily create Component & function libraries** (automatically distributed to npm)
-🤖 **Built in production deployments** _Choose server or serverless_
-🤖 **Smart Bundler**_
+📫 **Automatic library npm distribution** _Component & function libraries_ <br>
+🚀 **Built-in production deployments** _Choose server, serverless, or service_ <br>
+📚 **Smart Bundler** _Vite powered_ <br>
+🤖 **CI/CD** _GitHub Actions ready to go_ <br>
+👩🏽‍🔧 **Linting & formatting** _Eslint pre-configured_ <br>
+🍀 **Auto-imported Goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._ <br>
+💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_ <br>
+🛠️ **Version control built-in** _including automatic changelog generations_ <br>
 
-DX
-🤖 **CI/CD**
-🤖 **Lint**
-💡 **Fully-typed**
-💡 **First-class IDE integration**
-🧙🏼‍♀️ **Extremely beginner & expert-friendly**
-🤖 **Auto-imported Goodies** Collections, VueUse, etc.
-✨ **Next-gen Developer Experience _(DX)_**
+Everything is zero-config, yet highly configurable.
 
-UI Engine
-🤖 **Vue powered**
-🤖 **Components** (Auto Vue & Web Components generations)
-🤖 **Pages—Static Side Generation (SSG)**
-🎨 **Style with ease** via an atomic CSS engine, powered by UnoCSS
-🤖 **Progressive Web App support (PWA)**
+#### UI Engine
 
-FX Engine
-🤖 **Functions**
-🤖 **APIs**
-🤖 **Smart Routing**
-🤖 **Database** ORM, MySQL, Postgres, etc.
-🤖 **Cache**
-🤖 **Queues**
+🤖 **Components** _Automatically generate a Vue & Web Components_ <br>
+⚡️ **Static Site Generation (SSG)** _Sites developed without breaking a sweat_ <br>
+🤖 **Deployments** _Pages can natively be deployed to Netlify, Vercel, or elsewhere_ <br>
+🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_ <br>
+0️⃣ **Zero-config PWA** <br>
+🍀 **Vue powered** <br>
 
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework.
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
-Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
+#### FX Engine
 
-> _A true rapid application development framework for all Full Stack needs._
+🤖 **Functions** _Develop functions more rapidly than ever_ <br>
+🤖 **APIs** _Automatically turn functions to endpoints_ <br>
+🧭 **Smart Routing** _File based or Laravel-like_ <br>
+☁️ **Deployments** _Stacks is a serverless deployment platform_ <br>
+📀 **Database** _Prisma, PlanetScale, Supabase, ..._ <br>
+📢 **Notifications** _Send emails, SMSs, and webhooks simply_ <br>
+💨 **Cache** _Local Redis, or auto hosted & scaled_ <br>
+⚙️ **Queues** _Run your heavy-workload in the background_ <br>
+
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
+
+> _A true rapid application development framework for all Full Stack needs. You will love the DX._
 
 ## Get Started
 

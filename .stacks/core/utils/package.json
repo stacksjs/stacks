@@ -63,7 +63,6 @@
     "detect-newline": "^4.0.0",
     "esno": "^0.16.3",
     "fast-glob": "^3.2.12",
-    "jiti": "^1.16.0",
     "kolorist": "1.6.0",
     "rimraf": "^3.0.2",
     "only-allow": "^1.1.1"

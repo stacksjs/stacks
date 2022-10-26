@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import { cli as app } from '@stacksjs/cli'
+import { cli as command } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { build, create, dev, example, generate, key, make, test, update, utility } from './cli/'
 
-const cli = app('stacks')
+const cli = command('stacks')
 
 // setup global error handlers
 process.on('uncaughtException', errorHandler)
