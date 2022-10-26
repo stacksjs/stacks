@@ -8,7 +8,9 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends & backends. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs. Stacks helps you every step along the way, including the deployments and the maintenance of its infrastructure (server or serverless).
+_For internal usage only until beta is released by the end of October._
+
+The goal of the Stacks framework is to _help you_ create & maintain frontends & backends without having to worry about the boilerplate. Whether it's SSG pages, or npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its relating infrastructure (server or serverless).
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
@@ -32,7 +34,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 🧩 **Functions** _develop functions more rapidly than ever_<br>
 - 🤖 **APIs** _automatically turn functions to endpoints_<br>
 - 🧭 **Smart Routing** _file based or Laravel-like_<br>
-- ☁️ **Deployments** _Stacks is a serverless deployment platform_<br>
+- ☁️ **Deployments** _Stacks is a server & serverless deployment platform_<br>
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
 - 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
@@ -45,15 +47,15 @@ Everything is zero-config, yet highly configurable.
 - 📚 **Smart Bundler** _Vite powered_<br>
 - 📫 **npm distribution** _component & function libraries are automatically distributed_<br>
 - 🚀 **Built-in production deployments** _choose server, serverless, or service_<br>
-- 🤖 **CI/CD** _GitHub Actions ready to go_<br>
-- 👩🏽‍🔧 **Linting & formatting enabled by default** _and without setup. Eslint pre-configured._<br>
+- 🤖 **CI/CD** _GitHub Actions ready-to-go_<br>
+- 👩🏽‍🔧 **Linting & formatting enabled by default** _and without setup. Eslint pre-configured_<br>
 - 🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br>
 - 🛠️ **Version control built-in** _auto changelog generation in GitHub & CHANGELOG.md_<br>
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
-> _A true rapid application development framework for all Full Stack needs. You will love the DX._
+> _A true rapid application development framework for all Full Stack needs. Next-level & deep DX._
 
 ## Get Started
 
