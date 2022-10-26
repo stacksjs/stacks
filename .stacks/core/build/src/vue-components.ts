@@ -5,7 +5,7 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '../../../alias'
-import { atomicCssEngine, autoImports, components, inspect, preview, uiEngine } from '.'
+import { autoImports, components, cssEngine, inspect, preview, uiEngine } from '.'
 
 export const vueComponentsConfig: ViteConfig = {
   root: componentsPath(),
@@ -26,7 +26,7 @@ export const vueComponentsConfig: ViteConfig = {
   plugins: [
     preview(),
     uiEngine(),
-    atomicCssEngine(),
+    cssEngine(),
     autoImports(),
     components(),
     inspect(),

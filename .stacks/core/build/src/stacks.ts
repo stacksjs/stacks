@@ -14,7 +14,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '@stacksjs/types'
-import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, langPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath } from '@stacksjs/path'
+import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, langPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -117,9 +117,9 @@ function autoImports(options?: AutoImportsOptions) {
   return AutoImport(newOptions)
 }
 
-function atomicCssEngine(isWebComponent = false) {
+function cssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: frameworkPath('src/unocss.ts'),
+    configFile: uiPath('src/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
@@ -186,7 +186,7 @@ function uiEngine(isWebComponent = false) {
 const componentPreset = (isWebComponent = false) => <PluginOption>[
   inspect,
   uiEngine(isWebComponent),
-  atomicCssEngine(isWebComponent),
+  cssEngine(isWebComponent),
   autoImports,
   components,
   markdown,
@@ -200,4 +200,4 @@ const componentPreset = (isWebComponent = false) => <PluginOption>[
 //   //
 // ]
 
-export { resolve, componentPreset, uiEngine, autoImports, atomicCssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }
+export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }

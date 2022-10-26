@@ -3,7 +3,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 import type { ViteConfig } from '@stacksjs/types'
 import { functionsPath, projectPath } from '@stacksjs/path'
 import { alias } from '../../../alias'
-import { atomicCssEngine, autoImports, components, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '.'
+import { autoImports, components, cssEngine, i18n, inspect, layouts, markdown, pages, preview, pwa, uiEngine } from '.'
 
 export const pagesConfig: ViteConfig = {
   root: functionsPath(),
@@ -18,7 +18,7 @@ export const pagesConfig: ViteConfig = {
     preview(),
     uiEngine(),
     pages(),
-    atomicCssEngine(),
+    cssEngine(),
     components(),
     layouts(),
     i18n(),

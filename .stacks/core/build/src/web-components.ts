@@ -5,7 +5,7 @@ import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@s
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '../../../alias'
-import { atomicCssEngine, autoImports, components, inspect, uiEngine } from '.'
+import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
 const isWebComponent = true
 
@@ -23,7 +23,7 @@ export const webComponentsConfig: ViteConfig = {
   plugins: [
     inspect(),
     uiEngine(isWebComponent),
-    atomicCssEngine(isWebComponent),
+    cssEngine(isWebComponent),
     autoImports(),
     components(),
   ],
