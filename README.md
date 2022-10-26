@@ -131,13 +131,14 @@ stacks build:pages # build SSG pages
 stacks build:all # build all your code
 
 # `stacks build` aliases
-stacks production
-stacks production:components
-stacks production:vue-components
-stacks production:web-components
-stacks production:functions
-stacks production:pages
-stacks production:all
+stacks prod
+stacks prod:components
+stacks prod:vue-components
+stacks prod:web-components
+stacks prod:functions
+stacks prod:pages
+stacks prod:all
+stacks production # `stacks prod` alias
 
 # sets your application key
 stacks key:generate
@@ -151,9 +152,6 @@ stacks make:database cars
 stacks make:table brands
 stacks make:migration create_cars_table
 stacks make:factory cars
-
-stacks stub # stubs all the libraries
-stacks stub:functions # stubs the function library
 
 stacks lint # runs linter
 stacks lint:fix # runs linter and fixes issues
@@ -208,7 +206,6 @@ pnpm artisan fresh
 pnpm fresh
 pnpm run fresh
 pnpm run artisan fresh
-
 ```
 
 </details>
