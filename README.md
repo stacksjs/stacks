@@ -18,38 +18,38 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ### UI Engine
 
-- 🧩 **Components** _Automatically generate Vue & Web Components_<br>
-- ⚡️ **Static Site Generation (SSG)** _Sites & layouts developed without breaking a sweat_<br>
-- 🤖 **Deployments** _Pages can natively be deployed to Netlify, Vercel, or elsewhere_<br>
+- 🧩 **Components** _automatically generate Vue & Web Components_<br>
 - 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
-- 0️⃣ **Zero-config PWA**<br>
+- ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_<br>
+- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_<br>
+- 🤖 **Deployments** _pages can natively be deployed to Netlify, Vercel, or elsewhere_<br>
 - 🍀 **Vue powered**<br>
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ### FX Engine
 
-- 🧩 **Functions** _Develop functions more rapidly than ever_<br>
-- 🤖 **APIs** _Automatically turn functions to endpoints_<br>
-- 🧭 **Smart Routing** _File based or Laravel-like_<br>
+- 🧩 **Functions** _develop functions more rapidly than ever_<br>
+- 🤖 **APIs** _automatically turn functions to endpoints_<br>
+- 🧭 **Smart Routing** _file based or Laravel-like_<br>
 - ☁️ **Deployments** _Stacks is a serverless deployment platform_<br>
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
-- 📢 **Notifications** _Send emails, SMSs, and webhooks simply_<br>
+- 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
-- ⚙️ **Queues**_Run your heavy-workload in the background_<br>
+- ⚙️ **Queues** _run your heavy-workload in the background_<br>
 
 Everything is zero-config, yet highly configurable.
 
 ### Stacks Engine
 
 - 📚 **Smart Bundler** _Vite powered_<br>
-- 📫 **Library npm distribution** _Automatically distribute components & functions_<br>
-- 🚀 **Built-in production deployments** _Choose server, serverless, or service_<br>
+- 📫 **npm distribution** _component & function libraries are automatically distributed_<br>
+- 🚀 **Built-in production deployments** _choose server, serverless, or service_<br>
 - 🤖 **CI/CD** _GitHub Actions ready to go_<br>
-- 👩🏽‍🔧 **Linting & formatting enabled by default** _And without setup. Eslint pre-configured._<br>
+- 👩🏽‍🔧 **Linting & formatting enabled by default** _and without setup. Eslint pre-configured._<br>
 - 🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br>
-- 🛠️ **Version control built-in** _including automatic changelog generations_<br>
+- 🛠️ **Version control built-in** _auto changelog generation in GitHub & CHANGELOG.md_<br>
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
