@@ -8,9 +8,9 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_For internal usage only until beta is released by the end of October._
+_For internal usage only until the beta is released by the end of October._
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends & backends without having to worry about the boilerplate. Whether it's SSG pages, or npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its relating infrastructure (server or serverless).
+The goal of the Stacks framework is to _help you_ create & maintain frontends & backends without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
@@ -32,13 +32,13 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 ### FX Engine
 
 - 🧩 **Functions** _develop functions more rapidly than ever_<br>
-- 🤖 **APIs** _automatically turn functions to endpoints_<br>
-- 🧭 **Smart Routing** _file based or Laravel-like_<br>
-- ☁️ **Deployments** _Stacks is a server & serverless deployment platform_<br>
+- 🤖 **APIs** _automatically turn functions into endpoints_<br>
+- 🧭 **Smart Routing** _file-based or Laravel-like_<br>
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
 - 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
-- ⚙️ **Queues** _run your heavy-workload in the background_<br>
+- ⚙️ **Queues** _run your heavy workload in the background_<br>
+- ☁️ **Deployments** _Stacks is a server & serverless deployment platform_<br>
 
 Everything is zero-config, yet highly configurable.
 
