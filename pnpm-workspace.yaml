@@ -13,6 +13,7 @@ packages:
   - ./.stacks/core/lint
   - ./.stacks/core/objects
   - ./.stacks/core/modules
+  - ./.stacks/core/notifications
   - ./.stacks/core/path
   - ./.stacks/core/router
   - ./.stacks/core/security

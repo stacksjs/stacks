@@ -91,6 +91,7 @@
     "make:function": "pnpm stacks make:function",
     "make:database": "pnpm stacks make:migration",
     "make:migration": "pnpm stacks make:migration",
+    "make:notification": "pnpm stacks make:notification",
     "make:factory": "pnpm stacks make:factory",
     "make:lang": "pnpm stacks make:lang",
     "make:stack": "pnpm stacks make:stack",

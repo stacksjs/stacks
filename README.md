@@ -150,10 +150,12 @@ stacks make:component HelloWorld
 stacks make:function hello-world
 stacks make:page hello-world
 stacks make:lang de
+stacks make:notification welcome-email
 stacks make:database cars
 stacks make:table brands
 stacks make:migration create_cars_table
 stacks make:factory cars
+stacks make:seed cars
 
 stacks lint # runs linter
 stacks lint:fix # runs linter and fixes issues
