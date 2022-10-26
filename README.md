@@ -8,33 +8,48 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. The Stacks build system automatically builds highly-composable & scalable, framework-agnostic libraries—in beginner & expert-friendly ways, embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
+The goal of the Stacks framework is to _help you_ create & maintain UIs _(pages & components)_ & function _(composables & APIs)_ libraries. Convention over configuration is our mantra, while the Stacks build system automatically builds highly-composable & scalable framework-agnostic libraries—in beginner & expert-friendly ways, embodying [Composability-First Design](/apps/site/docs/composability-first-design.md) principles.
 
 ![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
-🤖 **Zero-config, by design**
+only list features, like all core packages plus other framework feats
 
-The Stacks framework automagically bundles & builds your code. A Web Component library, Vue 2 & 3 libraries, a composable functions library or API, plus all of its relating type declarations. Out of plain HTML & minimal JavaScript. _The best of the Vite & Nitro engines in a zero-config way._
+Stacks Engine
+🤖 **Zero-config, yet highly configurable**
+🤖 **Vite powered**
+🤖 **Easily create Component & function libraries** (automatically distributed to npm)
+🤖 **Built in production deployments** _Choose server or serverless_
+🤖 **Smart Bundler**_
 
-🎨 **Style with ease**
-
-Create your own style guide using conventions you are familiar with. Stacks' UnoCSS atomic engine allows for just that, in an instant, on-demand way. Tailwind CSS, Windi CSS, Bootstrap, Tachyons, Heroicons, Material Design Icons, and more to choose from.
-
-**✨ Next-gen Developer Experience _(DX)_**
-
-Whether it is the simplistic artisan setup & maintenance, the toolkit of accessible APIs, modern git commit conventions, a powerful, yet simple, CI, automated npm package releases & semver versioning, pretty changelog generations, automated PR dependency updates, built-in spell-checking, integrated documentation tooling, or the pre-configured examples... _Stacks has it all._
-
-💡 **First-class VS Code integration**
-
-IDE Capabilities, fully-typed, code completion, automatic web-types & custom HTML data generations, code formatting, and more—all natively built-into Stacks _And without the need for Prettier._
-
+DX
+🤖 **CI/CD**
+🤖 **Lint**
+💡 **Fully-typed**
+💡 **First-class IDE integration**
 🧙🏼‍♀️ **Extremely beginner & expert-friendly**
+🤖 **Auto-imported Goodies** Collections, VueUse, etc.
+✨ **Next-gen Developer Experience _(DX)_**
+
+UI Engine
+🤖 **Vue powered**
+🤖 **Components** (Auto Vue & Web Components generations)
+🤖 **Pages—Static Side Generation (SSG)**
+🎨 **Style with ease** via an atomic CSS engine, powered by UnoCSS
+🤖 **Progressive Web App support (PWA)**
+
+FX Engine
+🤖 **Functions**
+🤖 **APIs**
+🤖 **Smart Routing**
+🤖 **Database** ORM, MySQL, Postgres, etc.
+🤖 **Cache**
+🤖 **Queues**
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework.
 
 Develop beautiful, reactive, composable UIs & functions without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
-> _The clever way to build & share component & function libraries (and servers!)._
+> _A true rapid application development framework for all Full Stack needs._
 
 ## Get Started
 
@@ -55,17 +70,17 @@ npx stacks create my-project
 Meet the Stacks Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
 
 ```bash
-pnpm stacks install # installs all dependencies
-pnpm stacks dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm stacks build # follow CLI prompts to select which library (or server) to build
-pnpm stacks commit # follow CLI prompts for committing changes
-pnpm stacks release # creates the releases for the stack & consequently, publishes them to npm
+stacks install # installs all dependencies
+stacks dev # starts one of the dev servers (components, functions, pages, or docs)
+stacks build # follow CLI prompts to select which library (or server) to build
+stacks commit # follow CLI prompts for committing changes
+stacks release # creates the releases for the stack & consequently, publishes them to npm
 
-pnpm stacks make:component HelloWorld # scaffolds a component
-pnpm stacks make:function HelloWorld # scaffolds a function
-pnpm stacks make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+stacks make:component HelloWorld # scaffolds a component
+stacks make:function HelloWorld # scaffolds a function
+stacks make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-pnpm stacks --help
+stacks --help
 ```
 
 <details>
@@ -178,6 +193,18 @@ stacks test:unit # runs unit tests
 stacks test:e2e # runs e2e tests
 stacks test:coverage # runs test coverage
 stacks test:types # runs typecheck
+
+# the CLI may be triggered in any
+# of the following syntax:
+stx fresh
+stacks fresh
+pnpm stx fresh
+pnpm stacks fresh
+pnpm artisan fresh
+pnpm fresh
+pnpm run fresh
+pnpm run artisan fresh
+
 ```
 
 </details>

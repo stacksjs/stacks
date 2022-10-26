@@ -113,7 +113,7 @@ export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit
   }
 
   else {
-    consola.error('Error running your Artisan script.')
+    consola.error('Error running your Stacks script.')
     process.exit(ExitCode.FatalError)
   }
 }

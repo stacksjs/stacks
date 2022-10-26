@@ -21,6 +21,7 @@ export const enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
+  Clean = 'clean',
   Dev = 'dev',
   DevComponents = 'dev:components',
   DevDocs = 'dev:docs',

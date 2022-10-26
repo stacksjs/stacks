@@ -38,7 +38,7 @@ function components(options?: ComponentOptions) {
     include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
       componentsPath(),
-      pagesPath(),
+      // pagesPath(),
     ],
     dts: frameworkPath('components.d.ts'),
   }

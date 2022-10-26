@@ -208,7 +208,7 @@ declare global {
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
   const snakeCase: typeof import('./core/strings/src/index')['snakeCase']
-  const src: typeof import('./core/path/src/index')['default']
+  const src: typeof import('./core/fs/src/index')['default']
   const stacksPath: typeof import('./core/path/src/index')['stacksPath']
   const stringsPath: typeof import('./core/path/src/index')['stringsPath']
   const suite: typeof import('vitest')['suite']
@@ -636,7 +636,7 @@ declare module '@vue/runtime-core' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly snakeCase: UnwrapRef<typeof import('./core/strings/src/index')['snakeCase']>
-    readonly src: UnwrapRef<typeof import('./core/path/src/index')['default']>
+    readonly src: UnwrapRef<typeof import('./core/fs/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('./core/path/src/index')['stacksPath']>
     readonly stringsPath: UnwrapRef<typeof import('./core/path/src/index')['stringsPath']>
     readonly suite: UnwrapRef<typeof import('vitest')['suite']>
