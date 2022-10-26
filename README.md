@@ -23,7 +23,9 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 0️⃣ **Zero-config PWA** <br>
 🍀 **Vue powered** <br>
 
-#### FX Engine
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
+
+## FX Engine
 
 🤖 **Functions** _Develop functions more rapidly than ever_ <br>
 🤖 **APIs** _Automatically turn functions to endpoints_ <br>
@@ -34,7 +36,9 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 💨 **Cache** _Local Redis, or auto hosted & scaled_ <br>
 ⚙️ **Queues** _Run your heavy-workload in the background_ <br>
 
-#### Stacks Engine
+Everything is zero-config, yet highly configurable.
+
+## Stacks Engine
 
 📚 **Smart Bundler** _Vite powered_ <br>
 📫 **Library npm distribution** _Automatically distribute components & functions_ <br>
@@ -44,10 +48,6 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._ <br>
 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_ <br>
 🛠️ **Version control built-in** _including automatic changelog generations_ <br>
-
-Everything is zero-config, yet highly configurable.
-
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
