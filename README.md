@@ -14,7 +14,9 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ![Atomic UI & FX Design](./apps/site/images/diagram.png)
 
-## UI Engine
+## Features
+
+### UI Engine
 
 🧩 **Components** _Automatically generate Vue & Web Components_<br>
 ⚡️ **Static Site Generation (SSG)** _Sites & layouts developed without breaking a sweat_<br>
@@ -25,7 +27,7 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
-## FX Engine
+### FX Engine
 
 🧩 **Functions** _Develop functions more rapidly than ever_<br>
 🤖 **APIs** _Automatically turn functions to endpoints_<br>
@@ -38,7 +40,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 
 Everything is zero-config, yet highly configurable.
 
-## Stacks Engine
+### Stacks Engine
 
 📚 **Smart Bundler** _Vite powered_<br>
 📫 **Library npm distribution** _Automatically distribute components & functions_<br>
