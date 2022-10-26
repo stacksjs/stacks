@@ -97,7 +97,7 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Atomic FX development, at core, is a simple way to create composable functions. These “function libraries” may easily be distributed via npm or served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. <i>Don’t sweat it, it’s simple!</i>
+                  Stacks provides a toolkit to simply develop functions. These “function libraries” may easily be distributed via npm or be served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. <i>Don’t sweat it, it’s simple!</i>
                 </div>
               </div>
             </div>
