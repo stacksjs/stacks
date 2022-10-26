@@ -66,7 +66,7 @@ onMounted(() => {
                     href="https://stacks.ow3.org/components"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    Components
+                    UI Engine
                   </a>
                 </div>
               </div>
@@ -90,7 +90,7 @@ onMounted(() => {
                     href="https://stacks.ow3.org/functions"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    Functions
+                    FX Engine
                   </a>
                 </div>
               </div>
@@ -113,16 +113,26 @@ onMounted(() => {
                     href="https://stacks.ow3.org/pages"
                     class="underline text-gray-900 dark:text-white"
                   >
-                    Pages
+                    Stacks Engine
                   </a>
                 </div>
               </div>
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Building on top of “components,” you may easily reuse them to develop your “pages.”
-                  SSR & PWA support is built-in, as well as a deployable server. Get more done, more quickly.
-                  Vercel & Netlify are supported, including many other cloud providers.
+                  A well-designed CI/CD pipeline. Automatic component & function library npm distributions.
+                  Linting & formatting enabled by default, without the need of prettier. Semver version
+                  control enabled, automatic versioning & changelog generation. Access to a powerful
+                  Stacks CLI. And much more.
+
+                  <!-- The Stacks Engine is the layer that connects the UI & FX engine.
+                  No need to worry about the server infrastructure anymore.
+                  AWS, Vercel & Netlify and more supported. -->
+
+                  <!--
+                  - 🚀 **Built-in production deployments** _choose server, serverless, or service_<br>
+                  - 🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._<br>
+                  - 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br> -->
                 </div>
               </div>
             </div>
@@ -145,10 +155,12 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Approachable artisan design; simplistic setup, maintenance & collaboration. Deep IDE integration,
-                  auto-formatting, access to powerful utility APIs, modern git commit conventions, npm package releases, semver powered,
-                  pretty changelog generations, PR dependency updates, documentation tooling, and more.
-                  <i>A well-defined set of best practices & automations.</i>
+                  Simplistic setup, maintenance & collaboration. Deep IDE integration,
+                  auto-formatting, access to powerful APIs, modern git commit conventions, npm
+                  package releases, semver powered, pretty changelog generations, PR dependency updates,
+                  documentation tooling, and more.
+
+                  <i>A well-defined set of best practices & automations with an approachable design.</i>
                 </div>
               </div>
             </div>
@@ -166,9 +178,14 @@ onMounted(() => {
 
               <div class="ml-12">
                 <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
-                  Stacks’s robust ecosystem of first-party libraries, including headless/unstyled, fully accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
+                  Stacks has a deep ecosystem of integrations & first-party libraries, including headless/unstyled, fully
+                  accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
-                    href="https://github.com/stacksjsow3org/table"
+                    href="https://github.com/stacksjs/calendar"
+                    class="underline text-blue-600 dark:text-blue-200"
+                  >Calendar</a>,
+                  <a
+                    href="https://github.com/stacksjs/table"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Tables</a>,
                   <a
@@ -200,17 +217,7 @@ onMounted(() => {
                     href="https://github.com/stacksjs/web3"
                     class="underline text-blue-600 dark:text-blue-200"
                   >Web3</a>
-                  libraries, such as <a
-                    href="https://github.com/stacksjs/daos"
-                    class="underline text-blue-600 dark:text-blue-200"
-                  >DAO</a>, <a
-                    href="https://github.com/stacksjs/nfts"
-                    class="underline text-blue-600 dark:text-blue-200"
-                  >NFTs</a>, <a
-                    href="https://github.com/stacksjs/defi"
-                    class="underline text-blue-600 dark:text-blue-200"
-                  >DeFi</a>
-                  stacks, and more—we got you covered.
+                  libraries.
                 </div>
               </div>
             </div>
@@ -246,7 +253,7 @@ onMounted(() => {
           </div>
 
           <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Pre-Alpha (Node v18.8)
+            Stacks Alpha (Node v18.12)
           </div>
         </div>
       </div>
