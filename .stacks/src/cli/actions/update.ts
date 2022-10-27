@@ -1,5 +1,6 @@
 import { Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/fs'
+import { app } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, type IOType, NpmScript, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'
