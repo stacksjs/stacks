@@ -63,6 +63,7 @@
     "update:framework": "pnpm stacks update:framework",
     "update:package-manager": "pnpm stacks update:package-manager",
     "update:node": "pnpm stacks update:node",
+    "update:all": "pnpm stacks update:all",
     "dev": "pnpm stacks dev",
     "dev:components": "npx vite serve ./vue-components -c ./core/build/src/vue-components.ts",
     "dev:core": "pnpm --filter './core/**' dev",

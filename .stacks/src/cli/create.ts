@@ -10,6 +10,7 @@ import { generate as generateAppKey } from './actions/key'
 
 async function create(stacks: CLI) {
   stacks
+    .command('', 'Create a new Stacks project')
     .option('-n, --name <name>', 'Name of the stack')
     .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', 'Are you building UI components?', { default: true }) // if no, -v and -w would be false
@@ -21,9 +22,6 @@ async function create(stacks: CLI) {
     .option('-d, --database', 'Do you need a database?', { default: true })
     .option('--debug', 'Add additional debug logs', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-
-  stacks
-    .command('')
     .action(async (args: any) => {
       const name = stacks.args[0] || args.name || '.'
       const path = resolve(process.cwd(), name)

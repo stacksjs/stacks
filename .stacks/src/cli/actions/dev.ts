@@ -1,4 +1,4 @@
-import { prompts as Prompts, consola } from '@stacksjs/cli'
+import { Prompts, consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 

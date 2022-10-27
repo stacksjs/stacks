@@ -1,24 +1,27 @@
-import type { CLI } from '@stacksjs/types'
+import type { BuildOption, BuildOptions, CLI } from '@stacksjs/types'
 import { startBuildProcess } from './actions/build'
 
 async function build(stacks: CLI) {
   stacks
     .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-c, --components', 'Build your component library')
+    .option('-v, --vue-components', 'Build your Vue component library') // these are automatically built with your -c option as well
     .option('-w, --web-components', 'Build your framework agnostic web component library') // these are automatically built with your -c option as well
     .option('-e, --elements', 'An alias to the -w flag')
     .option('-f, --functions', 'Build your function library')
+    .option('-p, --pages', 'Build your SSG pages')
     .option('-d, --docs', 'Build your documentation site')
+    .option('-s, --stacks', 'Build Stacks framework', { default: false })
     .option('--debug', 'Add additional debug logs', { default: false })
-    // .option('-p, --pages', 'Build your pages')
-    .action(async (options: any) => {
+    .action(async (options: BuildOptions & BuildOption) => {
       await startBuildProcess(options)
     })
 
   stacks
     .command('build:components', 'Automagically build your component libraries for production use & npm/CDN distribution.')
     .action(async () => {
-      await startBuildProcess('components')
+      const type: BuildOption = 'components'
+      await startBuildProcess(type)
     })
 
   stacks
@@ -29,6 +32,8 @@ async function build(stacks: CLI) {
 
   stacks
     .command('build:web-components', 'Automagically build web component library for production use & npm/CDN distribution.')
+    .alias('build:elements')
+    .alias('build:wc')
     .action(async () => {
       await startBuildProcess('web-components')
     })

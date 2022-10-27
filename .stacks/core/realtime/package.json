@@ -1,28 +1,26 @@
 {
-  "name": "@stacksjs/fs",
+  "name": "@stacksjs/realtime",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
-  "description": "The Stacks file system.",
+  "description": "The Stacks realtime integration.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/fs#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/realtime#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/fs"
+    "directory": "./.stacks/core/realtime"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "fs",
-    "file system",
-    "storage",
-    "collections",
-    "utilities",
-    "functions",
+    "realtime",
+    "broadcasting",
+    "pusher",
+    "supabase",
     "stacks"
   ],
   "main": "dist/index.mjs",
@@ -46,11 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "fs-extra": "^10.1.0"
+    "vitest": "^0.24.3"
   },
   "devDependencies": {
     "mkdist": "^0.4.0",

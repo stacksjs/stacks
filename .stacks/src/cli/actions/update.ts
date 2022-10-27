@@ -13,7 +13,7 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
     debug = options.debug ? 'inherit' : 'ignore'
 
   // first, we need to update the framework, if updates available
-  if (type === 'framework' || options?.framework) {
+  if (type === 'framework' || type === 'all' || options?.framework) {
     try {
       // check if the .stacks folder has any updates
       // https://carlosbecker.com/posts/git-changed/
@@ -56,37 +56,39 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
     const exclude = ['functions/package.json', 'components/vue/package.json', 'components/web/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
     consola.info('Updating framework...')
-    await deleteFiles(frameworkPath(), exclude)
+    await fs.deleteFiles(frameworkPath(), exclude)
 
     // loop 5 times to make sure all "deep empty" folders are deleted
     for (let i = 0; i < 5; i++)
-      await deleteEmptyFolders(frameworkPath())
+      await fs.deleteEmptyFolders(frameworkPath())
 
     const from = projectPath('./updates/.stacks')
     const to = frameworkPath()
 
-    await copyFolder(from, to, exclude)
+    await fs.copyFolder(from, to, exclude)
 
     consola.info('Cleanup...')
-    await deleteFolder(tempUpdatePath)
+    await fs.deleteFolder(tempUpdatePath)
     consola.success('Framework updated')
   }
 
   // then, we need to update the project's & framework's dependencies, if updates available
-  if (type === 'dependencies' || options?.dependencies) {
+  if (type === 'dependencies' || type === 'all' || options?.dependencies) {
     consola.info('Updating dependencies...')
     await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
     // consola.success('Updated dependencies')
   }
 
-  if (type === 'package-manager' || options?.packageManager) {
+  // this condition checks whether pnpm needs to be updated
+  if (type === 'package-manager' || type === 'all' || options?.packageManager) {
     consola.info('Updating package manager...')
     const version = options?.version || 'latest'
     await spawn.async(`corepack prepare pnpm@${version} --activate`, { stdio: debug, cwd: projectPath() })
     consola.success('Successfully updated to:', version)
   }
 
-  if (type === 'node' || options?.node) {
+  // this condition checks whether Node needs to be updated
+  if (type === 'node' || type === 'all' || options?.node) {
     consola.info('Updating Node...')
     await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })
     consola.success('Updated Node')

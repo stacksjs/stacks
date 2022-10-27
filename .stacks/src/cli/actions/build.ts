@@ -1,7 +1,7 @@
 import { prompts as Prompts, consola } from '@stacksjs/cli'
 import { hasComponents, hasFunctions } from '@stacksjs/fs'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { type BuildOptionss, ExitCode, NpmScript } from '@stacksjs/types'
 import { generateTypes } from './types'
 
 const { prompts } = Prompts
@@ -98,7 +98,7 @@ export async function buildFunctionsLibrary() {
   }
 }
 
-export async function startBuildProcess(options: any) {
+export async function startBuildProcess(options: BuildOptionss) {
   if (options.components || options === 'components') {
     await buildComponentLibraries()
   }

@@ -38,18 +38,18 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
 - ⚙️ **Queues** _run your heavy workload in the background_<br>
+- 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
 - ☁️ **Deployments** _Stacks is a server & serverless deployment platform_<br>
-
-Everything is zero-config, yet highly configurable.
+- 🪄 **Zero-Config** _yet highly configurable_<br>
 
 ### Stacks Engine
 
 - 📚 **Smart Bundler** _Vite powered_<br>
 - 📫 **npm distribution** _component & function libraries are automatically distributed_<br>
-- 🚀 **Built-in production deployments** _choose server, serverless, or service_<br>
-- 🤖 **CI/CD** _GitHub Actions ready-to-go_<br>
+- 🚀 **Built-in production deployments** _choose server, serverless, Netlify, Vercel, and more<br>
+- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>__
 - 👩🏽‍🔧 **Linting & formatting enabled by default** _and without setup. Eslint pre-configured_<br>
-- 🍀 **Auto-imported goodies** _Components, Functions, String & Array helpers, Collections, VueUse, etc._<br>
+- 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br>
 - 🛠️ **Version control built-in** _auto changelog generation in GitHub & CHANGELOG.md_<br>
 
@@ -95,6 +95,8 @@ stacks --help
 ```bash
 stacks --version # get the Stacks version
 stacks --help # view help menu
+# please note: you may suffix any command with the
+# `command --help` flag to review the help menu
 
 stacks install # installs your dependencies
 stacks fresh # fresh reinstall of all deps
@@ -105,6 +107,7 @@ stacks update:dependencies # auto-update deps & the Stacks framework
 stacks update:framework # auto-update deps & the Stacks framework
 stacks update:package-manager # auto-update deps & the Stacks framework
 stacks update:node # update to latest project-defined node version
+stacks update:all # update Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `stacks ... --help`

@@ -16,8 +16,23 @@ export interface StacksOptions {
  */
 export interface CliOptions {
   debug: boolean | IOType
-  force?: boolean
 }
+
+export type BuildOptionss = BuildOptions | BuildOption
+
+export interface BuildOptions extends CliOptions {
+  components: boolean
+  vueComponents: boolean
+  webComponents: boolean
+  elements?: boolean
+  functions?: boolean
+  docs?: boolean
+  pages?: boolean
+  stacks?: boolean
+  all: boolean
+}
+
+export type BuildOption = 'components' | 'vue-components' | 'web-components' | 'elements' | 'functions' | 'docs' | 'pages'
 
 export interface UpdateOptions extends CliOptions {
   framework: boolean
@@ -25,6 +40,8 @@ export interface UpdateOptions extends CliOptions {
   packageManager: boolean
   node: boolean
   version: string
+  all: boolean
+  force?: boolean
 }
 
 export type UpdateTypes = 'all' | 'framework' | 'dependencies' | 'package-manager' | 'node'
