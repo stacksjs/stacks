@@ -1,4 +1,4 @@
-import { console as consola, spawn } from '@stacksjs/cli'
+import { consola, spawn } from '@stacksjs/cli'
 import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import fs from '@stacksjs/fs'
@@ -103,8 +103,12 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, debug: 'ignore' | 'inherit' = 'inherit') {
+export async function runNpmScript(script: NpmScript, options?: Options) {
   const path = frameworkPath()
+  let debug = app.debug ? 'inherit' : 'ignore'
+
+  if (options?.debug)
+    debug = options.debug ? 'inherit' : 'ignore'
 
   const { data: manifest } = await fs.readJsonFile('package.json', path)
 

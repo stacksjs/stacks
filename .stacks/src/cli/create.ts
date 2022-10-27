@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { console as consola, spawn } from '@stacksjs/cli'
+import { consola, spawn } from '@stacksjs/cli'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/fs'

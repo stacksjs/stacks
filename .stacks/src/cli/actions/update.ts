@@ -1,4 +1,4 @@
-import { prompts as Prompts, console as consola, spawn } from '@stacksjs/cli'
+import { prompts as Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/fs'
 import { projectPath, resolve } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'

@@ -258,3 +258,5 @@ export const path = {
   sep,
   toNamespacedPath,
 }
+
+export default path

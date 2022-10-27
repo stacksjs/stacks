@@ -50,10 +50,10 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/fs": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/lint": "workspace:*",
     "@vueuse/core": "^9.4.0",
     "@vueuse/head": "^0.9.8",
     "@vueuse/math": "^9.4.0",
@@ -64,8 +64,8 @@
     "esno": "^0.16.3",
     "fast-glob": "^3.2.12",
     "kolorist": "1.6.0",
-    "rimraf": "^3.0.2",
-    "only-allow": "^1.1.1"
+    "only-allow": "^1.1.1",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "mkdist": "^0.3.13",

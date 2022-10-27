@@ -12,6 +12,13 @@ export interface StacksOptions {
 }
 
 /**
+ * The options to pass to the CLI.
+ */
+export interface CliOptions {
+  debug: boolean
+}
+
+/**
  * The available npm scripts within the Stacks toolkit.
  */
 export const enum NpmScript {
@@ -52,4 +59,6 @@ export const enum NpmScript {
   KeyGenerate = 'key:generate',
   TypesFix = 'types:fix',
   TypesGenerate = 'types:generate',
+  Preinstall = 'preinstall',
+  Prepublish = 'prepublish',
 }

@@ -3,13 +3,14 @@ import consola from 'consola'
 import cac from 'cac'
 import prompts from 'prompts'
 
-const console = consola
-const cli = cac
+const command = cac
 const spawn = ezSpawn
 
 export {
-  console,
-  cli,
+  consola,
+  command,
+  cac,
   spawn,
+  ezSpawn,
   prompts,
 }
