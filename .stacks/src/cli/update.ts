@@ -30,8 +30,13 @@ async function update(stacks: CLI) {
 
   stacks
     .command('update:package-manager', 'Update your package manager, i.e. pnpm')
+    .option('-v, --version', 'The version to update pnpm to', { default: 'latest' })
     .option('--debug', 'Add additional debug logs', { default: false })
     .action(async (options: UpdateOptions) => {
+      // when a version is specified, we update to that version
+      if (stacks.args[0])
+        options.version = stacks.args[0]
+
       await updateStacks('package-manager', options)
     })
 

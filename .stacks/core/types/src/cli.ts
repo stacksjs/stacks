@@ -24,6 +24,7 @@ export interface UpdateOptions extends CliOptions {
   dependencies: boolean
   packageManager: boolean
   node: boolean
+  version: string
 }
 
 export type UpdateTypes = 'all' | 'framework' | 'dependencies' | 'package-manager' | 'node'

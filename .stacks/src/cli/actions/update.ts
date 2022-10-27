@@ -2,8 +2,7 @@ import { Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/fs'
 import { app } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, type IOType, NpmScript, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'
+import { ExitCode, type IOType, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
@@ -76,14 +75,15 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
   // then, we need to update the project's & framework's dependencies, if updates available
   if (type === 'dependencies' || options?.dependencies) {
     consola.info('Updating dependencies...')
-    await runNpmScript(NpmScript.Update, { debug })
-    consola.success('Updated dependencies')
+    await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
+    // consola.success('Updated dependencies')
   }
 
   if (type === 'package-manager' || options?.packageManager) {
     consola.info('Updating package manager...')
-    const version = await runNpmScript(NpmScript.UpdatePackageManager, { debug })
-    consola.success('Successfully updated pnpm to: ', version)
+    const version = options?.version || 'latest'
+    await spawn.async(`corepack prepare pnpm@${version} --activate`, { stdio: debug, cwd: projectPath() })
+    consola.success('Successfully updated to:', version)
   }
 
   if (type === 'node' || options?.node) {

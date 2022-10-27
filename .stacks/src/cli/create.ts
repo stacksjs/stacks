@@ -8,8 +8,8 @@ import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { generate as generateAppKey } from './actions/key'
 
-async function create(stack: CLI) {
-  stack
+async function create(stacks: CLI) {
+  stacks
     .option('-n, --name <name>', 'Name of the stack')
     .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', 'Are you building UI components?', { default: true }) // if no, -v and -w would be false
@@ -22,10 +22,10 @@ async function create(stack: CLI) {
     .option('--debug', 'Add additional debug logs', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
 
-  stack
+  stacks
     .command('')
     .action(async (args: any) => {
-      const name = stack.args[0] || args.name || '.'
+      const name = stacks.args[0] || args.name || '.'
       const path = resolve(process.cwd(), name)
 
       console.log()
