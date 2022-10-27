@@ -15,8 +15,20 @@ export interface StacksOptions {
  * The options to pass to the CLI.
  */
 export interface CliOptions {
-  debug: boolean
+  debug: boolean | IOType
+  force?: boolean
 }
+
+export interface UpdateOptions extends CliOptions {
+  framework: boolean
+  dependencies: boolean
+  packageManager: boolean
+  node: boolean
+}
+
+export type UpdateTypes = 'all' | 'framework' | 'dependencies' | 'package-manager' | 'node'
+
+export type IOType = 'overlapped' | 'pipe' | 'ignore' | 'inherit'
 
 /**
  * The available npm scripts within the Stacks toolkit.

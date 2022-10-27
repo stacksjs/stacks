@@ -1,8 +1,8 @@
 import { consola, spawn } from '@stacksjs/cli'
-import { ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
+import { type CliOptions, ExitCode, type IOType, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import fs from '@stacksjs/fs'
-import { ui } from '@stacksjs/config'
+import { app, ui } from '@stacksjs/config'
 
 export * as detectIndent from 'detect-indent'
 export { detectNewline } from 'detect-newline'
@@ -103,17 +103,16 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: Options) {
-  const path = frameworkPath()
-  let debug = app.debug ? 'inherit' : 'ignore'
+export async function runNpmScript(script: NpmScript, options?: CliOptions) {
+  let debug: IOType = app.debug ? 'inherit' : 'ignore'
 
   if (options?.debug)
     debug = options.debug ? 'inherit' : 'ignore'
 
-  const { data: manifest } = await fs.readJsonFile('package.json', path)
+  const { data: manifest } = await fs.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
-    await spawn.async('pnpm', ['run', script], { stdio: debug, cwd: path })
+    await spawn.async(`pnpm run ${script}`, { stdio: debug, cwd: frameworkPath() })
   }
 
   else {

@@ -1,32 +1,7 @@
 packages:
-  - ./.stacks/core/actions
-  - ./.stacks/core/arrays
-  - ./.stacks/core/build
-  - ./.stacks/core/cache
-  - ./.stacks/core/collections
-  - ./.stacks/core/config
-  - ./.stacks/core/cli
-  - ./.stacks/core/database
-  - ./.stacks/core/docs
-  - ./.stacks/core/fs
-  - ./.stacks/core/git
-  - ./.stacks/core/lint
-  - ./.stacks/core/objects
-  - ./.stacks/core/modules
-  - ./.stacks/core/notifications
-  - ./.stacks/core/path
-  - ./.stacks/core/router
-  - ./.stacks/core/security
-  - ./.stacks/core/server
-  - ./.stacks/core/serverless
-  - ./.stacks/core/strings
-  - ./.stacks/core/tests
-  - ./.stacks/core/types
-  - ./.stacks/core/ui
-  - ./.stacks/core/utils
+  - ./.stacks/core/*
+  - ./.stacks/components/*
   - ./.stacks/functions
-  - ./.stacks/vue-components
-  - ./.stacks/web-components
   - ./.stacks
-  - './apps/**'
+  - ./apps/*
   - ./

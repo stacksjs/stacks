@@ -5,14 +5,11 @@ import { app } from '@stacksjs/config'
 
 export async function runPrepublish(options?: CliOptions) {
   try {
-    let debug: 'inherit' | 'ignore' = app.debug ? 'inherit' : 'ignore'
+    const debug = options?.debug ? options.debug : app.debug
 
-    if (options?.debug)
-      debug = options.debug ? 'inherit' : 'ignore'
-
-    consola.info('Running prepublish script...')
+    consola.info('Running prepublish command...')
     await runNpmScript(NpmScript.BuildStacks, { debug })
-    consola.success('prepublish script completed.')
+    consola.success('prepublish command completed.')
   }
   catch (error) {
     consola.error(error)

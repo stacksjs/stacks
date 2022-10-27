@@ -1,21 +1,21 @@
 import type { CLI } from '@stacksjs/types'
-import { reinstallNpmDependencies } from './actions/fresh'
+import { runFresh } from './actions/fresh'
 import { lint, lintFix } from './actions/lint'
 import { release } from './actions/release'
 import { commit } from './actions/commit'
-import { clean } from './actions/clean'
+import { runClean } from './actions/clean'
 
 async function utility(stacks: CLI) {
   stacks
     .command('fresh', 'Reinstalls your npm dependencies.')
     .action(async () => {
-      await reinstallNpmDependencies()
+      await runFresh()
     })
 
   stacks
     .command('clean', 'Removes all node_modules & lock files.')
     .action(async () => {
-      await clean()
+      await runClean()
     })
 
   stacks

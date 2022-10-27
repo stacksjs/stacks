@@ -1,19 +1,23 @@
-import { prompts as Prompts, consola, spawn } from '@stacksjs/cli'
+import { Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/fs'
-import { projectPath, resolve } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { ExitCode, type IOType, NpmScript, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
-export async function stacks(options: any) {
+export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
+  let debug: IOType = app.debug ? 'inherit' : 'ignore'
+
+  if (options?.debug)
+    debug = options.debug ? 'inherit' : 'ignore'
+
   // first, we need to update the framework, if updates available
-  // TODO: need to delete all files except the whitelisted ones
-  if (options.framework) {
+  if (type === 'framework' || options?.framework) {
     try {
       // check if the .stacks folder has any updates
       // https://carlosbecker.com/posts/git-changed/
-      await spawn.async('git diff --quiet HEAD -- ./.stacks', { stdio: 'inherit', cwd: process.cwd() })
+      await spawn.async('git diff --quiet HEAD -- ./.stacks', { stdio: debug, cwd: projectPath() })
     }
     catch (error: any) {
       if (error.status === 1) {
@@ -41,55 +45,53 @@ export async function stacks(options: any) {
     consola.info('Downloading framework updates...')
 
     const tempFolderName = 'updates'
-    const tempUpdatePath = resolve(projectPath(), tempFolderName)
+    const tempUpdatePath = projectPath(tempFolderName)
 
     if (fs.doesFolderExist(tempUpdatePath))
       await deleteFolder(tempUpdatePath)
 
-    await spawn.async(`giget stacks ${tempFolderName}`, { stdio: options.debug ? 'inherit' : 'ignore' }) // TODO: stdio should inherit when APP_DEBUG or debug flag is true
-    consola.success('Downloaded framework updates.')
+    await spawn.async(`giget stacks ${tempFolderName}`, { stdio: debug })
+    consola.success('Downloaded framework updates')
+
+    const exclude = ['functions/package.json', 'components/vue/package.json', 'components/web/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
 
     consola.info('Updating framework...')
-
-    const frameworkPath = resolve(process.cwd(), '.stacks')
-    const exclude = ['functions/package.json', 'vue-components/package.json', 'web-components/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
-
-    await deleteFiles(frameworkPath, exclude)
+    await deleteFiles(frameworkPath(), exclude)
 
     // loop 5 times to make sure all "deep empty" folders are deleted
     for (let i = 0; i < 5; i++)
-      await deleteEmptyFolders(frameworkPath)
+      await deleteEmptyFolders(frameworkPath())
 
-    const from = resolve(projectPath(), './updates/.stacks')
-    const to = frameworkPath
+    const from = projectPath('./updates/.stacks')
+    const to = frameworkPath()
+
     await copyFolder(from, to, exclude)
 
     consola.info('Cleanup...')
     await deleteFolder(tempUpdatePath)
-    consola.success('Framework updated.')
+    consola.success('Framework updated')
   }
 
   // then, we need to update the project's & framework's dependencies, if updates available
-  if (options.dependencies) {
+  if (type === 'dependencies' || options?.dependencies) {
     consola.info('Updating dependencies...')
-    await runNpmScript(NpmScript.Update)
-    consola.success('Updated dependencies.')
+    await runNpmScript(NpmScript.Update, { debug })
+    consola.success('Updated dependencies')
   }
 
-  if (options.packageManager) {
-    consola.info('Updating pnpm...')
-    const version = await runNpmScript(NpmScript.UpdatePackageManager)
+  if (type === 'package-manager' || options?.packageManager) {
+    consola.info('Updating package manager...')
+    const version = await runNpmScript(NpmScript.UpdatePackageManager, { debug })
     consola.success('Successfully updated pnpm to: ', version)
   }
 
-  if (options.node || options === 'node') {
+  if (type === 'node' || options?.node) {
     consola.info('Updating Node...')
-    await spawn.async('fnm use', { stdio: 'inherit', cwd: projectPath() })
-    consola.success('Updated Node.')
+    await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })
+    consola.success('Updated Node')
   }
 
   // TODO: also update CI files & configurations, and other files, possibly
-  // ideally we want this to be smart enough to update only the files that have changed
-
+  // we want this to be smart enough to update only if files that have been updated
   // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
 }

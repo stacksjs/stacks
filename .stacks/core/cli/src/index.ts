@@ -5,6 +5,7 @@ import prompts from 'prompts'
 
 const command = cac
 const spawn = ezSpawn
+const Prompts = prompts
 
 export {
   consola,
@@ -13,4 +14,5 @@ export {
   spawn,
   ezSpawn,
   prompts,
+  Prompts,
 }
