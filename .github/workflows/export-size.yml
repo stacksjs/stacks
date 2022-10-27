@@ -9,7 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
       - uses: antfu/export-size-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          paths: .stacks,.stacks/core/actions,.stacks/core/arrays,.stacks/core/build,.stacks/core/collections,.stacks/core/fs,.stacks/core/helpers,.stacks/core/modules,.stacks/core/objects,.stacks/core/paths,.stacks/core/router,.stacks/core/security,.stacks/core/strings,.stacks/core/types,.stacks/core/ui
+          paths: .stacks,.stacks/core/actions,.stacks/core/arrays,.stacks/core/build,.stacks/core/cache,.stacks/core/cli,.stacks/core/collections,.stacks/core/docs,.stacks/core/fs,.stacks/core/git,.stacks/core/lint,.stacks/core/modules,.stacks/core/notifications,.stacks/core/objects,.stacks/core/path,.stacks/core/router,.stacks/core/security,.stacks/core/server,.stacks/core/serverless,.stacks/core/strings,.stacks/core/tests,.stacks/core/types,.stacks/core/ui,.stacks/core/utils

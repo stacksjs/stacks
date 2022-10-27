@@ -1,19 +1,17 @@
-import { consola } from '@stacksjs/cli'
-import { runNpmScript } from '@stacksjs/utils'
-import { type CliOptions, ExitCode, NpmScript } from '@stacksjs/types'
+import { consola, spawn } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
+import { type CliOptions, ExitCode } from '@stacksjs/types'
 import { app } from '@stacksjs/config'
 
 export async function runPreinstall(options?: CliOptions) {
   try {
-    let debug = app.debug ? 'inherit' : 'ignore'
+    let debug: 'inherit' | 'ignore' = app.debug ? 'inherit' : 'ignore'
 
     if (options?.debug)
       debug = options.debug ? 'inherit' : 'ignore'
 
     consola.info('Running preinstall script...')
-
-    await runNpmScript(NpmScript.BuildStacks, { debug })
-
+    await spawn.async('npx only-allow pnpm', { stdio: debug, cwd: projectPath() })
     consola.success('preinstall script completed.')
   }
   catch (error) {

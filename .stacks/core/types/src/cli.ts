@@ -61,4 +61,5 @@ export const enum NpmScript {
   TypesGenerate = 'types:generate',
   Preinstall = 'preinstall',
   Prepublish = 'prepublish',
+  Wip = 'wip',
 }
