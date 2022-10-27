@@ -51,7 +51,7 @@
     "vitest": "^0.24.3"
   },
   "devDependencies": {
-    "mkdist": "^0.3.13",
+    "mkdist": "^0.4.0",
     "typescript": "^4.8.4"
   }
 }
