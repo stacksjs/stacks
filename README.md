@@ -47,7 +47,8 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 
 - 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>
 - 📫 **npm support** _component & function libraries are automatically distributed_<br>
-- 🚀 **Deployments** _take the sweat out of server & serverless production deployments_<br>
+- 🚀 **Deployment Manager** _take the sweat out of server & serverless production deployments_<br>
+- 🚀 **Auto CDN** _low-latency content delivery network on top of your assets_<br>
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_<br>
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Powerful VS Code set up_<br>
