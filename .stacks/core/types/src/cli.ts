@@ -42,6 +42,18 @@ export interface UpdateOptions extends CliOptions {
   force?: boolean
 }
 
+export interface MakeOptions extends CliOptions {
+  component?: boolean
+  page?: boolean
+  function?: boolean
+  language?: boolean
+  database?: boolean
+  migration?: boolean
+  factory?: boolean
+  notification?: boolean
+  stack?: boolean
+}
+
 export type IOType = 'overlapped' | 'pipe' | 'ignore' | 'inherit'
 
 /**

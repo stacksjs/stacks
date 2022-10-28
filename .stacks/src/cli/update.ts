@@ -11,8 +11,8 @@ async function update(stacks: CLI) {
     .option('-d, --dependencies', 'Update your dependencies', { default: false })
     .option('-p, --package-manager', 'Update your package manager, i.e. pnpm', { default: false })
     .option('-n, --node', 'Update Node to the version defined in ./node-version', { default: false })
-    .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
     .option('-a, --all', 'Update Node, package manager, project dependencies, and framework', { default: false })
+    .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
     .option('--debug', 'Add additional debug logs', { default: false })
     .example('stacks update -a --debug')
     .action(async (options: UpdateOptions) => {
@@ -30,10 +30,8 @@ async function update(stacks: CLI) {
           initial: 0,
         })
 
-        // when answers are provided via the multi-select,
-        // then an array is returned with the answer values
-        if (Array.isArray(answers))
-          options = answers.reduce((a, v) => ({ ...a, [v]: true }), {}) // creates an object out of array and sets answers to true
+        // creates an object out of array and sets answers to true
+        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
       await updateStacks(options)

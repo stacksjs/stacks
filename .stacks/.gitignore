@@ -8,3 +8,5 @@ core/build/entries/*.ts
 **/dist/*.css
 **/dist/*.d.ts
 **/dist/**/*.d.ts
+**/dist/**/*.d.cts
+**/dist/**/*.d.mts

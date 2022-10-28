@@ -23,37 +23,43 @@ async function build(stacks: CLI) {
           name: 'update',
           message: 'What are you trying to build?',
           choices: [
-            { title: 'Dependencies', value: 'dependencies' },
-            { title: 'Framework', value: 'framework' },
-            { title: 'Node', value: 'node' },
-            { title: 'pnpm', value: 'package-manager' },
+            { title: 'Components', value: 'components' },
+            { title: 'Vue Components', value: 'vue-components' },
+            { title: 'Web Components', value: 'web-components' },
+            { title: 'Functions', value: 'functions' },
+            { title: 'Pages', value: 'pages' },
+            { title: 'Documentation', value: 'docs' },
           ],
-          initial: 0,
         })
 
-        // when answers are provided via the multi-select,
-        // then an array is returned with the answer values
-        if (Array.isArray(answers))
-          options = answers.reduce((a, v) => ({ ...a, [v]: true }), {}) // creates an object out of array and sets answers to true
+        // creates an object out of array and sets answers to true
+        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
       await startBuildProcess(options)
     })
 
   stacks
-    .command('build:components', 'Automagically build your component libraries for production use & npm/CDN distribution.')
+    .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .action(async () => {
       await startBuildProcess({ components: true })
     })
 
   stacks
-    .command('build:functions', 'Automagically build your function library for production use & npm/CDN distribution.')
+    .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .action(async () => {
       await startBuildProcess({ functions: true })
     })
 
   stacks
-    .command('build:web-components', 'Automagically build web component library for production use & npm/CDN distribution.')
+    .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
+    .alias('build:vue')
+    .action(async () => {
+      await startBuildProcess({ vueComponents: true })
+    })
+
+  stacks
+    .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
     .alias('build:elements')
     .alias('build:wc')
     .action(async () => {
