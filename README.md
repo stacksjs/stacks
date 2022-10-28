@@ -39,7 +39,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 📢 **Notifications** _simply send emails, SMSs, and webhooks_<br>
 - ⚙️ **Queues** _run your heavy workload in the background_<br>
 - 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
-- 🧭 **Smart Routing** _file-based or Laravel-like_<br>
+- 🧭 **Router** _smart routing, file-based or Laravel-like_<br>
 - 💾 **Storage** _easily make use of local & remote storage/file systems_<br>
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_<br>
 
