@@ -53,7 +53,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Powerful VS Code set up_<br>
 - 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects & it comes fully-typed_<br>
-- 🛠️ **Native version control** _auto changelog generation in GitHub & CHANGELOG.md_<br>
+- 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_<br>
 - 📚 **Smart Bundling** _Vite powered & extendable_<br>
 - 📈 **Modern DX** _latest & greatest tooling natively accessible, including ESNext support_<br>
 - 🪄 **Zero-Config** _yet highly configurable_<br>
