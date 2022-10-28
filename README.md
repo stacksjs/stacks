@@ -24,34 +24,35 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
 - ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_<br>
 - 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_<br>
-- 🤖 **Deployments** _pages can natively be deployed to Netlify, Vercel, or elsewhere_<br>
-- 🍀 **Vue powered**<br>
+- 🤖 **Deployment Manager** _pages can natively be deployed to Netlify, Vercel, or elsewhere_<br>
+- 🍀 **Vue powered** _extendable & native access to the ecosystem_ <br>
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ### FX Engine
 
 - 🧩 **Functions** _develop functions more rapidly than ever_<br>
-- 🤖 **APIs** _automatically turn functions into endpoints_<br>
-- 🧭 **Smart Routing** _file-based or Laravel-like_<br>
-- 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
-- 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
+- 🏎️ **APIs** _scalability built-in_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
+- 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
+- 🤖 **Deployment Manager** _server & serverless deployment platform for your APIs (AWS support and more)_<br>
+- 📢 **Notifications** _send emails, SMSs, and webhooks simply_<br>
 - ⚙️ **Queues** _run your heavy workload in the background_<br>
 - 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
-- ☁️ **Deployments** _Stacks is a server & serverless deployment platform_<br>
-- 🪄 **Zero-Config** _yet highly configurable_<br>
+- 🧭 **Smart Routing** _file-based or Laravel-like_<br>
+- 💾 **Storage** _easily make use of local and remote storage/file systems_<br>
 
 ### Stacks Engine
 
-- 📚 **Smart Bundler** _Vite powered_<br>
-- 📫 **npm distribution** _component & function libraries are automatically distributed_<br>
-- 🚀 **Built-in production deployments** _choose server, serverless, Netlify, Vercel, and more<br>
 - 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>__
-- 👩🏽‍🔧 **Linting & formatting enabled by default** _and without setup. Eslint pre-configured_<br>
+- 📫 **npm support** _component & function libraries are automatically distributed_<br>
+- 🚀 **Deployments** _take the sweat out of server & serverless production deployments_<br>
+- 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_<br>
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
 - 💡 **First-class IDE integration** _Efficient VS Code set up & fully-typed_<br>
-- 🛠️ **Version control built-in** _auto changelog generation in GitHub & CHANGELOG.md_<br>
+- 🛠️ **Native version control** _auto changelog generation in GitHub & CHANGELOG.md_<br>
+- 📚 **Smart Bundling** _Vite powered & extendable_<br>
+- 🪄 **Zero-Config** _yet highly configurable_<br>
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
