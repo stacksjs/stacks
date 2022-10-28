@@ -2,23 +2,20 @@ import { Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/storage'
 import { app } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import { ExitCode, type IOType, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'
+import { ExitCode, type IOType, type UpdateOptions } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
-export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
-  // when answers are provided via the multi-select,
-  // then an array is returned with the answer values
-  if (Array.isArray(options))
-    options = options.reduce((a, v) => ({ ...a, [v]: true }), {}) // creates an object out of array and sets answers to true
-
-  let debug: IOType = app.debug ? 'inherit' : 'ignore'
+export async function stacks(options?: UpdateOptions) {
+  let debug: IOType
 
   if (options?.debug)
     debug = options.debug ? 'inherit' : 'ignore'
+  else
+    debug = app.debug ? 'inherit' : 'ignore'
 
   // first, we need to update the framework, if updates available
-  if (type === 'framework' || type === 'all' || options?.framework) {
+  if (options?.framework || options?.all) {
     try {
       // check if the .stacks folder has any updates
       // https://carlosbecker.com/posts/git-changed/
@@ -30,7 +27,7 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
         // there is a chance that users may apply local core edits, as it's totally acceptable, as long as
         // the user knows what they are doing. There is also a change that simply the deps within .stacks
         // folder have been updated and that could produce a diff.
-        if (!options.force) {
+        if (!options?.force) {
           const answer = await prompts.confirm({
             type: 'select',
             name: 'framework-update',
@@ -78,14 +75,14 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
   }
 
   // then, we need to update the project's & framework's dependencies, if updates available
-  if (type === 'dependencies' || type === 'all' || options?.dependencies) {
+  if (options?.dependencies || options?.all) {
     consola.info('Updating dependencies...')
     await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
     // consola.success('Updated dependencies')
   }
 
   // this condition checks whether pnpm needs to be updated
-  if (type === 'package-manager' || type === 'all' || options?.packageManager) {
+  if (options?.packageManager || options?.all) {
     consola.info('Updating package manager...')
     const version = options?.version || 'latest'
     await spawn.async(`corepack prepare pnpm@${version} --activate`, { stdio: debug, cwd: projectPath() })
@@ -93,7 +90,7 @@ export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
   }
 
   // this condition checks whether Node needs to be updated
-  if (type === 'node' || type === 'all' || options?.node) {
+  if (options?.node || options?.all) {
     consola.info('Updating Node...')
     await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })
     consola.success('Updated Node')

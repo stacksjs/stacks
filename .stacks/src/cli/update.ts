@@ -30,11 +30,13 @@ async function update(stacks: CLI) {
           initial: 0,
         })
 
-        await updateStacks(undefined, answers)
+        // when answers are provided via the multi-select,
+        // then an array is returned with the answer values
+        if (Array.isArray(answers))
+          options = answers.reduce((a, v) => ({ ...a, [v]: true }), {}) // creates an object out of array and sets answers to true
       }
-      else {
-        await updateStacks(undefined, options)
-      }
+
+      await updateStacks(options)
     })
 
   stacks
@@ -42,7 +44,7 @@ async function update(stacks: CLI) {
     .option('--debug', 'Add additional debug logs', { default: false })
     .example('stacks update:framework --debug')
     .action(async (options: UpdateOptions) => {
-      await updateStacks('framework', options)
+      await updateStacks({ framework: true, ...options })
     })
 
   stacks
@@ -51,7 +53,7 @@ async function update(stacks: CLI) {
     .alias('deps')
     .example('stacks update:dependencies --debug')
     .action(async (options: UpdateOptions) => {
-      await updateStacks('dependencies', options)
+      await updateStacks({ dependencies: true, ...options })
     })
 
   stacks
@@ -66,7 +68,7 @@ async function update(stacks: CLI) {
       if (stacks.args[0])
         options.version = stacks.args[0]
 
-      await updateStacks('package-manager', options)
+      await updateStacks({ packageManager: true, ...options })
       return stacks.outputHelp()
     })
 
@@ -74,14 +76,14 @@ async function update(stacks: CLI) {
     .command('update:node', 'Update Node to version defined in ./node-version')
     .option('--debug', 'Add additional debug logs', { default: false })
     .action(async (options: UpdateOptions) => {
-      await updateStacks('node', options)
+      await updateStacks({ node: true, ...options })
     })
 
   stacks
     .command('update:all', 'Update Node, package manager, project dependencies, and framework')
     .option('--debug', 'Add additional debug logs', { default: false })
     .action(async (options: UpdateOptions) => {
-      await updateStacks('all', options)
+      await updateStacks({ all: true, ...options })
     })
 }
 

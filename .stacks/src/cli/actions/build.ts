@@ -1,10 +1,8 @@
-import { prompts as Prompts, consola } from '@stacksjs/cli'
+import { consola } from '@stacksjs/cli'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
-import { type BuildOptionss, ExitCode, NpmScript } from '@stacksjs/types'
+import { type BuildOptions, NpmScript } from '@stacksjs/types'
 import { generateTypes } from './types'
-
-const { prompts } = Prompts
 
 export async function buildComponentLibraries() {
   try {
@@ -98,62 +96,24 @@ export async function buildFunctionsLibrary() {
   }
 }
 
-export async function startBuildProcess(options: BuildOptionss) {
-  if (options.components || options === 'components') {
+export async function startBuildProcess(options: BuildOptions) {
+  if (options.components)
     await buildComponentLibraries()
-  }
 
-  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
+  else if (options.vueComponents)
+    await buildVueComponentLibrary()
+
+  else if (options.webComponents || options.elements)
     await buildWebComponentLibrary()
-  }
 
-  else if (options.functions || options === 'functions') {
+  else if (options.functions)
     await buildFunctionsLibrary()
-  }
 
-  else if (options.docs || options === 'docs') {
+  else if (options.docs)
     await buildDocs()
-  }
 
-  else if (options.stacks || options === 'stacks') {
+  else if (options.stacks)
     await buildStacks()
-  }
-
-  else if (options.npm || options === 'npm') {
-    await buildComponentLibraries()
-    await buildFunctionsLibrary()
-
-    consola.success('All your libraries and its types were built successfully to be distributed on npm.')
-  }
-
-  else {
-    const answer = await prompts.select({
-      type: 'select',
-      name: 'build',
-      message: 'Which stack are you trying to build for production use?',
-      choices: [ // todo: should be a multi-select
-        { title: 'Components', value: 'components' },
-        { title: 'Functions', value: 'functions' },
-        // { title: 'Pages', value: 'pages' },
-        { title: 'Docs', value: 'docs' },
-      ],
-      initial: 0,
-    })
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    if (answer === 'components')
-      await buildComponentLibraries()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    if (answer === 'functions')
-      await buildFunctionsLibrary()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'docs')
-      await buildDocs()
-
-    else process.exit(ExitCode.InvalidArgument)
-  }
 
   await generateTypes()
 }

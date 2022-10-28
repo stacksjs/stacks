@@ -15,36 +15,32 @@ export interface StacksOptions {
  * The options to pass to the CLI.
  */
 export interface CliOptions {
-  debug: boolean | IOType
+  debug?: boolean | IOType
 }
 
-export type BuildOptionss = BuildOptions | BuildOption
-
 export interface BuildOptions extends CliOptions {
-  components: boolean
-  vueComponents: boolean
-  webComponents: boolean
+  components?: boolean
+  vueComponents?: boolean
+  webComponents?: boolean
   elements?: boolean
   functions?: boolean
   docs?: boolean
   pages?: boolean
   stacks?: boolean
-  all: boolean
+  all?: boolean
 }
 
 export type BuildOption = 'components' | 'vue-components' | 'web-components' | 'elements' | 'functions' | 'docs' | 'pages'
 
 export interface UpdateOptions extends CliOptions {
-  framework: boolean
-  dependencies: boolean
-  packageManager: boolean
-  node: boolean
-  version: string
-  all: boolean
+  framework?: boolean
+  dependencies?: boolean
+  packageManager?: boolean
+  node?: boolean
+  version?: string
+  all?: boolean
   force?: boolean
 }
-
-export type UpdateTypes = 'all' | 'framework' | 'dependencies' | 'package-manager' | 'node'
 
 export type IOType = 'overlapped' | 'pipe' | 'ignore' | 'inherit'
 
