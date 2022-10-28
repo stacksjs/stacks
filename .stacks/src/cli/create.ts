@@ -20,7 +20,7 @@ async function create(stacks: CLI) {
     .option('-f, --functions', 'Are you developing functions/composables?', { default: true }) // if no, API would be false
     .option('-a, --api', 'Are you building an API?', { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', 'Do you need a database?', { default: true })
-    .option('--debug', 'Add additional debug logs', { default: false })
+    .option('--debug', 'Add additional debug logging', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (args: any) => {
       const name = stacks.args[0] || args.name || '.'

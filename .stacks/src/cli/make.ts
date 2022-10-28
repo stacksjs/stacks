@@ -18,7 +18,7 @@ async function make(stacks: CLI) {
     .option('-f, --factory', 'Create a new factory', { default: false })
     .option('-n, --notification', 'Create a new notification', { default: false })
     .option('-s, --stack', 'Create a new new stack', { default: false })
-    .option('--debug', 'Add additional debug logs', { default: false })
+    .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: MakeOptions) => {
       const name = stacks.args[0]
 

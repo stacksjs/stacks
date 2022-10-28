@@ -53,14 +53,14 @@ export async function buildWebComponentLibrary() {
 }
 
 export async function buildDocs() {
-  consola.info('Building the Artisan CLI...')
+  consola.info('Building the documentation site...')
 
   try {
     await runNpmScript(NpmScript.BuildDocs)
-    consola.success('Artisan CLI was built successfully.')
+    consola.success('Docs built successfully.')
   }
   catch (error) {
-    consola.error('There was an error building the Artisan CLI.')
+    consola.error('There was an error building the documentation.')
     consola.error(error)
   }
 }
@@ -70,7 +70,7 @@ export async function buildStacks() {
 
   try {
     await runNpmScript(NpmScript.BuildStacks)
-    consola.success('Stacks was built successfully.')
+    consola.success('Stacks built successfully.')
   }
   catch (error) {
     consola.error('There was an error building the Stacks framework.')
@@ -79,12 +79,13 @@ export async function buildStacks() {
 }
 
 export async function buildFunctionsLibrary() {
-  consola.info('Building your functions library for production use & npm/CDN distribution...')
+  consola.info('Building your functions library for production usages...')
+  consola.info('Production usages include: manual npm distribution and/or CDN distribution')
 
   if (hasFunctions()) {
     try {
       await runNpmScript(NpmScript.BuildFunctions)
-      consola.success('Your functions library was built successfully.')
+      consola.success('Functions library built successfully.')
     }
     catch (error) {
       consola.error('There was an error building your functions library.')

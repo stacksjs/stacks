@@ -42,6 +42,16 @@ export interface UpdateOptions extends CliOptions {
   force?: boolean
 }
 
+export interface GeneratorOptions extends CliOptions {
+  types?: boolean
+  entries?: boolean
+  webTypes?: boolean
+  customData?: boolean
+  ideHelpers?: string
+  vueCompatibility?: boolean
+  componentMeta?: boolean
+}
+
 export interface MakeOptions extends CliOptions {
   component?: boolean
   page?: boolean

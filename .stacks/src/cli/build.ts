@@ -15,7 +15,7 @@ async function build(stacks: CLI) {
     .option('-p, --pages', 'Build your SSG pages')
     .option('-d, --docs', 'Build your documentation site')
     .option('-s, --stacks', 'Build Stacks framework', { default: false })
-    .option('--debug', 'Add additional debug logs', { default: false })
+    .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({

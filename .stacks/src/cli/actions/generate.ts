@@ -1,14 +1,15 @@
-import { prompts as Prompts, consola } from '@stacksjs/cli'
+import { consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { ExitCode, type GeneratorOptions, NpmScript } from '@stacksjs/types'
+import { debugLevel } from '@stacksjs/config'
 import { lintFix } from './lint'
 import { generateTypes } from './types'
 
-const { prompts } = Prompts
-
-export async function generateLibEntries() {
+export async function generateLibEntries(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateEntries, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateEntries, { debug })
     consola.success('Library entry points were generated successfully.')
   }
   catch (error) {
@@ -17,9 +18,11 @@ export async function generateLibEntries() {
   }
 }
 
-export async function generateVueCompat() {
+export async function generateVueCompat(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateVueCompat, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateVueCompat, { debug })
     consola.success('Vue 2 & 3 compatibility was generated successfully.')
   }
   catch (error) {
@@ -28,9 +31,11 @@ export async function generateVueCompat() {
   }
 }
 
-export async function generateWebTypes() {
+export async function generateWebTypes(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateWebTypes, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateWebTypes, { debug })
     consola.success('Successfully generated the web-types.json file.')
   }
   catch (error) {
@@ -40,9 +45,11 @@ export async function generateWebTypes() {
   }
 }
 
-export async function generateVsCodeCustomData() {
+export async function generateVsCodeCustomData(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateVsCodeCustomData, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateVsCodeCustomData, { debug })
     await lintFix('ignore') // the created json file needs to be linted
     consola.success('Successfully generated the custom-elements.json file.')
   }
@@ -53,9 +60,11 @@ export async function generateVsCodeCustomData() {
   }
 }
 
-export async function generateIdeHelpers() {
+export async function generateIdeHelpers(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateIdeHelpers, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateIdeHelpers, { debug })
     await lintFix('ignore') // the created json file needs to be linted
     consola.success('Successfully generated IDE helpers.')
   }
@@ -66,9 +75,11 @@ export async function generateIdeHelpers() {
   }
 }
 
-export async function generateComponentMeta() {
+export async function generateComponentMeta(options?: GeneratorOptions) {
   try {
-    await runNpmScript(NpmScript.GenerateComponentMeta, 'ignore')
+    const debug = debugLevel(options)
+
+    await runNpmScript(NpmScript.GenerateComponentMeta, { debug })
     await lintFix('ignore') // the created json file needs to be linted
     consola.success('Successfully generated component meta.')
   }
@@ -79,80 +90,25 @@ export async function generateComponentMeta() {
   }
 }
 
-export async function startGenerationProcess(options: any) {
-  if (options.types || options === 'types') {
-    await generateTypes()
-  }
+export async function startGenerationProcess(options?: GeneratorOptions) {
+  if (options?.types)
+    await generateTypes(options)
 
-  else if (options.entries || options === 'entries') {
-    await generateLibEntries()
-  }
+  else if (options?.entries)
+    await generateLibEntries(options)
 
-  else if (options.webTypes || options === 'web-types') {
-    await generateWebTypes()
-  }
+  else if (options?.webTypes)
+    await generateWebTypes(options)
 
-  else if (options.customData || options === 'custom-data') {
-    await generateVsCodeCustomData()
-  }
+  else if (options?.customData)
+    await generateVsCodeCustomData(options)
 
-  else if (options.ideHelpers || options === 'ide-helpers') {
-    await generateIdeHelpers()
-  }
+  else if (options?.ideHelpers)
+    await generateIdeHelpers(options)
 
-  else if (options.vueCompatibility || options === 'vue-compatibility') {
-    await generateVueCompat()
-  }
+  else if (options?.vueCompatibility)
+    await generateVueCompat(options)
 
-  else if (options.componentMeta || options === 'component-meta') {
-    await generateComponentMeta()
-  }
-
-  else {
-    const answer = await prompts.select({
-      type: 'select',
-      name: 'generate',
-      message: 'What are you trying to generate?',
-      choices: [ // todo: should be a multi-select
-        { title: '1.) TypeScript Types', value: 'types' },
-        { title: '2.) Library Entry Points', value: 'entries' },
-        { title: '3.) Web Types', value: 'web-types' },
-        { title: '4.) VS Code Custom Data', value: 'custom-data' },
-        { title: '5.) IDE Helpers', value: 'ide-helpers' },
-        { title: '6.) Vue 2 & 3 Compatibility', value: 'vue-compatibility' },
-        { title: '7.) Component Meta', value: 'component-meta' },
-      ],
-      initial: 0,
-    })
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    if (answer === 'types')
-      await generateTypes()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'entries')
-      await generateLibEntries()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'web-types')
-      await generateWebTypes()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'custom-data')
-      await generateVsCodeCustomData()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'ide-helpers')
-      await generateIdeHelpers()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'vue-compatibility')
-      await generateVueCompat()
-
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'component-meta')
-      await generateComponentMeta()
-
-    else process.exit(ExitCode.InvalidArgument)
-  }
+  else if (options?.componentMeta)
+    await generateComponentMeta(options)
 }

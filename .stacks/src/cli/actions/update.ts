@@ -1,18 +1,13 @@
 import { Prompts, consola, spawn } from '@stacksjs/cli'
 import fs from '@stacksjs/storage'
-import { app } from '@stacksjs/config'
+import { debugLevel } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import { ExitCode, type IOType, type UpdateOptions } from '@stacksjs/types'
+import { ExitCode, type UpdateOptions } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
 export async function stacks(options?: UpdateOptions) {
-  let debug: IOType
-
-  if (options?.debug)
-    debug = options.debug ? 'inherit' : 'ignore'
-  else
-    debug = app.debug ? 'inherit' : 'ignore'
+  const debug = debugLevel(options)
 
   // first, we need to update the framework, if updates available
   if (options?.framework || options?.all) {

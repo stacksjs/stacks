@@ -12,7 +12,7 @@ export async function runClean(options?: CliOptions) {
 
     consola.info('Running clean command...')
     await spawn.async('rimraf ./pnpm-lock.yaml ./node_modules/ ./**/node_modules', { stdio: debug, cwd: projectPath() })
-    consola.success('clean completed')
+    consola.success('Cleaning completed.')
   }
   catch (error) {
     consola.error(error)

@@ -417,10 +417,10 @@ importers:
       pluralize: ^8.0.0
       typescript: ^4.8.4
     dependencies:
+      '@types/pluralize': 0.0.29
       change-case: 4.1.2
       pluralize: 8.0.0
     devDependencies:
-      '@types/pluralize': 0.0.29
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
 
@@ -445,10 +445,14 @@ importers:
       '@rollup/pluginutils': ^5.0.2
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
+      '@types/eslint': ^8.4.8
       '@types/fs-extra': ^9.0.13
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
       '@types/node': ^18.11.7
+      '@types/nprogress': ^0.2.0
+      '@types/pluralize': ^0.0.29
+      '@types/prompts': ^2.4.1
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^0.4.0
@@ -466,10 +470,14 @@ importers:
       '@rollup/pluginutils': 5.0.2
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
+      '@types/eslint': 8.4.8
       '@types/fs-extra': 9.0.13
       '@types/markdown-it-link-attributes': 3.0.1
       '@types/minimatch': 5.1.2
       '@types/node': 18.11.7
+      '@types/nprogress': 0.2.0
+      '@types/pluralize': 0.0.29
+      '@types/prompts': 2.4.1
       cac: 6.7.14
       markdown-it: 13.0.1
       mkdist: 0.4.0_typescript@4.8.4
@@ -2706,7 +2714,6 @@ packages:
     dependencies:
       '@types/estree': 1.0.0
       '@types/json-schema': 7.0.11
-    dev: false
 
   /@types/estree/0.0.39:
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
@@ -2723,7 +2730,6 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
-    dev: false
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
@@ -2779,7 +2785,6 @@ packages:
 
   /@types/nprogress/0.2.0:
     resolution: {integrity: sha512-1cYJrqq9GezNFPsWTZpFut/d4CjpZqA0vhqDUPFWYKF1oIyBz5qnoYMzR+0C/T96t3ebLAC1SSnwrVOm5/j74A==}
-    dev: false
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
@@ -2788,13 +2793,11 @@ packages:
 
   /@types/pluralize/0.0.29:
     resolution: {integrity: sha512-BYOID+l2Aco2nBik+iYS4SZX0Lf20KPILP5RGmM1IgzdwNdTs0eebiFriOPcej1sX9mLnSoiNte5zcFxssgpGA==}
-    dev: true
 
   /@types/prompts/2.4.1:
     resolution: {integrity: sha512-1Mqzhzi9W5KlooNE4o0JwSXGUDeQXKldbGn9NO4tpxwZbHXYd+WcKpCksG2lbhH7U9I9LigfsdVsP2QAY0lNPA==}
     dependencies:
       '@types/node': 18.11.7
-    dev: false
 
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}

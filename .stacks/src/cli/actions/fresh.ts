@@ -1,19 +1,16 @@
 import { consola, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { type CliOptions, ExitCode, type IOType } from '@stacksjs/types'
-import { app } from '@stacksjs/config'
+import { type CliOptions, ExitCode } from '@stacksjs/types'
+import { debugLevel } from '@stacksjs/config'
 
 export async function runFresh(options?: CliOptions) {
   try {
-    let debug: IOType = app.debug ? 'inherit' : 'ignore'
-
-    if (options?.debug)
-      debug = options.debug ? 'inherit' : 'ignore'
+    const debug = debugLevel(options)
 
     consola.info('Running fresh command...')
     await spawn.async('pnpm run clean', { stdio: debug, cwd: projectPath() })
     await spawn.async('pnpm install', { stdio: debug, cwd: projectPath() })
-    consola.success('fresh completed')
+    consola.success('Freshly reinstalled your dependencies.')
   }
   catch (error) {
     consola.error(error)

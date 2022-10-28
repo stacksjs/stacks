@@ -13,6 +13,7 @@ export const app: Options = {
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),
   debug: env('APP_DEBUG', true),
+  // debug: env('APP_DEBUG', false),
   url: env('APP_URL', 'https://localhost'),
   port: env('APP_PORT', 3333),
 

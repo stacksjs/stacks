@@ -1,4 +1,4 @@
-import type { CLI } from '@stacksjs/types'
+import type { CLI, CliOptions } from '@stacksjs/types'
 import { runFresh } from './actions/fresh'
 import { lint, lintFix } from './actions/lint'
 import { release } from './actions/release'
@@ -8,38 +8,44 @@ import { runClean } from './actions/clean'
 async function utility(stacks: CLI) {
   stacks
     .command('fresh', 'Reinstalls your npm dependencies.')
-    .action(async () => {
-      await runFresh()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await runFresh(options)
     })
 
   stacks
     .command('clean', 'Removes all node_modules & lock files.')
-    .action(async () => {
-      await runClean()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await runClean(options)
     })
 
   stacks
     .command('lint', 'Automagically lints your codebase.')
-    .action(async () => {
-      await lint()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await lint(options)
     })
 
   stacks
     .command('lint:fix', 'Automagically fixes lint errors.')
-    .action(async () => {
-      await lintFix()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await lintFix(options)
     })
 
   stacks
     .command('release', 'Releases a new version of your libraries/packages.')
-    .action(async () => {
-      await release()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await release(options)
     })
 
   stacks
     .command('commit', 'Commit your stashed changes.')
-    .action(async () => {
-      await commit()
+    .option('--debug', 'Add additional debug logging', { default: false })
+    .action(async (options: CliOptions) => {
+      await commit(options)
     })
 }
 
