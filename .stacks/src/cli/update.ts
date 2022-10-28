@@ -30,38 +30,10 @@ async function update(stacks: CLI) {
           initial: 0,
         })
 
-        if (answers.dependencies)
-          await updateStacks('dependencies', options)
-
-        if (answers.framework)
-          await updateStacks('framework', options)
-
-        if (answers.node)
-          await updateStacks('node', options)
-
-        if (answers.packageManager)
-          await updateStacks('package-manager', options)
+        await updateStacks(undefined, answers)
       }
       else {
-        if (options.all) {
-          await updateStacks('dependencies', options)
-          await updateStacks('framework', options)
-          await updateStacks('node', options)
-          await updateStacks('package-manager', options)
-        }
-        else {
-          if (options.dependencies)
-            await updateStacks('dependencies', options)
-
-          if (options.framework)
-            await updateStacks('framework', options)
-
-          if (options.node)
-            await updateStacks('node', options)
-
-          if (options.packageManager)
-            await updateStacks('package-manager', options)
-        }
+        await updateStacks(undefined, options)
       }
     })
 

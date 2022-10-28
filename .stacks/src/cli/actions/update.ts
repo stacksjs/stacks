@@ -7,6 +7,11 @@ import { ExitCode, type IOType, type UpdateOptions, type UpdateTypes } from '@st
 const { prompts } = Prompts
 
 export async function stacks(type?: UpdateTypes, options?: UpdateOptions) {
+  // when answers are provided via the multi-select,
+  // then an array is returned with the answer values
+  if (Array.isArray(options))
+    options = options.reduce((a, v) => ({ ...a, [v]: true }), {}) // creates an object out of array and sets answers to true
+
   let debug: IOType = app.debug ? 'inherit' : 'ignore'
 
   if (options?.debug)
