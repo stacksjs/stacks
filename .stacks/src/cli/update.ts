@@ -16,7 +16,7 @@ async function update(stacks: CLI) {
     .option('--debug', 'Add additional debug logging', { default: false })
     .example('stacks update -a --debug')
     .action(async (options: UpdateOptions) => {
-      if (!options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all) {
+      if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
           type: 'multiselect',
           name: 'update',
@@ -27,7 +27,6 @@ async function update(stacks: CLI) {
             { title: 'Node', value: 'node' },
             { title: 'pnpm', value: 'package-manager' },
           ],
-          initial: 0,
         })
 
         // creates an object out of array and sets answers to true
@@ -48,7 +47,7 @@ async function update(stacks: CLI) {
   stacks
     .command('update:dependencies', 'Update your dependencies')
     .option('--debug', 'Add additional debug logging', { default: false })
-    .alias('deps')
+    .alias('update:deps')
     .example('stacks update:dependencies --debug')
     .action(async (options: UpdateOptions) => {
       await updateStacks({ dependencies: true, ...options })
@@ -83,6 +82,10 @@ async function update(stacks: CLI) {
     .action(async (options: UpdateOptions) => {
       await updateStacks({ all: true, ...options })
     })
+}
+
+function hasNoOptions(options: UpdateOptions) {
+  return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
 }
 
 export { update }

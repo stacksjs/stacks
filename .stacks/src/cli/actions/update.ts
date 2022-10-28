@@ -26,13 +26,13 @@ export async function stacks(options?: UpdateOptions) {
           const answer = await prompts.confirm({
             type: 'select',
             name: 'framework-update',
-            message: 'Would you like to overwrite your ./stacks changes in favor of the Stacks update?',
+            message: 'We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?',
           })
 
           // @ts-expect-error the answer object type expects to return a void type but it returns boolean
           if (!answer) {
-            consola.info('The framework was not updated.')
-            consola.info('Note: if you commit your changes and replay the update, you will see what has changed.')
+            consola.info('Aborted. Stacks did not update itself.')
+            consola.info('Note: if you commit your changes and replay the update, you can see what changed.')
             process.exit(ExitCode.Success)
           }
         }
@@ -73,7 +73,7 @@ export async function stacks(options?: UpdateOptions) {
   if (options?.dependencies || options?.all) {
     consola.info('Updating dependencies...')
     await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
-    // consola.success('Updated dependencies')
+    consola.success('Updated dependencies.')
   }
 
   // this condition checks whether pnpm needs to be updated
@@ -86,9 +86,9 @@ export async function stacks(options?: UpdateOptions) {
 
   // this condition checks whether Node needs to be updated
   if (options?.node || options?.all) {
-    consola.info('Updating Node...')
+    consola.info('Ensuring the proper Node version is used...')
     await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })
-    consola.success('Updated Node')
+    consola.success('Your Node version is now:', process.version)
   }
 
   // TODO: also update CI files & configurations, and other files, possibly
