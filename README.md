@@ -21,10 +21,10 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 ### UI Engine
 
 - 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_<br>
-- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
 - ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_<br>
 - 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_<br>
-- 🤖 **Deployment Manager** _natively deploy to AWS, Netlify, Vercel, or elsewhere_<br>
+- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
+- 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_<br>
 - 🍀 **Vue powered** _extendable & native access to the ecosystem_ <br>
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
@@ -35,19 +35,20 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 🏎️ **APIs** _scalability & maintainability built-in_<br>
 - 💨 **Cache** _Redis or DynamoDB_<br>
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
-- 🤖 **Deployment Manager** _server & serverless deployment platform for your APIs (AWS support and more)_<br>
 - 📢 **Notifications** _simply send emails, SMSs, and webhooks_<br>
 - ⚙️ **Queues** _run your heavy workload in the background_<br>
 - 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
 - 🧭 **Router** _smart routing, file-based or Laravel-like_<br>
 - 💾 **Storage** _easily make use of local & remote storage/file systems_<br>
+- 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_<br>
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_<br>
 
 ### Stacks Engine
 
 - 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>
-- 📫 **npm support** _component & function libraries are automatically distributed_<br>
 - 🚀 **Deployment Manager** _take the sweat out of server & serverless production deployments_<br>
+- 📫 **npm support** _component & function libraries are automatically distributed_<br>
+- ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_<br>
 - ☁️ **CDN** _auto-setup of low-latency content delivery network on top of your assets_<br>
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_<br>
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
@@ -74,7 +75,7 @@ npx stacks create my-project
 ```
 
 > **Note**
-> pnpm 7.13 or higher required. _Run the setup script & Stacks will set you up._
+> pnpm 7.14 or higher required. _Run the setup script & Stacks will set you up._
 
 ## 🤖 Usage
 
@@ -300,17 +301,17 @@ You may view this framework as an incredibly "useful set of frames" to assist in
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/stacksjs/table) (Q3 - Data tables with ease)
-- [Calendar](https://github.com/stacksjs/calendar) (Q3 - Add to Calendar utilities—iCal, Google, and more)
-- [Command Palette](https://github.com/stacksjs/command-palette) (Q3 - `⌘ + k` for the web)
-- [Date Picker](https://github.com/stacksjs/date-picker) (Q3 - Beautiful, modern date picker)
-- [File Manager](https://github.com/stacksjs/file-manager) (Q3 - Build your own file manager—like Dropbox or Google Drive)
-- [Image](https://github.com/stacksjs/image) (Q3 - Modern image experience)
-- [Video](https://github.com/stacksjs/video) (Q3 - Modern video experience)
-- [Audio](https://github.com/stacksjs/audio) (Q3 - Modern audio experience)
-- [Web3](https://github.com/stacksjs/web3) (Q3 - Solana support, cross-chain core. _Ethereum & Cardano drivers coming._)
-  - [Wallets](https://github.com/stacksjs/wallets) (Q3 - Wallet Authentication)
-  - [NFT](https://github.com/stacksjs/nft) (Q3 - NFTs, Candy Machine mechanisms, and more.)
+- [Table](https://github.com/stacksjs/table) (Q4 - Data tables with ease)
+- [Calendar](https://github.com/stacksjs/calendar) (Q4 - Add to Calendar utilities—iCal, Google, and more)
+- [Command Palette](https://github.com/stacksjs/command-palette) (Q4 - `⌘ + k` for the web)
+- [Date Picker](https://github.com/stacksjs/date-picker) (Q4 - Beautiful, modern date picker)
+- [File Manager](https://github.com/stacksjs/file-manager) (Q4 - Build your own file manager—like Dropbox or Google Drive)
+- [Image](https://github.com/stacksjs/image) (Q4 - Modern image experience)
+- [Video](https://github.com/stacksjs/video) (Q4 - Modern video experience)
+- [Audio](https://github.com/stacksjs/audio) (Q4 - Modern audio experience)
+- [Web3](https://github.com/stacksjs/web3) (Q4 - Solana support, cross-chain core. _Ethereum & Cardano drivers coming._)
+  - [Wallets](https://github.com/stacksjs/wallets) (Q4 - Wallet Authentication)
+  - [NFT](https://github.com/stacksjs/nft) (Q4 - NFTs, Candy Machine mechanisms, and more.)
   - [DeFi](https://github.com/stacksjs/defi) (Q4 - Cross-chain DeFi engine, including staking support)
   - [DAO](https://github.com/stacksjs/dao) (Q4 - Powerful toolkit for DAO governance)
 
