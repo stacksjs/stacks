@@ -44,7 +44,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 
 ### Stacks Engine
 
-- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>__
+- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>
 - 📫 **npm support** _component & function libraries are automatically distributed_<br>
 - 🚀 **Deployments** _take the sweat out of server & serverless production deployments_<br>
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_<br>
