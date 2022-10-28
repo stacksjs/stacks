@@ -25,7 +25,7 @@ export const services = {
     apiKey: '',
   },
 
-  planetScale: {
+  planetscale: {
     appId: '',
     apiKey: '',
   },
@@ -35,7 +35,7 @@ export const services = {
     apiKey: '',
   },
 
-  singleStore: {
+  aws: {
     appId: '',
     apiKey: '',
   },

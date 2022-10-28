@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/fs",
+  "name": "@stacksjs/storage",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.0",
@@ -7,19 +7,20 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/fs#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/storage#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/fs"
+    "directory": "./.stacks/core/storage"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "storage",
     "fs",
     "file system",
-    "storage",
+    "api",
     "collections",
     "utilities",
     "functions",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "mkdist": "^0.4.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "unstorage": "^0.6.0"
   }
 }

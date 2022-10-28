@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/fs
+pnpm i -D @stacksjs/storage
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * as fs from '@stacksjs/fs'
+import * as fs from '@stacksjs/storage'
 
 // wip
 ```

@@ -5,7 +5,7 @@
  */
 
 import consola from 'consola'
-import { hasComponents } from '@stacksjs/fs'
+import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from './generate/component-meta'
 
 async function generate() {

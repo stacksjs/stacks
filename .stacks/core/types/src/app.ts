@@ -26,7 +26,7 @@ export interface AppOptions {
    *
    * @default "local"
    */
-  env?: 'development' | 'production' | 'local'
+  env?: 'local' | 'development' | 'production'
 
   /**
    * ### Application URL
@@ -48,7 +48,7 @@ export interface AppOptions {
    * stack traces will be shown on every error that occurs within your
    * application. If disabled, a simple generic error page is shown.
    *
-   * @default false
+   * @default true
    */
   debug: boolean
 

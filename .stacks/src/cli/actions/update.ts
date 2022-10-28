@@ -1,5 +1,5 @@
 import { Prompts, consola, spawn } from '@stacksjs/cli'
-import fs from '@stacksjs/fs'
+import fs from '@stacksjs/storage'
 import { app } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode, type IOType, type UpdateOptions, type UpdateTypes } from '@stacksjs/types'

@@ -282,7 +282,10 @@
     "frontmatter",
     "mkdist",
     "meilisearch",
-    "supabase"
+    "supabase",
+    "unstorage",
+    "planetscale",
+    "singlestore"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

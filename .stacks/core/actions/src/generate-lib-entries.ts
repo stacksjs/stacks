@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import consola from 'consola'
-import { hasComponents, hasFunctions } from '@stacksjs/fs'
+import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { generateLibEntry } from './generate/lib-entries'
 
 async function generate() {

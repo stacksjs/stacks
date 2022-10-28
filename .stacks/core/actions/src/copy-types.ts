@@ -5,7 +5,7 @@
  */
 
 import { frameworkPath } from '@stacksjs/path'
-import { copyFolder } from '@stacksjs/fs'
+import { copyFolder } from '@stacksjs/storage'
 
 // relative to scripts directory
 const destinations = [

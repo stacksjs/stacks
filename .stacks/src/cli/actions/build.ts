@@ -1,5 +1,5 @@
 import { prompts as Prompts, consola } from '@stacksjs/cli'
-import { hasComponents, hasFunctions } from '@stacksjs/fs'
+import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { type BuildOptionss, ExitCode, NpmScript } from '@stacksjs/types'
 import { generateTypes } from './types'

@@ -1,7 +1,7 @@
 import { consola, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type IOType, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import fs from '@stacksjs/fs'
+import fs from '@stacksjs/storage'
 import { app, ui } from '@stacksjs/config'
 
 export * as detectIndent from 'detect-indent'
