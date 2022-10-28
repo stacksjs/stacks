@@ -55,9 +55,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "change-case": "^4.1.2"
+    "change-case": "^4.1.2",
+    "pluralize": "^8.0.0"
   },
   "devDependencies": {
+    "@types/pluralize": "^0.0.29",
     "mkdist": "^0.4.0",
     "typescript": "^4.8.4"
   }

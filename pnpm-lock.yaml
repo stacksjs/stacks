@@ -411,12 +411,16 @@ importers:
 
   .stacks/core/strings:
     specifiers:
+      '@types/pluralize': ^0.0.29
       change-case: ^4.1.2
       mkdist: ^0.4.0
+      pluralize: ^8.0.0
       typescript: ^4.8.4
     dependencies:
       change-case: 4.1.2
+      pluralize: 8.0.0
     devDependencies:
+      '@types/pluralize': 0.0.29
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
 
@@ -2781,6 +2785,10 @@ packages:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
     dev: false
     optional: true
+
+  /@types/pluralize/0.0.29:
+    resolution: {integrity: sha512-BYOID+l2Aco2nBik+iYS4SZX0Lf20KPILP5RGmM1IgzdwNdTs0eebiFriOPcej1sX9mLnSoiNte5zcFxssgpGA==}
+    dev: true
 
   /@types/prompts/2.4.1:
     resolution: {integrity: sha512-1Mqzhzi9W5KlooNE4o0JwSXGUDeQXKldbGn9NO4tpxwZbHXYd+WcKpCksG2lbhH7U9I9LigfsdVsP2QAY0lNPA==}
