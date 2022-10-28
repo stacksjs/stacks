@@ -41,6 +41,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
 - 🧭 **Smart Routing** _file-based or Laravel-like_<br>
 - 💾 **Storage** _easily make use of local and remote storage/file systems_<br>
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_<br>
 
 ### Stacks Engine
 
