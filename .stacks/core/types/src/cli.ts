@@ -26,7 +26,14 @@ export type BuildOptions = {
 
 export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all'
 export type DevOptions = {
-  [key in DevOption]: string;
+  [key in DevOption]: boolean;
+} & CliOptions
+
+export type ExampleOption = 'components' | 'vue' | 'webComponents' | void
+export type ExampleOptions = {
+  components: boolean
+  vue: boolean
+  webComponents: boolean
 } & CliOptions
 
 export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'vueCompatibility' | 'componentMeta'

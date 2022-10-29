@@ -1,21 +1,29 @@
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
-import { Prompts, consola } from '@stacksjs/cli'
-import { runNpmScript } from '@stacksjs/utils'
-import { devComponents, invoke as startDevelopmentServer } from './actions/dev'
+import { Prompts } from '@stacksjs/cli'
+import { components, docs, functions, pages, invoke as startDevelopmentServer } from './actions/dev'
 
 const { prompts } = Prompts
+
+const descriptions = {
+  components: 'Start the Components development server',
+  functions: 'Start the Functions development server',
+  docs: 'Start the Documentation development server',
+  pages: 'Start the Pages development server',
+  debug: 'Add additional debug logging',
+}
 
 async function dev(stacks: CLI) {
   stacks
     .command('dev', 'Start the development server for any of the following')
-    .option('-c, --components', 'Start the Components development server')
-    .option('-f, --functions', 'Start the Functions development server')
-    .option('-d, --docs', 'Start the Documentation development server')
-    .option('-p, --pages', 'Start the Pages development server')
+    .option('-c, --components', descriptions.components)
+    .option('-f, --functions', descriptions.functions)
+    .option('-d, --docs', descriptions.docs)
+    .option('-p, --pages', descriptions.pages)
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       if (hasNoOptions(options)) {
-        const answer: DevOption = await prompts.select({
+        const answer: DevOption | void = await prompts.select({
           type: 'select',
           name: 'development',
           message: 'Which development server are you trying to start?',
@@ -27,41 +35,53 @@ async function dev(stacks: CLI) {
           ],
         })
 
-        if (answer === 'components') {
-          await devComponents()
-        }
+        if (answer !== null)
+          process.exit(ExitCode.InvalidArgument)
 
-        else if (answer === 'functions') {
-          consola.info('Starting development server for your components...')
-          await runNpmScript(NpmScript.DevFunctions)
-        }
+        if (answer === 'components')
+          await components(options)
 
-        else if (answer === 'pages') {
-          consola.info('Starting development server for your components...')
-          await runNpmScript(NpmScript.DevPages)
-        }
+        else if (answer === 'functions')
+          await functions(options)
 
-        else if (answer === 'docs') {
-          consola.info('Starting docs server for your components...')
-          await runNpmScript(NpmScript.DevDocs)
-        }
+        else if (answer === 'pages')
+          await pages(options)
 
-        else { process.exit(ExitCode.InvalidArgument) }
+        else if (answer === 'docs')
+          await docs(options)
+
+        else process.exit(ExitCode.InvalidArgument)
       }
 
       await startDevelopmentServer(options)
     })
 
   stacks
-    .command('dev:components', 'Start the development server for your component library')
+    .command('dev:components', descriptions.components)
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await startDevelopmentServer(options)
     })
 
   stacks
-    .command('dev:docs', 'Start the development server for your documentation')
+    .command('dev:docs', descriptions.docs)
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
-      await startDevelopmentServer({ docs: true, ...options.map(option => option !== 'dev') })
+      await docs(options)
+    })
+
+  stacks
+    .command('dev:functions', descriptions.functions)
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: DevOptions) => {
+      await functions(options)
+    })
+
+  stacks
+    .command('dev:pages', descriptions.pages)
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: DevOptions) => {
+      await pages(options)
     })
 }
 
