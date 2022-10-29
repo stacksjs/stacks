@@ -1,7 +1,6 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { Prompts } from '@stacksjs/cli'
-import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, invoke as startGenerationProcess } from './actions/generate'
-import { generateTypes } from './actions/types'
+import { componentMeta, ideHelpers, libEntries, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from './actions/generate'
 
 const { prompts } = Prompts
 
@@ -43,50 +42,51 @@ async function generate(stacks: CLI) {
   stacks
     .command('generate:types', 'Generate the types of & for your library/libraries')
     .option('--debug', 'Add additional debug logging', { default: false })
+    .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
-      await generateTypes(options)
+      await types(options)
     })
 
   stacks
     .command('generate:entries', 'Generate the entry points for your libraries')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateLibEntries(options)
+      await libEntries(options)
     })
 
   stacks
     .command('generate:vue-compatibility', 'Generate Vue 2 & 3 compatibility')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateVueCompat(options)
+      await vueCompat(options)
     })
 
   stacks
     .command('generate:web-types', 'Generate web-types.json for IDEs')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateWebTypes(options)
+      await webTypes(options)
     })
 
   stacks
     .command('generate:vscode-custom-data', 'Generate VS Code custom data (custom-elements.json) for IDEs')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateVsCodeCustomData(options)
+      await vsCodeCustomData(options)
     })
 
   stacks
     .command('generate:ide-helpers', 'Generate IDE helpers')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateIdeHelpers(options)
+      await ideHelpers(options)
     })
 
   stacks
     .command('generate:component-meta', 'Generate component meta information')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: GeneratorOptions) => {
-      await generateComponentMeta(options)
+      await componentMeta(options)
     })
 }
 

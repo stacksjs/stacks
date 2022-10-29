@@ -72,6 +72,18 @@ export interface MakeOptions extends CliOptions {
   stack?: boolean
 }
 
+export interface TestOptions extends CliOptions {}
+export interface CleanOptions extends CliOptions {}
+export interface CommitOptions extends CliOptions {}
+export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all' | void
+export interface DevOptions extends CliOptions {
+  components: boolean
+  docs: boolean
+  pages: boolean
+  functions: boolean
+  all: boolean
+}
+
 export type IOType = 'ignore' | 'inherit'
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 
@@ -89,6 +101,8 @@ export const enum NpmScript {
   Dev = 'dev',
   DevComponents = 'dev:components',
   DevDocs = 'dev:docs',
+  DevPages = 'dev:pages',
+  DevFunctions = 'dev:functions',
   Fresh = 'fresh',
   Update = 'update',
   UpdateDependencies = 'update:dependencies',
@@ -102,6 +116,7 @@ export const enum NpmScript {
   TestTypes = 'test:types',
   TestCoverage = 'test:coverage',
   Generate = 'generate',
+  GenerateTypes = 'generate:types',
   GenerateEntries = 'generate:entries',
   GenerateVueCompat = 'generate:vue-compatibility',
   GenerateWebTypes = 'generate:web-types',

@@ -30,12 +30,21 @@ console.log('Hello World component created')
 }
 
 export async function page(name: string) {
-  consola.info('Creating your component...')
-
   try {
-    await writeTextFile({
-      path: `./pages/${name}.vue`,
-      data: `<script setup lang="ts">
+    consola.info('Creating your component...')
+    createPage(name)
+    consola.success(`Created the ${name} page.`)
+  }
+  catch (err) {
+    consola.error(err)
+  }
+}
+
+export async function createPage(name: string) {
+  await writeTextFile({
+    path: `./pages/${name}.vue`,
+    data:
+`<script setup lang="ts">
 // eslint-disable-next-line no-console
 console.log('Hello World page created')
 </script>
@@ -46,22 +55,24 @@ console.log('Hello World page created')
   </div>
 </template>
 `,
-    })
+  })
+}
 
-    consola.success(`Created the ${name} page.`)
+export async function fx(name: string) {
+  try {
+    consola.info('Creating your function...')
+    createFunction(name)
+    consola.success(`Created the ${name} function.`)
   }
   catch (err) {
     consola.error(err)
   }
 }
 
-export async function fx(name: string) {
-  consola.info('Creating your function...')
-
-  try {
-    await writeTextFile({
-      path: `./functions/${name}.ts`,
-      data: `// reactive state
+export async function createFunction(name: string) {
+  await writeTextFile({
+    path: `./functions/${name}.ts`,
+    data: `// reactive state
 const ${name} = ref(0)
 
 // functions that mutate state and trigger updates
@@ -74,31 +85,27 @@ export {
   increment,
 }
 `,
-    })
+  })
+}
 
-    consola.success(`Created the ${name} function.`)
+export async function language(language: string) {
+  try {
+    consola.info('Creating your translation file...')
+    createLanguage(language)
+    consola.success(`Created the ${language} translation file.`)
   }
   catch (err) {
     consola.error(err)
   }
 }
 
-export async function language(language: string) {
-  consola.info('Creating your translation file...')
-
-  try {
-    await writeTextFile({
-      path: `./lang/${language}.yml`,
-      data: `button:
+export async function createLanguage(language: string) {
+  await writeTextFile({
+    path: `./lang/${language}.yml`,
+    data: `button:
   text: Copy
 `,
-    })
-
-    consola.success(`Created the ${language} translation file.`)
-  }
-  catch (err) {
-    consola.error(err)
-  }
+  })
 }
 
 export async function stack(name: string) {

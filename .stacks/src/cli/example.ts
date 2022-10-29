@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { runExample } from './actions/examples'
+import { invoke as runExample } from './actions/examples'
 
 async function example(stacks: CLI) {
   stacks

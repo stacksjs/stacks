@@ -1,46 +1,42 @@
-import { Prompts, consola } from '@stacksjs/cli'
+import { consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import type { DevOptions } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 
-const { prompts } = Prompts
+export async function invoke(options: DevOptions) {
+  if (options.components || options.all)
+    await components(options)
 
-export async function invoke(options: any) {
-  if (options.components || options === 'components') {
-    consola.info('Starting development server for your components...')
-    await runNpmScript(NpmScript.DevComponents)
-  }
+  else if (options.docs || options.all)
+    await docs(options)
 
-  else if (options.docs || options === 'docs') {
-    consola.info('Starting development server for your documentation...')
-    await runNpmScript(NpmScript.DevDocs)
-  }
+  else if (options.pages || options.all)
+    await pages(options)
 
-  else {
-    const answer = await prompts.select({
-      type: 'select',
-      name: 'development',
-      message: 'Which development server are you trying to start?',
-      choices: [
-        { title: 'Components', value: 'components' },
-        // { title: 'Functions', value: 'functions' },
-        // { title: 'Pages', value: 'pages' },
-        { title: 'Docs', value: 'docs' },
-      ],
-      initial: 0,
-    })
+  else if (options.functions || options.all)
+    await functions(options)
+}
 
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    if (answer === 'components') {
-      consola.info('Starting development server for your components...')
-      await runNpmScript(NpmScript.DevComponents)
-    }
+export async function dev(options: DevOptions) {
+  return invoke(options)
+}
 
-    // @ts-expect-error the answer object type expects to return a void type but it returns a string
-    else if (answer === 'docs') {
-      consola.info('Starting docs server for your components...')
-      await runNpmScript(NpmScript.DevDocs)
-    }
+export async function components(options: DevOptions) {
+  consola.info('Starting your components dev server...')
+  await runNpmScript(NpmScript.DevComponents, options)
+}
 
-    else { process.exit(ExitCode.InvalidArgument) }
-  }
+export async function docs(options: DevOptions) {
+  consola.info('Starting your docs dev server...')
+  await runNpmScript(NpmScript.DevDocs, options)
+}
+
+export async function pages(options: DevOptions) {
+  consola.info('Starting your page engine...')
+  await runNpmScript(NpmScript.DevPages, options)
+}
+
+export async function functions(options: DevOptions) {
+  consola.info('Starting your function\'s dev server...')
+  await runNpmScript(NpmScript.DevFunctions, options)
 }

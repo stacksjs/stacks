@@ -16,7 +16,7 @@ export async function lint(options: LintOptions) {
   consola.success('Linted.')
 }
 
-export async function lintFix(options: LintOptions) {
+export async function lintFix(options?: LintOptions) {
   consola.info('Fixing lint errors...')
   await runNpmScript(NpmScript.LintFix, options)
   consola.success('Fixed lint errors.')

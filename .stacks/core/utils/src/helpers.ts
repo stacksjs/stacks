@@ -4,9 +4,6 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import fs from '@stacksjs/storage'
 import { app, ui } from '@stacksjs/config'
 
-export * as detectIndent from 'detect-indent'
-export { detectNewline } from 'detect-newline'
-
 export async function isProjectCreated() {
   if (fs.isFile('.env'))
     return await isAppKeySet()
@@ -132,3 +129,6 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
 
   return false
 }
+
+export * as detectIndent from 'detect-indent'
+export { detectNewline } from 'detect-newline'

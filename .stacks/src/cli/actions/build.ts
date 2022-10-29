@@ -2,7 +2,7 @@ import { consola } from '@stacksjs/cli'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { type BuildOptions, NpmScript } from '@stacksjs/types'
-import { generateTypes } from './types'
+import { types as generateTypes } from './generate'
 
 export async function invoke(options: BuildOptions) {
   if (options.components)
@@ -24,6 +24,10 @@ export async function invoke(options: BuildOptions) {
     await stacks(options)
 
   await generateTypes()
+}
+
+export async function build(options: BuildOptions) {
+  return invoke(options)
 }
 
 export async function componentLibraries(options: BuildOptions) {
