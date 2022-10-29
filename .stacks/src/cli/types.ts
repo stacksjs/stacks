@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { generateTypes } from './actions/types'
+import { types as generateTypes } from './actions/generate'
 
 async function types(stacks: CLI) {
   stacks

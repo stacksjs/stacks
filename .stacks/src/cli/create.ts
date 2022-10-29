@@ -1,7 +1,8 @@
-import type { CLI } from '@stacksjs/types'
+import type { CLI, CreateOptions } from '@stacksjs/types'
 import { consola, spawn } from '@stacksjs/cli'
 import { bold, cyan, dim, link } from 'kolorist'
 import { useOnline } from '@stacksjs/utils'
+import { debugLevel } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -22,8 +23,8 @@ async function create(stacks: CLI) {
     .option('-d, --database', 'Do you need a database?', { default: true })
     .option('--debug', 'Add additional debug logging', { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .action(async (args: any) => {
-      const name = stacks.args[0] || args.name || '.'
+    .action(async (options: CreateOptions) => {
+      const name = stacks.args[0] || options.name || '.'
       const path = resolve(process.cwd(), name)
 
       console.log()
@@ -35,27 +36,10 @@ async function create(stacks: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      const online = useOnline()
-      if (!online) {
-        consola.info('It appears you are disconnected from the internet. The Stacks setup requires a brief internet connection for setup.')
-        process.exit(ExitCode.FatalError)
-      }
-
-      consola.info('Setting up your stack.')
-      await spawn.async(`giget stacks ${name}`, { stdio: args.debug ? 'inherit' : 'ignore' }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
-
-      consola.info('Ensuring your environment is ready...')
-      // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-      await spawn.async('fnm use', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      consola.success('Environment is ready.')
-
-      consola.info('Installing & setting up Stacks.')
-      await spawn.async('pnpm install', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      await spawn.async('cp .env.example .env', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      await generateAppKey()
-      await spawn.async('git init', { stdio: args.debug ? 'inherit' : 'ignore', cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-      consola.success('Installed & set-up 🚀')
+      await onlineCheck()
+      await download(path, options)
+      await ensureEnv(path, options)
+      await install(path, options)
 
       console.log()
       consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
@@ -63,6 +47,44 @@ async function create(stacks: CLI) {
       console.log()
       consola.log('To learn more, visit https://stacksjs.dev')
     })
+}
+
+async function onlineCheck() {
+  const online = useOnline()
+  if (!online) {
+    consola.info('It appears you are disconnected from the internet.')
+    consola.info('The Stacks setup requires a brief internet connection for setup.')
+    consola.info('For instance, it installs your dependencies from.')
+    process.exit(ExitCode.FatalError)
+  }
+}
+
+async function download(path: string, options: CreateOptions) {
+  const debug = debugLevel(options)
+
+  consola.info('Setting up your stack.')
+  await spawn.async(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
+}
+
+async function ensureEnv(path: string, options: CreateOptions) {
+  const debug = debugLevel(options)
+
+  consola.info('Ensuring your environment is ready...')
+  // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
+  await spawn.async('fnm use', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  consola.success('Environment is ready.')
+}
+
+async function install(path: string, options: CreateOptions) {
+  const debug = debugLevel(options)
+
+  consola.info('Installing & setting up Stacks.')
+  await spawn.async('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn.async('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await generateAppKey()
+  await spawn.async('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  consola.success('Installed & set-up 🚀')
 }
 
 export { create }

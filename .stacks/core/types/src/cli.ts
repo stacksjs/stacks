@@ -24,6 +24,15 @@ export type BuildOptions = {
   [key in BuildOption]: boolean;
 } & CliOptions
 
+export type CreateStrings = 'name'
+export type CreateBooleans = 'ui' | 'components' | 'web-components' | 'vue' | 'pages' | 'functions' | 'api' | 'database'
+export type CreateOption = CreateStrings | CreateBooleans
+export type CreateOptions = {
+  [key in CreateBooleans]: boolean
+} & {
+  name: string
+} & CliOptions
+
 export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all'
 export type DevOptions = {
   [key in DevOption]: boolean;
