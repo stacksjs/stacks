@@ -1,11 +1,11 @@
 import type { CLI } from '@stacksjs/types'
-import { generateTestCoverageReport, runTestSuite, typecheck } from './actions/test'
+import { generateTestCoverageReport, invoke, typecheck } from './actions/test'
 
 async function test(stacks: CLI) {
   stacks
     .command('test', 'Runs your test suite.')
     .action(async () => {
-      await runTestSuite()
+      await invoke()
     })
 
   stacks

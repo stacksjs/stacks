@@ -4,7 +4,7 @@ import { ExitCode, NpmScript } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
-export async function startDevelopmentServer(options: any) {
+export async function invoke(options: any) {
   if (options.components || options === 'components') {
     consola.info('Starting development server for your components...')
     await runNpmScript(NpmScript.DevComponents)

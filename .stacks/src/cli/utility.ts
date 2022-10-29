@@ -1,16 +1,16 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
-import { runFresh } from './actions/fresh'
+import { invoke as fresh } from './actions/fresh'
 import { lint, lintFix } from './actions/lint'
-import { release } from './actions/release'
-import { commit } from './actions/commit'
-import { runClean } from './actions/clean'
+import { invoke as release } from './actions/release'
+import { invoke as commit } from './actions/commit'
+import { invoke as runClean } from './actions/clean'
 
 async function utility(stacks: CLI) {
   stacks
     .command('fresh', 'Reinstalls your npm dependencies.')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: CliOptions) => {
-      await runFresh(options)
+      await fresh(options)
     })
 
   stacks

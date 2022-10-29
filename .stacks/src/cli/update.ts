@@ -56,9 +56,9 @@ async function update(stacks: CLI) {
   stacks
     .command('update:package-manager', 'Update your package manager, i.e. pnpm')
     .option('--debug', 'Add additional debug logging', { default: false })
+    .alias('update:pm')
     .example('stacks update:package-manager 7.14.0 --debug')
     .example('stacks update:package-manager latest')
-    .alias('update:pm')
     .action(async (options: UpdateOptions) => {
       options.version = 'latest'
 

@@ -1,18 +1,15 @@
 import { consola, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { type CliOptions, ExitCode, type IOType } from '@stacksjs/types'
-import { app } from '@stacksjs/config'
+import { type CliOptions, ExitCode } from '@stacksjs/types'
+import { debugLevel } from '@stacksjs/config'
 
-export async function runPreinstall(options?: CliOptions) {
+export async function invoke(options?: CliOptions) {
   try {
-    let debug: IOType = app.debug ? 'inherit' : 'ignore'
+    const debug = debugLevel(options)
 
-    if (options?.debug)
-      debug = options.debug ? 'inherit' : 'ignore'
-
-    consola.info('Running preinstall command...')
+    consola.info('Preinstall check...')
     await spawn.async('npx only-allow pnpm', { stdio: debug, cwd: projectPath() })
-    consola.success('preinstall command completed.')
+    consola.success('Environment ready.')
   }
   catch (error) {
     consola.error(error)

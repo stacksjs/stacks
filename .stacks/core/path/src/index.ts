@@ -28,6 +28,10 @@ export function arraysPath(path?: string) {
   return corePath(`arrays/${path || ''}`)
 }
 
+export function authPath(path?: string) {
+  return corePath(`auth/${path || ''}`)
+}
+
 /**
  * Returns the path to the build directory. The build directory
  * contains Stacks' build engine & its tooling integrations.
@@ -205,6 +209,7 @@ export const path = {
   actionsPath,
   aliasPath,
   arraysPath,
+  authPath,
   buildEnginePath,
   buildEntriesPath,
   buildPath,

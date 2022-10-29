@@ -1,6 +1,6 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { Prompts } from '@stacksjs/cli'
-import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, startGenerationProcess } from './actions/generate'
+import { generateComponentMeta, generateIdeHelpers, generateLibEntries, generateVsCodeCustomData, generateVueCompat, generateWebTypes, invoke as startGenerationProcess } from './actions/generate'
 import { generateTypes } from './actions/types'
 
 const { prompts } = Prompts

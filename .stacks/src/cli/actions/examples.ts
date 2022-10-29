@@ -5,47 +5,13 @@ import { ExitCode, NpmScript } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
-export async function testComponentExample() {
-  if (hasComponents()) {
-    try {
-      await runNpmScript(NpmScript.ExampleVue)
-      consola.success('Your component library was built successfully.')
-    }
-    catch (error) {
-      consola.error('There was an error building your component library.')
-      consola.error(error)
-    }
-  }
-  else {
-    consola.info('No components found.')
-  }
-}
-
-export async function testWebComponentExample() {
-  consola.info('Building your Web Component library...')
-
-  if (hasComponents()) {
-    try {
-      await runNpmScript(NpmScript.BuildWebComponents)
-      consola.success('Your Web Component library was built successfully.')
-    }
-    catch (error) {
-      consola.error('There was an error building your Web Component library.')
-      consola.error(error)
-    }
-  }
-  else {
-    consola.info('No components found.')
-  }
-}
-
-export async function runExample(options: any) {
+export async function invoke(options: any) {
   if (options.components || options === 'components' || options === 'vue') {
-    await testComponentExample()
+    await componentExample()
   }
 
   else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements') {
-    await testWebComponentExample()
+    await webComponentExample()
   }
 
   else {
@@ -62,12 +28,46 @@ export async function runExample(options: any) {
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     if (answer === 'components')
-      await testComponentExample()
+      await componentExample()
 
     // @ts-expect-error the answer object type expects to return a void type but it returns a string
     if (answer === 'web-components')
-      await testWebComponentExample()
+      await webComponentExample()
 
     else process.exit(ExitCode.InvalidArgument)
+  }
+}
+
+export async function componentExample() {
+  if (hasComponents()) {
+    try {
+      await runNpmScript(NpmScript.ExampleVue)
+      consola.success('Your component library was built successfully.')
+    }
+    catch (error) {
+      consola.error('There was an error building your component library.')
+      consola.error(error)
+    }
+  }
+  else {
+    consola.info('No components found.')
+  }
+}
+
+export async function webComponentExample() {
+  consola.info('Building your Web Component library...')
+
+  if (hasComponents()) {
+    try {
+      await runNpmScript(NpmScript.BuildWebComponents)
+      consola.success('Your Web Component library was built successfully.')
+    }
+    catch (error) {
+      consola.error('There was an error building your Web Component library.')
+      consola.error(error)
+    }
+  }
+  else {
+    consola.info('No components found.')
   }
 }

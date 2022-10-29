@@ -1,16 +1,38 @@
 import { consola } from '@stacksjs/cli'
+import { ExitCode, NpmScript } from '@stacksjs/types'
+import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, type GeneratorOptions, NpmScript } from '@stacksjs/types'
 import { debugLevel } from '@stacksjs/config'
 import { lintFix } from './lint'
 import { generateTypes } from './types'
 
-export async function generateLibEntries(options?: GeneratorOptions) {
-  try {
-    const debug = debugLevel(options)
+export async function invoke(options?: GeneratorOptions) {
+  if (options?.types)
+    await generateTypes(options)
 
-    await runNpmScript(NpmScript.GenerateEntries, { debug })
-    consola.success('Library entry points were generated successfully.')
+  else if (options?.entries)
+    await libEntries(options)
+
+  else if (options?.webTypes)
+    await webTypes(options)
+
+  else if (options?.customData)
+    await vsCodeCustomData(options)
+
+  else if (options?.ideHelpers)
+    await ideHelpers(options)
+
+  else if (options?.vueCompatibility)
+    await vueCompat(options)
+
+  else if (options?.componentMeta)
+    await componentMeta(options)
+}
+
+export async function libEntries(options: GeneratorOptions) {
+  try {
+    await runNpmScript(NpmScript.GenerateEntries, options)
+    consola.success('Library entry points were d successfully.')
   }
   catch (error) {
     consola.error('There was an error generating your library entry points.')
@@ -18,12 +40,10 @@ export async function generateLibEntries(options?: GeneratorOptions) {
   }
 }
 
-export async function generateVueCompat(options?: GeneratorOptions) {
+export async function vueCompat(options?: GeneratorOptions) {
   try {
-    const debug = debugLevel(options)
-
-    await runNpmScript(NpmScript.GenerateVueCompat, { debug })
-    consola.success('Vue 2 & 3 compatibility was generated successfully.')
+    await runNpmScript(NpmScript.GenerateVueCompat, options)
+    consola.success('Libraries are now Vue 2 & 3 compatible.')
   }
   catch (error) {
     consola.error('There was an error generating Vue compatibility.')
@@ -31,12 +51,12 @@ export async function generateVueCompat(options?: GeneratorOptions) {
   }
 }
 
-export async function generateWebTypes(options?: GeneratorOptions) {
+export async function webTypes(options?: GeneratorOptions) {
   try {
     const debug = debugLevel(options)
 
     await runNpmScript(NpmScript.GenerateWebTypes, { debug })
-    consola.success('Successfully generated the web-types.json file.')
+    consola.success('Successfully d the web-types.json file.')
   }
   catch (error) {
     consola.error('There was an error generating the web-types.json file')
@@ -45,13 +65,13 @@ export async function generateWebTypes(options?: GeneratorOptions) {
   }
 }
 
-export async function generateVsCodeCustomData(options?: GeneratorOptions) {
+export async function vsCodeCustomData(options?: GeneratorOptions) {
   try {
     const debug = debugLevel(options)
 
     await runNpmScript(NpmScript.GenerateVsCodeCustomData, { debug })
     await lintFix('ignore') // the created json file needs to be linted
-    consola.success('Successfully generated the custom-elements.json file.')
+    consola.success('Successfully d the custom-elements.json file.')
   }
   catch (error) {
     consola.error('There was an error generating the custom-elements.json file')
@@ -60,13 +80,13 @@ export async function generateVsCodeCustomData(options?: GeneratorOptions) {
   }
 }
 
-export async function generateIdeHelpers(options?: GeneratorOptions) {
+export async function ideHelpers(options?: GeneratorOptions) {
   try {
     const debug = debugLevel(options)
 
     await runNpmScript(NpmScript.GenerateIdeHelpers, { debug })
-    await lintFix('ignore') // the created json file needs to be linted
-    consola.success('Successfully generated IDE helpers.')
+    await lintFix(options) // the created json file needs to be linted
+    consola.success('Successfully d IDE helpers.')
   }
   catch (error) {
     consola.error('There was an error generating IDE helpers.')
@@ -75,40 +95,17 @@ export async function generateIdeHelpers(options?: GeneratorOptions) {
   }
 }
 
-export async function generateComponentMeta(options?: GeneratorOptions) {
+export async function componentMeta(options?: GeneratorOptions) {
   try {
     const debug = debugLevel(options)
 
     await runNpmScript(NpmScript.GenerateComponentMeta, { debug })
     await lintFix('ignore') // the created json file needs to be linted
-    consola.success('Successfully generated component meta.')
+    consola.success('Successfully d component meta.')
   }
   catch (error) {
     consola.error('There was an error generating your component meta information.')
     consola.error(error)
     process.exit(ExitCode.FatalError)
   }
-}
-
-export async function startGenerationProcess(options?: GeneratorOptions) {
-  if (options?.types)
-    await generateTypes(options)
-
-  else if (options?.entries)
-    await generateLibEntries(options)
-
-  else if (options?.webTypes)
-    await generateWebTypes(options)
-
-  else if (options?.customData)
-    await generateVsCodeCustomData(options)
-
-  else if (options?.ideHelpers)
-    await generateIdeHelpers(options)
-
-  else if (options?.vueCompatibility)
-    await generateVueCompat(options)
-
-  else if (options?.componentMeta)
-    await generateComponentMeta(options)
 }

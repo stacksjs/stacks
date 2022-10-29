@@ -14,7 +14,7 @@ export async function typecheck() {
   }
 }
 
-export async function runTestSuite() {
+export async function test() {
   consola.info('Running your test suite...')
 
   try {

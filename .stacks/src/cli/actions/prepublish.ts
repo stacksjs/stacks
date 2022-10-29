@@ -1,14 +1,11 @@
 import { consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { type CliOptions, ExitCode, NpmScript } from '@stacksjs/types'
-import { app } from '@stacksjs/config'
 
-export async function runPrepublish(options?: CliOptions) {
+export async function invoke(options?: CliOptions) {
   try {
-    const debug = options?.debug ? options.debug : app.debug
-
     consola.info('Running prepublish command...')
-    await runNpmScript(NpmScript.BuildStacks, { debug })
+    await runNpmScript(NpmScript.BuildStacks, options)
     consola.success('prepublish command completed.')
   }
   catch (error) {

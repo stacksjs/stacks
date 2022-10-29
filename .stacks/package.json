@@ -118,7 +118,7 @@
     "release": "esno ./core/actions/src/generate-package-json.ts && pnpm lint:fix && bumpp ./package.json ./core/**/package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm stacks generate",
-    "generate:entries": "npx esno ./core/actions/src/generate-lib-entries.ts",
+    "generate:entries": "pnpm stacks generate:entries",
     "generate:vue-compat": "esno ./core/actions/src/generate-vue-compat.ts",
     "generate:vscode-custom-data": "esno ./core/actions/src/generate-vscode-custom-data.ts",
     "generate:web-types": "vue-docgen-web-types -c ./core/build/web-types.config.cjs",

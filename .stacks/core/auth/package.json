@@ -1,0 +1,51 @@
+{
+  "name": "@stacksjs/auth",
+  "type": "module",
+  "version": "0.37.9",
+  "packageManager": "pnpm@7.14.0",
+  "description": "A more simplistic way to authenticate.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/auth#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/auth"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "auth",
+    "authenticate",
+    "stacks"
+  ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.12.0",
+    "pnpm": ">=7.14.0"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vitest": "^0.24.3"
+  },
+  "devDependencies": {
+    "mkdist": "^0.4.0",
+    "typescript": "^4.8.4"
+  }
+}

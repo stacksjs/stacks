@@ -30,6 +30,10 @@ export interface BuildOptions extends CliOptions {
   all?: boolean
 }
 
+export interface LintOptions extends CliOptions {
+  fix?: boolean
+}
+
 export type BuildOption = 'components' | 'vue-components' | 'web-components' | 'elements' | 'functions' | 'docs' | 'pages'
 
 export interface UpdateOptions extends CliOptions {
@@ -52,6 +56,10 @@ export interface GeneratorOptions extends CliOptions {
   componentMeta?: boolean
 }
 
+export interface ActionsOptions extends CliOptions {
+  types?: boolean
+}
+
 export interface MakeOptions extends CliOptions {
   component?: boolean
   page?: boolean
@@ -64,7 +72,8 @@ export interface MakeOptions extends CliOptions {
   stack?: boolean
 }
 
-export type IOType = 'overlapped' | 'pipe' | 'ignore' | 'inherit'
+export type IOType = 'ignore' | 'inherit'
+export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 
 /**
  * The available npm scripts within the Stacks toolkit.

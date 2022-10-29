@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
-import { generatePackageJson } from './generate/package-json'
+import { invoke as generatePackageJson } from './generate/package-json'
 
 async function generate() {
   if (hasComponents()) {

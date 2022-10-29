@@ -3,7 +3,7 @@ import { projectPath } from '@stacksjs/path'
 import { type CliOptions, ExitCode, type IOType } from '@stacksjs/types'
 import { app } from '@stacksjs/config'
 
-export async function runClean(options?: CliOptions) {
+export async function invoke(options?: CliOptions) {
   try {
     let debug: IOType = app.debug ? 'inherit' : 'ignore'
 

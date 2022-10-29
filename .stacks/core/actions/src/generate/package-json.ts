@@ -4,7 +4,7 @@ import { packageJsonPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { packageManager } from '../../package.json'
 
-export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
+export async function invoke(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config
 
   if (type === 'vue-components') {
