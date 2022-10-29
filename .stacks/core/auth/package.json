@@ -2,7 +2,7 @@
   "name": "@stacksjs/auth",
   "type": "module",
   "version": "0.37.9",
-  "packageManager": "pnpm@7.14.0",
+  "packageManager": "pnpm@7.14.1",
   "description": "A more simplistic way to authenticate.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v18.12.0",
-    "pnpm": ">=7.14.0"
+    "pnpm": ">=7.14.1"
   },
   "scripts": {
     "build": "mkdist -d",

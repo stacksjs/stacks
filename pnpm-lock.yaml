@@ -104,6 +104,17 @@ importers:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
 
+  .stacks/core/auth:
+    specifiers:
+      mkdist: ^0.4.0
+      typescript: ^4.8.4
+      vitest: ^0.24.3
+    dependencies:
+      vitest: 0.24.3
+    devDependencies:
+      mkdist: 0.4.0_typescript@4.8.4
+      typescript: 4.8.4
+
   .stacks/core/build:
     specifiers:
       '@intlify/vite-plugin-vue-i18n': ^6.0.3
@@ -257,14 +268,14 @@ importers:
   .stacks/core/lint:
     specifiers:
       '@ow3/eslint-config': ^0.31.3
-      '@types/eslint': ^8.4.8
+      '@types/eslint': ^8.4.9
       eslint: ^8.26.0
       lint-staged: ^13.0.3
       mkdist: ^0.4.0
       typescript: ^4.8.4
     dependencies:
       '@ow3/eslint-config': 0.31.3_wyqvi574yv7oiwfeinomdzmc3m
-      '@types/eslint': 8.4.8
+      '@types/eslint': 8.4.9
       eslint: 8.26.0
       lint-staged: 13.0.3
     devDependencies:
@@ -445,7 +456,7 @@ importers:
       '@rollup/pluginutils': ^5.0.2
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
-      '@types/eslint': ^8.4.8
+      '@types/eslint': ^8.4.9
       '@types/fs-extra': ^9.0.13
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
@@ -470,7 +481,7 @@ importers:
       '@rollup/pluginutils': 5.0.2
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
-      '@types/eslint': 8.4.8
+      '@types/eslint': 8.4.9
       '@types/fs-extra': 9.0.13
       '@types/markdown-it-link-attributes': 3.0.1
       '@types/minimatch': 5.1.2
@@ -2709,8 +2720,8 @@ packages:
       '@types/ms': 0.7.31
     dev: false
 
-  /@types/eslint/8.4.8:
-    resolution: {integrity: sha512-zUCKQI1bUCTi+0kQs5ZQzQ/XILWRLIlh15FXWNykJ+NG3TMKMVvwwC6GP3DR1Ylga15fB7iAExSzc4PNlR5i3w==}
+  /@types/eslint/8.4.9:
+    resolution: {integrity: sha512-jFCSo4wJzlHQLCpceUhUnXdrPuCNOjGFMQ8Eg6JXxlz3QaCKOb7eGi2cephQdM4XTYsNej69P9JDJ1zqNIbncQ==}
     dependencies:
       '@types/estree': 1.0.0
       '@types/json-schema': 7.0.11

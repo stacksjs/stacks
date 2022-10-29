@@ -2,7 +2,7 @@
   "name": "@stacksjs/types",
   "type": "module",
   "version": "0.37.9",
-  "packageManager": "pnpm@7.14.0",
+  "packageManager": "pnpm@7.14.1",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "engines": {
     "node": ">=v18.12.0",
-    "pnpm": ">=7.14.0"
+    "pnpm": ">=7.14.1"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -49,7 +49,7 @@
     "@rollup/pluginutils": "^5.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
-    "@types/eslint": "^8.4.8",
+    "@types/eslint": "^8.4.9",
     "@types/fs-extra": "^9.0.13",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
