@@ -1,7 +1,3 @@
-import type { CAC } from 'cac'
-
-export type CLI = CAC
-
 /**
  * The parsed command-line arguments
  */
@@ -18,74 +14,47 @@ export interface CliOptions {
   debug?: boolean | IOType
 }
 
-export interface BuildOptions extends CliOptions {
-  components?: boolean
-  vueComponents?: boolean
-  webComponents?: boolean
-  elements?: boolean
-  functions?: boolean
-  docs?: boolean
-  pages?: boolean
-  stacks?: boolean
-  all?: boolean
-}
+export type ActionsOption = 'types'
+export type ActionsOptions = {
+  [key in ActionsOption]?: boolean;
+} & CliOptions
 
-export interface LintOptions extends CliOptions {
-  fix?: boolean
-}
+export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'
+export type BuildOptions = {
+  [key in BuildOption]: boolean;
+} & CliOptions
 
-export type BuildOption = 'components' | 'vue-components' | 'web-components' | 'elements' | 'functions' | 'docs' | 'pages'
+export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all'
+export type DevOptions = {
+  [key in DevOption]: string;
+} & CliOptions
 
-export interface UpdateOptions extends CliOptions {
-  framework?: boolean
-  dependencies?: boolean
-  packageManager?: boolean
-  node?: boolean
-  version?: string
-  all?: boolean
-  force?: boolean
-}
+export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'vueCompatibility' | 'componentMeta'
+export type GeneratorOptions = {
+  [key in GeneratorOption]?: boolean;
+} & CliOptions
 
-export interface GeneratorOptions extends CliOptions {
-  types?: boolean
-  entries?: boolean
-  webTypes?: boolean
-  customData?: boolean
-  ideHelpers?: string
-  vueCompatibility?: boolean
-  componentMeta?: boolean
-}
+export type LintOption = 'fix'
+export type LintOptions = {
+  [key in LintOption]: boolean;
+} & CliOptions
 
-export interface ActionsOptions extends CliOptions {
-  types?: boolean
-}
+export type MakeOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'factory' | 'notification' | 'stack'
+export type MakeOptions = {
+  [key in MakeOption]?: boolean;
+} & CliOptions
 
-export interface MakeOptions extends CliOptions {
-  component?: boolean
-  page?: boolean
-  function?: boolean
-  language?: boolean
-  database?: boolean
-  migration?: boolean
-  factory?: boolean
-  notification?: boolean
-  stack?: boolean
-}
+export type UpdateOption = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'version' | 'all' | 'force'
+export type UpdateOptions = {
+  [key in UpdateOption]: boolean;
+} & CliOptions
 
 export interface TestOptions extends CliOptions {}
 export interface CleanOptions extends CliOptions {}
 export interface CommitOptions extends CliOptions {}
-export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all' | void
-export interface DevOptions extends CliOptions {
-  components: boolean
-  docs: boolean
-  pages: boolean
-  functions: boolean
-  all: boolean
-}
 
-export type IOType = 'ignore' | 'inherit'
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
+export type IOType = 'ignore' | 'inherit'
 
 /**
  * The available npm scripts within the Stacks toolkit.
@@ -135,3 +104,5 @@ export const enum NpmScript {
   Prepublish = 'prepublish',
   Wip = 'wip',
 }
+
+export type { CAC as CLI } from 'cac'
