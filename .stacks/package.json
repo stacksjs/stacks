@@ -44,7 +44,6 @@
   "scripts": {
     "stacks": "esno ./core/runtime/src/cli.ts",
     "stx": "pnpm run stacks",
-    "preinstall": "pnpm stacks preinstall",
     "prepublishOnly": "pnpm stacks prepublish",
     "fresh": "pnpm stacks fresh",
     "clean": "pnpm stacks clean",
