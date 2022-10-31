@@ -1,6 +1,6 @@
 import type { CLI, UpdateOptions } from '@stacksjs/types'
 import { Prompts } from '@stacksjs/cli'
-import { stacks as updateStacks } from './actions/update'
+import { invoke as updateStacks } from './actions/update'
 
 const { prompts } = Prompts
 

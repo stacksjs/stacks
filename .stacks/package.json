@@ -21,6 +21,7 @@
     "component",
     "composables",
     "functions",
+    "headless",
     "api",
     "ssg",
     "pwa",

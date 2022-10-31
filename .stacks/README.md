@@ -16,7 +16,7 @@ Other included core features are:
 - ⚡️ Vite powered, optimized for speed
 - 🚜 Create one component, automatically generate a Vue & Web Component library
 - 🎨 Optimized CSS engine for Vue & Web Components, and SSG pages _(defaults to Tailwind CSS utility classes)_
-- 👣 Tiny foot-print in production builds
+- 👣 Headless framework
 - 🌳 Treeshaking for Vue & Web Components, and function libraries
 - 💬 Fully-typed TypeScript definitions
 - 📰 Automatically publishes your libraries to npm & creates your changelogs

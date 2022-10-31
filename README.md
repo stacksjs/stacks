@@ -18,46 +18,46 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ## Features
 
+### Stacks Engine
+
+- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_
+- 🚀 **Deployment Manager** _take the sweat out of server & serverless zero-downtime prod deployments_
+- 📫 **npm support** _component & function libraries are automatically distributed_
+- ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
+- ☁️ **CDN** _auto-setup of low-latency content delivery network on top of your assets_
+- 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
+- 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
+- 💡 **First-class IDE integration** _Auto-completions, inline docs—powerful VS Code set up_
+- 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects & it comes fully-typed_
+- 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_
+- 📚 **Smart Bundling** _Vite powered & extendable_
+- 📈 **Modern DX** _latest & greatest tooling natively accessible, including ESNext support_
+- 🪄 **Zero-Config** _yet highly configurable_
+
 ### UI Engine
 
-- 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_<br>
-- ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_<br>
-- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_<br>
-- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_<br>
-- 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_<br>
-- 🍀 **Vue powered** _extendable & native access to the ecosystem_ <br>
+- 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_
+- ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_
+- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
+- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
+- 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
+- 🍀 **Vue powered** _extendable & native access to the ecosystem_
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ### FX Engine
 
-- 🧩 **Functions** _develop functions more rapidly than ever_<br>
-- 🏎️ **APIs** _scalability & maintainability built-in_<br>
-- 💨 **Cache** _Redis or DynamoDB_<br>
-- 📀 **Database** _Prisma, PlanetScale, Supabase, ..._<br>
-- 📢 **Notifications** _simply send emails, SMSs, and webhooks_<br>
-- ⚙️ **Queues** _run your heavy workload in the background_<br>
-- 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_<br>
-- 🧭 **Router** _smart routing, file-based or Laravel-like_<br>
-- 💾 **Storage** _easily make use of local & remote storage/file systems_<br>
-- 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_<br>
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_<br>
-
-### Stacks Engine
-
-- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_<br>
-- 🚀 **Deployment Manager** _take the sweat out of server & serverless production deployments_<br>
-- 📫 **npm support** _component & function libraries are automatically distributed_<br>
-- ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_<br>
-- ☁️ **CDN** _auto-setup of low-latency content delivery network on top of your assets_<br>
-- 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_<br>
-- 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._<br>
-- 💡 **First-class IDE integration** _Powerful VS Code set up_<br>
-- 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects & it comes fully-typed_<br>
-- 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_<br>
-- 📚 **Smart Bundling** _Vite powered & extendable_<br>
-- 📈 **Modern DX** _latest & greatest tooling natively accessible, including ESNext support_<br>
-- 🪄 **Zero-Config** _yet highly configurable_<br>
+- 🧩 **Functions** _develop functions more rapidly than ever_
+- 🏎️ **APIs** _scalability & maintainability built-in_
+- 💨 **Cache** _Redis or DynamoDB_
+- 📀 **Database** _Prisma, PlanetScale, Supabase, ..._
+- 📢 **Notifications** _simply send emails, SMSs, and webhooks_
+- ⚙️ **Queues** _run your heavy workload in the background_
+- 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_
+- 🧭 **Router** _smart routing, file-based or Laravel-like_
+- 💾 **Storage** _easily make use of local & remote storage/file systems_
+- 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 

@@ -1,5 +1,5 @@
 {
-  "name": "this-could-be-yours",
+  "name": "your-name",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@7.14.1",
@@ -16,20 +16,8 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "vite",
-    "component",
-    "composables",
-    "functions",
-    "api",
-    "ssg",
-    "pwa",
-    "modern",
-    "library",
-    "vue",
-    "web components",
-    "typescript",
-    "javascript",
-    "starter kit"
+    "your",
+    "features"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
