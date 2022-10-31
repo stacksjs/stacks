@@ -39,11 +39,12 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 ### UI Engine
 
 - 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_
-- ⚡️ **Static Site Generation (SSG)** _sites & layouts developed without breaking a sweat_
-- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
+- ⚡️ **Pages (SSG)** _Static site generation & layouts developed—without breaking a sweat_
 - 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
+- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
 - 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
 - 🍀 **Vue powered** _extendable & native access to the ecosystem_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 ### FX Engine
 
@@ -57,7 +58,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 💾 **Storage** _easily make use of local & remote storage/file systems_
 - 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
+- 🧪 **Testing** _covered by Vitest_
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
