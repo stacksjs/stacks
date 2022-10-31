@@ -34,6 +34,8 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - 📈 **Modern DX** _latest & greatest tooling natively accessible, including ESNext support_
 - 🪄 **Zero-Config** _yet highly configurable_
 
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
+
 ### UI Engine
 
 - 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_
@@ -42,8 +44,6 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
 - 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
 - 🍀 **Vue powered** _extendable & native access to the ecosystem_
-
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 ### FX Engine
 
@@ -59,7 +59,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 - 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
 
 > _A true rapid application development framework for all Full Stack needs. Next-level & deep DX._
 
