@@ -6,9 +6,9 @@ node_modules
 .pnpm-debug.log
 .stacks/core/server/.nitro
 .stacks/core/server/.output
+.stacks/components/vue/.vite-inspect/*
+.stacks/components/vue/dist/*
+.stacks/components/web/dist/*
 .stacks/docs/dist/*
-.stacks/vue-components/.vite-inspect/*
-.stacks/vue-components/dist/*
-.stacks/web-components/dist/*
 .stacks/functions/dist/*
 !.stacks/dist/*

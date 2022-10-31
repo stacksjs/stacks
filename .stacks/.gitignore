@@ -1,6 +1,6 @@
 .nitro
 .output
-core/vue-components/.vite-inspect
+components/vue/.vite-inspect
 core/build/entries/*.ts
 **/dist/*.cjs
 **/dist/*.mjs

@@ -1,7 +1,6 @@
 {
-  "name": "stacks-framework",
+  "name": "stacks",
   "type": "module",
-  "private": "true",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.1",
   "description": "The Stacks framework.",
@@ -12,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks"
+    "directory": "./.stacks/core/runtime"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -34,15 +33,27 @@
     "javascript",
     "starter kit"
   ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
+  ],
+  "bin": {
+    "stacks": "bin/stacks.mjs",
+    "stx": "bin/stacks.mjs",
+    "artisan": "bin/stacks.mjs"
+  },
+  "files": [
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=v18.12.0",
     "pnpm": ">=7.14.1"
   },
   "scripts": {
-    "stacks": "esno ./core/runtime/src/cli.ts",
+    "stacks": "esno ./src/cli.ts",
     "stx": "pnpm run stacks",
     "preinstall": "pnpm stacks preinstall",
     "prepublishOnly": "pnpm stacks prepublish",
@@ -123,6 +134,38 @@
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit",
     "artisan": "pnpm run stacks"
+  },
+  "dependencies": {
+    "@stacksjs/actions": "workspace:*",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/cloud": "workspace:*",
+    "@stacksjs/collections": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/docs": "workspace:*",
+    "@stacksjs/git": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/modules": "workspace:*",
+    "@stacksjs/objects": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/security": "workspace:*",
+    "@stacksjs/server": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/tests": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/ui": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
   },
   "web-types": "./web-types.json"
 }

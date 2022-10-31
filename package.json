@@ -27,7 +27,7 @@
     "pnpm": ">=7.14.1"
   },
   "scripts": {
-    "stacks": "esno .stacks/src/cli.ts",
+    "stacks": "esno .stacks/core/runtime/src/cli.ts",
     "stx": "pnpm stacks",
     "artisan": "pnpm stacks",
     "fresh": "pnpm stacks fresh",

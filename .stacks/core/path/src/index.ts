@@ -21,7 +21,11 @@ export function actionsPath(path?: string) {
 }
 
 export function aliasPath() {
-  return frameworkPath('alias.ts')
+  return runtimePath('alias.ts')
+}
+
+export function runtimePath(path?: string) {
+  return corePath(`runtime/${path || ''}`)
 }
 
 export function arraysPath(path?: string) {

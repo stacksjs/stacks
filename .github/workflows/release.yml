@@ -37,7 +37,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries to npm
-        run: pnpm stacks generate:entries && pnpm --filter './.stacks/vue-components' --filter './.stacks/web-components' --filter './.stacks/functions' publish --access public --no-git-checks
+        run: pnpm stacks generate:entries && pnpm --filter './.stacks/components/vue' --filter './.stacks/components/web' --filter './.stacks/functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

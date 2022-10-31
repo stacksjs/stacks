@@ -5,22 +5,36 @@ import { debugLevel } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { version } from '../../package.json'
+import { version } from '../../../../package.json'
 import { generate as generateAppKey } from './actions/key'
+
+const descriptions = {
+  command: 'Create a new Stacks project',
+  name: 'Name of the stack',
+  ui: 'Are you building a UI?',
+  components: 'Are you building UI components?',
+  webComponents: 'Automagically built optimized custom elements/web components?',
+  vue: 'Automagically built a Vue component library?',
+  pages: 'How about pages?',
+  functions: 'Are you developing functions/composables?',
+  api: 'Are you building an API?',
+  database: 'Do you need a database?',
+  debug: 'Add additional debug logging',
+}
 
 async function create(stacks: CLI) {
   stacks
-    .command('', 'Create a new Stacks project')
-    .option('-n, --name <name>', 'Name of the stack')
-    .option('-u, --ui', 'Are you building a UI?', { default: true }) // if no, disregard remainder of questions wrt UI
-    .option('-c, --components', 'Are you building UI components?', { default: true }) // if no, -v and -w would be false
-    .option('-w, --web-components', 'Automagically built optimized custom elements/web components?', { default: true })
-    .option('-v, --vue', 'Automagically built a Vue component library?', { default: true })
-    .option('-p, --pages', 'How about pages?', { default: true }) // pages need an HTTP server
-    .option('-f, --functions', 'Are you developing functions/composables?', { default: true }) // if no, API would be false
-    .option('-a, --api', 'Are you building an API?', { default: true }) // APIs need an HTTP server & assumes functions is true
-    .option('-d, --database', 'Do you need a database?', { default: true })
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('', descriptions.command)
+    .option('-n, --name <name>', descriptions.name)
+    .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
+    .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
+    .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-v, --vue', descriptions.vue, { default: true })
+    .option('-p, --pages', descriptions.pages, { default: true }) // pages need an HTTP server
+    .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
+    .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
+    .option('-d, --database', descriptions.database, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
       const name = stacks.args[0] || options.name || '.'

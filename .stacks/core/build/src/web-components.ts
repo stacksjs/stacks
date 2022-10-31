@@ -4,7 +4,7 @@ import type { ViteConfig } from '@stacksjs/types'
 import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
-import { alias } from '../../../alias'
+import { alias } from '../../runtime/alias'
 import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
 const isWebComponent = true
@@ -33,7 +33,7 @@ export const webComponentsConfig: ViteConfig = {
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: frameworkPath('web-components/dist'),
+    outDir: frameworkPath('components/web/dist'),
     emptyOutDir: true,
     lib: {
       entry: buildEntriesPath('web-components.ts'),

@@ -4,7 +4,7 @@ import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@s
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
-import { alias } from '../../../alias'
+import { alias } from '../../runtime/alias'
 import { autoImports, components, cssEngine, inspect, preview, uiEngine } from '.'
 
 export const vueComponentsConfig: ViteConfig = {
@@ -37,7 +37,7 @@ export const vueComponentsConfig: ViteConfig = {
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: frameworkPath('vue-components/dist'),
+    outDir: frameworkPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
       entry: buildEntriesPath('vue-components.ts'),

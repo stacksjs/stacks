@@ -286,7 +286,7 @@
     "unstorage",
     "planetscale",
     "singlestore",
-    "datetime",
+    "datetime"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
