@@ -20,14 +20,14 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ### Stacks Engine
 
-- 🤖 **CI/CD** _several CI, release & other workflows, including: stress-free deployments_
-- 🚀 **Deployment Manager** _take the sweat out of server & serverless zero-downtime prod deployments_
+- 🤖 **CI/CD** _several CI, release & other workflows_
+- 🚀 **Deployment Manager** _take the sweat & stress out of server & serverless prod deployments_
 - 📫 **npm support** _component & function libraries are automatically distributed_
 - ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
-- ☁️ **CDN** _auto-setup of low-latency content delivery network on top of your assets_
+- ☁️ **Cloud setup** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
-- 💡 **First-class IDE integration** _Auto-completions, inline docs—powerful VS Code set up_
+- 💡 **First-class IDE integration** _Auto-completions, inline docs & a powerful VS Code set up_
 - 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects & it comes fully-typed_
 - 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_
 - 📚 **Smart Bundling** _Vite powered & extendable_
