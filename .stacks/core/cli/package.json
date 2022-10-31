@@ -49,7 +49,9 @@
   },
   "peerDependencies": {
     "@jsdevtools/ez-spawn": "^3.0.4",
-    "@types/prompts": "^2.4.1",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "cac": "^6.7.14",
     "consola": "^2.15.3",
     "ora": "^6.1.2",

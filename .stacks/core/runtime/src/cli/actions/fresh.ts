@@ -8,18 +8,15 @@ export async function invoke(options?: FreshOptions) {
     const debug = debugLevel(options)
 
     consola.info('Preparing to run the fresh command.')
-
-    const spin = spinner('Running the fresh command...').start()
-
+    const spin = spinner('Running...').start()
     setTimeout(() => {
-      spin.text = `Running the fresh command. ${italic('This may take a little while...')}`
+      spin.text = italic('This may take a little while...')
     }, 15000)
 
     await spawn.async('pnpm run clean', { stdio: debug, cwd: projectPath() })
     await spawn.async('pnpm install', { stdio: debug, cwd: projectPath() })
 
     spin.stop()
-
     consola.success('Freshly reinstalled your dependencies.')
   }
   catch (error) {

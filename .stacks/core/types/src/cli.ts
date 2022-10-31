@@ -12,6 +12,8 @@ export interface StacksOptions {
  */
 export interface CliOptions {
   debug?: boolean | IOType
+  cwd?: string
+  shortLived?: boolean
 }
 
 export type ActionsOption = 'types'
@@ -56,7 +58,7 @@ export type MakeOptions = {
 } & CliOptions
 
 export type UpdateString = 'version'
-export type UpdateBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
+export type UpdateBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force' | 'onlyErrorsOutput'
 export type UpdateOptions = {
   [key in UpdateString]: string;
 } & {

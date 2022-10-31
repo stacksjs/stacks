@@ -1,4 +1,4 @@
-import { Prompts, consola, spawn } from '@stacksjs/cli'
+import { Prompts, consola, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
 import { debugLevel } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
@@ -20,6 +20,9 @@ export async function invoke(options?: UpdateOptions) {
   if (options?.node || options?.all)
     await updateNode(options)
 
+  else
+    process.exit(ExitCode.InvalidArgument)
+
   // TODO: also update CI files & configurations, and other files, possibly
   // we want this to be smart enough to update only if files that have been updated
   // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
@@ -31,7 +34,7 @@ export async function invoke(options?: UpdateOptions) {
  * @returns
  */
 export async function update(options: UpdateOptions) {
-  return invoke(options)
+  return await invoke(options)
 }
 
 export async function checkForUncommittedChanges(path = './.stacks', options: UpdateOptions) {
@@ -81,9 +84,7 @@ export async function updateFramework(options: UpdateOptions) {
   for (let i = 0; i < 5; i++)
     await storage.deleteEmptyFolders(frameworkPath())
 
-  const from = projectPath('./updates/.stacks')
-  const to = frameworkPath()
-  await storage.copyFolder(from, to, exclude)
+  await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
 
   if (debug === 'inherit')
     consola.info('Cleanup...')
@@ -93,38 +94,33 @@ export async function updateFramework(options: UpdateOptions) {
 }
 
 export async function downloadFrameworkUpdate(options: UpdateOptions) {
-  const debug = debugLevel(options)
-
-  consola.info('Downloading framework updates...')
-
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
 
   if (storage.doesFolderExist(tempUpdatePath))
     await deleteFolder(tempUpdatePath)
 
-  await spawn.async(`giget stacks ${tempFolderName}`, { stdio: debug })
-  consola.success('Downloaded framework updates.')
+  consola.info('Downloading framework updates...')
+  await runCommand(`giget stacks ${tempFolderName}`, options)
+  const version = (await storage.readJsonFile(projectPath(`${tempFolderName}/.stacks/version`))).data
+  consola.success('Your framework updated correctly to version: ', version)
 }
 
 export async function updateDependencies(options: UpdateOptions) {
-  const debug = debugLevel(options)
-  consola.info('Updating dependencies...')
-  await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
-  consola.success('Updated dependencies.')
+  consola.info('Preparing to update dependencies.')
+  await runCommand('pnpm update', options)
+  consola.success('Freshly updated your dependencies.')
 }
 
 export async function updatePackageManager(options: UpdateOptions) {
-  const debug = debugLevel(options)
-  consola.info('Updating package manager...')
+  consola.info('Preparing to update the package manager.')
   const version = options?.version || 'latest'
-  await spawn.async(`corepack prepare pnpm@${version} --activate`, { stdio: debug, cwd: projectPath() })
-  consola.success('Successfully updated to:', version)
+  await runCommand(`corepack prepare pnpm@${version} --activate`, options)
+  consola.success('Updated to version:', version)
 }
 
 export async function updateNode(options: UpdateOptions) {
-  const debug = debugLevel(options)
-  consola.info('Ensuring the proper Node version is used...')
-  await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })
+  consola.info('Preparing your Node version update.')
+  await runCommand('fnm use', options)
   consola.success('Your Node version is now:', process.version)
 }

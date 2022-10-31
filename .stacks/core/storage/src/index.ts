@@ -13,7 +13,7 @@ export const _dirname = typeof __dirname !== 'undefined'
 /**
  * Reads a JSON file and returns the parsed data.
  */
-export async function readJsonFile(name: string, cwd: string): Promise<JsonFile> {
+export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
   const data = JSON.parse(file.data) as unknown
   const indent = detectIndent(file.data).indent

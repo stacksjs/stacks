@@ -48,10 +48,9 @@ export async function componentLibraries(options: BuildOptions) {
 }
 
 export async function vueComponentLibrary(options: BuildOptions) {
-  consola.info('Building your component library...')
-
   if (hasComponents()) {
     try {
+      consola.info('Building your component library...')
       await runNpmScript(NpmScript.BuildComponents, options)
       consola.success('Your component library was built successfully.')
     }
@@ -61,7 +60,9 @@ export async function vueComponentLibrary(options: BuildOptions) {
     }
   }
   else {
-    consola.info('No components found.')
+    consola.warn('No components found.')
+    consola.info('Before you can build components,')
+    consola.info('you need to have developed some in the ./components folder.')
   }
 }
 

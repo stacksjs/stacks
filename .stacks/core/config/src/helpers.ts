@@ -6,10 +6,8 @@ import type { CliOptions, IOType } from '@stacksjs/types'
  * @param options
  */
 export function debugLevel(options?: CliOptions): IOType {
-  const debug: IOType = app.debug ? 'inherit' : 'ignore'
-
   if (options?.debug)
     return options.debug ? 'inherit' : 'ignore'
 
-  return debug
+  return app.debug ? 'inherit' : 'ignore'
 }

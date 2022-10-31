@@ -14,6 +14,11 @@ export async function isProjectCreated() {
   return await isAppKeySet()
 }
 
+export async function readVersion() {
+  const packageJson = await fs.fs.readJson(frameworkPath('package.json'))
+  return packageJson.version
+}
+
 export async function isAppKeySet() {
   const env = await fs.readTextFile('.env', projectPath())
   const lines = env.data.split('\n')

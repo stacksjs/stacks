@@ -143,9 +143,7 @@ export function pathPath(path?: string) {
 export function projectPath(filePath = '') {
   let path = process.cwd()
 
-  // workaround: run the follow command a few times because there is chance
-  // that the cwd is a few dirs up, like in the case when a release happens
-  // from a GitHub Action/workflow
+  // workaround: simple way to determine the project path
   if (path.includes('.stacks'))
     path = resolve(path, '..')
 
