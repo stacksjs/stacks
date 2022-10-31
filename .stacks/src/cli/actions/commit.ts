@@ -9,6 +9,11 @@ export async function invoke(options: CleanOptions) {
   consola.success('Committed.')
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
 export async function commit(options: CleanOptions) {
   return invoke(options)
 }

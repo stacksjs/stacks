@@ -1,8 +1,8 @@
 import { consola } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
-import { type CliOptions, ExitCode, NpmScript } from '@stacksjs/types'
+import { ExitCode, NpmScript, type CliOptions as PrepublishOptions } from '@stacksjs/types'
 
-export async function invoke(options?: CliOptions) {
+export async function invoke(options?: PrepublishOptions) {
   try {
     consola.info('Running prepublish command...')
     await runNpmScript(NpmScript.BuildStacks, options)
@@ -12,4 +12,13 @@ export async function invoke(options?: CliOptions) {
     consola.error(error)
     process.exit(ExitCode.FatalError)
   }
+}
+
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function generate(options: PrepublishOptions) {
+  return invoke(options)
 }

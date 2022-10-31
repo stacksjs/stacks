@@ -17,6 +17,11 @@ export async function invoke(options: DevOptions) {
     await functions(options)
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
 export async function dev(options: DevOptions) {
   return invoke(options)
 }

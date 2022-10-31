@@ -26,6 +26,11 @@ export async function invoke(options: BuildOptions) {
   await generateTypes()
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
 export async function build(options: BuildOptions) {
   return invoke(options)
 }

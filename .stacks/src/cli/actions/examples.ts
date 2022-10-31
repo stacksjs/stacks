@@ -1,14 +1,23 @@
 import { consola } from '@stacksjs/cli'
 import { hasComponents } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
-import { NpmScript } from '@stacksjs/types'
+import { type ExamplesOptions, NpmScript } from '@stacksjs/types'
 
-export async function invoke(options: any) {
-  if (options.components || options === 'components' || options === 'vue')
+export async function invoke(options: ExamplesOptions) {
+  if (options.components || options.vue)
     await componentExample()
 
-  else if (options.webComponents || options.elements || options === 'web-components' || options === 'elements')
+  else if (options.webComponents || options.elements)
     await webComponentExample()
+}
+
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function examples(options: ExamplesOptions) {
+  return invoke(options)
 }
 
 export async function componentExample() {

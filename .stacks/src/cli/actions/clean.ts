@@ -15,6 +15,11 @@ export async function invoke(options?: CleanOptions) {
   }
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
 export async function clean(options: CleanOptions) {
   return invoke(options)
 }

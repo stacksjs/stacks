@@ -24,13 +24,12 @@ export type BuildOptions = {
   [key in BuildOption]: boolean;
 } & CliOptions
 
-export type CreateStrings = 'name'
-export type CreateBooleans = 'ui' | 'components' | 'web-components' | 'vue' | 'pages' | 'functions' | 'api' | 'database'
-export type CreateOption = CreateStrings | CreateBooleans
+export type CreateStringOption = 'name'
+export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue' | 'pages' | 'functions' | 'api' | 'database'
 export type CreateOptions = {
-  [key in CreateBooleans]: boolean
+  [key in CreateBooleanOption]: boolean
 } & {
-  name: string
+  [key in CreateStringOption]: string
 } & CliOptions
 
 export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'all'
@@ -55,14 +54,22 @@ export type LintOptions = {
   [key in LintOption]: boolean;
 } & CliOptions
 
-export type MakeOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'factory' | 'notification' | 'stack'
+export type MakeStringOption = 'name'
+export type MakeBooleanOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'factory' | 'notification' | 'stack'
 export type MakeOptions = {
-  [key in MakeOption]?: boolean;
+  [key in MakeBooleanOption]: boolean
+} & {
+  [key in MakeStringOption]: string
 } & CliOptions
 
 export type UpdateOption = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'version' | 'all' | 'force'
 export type UpdateOptions = {
   [key in UpdateOption]: boolean;
+} & CliOptions
+
+export type ExamplesOption = 'components' | 'vue' | 'webComponents' | 'elements' | 'version' | 'all' | 'force'
+export type ExamplesOptions = {
+  [key in ExamplesOption]: boolean;
 } & CliOptions
 
 export interface TestOptions extends CliOptions {}

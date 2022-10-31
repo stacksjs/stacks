@@ -1,10 +1,9 @@
-import { consola, spawn } from '@stacksjs/cli'
+import { consola, italic, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { type CliOptions, ExitCode } from '@stacksjs/types'
+import { ExitCode, type CliOptions as FreshOptions } from '@stacksjs/types'
 import { debugLevel } from '@stacksjs/config'
-import { italic } from 'kolorist'
 
-export async function invoke(options?: CliOptions) {
+export async function invoke(options?: FreshOptions) {
   try {
     const debug = debugLevel(options)
 
@@ -17,4 +16,13 @@ export async function invoke(options?: CliOptions) {
     consola.error(error)
     process.exit(ExitCode.FatalError)
   }
+}
+
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function fresh(options: FreshOptions) {
+  return invoke(options)
 }

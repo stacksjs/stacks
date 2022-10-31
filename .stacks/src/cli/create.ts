@@ -1,6 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { consola, spawn } from '@stacksjs/cli'
-import { bold, cyan, dim, link } from 'kolorist'
+import { bold, consola, cyan, dim, link, spawn } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { debugLevel } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
@@ -82,7 +81,7 @@ async function install(path: string, options: CreateOptions) {
   consola.info('Installing & setting up Stacks.')
   await spawn.async('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   await spawn.async('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  await generateAppKey()
+  await generateAppKey(options)
   await spawn.async('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   consola.success('Installed & set-up 🚀')
 }

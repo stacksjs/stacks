@@ -7,7 +7,7 @@ import { ExitCode } from '@stacksjs/types'
 
 const { prompts } = Prompts
 
-export async function stacks(options?: UpdateOptions) {
+export async function invoke(options?: UpdateOptions) {
   if (options?.framework || options?.all)
     await updateFramework(options)
 
@@ -25,7 +25,16 @@ export async function stacks(options?: UpdateOptions) {
   // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
 }
 
-async function checkForUncommittedChanges(path = './.stacks', options: UpdateOptions) {
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function update(options: UpdateOptions) {
+  return invoke(options)
+}
+
+export async function checkForUncommittedChanges(path = './.stacks', options: UpdateOptions) {
   try {
     const debug = debugLevel(options)
 
@@ -57,7 +66,7 @@ async function checkForUncommittedChanges(path = './.stacks', options: UpdateOpt
   }
 }
 
-async function updateFramework(options: UpdateOptions) {
+export async function updateFramework(options: UpdateOptions) {
   const debug = debugLevel(options)
 
   await checkForUncommittedChanges('./.stacks', options)
@@ -83,7 +92,7 @@ async function updateFramework(options: UpdateOptions) {
   consola.success('Framework updated')
 }
 
-async function downloadFrameworkUpdate(options: UpdateOptions) {
+export async function downloadFrameworkUpdate(options: UpdateOptions) {
   const debug = debugLevel(options)
 
   consola.info('Downloading framework updates...')
@@ -98,14 +107,14 @@ async function downloadFrameworkUpdate(options: UpdateOptions) {
   consola.success('Downloaded framework updates.')
 }
 
-async function updateDependencies(options: UpdateOptions) {
+export async function updateDependencies(options: UpdateOptions) {
   const debug = debugLevel(options)
   consola.info('Updating dependencies...')
   await spawn.async('pnpm update', { stdio: debug, cwd: projectPath() })
   consola.success('Updated dependencies.')
 }
 
-async function updatePackageManager(options: UpdateOptions) {
+export async function updatePackageManager(options: UpdateOptions) {
   const debug = debugLevel(options)
   consola.info('Updating package manager...')
   const version = options?.version || 'latest'
@@ -113,7 +122,7 @@ async function updatePackageManager(options: UpdateOptions) {
   consola.success('Successfully updated to:', version)
 }
 
-async function updateNode(options: UpdateOptions) {
+export async function updateNode(options: UpdateOptions) {
   const debug = debugLevel(options)
   consola.info('Ensuring the proper Node version is used...')
   await spawn.async('fnm use', { stdio: debug, cwd: projectPath() })

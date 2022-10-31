@@ -1,4 +1,4 @@
-# Stacks Serverless
+# Stacks Datetime
 
 wip
 
@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/serverless
+pnpm i -D @stacksjs/cloud
 ```
 
 Now, you can use it in your project:
 
 ```js
-import serverless from '@stacksjs/serverless'
+import { date, time } from '@stacksjs/datetime'
 
 // wip
 ```

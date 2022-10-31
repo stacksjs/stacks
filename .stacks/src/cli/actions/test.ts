@@ -14,6 +14,15 @@ export async function invoke(options: TestOptions) {
   }
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function test(options: TestOptions) {
+  return invoke(options)
+}
+
 export async function typecheck(options: TestOptions) {
   try {
     consola.info('Typechecking your codebase...')

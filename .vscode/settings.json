@@ -285,7 +285,8 @@
     "supabase",
     "unstorage",
     "planetscale",
-    "singlestore"
+    "singlestore",
+    "datetime",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

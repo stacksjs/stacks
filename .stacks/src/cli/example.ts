@@ -4,13 +4,21 @@ import { Prompts } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from './actions/examples'
 
 const { prompts } = Prompts
+const descriptions = {
+  example: 'Which example do you want to see?',
+  components: 'Test your libraries against your built bundle',
+  vue: 'Test your Vue component library',
+  webComponents: 'Test your web component library',
+  debug: 'Add additional debug logging',
+}
 
 async function example(stacks: CLI) {
   stacks
-    .command('example', 'Test your libraries against your built bundle.')
-    .option('-c, --components', 'Test your Vue component library')
-    .option('-v, --vue', 'Test your Vue component library')
-    .option('-w, --web-components', 'Test your web component library')
+    .command('example', descriptions.example)
+    .option('-c, --components', descriptions.components)
+    .option('-v, --vue', descriptions.vue)
+    .option('-w, --web-components', descriptions.webComponents)
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: ExampleOptions) => {
       const answer: ExampleOption = await prompts.select({
         type: 'select',

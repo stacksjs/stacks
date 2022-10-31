@@ -27,6 +27,15 @@ export async function invoke(options?: GeneratorOptions) {
     await componentMeta(options)
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function generate(options: GeneratorOptions) {
+  return invoke(options)
+}
+
 export async function libEntries(options: GeneratorOptions) {
   try {
     await runNpmScript(NpmScript.GenerateEntries, options)
