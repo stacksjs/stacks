@@ -107,9 +107,16 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
 }
 
 export async function updateDependencies(options: UpdateOptions) {
-  consola.info('Preparing to update dependencies.')
-  await runCommand('pnpm update', options)
-  consola.success('Freshly updated your dependencies.')
+  try {
+    consola.info('Preparing to update dependencies.')
+    await runCommand('pnpm update', options)
+    consola.success('Freshly updated your dependencies.')
+  }
+  catch (error) {
+    consola.error('There was an error updating your dependencies.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
+  }
 }
 
 export async function updatePackageManager(options: UpdateOptions) {

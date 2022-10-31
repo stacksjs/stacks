@@ -9,6 +9,7 @@ export async function invoke(options?: PrepublishOptions) {
     consola.success('prepublish command completed.')
   }
   catch (error) {
+    consola.error('There was an error prepublish your stack.')
     consola.error(error)
     process.exit(ExitCode.FatalError)
   }

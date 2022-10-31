@@ -1,13 +1,12 @@
 import { getRandomValues } from 'node:crypto'
-import { consola, spawn } from '@stacksjs/cli'
+import { consola, runShortLivedCommand } from '@stacksjs/cli'
 // import { generateAppKey } from '@stacksjs/security'
 import type { CliOptions as KeyOptions } from '@stacksjs/types'
-import { projectPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
 import { setEnvValue } from '@stacksjs/utils'
 import { isFile } from '@stacksjs/storage'
 import utf8 from 'crypto-js/enc-utf8'
 import base64 from 'crypto-js/enc-base64'
-import { debugLevel } from '@stacksjs/config'
 
 export async function invoke(options: KeyOptions) {
   await generate(options)
@@ -23,17 +22,23 @@ export async function key(options: KeyOptions) {
 }
 
 export async function generate(options: KeyOptions) {
-  consola.info('Setting random application key.')
-  const debug = debugLevel(options)
+  try {
+    consola.info('Setting random application key.')
 
-  // if the .env file does not exist, ensure it is created
-  if (!isFile('.env'))
-    await spawn.async('cp .env.example .env', { stdio: debug, cwd: projectPath() })
+    if (!isFile('.env'))
+      await runShortLivedCommand('cp .env.example .env', options)
+      // spawn.async('cp .env.example .env', { stdio: debug, cwd: projectPath() })
 
-  await setEnvValue('APP_KEY', await generateAppKey())
-  consola.success('Application key set.')
+    await setEnvValue('APP_KEY', await generateAppKey())
+    consola.success('Application key set.')
 
-  return true
+    return true
+  }
+  catch (error) {
+    consola.error('There was an error generating your key.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
+  }
 }
 
 export async function generateAppKey() {

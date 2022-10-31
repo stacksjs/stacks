@@ -10,6 +10,7 @@ export async function invoke(options?: PreinstallOptions) {
     consola.success('Environment ready.')
   }
   catch (error) {
+    consola.error('There was an error preinstalling your stack.')
     consola.error(error)
     process.exit(ExitCode.FatalError)
   }

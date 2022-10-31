@@ -2,6 +2,7 @@ import { consola, italic, spawn } from '@stacksjs/cli'
 import { writeTextFile } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
@@ -48,8 +49,10 @@ export async function component(options: MakeOptions) {
     await createComponent(options)
     consola.success(`Created the ${italic(name)} component.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your component.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -78,8 +81,10 @@ export async function database(options: MakeOptions) {
     await createDatabase(options)
     consola.success(`Created the ${italic(name)} database.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your database.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -94,8 +99,10 @@ export async function factory(options: MakeOptions) {
     await createDatabase(options)
     consola.success(`Created the ${italic(name)} factory.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your factory.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -107,11 +114,13 @@ export async function migration(options: MakeOptions) {
   try {
     const name = options.name
     consola.info(`Creating your ${italic(name)} migration...`)
-    await createDatabase(options)
+    await createMigration(options)
     consola.success(`Created the ${italic(name)} migration.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your migration.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -126,8 +135,10 @@ export async function notification(options: MakeOptions) {
     await createNotification(options)
     consola.success(`Created the ${italic(name)} notification.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your notification.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -138,12 +149,14 @@ export async function createNotification(options: MakeOptions) {
 export async function page(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your component...')
+    consola.info('Creating your page...')
     createPage(options)
     consola.success(`Created the ${name} page.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your page.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -170,11 +183,13 @@ export async function fx(options: MakeOptions) {
   try {
     const name = options.name
     consola.info('Creating your function...')
-    createFunction(options)
+    await createFunction(options)
     consola.success(`Created the ${name} function.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your function.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -205,8 +220,10 @@ export async function language(options: MakeOptions) {
     createLanguage(options)
     consola.success(`Created the ${name} translation file.`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your language.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -229,7 +246,9 @@ export async function stack(options: MakeOptions) {
     consola.success('Successfully scaffolded your project.')
     consola.info(`cd ${path} && pnpm install`)
   }
-  catch (err) {
-    consola.error(err)
+  catch (error) {
+    consola.error('There was an error creating your stack.')
+    consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
