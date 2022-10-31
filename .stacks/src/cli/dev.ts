@@ -54,6 +54,8 @@ async function dev(stacks: CLI) {
       }
 
       await startDevelopmentServer(options)
+
+      process.exit(ExitCode.Success)
     })
 
   stacks

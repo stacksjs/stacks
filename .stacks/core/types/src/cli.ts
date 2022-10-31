@@ -37,13 +37,6 @@ export type DevOptions = {
   [key in DevOption]: boolean;
 } & CliOptions
 
-export type ExampleOption = 'components' | 'vue' | 'webComponents' | void
-export type ExampleOptions = {
-  components: boolean
-  vue: boolean
-  webComponents: boolean
-} & CliOptions
-
 export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'vueCompatibility' | 'componentMeta'
 export type GeneratorOptions = {
   [key in GeneratorOption]?: boolean;
@@ -70,15 +63,23 @@ export type UpdateOptions = {
   [key in UpdateBoolean]: boolean;
 } & CliOptions
 
-export type ExamplesOption = 'components' | 'vue' | 'webComponents' | 'elements' | 'version' | 'all' | 'force'
+export type ExamplesString = 'version'
+export type ExamplesBoolean = 'components' | 'vue' | 'webComponents' | 'elements' | 'all' | 'force'
+export type ExamplesOption = ExamplesString & ExamplesBoolean | void
 export type ExamplesOptions = {
-  [key in ExamplesOption]: boolean;
+  [key in ExamplesString]: string;
+} & {
+  [key in ExamplesBoolean]: boolean;
 } & CliOptions
 
 export interface TestOptions extends CliOptions {}
 export interface CleanOptions extends CliOptions {}
 export interface CommitOptions extends CliOptions {}
 export interface KeyOptions extends CliOptions {}
+export interface FreshOptions extends CliOptions {}
+export interface ReleaseOptions extends CliOptions {}
+export interface PreinstallOptions extends CliOptions {}
+export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 export type IOType = 'ignore' | 'inherit'

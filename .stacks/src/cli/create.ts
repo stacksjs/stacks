@@ -45,6 +45,8 @@ async function create(stacks: CLI) {
       console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
       consola.log('To learn more, visit https://stacksjs.dev')
+
+      process.exit(ExitCode.Success)
     })
 }
 

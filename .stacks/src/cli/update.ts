@@ -97,7 +97,7 @@ async function update(stacks: CLI) {
   stacks
     .command('update:all', descriptions.all)
     .option('-a, --all', descriptions.all, { default: true })
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })

@@ -78,63 +78,63 @@ async function make(stacks: CLI) {
     })
 
   stacks
-    .command('make:component', 'Create a new component')
+    .command('make:component', descriptions.component)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeComponent(options)
     })
 
   stacks
-    .command('make:database', 'Create a new database')
+    .command('make:database', descriptions.database)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeDatabase(options)
     })
 
   stacks
-    .command('make:migration', 'Create a new migration')
+    .command('make:migration', descriptions.migration)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeMigration(options)
     })
 
   stacks
-    .command('make:factory', 'Create a new factory')
+    .command('make:factory', descriptions.factory)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFactory(options)
     })
 
   stacks
-    .command('make:page', 'Create a new page')
+    .command('make:page', descriptions.page)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makePage(options)
     })
 
   stacks
-    .command('make:function', 'Create a new function')
+    .command('make:function', descriptions.function)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFunction(options)
     })
 
   stacks
-    .command('make:lang', 'Create a new language file')
+    .command('make:lang', descriptions.language)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeLanguage(options)
     })
 
   stacks
-    .command('make:notification', 'Create a new language notification')
+    .command('make:notification', descriptions.notification)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeNotification(options)
     })
 
   stacks
-    .command('make:stack', 'Create a new new stack')
+    .command('make:stack', descriptions.stack)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeStack(options)

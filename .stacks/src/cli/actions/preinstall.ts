@@ -1,6 +1,6 @@
 import { consola, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { ExitCode, type CliOptions as PreinstallOptions } from '@stacksjs/types'
+import { ExitCode, type PreinstallOptions } from '@stacksjs/types'
 import { debugLevel } from '@stacksjs/config'
 
 export async function invoke(options?: PreinstallOptions) {

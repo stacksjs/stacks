@@ -1,4 +1,5 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { Prompts } from '@stacksjs/cli'
 import { invoke as startBuildProcess } from './actions/build'
 
@@ -49,6 +50,8 @@ async function build(stacks: CLI) {
       }
 
       await startBuildProcess(options)
+
+      process.exit(ExitCode.Success)
     })
 
   stacks
