@@ -40,13 +40,10 @@ async function dev(stacks: CLI) {
 
         if (answer === 'components')
           await components(options)
-
         else if (answer === 'functions')
           await functions(options)
-
         else if (answer === 'pages')
           await pages(options)
-
         else if (answer === 'docs')
           await docs(options)
 
@@ -54,7 +51,6 @@ async function dev(stacks: CLI) {
       }
 
       await startDevelopmentServer(options)
-
       process.exit(ExitCode.Success)
     })
 

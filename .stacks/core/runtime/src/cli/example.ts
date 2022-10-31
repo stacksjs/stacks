@@ -38,14 +38,11 @@ async function example(stacks: CLI) {
 
       if (answer === 'components')
         await componentExample(options)
-
-      if (answer === 'web-components')
+      else if (answer === 'web-components')
         await webComponentExample(options)
-
       else process.exit(ExitCode.InvalidArgument)
 
       await runExample(options)
-
       process.exit(ExitCode.Success)
     })
 

@@ -3,7 +3,7 @@ import { command } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../../package.json'
-import { build, create, dev, example, generate, key, make, preinstall, prepublish, test, update, utility } from './cli'
+import { build, create, dev, example, generate, key, make, preinstall, prepublish, test, update, utility } from './cli/'
 
 const cli = command('stacks')
 
