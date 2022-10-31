@@ -62,9 +62,12 @@ export type MakeOptions = {
   [key in MakeStringOption]: string
 } & CliOptions
 
-export type UpdateOption = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'version' | 'all' | 'force'
+export type UpdateString = 'version'
+export type UpdateBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
 export type UpdateOptions = {
-  [key in UpdateOption]: boolean;
+  [key in UpdateString]: string;
+} & {
+  [key in UpdateBoolean]: boolean;
 } & CliOptions
 
 export type ExamplesOption = 'components' | 'vue' | 'webComponents' | 'elements' | 'version' | 'all' | 'force'
@@ -75,6 +78,7 @@ export type ExamplesOptions = {
 export interface TestOptions extends CliOptions {}
 export interface CleanOptions extends CliOptions {}
 export interface CommitOptions extends CliOptions {}
+export interface KeyOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 export type IOType = 'ignore' | 'inherit'

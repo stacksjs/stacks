@@ -1,26 +1,39 @@
 import type { CLI, UpdateOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { Prompts } from '@stacksjs/cli'
 import { invoke as updateStacks } from './actions/update'
 
 const { prompts } = Prompts
 
+const descriptions = {
+  command: 'Update dependencies, framework, package manager, and/or Node',
+  framework: 'Update the Stacks framework',
+  dependencies: 'Update your dependencies',
+  packageManager: 'Update your package manager, i.e. pnpm',
+  node: 'Update Node to the version defined in ./node-version',
+  all: 'Update Node, package manager, project dependencies, and framework',
+  force: 'Overwrite possible local updates with remote framework updates',
+  debug: 'Add additional debug logging',
+  select: 'What are you trying to update?',
+}
+
 async function update(stacks: CLI) {
   stacks
-    .command('update', 'Update dependencies, framework, package manager, and/or Node')
-    .option('-c, --framework', 'Update the Stacks framework', { default: false })
-    .option('-d, --dependencies', 'Update your dependencies', { default: false })
-    .option('-p, --package-manager', 'Update your package manager, i.e. pnpm', { default: false })
-    .option('-n, --node', 'Update Node to the version defined in ./node-version', { default: false })
-    .option('-a, --all', 'Update Node, package manager, project dependencies, and framework', { default: false })
-    .option('-f, --force', 'Overwrite possible local updates with remote framework updates', { default: false })
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('update', descriptions.command)
+    .option('-c, --framework', descriptions.framework, { default: false })
+    .option('-d, --dependencies', descriptions.dependencies, { default: false })
+    .option('-p, --package-manager', descriptions.packageManager, { default: false })
+    .option('-n, --node', descriptions.node, { default: false })
+    .option('-a, --all', descriptions.all, { default: false })
+    .option('-f, --force', descriptions.force, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .example('stacks update -a --debug')
     .action(async (options: UpdateOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
           type: 'multiselect',
           name: 'update',
-          message: 'What are you trying to update?',
+          message: descriptions.select,
           choices: [
             { title: 'Dependencies', value: 'dependencies' },
             { title: 'Framework', value: 'framework' },
@@ -37,25 +50,28 @@ async function update(stacks: CLI) {
     })
 
   stacks
-    .command('update:framework', 'Update the Stacks framework')
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('update:framework', descriptions.framework)
+    .option('-f, --framework', descriptions.framework, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
     .example('stacks update:framework --debug')
     .action(async (options: UpdateOptions) => {
-      await updateStacks({ framework: true, ...options })
+      await updateStacks(options)
     })
 
   stacks
-    .command('update:dependencies', 'Update your dependencies')
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('update:dependencies', descriptions.dependencies)
+    .option('-d, --dependencies', descriptions.dependencies, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('update:deps')
     .example('stacks update:dependencies --debug')
     .action(async (options: UpdateOptions) => {
-      await updateStacks({ dependencies: true, ...options })
+      await updateStacks(options)
     })
 
   stacks
-    .command('update:package-manager', 'Update your package manager, i.e. pnpm')
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('update:package-manager', descriptions.packageManager)
+    .option('-p, --package-manager', descriptions.packageManager, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('update:pm')
     .example('stacks update:package-manager 7.14.0 --debug')
     .example('stacks update:package-manager latest')
@@ -65,22 +81,25 @@ async function update(stacks: CLI) {
       if (stacks.args[0])
         options.version = stacks.args[0]
 
-      await updateStacks({ packageManager: true, ...options })
-      return stacks.outputHelp()
+      await updateStacks(options)
+
+      process.exit(ExitCode.Success)
     })
 
   stacks
-    .command('update:node', 'Update Node to version defined in ./node-version')
-    .option('--debug', 'Add additional debug logging', { default: false })
+    .command('update:node', descriptions.node)
+    .option('-n, --node', descriptions.node, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpdateOptions) => {
-      await updateStacks({ node: true, ...options })
+      await updateStacks(options)
     })
 
   stacks
-    .command('update:all', 'Update Node, package manager, project dependencies, and framework')
+    .command('update:all', descriptions.all)
+    .option('-a, --all', descriptions.all, { default: true })
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: UpdateOptions) => {
-      await updateStacks({ all: true, ...options })
+      await updateStacks(options)
     })
 }
 

@@ -1,12 +1,17 @@
-import type { CLI } from '@stacksjs/types'
+import type { CLI, KeyOptions } from '@stacksjs/types'
 import { generate as generateAppKey } from './actions/key'
 
 async function key(stacks: CLI) {
+  const descriptions = {
+    command: 'Generate & set the application key.',
+    debug: 'Add additional debug logging',
+  }
+
   stacks
-    .command('key:generate', 'Generate & set the application key.')
+    .command('key:generate', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
-    .action(async () => {
-      await generateAppKey()
+    .action(async (options: KeyOptions) => {
+      await generateAppKey(options)
     })
 }
 

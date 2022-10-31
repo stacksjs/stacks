@@ -1,8 +1,18 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { Prompts, consola } from '@stacksjs/cli'
-import { invoke, component as makeComponent, fx as makeFunction, language as makeLanguage, page as makePage, stack as makeStack } from './actions/make'
-// import { component as makeComponent, fx as makeFunction, language as makeLanguage, notification as makeNotification, page as makePage, stack as makeStack } from './actions/make'
+import {
+  invoke,
+  component as makeComponent,
+  database as makeDatabase,
+  factory as makeFactory,
+  fx as makeFunction,
+  language as makeLanguage,
+  migration as makeMigration,
+  notification as makeNotification,
+  page as makePage,
+  stack as makeStack,
+} from './actions/make'
 
 const { prompts } = Prompts
 
