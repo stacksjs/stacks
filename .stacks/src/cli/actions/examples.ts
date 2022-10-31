@@ -1,7 +1,7 @@
 import { consola } from '@stacksjs/cli'
 import { hasComponents } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
-import { type ExamplesOptions, NpmScript } from '@stacksjs/types'
+import { type ExamplesOptions, ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: ExamplesOptions) {
   if (options.components || options.vue)
@@ -9,6 +9,9 @@ export async function invoke(options: ExamplesOptions) {
 
   else if (options.webComponents || options.elements)
     await webComponentExample()
+
+  else
+    consola.error('You used an unsupported option. Please check the documentation & report the issue, if needed.')
 }
 
 /**
@@ -29,27 +32,30 @@ export async function componentExample() {
     catch (error) {
       consola.error('There was an error building your component library.')
       consola.error(error)
+      process.exit(ExitCode.FatalError)
     }
   }
   else {
     consola.info('No components found.')
+    process.exit(ExitCode.FatalError)
   }
 }
 
 export async function webComponentExample() {
-  consola.info('Building your Web Component library...')
-
   if (hasComponents()) {
     try {
+      consola.info('Building your Web Component library...')
       await runNpmScript(NpmScript.BuildWebComponents)
       consola.success('Your Web Component library was built successfully.')
     }
     catch (error) {
       consola.error('There was an error building your Web Component library.')
       consola.error(error)
+      process.exit(ExitCode.FatalError)
     }
   }
   else {
     consola.info('No components found.')
+    process.exit(ExitCode.FatalError)
   }
 }

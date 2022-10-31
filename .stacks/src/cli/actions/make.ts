@@ -32,6 +32,15 @@ export async function invoke(options: MakeOptions) {
     await stack(options)
 }
 
+/**
+ * An alias of the invoke method.
+ * @param options
+ * @returns
+ */
+export async function make(options: MakeOptions) {
+  return invoke(options)
+}
+
 export async function component(options: MakeOptions) {
   try {
     const name = options.name

@@ -19,6 +19,6 @@ export async function invoke(options?: PrepublishOptions) {
  * @param options
  * @returns
  */
-export async function generate(options: PrepublishOptions) {
+export async function prepublish(options: PrepublishOptions) {
   return invoke(options)
 }

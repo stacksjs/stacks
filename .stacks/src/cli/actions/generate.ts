@@ -44,6 +44,7 @@ export async function libEntries(options: GeneratorOptions) {
   catch (error) {
     consola.error('There was an error generating your library entry points.')
     consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -55,6 +56,7 @@ export async function vueCompat(options?: GeneratorOptions) {
   catch (error) {
     consola.error('There was an error generating Vue compatibility.')
     consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -73,8 +75,8 @@ export async function webTypes(options?: GeneratorOptions) {
 export async function vsCodeCustomData(options?: GeneratorOptions) {
   try {
     await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
-    await lintFix(options) // the created json file needs to be linted
-    consola.success('Successfully d the custom-elements.json file.')
+    await lintFix({ fix: true }) // the created json file needs to be linted
+    consola.success('Successfully generated the custom-elements.json file.')
   }
   catch (error) {
     consola.error('There was an error generating the custom-elements.json file')
@@ -86,8 +88,8 @@ export async function vsCodeCustomData(options?: GeneratorOptions) {
 export async function ideHelpers(options?: GeneratorOptions) {
   try {
     await runNpmScript(NpmScript.GenerateIdeHelpers, options)
-    await lintFix(options) // the created json file needs to be linted
-    consola.success('Successfully d IDE helpers.')
+    await lintFix({ fix: true }) // the created json file needs to be linted
+    consola.success('Successfully generated IDE helpers.')
   }
   catch (error) {
     consola.error('There was an error generating IDE helpers.')
@@ -99,7 +101,7 @@ export async function ideHelpers(options?: GeneratorOptions) {
 export async function componentMeta(options?: GeneratorOptions) {
   try {
     await runNpmScript(NpmScript.GenerateComponentMeta, options)
-    await lintFix(options) // the created json file needs to be linted
+    await lintFix({ fix: true }) // the created json file needs to be linted
     consola.success('Successfully d component meta.')
   }
   catch (error) {
@@ -117,5 +119,6 @@ export async function types(options?: GeneratorOptions) {
   catch (error) {
     consola.error('There was an error generating your types.')
     consola.error(error)
+    process.exit(ExitCode.FatalError)
   }
 }

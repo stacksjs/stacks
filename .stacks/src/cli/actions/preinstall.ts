@@ -20,6 +20,6 @@ export async function invoke(options?: PreinstallOptions) {
  * @param options
  * @returns
  */
-export async function generate(options: PreinstallOptions) {
+export async function preinstall(options: PreinstallOptions) {
   return invoke(options)
 }
