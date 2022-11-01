@@ -10,14 +10,10 @@ import { hasComponents } from '@stacksjs/storage'
 import { generateVsCodeCustomData } from './helpers/vscode-custom-data'
 // import { generateVsCodeCustomData, generateWebTypes } from './generate/vscode-custom-data'
 
-async function invoke() {
-  if (hasComponents()) {
-    // await generateWebTypes()
-    await generateVsCodeCustomData()
-  }
-  else {
-    consola.info('No components found. Skipping IDE helper generation.')
-  }
+if (hasComponents()) {
+  // await generateWebTypes()
+  await generateVsCodeCustomData()
 }
-
-invoke()
+else {
+  consola.info('No components found. Skipping IDE helper generation.')
+}

@@ -7,8 +7,4 @@
 
 import { generateVueCompat } from './helpers/vue-compat'
 
-async function invoke() {
-  await generateVueCompat(['wip'])
-}
-
-invoke()
+await generateVueCompat(['wip'])

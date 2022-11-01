@@ -8,12 +8,8 @@ import consola from 'consola'
 import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from './helpers/component-meta'
 
-async function invoke() {
-  if (hasComponents())
-    await generateComponentMeta()
+if (hasComponents())
+  await generateComponentMeta()
 
-  else
-    consola.info('No components found. Skipping component meta generation.')
-}
-
-invoke()
+else
+  consola.info('No components found. Skipping component meta generation.')
