@@ -317,7 +317,7 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
   - [DeFi](https://github.com/stacksjs/defi) (Q4 - Cross-chain DeFi engine, including staking support)
   - [DAO](https://github.com/stacksjs/dao) (Q4 - Powerful toolkit for DAO governance)
 
-These stacks make great examples. Find more awesome Stacks [here](https://github.com/stacksjs/awesome-stacks).
+View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen) for more information. Additionally, you may find interesting information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
 
 ## 🧪 Testing
 

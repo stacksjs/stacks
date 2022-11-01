@@ -5,7 +5,7 @@ The simple way to build beautiful CLIs.
 ## ☘️ Features
 
 - [x] Easily create pretty CLIs
-- [x] Prompts—"A beautiful command-line prompt"
+- [x] Lightweight, beautiful and user-friendly interactive prompts
 - [x] Spinners for use in the terminal
 - [x] Helper methods to run commands
 
@@ -106,6 +106,16 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [CAC](https://github.com/cacjs/cac)
+- [Ora](https://github.com/sindresorhus/ora)
+- [Consola](https://github.com/unjs/consola)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

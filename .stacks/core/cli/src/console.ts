@@ -1,4 +1,4 @@
 import consola from 'consola'
-import prompts from 'prompts'
+import { prompts } from 'prompts'
 
 export { consola, prompts }
