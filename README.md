@@ -14,7 +14,7 @@ The goal of the Stacks framework is to _help you_ create & maintain frontends & 
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
-![Atomic UI & FX Design](./apps/site/images/diagram.png)
+![Atomic UI & FX Design](./apps/docs/images/diagram.png)
 
 ## Features
 
@@ -27,6 +27,7 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - ⚡️ **CDN** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
 - ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
+- ⚙️ **Custom CLIs** _create CLIs for Linux, Windows, and Mac. Without any requirements._
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
 - 💡 **First-class IDE integration** _Auto-completions, inline docs & a powerful VS Code setup_
 - 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects, it comes fully-typed_

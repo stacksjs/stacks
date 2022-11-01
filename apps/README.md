@@ -1,8 +1,11 @@
-# Apps
+# Your Apps
 
-This folder contains your applications. One of those applications is the "site" that Stacks scaffolds for you. This site may be used as the your documentation site, or as a landing page for your application.
+This folder contains your applications. The default apps scaffolded for you
 
-Other examples could include a "VS Code plugin", a mobile app, a desktop app, etc.—whatever your application/ecosystem requires.
+- a "docs site"
+- a CLI
+
+Feel free to adjust them to your needs check out the docs when needed, or our Discord. If you are curious about other potential apps: it could be a VS Code plugin, a mobile app, a desktop app, ...—whatever your application/ecosystem requires.
 
 ## 💪🏼 Contributing
 

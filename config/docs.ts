@@ -24,7 +24,7 @@ export default <DocsConfig> {
     },
 
     editLink: {
-      pattern: 'https://github.com/stacksjs/stacks/edit/main/apps/site/docs/:path',
+      pattern: 'https://github.com/stacksjs/stacks/edit/main/apps/docs/docs/:path',
       text: 'Edit this page on GitHub',
     },
 

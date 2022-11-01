@@ -31,7 +31,7 @@ function layouts(options?: LayoutOptions) {
   return Layouts(options)
 }
 
-function components(options?: ComponentOptions) {
+function components(options?: ComponentOptions): PluginOption {
   const defaultOptions = {
     // also allow auto-loading markdown components
     extensions: ['vue', 'md'],

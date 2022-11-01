@@ -1,21 +1,27 @@
-# Actions
+# Stacks Ensure
 
-Placeholder for the "On-The-Fly API."
+Ensures the local & node environment it set up.
 
 ## ☘️ Features
 
+wip
+
 - ⚡️
+
+wip
 
 ## 🤖 Usage
 
+wip
+
 ```bash
-pnpm i -D @stacksjs/cloud
+pnpm i -D @stacksjs/ensure
 ```
 
 Now, you can use it in your project:
 
 ```js
-import { actions } from '@stacksjs/cloud'
+import ensure from '@stacksjs/ensure'
 
 // wip
 ```
