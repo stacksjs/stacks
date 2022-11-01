@@ -8,6 +8,7 @@ export async function isProjectCreated() {
   if (fs.isFile('.env'))
     return await isAppKeySet()
 
+  // copy the .env.example to become the .env file
   if (fs.isFile('.env.example'))
     await spawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 

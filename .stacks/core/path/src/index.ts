@@ -264,4 +264,6 @@ export const path = {
   toNamespacedPath,
 }
 
+export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
+
 export default path
