@@ -33,6 +33,7 @@
     ],
     "paths": {
       "~/*": ["../*"],
+      "@stacksjs/actions": ["./core/actions/src/index.ts"],
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/alias": ["core/runtime/alias.ts"],
       "@stacksjs/arrays/*": ["./core/arrays/src/*"],
