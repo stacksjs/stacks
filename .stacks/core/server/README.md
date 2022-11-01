@@ -1,18 +1,10 @@
 # Stacks Server
 
-wip
-
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- easily access the server's configuration
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/server
@@ -21,9 +13,9 @@ pnpm i -D @stacksjs/server
 Now, you can use it in your project:
 
 ```js
-import * as server from '@stacksjs/server'
+import { server } from '@stacksjs/server'
 
-// wip
+console.log('server config is', server)
 ```
 
 Learn more in the docs.

@@ -206,11 +206,11 @@ importers:
 
   .stacks/core/datetime:
     specifiers:
+      '@stacksjs/utils': workspace:*
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
     dependencies:
-      vitest: 0.24.4
+      '@stacksjs/utils': link:../utils
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -2257,7 +2257,7 @@ packages:
       npmlog: 5.0.1
       rimraf: 3.0.2
       semver: 7.3.8
-      tar: 6.1.11
+      tar: 6.1.12
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -6081,7 +6081,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 0.1.8
       pathe: 0.3.9
-      tar: 6.1.11
+      tar: 6.1.12
     dev: false
 
   /git-raw-commits/2.0.11:
@@ -9260,9 +9260,9 @@ packages:
       yallist: 3.1.1
     dev: false
 
-  /tar/6.1.11:
-    resolution: {integrity: sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==}
-    engines: {node: '>= 10'}
+  /tar/6.1.12:
+    resolution: {integrity: sha512-jU4TdemS31uABHd+Lt5WEYJuzn+TJTCBLljvIAHZOz6M9Os5pJ4dD+vRFLxPa/n3T0iEFzpi+0x1UfuDZYbRMw==}
+    engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
       fs-minipass: 2.1.0

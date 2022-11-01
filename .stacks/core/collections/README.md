@@ -1,32 +1,35 @@
 # Stacks Collections
 
-This package contains the Stacks Collections source.
+Easily work with via Laravel-like collections.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Access to Laravel-like Collections API
+- Other object helpers
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/collections
 ```
 
-Now, you can use it in your project:
+Now, you can easily access it in your project:
 
 ```js
 import { collect } from '@stacksjs/collections'
 
-// wip
+const collection = collect([{
+  name: 'My story',
+  pages: 176,
+}, {
+  name: 'Fantastic Beasts and Where to Find Them',
+  pages: 1096,
+}]);
+
+console.log(collection.avg('pages')) // 636
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/collections](https://stacksjs.dev/collections).
 
 ## 🧪 Testing
 
@@ -51,6 +54,15 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Collect.js](https://github.com/ecrmnn/collect.js)
+- [Laravel](https://laravel.com/)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

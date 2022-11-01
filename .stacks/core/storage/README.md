@@ -1,18 +1,15 @@
-# Stacks File System
+# Stacks Storage
 
 This package contains the Stacks File System source.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Easily create your own cloud storage
+- Driver-based architecture
+- Laravel-like Storage API
+- Drop-in Node.js module replacement
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/storage
@@ -21,12 +18,30 @@ pnpm i -D @stacksjs/storage
 Now, you can use it in your project:
 
 ```js
-import * as fs from '@stacksjs/storage'
+import {
+  _dirname,
+  readJsonFile,
+  writeJsonFile,
+  readTextFile,
+  writeTextFile,
+  isFolder,
+  isFile,
+  hasFiles,
+  hasComponents,
+  hasFunctions,
+  copyFolder,
+  deleteFolder,
+  deleteFiles,
+  deleteEmptyFolders,
+  doesFolderExist,
+  fs, // fs-extra Node module
+  fileURLToPath,
+} from '@stacksjs/storage'
 
 // wip
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/storage](https://stacksjs.dev/storage).
 
 ## 🧪 Testing
 

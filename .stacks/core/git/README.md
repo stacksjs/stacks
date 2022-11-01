@@ -1,32 +1,30 @@
-# Stacks Git
+# Stacks Datetime
 
-wip
+Easily work with dates.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Display & visualize dates in a human-friendly way
+- Easily convert dates to different formats & timezones
+- Simply calculate the difference between 2 dates
+- Modify dates with ease
 
 ## 🤖 Usage
 
-wip
-
 ```bash
-pnpm i -D @stacksjs/git
+pnpm i -D @stacksjs/datetime
 ```
 
-Now, you can use it in your project:
+Now, you can easily access it in your project:
 
 ```js
-import git from '@stacksjs/git'
+import { now, useDateFormat } from '@stacksjs/datetime'
 
-// wip
+const formatted = useDateFormat(now(), 'YYYY-MM-DD HH:mm:ss')
+console.log(formatted) // 2022-11-01 17:06:01
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/datetime](https://stacksjs.dev/datetime).
 
 ## 🧪 Testing
 
@@ -51,6 +49,18 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [bumpp](https://github.com/antfu/bumpp)
+- [commitizen](https://commitizen.github.io/cz-cli/)
+- [cz-git](https://github.com/Zhengqbbb/cz-git)
+- [giget](https://github.com/unjs/giget)
+- [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

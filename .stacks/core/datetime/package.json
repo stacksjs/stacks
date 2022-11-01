@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "vitest": "^0.24.4"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
     "mkdist": "^0.4.0",

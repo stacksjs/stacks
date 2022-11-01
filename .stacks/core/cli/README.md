@@ -88,7 +88,7 @@ import {
 consola.log(`hello ${bold(italic('world'))`)
 ```
 
-To view the full documentation, please visit [https://stacks.js.org/cli](https://stacksjs.dev/cli).
+To view the full documentation, please visit [https://stacksjs.dev/cli](https://stacksjs.dev/cli).
 
 ## 🧪 Testing
 

@@ -4,30 +4,26 @@ This package contains the Stacks UI engine.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️ Vue
-- ⚡️ UnoCSS
-
-wip
+- 🍀 **Vue-powered** _extendable & native access to the ecosystem_
+- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
+- 🍍 **Simple data storage** _accessed via an intuitive API_
+- Written in modern ESM/TypeScript
 
 ## 🤖 Usage
 
-wip
-
 ```bash
-pnpm i -D @stacksjs/security
+pnpm i -D @stacksjs/ui
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * as ui from '@stacksjs/ui'
+import ui from '@stacksjs/ui'
 
 // wip
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/ui](https://stacksjs.dev/ui).
 
 ## 🧪 Testing
 
@@ -52,6 +48,16 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Vue](https://vuejs.org)
+- [UnoCSS](https://github.com/unocss/unocss)
+- [Pinia](https://pinia.vuejs.org)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

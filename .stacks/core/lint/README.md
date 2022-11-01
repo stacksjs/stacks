@@ -1,32 +1,37 @@
-# Stacks Linting
+# Stacks Lint
 
-wip
+Easily get your project linted. It "just works."
 
 ## ☘️ Features
 
-wip
+- Single quotes, no semi
+- Auto fix for formatting (aimed to be used as standalone without Prettier)
+- Designed to work with TypeScript, Vue out-of-box (React opt-in)
+- Lint also for json, yaml, markdown
+- Sorted imports, dangling commas for cleaner commit diff
+- Improved component library linting & formatting
+- Stacks support
+- Laravel support
+- ESLint wrapper
+- And various other minor additions, i.e. `no-constant-binary-expression` usage
 
-- ⚡️
-
-wip
+> "Reasonable defaults, best practices, only one-line of config."
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/lint
 ```
 
-Now, you can use it in your project:
+Now, you can easily access it in your project:
 
 ```js
 import lint from '@stacksjs/lint'
 
-// wip
+// ...
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/lint](https://stacksjs.dev/lint).
 
 ## 🧪 Testing
 
@@ -51,6 +56,15 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [ESLint](https://github.com/eslint/eslint)
+- [lint-staged](https://github.com/okonet/lint-staged)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

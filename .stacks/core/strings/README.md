@@ -1,18 +1,14 @@
 # Stacks Strings
 
-This package contains the Stacks Strings source.
+Easily manipulate & work with strings.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Easily manipulate strings
+- Powerful & fast API
+-
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/strings
@@ -21,12 +17,18 @@ pnpm i -D @stacksjs/strings
 Now, you can use it in your project:
 
 ```js
-import * as strings from '@stacksjs/strings'
+import {
+  plural, singular, isPlural, isSingular, addPluralRule, addSingularRule, addIrregularRule, addUncountableRule
+  // change case
+  camelCase, capitalCase, constantCase, dotCase, headerCase, noCase, paramCase,
+  kebabCase, pascalCase, pathCase, sentenceCase, snakeCase,
+} from '@stacksjs/strings'
 
-// wip
+console.log(camelCase('hello world')) // helloWorld
+console.log(plural('dog')) // dogs
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/strings](https://stacksjs.dev/strings).
 
 ## 🧪 Testing
 
@@ -51,6 +53,15 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [change-case](https://www.npmjs.com/package/change-case)
+- [pluralize](https://www.npmjs.com/package/pluralize)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

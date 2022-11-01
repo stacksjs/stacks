@@ -1,32 +1,29 @@
 # Stacks Path
 
-wip
+Easily work with file paths.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Ensures paths are normalized across all Operating Systems
+- Easily access the path's basename, dirname, extension, filename, and more
+- Drop-in Node.js module replacement
+- Written in modern ESM/TypeScript
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/path
 ```
 
-Now, you can use it in your project:
+Now, you can easily access it in your project:
 
 ```js
-import path from '@stacksjs/path'
+import { resolve, filename, normalizeAliases, resolveAlias } from '@stacksjs/path'
 
-// wip
+// and more...
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/path](https://stacksjs.dev/path).
 
 ## 🧪 Testing
 
@@ -51,6 +48,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [pathe](https://github.com/unjs/pathe)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

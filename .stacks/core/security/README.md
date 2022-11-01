@@ -1,32 +1,30 @@
-# Stacks Router
+# Stacks Path
 
-This package contains the Stacks Security.
+Easily work with encryptions, decryptions, and hashing.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Base64 support
+- Bcrypt support
+- Argon support
+- Implements the Advanced Encryption Standard (AES)
+- Written in modern ESM/TypeScript
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/security
 ```
 
-Now, you can use it in your project:
+Now, you can easily access it in your project:
 
 ```js
-import * as security from '@stacksjs/security'
+import { encrypt, decrypt, makeHash, verifyHash, base64Encode, base64Verify, bcryptEncode, bcryptVerify, md5Encode } from '@stacksjs/security'
 
-// wip
+// and more...
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [https://stacksjs.dev/security](https://stacksjs.dev/security).
 
 ## 🧪 Testing
 
@@ -51,6 +49,15 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Open Web Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [crypto-js](https://github.com/brix/crypto-js)
+- [js-base64](https://www.npmjs.com/package/js-base64)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 

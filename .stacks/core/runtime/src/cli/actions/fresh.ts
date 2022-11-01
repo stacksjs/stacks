@@ -1,13 +1,18 @@
-import { consola, italic, spawn, spinner } from '@stacksjs/cli'
+import { bgCyan, bold, consola, cyan, dim, italic, spawn, spinner } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode, type CliOptions as FreshOptions } from '@stacksjs/types'
 import { debugLevel } from '@stacksjs/config'
+import { version } from '../../../package.json'
 
 export async function invoke(options?: FreshOptions) {
   try {
     const debug = debugLevel(options)
 
-    consola.info('Preparing to run the fresh command.')
+    console.log()
+    console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
+    console.log()
+
+    consola.info(`Preparing to run the ${bgCyan(' stx fresh ')} command.`)
     const spin = spinner('Running...').start()
     setTimeout(() => {
       spin.text = italic('This may take a little while...')
@@ -18,6 +23,7 @@ export async function invoke(options?: FreshOptions) {
 
     spin.stop()
     consola.success('Freshly reinstalled your dependencies.')
+    process.exit(ExitCode.Success)
   }
   catch (error) {
     consola.error(error)

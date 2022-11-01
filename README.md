@@ -347,6 +347,14 @@ For casual chit-chat with others using this package:
 
 Once we launch a usable Stacks version, we hope people will start enjoying it! Coming soon.
 
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Dan Scanlon](https://twitter.com/danscan) - many thanks for donating the `stacks` name on npm
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
+
 ## 📄 License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
