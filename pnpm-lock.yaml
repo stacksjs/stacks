@@ -60,9 +60,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -124,9 +124,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -162,9 +162,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -197,9 +197,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -249,7 +249,7 @@ importers:
 
   .stacks/core/lint:
     specifiers:
-      '@ow3/eslint-config': ^0.31.4
+      '@ow3/eslint-config': ^0.31.5
       '@types/eslint': ^8.4.9
       eslint: ^8.26.0
       lint-staged: ^13.0.3
@@ -285,9 +285,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -318,9 +318,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.24.4
+      vitest: ^0.24.5
     dependencies:
-      vitest: 0.24.4
+      vitest: 0.24.5
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -10175,6 +10175,48 @@ packages:
 
   /vitest/0.24.4:
     resolution: {integrity: sha512-4ratHSyVEJPtBLV00uhL4Wj3Pmandc9rsxUkE0q9peNOfaOgGF4lEepdkaXGRi9AGFKr1GRVtjGOJ6Fp2lCpEg==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@vitest/browser': '*'
+      '@vitest/ui': '*'
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/chai': 4.3.3
+      '@types/chai-subset': 1.3.3
+      '@types/node': 18.11.9
+      chai: 4.3.6
+      debug: 4.3.4
+      local-pkg: 0.4.2
+      strip-literal: 0.4.2
+      tinybench: 2.3.1
+      tinypool: 0.3.0
+      tinyspy: 1.0.2
+      vite: 3.2.2
+    transitivePeerDependencies:
+      - less
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: false
+
+  /vitest/0.24.5:
+    resolution: {integrity: sha512-zw6JhPUHtLILQDe5Q39b/SzoITkG+R7hcFjuthp4xsi6zpmfQPOZcHodZ+3bqoWl4EdGK/p1fuMiEwdxgbGLOA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
