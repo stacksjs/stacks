@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
-import { invoke as generatePackageJson } from './generate/package-json'
+import { generatePackageJson } from './helpers/package-json'
 
-async function generate() {
+async function invoke() {
   if (hasComponents()) {
     await generatePackageJson('vue-components')
     await generatePackageJson('web-components')
@@ -12,4 +12,4 @@ async function generate() {
     await generatePackageJson('functions')
 }
 
-generate()
+invoke()

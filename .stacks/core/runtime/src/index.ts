@@ -1,5 +1,4 @@
 export * from '../alias'
-export * from '@stacksjs/actions/generate'
 export * from '@stacksjs/arrays'
 export * from '@stacksjs/build'
 export * from '@stacksjs/cli'

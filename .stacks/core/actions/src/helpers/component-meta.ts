@@ -14,24 +14,8 @@ import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
 
-const md = new MarkdownIt()
-
-export interface ComponentApiProps {
-  name: ComponentMeta['props'][number]['name']
-  description: ComponentMeta['props'][number]['description']
-
-  // required: ComponentMeta['props'][number]['required']
-  type: ComponentMeta['props'][number]['type']
-  default: ComponentMeta['props'][number]['default']
-}
-
-export interface ComponentApi {
-  props: ComponentApiProps[]
-  events: ComponentMeta['events']
-  slots: ComponentMeta['slots']
-}
-
 export async function generateComponentMeta() {
+  const md = new MarkdownIt()
   const checkerOptions: MetaCheckerOptions = {
     forceUseTs: true,
     schema: { ignore: ['MyIgnoredNestedProps'] },
@@ -91,4 +75,19 @@ export async function generateComponentMeta() {
     const metaJsonFilePath = join(metaDirPath, `${componentExportName}.json`)
     writeFileSync(metaJsonFilePath, JSON.stringify(meta, null, 4))
   })
+}
+
+export interface ComponentApiProps {
+  name: ComponentMeta['props'][number]['name']
+  description: ComponentMeta['props'][number]['description']
+
+  // required: ComponentMeta['props'][number]['required']
+  type: ComponentMeta['props'][number]['type']
+  default: ComponentMeta['props'][number]['default']
+}
+
+export interface ComponentApi {
+  props: ComponentApiProps[]
+  events: ComponentMeta['events']
+  slots: ComponentMeta['slots']
 }

@@ -7,10 +7,10 @@
 
 import consola from 'consola'
 import { hasComponents } from '@stacksjs/storage'
-import { invoke as generateVsCodeCustomData } from './generate/vscode-custom-data'
+import { generateVsCodeCustomData } from './helpers/vscode-custom-data'
 // import { generateVsCodeCustomData, generateWebTypes } from './generate/vscode-custom-data'
 
-async function generate() {
+async function invoke() {
   if (hasComponents()) {
     // await generateWebTypes()
     await generateVsCodeCustomData()
@@ -20,4 +20,4 @@ async function generate() {
   }
 }
 
-generate()
+invoke()

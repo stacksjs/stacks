@@ -34,7 +34,6 @@
     "paths": {
       "~/*": ["../*"],
       "@stacksjs/actions/*": ["./core/actions/src/*"],
-      "@stacksjs/actions/generate": ["./core/actions/src/generate/index.ts"],
       "@stacksjs/alias": ["core/runtime/alias.ts"],
       "@stacksjs/arrays/*": ["./core/arrays/src/*"],
       "@stacksjs/arrays": ["./core/arrays/src/index.ts"],

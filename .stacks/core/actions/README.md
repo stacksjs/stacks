@@ -21,7 +21,7 @@ pnpm i -D @stacksjs/actions
 Now, you can use it in your project:
 
 ```js
-import * as invoke from '@stacksjs/actions/generate'
+import actions from '@stacksjs/actions'
 
 // wip
 ```

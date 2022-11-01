@@ -7,9 +7,9 @@
 
 import consola from 'consola'
 import { hasComponents } from '@stacksjs/storage'
-import { invoke as generateVsCodeCustomData } from './generate/vscode-custom-data'
+import { generateVsCodeCustomData } from './helpers/vscode-custom-data'
 
-async function generate() {
+async function invoke() {
   if (hasComponents())
     await generateVsCodeCustomData()
 
@@ -17,4 +17,4 @@ async function generate() {
     consola.info('No components found. Skipping VS Code custom data generation.')
 }
 
-generate()
+invoke()

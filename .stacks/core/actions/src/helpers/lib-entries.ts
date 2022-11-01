@@ -12,7 +12,7 @@ import { library } from '@stacksjs/config'
  *
  * @param type string
  */
-export async function invoke(type: LibEntryType) {
+export async function generateLibEntry(type: LibEntryType) {
   try {
     if (type === 'vue-components')
       await createVueLibraryEntryPoint()

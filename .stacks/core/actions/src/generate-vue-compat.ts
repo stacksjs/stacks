@@ -5,6 +5,10 @@
  * https://github.com/vueuse/vueuse/blob/main/scripts/fix-types.ts
  */
 
-import { generateVueCompat } from './generate'
+import { generateVueCompat } from './helpers/vue-compat'
 
-generateVueCompat(['wip'])
+async function invoke() {
+  await generateVueCompat(['wip'])
+}
+
+invoke()

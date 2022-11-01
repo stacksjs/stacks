@@ -3,7 +3,7 @@ import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { library } from '@stacksjs/config'
 
-export async function invoke() {
+export async function generateVsCodeCustomData() {
   try {
     // the version does not have to be set here,
     // it will be set automatically by the release script
