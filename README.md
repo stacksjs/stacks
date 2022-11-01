@@ -23,15 +23,16 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - 🤖 **CI/CD** _several CI, release & other workflows_
 - 🚀 **Deployment Manager** _take the sweat & stress out of server & serverless prod deployments_
 - 📫 **npm support** _component & function libraries are automatically distributed_
+- ☁️ **Cloud** _build & distribute your own cloud for front & backends, a la Vercel_
+- ⚡️ **CDN** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
 - ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
-- ☁️ **Cloud setup** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
 - 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
-- 💡 **First-class IDE integration** _Auto-completions, inline docs & a powerful VS Code set up_
-- 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects & it comes fully-typed_
+- 💡 **First-class IDE integration** _Auto-completions, inline docs & a powerful VS Code setup_
+- 💪🏼 **Type Strong** _Stacks not only helps build fully-typed projects, it comes fully-typed_
 - 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_
 - 📚 **Smart Bundling** _Vite powered & extendable_
-- 📈 **Modern DX** _latest & greatest tooling natively accessible, including ESNext support_
+- 📈 **Modern DX** _latest & greatest tooling accessible natively, including ESNext support_
 - 🪄 **Zero-Config** _yet highly configurable_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
@@ -43,7 +44,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 - 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
 - 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
 - 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
-- 🍀 **Vue powered** _extendable & native access to the ecosystem_
+- 🍀 **Vue-powered** _extendable & native access to the ecosystem_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 ### FX Engine
@@ -54,7 +55,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._
 - 📢 **Notifications** _simply send emails, SMSs, and webhooks_
 - ⚙️ **Queues** _run your heavy workload in the background_
-- 🏎️ **Realtime** _"everything you need to build dynamic realtime apps"_
+- 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 💾 **Storage** _easily make use of local & remote storage/file systems_
 - 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
