@@ -20,10 +20,9 @@ pnpm i -D @stacksjs/ensure
 
 Now, you can use it in your project:
 
-```js
-import ensure from '@stacksjs/ensure'
-
-// wip
+```bash
+npx ensure-env
+npx setup-env
 ```
 
 Learn more in the docs.

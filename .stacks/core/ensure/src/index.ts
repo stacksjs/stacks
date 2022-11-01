@@ -15,22 +15,16 @@ async function main() {
     .command('ensure', 'This command checks whether Node is installed. pnpm is checked via `only-allow` preinstall hook.')
     .option('--debug', 'Add additional debug logging', { default: false })
     .action(async (options: CliOptions) => {
-      try {
-        await runCommand('pnpm install', options)
-        process.exit(ExitCode.Success)
-      }
-      catch (error) {
-        consola.error('There was an error testing your stack.')
-        consola.error(error)
-        process.exit(ExitCode.FatalError)
-      }
+      await runCommand('pnpm install', options)
+      process.exit(ExitCode.Success)
     })
 
   cli
     .command('setup', 'This command installs Node & pnpm.')
     .option('--debug', 'Add additional debug logging', { default: false })
-    .action(async (options) => {
+    .action(async (options: CliOptions) => {
       await runCommand('pnpm env use', options)
+      process.exit(ExitCode.Success)
     })
 
   cli.help()
@@ -47,6 +41,6 @@ function errorHandler(error: Error): void {
   if (process.env.DEBUG || process.env.NODE_ENV === 'development')
     message = error.stack || message
 
-  console.error(message)
+  consola.error(message)
   process.exit(ExitCode.FatalError)
 }
