@@ -1,11 +1,9 @@
-import { Prompts, consola, runCommand, spawn } from '@stacksjs/cli'
+import { consola, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
 import { debugLevel } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpdateOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-
-const { prompts } = Prompts
 
 export async function invoke(options?: UpdateOptions) {
   if (options?.framework || options?.all)

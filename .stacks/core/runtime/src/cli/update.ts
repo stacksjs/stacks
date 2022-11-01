@@ -1,9 +1,7 @@
 import type { CLI, UpdateOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { Prompts } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 import { invoke as updateStacks } from './actions/update'
-
-const { prompts } = Prompts
 
 const descriptions = {
   command: 'Update dependencies, framework, package manager, and/or Node',

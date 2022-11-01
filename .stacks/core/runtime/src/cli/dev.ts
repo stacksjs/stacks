@@ -1,9 +1,7 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
-import { Prompts } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 import { components, docs, functions, pages, invoke as startDevelopmentServer } from './actions/dev'
-
-const { prompts } = Prompts
 
 const descriptions = {
   components: 'Start the Components development server',

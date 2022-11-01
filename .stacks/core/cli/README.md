@@ -18,6 +18,7 @@ pnpm i -D @stacksjs/cli
 Now, you can use it in your project:
 
 ```js
+// command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
 import { command, consola, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cli'
 
@@ -66,7 +67,13 @@ command.version(version) // automatically expose a -v and --version flag
 command.parse() // parse the command
 ```
 
-To view a more detailed example, check out the Stacks Runtime.
+You may now run the command via:
+
+```bash
+esno command.ts
+```
+
+To view a more detailed example, check out the [Stacks Runtime](../runtime/).
 
 _You may also use any of the following CLI utilities:_
 

@@ -1,9 +1,7 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { Prompts } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 import { componentMeta, ideHelpers, libEntries, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from './actions/generate'
-
-const { prompts } = Prompts
 
 const descriptions = {
   command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',

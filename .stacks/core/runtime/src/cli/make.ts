@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
-import { Prompts, consola } from '@stacksjs/cli'
+import { consola, prompts } from '@stacksjs/cli'
 import {
   invoke,
   component as makeComponent,
@@ -13,8 +13,6 @@ import {
   page as makePage,
   stack as makeStack,
 } from './actions/make'
-
-const { prompts } = Prompts
 
 const descriptions = {
   component: 'Create a new component',

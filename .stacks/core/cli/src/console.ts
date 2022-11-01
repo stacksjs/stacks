@@ -1,4 +1,6 @@
 import consola from 'consola'
-import { prompts } from 'prompts'
+import Prompts from 'prompts'
+
+const { prompts } = Prompts
 
 export { consola, prompts }
