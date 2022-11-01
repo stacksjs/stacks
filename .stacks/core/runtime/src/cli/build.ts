@@ -1,6 +1,6 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { Prompts } from '@stacksjs/cli'
+import { prompts as Prompts } from '@stacksjs/cli'
 import { invoke as startBuildProcess } from './actions/build'
 
 const { prompts } = Prompts
