@@ -11,5 +11,6 @@ import { types } from './types'
 import { key } from './key'
 import { preinstall } from './preinstall'
 import { prepublish } from './prepublish'
+import { setup } from './setup'
 
-export { dev, build, utility, make, example, test, create, update, generate, key, types, preinstall, prepublish }
+export { dev, build, utility, make, example, test, create, update, generate, key, types, preinstall, prepublish, setup }

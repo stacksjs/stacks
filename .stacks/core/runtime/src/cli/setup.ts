@@ -8,7 +8,7 @@ const descriptions = {
   debug: 'Add additional debug logging',
 }
 
-async function preinstall(stacks: CLI) {
+async function setup(stacks: CLI) {
   stacks
     .command('ensure', descriptions.ensure)
     .option('--debug', descriptions.debug, { default: false })
@@ -26,4 +26,4 @@ async function preinstall(stacks: CLI) {
     })
 }
 
-export { preinstall }
+export { setup }

@@ -3,7 +3,7 @@ import { command } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
-import { build, create, dev, example, generate, key, make, preinstall, prepublish, test, update, utility } from './cli/'
+import { build, create, dev, example, generate, key, make, preinstall, prepublish, setup, test, update, utility } from './cli/'
 
 const cli = command('stacks')
 
@@ -13,6 +13,7 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // before running any commands, check if the project is already initialized
+  await setup(cli)
   await key(cli)
 
   if (!await isProjectCreated()) {
