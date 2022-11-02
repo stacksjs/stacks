@@ -37,32 +37,25 @@ async function create(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
-      try {
-        const name = stacks.args[0] || options.name || '.'
-        const path = resolve(process.cwd(), name)
+      const name = stacks.args[0] || options.name || '.'
+      const path = resolve(process.cwd(), name)
 
-        console.log()
-        console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
-        console.log()
+      console.log()
+      console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
+      console.log()
 
-        await isFolderCheck(path)
-        await onlineCheck()
-        await download(name, path, options)
-        await ensureEnv(path, options)
-        await install(path, options)
+      await isFolderCheck(path)
+      await onlineCheck()
+      await download(name, path, options)
+      await ensureEnv(path, options)
+      await install(path, options)
 
-        console.log()
-        consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
-        console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
-        console.log()
-        consola.log('To learn more, visit https://stacksjs.dev')
-        process.exit(ExitCode.Success)
-      }
-      catch (error) {
-        consola.error('There was an error testing your stack.')
-        consola.error(error)
-        process.exit(ExitCode.FatalError)
-      }
+      console.log()
+      consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
+      console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
+      console.log()
+      consola.log('To learn more, visit https://stacksjs.dev')
+      process.exit(ExitCode.Success)
     })
 }
 
