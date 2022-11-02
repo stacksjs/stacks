@@ -1,0 +1,5 @@
+function factory() {
+
+}
+
+export { factory }
