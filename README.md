@@ -20,11 +20,12 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ### Stacks Engine
 
-- 🤖 **CI/CD** _several CI, release & other workflows_
-- 🚀 **Deployment Manager** _take the sweat & stress out of server & serverless prod deployments_
 - 📫 **npm support** _component & function libraries are automatically distributed_
 - ☁️ **Cloud** _build & distribute your own cloud for front & backends, a la Vercel_
+- 🤖 **CI/CD** _several CI, release & other workflows_
+- 🚀 **Deployment Manager** _take the sweat & stress out of server & serverless prod deployments_
 - ⚡️ **CDN** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
+- ⚡️ **Errors** _type-safe error handling_
 - ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
 - 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
 - ⚙️ **Custom CLIs** _create CLIs for Linux, Windows, and Mac. Without any requirements._

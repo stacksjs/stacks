@@ -5,7 +5,7 @@ const descriptions = {
   command: 'Runs your test suite',
   types: 'Typechecks your codebase',
   coverage: 'Generates a test coverage report',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function test(stacks: CLI) {

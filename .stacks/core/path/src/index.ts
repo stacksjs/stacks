@@ -86,6 +86,10 @@ export function customElementsDataPath() {
   return frameworkPath('custom-elements.json')
 }
 
+export function errorsPath(path?: string) {
+  return corePath(`errors/${path || ''}`)
+}
+
 export function examplesPath(type: 'vue-components' | 'web-components') {
   return frameworkPath(`examples/${type || ''}`)
 }
@@ -220,6 +224,7 @@ export const path = {
   corePath,
   customElementsDataPath,
   docsPath,
+  errorsPath,
   examplesPath,
   frameworkPath,
   fsPath,

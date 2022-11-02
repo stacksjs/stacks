@@ -26,6 +26,11 @@ export type BuildOptions = {
   [key in BuildOption]: boolean;
 } & CliOptions
 
+export type AddOption = 'table' | 'calendar' | 'all'
+export type AddOptions = {
+  [key in AddOption]?: boolean;
+} & CliOptions
+
 export type CreateStringOption = 'name'
 export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue' | 'pages' | 'functions' | 'api' | 'database'
 export type CreateOptions = {

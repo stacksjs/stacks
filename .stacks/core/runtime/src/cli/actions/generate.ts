@@ -37,39 +37,18 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateEntries, options)
-    consola.success('Library entry points were d successfully.')
-  }
-  catch (error) {
-    consola.error('There was an error generating your library entry points.')
-    consola.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+  await runNpmScript(NpmScript.GenerateEntries, options)
+  consola.success('Library entry points were generated successfully.')
 }
 
 export async function vueCompat(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateVueCompat, options)
-    consola.success('Libraries are now Vue 2 & 3 compatible.')
-  }
-  catch (error) {
-    consola.error('There was an error generating Vue compatibility.')
-    consola.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+  await runNpmScript(NpmScript.GenerateVueCompat, options)
+  consola.success('Libraries are now Vue 2 & 3 compatible.')
 }
 
 export async function webTypes(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateWebTypes, options)
-    consola.success('Successfully d the web-types.json file.')
-  }
-  catch (error) {
-    consola.error('There was an error generating the web-types.json file')
-    consola.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+  await runNpmScript(NpmScript.GenerateWebTypes, options)
+  consola.success('Successfully generated the web-types.json file.')
 }
 
 export async function vsCodeCustomData(options?: GeneratorOptions) {

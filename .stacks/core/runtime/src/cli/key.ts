@@ -4,7 +4,7 @@ import { generate as generateAppKey } from './actions/key'
 async function key(stacks: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
-    debug: 'Add additional debug logging',
+    debug: 'Enable debug mode',
   }
 
   stacks

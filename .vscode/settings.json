@@ -287,7 +287,8 @@
     "planetscale",
     "singlestore",
     "datetime",
-    "strikethrough"
+    "strikethrough",
+    "neverthrow"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

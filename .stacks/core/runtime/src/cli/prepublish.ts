@@ -3,7 +3,7 @@ import { invoke } from './actions/prepublish'
 
 const descriptions = {
   command: 'Run your prepublish script',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function prepublish(stacks: CLI) {

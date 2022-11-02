@@ -24,7 +24,7 @@ const descriptions = {
   factory: 'Create a new factory',
   notification: 'Create a new notification',
   stack: 'Create a new new stack',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function make(stacks: CLI) {

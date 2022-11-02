@@ -25,37 +25,24 @@ export async function examples(options: ExamplesOptions) {
 
 export async function componentExample(options: ExamplesOptions) {
   if (hasComponents()) {
-    try {
-      await runNpmScript(NpmScript.ExampleVue, options)
-      consola.success('Your component library was built successfully.')
-    }
-    catch (error) {
-      consola.error('There was an error building your component library.')
-      consola.error(error)
-      process.exit(ExitCode.FatalError)
-    }
+    await runNpmScript(NpmScript.ExampleVue, options)
+    consola.success('Your component library was built successfully.')
   }
   else {
     consola.info('No components found.')
-    process.exit(ExitCode.FatalError)
+    // todo: throw custom error here
   }
 }
 
 export async function webComponentExample(options: ExamplesOptions) {
   if (hasComponents()) {
-    try {
-      consola.info('Building your Web Component library...')
-      await runNpmScript(NpmScript.BuildWebComponents, options)
-      consola.success('Your Web Component library was built successfully.')
-    }
-    catch (error) {
-      consola.error('There was an error building your Web Component library.')
-      consola.error(error)
-      process.exit(ExitCode.FatalError)
-    }
+    consola.info('Building your Web Component library...')
+    await runNpmScript(NpmScript.BuildWebComponents, options)
+    consola.success('Your Web Component library was built successfully.')
   }
   else {
     consola.info('No components found.')
+    // todo: throw custom error here
     process.exit(ExitCode.FatalError)
   }
 }

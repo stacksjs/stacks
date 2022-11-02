@@ -8,7 +8,7 @@ const descriptions = {
   functions: 'Start the Functions development server',
   docs: 'Start the Documentation development server',
   pages: 'Start the Pages development server',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function dev(stacks: CLI) {

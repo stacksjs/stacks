@@ -19,7 +19,7 @@ const descriptions = {
   functions: 'Are you developing functions/composables?',
   api: 'Are you building an API?',
   database: 'Do you need a database?',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function create(stacks: CLI) {

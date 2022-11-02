@@ -4,6 +4,7 @@ import { alias } from './alias'
 // console.log('alias', alias)
 
 export default defineBuildConfig({
+  failOnWarn: false, // it may fail for "Potential missing package.json files: dist/index.mjs, dist/index.d.ts"
   alias,
   entries: [
     './src/cli',
@@ -12,6 +13,7 @@ export default defineBuildConfig({
   clean: false,
   externals: ['chokidar', '@intlify/shared', '@intlify/message-compiler', 'vite', 'gray-matter'],
   rollup: {
+    emitCJS: true,
     inlineDependencies: true,
   },
 })

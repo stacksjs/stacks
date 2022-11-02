@@ -12,7 +12,7 @@ const descriptions = {
   ideHelpers: 'Generate IDE helpers',
   vueCompat: 'Generate Vue 2 & 3 compatibility',
   componentMeta: 'Generate component meta information',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function generate(stacks: CLI) {

@@ -1,32 +1,25 @@
 {
-  "name": "@stacksjs/cli",
+  "name": "@stacksjs/errors",
   "type": "module",
   "version": "0.37.9",
   "packageManager": "pnpm@7.14.2",
-  "description": "The simple way to create beautiful CLIs.",
+  "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/cli#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/errors#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/cli"
+    "directory": "./.stacks/core/errors"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "cli",
-    "commands",
-    "command line interface",
-    "spinners",
-    "utilities",
-    "helpers",
-    "cac",
-    "ora",
-    "consola",
-    "ez-spawn",
+    "errors",
+    "neverthrow",
+    "type safe",
     "stacks"
   ],
   "main": "dist/index.mjs",
@@ -50,18 +43,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@antfu/install-pkg": "^0.1.1",
-    "@jsdevtools/ez-spawn": "^3.0.4",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "cac": "^6.7.14",
-    "consola": "^2.15.3",
-    "ora": "^6.1.2",
-    "prompts": "^2.4.2"
+    "@ow3/eslint-config": "^0.31.5",
+    "neverthrow": "^5.1.0"
   },
   "devDependencies": {
-    "esno": "^0.16.3",
     "mkdist": "^0.4.0",
     "typescript": "^4.8.4"
   }

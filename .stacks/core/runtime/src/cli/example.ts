@@ -8,7 +8,7 @@ const descriptions = {
   components: 'Test your libraries against your built bundle',
   vue: 'Test your Vue component library',
   webComponents: 'Test your web component library',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function example(stacks: CLI) {

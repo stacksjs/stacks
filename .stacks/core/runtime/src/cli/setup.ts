@@ -5,7 +5,7 @@ import type { CLI, CliOptions } from '@stacksjs/types'
 const descriptions = {
   ensure: 'This command checks whether Node is installed. pnpm is checked via `only-allow` preinstall hook',
   setup: 'This command installs Node & pnpm',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function setup(stacks: CLI) {

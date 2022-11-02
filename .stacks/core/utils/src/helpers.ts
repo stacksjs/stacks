@@ -1,27 +1,27 @@
 import { consola, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type IOType, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import fs from '@stacksjs/storage'
+import storage from '@stacksjs/storage'
 import { app, ui } from '@stacksjs/config'
 
 export async function isProjectCreated() {
-  if (fs.isFile('.env'))
+  if (storage.isFile('.env'))
     return await isAppKeySet()
 
   // copy the .env.example to become the .env file
-  if (fs.isFile('.env.example'))
+  if (storage.isFile('.env.example'))
     await spawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
 
 export async function readVersion() {
-  const packageJson = await fs.fs.readJson(frameworkPath('package.json'))
+  const packageJson = await storage.fs.readJson(frameworkPath('package.json'))
   return packageJson.version
 }
 
 export async function isAppKeySet() {
-  const env = await fs.readTextFile('.env', projectPath())
+  const env = await storage.readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
@@ -95,9 +95,9 @@ export function isOptionalString(value: any): value is string | undefined {
 }
 
 export async function setEnvValue(key: string, value: string) {
-  const file = await fs.readTextFile(projectPath('.env'))
+  const file = await storage.readTextFile(projectPath('.env'))
 
-  await fs.writeTextFile({
+  await storage.writeTextFile({
     path: projectPath('.env'),
     data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
   })
@@ -112,7 +112,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   if (options?.debug)
     debug = options.debug ? 'inherit' : 'ignore'
 
-  const { data: manifest } = await fs.readJsonFile('package.json', frameworkPath())
+  const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
     await spawn.async(`pnpm run ${script}`, { stdio: debug, cwd: frameworkPath() })

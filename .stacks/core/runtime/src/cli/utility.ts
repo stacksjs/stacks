@@ -12,7 +12,7 @@ const descriptions = {
   lintFix: 'Automagically fixes lint errors',
   commit: 'Commit your stashed changes',
   release: 'Releases a new version of your libraries/packages',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function utility(stacks: CLI) {

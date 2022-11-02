@@ -11,7 +11,7 @@ const descriptions = {
   node: 'Update Node to the version defined in ./node-version',
   all: 'Update Node, package manager, project dependencies, and framework',
   force: 'Overwrite possible local updates with remote framework updates',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
   select: 'What are you trying to update?',
 }
 

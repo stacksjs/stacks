@@ -4,7 +4,7 @@ import { types as generateTypes } from './actions/generate'
 const descriptions = {
   generate: 'Generate the types of & for your library/libraries',
   fix: 'wip',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function types(stacks: CLI) {

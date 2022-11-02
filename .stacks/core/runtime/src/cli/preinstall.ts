@@ -3,7 +3,7 @@ import { invoke } from './actions/preinstall'
 
 const descriptions = {
   command: 'Run your preinstall script',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function preinstall(stacks: CLI) {

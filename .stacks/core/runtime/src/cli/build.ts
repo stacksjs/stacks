@@ -12,7 +12,7 @@ const descriptions = {
   pages: 'Build your SSG pages',
   docs: 'Build your documentation site',
   stacks: 'Build Stacks framework',
-  debug: 'Add additional debug logging',
+  debug: 'Enable debug mode',
 }
 
 async function build(stacks: CLI) {

@@ -31,3 +31,5 @@ export async function runShortLivedCommand(command: string, options?: CliOptions
 export async function runLongRunningCommand(command: string, options?: CliOptions) {
   return await runCommand(command, { shortLived: false, ...options })
 }
+
+export { installPackage } from '@antfu/install-pkg'

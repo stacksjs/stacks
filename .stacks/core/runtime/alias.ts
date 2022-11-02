@@ -23,6 +23,8 @@ const alias: Record<string, string> = {
   '@stacksjs/config/*': p.projectPath('config/*'),
   '@stacksjs/docs': p.docsPath('src/index.ts'),
   '@stacksjs/docs/*': p.docsPath('src/*'),
+  '@stacksjs/errors': p.errorsPath('src/index.ts'),
+  '@stacksjs/errors/*': p.errorsPath('src/*'),
   '@stacksjs/storage': p.fsPath('src/index.ts'),
   '@stacksjs/storage/*': p.fsPath('src/*'),
   '@stacksjs/git': p.gitPath('src/index.ts'),
