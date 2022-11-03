@@ -20,19 +20,15 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ### Stacks Engine
 
-- ☁️ **Cloud** _build & distribute your own cloud for front & backends, a la Vercel_
-- 🤖 **CI/CD** _native CI, release & other workflows_
-- 📫 **npm support** _component & function libraries are automatically distributed_
-- 🚀 **Deployment Manager** _take the sweat & stress out of server & serverless prod deployments_
-- ⚡️ **CDN** _auto-setup of low-latency content delivery network on top of your assets (& APIs)_
-- 👾 **Errors** _type-safe error handling_
-- ⚖️ **Scalability** _on-demand, auto-scaling, zero maintenance_
-- 👩🏽‍🔧 **Linting & formatting** _natively included, without setup_
-- ⚙️ **Custom CLIs** _create CLIs for Linux, Windows, and Mac. Without any requirements._
-- 🍀 **Auto-imported goodies** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
-- 💡 **First-class IDE integration** _Auto-completions, inline docs & a powerful VS Code setup_
+- ☁️ **Cloud** _"on-demand, auto-scaling, zero maintenance"—create your own cloud_
+- ⚡️ **CDN** _auto-setup & maintenance of low-latency CDN on top of your storage origins & APIs_
+- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments_
+- 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
+- 🤖 **CI/CD** _native CI, release, auto changelog generations & other workflows_
+- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
+- 🍀 **Auto Imports** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
+- 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
 - 💪🏼 **Type Strong** _Built-in end-to-end type safety_
-- 🛠️ **Version control** _git helpers, auto changelog generation in GitHub & CHANGELOG.md_
 - 📚 **Smart Bundling** _Vite powered & extendable_
 - 📈 **Modern DX** _latest & greatest tooling accessible natively, including ESNext support_
 - 🪄 **Zero-Config** _yet highly configurable_
@@ -41,9 +37,9 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 
 ### UI Engine
 
+- 🎨 **Atomic CSS** _style with ease, powered by UnoCSS_
 - 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_
 - ⚡️ **Pages (SSG)** _Static site generation & layouts developed—without breaking a sweat_
-- 🎨 **Style with ease** _via an atomic CSS engine, powered by UnoCSS_
 - 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
 - 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
 - 🍀 **Vue-powered** _extendable & native access to the ecosystem_
@@ -51,10 +47,12 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 
 ### FX Engine
 
-- 🧩 **Functions** _develop functions more rapidly than ever_
 - 🏎️ **APIs** _scalability & maintainability built-in_
 - 💨 **Cache** _Redis or DynamoDB_
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without any requirements._
 - 📀 **Database** _Prisma, PlanetScale, Supabase, ..._
+- 👾 **Errors** _native type-safe error handling_
+- 🧩 **Functions** _develop more easily & rapidly_
 - 📢 **Notifications** _simply send emails, SMSs, and webhooks_
 - ⚙️ **Queues** _run your heavy workload in the background_
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
@@ -63,7 +61,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 - 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
 - 🧪 **Testing** _covered by Vitest_
 
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _(Or TypeScript ✌🏼)_
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
 
 > _A true rapid application development framework for all Full Stack needs. Next-level & deep DX._
 
