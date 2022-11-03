@@ -6,8 +6,7 @@ export async function invoke(options?: FreshOptions) {
   const perf = await intro('stx fresh', true)
   await runShortLivedCommand('pnpm run clean', options)
   await runCommand('pnpm install', options)
-  outro('Freshly reinstalled your dependencies.', perf)
-  // process.exit(ExitCode.Success)
+  outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
 }
 
 /**

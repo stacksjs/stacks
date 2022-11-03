@@ -15,14 +15,24 @@ export function intro(command: string, showPerformance: boolean) {
     return performance.now()
 }
 
+interface OutroOptions {
+  startTime?: number
+  useSeconds?: boolean
+}
 /**
  * Prints the outro message.
  */
-export function outro(text: string, perf?: number) {
+export function outro(text: string, options: OutroOptions) {
   consola.success(text)
 
-  if (perf) {
-    const time = performance.now() - perf
-    consola.success(green(`Done in ${time}ms`))
+  if (options.startTime) {
+    let time = performance.now() - options.startTime
+
+    if (options.useSeconds) {
+      time = time / 1000
+      time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
+    }
+
+    consola.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
   }
 }
