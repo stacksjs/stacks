@@ -5,7 +5,7 @@ import { debugLevel } from '@stacksjs/config'
 
 export async function invoke(options?: CleanOptions) {
   consola.info('Running clean command...')
-  await spawn.async('rimraf ./pnpm-lock.yaml ./node_modules/ ./**/node_modules', { stdio: debugLevel(options), cwd: projectPath() })
+  await spawn('rimraf ./pnpm-lock.yaml ./node_modules/ ./**/node_modules', { stdio: debugLevel(options), cwd: projectPath() })
   consola.success('Cleaning completed.')
 }
 

@@ -27,7 +27,7 @@ export async function generate(options: KeyOptions) {
 
     if (!isFile('.env'))
       await runShortLivedCommand('cp .env.example .env', options)
-      // spawn.async('cp .env.example .env', { stdio: debug, cwd: projectPath() })
+      // spawn('cp .env.example .env', { stdio: debug, cwd: projectPath() })
 
     await setEnvValue('APP_KEY', await generateAppKey())
     consola.success('Application key set.')

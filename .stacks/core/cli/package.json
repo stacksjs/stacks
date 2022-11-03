@@ -51,12 +51,12 @@
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
-    "@jsdevtools/ez-spawn": "^3.0.4",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "cac": "^6.7.14",
     "consola": "^2.15.3",
+    "execa": "^6.1.0",
     "ora": "^6.1.2",
     "prompts": "^2.4.2"
   },

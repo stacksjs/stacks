@@ -80,7 +80,7 @@ async function download(name: string, path: string, options: CreateOptions) {
   const debug = debugLevel(options)
 
   consola.info('Setting up your stack.')
-  await spawn.async(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
 }
 
@@ -89,7 +89,7 @@ async function ensureEnv(path: string, options: CreateOptions) {
 
   consola.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-  await spawn.async('fnm use', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn('fnm use', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   consola.success('Environment is ready.')
 }
 
@@ -97,10 +97,10 @@ async function install(path: string, options: CreateOptions) {
   const debug = debugLevel(options)
 
   consola.info('Installing & setting up Stacks.')
-  await spawn.async('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  await spawn.async('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   await generateAppKey(options)
-  await spawn.async('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await spawn('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   consola.success('Installed & set-up 🚀')
 }
 

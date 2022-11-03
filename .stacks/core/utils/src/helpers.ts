@@ -1,5 +1,5 @@
 import { consola, spawn } from '@stacksjs/cli'
-import { type CliOptions, ExitCode, type IOType, type Manifest, type NpmScript } from '@stacksjs/types'
+import { type CliOptions, ExitCode, type Manifest, type NpmScript, type StdioOption } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { app, ui } from '@stacksjs/config'
@@ -10,7 +10,7 @@ export async function isProjectCreated() {
 
   // copy the .env.example to become the .env file
   if (storage.isFile('.env.example'))
-    await spawn.async('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+    await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
@@ -107,7 +107,7 @@ export async function setEnvValue(key: string, value: string) {
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript, options?: CliOptions) {
-  let debug: IOType = app.debug ? 'inherit' : 'ignore'
+  let debug: StdioOption = app.debug ? 'inherit' : 'ignore'
 
   if (options?.debug)
     debug = options.debug ? 'inherit' : 'ignore'
@@ -115,7 +115,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) {
-    await spawn.async(`pnpm run ${script}`, { stdio: debug, cwd: frameworkPath() })
+    await spawn(`pnpm run ${script}`, { stdio: debug, cwd: frameworkPath() })
   }
 
   else {

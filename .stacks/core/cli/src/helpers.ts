@@ -9,7 +9,7 @@ export async function runCommand(command: string, options?: CliOptions) {
   const debug = debugLevel(options)
 
   if (options?.shortLived) {
-    await spawn.async(command, { stdio: debug, cwd: options?.cwd || projectPath() })
+    await spawn(command, { stdio: debug, cwd: options?.cwd || projectPath() })
     return
   }
 
@@ -19,7 +19,7 @@ export async function runCommand(command: string, options?: CliOptions) {
     spin.text = italic('This may take a little while...')
   }, 5000)
 
-  await spawn.async(command, { stdio: debug, cwd: options?.cwd || projectPath() })
+  await spawn(command, { stdio: debug, cwd: options?.cwd || projectPath() })
 
   spin.stop()
 }

@@ -17,8 +17,8 @@ export async function invoke(options?: FreshOptions) {
     spin.text = italic('This may take a little while...')
   }, 15000)
 
-  await spawn.async('pnpm run clean', { stdio: debug, cwd: projectPath() })
-  await spawn.async('pnpm install', { stdio: debug, cwd: projectPath() })
+  await spawn('pnpm run clean', { stdio: debug, cwd: projectPath() })
+  await spawn('pnpm install', { stdio: debug, cwd: projectPath() })
 
   spin.stop()
   consola.success('Freshly reinstalled your dependencies.')

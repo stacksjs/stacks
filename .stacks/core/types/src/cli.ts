@@ -11,7 +11,7 @@ export interface StacksOptions {
  * The options to pass to the CLI.
  */
 export interface CliOptions {
-  debug?: boolean | IOType
+  debug?: boolean | StdioOption
   cwd?: string // default is projectPath()
   shortLived?: boolean
 }
@@ -89,7 +89,7 @@ export interface PreinstallOptions extends CliOptions {}
 export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
-export type IOType = 'ignore' | 'inherit'
+export type StdioOption = 'ignore' | 'inherit'
 
 /**
  * The available npm scripts within the Stacks toolkit.

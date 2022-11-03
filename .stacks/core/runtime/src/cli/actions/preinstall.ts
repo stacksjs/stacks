@@ -6,7 +6,7 @@ import { debugLevel } from '@stacksjs/config'
 export async function invoke(options?: PreinstallOptions) {
   try {
     consola.info('Preinstall check...')
-    await spawn.async('npx only-allow pnpm', { stdio: debugLevel(options), cwd: projectPath() })
+    await spawn('npx only-allow pnpm', { stdio: debugLevel(options), cwd: projectPath() })
     consola.success('Environment ready.')
   }
   catch (error) {

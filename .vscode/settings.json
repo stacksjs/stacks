@@ -288,7 +288,8 @@
     "singlestore",
     "datetime",
     "strikethrough",
-    "neverthrow"
+    "neverthrow",
+    "execa"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

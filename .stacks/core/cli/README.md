@@ -53,7 +53,7 @@ async function install() {
     setTimeout(() => {
       spin.text = italic('This may take a little while...')
     }, 5000)
-    await spawn.async('pnpm install')
+    await spawn('pnpm install')
     spin.stop()
     process.exit(ExitCode.Success)
   } catch (error) {

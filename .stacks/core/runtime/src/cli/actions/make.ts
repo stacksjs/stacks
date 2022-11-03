@@ -242,7 +242,7 @@ export async function stack(options: MakeOptions) {
     const name = options.name
     consola.info('Creating your stack...')
     const path = resolve(process.cwd(), name)
-    await spawn.async(`giget stacks ${path}`)
+    await spawn(`giget stacks ${path}`)
     consola.success('Successfully scaffolded your project.')
     consola.info(`cd ${path} && pnpm install`)
   }

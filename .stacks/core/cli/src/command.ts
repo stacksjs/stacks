@@ -1,7 +1,7 @@
 import cac from 'cac'
-import ezSpawn from '@jsdevtools/ez-spawn'
+import { execaCommand } from 'execa'
 
-const spawn = ezSpawn
+const spawn = execaCommand
 const command = cac
 
 export { spawn, command }

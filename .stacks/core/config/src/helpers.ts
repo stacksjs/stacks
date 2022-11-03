@@ -1,11 +1,11 @@
 import { app } from '@stacksjs/config'
-import type { CliOptions, IOType } from '@stacksjs/types'
+import type { CliOptions, StdioOption } from '@stacksjs/types'
 
 /**
  * Determines the level of debugging.
  * @param options
  */
-export function debugLevel(options?: CliOptions): IOType {
+export function debugLevel(options?: CliOptions): StdioOption {
   if (options?.debug)
     return options.debug ? 'inherit' : 'ignore'
 

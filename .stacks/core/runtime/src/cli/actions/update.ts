@@ -41,7 +41,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
 
     // check if the .stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
-    await spawn.async(`git diff --quiet HEAD -- ${path}`, { stdio: debug, cwd: projectPath() })
+    await spawn(`git diff --quiet HEAD -- ${path}`, { stdio: debug, cwd: projectPath() })
   }
   catch (error: any) {
     if (error.status === 1) {
