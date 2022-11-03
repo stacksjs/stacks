@@ -1,27 +1,13 @@
-import { bgCyan, bold, consola, cyan, dim, italic, spawn, spinner } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
-import { type CliOptions as FreshOptions } from '@stacksjs/types'
-import { debugLevel } from '@stacksjs/config'
-import { version } from '../../../package.json'
+import { runCommand, runShortLivedCommand } from '@stacksjs/cli'
+import type { CliOptions as FreshOptions } from '@stacksjs/types'
+import { intro, outro } from '../helpers'
 
 export async function invoke(options?: FreshOptions) {
-  const debug = debugLevel(options)
-
-  console.log()
-  console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
-  console.log()
-
-  consola.info(`Preparing to run the  ${bgCyan(italic(bold(' stx fresh ')))}  command.`)
-  const spin = spinner('Running...').start()
-  setTimeout(() => {
-    spin.text = italic('This may take a little while...')
-  }, 15000)
-
-  await spawn('pnpm run clean', { stdio: debug, cwd: projectPath() })
-  await spawn('pnpm install', { stdio: debug, cwd: projectPath() })
-
-  spin.stop()
-  consola.success('Freshly reinstalled your dependencies.')
+  const perf = await intro('stx fresh', true)
+  await runShortLivedCommand('pnpm run clean', options)
+  await runCommand('pnpm install', options)
+  outro('Freshly reinstalled your dependencies.', perf)
+  // process.exit(ExitCode.Success)
 }
 
 /**

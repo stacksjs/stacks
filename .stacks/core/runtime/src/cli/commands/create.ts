@@ -5,8 +5,8 @@ import { debugLevel } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { version } from '../../package.json'
-import { generate as generateAppKey } from './actions/key'
+import { version } from '../../../package.json'
+import { generate as generateAppKey } from '../actions/key'
 
 const descriptions = {
   command: 'Create a new Stacks project',

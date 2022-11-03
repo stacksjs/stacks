@@ -1,6 +1,7 @@
 /**
  * The parsed command-line arguments
  */
+
 export interface StacksOptions {
   componentsSrcPath?: string
   dtsPath?: string
@@ -12,7 +13,7 @@ export interface StacksOptions {
  */
 export interface CliOptions {
   debug?: boolean | StdioOption
-  cwd?: string // default is projectPath()
+  cwd?: string // defaults to projectPath()
   shortLived?: boolean
 }
 
@@ -90,6 +91,8 @@ export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 export type StdioOption = 'ignore' | 'inherit'
+export type { Ora as Spinner } from 'ora'
+export type { ExecaReturnValue as SpawnReturnValue } from 'execa'
 
 /**
  * The available npm scripts within the Stacks toolkit.

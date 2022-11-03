@@ -26,7 +26,7 @@ const stacks = command('stacks')
 
 stacks
   .command('example', 'A dummy command') // pnpm stacks example
-  .option('-i, --install', 'The install options', { default: true })
+  .option('-i, --install', 'The install option', { default: true })
   .action(async (options) => {
     if (options.install)
       await install()
@@ -55,10 +55,8 @@ async function install() {
     }, 5000)
     await spawn('pnpm install')
     spin.stop()
-    process.exit(ExitCode.Success)
   } catch (error) {
     consola.error(error)
-    process.exit(ExitCode.Error)
   }
 }
 

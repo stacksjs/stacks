@@ -1,9 +1,9 @@
 import type { CLI, CleanOptions, CommitOptions, FreshOptions, LintOptions, ReleaseOptions } from '@stacksjs/types'
-import { invoke as fresh } from './actions/fresh'
-import { lint, lintFix } from './actions/lint'
-import { invoke as release } from './actions/release'
-import { invoke as commit } from './actions/commit'
-import { invoke as runClean } from './actions/clean'
+import { invoke as fresh } from '../actions/fresh'
+import { lint, lintFix } from '../actions/lint'
+import { invoke as release } from '../actions/release'
+import { invoke as commit } from '../actions/commit'
+import { invoke as runClean } from '../actions/clean'
 
 const descriptions = {
   fresh: 'Reinstalls your npm dependencies',

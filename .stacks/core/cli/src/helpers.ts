@@ -1,5 +1,5 @@
 import { debugLevel } from '@stacksjs/config'
-import type { CliOptions } from '@stacksjs/types'
+import type { CliOptions, Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { italic } from './utilities'
 import { spinner } from './spinner'
@@ -13,15 +13,20 @@ export async function runCommand(command: string, options?: CliOptions) {
     return
   }
 
-  const spin = spinner('Running...').start()
+  let spin: Spinner | undefined
 
-  setTimeout(() => {
-    spin.text = italic('This may take a little while...')
-  }, 5000)
+  // the spinner is not shown when the debug when output is being inherited
+  if (debug !== 'inherit') {
+    spin = spinner('Running...').start()
+    setTimeout(() => {
+      (spin as Spinner).text = italic('This may take a little while...')
+    }, 5000)
+  }
 
   await spawn(command, { stdio: debug, cwd: options?.cwd || projectPath() })
 
-  spin.stop()
+  if (debug !== 'inherit' && spin)
+    spin.stop()
 }
 
 export async function runShortLivedCommand(command: string, options?: CliOptions) {

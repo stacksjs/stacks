@@ -1,5 +1,4 @@
 import { runCommand } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
 const descriptions = {
@@ -14,7 +13,6 @@ async function setup(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CliOptions) => {
       await runCommand('pnpm install', options)
-      process.exit(ExitCode.Success)
     })
 
   stacks
@@ -22,7 +20,6 @@ async function setup(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CliOptions) => {
       await runCommand('pnpm env use', options)
-      process.exit(ExitCode.Success)
     })
 }
 

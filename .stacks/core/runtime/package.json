@@ -167,7 +167,6 @@
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "caxa": "^3.0.1",
     "nexe": "4.0.0-rc.1",
     "only-allow": "^1.1.1",
     "pkg": "^5.8.0",
