@@ -1,32 +1,48 @@
 import { debugLevel } from '@stacksjs/config'
 import type { CliOptions, Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
+import { spinner } from '@stacksjs/cli'
 import { italic } from './utilities'
-import { spinner } from './spinner'
 import { spawn } from './command'
 
 export async function runCommand(command: string, options?: CliOptions) {
   const debug = debugLevel(options)
+  let spin = options?.loadingAnimation
 
   if (options?.shortLived) {
+    if (spin)
+      spin = spinner('Running...').start()
+
     await spawn(command, { stdio: debug, cwd: options?.cwd || projectPath() })
-    return
+    return spin
   }
 
-  let spin: Spinner | undefined
-
-  // the spinner is not shown when the debug when output is being inherited
-  if (debug !== 'inherit') {
-    spin = spinner('Running...').start()
-    setTimeout(() => {
-      (spin as Spinner).text = italic('This may take a little while...')
-    }, 5000)
-  }
-
+  await animatedLoading(options)
   await spawn(command, { stdio: debug, cwd: options?.cwd || projectPath() })
 
-  if (debug !== 'inherit' && spin)
+  if (typeof spin === 'object' && spin.isSpinning)
     spin.stop()
+}
+
+async function animatedLoading(options?: CliOptions) {
+  const debug = debugLevel(options)
+  const waitingCopy = 'This may take a little while...'
+  let spin = options?.loadingAnimation
+
+  // the spinner is not shown when debug output is being inherited
+  if (debug !== 'inherit' && typeof spin === 'object') {
+    if (spin.isSpinning && spin.text === 'Running...') {
+      setTimeout(() => {
+        (spin as Spinner).text = italic(waitingCopy)
+      }, 5000)
+      return
+    }
+
+    spin = spinner('Running...').start()
+    setTimeout(() => {
+      (spin as Spinner).text = italic(waitingCopy)
+    }, 5000)
+  }
 }
 
 export async function runShortLivedCommand(command: string, options?: CliOptions) {

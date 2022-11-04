@@ -4,8 +4,8 @@ import { intro, outro } from '../helpers'
 
 export async function invoke(options?: FreshOptions) {
   const perf = await intro('stx fresh', true)
-  await runShortLivedCommand('pnpm run clean', options)
-  await runCommand('pnpm install', options)
+  const spinner = await runShortLivedCommand('pnpm run clean', { loadingAnimation: true, ...options })
+  await runCommand('pnpm install', { loadingAnimation: spinner, ...options })
   outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
 }
 

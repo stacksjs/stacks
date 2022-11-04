@@ -26,10 +26,10 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 - 🤖 **CI/CD** _native CI, release, auto changelog generations & other workflows_
 - 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
-- 🍀 **Auto Imports** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
 - 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
 - 💪🏼 **Type Strong** _Built-in end-to-end type safety_
 - 📚 **Smart Bundling** _Vite powered & extendable_
+- 🍀 **Auto Imports** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
 - 📈 **Modern DX** _latest & greatest tooling accessible natively, including ESNext support_
 - 🪄 **Zero-Config** _yet highly configurable_
 
@@ -57,7 +57,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 - ⚙️ **Queues** _run your heavy workload in the background_
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
-- 💾 **Storage** _easily make use of local & remote storage/file systems_
+- 💾 **Storage** _easily create & make use of local & remote storages/file systems_
 - 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
 - 🧪 **Testing** _covered by Vitest_
 

@@ -2,6 +2,8 @@
  * The parsed command-line arguments
  */
 
+import type { Ora as Spinner } from 'ora'
+
 export interface StacksOptions {
   componentsSrcPath?: string
   dtsPath?: string
@@ -15,7 +17,10 @@ export interface CliOptions {
   debug?: boolean | StdioOption
   cwd?: string // defaults to projectPath()
   shortLived?: boolean
+  loadingAnimation?: boolean | Spinner
 }
+
+export type { Ora as Spinner } from 'ora'
 
 export type ActionsOption = 'types'
 export type ActionsOptions = {
@@ -91,7 +96,6 @@ export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 export type StdioOption = 'ignore' | 'inherit'
-export type { Ora as Spinner } from 'ora'
 export type { ExecaReturnValue as SpawnReturnValue } from 'execa'
 
 /**
