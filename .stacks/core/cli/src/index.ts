@@ -1,3 +1,4 @@
+export * from './actions'
 export * from './command'
 export * from './console'
 export * from './helpers'

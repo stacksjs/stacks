@@ -4,15 +4,17 @@ import { version } from '../../package.json'
 /**
  * Prints the intro message.
  */
-export function intro(command: string, showPerformance: boolean) {
+export function intro(command: string, showPerformance?: boolean) {
   console.log()
   console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()
 
   consola.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
 
-  if (showPerformance)
-    return performance.now()
+  if (showPerformance === false)
+    return
+
+  return performance.now()
 }
 
 interface OutroOptions {
