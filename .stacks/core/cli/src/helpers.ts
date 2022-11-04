@@ -5,14 +5,14 @@ import { italic } from './utilities'
 
 export async function animatedLoading(options?: CliOptions) {
   const debug = debugLevel(options)
-  const waitingCopy = 'This may take a little while...'
+  const pleaseWait = 'This may take a little while...'
   let spin = options?.loadingAnimation
 
   // the spinner is not shown when debug output is being inherited
   if (debug !== 'inherit' && typeof spin === 'object') {
     if (spin.isSpinning && spin.text === 'Running...') {
       setTimeout(() => {
-        (spin as Spinner).text = italic(waitingCopy)
+        (spin as Spinner).text = italic(pleaseWait)
       }, 5000)
       return
     }
@@ -20,7 +20,7 @@ export async function animatedLoading(options?: CliOptions) {
     // this triggers when options.shortLived === false and options.loadingAnimation === true
     spin = spinner('Running...').start()
     setTimeout(() => {
-      (spin as Spinner).text = italic(waitingCopy)
+      (spin as Spinner).text = italic(pleaseWait)
     }, 5000)
   }
 }
