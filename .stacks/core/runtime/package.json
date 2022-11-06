@@ -55,7 +55,7 @@
   "scripts": {
     "stacks": "esno ./src/cli.ts",
     "stx": "pnpm run stacks",
-    "preinstall": "pnpm stacks preinstall",
+    "preinstall": "npx only-allow pnpm",
     "prepublishOnly": "pnpm stacks prepublish",
     "add": "pnpm stacks add",
     "fresh": "pnpm stacks fresh",

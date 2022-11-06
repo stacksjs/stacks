@@ -2,7 +2,7 @@
  * The parsed command-line arguments
  */
 
-import type { Ora as Spinner } from 'ora'
+import type { Ora } from 'ora'
 
 export interface StacksOptions {
   componentsSrcPath?: string
@@ -10,17 +10,62 @@ export interface StacksOptions {
   extensions?: string[]
 }
 
+export interface OutroOptions {
+  startTime?: number
+  useSeconds?: boolean
+  isError?: boolean
+}
+
+export interface IntroOptions {
+  showPerformance?: boolean
+}
+
+type SpinnerOptions = Ora
+
 /**
  * The options to pass to the CLI.
  */
 export interface CliOptions {
+  /**
+   * ### CLI Debug Level
+   *
+   * When your application is in debug mode, a different level of information,
+   * like stack traces, will be shown on every error that occurs within the
+   * application. When disabled, it defaults to the "normal experience."
+   *
+   * @default false
+   */
   debug?: boolean | StdioOption
-  cwd?: string // defaults to projectPath()
+
+  /**
+   * ### Current Work Directory
+   *
+   * Based on the `cwd` value, that's where the command...
+   *
+   * @default projectPath()
+   */
+  cwd?: string
+
+  /**
+   * ### Short Lived
+   *
+   * Is the command-call "fast?" The answer may vary and is opinionated.
+   *
+   * @default false
+   */
   shortLived?: boolean
-  loadingAnimation?: boolean | Spinner
+
+  /**
+   * ### Loading Animation
+   *
+   * Should the command show a loading animation?
+   *
+   * @default true
+   */
+  loadingAnimation?: boolean | SpinnerOptions
 }
 
-export type { Ora as Spinner } from 'ora'
+export type { Ora as SpinnerOptions } from 'ora'
 
 export type ActionsOption = 'types'
 export type ActionsOptions = {
@@ -148,3 +193,4 @@ export const enum NpmScript {
 }
 
 export type { CAC as CLI } from 'cac'
+export type { ExecaReturnValue as CommandResult } from 'execa'

@@ -1,12 +1,23 @@
-import { runCommand, runShortLivedCommand } from '@stacksjs/cli'
-import type { CliOptions as FreshOptions } from '@stacksjs/types'
-import { intro, outro } from '../helpers'
+import { intro, outro, runCommand, runShortLivedCommand } from '@stacksjs/cli'
+import type { CliOptions as FreshOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options?: FreshOptions) {
-  const perf = await intro('stx fresh', true)
-  const spinner = await runShortLivedCommand('pnpm run clean', { loadingAnimation: true, ...options })
-  await runCommand('pnpm install', { loadingAnimation: spinner, ...options })
-  outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
+  const perf = intro('stx fresh', { showPerformance: true })
+  const spinner = runShortLivedCommand('pnpm run clean', { loadingAnimation: true, ...options }, true)
+
+  const result = (spinner as Spinner)?.isSpinning
+    ? runCommand('pnpm install', { loadingAnimation: spinner as Spinner, ...options })
+    : runCommand('pnpm install', options)
+  const res = await result
+
+  if (res.isOk()) {
+    outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
+    process.exit(ExitCode.Success)
+  }
+
+  outro(res.error.message, { startTime: perf, useSeconds: true, isError: true })
+  process.exit(ExitCode.FatalError)
 }
 
 /**
