@@ -1,5 +1,5 @@
 import { installPackage as install } from '@stacksjs/cli'
-import type { AddOptions, SpawnReturnValue } from '@stacksjs/types'
+import type { AddOptions } from '@stacksjs/types'
 import { ResultAsync, err, ok } from '@stacksjs/errors'
 
 export async function invoke(options: AddOptions) {
@@ -32,7 +32,7 @@ export async function addCalendar(options: AddOptions) {
   // await runCommand('', options)
 }
 
-export async function installPackage(name: string, options: AddOptions): Promise<ResultAsync<SpawnReturnValue, Error>> {
+export async function installPackage(name: string, options: AddOptions) {
   return ResultAsync.fromPromise(
     install(name, options),
     () => new Error('Package install error'),

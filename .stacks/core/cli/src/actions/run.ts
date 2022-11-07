@@ -41,8 +41,6 @@ export async function runCommand(command: string, options?: CliOptions) {
     return await exec(command, options, errorMsg)
   }
 
-  console.log('long lived')
-
   animatedLoading(options)
   const errorMsg = 'Unknown longer-running command execution error. If this issue persists, please create an issue on GitHub.'
   const result = await exec(command, options, errorMsg)
@@ -54,18 +52,18 @@ export async function runCommand(command: string, options?: CliOptions) {
 }
 
 /**
- * Run a command in a child process. The only difference
- * from a long-running command is that a short-lived
- * command will not show a loading animation.
+ * Run a command in a child process. The only difference from
+ * a long-running command is that a short-lived command will
+ * not show a loading animation in the command line.
  *
  * @param command Command to run
  * @param options Options to pass to the command
- * @returns The result of the command
+ * @returns The result of the command or an instance of a running Spinner instance(used for chaining with long-running commands).
  */
 export function runShortLivedCommand(command: string, options?: CliOptions, returnSpinner = false) {
   const result = runCommand(command, { shortLived: true, ...options })
 
-  if (returnSpinner)
+  if (returnSpinner === true)
     return spinner('Running...').start()
 
   return result

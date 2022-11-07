@@ -141,7 +141,6 @@ export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 export type StdioOption = 'ignore' | 'inherit'
-export type { ExecaReturnValue as SpawnReturnValue } from 'execa'
 
 /**
  * The available npm scripts within the Stacks toolkit.
