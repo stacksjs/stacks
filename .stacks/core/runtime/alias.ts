@@ -31,6 +31,8 @@ const alias: Record<string, string> = {
   '@stacksjs/git/*': p.gitPath('src/*'),
   '@stacksjs/lint': p.lintPath('src/index.ts'),
   '@stacksjs/lint/*': p.lintPath('src/*'),
+  '@stacksjs/logging': p.loggingPath('src/index.ts'),
+  '@stacksjs/logging/*': p.loggingPath('src/*'),
   '@stacksjs/modules/*': p.modulesPath('src/*'),
   '@stacksjs/objects': p.objectsPath('src/index.ts'),
   '@stacksjs/objects/*': p.objectsPath('src/*'),
