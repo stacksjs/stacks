@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
-import { consola, prompts } from '@stacksjs/cli'
+import { log, prompts } from '@stacksjs/cli'
 import {
   invoke,
   component as makeComponent,
@@ -44,7 +44,7 @@ async function make(stacks: CLI) {
       const name = stacks.args[0]
 
       if (!name) {
-        consola.error('You need to specify a name. Read more about the documentation here.')
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.InvalidArgument)
       }
 

@@ -1,17 +1,17 @@
-import { consola } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import type { TestOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: TestOptions) {
   try {
-    consola.info('Running your test suite...')
+    log.info('Running your test suite...')
     await runNpmScript(NpmScript.Test, options)
-    consola.success('Completed running the test suite.')
+    log.success('Completed running the test suite.')
   }
   catch (error) {
-    consola.error('There was an error testing your stack.')
-    consola.error(error)
+    log.error('There was an error testing your stack.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -27,22 +27,22 @@ export async function test(options: TestOptions) {
 
 export async function typecheck(options: TestOptions) {
   try {
-    consola.info('Typechecking your codebase...')
+    log.info('Typechecking your codebase...')
     await runNpmScript(NpmScript.TestTypes, options)
-    consola.success('Completed the typecheck.')
+    log.success('Completed the typecheck.')
   }
   catch (error) {
-    consola.error(error)
+    log.error(error)
   }
 }
 
 export async function testCoverageReport(options: TestOptions) {
   try {
-    consola.info('Generating a test coverage report...')
+    log.info('Generating a test coverage report...')
     await runNpmScript(NpmScript.TestCoverage, options)
-    consola.success('Generated the test coverage report.')
+    log.success('Generated the test coverage report.')
   }
   catch (error) {
-    consola.error(error)
+    log.error(error)
   }
 }

@@ -13,9 +13,11 @@ export const git: Options = {
   },
 
   scopes: [
-    '', 'ci', 'deps', 'dx', 'release', 'readme', 'test', 'actions', 'build', 'cli', 'config',
-    'examples', 'functions', 'modules', 'pages', 'router', 'scripts', 'security',
-    'ui', 'utils', 'arrays', 'collections', 'fs', 'objects', 'strings',
+    '', 'ci', 'deps', 'dx', 'release', 'docs', 'test', 'core',
+    'actions', 'arrays', 'auth', 'build', 'cache', 'cli', 'cloud', 'collections', 'config',
+    'database', 'datetime', 'docs', 'errors', 'git', 'lint', 'logging', 'modules', 'notifications',
+    'objects', 'path', 'realtime', 'router', 'runtime', 'security', 'server', 'storage', 'strings',
+    'tests', 'types', 'ui', 'utils',
   ],
 
   messages: {

@@ -1,4 +1,4 @@
-import { consola } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { hasComponents } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { type ExamplesOptions, ExitCode, NpmScript } from '@stacksjs/types'
@@ -11,7 +11,7 @@ export async function invoke(options: ExamplesOptions) {
     await webComponentExample(options)
 
   else
-    consola.error('An unsupported option was used. Please try again, check the documentation & report the issue, if needed.')
+    log.error('An unsupported option was used. Please try again, check the documentation & report the issue, if needed.')
 }
 
 /**
@@ -26,22 +26,22 @@ export async function examples(options: ExamplesOptions) {
 export async function componentExample(options: ExamplesOptions) {
   if (hasComponents()) {
     await runNpmScript(NpmScript.ExampleVue, options)
-    consola.success('Your component library was built successfully.')
+    log.success('Your component library was built successfully.')
   }
   else {
-    consola.info('No components found.')
+    log.info('No components found.')
     // todo: throw custom error here
   }
 }
 
 export async function webComponentExample(options: ExamplesOptions) {
   if (hasComponents()) {
-    consola.info('Building your Web Component library...')
+    log.info('Building your Web Component library...')
     await runNpmScript(NpmScript.BuildWebComponents, options)
-    consola.success('Your Web Component library was built successfully.')
+    log.success('Your Web Component library was built successfully.')
   }
   else {
-    consola.info('No components found.')
+    log.info('No components found.')
     // todo: throw custom error here
     process.exit(ExitCode.FatalError)
   }

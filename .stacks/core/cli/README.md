@@ -20,7 +20,7 @@ Now, you can use it in your project:
 ```js
 // command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
-import { command, consola, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cli'
+import { command, log, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cli'
 
 const stacks = command('stacks')
 
@@ -43,7 +43,7 @@ stacks
     if (answer === 'run')
       install()
     else if (answer === 'do-not-run')
-      consola.info('Not running the command')
+      log.info('Not running the command')
     else process.exit(ExitCode.InvalidArgument)
   })
 
@@ -56,7 +56,7 @@ async function install() {
     await spawn('pnpm install')
     spin.stop()
   } catch (error) {
-    consola.error(error)
+    log.error(error)
   }
 }
 
@@ -77,13 +77,13 @@ _You may also use any of the following CLI utilities:_
 
 ```js
 import {
-  consola,
+  log,
   ansi256Bg, bold, dim, hidden, inverse, italic, link, reset, strikethrough, underline,
   bgBlack, bgBlue, bgCyan, bgGray, bgGreen, bgLightBlue, bgLightCyan, bgLightGray, bgLightGreen, bgLightMagenta, bgLightRed, bgLightYellow, bgMagenta, bgRed, bgWhite, bgYellow,
   black, blue, cyan, gray, green, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, magenta, red, white, yellow,
 } from '@stacksjs/cli'
 
-consola.log(`hello ${bold(italic('world'))`)
+log.info(`hello ${bold(italic('world'))`)
 ```
 
 To view the full documentation, please visit [https://stacksjs.dev/cli](https://stacksjs.dev/cli).

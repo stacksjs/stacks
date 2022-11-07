@@ -1,5 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, consola, cyan, dim, link, spawn } from '@stacksjs/cli'
+import { bold, cyan, dim, link, log, spawn } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { debugLevel } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
@@ -51,17 +51,17 @@ async function create(stacks: CLI) {
       await install(path, options)
 
       console.log()
-      consola.info(bold('Welcome to the Stacks Framework! ⚛️'))
+      log.info(bold('Welcome to the Stacks Framework! ⚛️'))
       console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
-      consola.log('To learn more, visit https://stacksjs.dev')
+      log('To learn more, visit https://stacksjs.dev')
       process.exit(ExitCode.Success)
     })
 }
 
 async function isFolderCheck(path: string) {
   if (await isFolder(path)) {
-    consola.error(`Path ${path} already exists`)
+    log.error(`Path ${path} already exists`)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -69,9 +69,9 @@ async function isFolderCheck(path: string) {
 async function onlineCheck() {
   const online = useOnline()
   if (!online) {
-    consola.info('It appears you are disconnected from the internet.')
-    consola.info('The Stacks setup requires a brief internet connection for setup.')
-    consola.info('For instance, it installs your dependencies from.')
+    log.info('It appears you are disconnected from the internet.')
+    log.info('The Stacks setup requires a brief internet connection for setup.')
+    log.info('For instance, it installs your dependencies from.')
     process.exit(ExitCode.FatalError)
   }
 }
@@ -79,29 +79,29 @@ async function onlineCheck() {
 async function download(name: string, path: string, options: CreateOptions) {
   const debug = debugLevel(options)
 
-  consola.info('Setting up your stack.')
+  log.info('Setting up your stack.')
   await spawn(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  consola.success(`Successfully scaffolded your project at ${cyan(path)}`)
+  log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 }
 
 async function ensureEnv(path: string, options: CreateOptions) {
   const debug = debugLevel(options)
 
-  consola.info('Ensuring your environment is ready...')
+  log.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
   await spawn('fnm use', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  consola.success('Environment is ready.')
+  log.success('Environment is ready.')
 }
 
 async function install(path: string, options: CreateOptions) {
   const debug = debugLevel(options)
 
-  consola.info('Installing & setting up Stacks.')
+  log.info('Installing & setting up Stacks.')
   await spawn('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   await spawn('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
   await generateAppKey(options)
   await spawn('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  consola.success('Installed & set-up 🚀')
+  log.success('Installed & set-up 🚀')
 }
 
 export { create }

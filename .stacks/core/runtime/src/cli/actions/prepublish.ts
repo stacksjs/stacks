@@ -1,16 +1,16 @@
-import { consola } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { ExitCode, NpmScript, type PrepublishOptions } from '@stacksjs/types'
 
 export async function invoke(options?: PrepublishOptions) {
   try {
-    consola.info('Running prepublish command...')
+    log.info('Running prepublish command...')
     await runNpmScript(NpmScript.BuildStacks, options)
-    consola.success('prepublish command completed.')
+    log.success('prepublish command completed.')
   }
   catch (error) {
-    consola.error('There was an error prepublish your stack.')
-    consola.error(error)
+    log.error('There was an error prepublish your stack.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }

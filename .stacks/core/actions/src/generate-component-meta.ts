@@ -4,7 +4,7 @@
  * This action generates the component meta.
  */
 
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from './helpers/component-meta'
 
@@ -12,4 +12,4 @@ if (hasComponents())
   await generateComponentMeta()
 
 else
-  consola.info('No components found. Skipping component meta generation.')
+  log.info('No components found. Skipping component meta generation.')

@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ExamplesOption, ExamplesOptions } from '@stacksjs/types'
-import { consola, italic, prompts } from '@stacksjs/cli'
+import { italic, log, prompts } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from '../actions/examples'
 
 const descriptions = {
@@ -30,7 +30,7 @@ async function example(stacks: CLI) {
       })
 
       if (answer !== null) {
-        consola.error(`You did not provide an answer. Please try again, ${italic('or report the issue')}`)
+        log.error(`You did not provide an answer. Please try again, ${italic('or report the issue')}`)
         process.exit(ExitCode.InvalidArgument)
       }
 

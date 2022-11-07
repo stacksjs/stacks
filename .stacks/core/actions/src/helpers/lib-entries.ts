@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import { kebabCase } from '@stacksjs/strings'
 import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
@@ -24,42 +24,42 @@ export async function generateLibEntry(type: LibEntryType) {
       await createFunctionLibraryEntryPoint()
   }
   catch (err) {
-    consola.error(err)
+    log.error(err)
     process.exit(ExitCode.FatalError)
   }
 }
 
 export async function createVueLibraryEntryPoint() {
-  consola.info('Creating the Vue component library entry point...')
+  log.info('Creating the Vue component library entry point...')
 
   await writeTextFile({
     path: libraryEntryPath('vue-components'),
     data: generateEntryPointData('vue-components'),
   })
 
-  consola.success('Created the Vue component library entry point.')
+  log.success('Created the Vue component library entry point.')
 }
 
 export async function createWebComponentLibraryEntryPoint() {
-  consola.info('Creating the Web Component library entry point...')
+  log.info('Creating the Web Component library entry point...')
 
   await writeTextFile({
     path: libraryEntryPath('web-components'),
     data: generateEntryPointData('web-components'),
   })
 
-  consola.success('Created the Web Component library entry point.')
+  log.success('Created the Web Component library entry point.')
 }
 
 export async function createFunctionLibraryEntryPoint() {
-  consola.info('Creating the Function library entry point...')
+  log.info('Creating the Function library entry point...')
 
   await writeTextFile({
     path: libraryEntryPath('functions'),
     data: generateEntryPointData('functions'),
   })
 
-  consola.success('Created the Functions library entry point.')
+  log.success('Created the Functions library entry point.')
 }
 
 export function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
@@ -67,7 +67,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
   if (type === 'functions') {
     if (!library.functions.functions) {
-      consola.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
+      log.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit(ExitCode.FatalError)
     }
 
@@ -84,7 +84,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
   if (type === 'vue-components') {
     if (!library.vueComponents.tags) {
-      consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+      log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit(ExitCode.FatalError)
     }
 
@@ -108,7 +108,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   const definitions = []
 
   if (!library.webComponents.tags) {
-    consola.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+    log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
     process.exit(ExitCode.FatalError)
   }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { generateLibEntry } from './helpers/lib-entries'
 
@@ -8,11 +8,11 @@ if (hasComponents()) {
   await generateLibEntry('web-components')
 }
 else {
-  consola.info('No components found. Skipping building component entry points.')
+  log.info('No components found. Skipping building component entry points.')
 }
 
 if (hasFunctions())
   await generateLibEntry('functions')
 
 else
-  consola.info('No functions found. Skipping building function entry point.')
+  log.info('No functions found. Skipping building function entry point.')

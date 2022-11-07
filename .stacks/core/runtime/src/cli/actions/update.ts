@@ -1,4 +1,4 @@
-import { consola, prompts, runCommand, spawn } from '@stacksjs/cli'
+import { log, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
 import { debugLevel } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
@@ -58,8 +58,8 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
 
         // @ts-expect-error the answer object type expects to return a void type but it returns boolean
         if (!answer) {
-          consola.info('Aborted. Stacks did not update itself.')
-          consola.info('Note: if you commit your changes and replay the update, you can see what changed.')
+          log.info('Aborted. Stacks did not update itself.')
+          log.info('Note: if you commit your changes and replay the update, you can see what changed.')
           process.exit(ExitCode.Success)
         }
       }
@@ -73,7 +73,7 @@ export async function updateFramework(options: UpdateOptions) {
   await checkForUncommittedChanges('./.stacks', options)
   await downloadFrameworkUpdate(options)
 
-  consola.info('Updating framework...')
+  log.info('Updating framework...')
 
   const exclude = ['functions/package.json', 'components/vue/package.json', 'components/web/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
   await storage.deleteFiles(frameworkPath(), exclude)
@@ -85,10 +85,10 @@ export async function updateFramework(options: UpdateOptions) {
   await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
 
   if (debug === 'inherit')
-    consola.info('Cleanup...')
+    log.info('Cleanup...')
 
   await storage.deleteFolder(projectPath('updates'))
-  consola.success('Framework updated')
+  log.success('Framework updated')
 }
 
 export async function downloadFrameworkUpdate(options: UpdateOptions) {
@@ -98,34 +98,34 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
   if (storage.doesFolderExist(tempUpdatePath))
     await deleteFolder(tempUpdatePath)
 
-  consola.info('Downloading framework updates...')
+  log.info('Downloading framework updates...')
   await runCommand(`giget stacks ${tempFolderName}`, options)
   const version = (await storage.readJsonFile(projectPath(`${tempFolderName}/.stacks/version`))).data
-  consola.success('Your framework updated correctly to version: ', version)
+  log.success('Your framework updated correctly to version: ', version)
 }
 
 export async function updateDependencies(options: UpdateOptions) {
   try {
-    consola.info('Preparing to update dependencies.')
+    log.info('Preparing to update dependencies.')
     await runCommand('pnpm update', options)
-    consola.success('Freshly updated your dependencies.')
+    log.success('Freshly updated your dependencies.')
   }
   catch (error) {
-    consola.error('There was an error updating your dependencies.')
-    consola.error(error)
+    log.error('There was an error updating your dependencies.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
 
 export async function updatePackageManager(options: UpdateOptions) {
-  consola.info('Preparing to update the package manager.')
+  log.info('Preparing to update the package manager.')
   const version = options?.version || 'latest'
   await runCommand(`corepack prepare pnpm@${version} --activate`, options)
-  consola.success('Updated to version:', version)
+  log.success('Updated to version:', version)
 }
 
 export async function updateNode(options: UpdateOptions) {
-  consola.info('Preparing your Node version update.')
+  log.info('Preparing your Node version update.')
   await runCommand('fnm use', options)
-  consola.success('Your Node version is now:', process.version)
+  log.success('Your Node version is now:', process.version)
 }

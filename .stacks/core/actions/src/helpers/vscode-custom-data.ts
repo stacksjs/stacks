@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { library } from '@stacksjs/config'
@@ -13,7 +13,7 @@ export async function generateVsCodeCustomData() {
     })
   }
   catch (err) {
-    consola.error(err)
+    log.error(err)
   }
 }
 

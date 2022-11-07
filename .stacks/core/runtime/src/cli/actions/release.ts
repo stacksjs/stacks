@@ -1,17 +1,17 @@
-import { consola } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import type { CliOptions as ReleaseOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: ReleaseOptions) {
   try {
-    consola.info('Releasing...')
+    log.info('Releasing...')
     await runNpmScript(NpmScript.Release, options)
-    consola.success('Triggered release workflow')
+    log.success('Triggered release workflow')
   }
   catch (error) {
-    consola.error('There was an error releasing your stack.')
-    consola.error(error)
+    log.error('There was an error releasing your stack.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }

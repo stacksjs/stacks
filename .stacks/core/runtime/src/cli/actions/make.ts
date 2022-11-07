@@ -1,4 +1,4 @@
-import { consola, italic, spawn } from '@stacksjs/cli'
+import { italic, log, spawn } from '@stacksjs/cli'
 import { writeTextFile } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
@@ -45,13 +45,13 @@ export async function make(options: MakeOptions) {
 export async function component(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your component...')
+    log.info('Creating your component...')
     await createComponent(options)
-    consola.success(`Created the ${italic(name)} component.`)
+    log.success(`Created the ${italic(name)} component.`)
   }
   catch (error) {
-    consola.error('There was an error creating your component.')
-    consola.error(error)
+    log.error('There was an error creating your component.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -77,13 +77,13 @@ console.log('Hello World component created')
 export async function database(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info(`Creating your ${italic(name)} database...`)
+    log.info(`Creating your ${italic(name)} database...`)
     await createDatabase(options)
-    consola.success(`Created the ${italic(name)} database.`)
+    log.success(`Created the ${italic(name)} database.`)
   }
   catch (error) {
-    consola.error('There was an error creating your database.')
-    consola.error(error)
+    log.error('There was an error creating your database.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -95,13 +95,13 @@ export async function createDatabase(options: MakeOptions) {
 export async function factory(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info(`Creating your ${italic(name)} factory...`)
+    log.info(`Creating your ${italic(name)} factory...`)
     await createDatabase(options)
-    consola.success(`Created the ${italic(name)} factory.`)
+    log.success(`Created the ${italic(name)} factory.`)
   }
   catch (error) {
-    consola.error('There was an error creating your factory.')
-    consola.error(error)
+    log.error('There was an error creating your factory.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -113,13 +113,13 @@ export async function createFactory(options: MakeOptions) {
 export async function migration(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info(`Creating your ${italic(name)} migration...`)
+    log.info(`Creating your ${italic(name)} migration...`)
     await createMigration(options)
-    consola.success(`Created the ${italic(name)} migration.`)
+    log.success(`Created the ${italic(name)} migration.`)
   }
   catch (error) {
-    consola.error('There was an error creating your migration.')
-    consola.error(error)
+    log.error('There was an error creating your migration.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -131,13 +131,13 @@ export async function createMigration(options: MakeOptions) {
 export async function notification(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info(`Creating your ${italic(name)} notification...`)
+    log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
-    consola.success(`Created the ${italic(name)} notification.`)
+    log.success(`Created the ${italic(name)} notification.`)
   }
   catch (error) {
-    consola.error('There was an error creating your notification.')
-    consola.error(error)
+    log.error('There was an error creating your notification.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -149,13 +149,13 @@ export async function createNotification(options: MakeOptions) {
 export async function page(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your page...')
+    log.info('Creating your page...')
     createPage(options)
-    consola.success(`Created the ${name} page.`)
+    log.success(`Created the ${name} page.`)
   }
   catch (error) {
-    consola.error('There was an error creating your page.')
-    consola.error(error)
+    log.error('There was an error creating your page.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -182,13 +182,13 @@ console.log('Hello World page created')
 export async function fx(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your function...')
+    log.info('Creating your function...')
     await createFunction(options)
-    consola.success(`Created the ${name} function.`)
+    log.success(`Created the ${name} function.`)
   }
   catch (error) {
-    consola.error('There was an error creating your function.')
-    consola.error(error)
+    log.error('There was an error creating your function.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -216,13 +216,13 @@ export {
 export async function language(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your translation file...')
+    log.info('Creating your translation file...')
     createLanguage(options)
-    consola.success(`Created the ${name} translation file.`)
+    log.success(`Created the ${name} translation file.`)
   }
   catch (error) {
-    consola.error('There was an error creating your language.')
-    consola.error(error)
+    log.error('There was an error creating your language.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -240,15 +240,15 @@ export async function createLanguage(options: MakeOptions) {
 export async function stack(options: MakeOptions) {
   try {
     const name = options.name
-    consola.info('Creating your stack...')
+    log.info('Creating your stack...')
     const path = resolve(process.cwd(), name)
     await spawn(`giget stacks ${path}`)
-    consola.success('Successfully scaffolded your project.')
-    consola.info(`cd ${path} && pnpm install`)
+    log.success('Successfully scaffolded your project.')
+    log.info(`cd ${path} && pnpm install`)
   }
   catch (error) {
-    consola.error('There was an error creating your stack.')
-    consola.error(error)
+    log.error('There was an error creating your stack.')
+    log.error(error)
     process.exit(ExitCode.FatalError)
   }
 }

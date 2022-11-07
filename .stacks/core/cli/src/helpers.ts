@@ -2,7 +2,7 @@ import { debugLevel } from '@stacksjs/config'
 import type { CliOptions, IntroOptions, OutroOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
-import { consola } from './console'
+import { log } from './console'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 
@@ -14,7 +14,7 @@ export function intro(command: string, options: IntroOptions) {
   console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()
 
-  consola.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
+  log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
 
   if (options.showPerformance === false)
     return
@@ -27,9 +27,9 @@ export function intro(command: string, options: IntroOptions) {
  */
 export function outro(text: string, options: OutroOptions) {
   if (options.isError)
-    consola.error(text)
+    log.error(text)
   else
-    consola.success(text)
+    log.success(text)
 
   if (options.startTime) {
     let time = performance.now() - options.startTime
@@ -40,12 +40,12 @@ export function outro(text: string, options: OutroOptions) {
     }
 
     if (options.isError) {
-      consola.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
+      log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
       process.exit(ExitCode.FatalError)
     }
 
     else {
-      consola.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
+      log.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
       process.exit(ExitCode.Success)
     }
   }

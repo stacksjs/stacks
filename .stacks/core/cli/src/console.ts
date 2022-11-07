@@ -1,6 +1,6 @@
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import Prompts from 'prompts'
 
 const { prompts } = Prompts
 
-export { consola, prompts }
+export { log, prompts }

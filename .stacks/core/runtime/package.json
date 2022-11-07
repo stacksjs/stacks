@@ -153,6 +153,7 @@
     "@stacksjs/errors": "workspace:*",
     "@stacksjs/git": "workspace:*",
     "@stacksjs/lint": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/path": "workspace:*",

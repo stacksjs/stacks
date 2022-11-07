@@ -1,4 +1,4 @@
-import { consola, spawn } from '@stacksjs/cli'
+import { log, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type Manifest, type NpmScript, type StdioOption } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
@@ -119,7 +119,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   }
 
   else {
-    consola.error('Error running your Stacks script.')
+    log.error('Error running your Stacks script.')
     process.exit(ExitCode.FatalError)
   }
 }

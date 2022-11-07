@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { log } from '@stacksjs/logging'
 import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
@@ -80,9 +80,9 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
 `,
     })
 
-    consola.success(`Created the ${type} package.json.`)
+    log.success(`Created the ${type} package.json.`)
   }
   catch (err) {
-    consola.error(err)
+    log.error(err)
   }
 }
