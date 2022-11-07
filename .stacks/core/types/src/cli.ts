@@ -47,22 +47,15 @@ export interface CliOptions {
   cwd?: string
 
   /**
-   * ### Short Lived
-   *
-   * Is the command-call "fast?" The answer may vary and is opinionated.
-   *
-   * @default false
-   */
-  shortLived?: boolean
-
-  /**
    * ### Loading Animation
    *
    * Should the command show a loading animation?
+   * Please note, when debug mode is enabled,
+   * the animation will not show.
    *
    * @default true
    */
-  loadingAnimation?: boolean | SpinnerOptions
+  shouldBeAnimated?: boolean | SpinnerOptions
 }
 
 export type { Ora as SpinnerOptions } from 'ora'

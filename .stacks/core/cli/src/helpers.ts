@@ -54,7 +54,7 @@ export function outro(text: string, options: OutroOptions) {
 export function animatedLoading(options?: CliOptions) {
   const debug = debugLevel(options)
   const pleaseWait = 'This may take a little while...'
-  let spin = options?.loadingAnimation
+  let spin = options?.animatedLoading
 
   // the spinner is not shown when debug output is being inherited
   if (debug !== 'inherit' && typeof spin === 'object') {
@@ -65,7 +65,7 @@ export function animatedLoading(options?: CliOptions) {
       return
     }
 
-    // this triggers when options.shortLived === false and options.loadingAnimation === true
+    // this triggers when options.shortLived === false and options.animatedLoading === true
     spin = spinner('Running...').start()
     setTimeout(() => {
       (spin as Spinner).text = italic(pleaseWait)

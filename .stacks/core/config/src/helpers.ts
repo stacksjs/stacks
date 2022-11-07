@@ -6,10 +6,10 @@ import type { CliOptions, StdioOption } from '@stacksjs/types'
  * @param options
  */
 export function debugLevel(options?: CliOptions): StdioOption {
-  if (options?.loadingAnimation && options?.debug === true)
+  if (options?.animatedLoading && options?.debug === true)
     return 'inherit'
 
-  if (options?.loadingAnimation)
+  if (options?.animatedLoading)
     return 'ignore'
 
   if (options?.debug)

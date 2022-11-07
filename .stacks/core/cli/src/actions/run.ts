@@ -31,17 +31,23 @@ export function exec(command: string, options?: CliOptions, errorMsg?: string) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions) {
-  const isShortLived = options?.shortLived ?? false
-  let spin = options?.loadingAnimation ?? true
+export async function runCommand(command: string, options?: CliOptions, returnSpinner = false) {
+  const shouldBeAnimated = options?.shouldBeAnimated || returnSpinner
 
-  if (isShortLived && spin) {
-    spin = spinner('Running...').start()
+  if (shouldBeAnimated) {
+    const spin = spinner('Running...').start()
     const errorMsg = 'Unknown short-lived command execution error. If this issue persists, please create an issue on GitHub.'
-    return await exec(command, options, errorMsg)
+    const result = await exec(command, options, errorMsg)
+
+    if (returnSpinner)
+      return { result, spinner: spin }
+
+    return result
   }
 
-  animatedLoading(options)
+  if (options?.animatedLoading)
+    animatedLoading(options)
+
   const errorMsg = 'Unknown longer-running command execution error. If this issue persists, please create an issue on GitHub.'
   const result = await exec(command, options, errorMsg)
 
@@ -49,35 +55,4 @@ export async function runCommand(command: string, options?: CliOptions) {
     spin.stop()
 
   return result
-}
-
-/**
- * Run a command in a child process. The only difference from
- * a long-running command is that a short-lived command will
- * not show a loading animation in the command line.
- *
- * @param command Command to run
- * @param options Options to pass to the command
- * @returns The result of the command or an instance of a running Spinner instance(used for chaining with long-running commands).
- */
-export function runShortLivedCommand(command: string, options?: CliOptions, returnSpinner = false) {
-  const result = runCommand(command, { shortLived: true, ...options })
-
-  if (returnSpinner === true)
-    return spinner('Running...').start()
-
-  return result
-}
-
-/**
- * Run a command in a child process. The only difference
- * from a short-lived command is that a long-running
- * command will show a loading animation.
- *
- * @param command Command to run
- * @param options Options to pass to the command
- * @returns ResultAsync
- */
-export async function runLongRunningCommand(command: string, options?: CliOptions) {
-  return await runCommand(command, options)
 }

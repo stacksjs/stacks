@@ -38,7 +38,7 @@ Please see our [releases](https://github.com/stacksjs/stacks/releases) page for 
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](../../../.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 

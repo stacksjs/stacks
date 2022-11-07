@@ -24,7 +24,7 @@ const collection = collect([{
 }, {
   name: 'Fantastic Beasts and Where to Find Them',
   pages: 1096,
-}]);
+}])
 
 console.log(collection.avg('pages')) // 636
 ```
@@ -43,7 +43,7 @@ Please see our [releases](https://github.com/stacksjs/stacks/releases) page for 
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](../../../.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
 
 ## 🏝 Community
 

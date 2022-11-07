@@ -290,7 +290,8 @@
     "strikethrough",
     "neverthrow",
     "execa",
-    "outro"
+    "outro",
+    "scanlon"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

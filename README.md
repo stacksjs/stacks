@@ -351,8 +351,8 @@ Once we launch a usable Stacks version, we hope people will start enjoying it! C
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [Dan Scanlon](https://twitter.com/danscan) - many thanks for donating the `stacks` name on npm
 - [Chris Breuer](https://github.com/chrisbbreuer)
+- [Dan Scanlon](https://twitter.com/danscan) _many thanks for donating the `stacks` name on npm_
 - [All Contributors](../../contributors)
 
 ## 📄 License

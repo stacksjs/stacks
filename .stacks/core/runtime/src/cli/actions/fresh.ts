@@ -1,14 +1,15 @@
-import { intro, outro, runCommand, runShortLivedCommand } from '@stacksjs/cli'
+import { intro, outro, runCommand } from '@stacksjs/cli'
 import type { CliOptions as FreshOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options?: FreshOptions) {
   const perf = intro('stx fresh', { showPerformance: true })
-  const spinner = runShortLivedCommand('pnpm run clean', { loadingAnimation: true, ...options }, true)
+  const spinner = (await runCommand('pnpm run clean', options, true)).spinner as Spinner
 
   const result = (spinner as Spinner)?.isSpinning
-    ? runCommand('pnpm install', { loadingAnimation: spinner as Spinner, ...options })
+    ? runCommand('pnpm install', options, true)
     : runCommand('pnpm install', options)
+
   const res = await result
 
   if (res.isOk()) {
