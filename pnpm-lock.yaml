@@ -87,7 +87,7 @@ importers:
       vite: ^3.2.3
       vite-plugin-inspect: ^0.7.7
       vite-plugin-pages: ^0.27.1
-      vite-plugin-pwa: ^0.13.2
+      vite-plugin-pwa: ^0.13.3
       vite-plugin-vue-component-preview: ^0.3.3
       vite-plugin-vue-layouts: ^0.7.0
       vite-plugin-vue-markdown: ^0.22.1
@@ -110,7 +110,7 @@ importers:
       vite: 3.2.3
       vite-plugin-inspect: 0.7.7_rollup@2.79.1+vite@3.2.3
       vite-plugin-pages: 0.27.1_vite@3.2.3
-      vite-plugin-pwa: 0.13.2_jklrv2undatkozcsn24zow6xuu
+      vite-plugin-pwa: 0.13.3_jklrv2undatkozcsn24zow6xuu
       vite-plugin-vue-component-preview: 0.3.3_vite@3.2.3
       vite-plugin-vue-layouts: 0.7.0_v56ztcpa6tt6grmqxtrsi7smhy
       vite-plugin-vue-markdown: 0.22.1_vite@3.2.3
@@ -2637,6 +2637,16 @@ packages:
 
   /@rollup/plugin-replace/2.4.2_rollup@2.79.1:
     resolution: {integrity: sha512-IGcu+cydlUMZ5En85jxHH4qj2hta/11BHq95iHEyb2sbgiN0eCdzvUcHw5gt9pBL5lTi4JDYJ1acCoMGpTvEZg==}
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0
+    dependencies:
+      '@rollup/pluginutils': 3.1.0_rollup@2.79.1
+      magic-string: 0.25.9
+      rollup: 2.79.1
+    dev: false
+
+  /@rollup/plugin-replace/4.0.0_rollup@2.79.1:
+    resolution: {integrity: sha512-+rumQFiaNac9y64OHtkHGmdjm7us9bo1PlbgQfdihQtuNxzjpaB064HbRnewUOggLQxVCCyINfStkgmBeQpv1g==}
     peerDependencies:
       rollup: ^1.20.0 || ^2.0.0
     dependencies:
@@ -11184,13 +11194,14 @@ packages:
       - supports-color
     dev: false
 
-  /vite-plugin-pwa/0.13.2_jklrv2undatkozcsn24zow6xuu:
-    resolution: {integrity: sha512-RwWJBaeMATrdicNFCXWb3aUELnmTk4Um72hE97nz9HKYG165kQGUE/TSrXOLExiPWJ23doV1Uw4IcHnOix17aA==}
+  /vite-plugin-pwa/0.13.3_jklrv2undatkozcsn24zow6xuu:
+    resolution: {integrity: sha512-cjWXpZ7slAY14OKz7M8XdgTIi9wjf6OD6NkhiMAc+ogxnbUrecUwLdRtfGPCPsN2ftut5gaN1jTghb11p6IQAA==}
     peerDependencies:
       vite: ^3.1.0
       workbox-build: ^6.5.4
       workbox-window: ^6.5.4
     dependencies:
+      '@rollup/plugin-replace': 4.0.0_rollup@2.79.1
       debug: 4.3.4
       fast-glob: 3.2.12
       pretty-bytes: 6.0.0
