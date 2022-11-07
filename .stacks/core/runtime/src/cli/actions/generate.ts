@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
