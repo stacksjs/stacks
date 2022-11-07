@@ -38,7 +38,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v18.12.0",
+    "node": ">=v18.12.1",
     "pnpm": ">=7.14.2"
   },
   "scripts": {
