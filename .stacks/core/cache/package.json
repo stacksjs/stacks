@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "vitest": "^0.25.0"
+    "vitest": "^0.25.1"
   },
   "devDependencies": {
     "mkdist": "^0.4.0",
