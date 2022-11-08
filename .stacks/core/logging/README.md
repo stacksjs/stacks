@@ -4,11 +4,11 @@ Log anything.
 
 ## ☘️ Features
 
-- Log anything
+- Works in browser and server
+- Pretty logs
+- Logs anything
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/logging

@@ -9,14 +9,14 @@ import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 /**
  * Prints the intro message.
  */
-export function intro(command: string, options: IntroOptions) {
+export function intro(command: string, options?: IntroOptions) {
   console.log()
   console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()
 
   log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
 
-  if (options.showPerformance === false)
+  if (options?.showPerformance === false)
     return
 
   return performance.now()
@@ -25,7 +25,7 @@ export function intro(command: string, options: IntroOptions) {
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options: OutroOptions) {
+export function outro(text: string | Error, options: OutroOptions) {
   if (options.isError)
     log.error(text)
   else
@@ -54,7 +54,7 @@ export function outro(text: string, options: OutroOptions) {
 export function animatedLoading(options?: CliOptions) {
   const debug = debugLevel(options)
   const pleaseWait = 'This may take a little while...'
-  let spin = options?.animatedLoading
+  let spin = options?.shouldBeAnimated
 
   // the spinner is not shown when debug output is being inherited
   if (debug !== 'inherit' && typeof spin === 'object') {

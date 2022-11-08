@@ -17,6 +17,9 @@ export interface OutroOptions {
 }
 
 export interface IntroOptions {
+  /**
+   * @default true
+   */
   showPerformance?: boolean
 }
 

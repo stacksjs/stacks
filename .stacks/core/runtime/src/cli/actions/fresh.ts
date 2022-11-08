@@ -1,23 +1,33 @@
-import { intro, outro, runCommand } from '@stacksjs/cli'
-import type { CliOptions as FreshOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import type { CliOptions as FreshOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options?: FreshOptions) {
-  const perf = intro('stx fresh', { showPerformance: true })
-  const spinner = (await runCommand('pnpm run clean', options, true)).spinner as Spinner
+  const perf = intro('stx fresh')
+  const newOptions = { shouldBeAnimated: true, ...options }
+  const result = await runCommand('pnpm run clean', newOptions, true)
 
-  const result = (spinner as Spinner)?.isSpinning
-    ? runCommand('pnpm install', options, true)
-    : runCommand('pnpm install', options)
+  if (result.isErr()) {
+    log.error('while running the fresh command, there was a cleaning issue', result.error)
+    process.exit(ExitCode.FatalError)
+  }
 
-  const res = await result
+  // console.log('result is ', result.value.spinner)
+
+  const r = result
+
+  // .resource.spinner.succeed('Cleaned up the project.')
+
+  const res = r.spinner.isSpinning
+    ? await runCommand('pnpm install', options, true)
+    : await runCommand('pnpm install', options)
 
   if (res.isOk()) {
     outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
     process.exit(ExitCode.Success)
   }
 
-  outro(res.error.message, { startTime: perf, useSeconds: true, isError: true })
+  outro(res, { startTime: perf, useSeconds: true, isError: true })
   process.exit(ExitCode.FatalError)
 }
 
