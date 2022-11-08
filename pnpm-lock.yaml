@@ -62,9 +62,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -126,9 +126,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -164,9 +164,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -199,9 +199,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -221,9 +221,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitepress: 1.0.0-alpha.27
+      vitepress: 1.0.0-alpha.28
     dependencies:
-      vitepress: 1.0.0-alpha.27_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.28_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -309,9 +309,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -342,9 +342,9 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.0
+      vitest: ^0.25.1
     dependencies:
-      vitest: 0.25.0
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
@@ -531,7 +531,7 @@ importers:
       vite-plugin-inspect: ^0.7.7
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.21.2
-      vitepress: 1.0.0-alpha.27
+      vitepress: 1.0.0-alpha.28
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.1
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -556,7 +556,7 @@ importers:
       vite-plugin-inspect: 0.7.7_vite@3.2.3
       vite-plugin-vue-layouts: 0.7.0_v56ztcpa6tt6grmqxtrsi7smhy
       vite-ssg: 0.21.2_6urc5mfvzdn52mrx4s45tdworu
-      vitepress: 1.0.0-alpha.27_ysryt2e75uhznkanan6iyjk4mi
+      vitepress: 1.0.0-alpha.28_ysryt2e75uhznkanan6iyjk4mi
 
   .stacks/core/ui:
     specifiers:
@@ -799,7 +799,7 @@ packages:
     resolution: {integrity: sha512-W1lG5vUwFvfMd8HVXqdfbuG7RuaSrTCCD8cl8fP8wOivdbtbIg2Db3IWUcgvfxKbbn6ZBGYRW/Zk1MIwK49mgw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.4
+      '@babel/types': 7.20.2
       '@jridgewell/gen-mapping': 0.3.2
       jsesc: 2.5.2
     dev: true
@@ -1042,7 +1042,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
-      '@babel/types': 7.18.4
+      '@babel/types': 7.20.2
     dev: true
 
   /@babel/parser/7.20.3:
@@ -11354,8 +11354,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.27_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-7/PwlIRZANvB2uyi8oi4oMXuH84g2/pAaoymb+ObBCs60m0oVxKMPO28w7R/svqSnnE+bNDOuLzTCXt7gn513g==}
+  /vitepress/1.0.0-alpha.28_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-pvbLssDMgLUN1terajmPlFBxHSDGO4DqwexKbjFyr7LeELerVuwGrG6F2J1hxmwOlbpLd1kHXEDqGm9JX/kTDQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.0
@@ -11381,8 +11381,8 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.27_ysryt2e75uhznkanan6iyjk4mi:
-    resolution: {integrity: sha512-7/PwlIRZANvB2uyi8oi4oMXuH84g2/pAaoymb+ObBCs60m0oVxKMPO28w7R/svqSnnE+bNDOuLzTCXt7gn513g==}
+  /vitepress/1.0.0-alpha.28_ysryt2e75uhznkanan6iyjk4mi:
+    resolution: {integrity: sha512-pvbLssDMgLUN1terajmPlFBxHSDGO4DqwexKbjFyr7LeELerVuwGrG6F2J1hxmwOlbpLd1kHXEDqGm9JX/kTDQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.0
@@ -11450,8 +11450,8 @@ packages:
       - terser
     dev: false
 
-  /vitest/0.25.0:
-    resolution: {integrity: sha512-CVgBdKSeA27mowKC/C31Tx7ZBjRoyasq/yW7zoqUaCdKaOsjdzRUH5KgSL3eG36DzaaUsbnwWPUbAOtFz5k6tQ==}
+  /vitest/0.25.1:
+    resolution: {integrity: sha512-eH74h6MkuEgsqR4mAQZeMK9O0PROiKY+i+1GMz/fBi5A3L2ml5U7JQs7LfPU7+uWUziZyLHagl+rkyfR8SLhlA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
