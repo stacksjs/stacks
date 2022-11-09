@@ -51,10 +51,10 @@
     "@iconify-json/heroicons-solid": "^1.1.5",
     "@julr/unocss-preset-forms": "^0.0.2",
     "@stacksjs/build": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.46.3",
+    "@unocss/transformer-compile-class": "^0.46.4",
     "pinia": "^2.0.23",
-    "unocss": "^0.46.3",
-    "vue": "^3.2.41",
+    "unocss": "^0.46.4",
+    "vue": "^3.2.42",
     "vue-tsc": "^1.0.9"
   },
   "devDependencies": {
