@@ -291,7 +291,8 @@
     "neverthrow",
     "execa",
     "outro",
-    "scanlon"
+    "scanlon",
+    "nexe"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

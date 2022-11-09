@@ -168,9 +168,7 @@
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "nexe": "4.0.0-rc.1",
     "only-allow": "^1.1.1",
-    "pkg": "^5.8.0",
     "pnpm": ">=7.14.2",
     "typescript": "^4.8.4"
   },

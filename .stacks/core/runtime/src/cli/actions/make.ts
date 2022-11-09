@@ -240,15 +240,15 @@ export async function createLanguage(options: MakeOptions) {
 export async function stack(options: MakeOptions) {
   try {
     const name = options.name
-    log.info('Creating your stack...')
+    log.info(`Creating your ${name} stack...`)
     const path = resolve(process.cwd(), name)
+
     await spawn(`giget stacks ${path}`)
     log.success('Successfully scaffolded your project.')
     log.info(`cd ${path} && pnpm install`)
   }
   catch (error) {
-    log.error('There was an error creating your stack.')
-    log.error(error)
+    log.error('There was an error creating your stack.', error)
     process.exit(ExitCode.FatalError)
   }
 }

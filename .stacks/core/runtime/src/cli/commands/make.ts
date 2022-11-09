@@ -133,8 +133,17 @@ async function make(stacks: CLI) {
 
   stacks
     .command('make:stack', descriptions.stack)
+    .option('--n, -name', 'The name of the stack')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeStack(options)
     })
 }
