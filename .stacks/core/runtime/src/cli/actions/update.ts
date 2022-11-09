@@ -1,6 +1,6 @@
 import { log, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { debugLevel } from '@stacksjs/config'
+import { determineDebugMode } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpdateOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -37,11 +37,11 @@ export async function update(options: UpdateOptions) {
 
 export async function checkForUncommittedChanges(path = './.stacks', options: UpdateOptions) {
   try {
-    const debug = debugLevel(options)
+    const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
 
     // check if the .stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
-    await spawn(`git diff --quiet HEAD -- ${path}`, { stdio: debug, cwd: projectPath() })
+    await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
   }
   catch (error: any) {
     if (error.status === 1) {
@@ -68,7 +68,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
 }
 
 export async function updateFramework(options: UpdateOptions) {
-  const debug = debugLevel(options)
+  const debug = determineDebugMode(options)
 
   await checkForUncommittedChanges('./.stacks', options)
   await downloadFrameworkUpdate(options)

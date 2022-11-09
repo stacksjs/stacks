@@ -1,10 +1,9 @@
-import type { CliOptions } from '@stacksjs/types'
-import { debugLevel } from '@stacksjs/config'
-import { spinner } from '@stacksjs/cli'
-import { ResultAsync, ok } from '@stacksjs/errors'
+import type { CliOptions, CommandResult, Result } from '@stacksjs/types'
+import { determineDebugMode } from '@stacksjs/config'
+import { ResultAsync } from '@stacksjs/errors'
 import { projectPath } from '@stacksjs/path'
 import { spawn } from '../command'
-import { animatedLoading } from '../helpers'
+import { startAnimation } from '../helpers'
 
 /**
  * Execute a command.
@@ -15,8 +14,8 @@ import { animatedLoading } from '../helpers'
  * @returns The result of the command.
  */
 export function exec(command: string, options?: CliOptions, errorMsg?: string) {
-  const stdio = debugLevel(options)
   const cwd = options?.cwd || projectPath()
+  const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
 
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd }),
@@ -31,26 +30,37 @@ export function exec(command: string, options?: CliOptions, errorMsg?: string) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions, returnSpinner = false) {
-  if (options?.shouldBeAnimated) {
-    const spin = spinner('Running...').start()
-    const errorMsg = 'Unknown short-lived command execution error. If this issue persists, please create an issue on GitHub.'
-    const result = await exec(command, options, errorMsg)
-
-    if (returnSpinner)
-      return ok({ spinner: spin })
-
-    return result
-  }
-
-  if (options?.shouldBeAnimated)
-    animatedLoading(options)
-
-  const errorMsg = 'Unknown longer-running command execution error. If this issue persists, please create an issue on GitHub.'
+export async function runCommand(command: string, options?: CliOptions) {
+  const errorMsg = 'Unknown command execution error. If this issue persists, please create an issue on GitHub.'
   const result = await exec(command, options, errorMsg)
 
-  if (typeof spin === 'object' && spin.isSpinning)
-    spin.stop()
-
   return result
+}
+
+/**
+ * Run many commands—the Stacks way.
+ *
+ * @param commands The command to run.
+ * @param options The options to pass to the command.
+ * @returns The result of the command.
+ */
+export async function runCommands(commands: string[], options?: CliOptions) {
+  const spinner = startAnimation()
+  const results: Result<CommandResult<string>, Error>[] = []
+
+  for (const command of commands) {
+    const result = await runCommand(command, options)
+
+    if (result.isErr()) {
+      spinner.fail(`Failed to run command ${command}`)
+      return result
+    }
+    else {
+      results.push(result)
+    }
+  }
+
+  spinner.stop()
+
+  return results
 }

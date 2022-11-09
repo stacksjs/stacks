@@ -136,7 +136,6 @@ export interface PreinstallOptions extends CliOptions {}
 export interface PrepublishOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
-export type StdioOption = 'ignore' | 'inherit'
 
 /**
  * The available npm scripts within the Stacks toolkit.

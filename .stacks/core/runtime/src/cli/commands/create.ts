@@ -1,7 +1,7 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
 import { bold, cyan, dim, link, log, spawn } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
-import { debugLevel } from '@stacksjs/config'
+import { determineDebugMode } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -54,7 +54,7 @@ async function create(stacks: CLI) {
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
       console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
-      log('To learn more, visit https://stacksjs.dev')
+      log.info('To learn more, visit https://stacksjs.dev')
       process.exit(ExitCode.Success)
     })
 }
@@ -77,7 +77,7 @@ async function onlineCheck() {
 }
 
 async function download(name: string, path: string, options: CreateOptions) {
-  const debug = debugLevel(options)
+  const debug = determineDebugMode(options)
 
   log.info('Setting up your stack.')
   await spawn(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
@@ -85,7 +85,7 @@ async function download(name: string, path: string, options: CreateOptions) {
 }
 
 async function ensureEnv(path: string, options: CreateOptions) {
-  const debug = debugLevel(options)
+  const debug = determineDebugMode(options)
 
   log.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
@@ -94,7 +94,7 @@ async function ensureEnv(path: string, options: CreateOptions) {
 }
 
 async function install(path: string, options: CreateOptions) {
-  const debug = debugLevel(options)
+  const debug = determineDebugMode(options)
 
   log.info('Installing & setting up Stacks.')
   await spawn('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true

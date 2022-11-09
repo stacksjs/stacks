@@ -1,12 +1,14 @@
 import { log, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode, type PreinstallOptions } from '@stacksjs/types'
-import { debugLevel } from '@stacksjs/config'
+import { determineDebugMode } from '@stacksjs/config'
 
 export async function invoke(options?: PreinstallOptions) {
   try {
+    const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
+
     log.info('Preinstall check...')
-    await spawn('npx only-allow pnpm', { stdio: debugLevel(options), cwd: projectPath() })
+    await spawn('npx only-allow pnpm', { stdio, cwd: projectPath() })
     log.success('Environment ready.')
   }
   catch (error) {

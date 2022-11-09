@@ -1,19 +1,16 @@
 import { app } from '@stacksjs/config'
-import type { CliOptions, StdioOption } from '@stacksjs/types'
+import type { CliOptions } from '@stacksjs/types'
 
 /**
  * Determines the level of debugging.
  * @param options
  */
-export function debugLevel(options?: CliOptions): StdioOption {
-  if (options?.animatedLoading && options?.debug === true)
-    return 'inherit'
+export function determineDebugMode(options?: CliOptions) {
+  if (options?.debug === true)
+    return true
 
-  if (options?.animatedLoading)
-    return 'ignore'
+  if (app.debug === true)
+    return true
 
-  if (options?.debug)
-    return options.debug ? 'inherit' : 'ignore'
-
-  return app.debug ? 'inherit' : 'ignore'
+  return false
 }

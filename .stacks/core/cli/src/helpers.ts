@@ -1,5 +1,4 @@
-import { debugLevel } from '@stacksjs/config'
-import type { CliOptions, IntroOptions, OutroOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
+import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { log } from './console'
@@ -51,24 +50,22 @@ export function outro(text: string | Error, options: OutroOptions) {
   }
 }
 
-export function animatedLoading(options?: CliOptions) {
-  const debug = debugLevel(options)
+export function startAnimation() {
+  const spin = spinner('Running...').start()
   const pleaseWait = 'This may take a little while...'
-  let spin = options?.shouldBeAnimated
 
-  // the spinner is not shown when debug output is being inherited
-  if (debug !== 'inherit' && typeof spin === 'object') {
-    if (spin.isSpinning) {
-      setTimeout(() => {
-        (spin as Spinner).text = italic(pleaseWait)
-      }, 5000)
-      return
-    }
+  setTimeout(() => {
+    spin.text = italic(pleaseWait)
+  }, 5000)
 
-    // this triggers when options.shortLived === false and options.animatedLoading === true
-    spin = spinner('Running...').start()
-    setTimeout(() => {
-      (spin as Spinner).text = italic(pleaseWait)
-    }, 5000)
-  }
+  return spin
+}
+
+export function handleError(error: Error, message?: string) {
+  if (message)
+    log.error(message, error)
+  else
+    log.error(error)
+
+  process.exit(ExitCode.FatalError)
 }
