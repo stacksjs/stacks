@@ -1,4 +1,4 @@
-import type { CliOptions, CommandResult, Result } from '@stacksjs/types'
+import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { determineDebugMode } from '@stacksjs/config'
 import { ResultAsync } from '@stacksjs/errors'
 import { projectPath } from '@stacksjs/path'
@@ -13,13 +13,13 @@ import { startAnimation } from '../helpers'
  * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
  */
-export function exec(command: string, options?: CliOptions, errorMsg?: string) {
+export function exec(command: string, options?: CliOptions) {
   const cwd = options?.cwd || projectPath()
   const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
 
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd }),
-    () => new Error(errorMsg),
+    () => new Error(`Failed to execute command: ${command}`),
   )
 }
 
@@ -31,10 +31,7 @@ export function exec(command: string, options?: CliOptions, errorMsg?: string) {
  * @returns The result of the command.
  */
 export async function runCommand(command: string, options?: CliOptions) {
-  const errorMsg = 'Unknown command execution error. If this issue persists, please create an issue on GitHub.'
-  const result = await exec(command, options, errorMsg)
-
-  return result
+  return await exec(command, options)
 }
 
 /**
@@ -45,14 +42,20 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @returns The result of the command.
  */
 export async function runCommands(commands: string[], options?: CliOptions) {
-  const spinner = startAnimation()
+  let spinner: Spinner | undefined
+
+  if (!determineDebugMode(options))
+    spinner = startAnimation()
+
   const results: Result<CommandResult<string>, Error>[] = []
 
   for (const command of commands) {
     const result = await runCommand(command, options)
 
     if (result.isErr()) {
-      spinner.fail(`Failed to run command ${command}`)
+      if (spinner)
+        spinner.fail(`Failed to run command ${command}`)
+
       return result
     }
     else {
@@ -60,7 +63,8 @@ export async function runCommands(commands: string[], options?: CliOptions) {
     }
   }
 
-  spinner.stop()
+  if (spinner)
+    spinner.stop()
 
   return results
 }
