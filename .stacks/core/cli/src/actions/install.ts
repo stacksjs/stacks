@@ -1,5 +1,4 @@
 import { installPackage as installPkg } from '@antfu/install-pkg'
-import { runCommand } from './run'
 
 /**
  * Install an npm package.
@@ -18,5 +17,5 @@ export async function installPackage(pkg: string) {
  * @returns The result of the install.
  */
 export async function installStack(name: string) {
-  return runCommand(`pnpm install @stacksjs/${name}`)
+  return await installPkg(`@stacksjs/${name}`, { silent: true })
 }
