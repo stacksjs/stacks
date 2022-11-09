@@ -24,9 +24,9 @@ export function intro(command: string, options?: IntroOptions) {
 /**
  * Prints the outro message.
  */
-export function outro(text: string | Error, options: OutroOptions) {
+export function outro(text: string, options: OutroOptions, error?: Error) {
   if (options.isError)
-    log.error(text)
+    log.error(error)
   else
     log.success(text)
 
@@ -59,13 +59,4 @@ export function startAnimation() {
   }, 5000)
 
   return spin
-}
-
-export function handleError(error: Error, message?: string) {
-  if (message)
-    log.error(message, error)
-  else
-    log.error(error)
-
-  process.exit(ExitCode.FatalError)
 }

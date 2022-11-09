@@ -41,7 +41,7 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions) {
+export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[]> {
   let spinner: Spinner | undefined
 
   if (!determineDebugMode(options))
@@ -52,14 +52,15 @@ export async function runCommands(commands: string[], options?: CliOptions) {
   for (const command of commands) {
     const result = await runCommand(command, options)
 
+    if (result.isOk())
+      results.push(result)
+
     if (result.isErr()) {
       if (spinner)
-        spinner.fail(`Failed to run command ${command}`)
+        spinner.fail(`Failed to run command "${command}" with message: ${result.error.message}`)
 
-      return result
-    }
-    else {
       results.push(result)
+      break
     }
   }
 
