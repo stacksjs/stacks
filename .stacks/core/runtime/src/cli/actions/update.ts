@@ -1,4 +1,4 @@
-import { log, prompts, runCommand, spawn } from '@stacksjs/cli'
+import { intro, log, outro, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
 import { determineDebugMode } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
@@ -68,7 +68,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
 }
 
 export async function updateFramework(options: UpdateOptions) {
-  const debug = determineDebugMode(options)
+  const perf = intro('stx update:framework')
 
   await checkForUncommittedChanges('./.stacks', options)
   await downloadFrameworkUpdate(options)
@@ -84,11 +84,13 @@ export async function updateFramework(options: UpdateOptions) {
 
   await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
 
-  if (debug === 'inherit')
+  if (determineDebugMode(options))
     log.info('Cleanup...')
 
   await storage.deleteFolder(projectPath('updates'))
-  log.success('Framework updated')
+
+  outro('Framework updated', { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }
 
 export async function downloadFrameworkUpdate(options: UpdateOptions) {
@@ -105,27 +107,41 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
 }
 
 export async function updateDependencies(options: UpdateOptions) {
-  try {
-    log.info('Preparing to update dependencies.')
-    await runCommand('pnpm update', options)
-    log.success('Freshly updated your dependencies.')
-  }
-  catch (error) {
-    log.error('There was an error updating your dependencies.')
-    log.error(error)
+  const perf = intro('stx update:dependencies')
+  const result = await runCommand('pnpm update', options)
+
+  if (result.isErr()) {
+    outro('While running the update:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
     process.exit(ExitCode.FatalError)
   }
+
+  outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }
 
 export async function updatePackageManager(options: UpdateOptions) {
-  log.info('Preparing to update the package manager.')
+  const perf = intro('stx update:package-manager')
   const version = options?.version || 'latest'
-  await runCommand(`corepack prepare pnpm@${version} --activate`, options)
-  log.success('Updated to version:', version)
+  const result = await runCommand(`corepack prepare pnpm@${version} --activate`, options)
+
+  if (result.isErr()) {
+    outro('While running the update:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  outro(`Updated to version: ${version}`, { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }
 
 export async function updateNode(options: UpdateOptions) {
-  log.info('Preparing your Node version update.')
-  await runCommand('fnm use', options)
-  log.success('Your Node version is now:', process.version)
+  const perf = intro('stx update:node')
+  const result = await runCommand('pnpm env use', options)
+
+  if (result.isErr()) {
+    outro('While running the update:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  outro(`Updated your project's Node.js version to: ${process.version}`, { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }

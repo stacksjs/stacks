@@ -4,7 +4,7 @@ import { prompts } from '@stacksjs/cli'
 import { add as startAddProcess } from '../actions/add'
 
 const descriptions = {
-  add: 'Add a stack to your project',
+  add: 'Add a stack to your project (coming soon)',
   table: 'Add the Table Stack to your project',
   calendar: 'Add the Calendar Stack to your project',
   all: 'Add all stacks',

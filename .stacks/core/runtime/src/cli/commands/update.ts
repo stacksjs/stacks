@@ -25,7 +25,7 @@ async function update(stacks: CLI) {
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .example('stacks update -a --debug')
+    .example('stx update -a --debug')
     .action(async (options: UpdateOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -51,7 +51,7 @@ async function update(stacks: CLI) {
     .command('update:framework', descriptions.framework)
     .option('-f, --framework', descriptions.framework, { default: true })
     .option('--debug', descriptions.debug, { default: false })
-    .example('stacks update:framework --debug')
+    .example('stx update:framework --debug')
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -61,7 +61,7 @@ async function update(stacks: CLI) {
     .option('-d, --dependencies', descriptions.dependencies, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .alias('update:deps')
-    .example('stacks update:dependencies --debug')
+    .example('stx update:dependencies --debug')
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -71,8 +71,8 @@ async function update(stacks: CLI) {
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .alias('update:pm')
-    .example('stacks update:package-manager 7.14.0 --debug')
-    .example('stacks update:package-manager latest')
+    .example('stx update:package-manager 7.14.0 --debug')
+    .example('stx update:package-manager latest')
     .action(async (options: UpdateOptions) => {
       options.version = 'latest'
 
