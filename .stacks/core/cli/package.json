@@ -57,7 +57,6 @@
     "@stacksjs/types": "workspace:*",
     "cac": "^6.7.14",
     "execa": "^6.1.0",
-    "nexe": "4.0.0-rc.1",
     "ora": "^6.1.2",
     "prompts": "^2.4.2"
   },

@@ -48,12 +48,12 @@
   },
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "fs-extra": "^10.1.0"
   },
   "devDependencies": {
+    "@stacksjs/path": "workspace:*",
     "mkdist": "^0.4.0",
     "typescript": "^4.8.4",
     "unstorage": "^0.6.0"

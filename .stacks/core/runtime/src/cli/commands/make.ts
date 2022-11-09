@@ -77,41 +77,87 @@ async function make(stacks: CLI) {
 
   stacks
     .command('make:component', descriptions.component)
+    .option('--n, -name', 'The name of the component')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeComponent(options)
     })
 
   stacks
     .command('make:database', descriptions.database)
+    .option('--n, -name', 'The name of the database')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeDatabase(options)
     })
 
   stacks
     .command('make:migration', descriptions.migration)
+    .option('--n, -name', 'The name of the migration')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeMigration(options)
     })
 
   stacks
     .command('make:factory', descriptions.factory)
+    .option('--n, -name', 'The name of the factory')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeFactory(options)
     })
 
   stacks
     .command('make:page', descriptions.page)
+    .option('--n, -name', 'The name of the page')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makePage(options)
     })
 
   stacks
     .command('make:function', descriptions.function)
+    .option('--n, -name', 'The name of the function')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFunction(options)
@@ -119,15 +165,33 @@ async function make(stacks: CLI) {
 
   stacks
     .command('make:lang', descriptions.language)
+    .option('--n, -name', 'The name of the language')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeLanguage(options)
     })
 
   stacks
     .command('make:notification', descriptions.notification)
+    .option('--n, -name', 'The name of the notification')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const name = stacks.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await makeNotification(options)
     })
 
