@@ -1,4 +1,4 @@
-import type { AddOptions } from '@stacksjs/types'
+import { installPackage as installPkg } from '@antfu/install-pkg'
 import { runCommand } from './run'
 
 /**
@@ -7,8 +7,8 @@ import { runCommand } from './run'
  * @param pkg - The package name to install.
  * @returns The result of the install.
  */
-export async function installPackage(pkg: string, options: AddOptions) {
-  return runCommand(`pnpm install ${pkg}`, options)
+export async function installPackage(pkg: string) {
+  return await installPkg(pkg, { silent: true })
 }
 
 /**

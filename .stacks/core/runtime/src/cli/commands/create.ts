@@ -1,7 +1,6 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, dim, link, log, spawn } from '@stacksjs/cli'
+import { bold, cyan, dim, link, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
-import { determineDebugMode } from '@stacksjs/config'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -77,30 +76,24 @@ async function onlineCheck() {
 }
 
 async function download(name: string, path: string, options: CreateOptions) {
-  const debug = determineDebugMode(options)
-
   log.info('Setting up your stack.')
-  await spawn(`giget stacks ${name}`, { stdio: debug }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await runCommand(`giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 }
 
 async function ensureEnv(path: string, options: CreateOptions) {
-  const debug = determineDebugMode(options)
-
   log.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-  await spawn('fnm use', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await runCommand('fnm use', { ...options, cwd: path })
   log.success('Environment is ready.')
 }
 
 async function install(path: string, options: CreateOptions) {
-  const debug = determineDebugMode(options)
-
   log.info('Installing & setting up Stacks.')
-  await spawn('pnpm install', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
-  await spawn('cp .env.example .env', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await runCommand('pnpm install', { ...options, cwd: path })
+  await runCommand('cp .env.example .env', { ...options, cwd: path })
   await generateAppKey(options)
-  await spawn('git init', { stdio: debug, cwd: path }) // todo: stdio should inherit when APP_DEBUG or debug flag is true
+  await runCommand('git init', { ...options, cwd: path })
   log.success('Installed & set-up 🚀')
 }
 

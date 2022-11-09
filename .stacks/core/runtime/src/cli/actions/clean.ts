@@ -13,8 +13,6 @@ export async function invoke(options?: CleanOptions) {
   }
 
   log.error(result.error)
-
-  // todo: log error (stack trace, etc.)
   process.exit(ExitCode.FatalError)
 }
 

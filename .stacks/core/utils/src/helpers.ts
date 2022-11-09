@@ -1,8 +1,8 @@
-import { log, spawn } from '@stacksjs/cli'
-import { type CliOptions, ExitCode, type Manifest, type NpmScript, type StdioOption } from '@stacksjs/types'
+import { log, runCommand } from '@stacksjs/cli'
+import { type CliOptions, ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
-import { app, ui } from '@stacksjs/config'
+import { ui } from '@stacksjs/config'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -107,21 +107,13 @@ export async function setEnvValue(key: string, value: string) {
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript, options?: CliOptions) {
-  let debug: StdioOption = app.debug ? 'inherit' : 'ignore'
-
-  if (options?.debug)
-    debug = options.debug ? 'inherit' : 'ignore'
-
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
-  if (isManifest(manifest) && hasScript(manifest, script)) {
-    await spawn(`pnpm run ${script}`, { stdio: debug, cwd: frameworkPath() })
-  }
+  if (isManifest(manifest) && hasScript(manifest, script))
+    return await runCommand(`pnpm run ${script}`, { ...options, cwd: frameworkPath() })
 
-  else {
-    log.error('Error running your Stacks script.')
-    process.exit(ExitCode.FatalError)
-  }
+  log.error(`The specified npm script "${script}" does not exist in the package.json file`)
+  process.exit(ExitCode.FatalError)
 }
 
 /**

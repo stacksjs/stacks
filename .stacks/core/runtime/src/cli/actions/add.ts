@@ -1,13 +1,12 @@
-import { installPackage as install } from '@stacksjs/cli'
+import { installPackage } from '@stacksjs/cli'
 import type { AddOptions } from '@stacksjs/types'
-import { ResultAsync, err, ok } from '@stacksjs/errors'
 
 export async function invoke(options: AddOptions) {
   if (options?.table)
-    await addTable(options)
+    await addTable()
 
   else if (options.calendar)
-    await addCalendar(options)
+    await addCalendar()
 }
 
 /**
@@ -19,32 +18,15 @@ export async function add(options: AddOptions) {
   return invoke(options)
 }
 
-export async function addTable(options: AddOptions) {
-  await installPackage('@stacksjs/table', options)
-  // await runCommand('', options)
+export async function addTable() {
+  await installPackage('@stacksjs/table')
 }
 
-export async function addCalendar(options: AddOptions) {
-  const result = await installPackage('@stacksjs/calendar', options)
-  if (result.isErr())
-    return result
-
-  // await runCommand('', options)
+export async function addCalendar() {
+  await installPackage('@stacksjs/calendar')
 }
 
-export async function installPackage(name: string, options: AddOptions) {
-  return ResultAsync.fromPromise(
-    install(name, options),
-    () => new Error('Package install error'),
-  )
-}
-
-export async function installPackages(names: string[], options: AddOptions) {
-  try {
-    await install(names, options)
-    return ok('installed packages')
-  }
-  catch (error) {
-    return err(error)
-  }
+export async function installPackages(names: string[]) {
+  for (const name of names)
+    await installPackage(name)
 }

@@ -12,7 +12,7 @@ export async function invoke(options?: PreinstallOptions) {
     log.success('Environment ready.')
   }
   catch (error) {
-    log.error('There was an error preinstalling your stack.')
+    log.error('There was an error pre-installing your stack.')
     log.error(error)
     process.exit(ExitCode.FatalError)
   }

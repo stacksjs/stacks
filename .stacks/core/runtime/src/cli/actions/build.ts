@@ -51,7 +51,7 @@ export async function vueComponentLibrary(options: BuildOptions) {
     // todo: throw custom error here
     log.warn('No components found.')
     log.info('Before you can build components,')
-    log.info('you need to have developed some in the ./components folder.')
+    log.info('you need to have created some in the ./components folder.')
   }
 }
 
