@@ -1,4 +1,5 @@
 import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
 import { determineDebugMode } from '@stacksjs/config'
 import { ResultAsync } from '@stacksjs/errors'
 import { projectPath } from '@stacksjs/path'
@@ -19,7 +20,7 @@ export function exec(command: string, options?: CliOptions) {
 
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd }),
-    () => new Error(`Failed to execute command: ${command}`),
+    () => new Error(`Failed to execute command: ${italic(command)}`),
   )
 }
 
