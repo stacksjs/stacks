@@ -139,7 +139,16 @@ export function objectsPath(path?: string) {
 }
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
-  return frameworkPath(`./${type}/package.json`)
+  if (type === 'vue-components')
+    return frameworkPath('components/vue/package.json')
+
+  if (type === 'web-components')
+    return frameworkPath('components/web/package.json')
+
+  if (type === 'functions')
+    return frameworkPath('functions/package.json')
+
+  return frameworkPath(`${type}/package.json`)
 }
 
 export function pagesPath(path?: string) {

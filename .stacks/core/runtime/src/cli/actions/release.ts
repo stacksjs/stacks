@@ -5,7 +5,7 @@ import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: ReleaseOptions) {
   const perf = intro('stx release')
-  const result = await runNpmScript(NpmScript.Release, options)
+  const result = await runNpmScript(NpmScript.Release, { ...options, debug: true })
 
   if (result.isOk()) {
     outro('Triggered CI/CD release workflow', { startTime: perf, useSeconds: true })

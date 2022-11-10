@@ -9,7 +9,7 @@ const descriptions = {
 async function release(stacks: CLI) {
   stacks
     .command('release', descriptions.release)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
       await invoke(options)
     })
