@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "redis": "^4.4.0",
+    "redis": "^4.5.0",
     "vitest": "^0.25.1"
   },
   "devDependencies": {
