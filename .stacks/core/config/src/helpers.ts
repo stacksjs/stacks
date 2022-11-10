@@ -1,5 +1,5 @@
-import { app } from '@stacksjs/config'
 import type { CliOptions } from '@stacksjs/types'
+import { app } from '.'
 
 /**
  * Determines the level of debugging.
