@@ -6,7 +6,6 @@ Easily manipulate & work with strings.
 
 - Easily manipulate strings
 - Powerful & fast API
--
 
 ## 🤖 Usage
 
@@ -19,9 +18,8 @@ Now, you can use it in your project:
 ```js
 import {
   plural, singular, isPlural, isSingular, addPluralRule, addSingularRule, addIrregularRule, addUncountableRule
-  // change case
   camelCase, capitalCase, constantCase, dotCase, headerCase, noCase, paramCase,
-  kebabCase, pascalCase, pathCase, sentenceCase, snakeCase,
+  kebabCase, pascalCase, pathCase, sentenceCase, snakeCase
 } from '@stacksjs/strings'
 
 console.log(camelCase('hello world')) // helloWorld

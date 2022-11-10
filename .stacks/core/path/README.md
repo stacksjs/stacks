@@ -18,7 +18,7 @@ pnpm i -D @stacksjs/path
 Now, you can easily access it in your project:
 
 ```js
-import { resolve, filename, normalizeAliases, resolveAlias } from '@stacksjs/path'
+import { filename, normalizeAliases, resolve, resolveAlias } from '@stacksjs/path'
 
 // and more...
 ```

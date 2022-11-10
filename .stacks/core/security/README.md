@@ -19,7 +19,7 @@ pnpm i -D @stacksjs/security
 Now, you can easily access it in your project:
 
 ```js
-import { encrypt, decrypt, makeHash, verifyHash, base64Encode, base64Verify, bcryptEncode, bcryptVerify, md5Encode } from '@stacksjs/security'
+import { base64Encode, base64Verify, bcryptEncode, bcryptVerify, decrypt, encrypt, makeHash, md5Encode, verifyHash } from '@stacksjs/security'
 
 // and more...
 ```

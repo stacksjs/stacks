@@ -239,7 +239,7 @@ importers:
       neverthrow: ^5.1.0
       typescript: ^4.8.4
     dependencies:
-      '@ow3/eslint-config': 0.33.5_rmayb2veg2btbq6mbmnyivgasy
+      '@ow3/eslint-config': 0.33.9_rmayb2veg2btbq6mbmnyivgasy
       neverthrow: 5.1.0
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
@@ -275,7 +275,7 @@ importers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
     dependencies:
-      '@ow3/eslint-config': 0.33.5_rmayb2veg2btbq6mbmnyivgasy
+      '@ow3/eslint-config': 0.33.9_rmayb2veg2btbq6mbmnyivgasy
       '@types/eslint': 8.4.10
       eslint: 8.27.0
       lint-staged: 13.0.3
@@ -2337,8 +2337,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-  /@ow3/eslint-config-basic/0.33.5_2udltptbznfmezdozpdoa2aemq:
-    resolution: {integrity: sha512-ShLVfoxr3SlY0uS1SX4jiVzSRKz8wjgY+KT2hKggohJCiDtE15Aa2GBMyNeizh1s13lqxFi/6tpFF/wUFCEgvQ==}
+  /@ow3/eslint-config-basic/0.33.9_2udltptbznfmezdozpdoa2aemq:
+    resolution: {integrity: sha512-C+1QyAHMKW9maVR5o5ssarzThzodJRXlEolZi99jIci6g6fSNe++dLtMtjUPjmyl2FXCqp5nYUKQYErjnyo4MA==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
@@ -2350,7 +2350,7 @@ packages:
       eslint-plugin-markdown: 3.0.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-no-only-tests: 3.1.0
-      eslint-plugin-ow3: 0.33.5_rmayb2veg2btbq6mbmnyivgasy
+      eslint-plugin-ow3: 0.33.9_rmayb2veg2btbq6mbmnyivgasy
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-unicorn: 43.0.2_eslint@8.27.0
       eslint-plugin-yml: 1.2.0_eslint@8.27.0
@@ -2364,13 +2364,13 @@ packages:
       - typescript
     dev: false
 
-  /@ow3/eslint-config-ts/0.33.5_rmayb2veg2btbq6mbmnyivgasy:
-    resolution: {integrity: sha512-cH4ftzed6Dq8QsYGlG8y7LAF2EBCi+pz0bAvn7z3dyTWhmFyT06manYBWU2sd/ZRzFU0rVlVOEmKSccB4D1OSQ==}
+  /@ow3/eslint-config-ts/0.33.9_rmayb2veg2btbq6mbmnyivgasy:
+    resolution: {integrity: sha512-KWshHVZ6OdM5c835tYgZuR55FQ2odT8RjZYEQP04KcPFkPQx0OF5ZocPV0nbbFnDTtMGdSvc2KSl41suhkVQRg==}
     peerDependencies:
       eslint: '>=7.4.0'
       typescript: '>=3.9'
     dependencies:
-      '@ow3/eslint-config-basic': 0.33.5_2udltptbznfmezdozpdoa2aemq
+      '@ow3/eslint-config-basic': 0.33.9_2udltptbznfmezdozpdoa2aemq
       '@typescript-eslint/eslint-plugin': 5.42.1_2udltptbznfmezdozpdoa2aemq
       '@typescript-eslint/parser': 5.42.1_rmayb2veg2btbq6mbmnyivgasy
       eslint: 8.27.0
@@ -2382,12 +2382,12 @@ packages:
       - supports-color
     dev: false
 
-  /@ow3/eslint-config-vue/0.33.5_rmayb2veg2btbq6mbmnyivgasy:
-    resolution: {integrity: sha512-ImfmWHBd9Sq9XjHlPJ0mUOVAqkDfo37zmPuuoddw2GgWxL4UVsVrELu+z+ef7OYJesAfh/zQGW7/OT3qFPxZnA==}
+  /@ow3/eslint-config-vue/0.33.9_rmayb2veg2btbq6mbmnyivgasy:
+    resolution: {integrity: sha512-1uESm947Q/t4VvaLFVzD8Db4eZdk7tTomLa2DFgZt3oDwaC/jr89sKQZUO5PBCekTS/ZVn2yWwEgl10VV5QOCA==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
-      '@ow3/eslint-config-ts': 0.33.5_rmayb2veg2btbq6mbmnyivgasy
+      '@ow3/eslint-config-ts': 0.33.9_rmayb2veg2btbq6mbmnyivgasy
       eslint: 8.27.0
       eslint-plugin-vue: 9.7.0_eslint@8.27.0
     transitivePeerDependencies:
@@ -2397,12 +2397,12 @@ packages:
       - typescript
     dev: false
 
-  /@ow3/eslint-config/0.33.5_rmayb2veg2btbq6mbmnyivgasy:
-    resolution: {integrity: sha512-WBP8kdmMvxpyFcyAJl7GNUY6QR6LL6IrraT/5l9XhAqc9euaSxaqbaVFe60BnOgTvdNXaaFy07MCB95RIPax1g==}
+  /@ow3/eslint-config/0.33.9_rmayb2veg2btbq6mbmnyivgasy:
+    resolution: {integrity: sha512-Ww4qxOW3NIkhtBLEEOmvW3HPW7goqRzGttiwOPEK9y9pJxOFoSUkWGeaArHxLSXfBBDl9ieyveVl6QQaaEjgEg==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
-      '@ow3/eslint-config-vue': 0.33.5_rmayb2veg2btbq6mbmnyivgasy
+      '@ow3/eslint-config-vue': 0.33.9_rmayb2veg2btbq6mbmnyivgasy
       '@typescript-eslint/eslint-plugin': 5.42.1_2udltptbznfmezdozpdoa2aemq
       '@typescript-eslint/parser': 5.42.1_rmayb2veg2btbq6mbmnyivgasy
       eslint: 8.27.0
@@ -5603,8 +5603,8 @@ packages:
     engines: {node: '>=5.0.0'}
     dev: false
 
-  /eslint-plugin-ow3/0.33.5_rmayb2veg2btbq6mbmnyivgasy:
-    resolution: {integrity: sha512-F+BaUd1McTuZeYAkeTmF2fY5y0n++0wJXwf68K86u8QNyNffSRr5Mr+I5orQkxN082MQtDVphv6F0QuXwpIsQg==}
+  /eslint-plugin-ow3/0.33.9_rmayb2veg2btbq6mbmnyivgasy:
+    resolution: {integrity: sha512-yXo2oFLi+wuEZiMs0zqNc9GvXu6CAHHGjFZx0Gw66g6vLbIhtyagag477nsJPL/6XGgRwqDXB3eTZlBSMqxv0A==}
     dependencies:
       '@typescript-eslint/utils': 5.42.1_rmayb2veg2btbq6mbmnyivgasy
     transitivePeerDependencies:
