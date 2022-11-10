@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/server",
   "type": "module",
-  "version": "0.37.9",
+  "version": "0.38.0",
   "packageManager": "pnpm@7.15.0",
   "description": "The Stacks plug-n-play servers.",
   "author": "Chris Breuer",

@@ -17,9 +17,9 @@ Now, you can use it in your project:
 
 ```js
 import {
-  plural, singular, isPlural, isSingular, addPluralRule, addSingularRule, addIrregularRule, addUncountableRule
-  camelCase, capitalCase, constantCase, dotCase, headerCase, noCase, paramCase,
-  kebabCase, pascalCase, pathCase, sentenceCase, snakeCase
+  addIrregularRule, addPluralRule, addSingularRule, addUncountableRule, camelCase, capitalCase, constantCase, dotCase,
+  headerCase, isPlural, isSingular, kebabCase, noCase, paramCase, pascalCase,
+  pathCase, plural, sentenceCase, singular, snakeCase
 } from '@stacksjs/strings'
 
 console.log(camelCase('hello world')) // helloWorld

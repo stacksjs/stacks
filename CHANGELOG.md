@@ -1,4 +1,14 @@
-# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.37.8...v0.0.0) (2022-10-22)
+# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.37.9...v0.0.0) (2022-11-10)
+
+
+### Features
+
+* **cli:** add `update:node` ([8f37770](https://github.com/stacksjs/stacks/commit/8f377709d53ae2b0d494e8d19e4f819e97918f0e))
+* **core:** add logging ([5c25441](https://github.com/stacksjs/stacks/commit/5c2544169bd1ee1fce45ecb5d536e4ff817b827f))
+
+
+
+## [0.37.9](https://github.com/stacksjs/stacks/compare/v0.37.8...v0.37.9) (2022-10-22)
 
 
 
