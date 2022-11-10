@@ -15,6 +15,8 @@ const alias: Record<string, string> = {
   '@stacksjs/auth/*': p.authPath('src/*'),
   '@stacksjs/build': p.buildPath('src/index.ts'),
   '@stacksjs/build/*': p.buildPath('src/*'),
+  '@stacksjs/cache': p.cachePath('src/index.ts'),
+  '@stacksjs/cache/*': p.cachePath('src/*'),
   '@stacksjs/cli': p.cliPath('src/index.ts'),
   '@stacksjs/cli/*': p.cliPath('src/*'),
   '@stacksjs/collections': p.collectionsPath('src/index.ts'),

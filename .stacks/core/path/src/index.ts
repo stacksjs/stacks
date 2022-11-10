@@ -58,6 +58,10 @@ export function buildEntriesPath(path?: string) {
   return buildPath(`entries/${path || ''}`)
 }
 
+export function cachePath(path?: string) {
+  return corePath(`cache/${path || ''}`)
+}
+
 export function cliPath(path?: string) {
   return corePath(`cli/${path || ''}`)
 }
@@ -221,6 +225,7 @@ export const path = {
   buildEnginePath,
   buildEntriesPath,
   buildPath,
+  cachePath,
   cliPath,
   collectionsPath,
   componentsPath,
