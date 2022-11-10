@@ -47,7 +47,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "consola": "^2.15.3"
+    "consola": "^2.15.3",
+    "node-ray": "^1.19.2",
+    "vue-ray": "^1.17.3"
   },
   "devDependencies": {
     "mkdist": "^0.4.0"
