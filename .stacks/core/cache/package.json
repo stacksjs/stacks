@@ -45,6 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
     "vitest": "^0.25.1"
   },
   "devDependencies": {

@@ -1,3 +1,5 @@
+import { env } from '@stacksjs/utils'
+
 /**
  * ### Cache Options
  *
@@ -5,17 +7,14 @@
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-
- import { env } from "../env";
-
- export const cache = {
-  default: env.cache_driver || 'redis',
+export const cache = {
+  default: env('CACHE_DRIVER', 'redis'),
 
   redis: {
     driver: 'redis',
     connection: 'cache',
-    host: env.redis_host || '127.0.0.1',
-    port: env.redis_port || '6379'
+    host: env('REDIS_HOST', '127.0.0.1'),
+    port: env('REDIS_PORT', '6379'),
   },
 
 }
