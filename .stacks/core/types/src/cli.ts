@@ -38,7 +38,7 @@ export interface CliOptions {
    *
    * @default false
    */
-  debug?: boolean | StdioOption
+  debug?: boolean
 
   /**
    * ### Current Work Directory
