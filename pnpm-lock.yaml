@@ -124,17 +124,15 @@ importers:
 
   .stacks/core/cache:
     specifiers:
+      '@stacksjs/config': workspace:*
       mkdist: ^0.4.0
       redis: ^4.4.0
       typescript: ^4.8.4
       vitest: ^0.25.1
     dependencies:
-<<<<<<< Updated upstream
-      vitest: 0.25.1
-=======
+      '@stacksjs/config': link:../config
       redis: 4.4.0
-      vitest: 0.25.0
->>>>>>> Stashed changes
+      vitest: 0.25.1
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
