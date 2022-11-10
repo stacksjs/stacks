@@ -1,4 +1,4 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
