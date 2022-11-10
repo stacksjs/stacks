@@ -1,19 +1,19 @@
-import { log } from '@stacksjs/logging'
+import { intro, log, outro } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import type { CliOptions as ReleaseOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: ReleaseOptions) {
-  try {
-    log.info('Releasing...')
-    await runNpmScript(NpmScript.Release, options)
-    log.success('Triggered release workflow')
+  const perf = intro('stx release')
+  const result = await runNpmScript(NpmScript.Release, options)
+
+  if (result.isOk()) {
+    outro('Triggered CI/CD release workflow', { startTime: perf, useSeconds: true })
+    process.exit(ExitCode.Success)
   }
-  catch (error) {
-    log.error('There was an error releasing your stack.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  log.error(result.error)
+  process.exit(ExitCode.FatalError)
 }
 
 /**
