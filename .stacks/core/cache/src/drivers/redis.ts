@@ -1,7 +1,8 @@
+import type { RedisClientType } from 'redis'
 import { createClient } from 'redis'
 import { cache } from '@stacksjs/config'
 
-const client: any = createClient({
+const client: RedisClientType = createClient({
   socket: {
     host: cache.redis.host,
     port: cache.redis.port,
