@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.39.0",
+  "version": "0.39.1",
   "packageManager": "pnpm@7.15.0",
   "description": "The Stacks atomic UI engine, powered by UnoCSS.",
   "author": "Chris Breuer",
