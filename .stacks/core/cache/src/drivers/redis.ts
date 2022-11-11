@@ -12,7 +12,7 @@ const client: RedisClientType = createClient({
 
 await client.connect()
 
-async function set(key: any, value: any): Promise<void> {
+async function set(key, value): Promise<void> {
   await client.set(key, value)
 }
 
