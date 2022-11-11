@@ -1,0 +1,33 @@
+{
+  "name": "mona-sans",
+  "version": "1.0.0",
+  "packageManager": "pnpm@7.15.0",
+  "description": "Mona Sans, a variable font from GitHub.",
+  "license": "OFL-1.1",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/fonts/mona-sans#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/fonts/mona-sans"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "font",
+    "mona sans",
+    "variable font",
+    "github"
+  ],
+  "files": [
+    "otf",
+    "ttf",
+    "woff",
+    "woff2",
+    "Mona-Sans.ttf",
+    "Mona-Sans.woff",
+    "Mona-Sans.woff2",
+    "README.md",
+    "LICENSE.txt"
+  ]
+}

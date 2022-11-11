@@ -1,0 +1,29 @@
+{
+  "name": "inter-font",
+  "version": "1.0.0",
+  "packageManager": "pnpm@7.15.0",
+  "description": "Mona Sans, a variable font from GitHub.",
+  "license": "OFL-1.1",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/fonts/inter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/fonts/inter"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "font",
+    "mona sans",
+    "variable font",
+    "github"
+  ],
+  "files": [
+    "ttf",
+    "Inter-VariableFont_slnt,wght.ttf",
+    "OFL.txt",
+    "README.md",
+    "README.txt"
+  ]
+}

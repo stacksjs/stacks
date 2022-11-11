@@ -126,7 +126,7 @@ export interface UiOptions {
    * support for several local font providers. You may set this value
    * to `null` if you prefer not utilize any local fonts.
    *
-   * @url ...
+   * @see https://stacks.ow3.org/fonts
    * @example
    * ```ts
    * fonts: 'mona-lisa'
@@ -141,7 +141,7 @@ export interface UiOptions {
    * support for several web font providers. You may set this value
    * to `null` if you prefer not utilize any web fonts.
    *
-   * @url ...
+   * @see https://stacks.ow3.org/fonts
    * @example
    * ```ts
    * webFonts: 'inter'
