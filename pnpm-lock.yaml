@@ -26,24 +26,24 @@ importers:
   .stacks/core/actions:
     specifiers:
       '@stacksjs/config': workspace:*
-      '@stacksjs/logging': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/storage': workspace:*
       '@stacksjs/strings': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
+      '@stacksjs/x-ray': workspace:*
       markdown-it: ^13.0.1
       mkdist: ^0.4.0
       typescript: ^4.8.4
       vue-component-meta: ^1.0.9
     dependencies:
       '@stacksjs/config': link:../config
-      '@stacksjs/logging': link:../logging
       '@stacksjs/path': link:../path
       '@stacksjs/storage': link:../storage
       '@stacksjs/strings': link:../strings
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
+      '@stacksjs/x-ray': link:../x-ray
       markdown-it: 13.0.1
       vue-component-meta: 1.0.9_typescript@4.8.4
     devDependencies:
@@ -145,9 +145,9 @@ importers:
     specifiers:
       '@antfu/install-pkg': ^0.1.1
       '@stacksjs/config': workspace:*
-      '@stacksjs/logging': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/types': workspace:*
+      '@stacksjs/x-ray': workspace:*
       cac: ^6.7.14
       esno: ^0.16.3
       execa: ^6.1.0
@@ -157,9 +157,9 @@ importers:
     dependencies:
       '@antfu/install-pkg': 0.1.1
       '@stacksjs/config': link:../config
-      '@stacksjs/logging': link:../logging
       '@stacksjs/path': link:../path
       '@stacksjs/types': link:../types
+      '@stacksjs/x-ray': link:../x-ray
       cac: 6.7.14
       execa: 6.1.0
       ora: 6.1.2
@@ -287,19 +287,6 @@ importers:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
 
-  .stacks/core/logging:
-    specifiers:
-      consola: ^2.15.3
-      mkdist: ^0.4.0
-      node-ray: ^1.19.2
-      vue-ray: ^1.17.3
-    dependencies:
-      consola: 2.15.3
-      node-ray: 1.19.2
-      vue-ray: 1.17.3
-    devDependencies:
-      mkdist: 0.4.0
-
   .stacks/core/modules:
     specifiers:
       '@stacksjs/types': workspace:*
@@ -385,7 +372,6 @@ importers:
       '@stacksjs/errors': workspace:*
       '@stacksjs/git': workspace:*
       '@stacksjs/lint': workspace:*
-      '@stacksjs/logging': workspace:*
       '@stacksjs/modules': workspace:*
       '@stacksjs/objects': workspace:*
       '@stacksjs/path': workspace:*
@@ -398,6 +384,7 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
+      '@stacksjs/x-ray': workspace:*
       only-allow: ^1.1.1
       pnpm: '>=7.15.0'
       typescript: ^4.8.4
@@ -413,7 +400,6 @@ importers:
       '@stacksjs/errors': link:../errors
       '@stacksjs/git': link:../git
       '@stacksjs/lint': link:../lint
-      '@stacksjs/logging': link:../logging
       '@stacksjs/modules': link:../modules
       '@stacksjs/objects': link:../objects
       '@stacksjs/path': link:../path
@@ -426,6 +412,7 @@ importers:
       '@stacksjs/types': link:../types
       '@stacksjs/ui': link:../ui
       '@stacksjs/utils': link:../utils
+      '@stacksjs/x-ray': link:../x-ray
     devDependencies:
       only-allow: 1.1.1
       pnpm: 7.15.0
@@ -635,6 +622,19 @@ importers:
     devDependencies:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
+
+  .stacks/core/x-ray:
+    specifiers:
+      consola: ^2.15.3
+      mkdist: ^0.4.0
+      node-ray: ^1.19.2
+      vue-ray: ^1.17.3
+    dependencies:
+      consola: 2.15.3
+      node-ray: 1.19.2
+      vue-ray: 1.17.3
+    devDependencies:
+      mkdist: 0.4.0
 
   .stacks/functions:
     specifiers:

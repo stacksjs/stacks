@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/x-ray": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",

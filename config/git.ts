@@ -15,7 +15,7 @@ export const git: Options = {
   scopes: [
     '', 'ci', 'deps', 'dx', 'release', 'docs', 'test', 'core',
     'actions', 'arrays', 'auth', 'build', 'cache', 'cli', 'cloud', 'collections', 'config',
-    'database', 'datetime', 'docs', 'errors', 'git', 'lint', 'logging', 'modules', 'notifications',
+    'database', 'datetime', 'docs', 'errors', 'git', 'lint', 'x-ray', 'modules', 'notifications',
     'objects', 'path', 'realtime', 'router', 'runtime', 'security', 'server', 'storage', 'strings',
     'tests', 'types', 'ui', 'utils',
   ],

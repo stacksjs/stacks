@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { runNpmScript } from '@stacksjs/utils'
 import type { CleanOptions } from '@stacksjs/types'
 import { NpmScript } from '@stacksjs/types'

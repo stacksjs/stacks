@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { library } from '@stacksjs/config'

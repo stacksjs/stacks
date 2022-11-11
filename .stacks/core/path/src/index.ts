@@ -126,8 +126,8 @@ export function lintPath(path?: string) {
   return corePath(`lint/${path || ''}`)
 }
 
-export function loggingPath(path?: string) {
-  return corePath(`logging/${path || ''}`)
+export function xRayPath(path?: string) {
+  return corePath(`x-ray/${path || ''}`)
 }
 
 export function modulesPath(path?: string) {
@@ -251,7 +251,7 @@ export const path = {
   langPath,
   libraryEntryPath,
   lintPath,
-  loggingPath,
+  xRayPath,
   modulesPath,
   objectsPath,
   packageJsonPath,

@@ -21,5 +21,4 @@ export const app: Options = {
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
   editor: 'vscode',
-  // inspect: '',
 }

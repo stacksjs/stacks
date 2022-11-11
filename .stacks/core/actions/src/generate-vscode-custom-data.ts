@@ -5,7 +5,7 @@
  * files for the components.
  */
 
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { hasComponents } from '@stacksjs/storage'
 import { generateVsCodeCustomData } from './helpers/vscode-custom-data'
 

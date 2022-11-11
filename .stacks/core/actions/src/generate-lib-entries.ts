@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { generateLibEntry } from './helpers/lib-entries'
 

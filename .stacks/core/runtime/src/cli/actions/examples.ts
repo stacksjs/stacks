@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { hasComponents } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { type ExamplesOptions, ExitCode, NpmScript } from '@stacksjs/types'

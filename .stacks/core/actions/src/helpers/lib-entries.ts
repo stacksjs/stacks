@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/x-ray'
 import { kebabCase } from '@stacksjs/strings'
 import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
