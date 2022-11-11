@@ -236,7 +236,7 @@ importers:
       mkdist: 0.4.0_typescript@4.8.4
       typescript: 4.8.4
 
-  .stacks/core/errors:
+  .stacks/core/error-handling:
     specifiers:
       '@ow3/eslint-config': ^0.33.10
       mkdist: ^0.4.0
@@ -397,7 +397,7 @@ importers:
       '@stacksjs/collections': link:../collections
       '@stacksjs/config': link:../config
       '@stacksjs/docs': link:../docs
-      '@stacksjs/error-handling': link:../errors
+      '@stacksjs/error-handling': link:../error-handling
       '@stacksjs/git': link:../git
       '@stacksjs/lint': link:../lint
       '@stacksjs/modules': link:../modules
@@ -635,6 +635,15 @@ importers:
       vue-ray: 1.17.3
     devDependencies:
       mkdist: 0.4.0
+
+  .stacks/fonts/hubot-sans:
+    specifiers: {}
+
+  .stacks/fonts/inter:
+    specifiers: {}
+
+  .stacks/fonts/mona-sans:
+    specifiers: {}
 
   .stacks/functions:
     specifiers:

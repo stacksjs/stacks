@@ -153,7 +153,6 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/git": "workspace:*",
     "@stacksjs/lint": "workspace:*",
-    "@stacksjs/x-ray": "workspace:*",
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -165,7 +164,8 @@
     "@stacksjs/tests": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/x-ray": "workspace:*"
   },
   "devDependencies": {
     "only-allow": "^1.1.1",
