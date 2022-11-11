@@ -1,5 +1,16 @@
 import type { UserShortcuts } from 'unocss'
 
+export type Font = 'inter' | 'mona' | 'hubot'
+export type Icon = 'heroicon-outline' | 'heroicon-solid'
+export type WebFontsProviders = 'google' | 'bunny' | 'fontshare' | 'none'
+
+export interface WebFontMeta {
+  name: string
+  weights?: (string | number)[]
+  italic?: boolean
+  provider?: WebFontsProviders
+}
+
 /**
  * ### UI Engine Options
  *
@@ -109,6 +120,36 @@ export interface UiOptions {
   reset?: ResetPreset
 
   /**
+   * ### Fonts
+   *
+   * Define the local fonts you want to use. By default, Stacks provides
+   * support for several local font providers. You may set this value
+   * to `null` if you prefer not utilize any local fonts.
+   *
+   * @url ...
+   * @example
+   * ```ts
+   * fonts: 'mona-lisa'
+   * ```
+   */
+  fonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
+
+  /**
+   * ### Web Fonts
+   *
+   * Define the web fonts you want to use. By default, Stacks provides
+   * support for several web font providers. You may set this value
+   * to `null` if you prefer not utilize any web fonts.
+   *
+   * @url ...
+   * @example
+   * ```ts
+   * webFonts: 'inter'
+   * ```
+   */
+  webFonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
+
+  /**
    * ### Icon Sets
    *
    * This value defines the icon sets you want to use. When using icons, they
@@ -126,7 +167,8 @@ export interface UiOptions {
    * <i class="i-heroicons-outline-book-open w-8 h-8 text-gray-500" aria-hidden="true" />
    * ```
    */
-  icons: Record<string, () => Promise<any>>
+  icons: Icon | Icon[]
+  // icons: Record<string, () => Promise<any>>
 }
 
 export type Shortcuts = UserShortcuts

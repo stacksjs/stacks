@@ -15,8 +15,13 @@ export const ui: Options = {
   trigger: ':stx:',
   classPrefix: 'stx-',
   reset: 'tailwind',
-  icons: {
-    'heroicon-outline': () => import('@iconify-json/heroicons-outline/icons.json').then(i => i.default as any),
-    'heroicon-solid': () => import('@iconify-json/heroicons-solid/icons.json').then(i => i.default as any),
+  icons: ['heroicon-outline', 'heroicon-solid'],
+  fonts: {
+    title: 'Mona',
+    text: 'Hubot',
   },
+  // webFonts: {
+  //   sans: 'Inter',
+  //   mono: 'Inter',
+  // },
 }

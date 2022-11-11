@@ -292,7 +292,9 @@
     "execa",
     "outro",
     "scanlon",
-    "nexe"
+    "nexe",
+    "hubot",
+    "fontshare"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
