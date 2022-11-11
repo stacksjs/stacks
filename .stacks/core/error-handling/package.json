@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/errors",
+  "name": "@stacksjs/error-handling",
   "type": "module",
   "version": "0.38.4",
   "packageManager": "pnpm@7.15.0",
@@ -7,17 +7,18 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/errors#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/error-handling#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/errors"
+    "directory": "./.stacks/core/error-handling"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
     "errors",
+    "error-handling",
     "neverthrow",
     "type safe",
     "stacks"

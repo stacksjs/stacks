@@ -369,7 +369,7 @@ importers:
       '@stacksjs/collections': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/docs': workspace:*
-      '@stacksjs/errors': workspace:*
+      '@stacksjs/error-handling': workspace:*
       '@stacksjs/git': workspace:*
       '@stacksjs/lint': workspace:*
       '@stacksjs/modules': workspace:*
@@ -397,7 +397,7 @@ importers:
       '@stacksjs/collections': link:../collections
       '@stacksjs/config': link:../config
       '@stacksjs/docs': link:../docs
-      '@stacksjs/errors': link:../errors
+      '@stacksjs/error-handling': link:../errors
       '@stacksjs/git': link:../git
       '@stacksjs/lint': link:../lint
       '@stacksjs/modules': link:../modules

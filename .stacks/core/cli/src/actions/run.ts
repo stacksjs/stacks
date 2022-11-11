@@ -1,7 +1,7 @@
 import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { italic } from '@stacksjs/cli'
 import { determineDebugMode } from '@stacksjs/config'
-import { ResultAsync } from '@stacksjs/errors'
+import { ResultAsync } from '@stacksjs/error-handling'
 import { projectPath } from '@stacksjs/path'
 import { spawn } from '../command'
 import { startAnimation } from '../helpers'

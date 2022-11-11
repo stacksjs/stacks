@@ -20,7 +20,7 @@ Currently, a wrapper of the `neverthrow` API.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/errors
+pnpm i -D @stacksjs/error-handling
 ```
 
 You can now use it in your project:
@@ -38,7 +38,7 @@ import {
   fromThrowable,
   ok,
   okAsync,
-} from '@stacksjs/errors'
+} from '@stacksjs/error-handling'
 
 // ...
 ```

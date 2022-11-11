@@ -150,7 +150,7 @@
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/docs": "workspace:*",
-    "@stacksjs/errors": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/git": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/x-ray": "workspace:*",
