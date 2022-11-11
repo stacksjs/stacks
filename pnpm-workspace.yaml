@@ -1,6 +1,7 @@
 packages:
   - ./.stacks/core/*
   - ./.stacks/components/*
+  - ./.stacks/fonts/*
   - ./.stacks/functions
   - ./.stacks
   - ./apps/*
