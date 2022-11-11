@@ -1,3 +1,3 @@
 import { debug } from './src'
 
-debug('hello world')
+debug(new Error('test'))
