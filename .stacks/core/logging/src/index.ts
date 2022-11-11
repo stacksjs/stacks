@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { ray } from 'node-ray/web'
+import { ray } from 'node-ray'
 
 const log = consola
 
