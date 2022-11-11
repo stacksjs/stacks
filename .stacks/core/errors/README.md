@@ -2,13 +2,11 @@
 
 Similar to the way Rust handles errors and other functional programming languages.
 
-<blockquote>
-Encode failure into your program. This package contains a Result type that represents either success (`Ok`) or failure (`Err`).
-
-For asynchronous tasks, [this package] offers a ResultAsync class which wraps a `Promise<Result<T, E>>` and gives you the same level of expressivity and control as a regular `Result<T, E>`.
-
-`ResultAsync` is "thenable" meaning it behaves exactly like a native `Promise<Result>`, except you have access to the same methods that Result provides without having to `await` or `.then` the promise!
-</blockquote>
+>Encode failure into your program. This package contains a Result type that represents either success (`Ok`) or failure (`Err`).
+>
+>For asynchronous tasks, [this package] offers a `ResultAsync` class which wraps a `Promise<Result<T, E>>` and gives you the same level of expressivity and control as a regular `Result<T, E>`.
+>
+>`ResultAsync` is "thenable" meaning it behaves exactly like a native `Promise<Result>`, except you have access to the same methods that Result provides without having to `await` or `.then` the promise.
 
 Read more about the API in the documentation [here](https://github.com/supermacro/neverthrow).
 
