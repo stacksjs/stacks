@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tests",
   "type": "module",
-  "version": "0.38.4",
+  "version": "0.39.0",
   "packageManager": "pnpm@7.15.0",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",
