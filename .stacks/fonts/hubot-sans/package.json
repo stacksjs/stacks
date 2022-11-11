@@ -4,7 +4,7 @@
   "packageManager": "pnpm@7.15.0",
   "description": "Hubot Sans, a variable font from GitHub.",
   "license": "OFL-1.1",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/fonts/hubot-sans#readme",
+  "homepage": "https://github.com/github/hubot-sans#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",

@@ -1,10 +1,13 @@
 {
   "name": "inter-font",
-  "version": "1.0.0",
+  "version": "3.19.0",
   "packageManager": "pnpm@7.15.0",
   "description": "Mona Sans, a variable font from GitHub.",
+  "author": {
+    "name": "Rasmus Andersson"
+  },
   "license": "OFL-1.1",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/fonts/inter#readme",
+  "homepage": "https://rsms.me/inter",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -15,9 +18,8 @@
   },
   "keywords": [
     "font",
-    "mona sans",
-    "variable font",
-    "github"
+    "inter",
+    "rsms"
   ],
   "files": [
     "ttf",
