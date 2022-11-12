@@ -294,7 +294,9 @@
     "scanlon",
     "nexe",
     "hubot",
-    "fontshare"
+    "fontshare",
+    "arrayable",
+    "mergeable"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
