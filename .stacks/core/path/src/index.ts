@@ -82,6 +82,10 @@ export function corePath(path?: string) {
   return frameworkPath(`core/${path || ''}`)
 }
 
+export function dashboardPath(path?: string) {
+  return corePath(`dashboard/${path || ''}`)
+}
+
 export function docsPath(path?: string) {
   return corePath(`docs/${path || ''}`)
 }
@@ -241,6 +245,7 @@ export const path = {
   configPath,
   corePath,
   customElementsDataPath,
+  dashboardPath,
   docsPath,
   errorHandlingPath,
   examplesPath,

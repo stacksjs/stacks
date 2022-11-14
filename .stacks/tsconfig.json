@@ -50,6 +50,8 @@
       "@stacksjs/collections/*": ["./core/collections/src/*"],
       "@stacksjs/config": ["./core/config/src/index.ts"],
       "@stacksjs/config/*": ["../config/*"],
+      "@stacksjs/dashboard": ["./core/dashboard/src/index.ts"],
+      "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/storage": ["./core/storage/src/index.ts"],

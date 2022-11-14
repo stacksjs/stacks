@@ -1,8 +1,8 @@
 import consola from 'consola'
 import { ray } from 'node-ray'
 
-const debug = ray
 const log = consola
+const debug = ray
 
 function dump(...args: any[]) {
   return debug(...args)

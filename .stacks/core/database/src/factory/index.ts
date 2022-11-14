@@ -10,6 +10,7 @@ class Factory {
   private noOfItems = 5
   private items: object = []
   private columns: object = []
+
   constructor(factory: string) {
     this.factory = factory
   }
@@ -55,7 +56,7 @@ class Factory {
   }
 
   initiateColumns() {
-    let items = collect()
+    const items = collect()
     for (let i = 0; i < this.noOfItems; i++)
       items.push(this.columns)
 

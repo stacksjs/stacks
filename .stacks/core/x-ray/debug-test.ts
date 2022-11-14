@@ -1,8 +1,6 @@
-import { dd, debug, ray } from './src/index'
+import { debug } from './src/index'
 
-// eslint-disable-next-line no-console
-console.log('here', debug('hello').send())
-debug('hello').send()
-ray('hello')
+// console.log('here', debug('hello').send())
+debug('hello')
 
-dd(new Error('test'))
+// dd(new Error('test'))
