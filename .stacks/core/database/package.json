@@ -48,6 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@prisma/client": "^4.6.1",
     "vitest": "^0.25.1"
   },
   "devDependencies": {

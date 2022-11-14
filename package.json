@@ -102,7 +102,6 @@
     "test:types": "pnpm stacks test:types"
   },
   "dependencies": {
-    "@prisma/client": "^4.6.1",
     "stacks": "workspace:*"
   },
   "lint-staged": {
