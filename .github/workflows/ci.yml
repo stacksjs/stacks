@@ -22,13 +22,13 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
