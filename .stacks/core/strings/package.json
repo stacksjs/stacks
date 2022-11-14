@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.39.1",
+  "version": "0.40.0",
   "packageManager": "pnpm@7.16.0",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
