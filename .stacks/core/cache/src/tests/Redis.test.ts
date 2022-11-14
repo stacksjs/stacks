@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createClient } from 'redis'
 
+// TODO: needs to be imported to cache package
 const client: any = createClient({
   socket: {
     host: '127.0.0.1',
@@ -9,30 +10,37 @@ const client: any = createClient({
   password: '',
 })
 
+// TODO: needs to be moved to cache package
 await client.connect()
 
+// TODO: needs to be imported to cache package
 async function set(key: any, value: any): Promise<void> {
   await client.set(key, value)
 }
 
+// TODO: needs to be imported to cache package
 async function get(key: string): Promise<any> {
   const value = await client.get(key)
 
   return value
 }
 
+// TODO: needs to be imported to cache package
 async function remove(key: string): Promise<void> {
   await client.del(key)
 }
 
+// TODO: needs to be imported to cache package
 async function del(key: string): Promise<void> {
   await client.del(key)
 }
 
+// TODO: needs to be imported to cache package
 async function flushAll(): Promise<void> {
   await client.sendCommand(['FLUSHALL', 'ASYNC'])
 }
 
+// TODO: needs to be imported to cache package
 async function flushDB(): Promise<void> {
   await client.sendCommand(['FLUSHDB', 'ASYNC'])
 }

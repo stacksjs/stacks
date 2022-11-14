@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 const dynamodb = new DynamoDB({ region: 'us-east-1' })
 
-describe('DynamoDBTest', () => {
+describe('DynamoDB test', () => {
   it('it should set dynamodb cache', async () => {
     await set('foo', 'bar')
     const value = await get('foo')
@@ -24,10 +24,12 @@ describe('DynamoDBTest', () => {
     expect(value).toBe(null)
   })
 })
-const valueAttribute = 'value'
-const keyAttribute = 'key'
 
+// TODO: needs to be imported to cache package
 async function set(key: string, value: string | number): Promise<void> {
+  const valueAttribute = 'value'
+  const keyAttribute = 'key'
+
   const params: PutItemCommandInput = {
     TableName: 'cache',
     Item: {
@@ -43,7 +45,11 @@ async function set(key: string, value: string | number): Promise<void> {
   await dynamodb.putItem(params)
 }
 
+// TODO: needs to be imported to cache package
 async function get(key: string): Promise<string | undefined | null> {
+  const valueAttribute = 'value'
+  const keyAttribute = 'key'
+
   const params = {
     TableName: 'cache',
     Key: {
@@ -61,6 +67,7 @@ async function get(key: string): Promise<string | undefined | null> {
   return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
 }
 
+// TODO: needs to be imported to cache package
 function getValueType(value: string | number) {
   if (typeof value === 'string')
     return 'S'
@@ -71,7 +78,10 @@ function getValueType(value: string | number) {
   return 'S'
 }
 
+// TODO: needs to be imported to cache package
 async function remove(key: string): Promise<void> {
+  const keyAttribute = 'key'
+
   const params = {
     TableName: 'cache',
     Key: {
@@ -84,19 +94,21 @@ async function remove(key: string): Promise<void> {
   await dynamodb.deleteItem(params)
 }
 
-async function del(key: string): Promise<void> {
-  const params = {
-    TableName: 'cache',
-    Key: {
-      [keyAttribute]: {
-        S: key,
-      },
-    },
-  }
+// TODO: needs to be imported to cache package
+// async function del(key: string): Promise<void> {
+//   const params = {
+//     TableName: 'cache',
+//     Key: {
+//       [keyAttribute]: {
+//         S: key,
+//       },
+//     },
+//   }
 
-  await dynamodb.deleteItem(params)
-}
+//   await dynamodb.deleteItem(params)
+// }
 
+// TODO: needs to be imported to cache package
 function serialize(value: string | number) {
   return String(value)
 }
