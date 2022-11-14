@@ -1,4 +1,5 @@
 import { collect } from '@stacksjs/collections'
+import { loop } from '@stacksjs/utils'
 import { PrismaClient } from '@prisma/client'
 import { ResultAsync } from '@stacksjs/error-handling'
 import type { Result } from '@stacksjs/types'
@@ -57,8 +58,10 @@ class Factory {
 
   initiateColumns() {
     const items = collect()
-    for (let i = 0; i < this.noOfItems; i++)
+
+    loop(this.noOfItems, () => {
       items.push(this.columns)
+    });
 
     this.items = items
   }
