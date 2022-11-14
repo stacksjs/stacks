@@ -2,7 +2,7 @@
   "name": "@stacksjs/config",
   "type": "module",
   "version": "0.39.1",
-  "packageManager": "pnpm@7.15.0",
+  "packageManager": "pnpm@7.16.0",
   "description": "The Stacks configuration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -32,7 +32,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.15.0"
+    "pnpm": ">=7.16.0"
   },
   "scripts": {
     "build": "unbuild",

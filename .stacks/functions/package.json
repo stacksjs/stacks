@@ -2,7 +2,7 @@
   "name": "hello-world-fx",
   "type": "module",
   "version": "",
-  "packageManager": "pnpm@7.15.0",
+  "packageManager": "pnpm@7.16.0",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
