@@ -2,7 +2,7 @@
   "name": "your-name",
   "type": "module",
   "version": "0.0.0",
-  "packageManager": "pnpm@7.15.0",
+  "packageManager": "pnpm@7.16.0",
   "description": "Develop your modern framework-agnostic web app or library, faster.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -24,7 +24,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.15.0"
+    "pnpm": ">=7.16.0"
   },
   "scripts": {
     "stacks": "esno .stacks/core/runtime/src/cli.ts",

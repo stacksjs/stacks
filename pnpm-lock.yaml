@@ -62,7 +62,7 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
@@ -85,7 +85,7 @@ importers:
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
       vite: ^3.2.3
-      vite-plugin-inspect: ^0.7.7
+      vite-plugin-inspect: ^0.7.8
       vite-plugin-pages: ^0.27.1
       vite-plugin-pwa: ^0.13.3
       vite-plugin-vue-component-preview: ^0.3.3
@@ -132,7 +132,7 @@ importers:
       mkdist: ^0.4.0
       redis: ^4.5.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       '@aws-sdk/client-dynamodb': 3.209.0
       '@stacksjs/config': link:../config
@@ -176,7 +176,7 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
@@ -212,7 +212,7 @@ importers:
       '@prisma/client': ^4.6.1
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       '@prisma/client': 4.6.1
       vitest: 0.25.2
@@ -314,7 +314,7 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
@@ -347,7 +347,7 @@ importers:
     specifiers:
       mkdist: ^0.4.0
       typescript: ^4.8.4
-      vitest: ^0.25.1
+      vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
@@ -392,7 +392,7 @@ importers:
       '@stacksjs/utils': workspace:*
       '@stacksjs/x-ray': workspace:*
       only-allow: ^1.1.1
-      pnpm: '>=7.15.0'
+      pnpm: '>=7.16.0'
       typescript: ^4.8.4
     dependencies:
       '@stacksjs/actions': link:../actions
@@ -529,7 +529,7 @@ importers:
       typescript: ^4.8.4
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
-      vite-plugin-inspect: ^0.7.7
+      vite-plugin-inspect: ^0.7.8
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.21.2
       vitepress: 1.0.0-alpha.28
@@ -565,11 +565,11 @@ importers:
       '@iconify-json/heroicons-solid': ^1.1.5
       '@julr/unocss-preset-forms': ^0.0.2
       '@stacksjs/build': workspace:*
-      '@unocss/transformer-compile-class': ^0.46.4
+      '@unocss/transformer-compile-class': ^0.46.5
       mkdist: ^0.4.0
       pinia: ^2.0.23
       typescript: ^4.8.4
-      unocss: ^0.46.4
+      unocss: ^0.46.5
       vue: ^3.2.45
       vue-tsc: ^1.0.9
     dependencies:
