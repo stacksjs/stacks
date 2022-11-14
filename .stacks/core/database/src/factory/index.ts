@@ -7,8 +7,8 @@ const prisma = new PrismaClient()
 class Factory {
   private factory: string
   private noOfItems = 5
-  private items = []
-  private columns = []
+  private items: Array<Object> = []
+  private columns: Array<Object> = []
 
   constructor(factory: string) {
     this.factory = factory
