@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { ResultAsync } from '@stacksjs/errors'
+import type { Result } from '@stacksjs/types'
 
 const prisma = new PrismaClient()
 
@@ -23,7 +24,7 @@ class Factory {
     return this
   }
 
-  async make(count = 0) {
+  async make(count = 0): Promise<Result<Object, Error>> {
     if (count)
       this.noOfItems = count
 
@@ -38,7 +39,7 @@ class Factory {
     )
   }
 
-  async create(count = 0) {
+  async create(count = 0): Promise<Result<Object, Error>> {
     if (count)
       this.noOfItems = count
 
