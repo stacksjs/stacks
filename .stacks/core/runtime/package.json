@@ -42,6 +42,8 @@
   "bin": {
     "stacks": "bin/stacks.mjs",
     "stx": "bin/stacks.mjs",
+    "buddy": "bin/stacks.mjs",
+    "bud": "bin/stacks.mjs",
     "artisan": "bin/stacks.mjs"
   },
   "files": [
