@@ -595,7 +595,7 @@ importers:
       '@stacksjs/storage': workspace:*
       '@stacksjs/types': workspace:*
       '@vueuse/core': ^9.5.0
-      '@vueuse/head': ^0.9.8
+      '@vueuse/head': ^1.0.12
       '@vueuse/math': ^9.5.0
       '@vueuse/shared': ^9.5.0
       defu: ^6.1.0
@@ -617,7 +617,7 @@ importers:
       '@stacksjs/storage': link:../storage
       '@stacksjs/types': link:../types
       '@vueuse/core': 9.5.0_vue@3.2.45
-      '@vueuse/head': 0.9.8_vue@3.2.45
+      '@vueuse/head': 1.0.12_vue@3.2.45
       '@vueuse/math': 9.5.0_vue@3.2.45
       '@vueuse/shared': 9.5.0_vue@3.2.45
       defu: 6.1.0
@@ -3865,6 +3865,35 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: false
 
+  /@unhead/dom/0.6.6:
+    resolution: {integrity: sha512-iKKv6s+oRvsvF3EeHE1n5xVf2oKtED1M4q0ECzFmM+oSihGUGzZJAn+UgN5MOcx1ilJQcHxBQQwzO9pppW/3aQ==}
+    dependencies:
+      '@unhead/schema': 0.6.6
+    dev: false
+
+  /@unhead/schema/0.6.6:
+    resolution: {integrity: sha512-hcJLBTW7LlS1KzaUZ4nxBFaQmx3g7SxfJyX37/UET2JlH+8ycQgojFCZbnrHn5QIJz7zU1VcWv9gGfeS9i2lSQ==}
+    dependencies:
+      '@zhead/schema': 1.0.0-beta.13
+      hookable: 5.4.1
+    dev: false
+
+  /@unhead/ssr/0.6.6:
+    resolution: {integrity: sha512-Dmt6E5BqJ3HRLh5fSlICCJ1YtYoyijl1jXdJ+D6jXHN8ut21/65qiwGPNPQOXAwBtBLLRRX3yvvDvTtlWN+zLQ==}
+    dependencies:
+      '@unhead/schema': 0.6.6
+    dev: false
+
+  /@unhead/vue/0.6.6_vue@3.2.45:
+    resolution: {integrity: sha512-oXkWEbW8astq5xhIS7HS+q6Q9vT/HGYM/gaHUpHQlXVFwc2t7KcBcDoFQMONLLw/eEovMudnwUGXRi6/8kwz8Q==}
+    peerDependencies:
+      vue: '>=2.7 || >=3'
+    dependencies:
+      '@unhead/schema': 0.6.6
+      hookable: 5.4.1
+      vue: 3.2.45
+    dev: false
+
   /@unocss/astro/0.46.5_vite@3.2.3:
     resolution: {integrity: sha512-Ey4ReY0ult1IARdgYsEynwGbfvmwoUBOFKKdQzsm6TQR/HcSGLND4Yzoa0OTotG5gj6h9jCPjypZtw6xCUqyzg==}
     dependencies:
@@ -4217,6 +4246,18 @@ packages:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
+  /@vueuse/head/1.0.12_vue@3.2.45:
+    resolution: {integrity: sha512-ra2mnr8doC+ZmlKir3Jv2H0b9zkjxcBlkdb7Hi7kXpjXJ2E5U5S/c3QF3tNyO4WnxTjV/hEw2Is0wkfX924szg==}
+    peerDependencies:
+      vue: '>=2.7 || >=3'
+    dependencies:
+      '@unhead/dom': 0.6.6
+      '@unhead/schema': 0.6.6
+      '@unhead/ssr': 0.6.6
+      '@unhead/vue': 0.6.6_vue@3.2.45
+      vue: 3.2.45
+    dev: false
+
   /@vueuse/math/9.5.0_vue@3.2.45:
     resolution: {integrity: sha512-dPr5CkxE4Oo+OEvTqPfAZ8Lv1AVbnLH2N5gJSm5EWykxGPLbSaimUIckqXXR8DDyvaWIV545tELekpFUHLoFmw==}
     dependencies:
@@ -4257,6 +4298,10 @@ packages:
 
   /@zhead/schema/0.8.5:
     resolution: {integrity: sha512-1S3Otr2zpl1zwP72dNseVXQNG9tnTQ6hHUEUYwINvBjRj6bHcUwdE+Itc9OLxnGAJT/7p8P7GHGo5sshXJNJsA==}
+
+  /@zhead/schema/1.0.0-beta.13:
+    resolution: {integrity: sha512-P1A1vRGFBhITco8Iw4/hvnDYoE/SoVrd71dW1pBFdXJb3vP+pBtoOuhbEKy0ROJGOyzQuqvFibcwzyLlWMqNiQ==}
+    dev: false
 
   /JSONStream/1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
