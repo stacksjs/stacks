@@ -1,3 +1,4 @@
+import { collect } from '@stacksjs/collections'
 import { PrismaClient } from '@prisma/client'
 import { ResultAsync } from '@stacksjs/error-handling'
 import type { Result } from '@stacksjs/types'
@@ -7,7 +8,7 @@ const prisma = new PrismaClient()
 class Factory {
   private factory: string
   private noOfItems = 5
-  private items: Array<Object> = []
+  private items: object = []
   private columns: object = []
   constructor(factory: string) {
     this.factory = factory
@@ -54,8 +55,11 @@ class Factory {
   }
 
   initiateColumns() {
+    let items = collect()
     for (let i = 0; i < this.noOfItems; i++)
-      this.items.push(this.columns)
+      items.push(this.columns)
+
+    this.items = items
   }
 }
 
