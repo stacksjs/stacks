@@ -27,7 +27,7 @@ class Factory {
     if (count)
       this.noOfItems = count
 
-    this.intiateColumns()
+    this.initiateColumns()
 
     return ResultAsync.fromPromise(
       await prisma[this.factory].createMany(
@@ -42,7 +42,7 @@ class Factory {
     if (count)
       this.noOfItems = count
 
-    this.intiateColumns()
+    this.initiateColumns()
 
     return ResultAsync.fromPromise(
       await prisma[this.factory].createMany(
@@ -53,7 +53,7 @@ class Factory {
     )
   }
 
-  intiateColumns() {
+  initiateColumns() {
     for (let i = 0; i < this.noOfItems; i++)
       this.items.push(this.columns)
   }
