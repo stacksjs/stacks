@@ -186,6 +186,10 @@ export function routerPath(path?: string) {
   return corePath(`router/${path || ''}`)
 }
 
+export function searchEnginePath(path?: string) {
+  return corePath(`search-engine/${path || ''}`)
+}
+
 export function routesPath(path?: string) {
   return projectPath(`routes/${path || ''}`)
 }
