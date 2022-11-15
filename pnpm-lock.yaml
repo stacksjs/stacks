@@ -33,7 +33,7 @@ importers:
       '@stacksjs/utils': workspace:*
       '@stacksjs/x-ray': workspace:*
       markdown-it: ^13.0.1
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vue-component-meta: ^1.0.9
     dependencies:
@@ -47,26 +47,26 @@ importers:
       markdown-it: 13.0.1
       vue-component-meta: 1.0.9_typescript@4.8.4
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/arrays:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/auth:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/build:
@@ -79,7 +79,7 @@ importers:
       '@vitejs/plugin-vue': ^3.2.0
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.6.1
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       unbuild: ^0.9.4
       unplugin-auto-import: ^0.11.4
@@ -119,7 +119,7 @@ importers:
       vue-docgen-web-types: 0.1.8_vue@3.2.45
       vue-i18n: 9.2.2_vue@3.2.45
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/cache:
@@ -129,7 +129,7 @@ importers:
       aws-sdk: ^2.1253.0
       memcached: ^2.2.2
       memjs: ^1.3.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       redis: ^4.5.0
       typescript: ^4.8.4
       vitest: ^0.25.2
@@ -141,7 +141,7 @@ importers:
       memjs: 1.3.0
       redis: 4.5.0
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
       vitest: 0.25.2
 
@@ -155,7 +155,7 @@ importers:
       cac: ^6.7.14
       esno: ^0.16.3
       execa: ^6.1.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       ora: ^6.1.2
       prompts: ^2.4.2
     dependencies:
@@ -170,54 +170,54 @@ importers:
       prompts: 2.4.2
     devDependencies:
       esno: 0.16.3
-      mkdist: 0.4.0
+      mkdist: 1.0.0
 
   .stacks/core/cloud:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/collections:
     specifiers:
       collect.js: ^4.34.3
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       collect.js: 4.34.3
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/config:
     specifiers:
       '@stacksjs/utils': workspace:*
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       unbuild: ^0.9.4
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
       unbuild: 0.9.4
 
   .stacks/core/dashboard:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
     devDependencies:
-      mkdist: 0.4.0
+      mkdist: 1.0.0
 
   .stacks/core/database:
     specifiers:
       '@prisma/client': ^4.6.1
       '@stacksjs/utils': workspace:*
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitest: ^0.25.2
     dependencies:
@@ -225,42 +225,42 @@ importers:
       '@stacksjs/utils': link:../utils
       vitest: 0.25.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/datetime:
     specifiers:
       '@stacksjs/utils': workspace:*
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/docs:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitepress: 1.0.0-alpha.28
     dependencies:
       vitepress: 1.0.0-alpha.28_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/error-handling:
     specifiers:
       '@ow3/eslint-config': ^0.33.10
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       neverthrow: ^5.1.0
       typescript: ^4.8.4
     dependencies:
       '@ow3/eslint-config': 0.33.10_rmayb2veg2btbq6mbmnyivgasy
       neverthrow: 5.1.0
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/git:
@@ -270,7 +270,7 @@ importers:
       conventional-changelog-cli: ^2.2.2
       cz-git: ^1.3.12
       giget: ^1.0.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       simple-git-hooks: ^2.8.1
       typescript: ^4.8.4
     dependencies:
@@ -281,7 +281,7 @@ importers:
       giget: 1.0.0
       simple-git-hooks: 2.8.1
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/lint:
@@ -290,7 +290,7 @@ importers:
       '@types/eslint': ^8.4.10
       eslint: ^8.27.0
       lint-staged: ^13.0.3
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       '@ow3/eslint-config': 0.33.10_rmayb2veg2btbq6mbmnyivgasy
@@ -298,14 +298,14 @@ importers:
       eslint: 8.27.0
       lint-staged: 13.0.3
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/modules:
     specifiers:
       '@stacksjs/types': workspace:*
       '@types/nprogress': ^0.2.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       nprogress: ^0.2.0
       typescript: ^4.8.4
       vue-i18n: ^9.2.2
@@ -315,62 +315,62 @@ importers:
       nprogress: 0.2.0
       vue-i18n: 9.2.2_vue@3.2.45
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/notifications:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/objects:
     specifiers:
       '@stacksjs/collections': workspace:*
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/path:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       pathe: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       pathe: 1.0.0
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/realtime:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/router:
     specifiers:
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.45
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/runtime:
@@ -439,7 +439,7 @@ importers:
       bcryptjs: ^2.4.3
       crypto-js: ^4.1.1
       js-base64: ^3.7.2
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
     dependencies:
       '@stacksjs/config': link:../config
@@ -448,13 +448,13 @@ importers:
       crypto-js: 4.1.1
       js-base64: 3.7.2
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/server:
     specifiers:
       '@stacksjs/path': workspace:*
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       nitropack: ^0.6.1
       typescript: ^4.8.4
       vite: ^3.2.3
@@ -463,7 +463,7 @@ importers:
       nitropack: 0.6.1
       vite: 3.2.3
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/storage:
@@ -473,7 +473,7 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       fs-extra: ^10.1.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       unstorage: ^1.0.0
     dependencies:
@@ -483,7 +483,7 @@ importers:
       fs-extra: 10.1.0
     devDependencies:
       '@stacksjs/path': link:../path
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
       unstorage: 1.0.0
 
@@ -491,7 +491,7 @@ importers:
     specifiers:
       '@types/pluralize': ^0.0.29
       change-case: ^4.1.2
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       pluralize: ^8.0.0
       typescript: ^4.8.4
     dependencies:
@@ -499,7 +499,7 @@ importers:
       change-case: 4.1.2
       pluralize: 8.0.0
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/tests:
@@ -533,7 +533,7 @@ importers:
       '@types/prompts': ^2.4.1
       cac: ^6.7.14
       markdown-it: ^13.0.1
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       typescript: ^4.8.4
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
@@ -558,7 +558,7 @@ importers:
       '@types/prompts': 2.4.1
       cac: 6.7.14
       markdown-it: 13.0.1
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
       unplugin-auto-import: 0.11.4
       unplugin-vue-components: 0.22.9_vue@3.2.45
@@ -574,7 +574,7 @@ importers:
       '@julr/unocss-preset-forms': ^0.0.2
       '@stacksjs/build': workspace:*
       '@unocss/transformer-compile-class': ^0.46.5
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       pinia: ^2.0.23
       typescript: ^4.8.4
       unocss: ^0.46.5
@@ -591,7 +591,7 @@ importers:
       vue: 3.2.45
       vue-tsc: 1.0.9_typescript@4.8.4
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/utils:
@@ -612,7 +612,7 @@ importers:
       esno: ^0.16.3
       fast-glob: ^3.2.12
       kolorist: 1.6.0
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       p-limit: ^4.0.0
       rimraf: ^3.0.2
       throttle-debounce: ^5.0.0
@@ -638,13 +638,13 @@ importers:
       rimraf: 3.0.2
       throttle-debounce: 5.0.0
     devDependencies:
-      mkdist: 0.4.0_typescript@4.8.4
+      mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
 
   .stacks/core/x-ray:
     specifiers:
       consola: ^2.15.3
-      mkdist: ^0.4.0
+      mkdist: ^1.0.0
       node-ray: ^1.19.2
       vue-ray: ^1.17.3
     dependencies:
@@ -652,7 +652,7 @@ importers:
       node-ray: 1.19.2
       vue-ray: 1.17.3
     devDependencies:
-      mkdist: 0.4.0
+      mkdist: 1.0.0
 
   .stacks/fonts/hubot-sans:
     specifiers: {}
@@ -8750,11 +8750,11 @@ packages:
       pathe: 0.2.0
       typescript: 4.8.4
 
-  /mkdist/0.4.0:
-    resolution: {integrity: sha512-513LkEPKcd0wVwFwyZl0xLlmZO6tVS+RNPjgOLuMGQiVUSoyHOWHMyois+RbHd8V6Pi/EscL0jzer0UUPq4LQg==}
+  /mkdist/1.0.0:
+    resolution: {integrity: sha512-aJke+yvXwwcrOh+3KfAdDgDA+MPe7c+R8hQ7IPfp0gqL1/WPZZUS9rwS6CNjdwDJmHm6DTMA9KwX1FNjZG3I1Q==}
     hasBin: true
     peerDependencies:
-      sass: ^1.55.0
+      sass: ^1.56.1
       typescript: '>=4.8.4'
     peerDependenciesMeta:
       sass:
@@ -8762,20 +8762,20 @@ packages:
       typescript:
         optional: true
     dependencies:
-      defu: 6.1.0
+      defu: 6.1.1
       esbuild: 0.15.13
       fs-extra: 10.1.0
       globby: 13.1.2
       jiti: 1.16.0
       mri: 1.2.0
-      pathe: 0.3.9
+      pathe: 1.0.0
     dev: true
 
-  /mkdist/0.4.0_typescript@4.8.4:
-    resolution: {integrity: sha512-513LkEPKcd0wVwFwyZl0xLlmZO6tVS+RNPjgOLuMGQiVUSoyHOWHMyois+RbHd8V6Pi/EscL0jzer0UUPq4LQg==}
+  /mkdist/1.0.0_typescript@4.8.4:
+    resolution: {integrity: sha512-aJke+yvXwwcrOh+3KfAdDgDA+MPe7c+R8hQ7IPfp0gqL1/WPZZUS9rwS6CNjdwDJmHm6DTMA9KwX1FNjZG3I1Q==}
     hasBin: true
     peerDependencies:
-      sass: ^1.55.0
+      sass: ^1.56.1
       typescript: '>=4.8.4'
     peerDependenciesMeta:
       sass:
@@ -8783,13 +8783,13 @@ packages:
       typescript:
         optional: true
     dependencies:
-      defu: 6.1.0
+      defu: 6.1.1
       esbuild: 0.15.13
       fs-extra: 10.1.0
       globby: 13.1.2
       jiti: 1.16.0
       mri: 1.2.0
-      pathe: 0.3.9
+      pathe: 1.0.0
       typescript: 4.8.4
     dev: true
 
@@ -9409,7 +9409,6 @@ packages:
 
   /pathe/1.0.0:
     resolution: {integrity: sha512-nPdMG0Pd09HuSsr7QOKUXO2Jr9eqaDiZvDwdyIhNG5SHYujkQHYKDfGQkulBxvbDHz8oHLsTgKN86LSwYzSHAg==}
-    dev: false
 
   /pathval/1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
