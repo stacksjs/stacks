@@ -4,10 +4,10 @@ The simple way to build beautiful CLIs.
 
 ## ☘️ Features
 
-- [x] Easily create beautiful CLI apps
-- [x] Lightweight, beautiful and user-friendly interactive prompts
-- [x] Elegant terminal spinners
-- [x] Helper methods to run commands
+- 🎨 Easily create beautiful CLI apps
+- ⚡️ Lightweight, user-friendly, interactive prompts
+- 🚦 Elegant terminal spinners
+- ⛑️ Helper methods to run commands
 
 ## 🤖 Usage
 
