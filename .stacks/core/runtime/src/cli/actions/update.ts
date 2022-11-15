@@ -1,5 +1,6 @@
 import { intro, log, outro, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
+import { loop } from '@stacksjs/utils'
 import { determineDebugMode } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpdateOptions } from '@stacksjs/types'
@@ -79,8 +80,9 @@ export async function updateFramework(options: UpdateOptions) {
   await storage.deleteFiles(frameworkPath(), exclude)
 
   // loop 5 times to make sure all "deep empty" folders are deleted
-  for (let i = 0; i < 5; i++)
+  loop(5, async (i) => {
     await storage.deleteEmptyFolders(frameworkPath())
+  })
 
   await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
 
