@@ -9,7 +9,7 @@ function dump(...args: any[]) {
 }
 
 function dd(...args: any[]) {
-  return debug(args).die()
+  return dump(...args).showApp()
 }
 
 export { log, debug, dd, dump, ray }

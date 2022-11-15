@@ -1,6 +1,8 @@
-import { debug } from './src/index'
+import { dd } from './src/index'
+// import { debug, dump, dd } from './src/index'
 
-// console.log('here', debug('hello').send())
-debug('hello')
+// debug('hello')
+// dump('hello')
+dd('hello')
 
 // dd(new Error('test'))
