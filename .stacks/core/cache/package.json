@@ -57,7 +57,7 @@
     "memjs": "^1.3.0"
   },
   "devDependencies": {
-    "mkdist": "^0.4.0",
+    "mkdist": "^1.0.0",
     "typescript": "^4.8.4",
     "vitest": "^0.25.2"
   }

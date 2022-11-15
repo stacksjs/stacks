@@ -62,6 +62,6 @@
   },
   "devDependencies": {
     "esno": "^0.16.3",
-    "mkdist": "^0.4.0"
+    "mkdist": "^1.0.0"
   }
 }
