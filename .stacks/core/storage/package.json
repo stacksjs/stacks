@@ -56,6 +56,6 @@
     "@stacksjs/path": "workspace:*",
     "mkdist": "^0.4.0",
     "typescript": "^4.8.4",
-    "unstorage": "^0.6.0"
+    "unstorage": "^1.0.0"
   }
 }
