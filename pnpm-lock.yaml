@@ -473,7 +473,7 @@ importers:
       fs-extra: ^10.1.0
       mkdist: ^1.0.0
       typescript: ^4.8.4
-      unstorage: ^1.0.0
+      unstorage: ^1.0.1
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/types': link:../types
@@ -483,7 +483,7 @@ importers:
       '@stacksjs/path': link:../path
       mkdist: 1.0.0_typescript@4.8.4
       typescript: 4.8.4
-      unstorage: 1.0.0
+      unstorage: 1.0.1
 
   .stacks/core/strings:
     specifiers:
@@ -4801,6 +4801,7 @@ packages:
     engines: {node: '>=10.16.0'}
     dependencies:
       streamsearch: 1.1.0
+    dev: false
 
   /c12/0.2.13:
     resolution: {integrity: sha512-wJL0/knDbqM/3moLb+8Xd+w3JdkggkIIhiNBkxZ1mWlskKC/vajb85wM3UPg/D9nK6RbI1NgaVTg6AeXBVbknA==}
@@ -7303,6 +7304,16 @@ packages:
       destr: 1.2.1
       radix3: 0.2.1
       ufo: 0.8.6
+    dev: false
+
+  /h3/1.0.1:
+    resolution: {integrity: sha512-gDCGpRvjchZW2JBlTqbJ9IOs+mdkXXuwSQkSye+jubHAv/UhdamKqoQvd4RFgyBNjHSId8Y+b10UdTcPlP/V+w==}
+    dependencies:
+      cookie-es: 0.5.0
+      destr: 1.2.1
+      radix3: 1.0.0
+      ufo: 1.0.0
+    dev: true
 
   /handlebars/4.7.7:
     resolution: {integrity: sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==}
@@ -8903,10 +8914,10 @@ packages:
 
   /node-fetch-native/0.1.8:
     resolution: {integrity: sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==}
+    dev: false
 
   /node-fetch-native/1.0.1:
     resolution: {integrity: sha512-VzW+TAk2wE4X9maiKMlT+GsPU4OMmR1U9CrHSmd3DFLn2IcZ9VJ6M6BBugGfYUnPCLSYxXdZy17M0BEJyhUTwg==}
-    dev: false
 
   /node-fetch/2.6.7:
     resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
@@ -9062,6 +9073,14 @@ packages:
     resolution: {integrity: sha512-9WXswnqINnnhOG/5SLimUlzuU1hFJUc8zkwyD59Sd+dPOMf05PmnYG/d6Q7HZ+KmgkZJa1PxRso6QdM3sTNHig==}
     dev: false
 
+  /ofetch/1.0.0:
+    resolution: {integrity: sha512-d40aof8czZFSQKJa4+F7Ch3UC5D631cK1TTUoK+iNEut9NoiCL+u0vykl/puYVUS2df4tIQl5upQcolIcEzQjQ==}
+    dependencies:
+      destr: 1.2.1
+      node-fetch-native: 1.0.1
+      ufo: 1.0.0
+    dev: true
+
   /ohash/0.1.5:
     resolution: {integrity: sha512-qynly1AFIpGWEAW88p6DhMNqok/Swb52/KsiU+Toi7er058Ptvno3tkfTML6wYcEgFgp2GsUziW4Nqn62ciuyw==}
     dev: false
@@ -9073,6 +9092,7 @@ packages:
       node-fetch-native: 0.1.8
       ufo: 0.8.6
       undici: 5.12.0
+    dev: false
 
   /on-finished/2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -9625,6 +9645,11 @@ packages:
 
   /radix3/0.2.1:
     resolution: {integrity: sha512-FnhArTl5Tq7dodiLeSPKrDUyCQuJqEncP8cKdyy399g8F/cz7GH6FmzA3Rkosu2IZMkpswFFwXfb2ERSiL06pg==}
+    dev: false
+
+  /radix3/1.0.0:
+    resolution: {integrity: sha512-6n3AEXth91ASapMVKiEh2wrbFJmI+NBilrWE0AbiGgfm0xet0QXC8+a3K19r1UVYjUjctUgB053c3V/J6V0kCQ==}
+    dev: true
 
   /random-int/2.0.1:
     resolution: {integrity: sha512-YALjWK2Rt9EMIv9BF/3mvlzFWQathsvb5UZmN1QmhfIOfcQYXc/UcLzg0ablqesSBpBVLt2Tlwv/eTuBh4LXUQ==}
@@ -10307,6 +10332,7 @@ packages:
   /streamsearch/1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
+    dev: false
 
   /string-argv/0.3.1:
     resolution: {integrity: sha512-a1uQGz7IyVy9YwhqjZIZu1c8JO8dNIe20xBmSS6qu9kv++k3JGzCVmprbNN5Kn+BgzD5E7YYwg1CcjuJMRNsvg==}
@@ -10864,6 +10890,7 @@ packages:
     engines: {node: '>=12.18'}
     dependencies:
       busboy: 1.6.0
+    dev: false
 
   /unenv/0.6.2:
     resolution: {integrity: sha512-IdQfYsHsGKDkiBdeOmtU4MjWvPYfMDOC63cvFqZPodAc5aVezvfD9Bwr7FL/G78cAMMCaDm5Jux3vYo+Z8c/Dg==}
@@ -11104,18 +11131,18 @@ packages:
       - utf-8-validate
     dev: false
 
-  /unstorage/1.0.0:
-    resolution: {integrity: sha512-hsXAvUMXZjyLlkwwWtVB7bjXZuPvhxqmEw53a5loxqlzemWtYvQwcEfYvVBtC47sQPAuK3ktKzbbspusUmt1KA==}
+  /unstorage/1.0.1:
+    resolution: {integrity: sha512-J1c4b8K2KeihHrQtdgl/ybIapArUbPaPb+TyJy/nGSauDwDYqciZsEKdkee568P3c8SSH4TIgnGRHDWMPGw+Lg==}
     dependencies:
       anymatch: 3.1.2
       chokidar: 3.5.3
       destr: 1.2.1
-      h3: 0.8.6
+      h3: 1.0.1
       ioredis: 5.2.4
       listhen: 1.0.0
       mkdir: 0.0.2
       mri: 1.2.0
-      ohmyfetch: 0.4.21
+      ofetch: 1.0.0
       ufo: 1.0.0
       ws: 8.11.0
     transitivePeerDependencies:
