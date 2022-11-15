@@ -58,7 +58,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
     if (result.isErr()) {
       if (spinner)
-        spinner.fail(`Failed to run command "${command}" with message: ${result.error.message}`)
+        spinner.fail('Failed to run command.')
 
       results.push(result)
       break

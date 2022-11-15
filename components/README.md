@@ -11,8 +11,8 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx artisan make:stack hello-world
-cd hello-world-stack
+npx stacks new hello-world
+cd hello-world
 
 pnpm i # install deps for all packages
 pnpm dev # stubs the packages for local use

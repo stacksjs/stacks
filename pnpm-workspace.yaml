@@ -1,4 +1,5 @@
 packages:
+  - ./.stacks/buddy
   - ./.stacks/core/*
   - ./.stacks/components/*
   - ./.stacks/fonts/*

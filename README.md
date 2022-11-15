@@ -215,17 +215,19 @@ stacks test:types # runs typecheck
 # of the following syntax:
 stx fresh
 stacks fresh
+bud fresh
+buddy fresh
 pnpm stx fresh
 pnpm stacks fresh
-pnpm artisan fresh
+pnpm buddy fresh
 pnpm fresh
 pnpm run fresh
-pnpm run artisan fresh
+pnpm run buddy fresh
 ```
 
 </details>
 
-Read more here about the Stacks CLI in the documentation. _As a Laravel fan, you may enjoy the `artisan` alias._
+Read more here about the Stacks CLI in the documentation.
 
 ## 📚 Utilizing the Built Libraries
 

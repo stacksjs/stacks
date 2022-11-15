@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
-import { alias } from '../../runtime/alias'
+import { alias } from '../../../buddy/alias'
 import { autoImports } from '.'
 
 export const functionsConfig: ViteConfig = {

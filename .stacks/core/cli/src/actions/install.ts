@@ -1,5 +1,5 @@
 import { installPackage as installPkg } from '@antfu/install-pkg'
-import type { CommandResult } from 'stacks'
+import type { CommandResult } from 'framework/buddy/src'
 
 /**
  * Install an npm package.

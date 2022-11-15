@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.40.0",
   "packageManager": "pnpm@7.16.0",
-  "description": "The Stacks framework.",
+  "description": "The Stacks Buddy runtime.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -43,8 +43,7 @@
     "stacks": "bin/stacks.mjs",
     "stx": "bin/stacks.mjs",
     "buddy": "bin/stacks.mjs",
-    "bud": "bin/stacks.mjs",
-    "artisan": "bin/stacks.mjs"
+    "bud": "bin/stacks.mjs"
   },
   "files": [
     "dist",
@@ -69,7 +68,7 @@
     "update:all": "pnpm stacks update:all",
     "dev": "pnpm stacks dev",
     "dev:components": "npx vite serve ./components/vue -c ./core/build/src/vue-components.ts",
-    "dev:core": "pnpm --filter '../**' --filter '!../runtime/' dev",
+    "dev:core": "pnpm --filter '../**' --filter '!../buddy/' dev",
     "dev:docs": "vitepress dev ../apps/docs",
     "dev:pages": "nitro dev",
     "dev:functions": "pnpm stacks dev:functions",
@@ -141,7 +140,7 @@
     "test:e2e": "wip",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit",
-    "artisan": "pnpm run stacks"
+    "buddy": "pnpm run stacks"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",

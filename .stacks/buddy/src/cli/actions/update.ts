@@ -80,7 +80,7 @@ export async function updateFramework(options: UpdateOptions) {
   await storage.deleteFiles(frameworkPath(), exclude)
 
   // loop 5 times to make sure all "deep empty" folders are deleted
-  loop(5, async (i) => {
+  loop(5, async () => {
     await storage.deleteEmptyFolders(frameworkPath())
   })
 

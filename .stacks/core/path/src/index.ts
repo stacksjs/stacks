@@ -23,7 +23,7 @@ export function aliasPath() {
 }
 
 export function runtimePath(path?: string) {
-  return corePath(`runtime/${path || ''}`)
+  return frameworkPath(`buddy/${path || ''}`)
 }
 
 export function arraysPath(path?: string) {
@@ -268,6 +268,7 @@ export const path = {
   pathPath,
   projectPath,
   routerPath,
+  searchEnginePath,
   routesPath,
   scriptsPath,
   securityPath,

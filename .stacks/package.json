@@ -42,8 +42,9 @@
     "pnpm": ">=7.16.0"
   },
   "scripts": {
-    "stacks": "esno ./core/runtime/src/cli.ts",
+    "buddy": "esno ./buddy/src/cli.ts",
     "stx": "pnpm run stacks",
+    "stacks": "pnpm run stacks",
     "prepublishOnly": "pnpm stacks prepublish",
     "fresh": "pnpm stacks fresh",
     "clean": "pnpm stacks clean",
@@ -120,8 +121,7 @@
     "test:unit": "wip",
     "test:e2e": "wip",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
-    "test:types": "vue-tsc --noEmit",
-    "artisan": "pnpm run stacks"
+    "test:types": "vue-tsc --noEmit"
   },
   "web-types": "./web-types.json"
 }
