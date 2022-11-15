@@ -71,7 +71,7 @@ You may now run the command via:
 esno command.ts
 ```
 
-To view a more detailed example, check out [Buddy](../buddy/).
+To view a more detailed example, check out [Buddy](../../buddy/).
 
 _You may also use any of the following CLI utilities:_
 
