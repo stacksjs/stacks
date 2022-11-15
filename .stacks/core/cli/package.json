@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cli",
   "type": "module",
-  "version": "0.40.0",
+  "version": "0.41.0",
   "packageManager": "pnpm@7.16.0",
   "description": "The simple way to create beautiful CLIs.",
   "author": "Chris Breuer",

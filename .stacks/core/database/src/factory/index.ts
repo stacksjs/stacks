@@ -61,7 +61,7 @@ class Factory {
 
     loop(this.noOfItems, () => {
       items.push(this.columns)
-    });
+    })
 
     this.items = items
   }

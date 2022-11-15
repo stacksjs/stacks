@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.40.0",
+  "version": "0.41.0",
   "packageManager": "pnpm@7.16.0",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
@@ -49,8 +49,8 @@
   },
   "peerDependencies": {
     "@prisma/client": "^4.6.1",
-    "vitest": "^0.25.2",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "vitest": "^0.25.2"
   },
   "devDependencies": {
     "mkdist": "^1.0.0",
