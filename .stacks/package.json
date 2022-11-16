@@ -1,5 +1,5 @@
 {
-  "name": "stacks-framework",
+  "name": "stacks",
   "type": "module",
   "version": "0.41.1",
   "private": "true",
@@ -30,12 +30,35 @@
     "library",
     "vue",
     "web components",
+    "serverless",
+    "cloud",
     "typescript",
     "javascript",
     "starter kit"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "buddy",
+    "components",
+    "core",
+    "examples",
+    "functions",
+    "pages",
+    "tests",
+    ".gitignore",
+    "package.json",
+    "custom-elements.json",
+    "netlify.toml",
+    "simple-git-hooks.cjs",
+    "tsconfig.json",
+    "vitest.config.ts",
+    "web-types.json",
+    "README.md",
+    "shims.d.ts",
+    "auto-imports.d.ts",
+    "components.d.ts"
   ],
   "engines": {
     "node": ">=v18.12.1",
@@ -123,5 +146,8 @@
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:types": "vue-tsc --noEmit"
   },
-  "web-types": "./web-types.json"
+  "web-types": "./web-types.json",
+  "dependencies": {
+    "@stacksjs/buddy": "workspace:*"
+  }
 }

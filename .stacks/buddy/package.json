@@ -1,5 +1,5 @@
 {
-  "name": "stacks",
+  "name": "@stacksjs/buddy",
   "type": "module",
   "version": "0.41.1",
   "packageManager": "pnpm@7.16.1",
@@ -123,7 +123,7 @@
     "key": "pnpm buddy key",
     "key:generate": "pnpm buddy key:generate",
     "commit": "git cz",
-    "release": "esno ./core/actions/src/generate-package-json.ts && pnpm lint:fix && bumpp ./package.json ./core/**/package.json ../package.json --execute 'pnpm run changelog' --all",
+    "release": "esno ./core/actions/src/generate-package-json.ts && pnpm lint:fix && bumpp ../package.json ./package.json ./core/**/package.json ../package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm buddy generate",
     "generate:entries": "pnpm buddy generate:entries",

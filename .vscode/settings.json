@@ -296,7 +296,8 @@
     "hubot",
     "fontshare",
     "arrayable",
-    "mergeable"
+    "mergeable",
+    "tauri"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

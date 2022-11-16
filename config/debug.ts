@@ -12,6 +12,4 @@ export const debug: Options = {
   enable: true,
   host: 'localhost',
   port: 23517,
-  scheme: 'http', // only change this if you know what you're doing!
-  interceptConsoleLog: true, // calls to console.log() are redirected to Ray
 }
