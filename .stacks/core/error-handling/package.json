@@ -44,11 +44,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.33.10",
+    "@ow3/eslint-config": "^0.33.11",
     "neverthrow": "^5.1.0"
   },
   "devDependencies": {
     "mkdist": "^1.0.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.3"
   }
 }
