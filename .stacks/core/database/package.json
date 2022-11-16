@@ -2,7 +2,7 @@
   "name": "@stacksjs/database",
   "type": "module",
   "version": "0.41.1",
-  "packageManager": "pnpm@7.16.0",
+  "packageManager": "pnpm@7.16.1",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -39,7 +39,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.16.0"
+    "pnpm": ">=7.16.1"
   },
   "scripts": {
     "build": "mkdist -d",
