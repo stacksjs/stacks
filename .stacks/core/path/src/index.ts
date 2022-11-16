@@ -86,6 +86,10 @@ export function dashboardPath(path?: string) {
   return corePath(`dashboard/${path || ''}`)
 }
 
+export function desktopPath(path?: string) {
+  return corePath(`desktop/${path || ''}`)
+}
+
 export function docsPath(path?: string) {
   return corePath(`docs/${path || ''}`)
 }
@@ -250,6 +254,7 @@ export const path = {
   corePath,
   customElementsDataPath,
   dashboardPath,
+  desktopPath,
   docsPath,
   errorHandlingPath,
   examplesPath,

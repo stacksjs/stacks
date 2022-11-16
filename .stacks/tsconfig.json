@@ -52,6 +52,8 @@
       "@stacksjs/config/*": ["../config/*"],
       "@stacksjs/dashboard": ["./core/dashboard/src/index.ts"],
       "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],
+      "@stacksjs/desktop": ["./core/desktop/src/index.ts"],
+      "@stacksjs/desktop/*": ["./core/desktop/src/*"],
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/search-engine": ["./core/search-engine/src/index.ts"],
