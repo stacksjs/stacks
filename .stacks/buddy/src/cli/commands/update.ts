@@ -71,7 +71,7 @@ async function update(stacks: CLI) {
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .alias('update:pm')
-    .example('stx update:package-manager 7.16.0 --debug')
+    .example('stx update:package-manager 7.16.1 --debug')
     .example('stx update:package-manager latest')
     .action(async (options: UpdateOptions) => {
       options.version = 'latest'

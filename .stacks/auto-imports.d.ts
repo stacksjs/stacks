@@ -219,7 +219,7 @@ declare global {
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
   const templateRef: typeof import('@vueuse/core')['templateRef']
   const test: typeof import('vitest')['test']
-  const testsPath: typeof import('./core/path/src/index')['testsPath']
+  const testingPath: typeof import('./core/path/src/index')['testingPath']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
   const timestamp: typeof import('@vueuse/shared')['timestamp']
@@ -650,7 +650,7 @@ declare module 'vue' {
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly test: UnwrapRef<typeof import('vitest')['test']>
-    readonly testsPath: UnwrapRef<typeof import('./core/path/src/index')['testsPath']>
+    readonly testingPath: UnwrapRef<typeof import('./core/path/src/index')['testingPath']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
     readonly timestamp: UnwrapRef<typeof import('@vueuse/shared')['timestamp']>

@@ -56,7 +56,7 @@ const alias: Record<string, string> = {
   '@stacksjs/serverless/*': p.serverlessPath('src/*'),
   '@stacksjs/strings': p.stringsPath('src/index.ts'),
   '@stacksjs/strings/*': p.stringsPath('src/*'),
-  '@stacksjs/tests/*': p.testsPath('*'),
+  '@stacksjs/testing/*': p.testingPath('*'),
   '@stacksjs/types': p.typesPath('src/index.ts'),
   '@stacksjs/types/*': p.typesPath('src/*'),
   '@stacksjs/ui': p.uiPath('src/index.ts'),

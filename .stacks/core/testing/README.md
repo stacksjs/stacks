@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/tests
+pnpm i -D @stacksjs/testing
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * as tests from '@stacksjs/tests'
+import { tests } from '@stacksjs/testing'
 
 // wip
 ```

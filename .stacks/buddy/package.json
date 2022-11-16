@@ -163,7 +163,7 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/tests": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
