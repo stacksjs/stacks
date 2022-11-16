@@ -1,8 +1,8 @@
 {
-  "name": "@stacksjs/tests",
+  "name": "@stacksjs/testing",
   "type": "module",
   "version": "0.41.1",
-  "packageManager": "pnpm@7.15.0",
+  "packageManager": "pnpm@7.16.0",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.10.0",
-    "pnpm": ">=7.15.0"
+    "pnpm": ">=7.16.0"
   },
   "scripts": {
     "build": "mkdist -d",
