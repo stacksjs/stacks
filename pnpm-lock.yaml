@@ -140,7 +140,7 @@ importers:
       markdown-it-shiki: ^0.6.1
       mkdist: ^1.0.0
       typescript: ^4.8.4
-      unbuild: ^0.9.4
+      unbuild: ^1.0.1
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
       vite: ^3.2.3
@@ -163,7 +163,7 @@ importers:
       '@vitejs/plugin-vue': 3.2.0_vite@3.2.4+vue@3.2.45
       markdown-it-link-attributes: 4.0.1
       markdown-it-shiki: 0.6.1
-      unbuild: 0.9.4
+      unbuild: 1.0.1
       unplugin-auto-import: 0.11.4_rollup@2.79.1
       unplugin-vue-components: 0.22.9_rollup@2.79.1+vue@3.2.45
       vite: 3.2.4
@@ -256,13 +256,13 @@ importers:
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
       typescript: ^4.8.4
-      unbuild: ^0.9.4
+      unbuild: ^1.0.1
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
       mkdist: 1.0.0_typescript@4.9.3
       typescript: 4.9.3
-      unbuild: 0.9.4
+      unbuild: 1.0.1
 
   .stacks/core/dashboard:
     specifiers:
@@ -2800,6 +2800,7 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@esbuild/linux-loong64/0.15.14:
@@ -5932,6 +5933,7 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-android-64/0.15.14:
@@ -5948,6 +5950,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-android-arm64/0.15.14:
@@ -5964,6 +5967,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-darwin-64/0.15.14:
@@ -5980,6 +5984,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-darwin-arm64/0.15.14:
@@ -5996,6 +6001,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-freebsd-64/0.15.14:
@@ -6012,6 +6018,7 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-freebsd-arm64/0.15.14:
@@ -6028,6 +6035,7 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-32/0.15.14:
@@ -6044,6 +6052,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-64/0.15.14:
@@ -6060,6 +6069,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-arm/0.15.14:
@@ -6076,6 +6086,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-arm64/0.15.14:
@@ -6092,6 +6103,7 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-mips64le/0.15.14:
@@ -6108,6 +6120,7 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-ppc64le/0.15.14:
@@ -6124,6 +6137,7 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-riscv64/0.15.14:
@@ -6140,6 +6154,7 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-s390x/0.15.14:
@@ -6156,6 +6171,7 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-netbsd-64/0.15.14:
@@ -6172,6 +6188,7 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-openbsd-64/0.15.14:
@@ -6188,6 +6205,7 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-sunos-64/0.15.14:
@@ -6204,6 +6222,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-32/0.15.14:
@@ -6220,6 +6239,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-64/0.15.14:
@@ -6236,6 +6256,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-arm64/0.15.14:
@@ -6273,6 +6294,7 @@ packages:
       esbuild-windows-32: 0.14.54
       esbuild-windows-64: 0.14.54
       esbuild-windows-arm64: 0.14.54
+    dev: true
 
   /esbuild/0.15.14:
     resolution: {integrity: sha512-pJN8j42fvWLFWwSMG4luuupl2Me7mxciUOsMegKvwCmhEbJ2covUdFnihxm0FMIBV+cbwbtMoHgMCCI+pj1btQ==}
@@ -8715,6 +8737,7 @@ packages:
       mri: 1.2.0
       pathe: 0.2.0
       typescript: 4.9.3
+    dev: true
 
   /mkdist/1.0.0:
     resolution: {integrity: sha512-aJke+yvXwwcrOh+3KfAdDgDA+MPe7c+R8hQ7IPfp0gqL1/WPZZUS9rwS6CNjdwDJmHm6DTMA9KwX1FNjZG3I1Q==}
@@ -8757,7 +8780,6 @@ packages:
       mri: 1.2.0
       pathe: 1.0.0
       typescript: 4.9.3
-    dev: true
 
   /mlly/0.5.17:
     resolution: {integrity: sha512-Rn+ai4G+CQXptDFSRNnChEgNr+xAEauYhwRvpPl/UHStTlgkIftplgJRsA2OXPuoUn86K4XAjB26+x5CEvVb6A==}
@@ -8766,6 +8788,7 @@ packages:
       pathe: 1.0.0
       pkg-types: 1.0.1
       ufo: 1.0.0
+    dev: false
 
   /mlly/1.0.0:
     resolution: {integrity: sha512-QL108Hwt+u9bXdWgOI0dhzZfACovn5Aen4Xvc8Jasd9ouRH4NjnrXEiyP3nVvJo91zPlYjVRckta0Nt2zfoR6g==}
@@ -9385,9 +9408,11 @@ packages:
 
   /pathe/0.2.0:
     resolution: {integrity: sha512-sTitTPYnn23esFR3RlqYBWn4c45WGeLcsKzQiUpXJAyfcWkolvlYpV8FLo7JishK946oQwMFUCHXQ9AjGPKExw==}
+    dev: true
 
   /pathe/0.3.9:
     resolution: {integrity: sha512-6Y6s0vT112P3jD8dGfuS6r+lpa0qqNrLyHPOwvXMnyNTQaYiwgau2DP3aNDsR13xqtGj7rrPo+jFUATpU6/s+g==}
+    dev: false
 
   /pathe/1.0.0:
     resolution: {integrity: sha512-nPdMG0Pd09HuSsr7QOKUXO2Jr9eqaDiZvDwdyIhNG5SHYujkQHYKDfGQkulBxvbDHz8oHLsTgKN86LSwYzSHAg==}
@@ -9446,6 +9471,7 @@ packages:
       jsonc-parser: 3.2.0
       mlly: 0.5.17
       pathe: 0.3.9
+    dev: false
 
   /pkg-types/1.0.1:
     resolution: {integrity: sha512-jHv9HB+Ho7dj6ItwppRDDl0iZRYBD0jsakHXtFgoLr+cHSF6xC+QL54sJmWxyGxOLYSHm0afhXhXcQDQqH9z8g==}
@@ -10039,6 +10065,7 @@ packages:
 
   /scule/0.3.2:
     resolution: {integrity: sha512-zIvPdjOH8fv8CgrPT5eqtxHQXmPNnV/vHJYffZhE43KZkvULvpCTvOt1HPlFaCZx287INL9qaqrZg34e8NgI4g==}
+    dev: false
 
   /scule/1.0.0:
     resolution: {integrity: sha512-4AsO/FrViE/iDNEPaAQlb77tf0csuq27EsVpy6ett584EcRTp6pTDLoGWVxCD77y5iU5FauOvhsI4o1APwPoSQ==}
@@ -10850,8 +10877,8 @@ packages:
       which-boxed-primitive: 1.0.2
     dev: false
 
-  /unbuild/0.9.4:
-    resolution: {integrity: sha512-IkKPqzazcCNfwTSs5bDRS2bOvg1Zh9gPYQq/ruVarCoM4f7KXclSrcb0jyJiSU/5qhakZ8K5B2CzwX4ZaaVKdQ==}
+  /unbuild/1.0.1:
+    resolution: {integrity: sha512-i2mkbLNFZDJJdpsbg4JflHldKeF3J0K+mLGUdh8jrHBSTHZBw8qFWI7t/AUrGjHxa/O/vkIod65LXu9ktPiUHw==}
     hasBin: true
     dependencies:
       '@rollup/plugin-alias': 4.0.2_rollup@3.3.0
@@ -10869,19 +10896,20 @@ packages:
       jiti: 1.16.0
       magic-string: 0.26.7
       mkdirp: 1.0.4
-      mkdist: 0.3.13_typescript@4.9.3
-      mlly: 0.5.17
+      mkdist: 1.0.0_typescript@4.9.3
+      mlly: 1.0.0
       mri: 1.2.0
-      pathe: 0.3.9
-      pkg-types: 0.3.6
+      pathe: 1.0.0
+      pkg-types: 1.0.1
       pretty-bytes: 6.0.0
       rimraf: 3.0.2
       rollup: 3.3.0
       rollup-plugin-dts: 5.0.0_6annma2bj33shm6er7hwi5u4z4
-      scule: 0.3.2
+      scule: 1.0.0
       typescript: 4.9.3
-      untyped: 0.5.0
+      untyped: 1.0.0
     transitivePeerDependencies:
+      - sass
       - supports-color
 
   /unconfig/0.3.7:
@@ -11163,13 +11191,13 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /untyped/0.5.0:
-    resolution: {integrity: sha512-2Sre5A1a7G61bjaAKZnSFaVgbJMwwbbYQpJFH69hAYcDfN7kIaktlSphS02XJilz4+/jR1tsJ5MHo1oMoCezxg==}
+  /untyped/1.0.0:
+    resolution: {integrity: sha512-aBeR3Z51038d7zVzsNShYEdO7u/VCp5R17fxpPXlD2QvG9g6uVJ+JM+zMJ7KFPIt1BNf3I6bU6PhAlsAFkIfdA==}
     dependencies:
       '@babel/core': 7.20.2
       '@babel/standalone': 7.20.4
       '@babel/types': 7.20.2
-      scule: 0.3.2
+      scule: 1.0.0
     transitivePeerDependencies:
       - supports-color
 
