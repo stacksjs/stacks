@@ -45,6 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "meilisearch": "^0.29.1",
     "vitest": "^0.25.2"
   },
   "devDependencies": {
