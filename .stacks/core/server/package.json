@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@stacksjs/path": "workspace:*",
-    "nitropack": "^0.6.1",
+    "nitropack": "^1.0.0",
     "vite": "^3.2.3"
   },
   "devDependencies": {
