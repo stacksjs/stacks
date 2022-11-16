@@ -39,7 +39,7 @@ importers:
       '@stacksjs/x-ray': workspace:*
       only-allow: ^1.1.1
       pnpm: '>=7.16.0'
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@stacksjs/actions': link:../core/actions
       '@stacksjs/arrays': link:../core/arrays
@@ -93,7 +93,7 @@ importers:
       '@stacksjs/x-ray': workspace:*
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vue-component-meta: ^1.0.9
     dependencies:
       '@stacksjs/config': link:../config
@@ -112,7 +112,7 @@ importers:
   .stacks/core/arrays:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     devDependencies:
       mkdist: 1.0.0_typescript@4.9.3
       typescript: 4.9.3
@@ -120,7 +120,7 @@ importers:
   .stacks/core/auth:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
@@ -139,11 +139,11 @@ importers:
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.6.1
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       unbuild: ^1.0.1
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
-      vite: ^3.2.3
+      vite: ^3.2.4
       vite-plugin-inspect: ^0.7.8
       vite-plugin-pages: ^0.27.1
       vite-plugin-pwa: ^0.13.3
@@ -183,13 +183,13 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.210.0
+      '@aws-sdk/client-dynamodb': ^3.211.0
       '@stacksjs/config': workspace:*
       memcached: ^2.2.2
       memjs: ^1.3.0
       mkdist: ^1.0.0
       redis: ^4.5.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       '@aws-sdk/client-dynamodb': 3.211.0
@@ -232,7 +232,7 @@ importers:
   .stacks/core/cloud:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
@@ -244,7 +244,7 @@ importers:
     specifiers:
       collect.js: ^4.34.3
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       collect.js: 4.34.3
     devDependencies:
@@ -255,7 +255,7 @@ importers:
     specifiers:
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       unbuild: ^1.0.1
     dependencies:
       '@stacksjs/utils': link:../utils
@@ -275,7 +275,7 @@ importers:
       '@prisma/client': ^4.6.1
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       '@prisma/client': 4.6.1
@@ -289,7 +289,7 @@ importers:
     specifiers:
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -299,7 +299,7 @@ importers:
   .stacks/core/docs:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitepress: 1.0.0-alpha.29
     dependencies:
       vitepress: 1.0.0-alpha.29_tbpndr44ulefs3hehwpi2mkf2y
@@ -309,10 +309,10 @@ importers:
 
   .stacks/core/error-handling:
     specifiers:
-      '@ow3/eslint-config': ^0.33.10
+      '@ow3/eslint-config': ^0.33.11
       mkdist: ^1.0.0
       neverthrow: ^5.1.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@ow3/eslint-config': 0.33.11_e3uo4sehh4zr4i6m57mkkxxv7y
       neverthrow: 5.1.0
@@ -329,7 +329,7 @@ importers:
       giget: ^1.0.0
       mkdist: ^1.0.0
       simple-git-hooks: ^2.8.1
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       bumpp: 8.2.1
       commitizen: 4.2.5
@@ -343,12 +343,12 @@ importers:
 
   .stacks/core/lint:
     specifiers:
-      '@ow3/eslint-config': ^0.33.10
+      '@ow3/eslint-config': ^0.33.11
       '@types/eslint': ^8.4.10
       eslint: ^8.27.0
       lint-staged: ^13.0.3
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@ow3/eslint-config': 0.33.11_e3uo4sehh4zr4i6m57mkkxxv7y
       '@types/eslint': 8.4.10
@@ -364,7 +364,7 @@ importers:
       '@types/nprogress': ^0.2.0
       mkdist: ^1.0.0
       nprogress: ^0.2.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -378,7 +378,7 @@ importers:
   .stacks/core/notifications:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
@@ -390,7 +390,7 @@ importers:
     specifiers:
       '@stacksjs/collections': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
@@ -401,7 +401,7 @@ importers:
     specifiers:
       mkdist: ^1.0.0
       pathe: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       pathe: 1.0.0
     devDependencies:
@@ -411,7 +411,7 @@ importers:
   .stacks/core/realtime:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       vitest: 0.25.2
@@ -422,7 +422,7 @@ importers:
   .stacks/core/router:
     specifiers:
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.45
@@ -434,7 +434,7 @@ importers:
     specifiers:
       meilisearch: ^0.29.1
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
       meilisearch: 0.29.1
@@ -451,7 +451,7 @@ importers:
       crypto-js: ^4.1.1
       js-base64: ^3.7.2
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -467,8 +467,8 @@ importers:
       '@stacksjs/path': workspace:*
       mkdist: ^1.0.0
       nitropack: ^1.0.0
-      typescript: ^4.8.4
-      vite: ^3.2.3
+      typescript: ^4.9.3
+      vite: ^3.2.4
     dependencies:
       '@stacksjs/path': link:../path
       nitropack: 1.0.0
@@ -485,7 +485,7 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^10.1.0
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       unstorage: ^1.0.1
     dependencies:
       '@stacksjs/arrays': link:../arrays
@@ -504,7 +504,7 @@ importers:
       change-case: ^4.1.2
       mkdist: ^1.0.0
       pluralize: ^8.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@types/pluralize': 0.0.29
       change-case: 4.1.2
@@ -545,7 +545,7 @@ importers:
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       unplugin-auto-import: ^0.11.4
       unplugin-vue-components: ^0.22.9
       vite-plugin-inspect: ^0.7.8
@@ -587,7 +587,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.46.5
       mkdist: ^1.0.0
       pinia: ^2.0.23
-      typescript: ^4.8.4
+      typescript: ^4.9.3
       unocss: ^0.46.5
       vue: ^3.2.45
       vue-tsc: ^1.0.9
@@ -614,7 +614,7 @@ importers:
       '@stacksjs/storage': workspace:*
       '@stacksjs/types': workspace:*
       '@vueuse/core': ^9.5.0
-      '@vueuse/head': ^1.0.13
+      '@vueuse/head': ^1.0.15
       '@vueuse/math': ^9.5.0
       '@vueuse/shared': ^9.5.0
       defu: ^6.1.1
@@ -627,7 +627,7 @@ importers:
       p-limit: ^4.0.0
       rimraf: ^3.0.2
       throttle-debounce: ^5.0.0
-      typescript: ^4.8.4
+      typescript: ^4.9.3
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -8781,15 +8781,6 @@ packages:
       pathe: 1.0.0
       typescript: 4.9.3
 
-  /mlly/0.5.17:
-    resolution: {integrity: sha512-Rn+ai4G+CQXptDFSRNnChEgNr+xAEauYhwRvpPl/UHStTlgkIftplgJRsA2OXPuoUn86K4XAjB26+x5CEvVb6A==}
-    dependencies:
-      acorn: 8.8.1
-      pathe: 1.0.0
-      pkg-types: 1.0.1
-      ufo: 1.0.0
-    dev: false
-
   /mlly/1.0.0:
     resolution: {integrity: sha512-QL108Hwt+u9bXdWgOI0dhzZfACovn5Aen4Xvc8Jasd9ouRH4NjnrXEiyP3nVvJo91zPlYjVRckta0Nt2zfoR6g==}
     dependencies:
@@ -9465,14 +9456,6 @@ packages:
       vue-demi: 0.13.11_vue@3.2.45
     dev: false
 
-  /pkg-types/0.3.6:
-    resolution: {integrity: sha512-uQZutkkh6axl1GxDm5/+8ivVdwuJ5pyDGqJeSiIWIUWIqYiK3p9QKozN/Rv6eVvFoeSWkN1uoYeSDBwwBJBtbg==}
-    dependencies:
-      jsonc-parser: 3.2.0
-      mlly: 0.5.17
-      pathe: 0.3.9
-    dev: false
-
   /pkg-types/1.0.1:
     resolution: {integrity: sha512-jHv9HB+Ho7dj6ItwppRDDl0iZRYBD0jsakHXtFgoLr+cHSF6xC+QL54sJmWxyGxOLYSHm0afhXhXcQDQqH9z8g==}
     dependencies:
@@ -10062,10 +10045,6 @@ packages:
     engines: {node: '>=v12.22.7'}
     dependencies:
       xmlchars: 2.2.0
-
-  /scule/0.3.2:
-    resolution: {integrity: sha512-zIvPdjOH8fv8CgrPT5eqtxHQXmPNnV/vHJYffZhE43KZkvULvpCTvOt1HPlFaCZx287INL9qaqrZg34e8NgI4g==}
-    dev: false
 
   /scule/1.0.0:
     resolution: {integrity: sha512-4AsO/FrViE/iDNEPaAQlb77tf0csuq27EsVpy6ett584EcRTp6pTDLoGWVxCD77y5iU5FauOvhsI4o1APwPoSQ==}
