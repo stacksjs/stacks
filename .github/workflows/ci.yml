@@ -46,10 +46,10 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm stacks key:generate
+        run: pnpm buddy key:generate
 
       - name: Lint
-        run: pnpm stacks lint
+        run: pnpm buddy lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -76,10 +76,10 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm stacks key:generate
+        run: pnpm buddy key:generate
 
       - name: Typecheck
-        run: pnpm stacks test:types
+        run: pnpm buddy test:types
 
   test:
     runs-on: ${{ matrix.os }}
@@ -106,7 +106,7 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm stacks key:generate
+        run: pnpm buddy key:generate
 
       - name: Test Suite
         run: pnpm run test
@@ -139,7 +139,7 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm stacks key:generate
+        run: pnpm buddy key:generate
 
       - name: Prepare Git User
         run: |

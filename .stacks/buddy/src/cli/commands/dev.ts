@@ -1,10 +1,11 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { components, docs, functions, pages, invoke as startDevelopmentServer } from '../actions/dev'
+import { components, desktop, docs, functions, pages, invoke as startDevelopmentServer } from '../actions/dev'
 
 const descriptions = {
   components: 'Start the Components development server',
+  desktop: 'Start the Desktop development server',
   functions: 'Start the Functions development server',
   docs: 'Start the Documentation development server',
   pages: 'Start the Pages development server',
@@ -64,6 +65,13 @@ async function dev(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await docs(options)
+    })
+
+  stacks
+    .command('dev:desktop', descriptions.desktop)
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: DevOptions) => {
+      await desktop(options)
     })
 
   stacks

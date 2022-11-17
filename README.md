@@ -18,48 +18,9 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 ## Features
 
-### Stacks Engine
-
-- ☁️ **Cloud** _"on-demand, auto-scaling, zero maintenance"—create your own cloud_
-- ⚡️ **CDN** _auto-setup & maintenance of low-latency CDN on top of your storage origins & APIs_
-- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments_
-- 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
-- 🤖 **CI/CD** _native CI, release, auto changelog generations & other workflows_
-- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
-- 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
-- 💪🏼 **Type Strong** _Built-in end-to-end type safety_
-- 📚 **Smart Bundling** _Vite powered & extendable_
-- 🍀 **Auto Imports** _Components, Functions. Date, String & Array helpers, Collections, VueUse, etc._
-- 📈 **Modern DX** _latest & greatest tooling accessible natively, including ESNext support_
-- 🪄 **Zero-Config** _yet highly configurable_
+The Stacks framework is a harmony of the following engines:
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
-
-### UI Engine
-
-- 🎨 **Atomic CSS** _style with ease, powered by UnoCSS_
-- 🧩 **Components** _automatically generate optimized Vue & Web Component libraries_
-- ⚡️ **Pages (SSG)** _Static site generation & layouts developed—without breaking a sweat_
-- 0️⃣ **Zero-config PWA** _sensible built-in default configs for common use cases_
-- 🤖 **Deployments** _natively deploy to AWS, Netlify, Vercel, or elsewhere_
-- 🍀 **Vue-powered** _extendable & native access to the ecosystem_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
-
-### FX Engine
-
-- 🏎️ **APIs** _scalability & maintainability built-in_
-- 💨 **Cache** _Redis or DynamoDB_
-- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without any requirements._
-- 📀 **Database** _Prisma, PlanetScale, Supabase, ..._
-- 👾 **Errors** _native type-safe error handling_
-- 🧩 **Functions** _develop more easily & rapidly_
-- 📢 **Notifications** _simply send emails, SMSs, and webhooks_
-- ⚙️ **Queues** _run your heavy workload in the background_
-- 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
-- 🧭 **Router** _smart routing, file-based or Laravel-like_
-- 💾 **Storage** _easily create & make use of local & remote storages/file systems_
-- 🤖 **Deployments** _server & serverless deployment platform for your APIs (AWS support and more)_
-- 🧪 **Testing** _covered by Vitest_
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
 
@@ -73,152 +34,153 @@ It's incredibly easy to get started with this framework. Simply run the followin
 curl -fsSL https://stacksjs.dev/setup | sh
 
 # alternatively, if you know pnpm is already installed, get started via:
-npx stacks create my-project
+npx buddy new my-project
 ```
 
 > **Note**
-> pnpm 7.14 or higher required. _Run the setup script & Stacks will set you up._
+> pnpm 7.16 or higher required. _Run the setup script & Buddy will set you up. He will bark otherwise._
 
 ## 🤖 Usage
 
 Meet the Stacks Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
 
 ```bash
-stacks install # installs all dependencies
-stacks dev # starts one of the dev servers (components, functions, pages, or docs)
-stacks build # follow CLI prompts to select which library (or server) to build
-stacks commit # follow CLI prompts for committing changes
-stacks release # creates the releases for the stack & consequently, publishes them to npm
+buddy install # installs all dependencies
+buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy build # follow CLI prompts to select which library (or server) to build
+buddy commit # follow CLI prompts for committing changes
+buddy release # creates the releases for the stack & consequently, publishes them to npm
 
-stacks make:component HelloWorld # scaffolds a component
-stacks make:function HelloWorld # scaffolds a function
-stacks make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+buddy make:component HelloWorld # scaffolds a component
+buddy make:function HelloWorld # scaffolds a function
+buddy make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-stacks --help
+buddy --help
 ```
 
 <details>
 <summary>View the complete Stacks Toolkit</summary>
 
 ```bash
-stacks --version # get the Stacks version
-stacks --help # view help menu
+buddy --version # get the Stacks version
+buddy --help # view help menu
 # please note: you may suffix any command with the
 # `command --help` flag to review the help menu
 
-stacks install # installs your dependencies
-stacks fresh # fresh reinstall of all deps
-stacks clean # removes all your deps
+buddy install # installs your dependencies
+buddy fresh # fresh reinstall of all deps
+buddy clean # removes all your deps
 
-stacks update # auto-update deps & the Stacks framework
-stacks update:dependencies # auto-update deps & the Stacks framework
-stacks update:framework # auto-update deps & the Stacks framework
-stacks update:package-manager # auto-update deps & the Stacks framework
-stacks update:node # update to latest project-defined node version
-stacks update:all # update Node, package manager, framework, dependencies
+buddy update # auto-update deps & the Stacks framework
+buddy update:dependencies # auto-update deps & the Stacks framework
+buddy update:framework # auto-update deps & the Stacks framework
+buddy update:package-manager # auto-update deps & the Stacks framework
+buddy update:node # update to latest project-defined node version
+buddy update:all # update Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
-# any of them via the "help option", i.e. `stacks ... --help`
+# any of them via the "help option", i.e. `buddy ... --help`
 
-stacks dev # start one of the dev servers (components, functions, pages, or docs)
-stacks dev:components # start local playground dev server
-stacks dev:pages # start local playground pages dev server
-stacks dev:functions # stub local the functions
-stacks dev:docs # start local docs dev server
-stacks development # `stacks dev` alias
+buddy dev # start one of the dev servers (components, functions, pages, or docs)
+buddy dev:components # start local playground dev server
+buddy dev:desktop # starts the Desktop playground
+buddy dev:pages # start local playground pages dev server
+buddy dev:functions # stub local the functions
+buddy dev:docs # start local docs dev server
+buddy development # `buddy dev` alias
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-stacks serve
-stacks serve:components
-stacks serve:pages
-stacks serve:functions
-stacks serve:docs
+buddy serve
+buddy serve:components
+buddy serve:pages
+buddy serve:functions
+buddy serve:docs
 
 # building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
-stacks build # select a specific build (follow CLI prompts)
-stacks build:components # build Vue component library & Web Component library
-stacks build:vue-components # build Vue 2 & 3-ready Component library
-stacks build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-stacks build:functions # build function library
-stacks build:pages # build SSG pages
-stacks build:all # build all your code
+buddy build # select a specific build (follow CLI prompts)
+buddy build:components # build Vue component library & Web Component library
+buddy build:vue-components # build Vue 2 & 3-ready Component library
+buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
+buddy build:functions # build function library
+buddy build:pages # build SSG pages
+buddy build:all # build all your code
 
-# `stacks build` aliases
-stacks prod
-stacks prod:components
-stacks prod:vue-components
-stacks prod:web-components
-stacks prod:functions
-stacks prod:pages
-stacks prod:all
-stacks production # `stacks prod` alias
+# `buddy build` aliases
+buddy prod
+buddy prod:components
+buddy prod:vue-components
+buddy prod:web-components
+buddy prod:functions
+buddy prod:pages
+buddy prod:all
+buddy production # `buddy prod` alias
 
 # sets your application key
-stacks key:generate
+buddy key:generate
 
-stacks make:stack project
-stacks make:component HelloWorld
-stacks make:function hello-world
-stacks make:page hello-world
-stacks make:lang de
-stacks make:notification welcome-email
-stacks make:database cars
-stacks make:table brands
-stacks make:migration create_cars_table
-stacks make:factory cars
-stacks make:seed cars
+buddy make:stack project
+buddy make:component HelloWorld
+buddy make:function hello-world
+buddy make:page hello-world
+buddy make:lang de
+buddy make:notification welcome-email
+buddy make:database cars
+buddy make:table brands
+buddy make:migration create_cars_table
+buddy make:factory cars
+buddy make:seed cars
 
-stacks lint # runs linter
-stacks lint:fix # runs linter and fixes issues
+buddy lint # runs linter
+buddy lint:fix # runs linter and fixes issues
 
-stacks commit # follow CLI prompts for committing staged changes
-stacks release # creates the releases for the stack & triggers the Release Action (workflow)
-stacks changelog # generates CHANGELOG.md
+buddy commit # follow CLI prompts for committing staged changes
+buddy release # creates the releases for the stack & triggers the Release Action (workflow)
+buddy changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
-stacks deploy
-stacks deploy:docs
-stacks deploy:functions
-stacks deploy:pages
-stacks deploy:all
+buddy deploy
+buddy deploy:docs
+buddy deploy:functions
+buddy deploy:pages
+buddy deploy:all
 
 # select the example to run (follow CLI prompts)
-stacks example
-stacks example:vue
-stacks example:web-components
+buddy example
+buddy example:vue
+buddy example:web-components
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
-stacks generate
-stacks generate:entries
-stacks generate:vue-compat
-stacks generate:web-types
-stacks generate:vscode-custom-data
-stacks generate:ide-helpers
-stacks generate:component-meta
-stacks generate:all
+buddy generate
+buddy generate:entries
+buddy generate:vue-compat
+buddy generate:web-types
+buddy generate:vscode-custom-data
+buddy generate:ide-helpers
+buddy generate:component-meta
+buddy generate:all
 
 # generates your application key
-stacks key:generate
+buddy key:generate
 
 # generate your TypeScript declarations
-stacks types:generate
-stacks types:fix
+buddy types:generate
+buddy types:fix
 
 # test your stack
-stacks test # runs test suite
-stacks test:unit # runs unit tests
-stacks test:e2e # runs e2e tests
-stacks test:coverage # runs test coverage
-stacks test:types # runs typecheck
+buddy test # runs test suite
+buddy test:unit # runs unit tests
+buddy test:e2e # runs e2e tests
+buddy test:coverage # runs test coverage
+buddy test:types # runs typecheck
 
 # the CLI may be triggered in any
 # of the following syntax:
 stx fresh
-stacks fresh
+buddy fresh
 bud fresh
 buddy fresh
 pnpm stx fresh
-pnpm stacks fresh
+pnpm buddy fresh
 pnpm buddy fresh
 pnpm fresh
 pnpm run fresh
@@ -364,14 +326,14 @@ The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 Made with ❤️
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/@stacksjs/stacks?style=flat-square
-[npm-version-href]: https://npmjs.com/package/@stacksjs/stacks
+[npm-version-src]: https://img.shields.io/npm/v/stacks?style=flat-square
+[npm-version-href]: https://npmjs.com/package/stacks
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/@stacksjs/stacks?style=flat-square
-[npm-downloads-href]: https://npmjs.com/package/@stacksjs/stacks
+[npm-downloads-src]: https://img.shields.io/npm/dm/stacks?style=flat-square
+[npm-downloads-href]: https://npmjs.com/package/stacks
 
 [github-actions-src]: https://img.shields.io/github/workflow/status/stacksjs/stacks/CI/main?style=flat-square
 [github-actions-href]: https://github.com/stacksjs/stacks/actions?query=workflow%3Aci
 
 <!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/stacks/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/stacksjs/stacks -->
+[codecov-href]: https://codecov.io/gh/stacksjs/buddy -->

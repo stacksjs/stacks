@@ -15,6 +15,9 @@ export async function invoke(options: DevOptions) {
 
   else if (options.functions || options.all)
     await functions(options)
+
+  else if (options.desktop || options.all)
+    await desktop(options)
 }
 
 /**
@@ -34,6 +37,11 @@ export async function components(options: DevOptions) {
 export async function docs(options: DevOptions) {
   log.info('Starting your docs dev server...')
   await runNpmScript(NpmScript.DevDocs, options)
+}
+
+export async function desktop(options: DevOptions) {
+  log.info('Starting your Desktop engine...')
+  await runNpmScript(NpmScript.DevDesktop, options)
 }
 
 export async function pages(options: DevOptions) {

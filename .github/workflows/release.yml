@@ -29,7 +29,7 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm stacks key:generate
+        run: pnpm buddy key:generate
 
       - name: Publish fonts to npm
         run: pnpm --filter './.stacks/fonts/**' publish --access public --no-git-checks
@@ -42,7 +42,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries to npm
-        run: pnpm stacks generate:entries && pnpm --filter './.stacks/components/vue' --filter './.stacks/components/web' --filter './.stacks/functions' publish --access public --no-git-checks
+        run: pnpm buddy generate:entries && pnpm --filter './.stacks/components/vue' --filter './.stacks/components/web' --filter './.stacks/functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

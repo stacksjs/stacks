@@ -4,11 +4,12 @@ This package contains the Stacks Actions.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- Generate Component Meta information
+- Generate IDE Helper files
+- Generate Stacks Library Entry Points
+- Generate Package Manifests
+- Generate VS Code Custom Data file
+- Generate Vue 2 Compatibility (maybe deprecate)
 
 ## 🤖 Usage
 
