@@ -8,7 +8,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_For internal usage only until the beta is released by the end of October._
+_For internal usage only until the beta is released by the end of ~November._
 
 The goal of the Stacks framework is to _help you_ create & maintain frontends & backends without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
 
