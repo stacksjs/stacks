@@ -47,7 +47,7 @@
     "@stacksjs/types": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
-    "js-base64": "^3.7.2"
+    "js-base64": "^3.7.3"
   },
   "devDependencies": {
     "mkdist": "^1.0.0",
