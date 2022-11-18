@@ -10,7 +10,7 @@
 
 _For internal usage only until the beta is released by the end of ~November._
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends & backends without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, or infinitely scalable APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
+The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, serverless APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
@@ -34,7 +34,7 @@ It's incredibly easy to get started with this framework. Simply run the followin
 curl -fsSL https://stacksjs.dev/setup | sh
 
 # alternatively, if you know pnpm is already installed, get started via:
-npx buddy new my-project
+npx stacks new my-project
 ```
 
 > **Note**
@@ -42,7 +42,7 @@ npx buddy new my-project
 
 ## 🤖 Usage
 
-Meet the Stacks Toolkit. The following list is of some of the most common ways to interact with the Stacks API:
+The following list includes some of the most common ways to interact with the Stacks API. Meet the toolkit, Buddy:
 
 ```bash
 buddy install # installs all dependencies
@@ -50,6 +50,7 @@ buddy dev # starts one of the dev servers (components, functions, pages, or docs
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
+buddy upgrade # auto-update deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
@@ -59,7 +60,7 @@ buddy --help
 ```
 
 <details>
-<summary>View the complete Stacks Toolkit</summary>
+<summary>View the complete Buddy Toolkit</summary>
 
 ```bash
 buddy --version # get the Stacks version
@@ -75,6 +76,7 @@ buddy update # auto-update deps & the Stacks framework
 buddy update:dependencies # auto-update deps & the Stacks framework
 buddy update:framework # auto-update deps & the Stacks framework
 buddy update:package-manager # auto-update deps & the Stacks framework
+buddy update:search-engine # auto-updates Meilisearch
 buddy update:node # update to latest project-defined node version
 buddy update:all # update Node, package manager, framework, dependencies
 
