@@ -1,30 +1,27 @@
 # Contributing
 
-First off, thank you for taking the time to contribute to Open Web ❤️
+First off, thank you for taking the time to contribute to the Stacks ecosystem ❤️
+
+> **Note**
+> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vue][vue], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Vitest][vitest].
 
 ## 💭 Knowledge
 
 ### TypeScript
 
-It's important to note early on that these projects are written with [TypeScript][typescript]. If you're unfamiliar with it or any strongly typed languages such as Java then this may be a slight roadblock. However, there's never a truly perfect time to start learning it, so ... why not today!
+It's important to note early on that these projects are written with [TypeScript][typescript]. If you're unfamiliar with it (or any strongly typed languages such as Java) then this may feel like a slight roadblock. However, there's never a truly perfect time to start learning it, so ... why not today using well-written codebases as your playground?
 
-Don't be discouraged, because you likely will get by learning TypeScript on-the-fly as you view some of the component examples within the codebase. It's easy getting started—the code is very readable!
-
-### Stacks
-
-This project uses Stacks as its framework/engine. Under the hood, it is powered by [Vue][vue] & [Vite][vite] to build [Vue components][vue-components], Web Components, and "composable functions".
+_Don't be discouraged. You will get by learning TypeScript on-the-fly as you review some of the examples within the codebase. It's easy to get started—the code is, we hope, very approachable (and readable)._
 
 ### Architecture
 
-An understanding of the library architecture and design will help if you're looking to contribute long-term, or you are working on a big PR. Browse the source and read our documentation to get a better idea on how it is structured. Feel free to ask any question _(Twitter, Discord, or GitHub Discussions)_, we would love to elaborate.
+An understanding of the framework architecture and design will help if you're looking to contribute long-term, or if you are working on a "more complex" PR. Browse the source and read our documentation to get a better sense of how it is structured. The documentation is very thorough and can be used as your progressive guide as you're learning more about Stacks.
 
-## 🎒 Getting Started
+Feel free to ask any question _(Twitter, Discord, or GitHub Discussions)_, we would love to elaborate & collaborate.
 
-### Install
+### Stacks/Core Setup
 
-Please view the README and the instructions below on how to install the project locally.
-
-### Project Setup
+Are you interested in contributing to the Stacks codebase?
 
 **Working on your first Pull Request?** You can learn how from this free series [How to Contribute to an Open Source Project on GitHub][pr-beginner-series].
 
@@ -57,111 +54,111 @@ git branch --set-upstream-to=upstream/main main
 git pull
 ```
 
-## Artisan Toolkit
+_You may also use GitHub Desktop or any other GUI—if that is your preference._
 
-The following list is of some of the most common ways to interact with the Stacks API. Meet Artisan:
+### Buddy Toolkit
+
+The following list of commands is one of the most common ways to interact with the Stacks API. Meet Buddy:
 
 ```bash
-pnpm buddy install # installs all dependencies
-pnpm buddy dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm buddy build # follow CLI prompts to select which library (or server) to build
-pnpm buddy commit # follow CLI prompts for committing changes
-pnpm buddy release # creates the releases for the stack & consequently, publishes them to npm
+buddy install # installs all dependencies
+buddy dev # starts one of the dev servers (components, functions, pages, desktop or docs)
+buddy build # follow CLI prompts to select which library (or server) to build
+buddy commit # follow CLI prompts for committing changes
+buddy release # creates the releases of the stack & consequently, publishes them (to npm)
+buddy upgrade # auto-update deps & the Stacks framework
 
-pnpm buddy make:component HelloWorld # scaffolds a component
-pnpm buddy make:function HelloWorld # scaffolds a function
-pnpm buddy make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+buddy make:component HelloWorld # scaffolds a component
+buddy make:function HelloWorld # scaffolds a function
+buddy make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
 
-pnpm buddy help
+buddy help
 ```
 
 <details>
-<summary>View the complete Artisan Toolkit</summary>
+<summary>View the complete Buddy Toolkit</summary>
 
 ```bash
-pnpm buddy --help # view help menu
-pnpm buddy install # installs your dependencies
-pnpm buddy fresh # fresh reinstall of all deps
-pnpm buddy update # auto-update deps & the Stacks framework
+buddy --help # view help menu
+buddy install # installs your dependencies
+buddy fresh # fresh reinstall of all deps
+buddy update # auto-update deps & the Stacks framework
 
-pnpm buddy --version # get the Stacks version
-pnpm buddy --help # view help menu
+buddy --version # get the Stacks version
+buddy --help # view help menu
 
 # if you need any more info to any command listed here, you may suffix
-# any of them via the "help option", i.e. `pnpm buddy ... --help`
+# any of them via the "help option", i.e. `buddy command --help`
 
-pnpm buddy dev # starts one of the dev servers (components, functions, pages, or docs)
-pnpm buddy dev:components # starts local playground dev server
-pnpm buddy dev:desktop # starts the Desktop playground
-pnpm buddy dev:pages # starts local playground pages dev server
-pnpm buddy dev:functions # stubs local the functions
-pnpm buddy dev:docs # starts local docs dev server
+buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev:components # starts local playground dev server
+buddy dev:desktop # starts the Desktop playground
+buddy dev:pages # starts local playground pages dev server
+buddy dev:functions # stubs local the functions
+buddy dev:docs # starts local docs dev server
 
 # for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
-pnpm buddy serve # starts one of the dev servers (components, functions, pages, or docs)
-pnpm buddy serve:components # starts local playground dev server
-pnpm buddy serve:pages # starts local playground pages dev server
-pnpm buddy serve:functions # stubs local the functions
-pnpm buddy serve:docs # starts local docs dev server
+buddy serve # starts one of the dev servers (components, functions, pages, or docs)
+buddy serve:components # starts local playground dev server
+buddy serve:pages # starts local playground pages dev server
+buddy serve:functions # stubs local the functions
+buddy serve:docs # starts local docs dev server
 
 # sets your application key
-pnpm buddy key:generate
+buddy key:generate
 
-pnpm buddy make:stack project
-pnpm buddy make:component HelloWorld
-pnpm buddy make:function hello-world
-pnpm buddy make:page hello-world
-pnpm buddy make:lang de
-pnpm buddy make:database cars
-pnpm buddy make:table brands
-pnpm buddy make:migration create_cars_table
-pnpm buddy make:factory cars
+buddy make:stack project
+buddy make:component HelloWorld
+buddy make:function hello-world
+buddy make:page hello-world
+buddy make:lang de
+buddy make:database cars
+buddy make:table brands
+buddy make:migration create_cars_table
+buddy make:factory cars
 
-pnpm buddy stub # stubs all the libraries
-pnpm buddy stub:functions # stubs the function library
+buddy lint # runs linter
+buddy lint:fix # runs linter and fixes issues
 
-pnpm buddy lint # runs linter
-pnpm buddy lint:fix # runs linter and fixes issues
-
-pnpm buddy commit # follow CLI prompts for committing staged changes
-pnpm buddy release # creates the releases for the stack & triggers the Release Action (workflow)
-pnpm buddy changelog # generates CHANGELOG.md
+buddy commit # follow CLI prompts for committing staged changes
+buddy release # creates the releases for the stack & triggers the Release Action (workflow)
+buddy changelog # generates CHANGELOG.md
 
 # building for production (e.g. npm, Vercel, Netlify, et al.)
-pnpm buddy build # select a specific build (follow CLI prompts)
-pnpm buddy build:components # builds Vue component library & Web Component library
-pnpm buddy build:functions # builds function library
-pnpm buddy build:vue-components # builds Vue 2 & 3-ready Component library
-pnpm buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-pnpm buddy build:pages # builds pages
+buddy build # select a specific build (follow CLI prompts)
+buddy build:components # builds Vue component library & Web Component library
+buddy build:functions # builds function library
+buddy build:vue-components # builds Vue 2 & 3-ready Component library
+buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+buddy build:pages # builds pages
 
 # when deploying your app/s
-pnpm buddy deploy:docs
-pnpm buddy deploy:functions
-pnpm buddy deploy:pages
+buddy deploy:docs
+buddy deploy:functions
+buddy deploy:pages
 
 # select the example to run (follow CLI prompts)
-pnpm buddy example
+buddy example
 
 # test your stack
-pnpm buddy test # runs test suite
-pnpm buddy test:unit # runs unit tests
-pnpm buddy test:e2e # runs e2e tests
-pnpm buddy test:coverage # runs test coverage
-pnpm buddy test:types # runs typecheck
+buddy test # runs test suite
+buddy test:unit # runs unit tests
+buddy test:e2e # runs e2e tests
+buddy test:coverage # runs test coverage
+buddy test:types # runs typecheck
 ```
 
 </details>
 
-## 🧪 Test
+## 🧪 Testing
 
-### Unit
+All of the framework tests are stored within within the `./.stacks/tests` project folder. When adding or updating functionality, please ensure it is covered through our Vitest test suite. Ensure so by running `buddy test`.
 
-Each of our components come with test cases. Feel free to check them out within the `./tests` root folder. When adding or or updating functionality, please ensure it is covered through our tests cases. Ensure so by running `pnpm test`.
+When working on an individual Stack, tests are stored within the `./tests` project folder & it is recommended to write tests (when useful). Bu
 
 ## ✍️ Commit
 
-This project uses [semantic commit messages][semantic-commit-style] to automate package releases. We automated the commit process for you, and simply run `pnpm run commit` in your terminal and follow the instructions.
+Stacks uses [semantic commit messages][semantic-commit-style] to automate package releases. No worries, you may not be aware what this is or how it works—just let Buddy guide you.  Stacks automated the commit process for you, simply run `buddy commit` in your terminal and follow the instructions.
 
 For example,
 
@@ -170,25 +167,26 @@ For example,
 git add .
 
 # Commit changes.
-pnpm run commit
+buddy commit
 
 # Push changes up to GitHub.
 git push
 ```
 
+_By following these minor steps, Stacks is able to automatically release new versions & generate relating local & remote changelogs._
+
 ## 🎉 Pull Request
 
-When you're all done, head over to the [repository][stacks], and click the big green
-`Compare & Pull Request` button that should appear after you've pushed changes to your fork.
+When you're all done, head over to the [repository][stacks], and click the big green `Compare & Pull Request` button that should appear after you've pushed changes to your fork.
 
-Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to
-vet it and see if it should be merged. Please don't be disheartened if it's not accepted. Your
-contribution is appreciated more than you can imagine, and even a failed PR can teach us a lot ❤️
+Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to vet it and see if it should be merged. Please don't be disheartened if it's not accepted. Your contribution is appreciated more than you can imagine, and even a unmerged PR can teach us a lot ❤️
 
 [typescript]: https://www.typescriptlang.org
 [vue]: https://vuejs.org/
 [vite]: https://vitejs.dev/
-[vue-components]: https://vuejs.org/guide/essentials/component-basics.html
+[tauri]: https://tauri.app/
+[nitro]: https://nitro.unjs.io/
+[vitest]: https://vitest.dev/
 [stacks]: https://github.com/stacksjs/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [pr-beginner-series]: https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github
