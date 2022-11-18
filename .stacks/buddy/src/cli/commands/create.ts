@@ -1,15 +1,13 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, dim, link, log, runCommand } from '@stacksjs/cli'
+import { bold, cyan, green, intro, link, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { version } from '../../../package.json'
 import { generate as generateAppKey } from '../actions/key'
 
 const descriptions = {
   command: 'Create a new Stacks project',
-  name: 'Name of the stack',
   ui: 'Are you building a UI?',
   components: 'Are you building UI components?',
   webComponents: 'Automagically built optimized custom elements/web components?',
@@ -23,8 +21,7 @@ const descriptions = {
 
 async function create(stacks: CLI) {
   stacks
-    .command('', descriptions.command)
-    .option('-n, --name <name>', descriptions.name)
+    .command('new <name>', descriptions.command)
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
     .option('-w, --web-components', descriptions.webComponents, { default: true })
@@ -36,24 +33,35 @@ async function create(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
+      const startTime = intro('buddy new')
       const name = stacks.args[0] || options.name || '.'
       const path = resolve(process.cwd(), name)
 
-      console.log()
-      console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
-      console.log()
-
       await isFolderCheck(path)
       await onlineCheck()
-      await download(name, path, options)
+      const result = await download(name, path, options)
+
+      if (result.isErr()) {
+        log.error(result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
       await ensureEnv(path, options)
       await install(path, options)
 
+      // a custom outro
       console.log()
+
+      if (startTime) {
+        const time = performance.now() - startTime
+        log.success(green(`Done in ${time}ms`))
+      }
+
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
       console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       console.log()
       log.info('To learn more, visit https://stacksjs.dev')
+
       process.exit(ExitCode.Success)
     })
 }
@@ -77,8 +85,10 @@ async function onlineCheck() {
 
 async function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  await runCommand(`giget stacks ${name}`, options)
+  const result = await runCommand(`giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
+
+  return result
 }
 
 async function ensureEnv(path: string, options: CreateOptions) {

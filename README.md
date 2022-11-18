@@ -24,7 +24,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
 
-> _A true rapid application development framework for all Full Stack needs. Next-level & deep DX._
+> _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
 
 ## Get Started
 
