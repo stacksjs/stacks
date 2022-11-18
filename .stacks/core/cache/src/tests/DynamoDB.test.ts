@@ -1,10 +1,14 @@
 import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
+import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import { describe, expect, it } from 'vitest'
 
 const dynamodb = new DynamoDB({ region: 'us-east-1' })
 
 describe('DynamoDB test', () => {
+  it('it should create a table for dynamodb cache', async () => {
+    await createTable()
+  })
+
   it('it should set dynamodb cache', async () => {
     await set('foo', 'bar')
     const value = await get('foo')
@@ -24,6 +28,37 @@ describe('DynamoDB test', () => {
     expect(value).toBe(null)
   })
 })
+
+async function createTable() {
+  const tables = await dynamodb.send(new ListTablesCommand({}))
+
+  const tableExists = tables.TableNames?.includes('cache')
+
+  if (tableExists)
+    return
+
+  const params = {
+    AttributeDefinitions: [
+      {
+        AttributeName: 'key',
+        AttributeType: 'S',
+      },
+    ],
+    KeySchema: [
+      {
+        AttributeName: 'key',
+        KeyType: 'HASH',
+      },
+    ],
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5,
+    },
+    TableName: 'cache',
+  }
+
+  await dynamodb.createTable(params)
+}
 
 // TODO: needs to be imported to cache package
 async function set(key: string, value: string | number): Promise<void> {
