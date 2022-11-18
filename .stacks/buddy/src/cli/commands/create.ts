@@ -33,8 +33,8 @@ async function create(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
-      const startTime = intro('buddy new')
-      const name = stacks.args[0] || options.name || '.'
+      const startTime = intro('stacks new')
+      const name = options.name
       const path = resolve(process.cwd(), name)
 
       await isFolderCheck(path)
@@ -100,10 +100,29 @@ async function ensureEnv(path: string, options: CreateOptions) {
 
 async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks.')
-  await runCommand('pnpm install', { ...options, cwd: path })
-  await runCommand('cp .env.example .env', { ...options, cwd: path })
+  const res1 = await runCommand('pnpm install', { ...options, cwd: path })
+
+  if (res1.isErr()) {
+    log.error(res1.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  const res2 = await runCommand('cp .env.example .env', { ...options, cwd: path })
+
+  if (res2.isErr()) {
+    log.error(res2.error)
+    process.exit(ExitCode.FatalError)
+  }
+
   await generateAppKey(options)
-  await runCommand('git init', { ...options, cwd: path })
+
+  const res3 = await runCommand('git init', { ...options, cwd: path })
+
+  if (res3.isErr()) {
+    log.error(res3.error)
+    process.exit(ExitCode.FatalError)
+  }
+
   log.success('Installed & set-up 🚀')
 }
 
