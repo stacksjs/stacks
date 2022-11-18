@@ -188,7 +188,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.212.0
+      '@aws-sdk/client-dynamodb': ^3.213.0
       '@stacksjs/config': workspace:*
       memcached: ^2.2.2
       memjs: ^1.3.0
@@ -197,7 +197,7 @@ importers:
       typescript: ^4.9.3
       vitest: ^0.25.2
     dependencies:
-      '@aws-sdk/client-dynamodb': 3.212.0
+      '@aws-sdk/client-dynamodb': 3.213.0
       '@stacksjs/config': link:../config
       memcached: 2.2.2
       memjs: 1.3.0
@@ -465,7 +465,7 @@ importers:
       '@stacksjs/types': workspace:*
       bcryptjs: ^2.4.3
       crypto-js: ^4.1.1
-      js-base64: ^3.7.2
+      js-base64: ^3.7.3
       mkdist: ^1.0.0
       typescript: ^4.9.3
     dependencies:
@@ -473,7 +473,7 @@ importers:
       '@stacksjs/types': link:../types
       bcryptjs: 2.4.3
       crypto-js: 4.1.1
-      js-base64: 3.7.2
+      js-base64: 3.7.3
     devDependencies:
       mkdist: 1.0.0_typescript@4.9.3
       typescript: 4.9.3
@@ -602,7 +602,7 @@ importers:
       '@stacksjs/build': workspace:*
       '@unocss/transformer-compile-class': ^0.46.5
       mkdist: ^1.0.0
-      pinia: ^2.0.23
+      pinia: ^2.0.24
       typescript: ^4.9.3
       unocss: ^0.46.5
       vue: ^3.2.45
@@ -613,7 +613,7 @@ importers:
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.46.5
       '@stacksjs/build': link:../build
       '@unocss/transformer-compile-class': 0.46.5
-      pinia: 2.0.23_mgnvym7yiazkylwwogi5r767ue
+      pinia: 2.0.24_mgnvym7yiazkylwwogi5r767ue
       unocss: 0.46.5_vite@3.2.4
       vue: 3.2.45
       vue-tsc: 1.0.9_typescript@4.9.3
@@ -874,13 +874,13 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@aws-sdk/client-dynamodb/3.212.0:
-    resolution: {integrity: sha512-BXS+64t1d505PCS9e6qyjg1fghtTxZwzgZt3cYXGkRZO5E4zBX+9NxlEzayU0Wxp1P52260vJDN5dUP77ZOnEg==}
+  /@aws-sdk/client-dynamodb/3.213.0:
+    resolution: {integrity: sha512-TTDL8ZLOHE0BpsHiAgANs9f7Td0j3XxGRn7FWzkk3WqzfwF4LyeWrEVc56rHDK0odVwQioY7fSzjop/7kySi/A==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 2.0.0
       '@aws-crypto/sha256-js': 2.0.0
-      '@aws-sdk/client-sts': 3.212.0
+      '@aws-sdk/client-sts': 3.213.0
       '@aws-sdk/config-resolver': 3.212.0
       '@aws-sdk/credential-provider-node': 3.212.0
       '@aws-sdk/fetch-http-handler': 3.212.0
@@ -1000,8 +1000,8 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sts/3.212.0:
-    resolution: {integrity: sha512-Zl8665HT1Do/yfiFEtqEjLkHSkAo5Isg2QU65Kbknj2W2DFj92a1cRvMlHanDLxlpuoryGP9/u1efYZeWeIdlg==}
+  /@aws-sdk/client-sts/3.213.0:
+    resolution: {integrity: sha512-MCjtLaYVQJLIMeLubDc4yRjSyVVTOebKxhY4ix4cfpSA6X4jMc4gRY2eu4eja3qoISfHq/Ikrkxx9DD1+n1azg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 2.0.0
@@ -7826,8 +7826,8 @@ packages:
     resolution: {integrity: sha512-L3BJStEf5NAqNuzrpfbN71dp43mYIcBUlCRea/vdyv5dW/AYa1d4bpelko4SHdY3I6eN9Wzyasxirj1/vv5kmg==}
     hasBin: true
 
-  /js-base64/3.7.2:
-    resolution: {integrity: sha512-NnRs6dsyqUXejqk/yv2aiXlAvOs56sLkX6nUdeaNezI5LFFLlsZjOThmwnrcwh5ZZRwZlCMnVAY3CvhIhoVEKQ==}
+  /js-base64/3.7.3:
+    resolution: {integrity: sha512-PAr6Xg2jvd7MCR6Ld9Jg3BmTcjYsHEBx1VlwEwULb/qowPf5VD9kEMagj23Gm7JRnSvE/Da/57nChZjnvL8v6A==}
     dev: false
 
   /js-sdsl/4.1.5:
@@ -9237,8 +9237,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pinia/2.0.23_mgnvym7yiazkylwwogi5r767ue:
-    resolution: {integrity: sha512-N15hFf4o5STrxpNrib1IEb1GOArvPYf1zPvQVRGOO1G1d74Ak0J0lVyalX/SmrzdT4Q0nlEFjbURsmBmIGUR5Q==}
+  /pinia/2.0.24_mgnvym7yiazkylwwogi5r767ue:
+    resolution: {integrity: sha512-DDLd4Iphyc+6PYYYbx7jkb6WP9gecgu9bz9huyB5rb7CdJI3DhzYiZI+/Ih8MLewRrP9DSpslF/BgSNrJtZU7A==}
     peerDependencies:
       '@vue/composition-api': ^1.4.0
       typescript: '>=4.4.4'
