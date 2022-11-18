@@ -84,10 +84,10 @@ for a complete list of all contributors.
 ## Contributing to this project
 
 For instructions on how to work with the source files and how to
-[compile & build font files](CONTRIBUTING.md#compiling-font-files),
-refer to [**CONTRIBUTING.md**](CONTRIBUTING.md).
+[compile & build font files](https://github.com/rsms/inter/CONTRIBUTING.md#compiling-font-files),
+refer to [**CONTRIBUTING.md**](https://github.com/rsms/inter/CONTRIBUTING.md).
 
-Inter is licensed under the [SIL Open Font License](LICENSE.txt)
+Inter is licensed under the [SIL Open Font License](https://github.com/rsms/inter/CONTRIBUTING.md/LICENSE.txt)
 
 ## Design
 

@@ -38,7 +38,7 @@ Please see our [releases](https://github.com/stacksjs/stacks/releases) page for 
 
 ## 💪🏼 Contributing
 
-Please see [CONTRIBUTING](../../.github/CONTRIBUTING.md) for details.
+Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
 ## 🏝 Community
 
@@ -48,7 +48,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Open Web Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.ow3.org)
 
 ## 🙏🏼 Credits
 
