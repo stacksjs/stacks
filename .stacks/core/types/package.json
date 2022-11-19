@@ -65,7 +65,7 @@
     "unplugin-vue-components": "^0.22.9",
     "vite-plugin-inspect": "^0.7.8",
     "vite-plugin-vue-layouts": "^0.7.0",
-    "vite-ssg": "^0.21.2",
+    "vite-ssg": "^0.22.0",
     "vitepress": "1.0.0-alpha.29"
   }
 }
