@@ -35,7 +35,7 @@ The Stacks framework is a harmony of the following engines:
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
 - 📀 **Database** _MySQL, Postgres, Prisma, PlanetScale, Supabase, ..._
 - 👾 **Errors** _native type-safe error handling_
-- 📢 **Notifications** _simply send emails, SMSs, and webhooks_
+- 📢 **Notifications** _send emails, SMSs, and webhooks_
 - ⚙️ **Queues** run your heavy workload in the background
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_

@@ -1,6 +1,7 @@
 {
   // See https://go.microsoft.com/fwlink/?LinkId=827846
   // for the documentation about the extensions.json format
+  // TODO: the only recommended extension should be Stacks
   "recommendations": [
     "vue.volar",
     "voorjaar.windicss-intellisense",
