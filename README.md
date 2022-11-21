@@ -22,6 +22,8 @@ The Stacks framework is a harmony of the following engines:
 
 ### Stacks UI
 
+Develop UIs with helpers for atomic design, component libraries, and more.
+
 - 🧩 Components (auto creates Vue & Web components)
 - 📚 Library Mode
 - 📊 Pages (SSG & PWA support)
@@ -29,6 +31,8 @@ The Stacks framework is a harmony of the following engines:
 - Powered by Vue & UnoCSS
 
 ### Stacks Functions
+
+Develop serverless (or server) functions with countless helpers to build scalable & fast APIs.
 
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
@@ -46,7 +50,7 @@ The Stacks framework is a harmony of the following engines:
 
 ### Stacks Cloud
 
-Create your own cloud.
+Create your own cloud. _With a few commands._
 
 - ☁️ **Server** local development server & production-ready servers
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
@@ -64,7 +68,7 @@ Focus on coding, not publishing.
 
 ### Stacks DX
 
-Enhanced productivity.
+Enhanced productivity for developers. No more creating boilerplate.
 
 - 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
