@@ -6,6 +6,7 @@ interface Index {
 type Indexes = Index[]
 type Record = string
 type Records = Record[]
+type Search = any
 
 export interface SearchEngineDriver {
   // Indexes
@@ -29,5 +30,5 @@ export interface SearchEngineDriver {
   batchDeleteRecords?: (key: string) => MaybePromise<void>
 
   // Search
-  search?: (key: string) => MaybePromise<void>
+  search?: (key: string) => MaybePromise<Search>
 }

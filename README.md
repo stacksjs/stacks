@@ -20,6 +20,58 @@ Convention over configuration is our mantra—in beginner & expert-friendly ways
 
 The Stacks framework is a harmony of the following engines:
 
+### Stacks UI
+
+- 🧩 Components (auto creates Vue & Web components)
+- 📚 Library Mode
+- 📊 Pages (SSG & PWA support)
+- 🖥️ Desktop (coming soon, powered by Tauri)
+- Powered by Vue & UnoCSS
+
+### Stacks Functions
+
+- 🤖 **APIs** _scalability & maintainability built-in_
+- 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
+- 📀 **Database** _MySQL, Postgres, Prisma, PlanetScale, Supabase, ..._
+- 👾 **Errors** _native type-safe error handling_
+- 📢 **Notifications** _simply send emails, SMSs, and webhooks_
+- ⚙️ **Queues** run your heavy workload in the background
+- 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
+- 🧭 **Router** _smart routing, file-based or Laravel-like_
+- 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
+- 💾 **Storage** _easily create & make use of local & remote storages/file systems_
+- 🌪️ **Validation** _tbd_
+- 📈 **X-Ray** All you need to debug, log & analyze, easily
+
+### Stacks Cloud
+
+Create your own cloud.
+
+- ☁️ **Server** local development server & production-ready servers
+- ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
+- 🚏 **CDN** _your own CloudFront CDN_
+- 🔐 **Firewall** _native web application firewall support_
+
+### Stacks CI/CD
+
+Focus on coding, not publishing.
+
+- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments_  (AWS, Vercel, Netlify, etc.)
+- 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
+- ✨ **Git workflows** commit with ease
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
+
+### Stacks DX
+
+Enhanced productivity.
+
+- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
+- 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
+- 💪🏼 **Type Strong** _Built-in end-to-end type safety_
+- 🛠️ **Utilities** _Auto imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
+- 🪄 **Zero-Config** yet highly configurable
+
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
@@ -38,7 +90,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.16 or higher required. _Run the setup script & Buddy will set you up. He will bark otherwise._
+> pnpm 7.16 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
@@ -281,9 +333,9 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
   - [Wallets](https://github.com/stacksjs/wallets) (Q4 - Wallet Authentication)
   - [NFT](https://github.com/stacksjs/nft) (Q4 - NFTs, Candy Machine mechanisms, and more.)
   - [DeFi](https://github.com/stacksjs/defi) (Q4 - Cross-chain DeFi engine, including staking support)
-  - [DAO](https://github.com/stacksjs/dao) (Q4 - Powerful toolkit for DAO governance)
+  - [DAO](https://github.com/stacksjs/dao) (Q4 - Powerful toolkit for DAO governance, including a Reddit-type of voting system)
 
-View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen) for more information. Additionally, you may find interesting information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
+View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
 
 ## 🧪 Testing
 
