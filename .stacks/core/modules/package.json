@@ -2,7 +2,7 @@
   "name": "@stacksjs/modules",
   "type": "module",
   "version": "0.41.1",
-  "packageManager": "pnpm@7.16.1",
+  "packageManager": "pnpm@7.17.0",
   "description": "The Stacks framework modules.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -32,7 +32,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.16.1"
+    "pnpm": ">=7.17.0"
   },
   "scripts": {
     "build": "mkdist -d",
