@@ -24,11 +24,11 @@ The Stacks framework is a harmony of the following engines:
 
 Develop UIs with helpers for atomic design, component libraries, and more.
 
-- 🧩 Components (auto creates Vue & Web components)
-- 📚 Library Mode
-- 📊 Pages (SSG & PWA support)
-- 🖥️ Desktop (coming soon, powered by Tauri)
-- Powered by Vue & UnoCSS
+- 🧩 Components _develop UI components with ease_
+- 📚 Library Mode _auto-builds Vue & Web component libraries_
+- 📊 Pages _SSG & PWA support using components_
+- 🖥️ Desktop _components as desktop elements, powered by Tauri_
+- ⚡️ Powered by Vue, Vite & UnoCSS
 
 ### Stacks Functions
 
@@ -46,24 +46,25 @@ Develop serverless (or server) functions with countless helpers to build scalabl
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
 - 🌪️ **Validation** _tbd_
-- 📈 **X-Ray** All you need to debug, log & analyze, easily
+- 📈 **X-Ray** _All you need to debug, log & analyze, easily_
 
 ### Stacks Cloud
 
 Create your own cloud. _With a few commands._
 
-- ☁️ **Server** local development server & production-ready servers
+- ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _your own CloudFront CDN_
 - 🔐 **Firewall** _native web application firewall support_
+- 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 
 ### Stacks CI/CD
 
 Focus on coding, not publishing.
 
-- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments_  (AWS, Vercel, Netlify, etc.)
+- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
-- ✨ **Git workflows** commit with ease
+- ✨ **Git workflows** _commit with ease_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 ### Stacks DX
@@ -71,10 +72,10 @@ Focus on coding, not publishing.
 Enhanced productivity for developers. No more creating boilerplate.
 
 - 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
-- 💡 **IDE Integration** _Auto-completions, inline docs & a powerful VS Code setup_
-- 💪🏼 **Type Strong** _Built-in end-to-end type safety_
-- 🛠️ **Utilities** _Auto imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
-- 🪄 **Zero-Config** yet highly configurable
+- 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
+- 💪🏼 **Type Strong** _built-in end-to-end type safety_
+- 🛠️ **Utilities** _auto-imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
+- 🪄 **Zero-Config** _yet highly configurable. Convention over configuration_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
