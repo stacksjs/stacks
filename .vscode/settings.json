@@ -297,7 +297,8 @@
     "fontshare",
     "arrayable",
     "mergeable",
-    "tauri"
+    "tauri",
+    "typesense"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

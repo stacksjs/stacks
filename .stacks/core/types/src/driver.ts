@@ -31,4 +31,29 @@ export interface SearchEngineDriver {
 
   // Search
   search?: (key: string) => MaybePromise<Search>
+
+  calculatePagination: any
+  currentPage: any
+  filterName: any
+  filters: any
+  goToNextPage: any
+  goToPage: any
+  goToPrevPage: any
+  hits: any
+  index: any
+  lastPageNumber: any
+  perPage: any
+  query: any
+  results: any
+  searchFilters: any
+  searchParams: any
+  setTotalHits: any
+  sort: any
+  sorts: any
+  totalPages: any
+}
+
+export function isPrimitive(arg: any) {
+  const type = typeof arg
+  return arg === null || (type !== 'object' && type !== 'function')
 }

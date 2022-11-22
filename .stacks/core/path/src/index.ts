@@ -94,8 +94,8 @@ export function docsPath(path?: string) {
   return corePath(`docs/${path || ''}`)
 }
 
-export function driverPath(path?: string) {
-  return corePath(`driver/${path || ''}`)
+export function driversPath(path?: string) {
+  return corePath(`drivers/${path || ''}`)
 }
 
 export function customElementsDataPath() {
@@ -260,7 +260,7 @@ export const path = {
   dashboardPath,
   desktopPath,
   docsPath,
-  driverPath,
+  driversPath,
   errorHandlingPath,
   examplesPath,
   frameworkPath,

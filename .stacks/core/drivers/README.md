@@ -9,13 +9,13 @@ A simple way to create reusable driver implementations. Utilized in the Stacks F
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/driver
+pnpm i -D @stacksjs/drivers
 ```
 
 Now, you can use it in your project:
 
 ```js
-import { defineDriver } from '@stacksjs/driver'
+import { defineDriver } from '@stacksjs/drivers'
 
 // wip
 ```

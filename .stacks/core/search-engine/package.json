@@ -20,6 +20,11 @@
     "search-engine",
     "meilisearch",
     "algolia",
+    "typesense",
+    "pagination",
+    "sorting",
+    "filtering",
+    "searching",
     "api",
     "headless",
     "stacks"
@@ -45,6 +50,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/drivers": "workspace:*",
     "meilisearch": "^0.29.1",
     "vitest": "^0.25.2"
   },
