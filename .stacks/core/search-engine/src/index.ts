@@ -1,10 +1,6 @@
-import type { SearchEngineDriver } from './drivers/meilisearch'
+// import type { SearchEngineDriver } from '@stacksjs/types'
 
-export interface CreateSearchEngineOptions {
-  driver?: SearchEngineDriver
-}
-
-// export function createSearchEngine(options: CreateSearchEngineOptions): SearchEngineDriver {
+// export async function createSearchEngine(options: any): SearchEngineDriver {
 //   return {}
 // }
 

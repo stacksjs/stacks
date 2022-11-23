@@ -3,7 +3,7 @@ import type { CliOptions as FreshOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options?: FreshOptions) {
-  const perf = intro('stx fresh')
+  const perf = intro('buddy fresh')
   const results = await runCommands(['pnpm run clean', 'pnpm install'], options)
 
   for (const result of results) {

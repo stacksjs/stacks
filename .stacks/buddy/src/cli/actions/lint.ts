@@ -1,4 +1,5 @@
 import { log } from '@stacksjs/x-ray'
+import { intro, outro, runCommand } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import type { LintOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
@@ -11,16 +12,15 @@ export async function invoke(options: LintOptions) {
 }
 
 export async function lint(options: LintOptions) {
-  try {
-    log.info('Linting...')
-    await runNpmScript(NpmScript.Lint, options)
-    log.success('Linted.')
-  }
-  catch (error) {
-    log.error('There was an error linting your code.')
-    log.error(error)
+  const perf = intro('buddy lint')
+  const result = await runCommand('eslint .', { ...options, debug: true })
+
+  if (result.isErr()) {
+    outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true })
     process.exit(ExitCode.FatalError)
   }
+
+  outro('Linted', { startTime: perf, useSeconds: true })
 }
 
 export async function lintFix(options?: LintOptions) {

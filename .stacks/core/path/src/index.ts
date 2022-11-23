@@ -218,6 +218,10 @@ export function stacksPath(path?: string) {
   return frameworkPath(`src/${path || ''}`)
 }
 
+export function tablesPath(path?: string) {
+  return corePath(`tables/${path || ''}`)
+}
+
 export function testingPath(path?: string) {
   return corePath(`testing/${path || ''}`)
 }
@@ -286,6 +290,7 @@ export const path = {
   serverlessPath,
   stacksPath,
   stringsPath,
+  tablesPath,
   testingPath,
   typesPath,
   uiPath,

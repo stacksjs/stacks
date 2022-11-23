@@ -1,5 +1,4 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { log } from './console'
 import { spinner } from './spinner'
@@ -25,10 +24,11 @@ export function intro(command: string, options?: IntroOptions) {
  * Prints the outro message.
  */
 export function outro(text: string, options: OutroOptions, error?: Error) {
-  if (options.isError)
-    log.error(error)
-  else
-    log.success(text)
+  if (options.isError) {
+    if (error)
+      log.error(error)
+  }
+  else { log.success(text) }
 
   if (options.startTime) {
     let time = performance.now() - options.startTime
@@ -38,15 +38,10 @@ export function outro(text: string, options: OutroOptions, error?: Error) {
       time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
     }
 
-    if (options.isError) {
+    if (options.isError)
       log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
-      process.exit(ExitCode.FatalError)
-    }
-
-    else {
+    else
       log.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
-      process.exit(ExitCode.Success)
-    }
   }
 }
 
