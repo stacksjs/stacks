@@ -64,8 +64,6 @@ Focus on coding, not publishing.
 
 - 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
-- ✨ **Git workflows** _commit with ease_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 ### Stacks DX
 
@@ -75,6 +73,8 @@ Enhanced productivity for developers. No more creating boilerplate.
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
 - 💪🏼 **Type Strong** _built-in end-to-end type safety_
 - 🛠️ **Utilities** _auto-imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
+- ✨ **Git workflows** _commit with ease_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 - 🪄 **Zero-Config** _yet highly configurable. Convention over configuration_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
