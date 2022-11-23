@@ -31,11 +31,11 @@ export interface SearchEngineDriver {
 
   // Records (MeiliSearch uses the term "documents")
   getRecord?: (key: string) => MaybePromise<Record>
-  getRecords?: (key: string) => MaybePromise<DocumentsResults>
-  createRecord?: (record: Record, indexName: string, options: DocumentOptions) => MaybePromise<EnqueuedTask>
-  createRecords?: (records: Records, indexName: string, options: DocumentOptions) => MaybePromise<EnqueuedTask>
-  createOrReplaceRecord?: (record: Record, indexName: string, options: DocumentOptions) => MaybePromise<EnqueuedTask>
-  createOrUpdateRecord?: (record: Record, indexName: string, options: DocumentOptions) => MaybePromise<EnqueuedTask>
+  getRecords?: (key: string) => MaybePromise<RecordOptions>
+  createRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createRecords?: (records: Records, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrReplaceRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrUpdateRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
   deleteRecord?: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
   deleteAllRecords?: (indexName: string) => MaybePromise<EnqueuedTask>
   batchDeleteRecords?: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>

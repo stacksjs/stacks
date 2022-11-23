@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createClient } from 'redis'
+import { createClient } from 'redis' // TODO: needs to be imported from cache package
 
-// TODO: needs to be imported to cache package
 const client: any = createClient({
   socket: {
     host: '127.0.0.1',

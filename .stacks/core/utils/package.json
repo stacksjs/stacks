@@ -68,6 +68,7 @@
     "throttle-debounce": "^5.0.0"
   },
   "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
     "typescript": "^4.9.3"
   }

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { alias } from './alias'
+import { alias } from './buddy/alias'
 
 export default defineConfig({
   root: '..',
@@ -16,7 +16,6 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'istanbul',
-      exclude: ['.stacks'],
     },
   },
 })

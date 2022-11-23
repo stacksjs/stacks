@@ -50,12 +50,13 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "fs-extra": "^10.1.0"
+    "fs-extra": "^10.1.0",
+    "unstorage": "^1.0.1"
   },
   "devDependencies": {
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
-    "typescript": "^4.9.3",
-    "unstorage": "^1.0.1"
+    "typescript": "^4.9.3"
   }
 }

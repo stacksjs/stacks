@@ -51,6 +51,7 @@
     "vite": "^3.2.4"
   },
   "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
     "typescript": "^4.9.3"
   }

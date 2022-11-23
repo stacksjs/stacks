@@ -49,10 +49,10 @@
   },
   "peerDependencies": {
     "@prisma/client": "^4.6.1",
-    "@stacksjs/utils": "workspace:*",
-    "vitest": "^0.25.2"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
     "typescript": "^4.9.3"
   }

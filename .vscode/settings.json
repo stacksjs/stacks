@@ -298,7 +298,8 @@
     "arrayable",
     "mergeable",
     "tauri",
-    "typesense"
+    "typesense",
+    "memjs"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

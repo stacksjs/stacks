@@ -53,6 +53,7 @@
     "vue-ray": "^1.17.3"
   },
   "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0"
   }
 }
