@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/testing",
   "type": "module",
-  "version": "0.41.1",
+  "version": "0.42.0",
   "packageManager": "pnpm@7.17.0",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",
@@ -46,8 +46,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vitest/ui": "^0.25.3",
     "@vitest/coverage-istanbul": "^0.25.2",
+    "@vitest/ui": "^0.25.3",
     "vitest": "^0.25.2"
   },
   "devDependencies": {

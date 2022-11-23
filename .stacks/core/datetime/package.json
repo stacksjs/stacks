@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/datetime",
   "type": "module",
-  "version": "0.41.1",
+  "version": "0.42.0",
   "packageManager": "pnpm@7.17.0",
   "description": "The Stacks datetime helpers.",
   "author": "Chris Breuer",
