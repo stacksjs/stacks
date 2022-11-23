@@ -344,11 +344,13 @@ importers:
 
   .stacks/core/drivers:
     specifiers:
+      '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.0.0
       typescript: ^4.9.3
     dependencies:
+      '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing

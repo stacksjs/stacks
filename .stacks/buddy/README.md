@@ -226,9 +226,7 @@ buddy types:generate
 buddy types:fix
 
 # test your stack
-buddy test # runs test suite
-buddy test:unit # runs unit tests
-buddy test:e2e # runs e2e tests
+buddy test # runs test suite (unit & e2e)
 buddy test:coverage # runs test coverage
 buddy test:types # runs typecheck
 
