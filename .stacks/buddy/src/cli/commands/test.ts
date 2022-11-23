@@ -1,5 +1,5 @@
 import type { CLI, TestOptions } from '@stacksjs/types'
-import { invoke, testCoverageReport, typecheck } from '../actions/test'
+import { invoke, testCoverageReport, testUi, typecheck } from '../actions/test'
 
 const descriptions = {
   command: 'Runs your test suite',
@@ -14,6 +14,13 @@ async function test(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       await invoke(options)
+    })
+
+  stacks
+    .command('test:ui', descriptions.command)
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: TestOptions) => {
+      await testUi(options)
     })
 
   stacks

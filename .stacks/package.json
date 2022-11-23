@@ -142,9 +142,8 @@
     "types:generate": "vue-tsc --declaration --emitDeclarationOnly && esno ./core/actions/src/copy-types.ts",
     "types:fix": "esno actions/src/fix-types.ts",
     "test": "vitest --config vitest.config.ts",
-    "test:unit": "wip",
-    "test:e2e": "wip",
-    "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "test:ui": "pnpm buddy test:ui",
+    "test:coverage": "pnpm buddy test:coverage",
     "test:types": "vue-tsc --noEmit"
   },
   "web-types": "./web-types.json",

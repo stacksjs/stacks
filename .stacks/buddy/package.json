@@ -138,10 +138,9 @@
     "types:fix": "esno actions/src/fix-types.ts",
     "add": "pnpm buddy add",
     "test": "vitest --config vitest.config.ts",
-    "test:unit": "wip",
-    "test:e2e": "wip",
-    "test:coverage": "vitest run --coverage --config vitest.config.ts",
-    "test:types": "vue-tsc --noEmit"
+    "test:ui": "pnpm buddy test:ui",
+    "test:coverage": "pnpm buddy test:coverage",
+    "test:types": "pnpm buddy test:types"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",

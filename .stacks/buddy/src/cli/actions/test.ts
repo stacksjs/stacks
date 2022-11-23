@@ -1,17 +1,25 @@
-import { log } from '@stacksjs/x-ray'
-import { runNpmScript } from '@stacksjs/utils'
 import type { TestOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
+import { intro, outro, runCommand } from '@stacksjs/cli'
 
 export async function invoke(options: TestOptions) {
-  try {
-    log.info('Running your test suite...')
-    await runNpmScript(NpmScript.Test, options)
-    log.success('Completed running the test suite.')
+  const perf = intro('buddy test')
+  const result = await runCommand(NpmScript.Test, { ...options, debug: true })
+
+  if (result.isErr()) {
+    outro('While running `buddy test`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    process.exit(ExitCode.FatalError)
   }
-  catch (error) {
-    log.error('There was an error testing your stack.')
-    log.error(error)
+
+  outro('Finished running tests', { startTime: perf, useSeconds: true })
+}
+
+export async function testUi(options: TestOptions) {
+  const perf = intro('buddy test:ui')
+  const result = await runCommand(NpmScript.TestUi, { ...options, debug: true })
+
+  if (result.isErr()) {
+    outro('While running `buddy test:ui`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -26,23 +34,27 @@ export async function test(options: TestOptions) {
 }
 
 export async function typecheck(options: TestOptions) {
-  try {
-    log.info('Typechecking your codebase...')
-    await runNpmScript(NpmScript.TestTypes, options)
-    log.success('Completed the typecheck.')
+  const perf = intro('buddy test:types')
+  const result = await runCommand(NpmScript.TestTypes, options)
+
+  if (result.isErr()) {
+    outro('While running `buddy test:types`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    process.exit(ExitCode.FatalError)
   }
-  catch (error) {
-    log.error(error)
-  }
+
+  outro('Finished typecheck', { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }
 
 export async function testCoverageReport(options: TestOptions) {
-  try {
-    log.info('Generating a test coverage report...')
-    await runNpmScript(NpmScript.TestCoverage, options)
-    log.success('Generated the test coverage report.')
+  const perf = intro('buddy test:coverage')
+  const result = await runCommand(NpmScript.TestCoverage, options)
+
+  if (result.isErr()) {
+    outro('While running `buddy test:coverage`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    process.exit(ExitCode.FatalError)
   }
-  catch (error) {
-    log.error(error)
-  }
+
+  outro('Generated the test coverage report', { startTime: perf, useSeconds: true })
+  process.exit(ExitCode.Success)
 }

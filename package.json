@@ -100,6 +100,7 @@
     "types:generate": "pnpm buddy types:generate",
     "types:fix": "pnpm buddy types:fix",
     "test": "pnpm buddy test",
+    "test:ui": "pnpm buddy test:ui",
     "test:coverage": "pnpm buddy test:coverage",
     "test:types": "pnpm buddy test:types"
   },
