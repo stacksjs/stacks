@@ -80,7 +80,15 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
 `,
     })
 
-    log.success(`Created the ${type} package.json.`)
+    let prettyName
+    if (type === 'vue-components')
+      prettyName = 'Vue Component library'
+    else if (type === 'web-components')
+      prettyName = 'Web Component library'
+    else if (type === 'functions')
+      prettyName = 'Function Library'
+
+    log.success(`Created the ${prettyName} package.json.`)
   }
   catch (err) {
     log.error(err)
