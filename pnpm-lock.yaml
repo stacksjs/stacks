@@ -193,7 +193,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.215.0
+      '@aws-sdk/client-dynamodb': ^3.216.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.4
@@ -202,7 +202,7 @@ importers:
       mkdist: ^1.0.0
       redis: ^4.5.0
       typescript: ^4.9.3
-      vitest: ^0.25.2
+      vitest: ^0.25.3
     dependencies:
       '@aws-sdk/client-dynamodb': 3.216.0
       '@stacksjs/config': link:../config
@@ -591,11 +591,11 @@ importers:
 
   .stacks/core/testing:
     specifiers:
-      '@vitest/coverage-istanbul': ^0.25.2
+      '@vitest/coverage-istanbul': ^0.25.3
       '@vitest/ui': ^0.25.3
       mkdist: ^0.4.1
       typescript: ^4.9.3
-      vitest: ^0.25.2
+      vitest: ^0.25.3
     dependencies:
       '@vitest/coverage-istanbul': 0.25.3_@vitest+ui@0.25.3
       '@vitest/ui': 0.25.3
@@ -665,7 +665,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@unocss/transformer-compile-class': ^0.46.5
       mkdist: ^1.0.0
-      pinia: ^2.0.25
+      pinia: ^2.0.26
       typescript: ^4.9.3
       unocss: ^0.46.5
       vue: ^3.2.45
