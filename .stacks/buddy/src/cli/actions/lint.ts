@@ -13,7 +13,7 @@ export async function invoke(options: LintOptions) {
 
 export async function lint(options: LintOptions) {
   const perf = intro('buddy lint')
-  const result = await runCommand('eslint .', { ...options, debug: true })
+  const result = await runCommand(NpmScript.Lint, { ...options, debug: true })
 
   if (result.isErr()) {
     outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true })

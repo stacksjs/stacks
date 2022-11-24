@@ -4,7 +4,7 @@ import { loop } from '@stacksjs/utils'
 import { determineDebugMode } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpdateOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
+import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options?: UpdateOptions) {
   if (options?.framework || options?.all)
@@ -110,7 +110,7 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
 
 export async function updateDependencies(options: UpdateOptions) {
   const perf = intro('buddy update:dependencies')
-  const result = await runCommand('pnpm update', options)
+  const result = await runCommand(NpmScript.UpdateDependencies, options)
 
   if (result.isErr()) {
     outro('While running the update:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -137,7 +137,7 @@ export async function updatePackageManager(options: UpdateOptions) {
 
 export async function updateNode(options: UpdateOptions) {
   const perf = intro('buddy update:node')
-  const result = await runCommand('pnpm env use', options)
+  const result = await runCommand(NpmScript.UpdateNode, options)
 
   if (result.isErr()) {
     outro('While running the update:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

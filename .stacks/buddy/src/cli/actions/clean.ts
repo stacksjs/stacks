@@ -1,11 +1,10 @@
 import { log, runCommand } from '@stacksjs/cli'
-import { type CleanOptions, ExitCode } from '@stacksjs/types'
+import { type CleanOptions, ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function invoke(options?: CleanOptions) {
   log.info('Running clean command...')
 
-  const command = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules'
-  const result = await runCommand(command, options)
+  const result = await runCommand(NpmScript.Clean, options)
 
   if (result.isOk()) {
     log.success('Cleaned up.')
