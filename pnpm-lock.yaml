@@ -200,7 +200,7 @@ importers:
       memcached: ^2.2.2
       memjs: ^1.3.0
       mkdist: ^1.0.0
-      redis: ^4.5.0
+      redis: ^4.5.1
       typescript: ^4.9.3
     dependencies:
       '@aws-sdk/client-dynamodb': 3.216.0
@@ -208,7 +208,7 @@ importers:
       '@types/memjs': 1.2.4
       memcached: 2.2.2
       memjs: 1.3.0
-      redis: 4.5.0
+      redis: 4.5.1
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.3
@@ -399,14 +399,14 @@ importers:
       '@stacksjs/testing': workspace:*
       '@types/eslint': ^8.4.10
       eslint: ^8.28.0
-      lint-staged: ^13.0.3
+      lint-staged: ^13.0.4
       mkdist: ^1.0.0
       typescript: ^4.9.3
     dependencies:
       '@ow3/eslint-config': 0.33.11_hsf322ms6xhhd4b5ne6lb74y4a
       '@types/eslint': 8.4.10
       eslint: 8.28.0
-      lint-staged: 13.0.3
+      lint-staged: 13.0.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.3
@@ -3318,16 +3318,16 @@ packages:
     resolution: {integrity: sha512-HUCmkXAU2jqp2O1RvNtbE+seLGLyJGEABZS/R38rZjSAafAy0WzBuHq+tbZMnD+b5OSCsTVtIPVcuvx1ySxcWQ==}
     dev: false
 
-  /@redis/bloom/1.1.0_@redis+client@1.4.0:
+  /@redis/bloom/1.1.0_@redis+client@1.4.2:
     resolution: {integrity: sha512-9QovlxmpRtvxVbN0UBcv8WfdSMudNZZTFqCsnBszcQXqaZb/TVe30ScgGEO7u1EAIacTPAo7/oCYjYAxiHLanQ==}
     peerDependencies:
       '@redis/client': ^1.0.0
     dependencies:
-      '@redis/client': 1.4.0
+      '@redis/client': 1.4.2
     dev: false
 
-  /@redis/client/1.4.0:
-    resolution: {integrity: sha512-1gEj1AkyXPlkcC/9/T5xpDcQF8ntERURjLBgEWMTdUZqe181zfI9BY3jc2OzjTLkvZh5GV7VT4ktoJG2fV2ufw==}
+  /@redis/client/1.4.2:
+    resolution: {integrity: sha512-oUdEjE0I7JS5AyaAjkD3aOXn9NhO7XKyPyXEyrgFDu++VrVBHUPnV6dgEya9TcMuj5nIJRuCzCm8ZP+c9zCHPw==}
     engines: {node: '>=14'}
     dependencies:
       cluster-key-slot: 1.1.1
@@ -3335,36 +3335,36 @@ packages:
       yallist: 4.0.0
     dev: false
 
-  /@redis/graph/1.1.0_@redis+client@1.4.0:
+  /@redis/graph/1.1.0_@redis+client@1.4.2:
     resolution: {integrity: sha512-16yZWngxyXPd+MJxeSr0dqh2AIOi8j9yXKcKCwVaKDbH3HTuETpDVPcLujhFYVPtYrngSco31BUcSa9TH31Gqg==}
     peerDependencies:
       '@redis/client': ^1.0.0
     dependencies:
-      '@redis/client': 1.4.0
+      '@redis/client': 1.4.2
     dev: false
 
-  /@redis/json/1.0.4_@redis+client@1.4.0:
+  /@redis/json/1.0.4_@redis+client@1.4.2:
     resolution: {integrity: sha512-LUZE2Gdrhg0Rx7AN+cZkb1e6HjoSKaeeW8rYnt89Tly13GBI5eP4CwDVr+MY8BAYfCg4/N15OUrtLoona9uSgw==}
     peerDependencies:
       '@redis/client': ^1.0.0
     dependencies:
-      '@redis/client': 1.4.0
+      '@redis/client': 1.4.2
     dev: false
 
-  /@redis/search/1.1.0_@redis+client@1.4.0:
+  /@redis/search/1.1.0_@redis+client@1.4.2:
     resolution: {integrity: sha512-NyFZEVnxIJEybpy+YskjgOJRNsfTYqaPbK/Buv6W2kmFNaRk85JiqjJZA5QkRmWvGbyQYwoO5QfDi2wHskKrQQ==}
     peerDependencies:
       '@redis/client': ^1.0.0
     dependencies:
-      '@redis/client': 1.4.0
+      '@redis/client': 1.4.2
     dev: false
 
-  /@redis/time-series/1.0.4_@redis+client@1.4.0:
+  /@redis/time-series/1.0.4_@redis+client@1.4.2:
     resolution: {integrity: sha512-ThUIgo2U/g7cCuZavucQTQzA9g9JbDDY2f64u3AbAoz/8vE2lt2U37LamDUVChhaDA3IRT9R6VvJwqnUfTJzng==}
     peerDependencies:
       '@redis/client': ^1.0.0
     dependencies:
-      '@redis/client': 1.4.0
+      '@redis/client': 1.4.2
     dev: false
 
   /@rollup/plugin-alias/4.0.2_rollup@2.79.1:
@@ -8117,8 +8117,8 @@ packages:
       type-check: 0.4.0
     dev: false
 
-  /lilconfig/2.0.5:
-    resolution: {integrity: sha512-xaYmXZtTHPAw5m+xLN8ab9C+3a8YmV3asNSPOATITbtwrfbwaLJj8h66H1WMIpALCkqsIzK3h7oQ+PdX+LQ9Eg==}
+  /lilconfig/2.0.6:
+    resolution: {integrity: sha512-9JROoBW7pobfsx+Sq2JsASvCo6Pfo6WWoUW79HuB1BCoBXD4PLWJPqDF6fNj67pqBYTbAHkE57M1kS/+L1neOg==}
     engines: {node: '>=10'}
     dev: false
 
@@ -8131,8 +8131,8 @@ packages:
     dependencies:
       uc.micro: 1.0.6
 
-  /lint-staged/13.0.3:
-    resolution: {integrity: sha512-9hmrwSCFroTSYLjflGI8Uk+GWAwMB4OlpU4bMJEAT5d/llQwtYKoim4bLOyLCuWFAhWEupE0vkIFqtw/WIsPug==}
+  /lint-staged/13.0.4:
+    resolution: {integrity: sha512-HxlHCXoYRsq9QCby5wFozmZW00hMs/9e3l+/dz6Qr8Kle4UH0kJTdABAbqhzG+3pcG6QjL9kz7NgGBfph+a5dw==}
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
     dependencies:
@@ -8141,8 +8141,8 @@ packages:
       commander: 9.4.1
       debug: 4.3.4
       execa: 6.1.0
-      lilconfig: 2.0.5
-      listr2: 4.0.5
+      lilconfig: 2.0.6
+      listr2: 5.0.5
       micromatch: 4.0.5
       normalize-path: 3.0.0
       object-inspect: 1.12.2
@@ -8167,9 +8167,9 @@ packages:
       ufo: 1.0.0
     dev: false
 
-  /listr2/4.0.5:
-    resolution: {integrity: sha512-juGHV1doQdpNT3GSTs9IUN43QJb7KHdF9uqg7Vufs/tG9VTzpFphqF4pm/ICdAABGQxsyNn9CiYA3StkI6jpwA==}
-    engines: {node: '>=12'}
+  /listr2/5.0.5:
+    resolution: {integrity: sha512-DpBel6fczu7oQKTXMekeprc0o3XDgGMkD7JNYyX+X0xbwK+xgrx9dcyKoXKqpLSUvAWfmoePS7kavniOcq3r4w==}
+    engines: {node: ^14.13.1 || >=16.0.0}
     peerDependencies:
       enquirer: '>= 2.3.0 < 3'
     peerDependenciesMeta:
@@ -9677,15 +9677,15 @@ packages:
       redis-errors: 1.2.0
     dev: false
 
-  /redis/4.5.0:
-    resolution: {integrity: sha512-oZGAmOKG+RPnHo0UxM5GGjJ0dBd/Vi4fs3MYwM1p2baDoXC0wpm0yOdpxVS9K+0hM84ycdysp2eHg2xGoQ4FEw==}
+  /redis/4.5.1:
+    resolution: {integrity: sha512-oxXSoIqMJCQVBTfxP6BNTCtDMyh9G6Vi5wjdPdV/sRKkufyZslDqCScSGcOr6XGR/reAWZefz7E4leM31RgdBA==}
     dependencies:
-      '@redis/bloom': 1.1.0_@redis+client@1.4.0
-      '@redis/client': 1.4.0
-      '@redis/graph': 1.1.0_@redis+client@1.4.0
-      '@redis/json': 1.0.4_@redis+client@1.4.0
-      '@redis/search': 1.1.0_@redis+client@1.4.0
-      '@redis/time-series': 1.0.4_@redis+client@1.4.0
+      '@redis/bloom': 1.1.0_@redis+client@1.4.2
+      '@redis/client': 1.4.2
+      '@redis/graph': 1.1.0_@redis+client@1.4.2
+      '@redis/json': 1.0.4_@redis+client@1.4.2
+      '@redis/search': 1.1.0_@redis+client@1.4.2
+      '@redis/time-series': 1.0.4_@redis+client@1.4.2
     dev: false
 
   /regenerate-unicode-properties/10.1.0:
