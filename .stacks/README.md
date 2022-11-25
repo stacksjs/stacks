@@ -28,7 +28,7 @@ Develop UIs with helpers for atomic design, component libraries, and more.
 - 📚 Library Mode _auto-builds Vue & Web component libraries_
 - 📊 Pages _SSG & PWA support using components_
 - 🖥️ Desktop _components as desktop elements, powered by Tauri_
-- ⚡️ Powered by Vue, Vite & UnoCSS
+- ⚡️ Powered by Vue, Vite, UnoCSS & Tauri
 
 ### Stacks Functions
 
@@ -45,7 +45,7 @@ Develop serverless (or server) functions with countless helpers to build scalabl
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
-- 🌪️ **Validation** _tbd_
+- 🌪️ **Validation** _e2e type-safety (frontend knows what the backend knows)_
 - 📈 **X-Ray** _All you need to debug, log & analyze, easily_
 
 ### Stacks Cloud
@@ -75,7 +75,7 @@ Enhanced productivity for developers. No more creating boilerplate.
 - 🛠️ **Utilities** _auto-imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
 - ✨ **Git workflows** _commit with ease_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest_
-- 🪄 **Zero-Config** _yet highly configurable. Convention over configuration_
+- 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
