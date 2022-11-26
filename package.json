@@ -105,6 +105,27 @@
     "test:types": "pnpm buddy test:types"
   },
   "dependencies": {
+    "@novu/discord": "^0.9.0",
+    "@novu/emailjs": "^0.9.0",
+    "@novu/gupshup": "^0.9.0",
+    "@novu/mailgun": "^0.9.0",
+    "@novu/mailjet": "^0.9.0",
+    "@novu/mandrill": "^0.9.0",
+    "@novu/netcore": "^0.9.0",
+    "@novu/nexmo": "^0.9.0",
+    "@novu/node": "^0.9.0",
+    "@novu/nodemailer": "^0.9.0",
+    "@novu/plivo": "^0.9.0",
+    "@novu/postmark": "^0.9.0",
+    "@novu/sendgrid": "^0.9.0",
+    "@novu/ses": "^0.9.0",
+    "@novu/slack": "^0.9.0",
+    "@novu/sms77": "^0.9.0",
+    "@novu/sns": "^0.9.0",
+    "@novu/stateless": "^0.9.0",
+    "@novu/telnyx": "^0.9.0",
+    "@novu/termii": "^0.9.0",
+    "@novu/twilio": "^0.9.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {
