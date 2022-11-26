@@ -8,8 +8,8 @@ const provider = new PlivoSmsProvider({
   from: env('PLIVO_FROM_NUMBER', 'test'),
 });
 
-async function send(options: ISmsOptions): Promise<ISendMessageSuccessResponse>{
+async function send(options: ISmsOptions): Promise<ISendMessageSuccessResponse> {
   return await provider.sendMessage(options);
 }
 
-export { send as Send, send }
+export { send as Send, send } 
