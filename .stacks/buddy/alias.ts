@@ -42,6 +42,8 @@ const alias: Record<string, string> = {
   '@stacksjs/x-ray': p.xRayPath('src/index.ts'),
   '@stacksjs/x-ray/*': p.xRayPath('src/*'),
   '@stacksjs/modules/*': p.modulesPath('src/*'),
+  '@stacksjs/notifications': p.notificationsPath('src/index.ts'),
+  '@stacksjs/notifications/*': p.notificationsPath('src/*'),
   '@stacksjs/objects': p.objectsPath('src/index.ts'),
   '@stacksjs/objects/*': p.objectsPath('src/*'),
   '@stacksjs/path': p.pathPath('src/index.ts'), // 🤦🏼‍♂️
