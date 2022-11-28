@@ -505,14 +505,14 @@ importers:
       '@stacksjs/drivers': workspace:*
       '@stacksjs/testing': workspace:*
       '@vueuse/core': ^9.6.0
-      meilisearch: ^0.29.1
+      meilisearch: ^0.30.0
       mkdist: ^1.0.0
       typescript: ^4.9.3
       vue: ^3.2.45
     dependencies:
       '@stacksjs/drivers': link:../drivers
       '@vueuse/core': 9.6.0_vue@3.2.45
-      meilisearch: 0.29.1
+      meilisearch: 0.30.0
       vue: 3.2.45
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -8438,8 +8438,8 @@ packages:
   /mdurl/1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
 
-  /meilisearch/0.29.1:
-    resolution: {integrity: sha512-SXaCtOvQV7i6kVcxJc3cWQgUKCAc0+tAg+IiuWI0OY64eyaLhSwFkjDrU4chccmiiv526y4h4lbAUt99h9+Y1A==}
+  /meilisearch/0.30.0:
+    resolution: {integrity: sha512-3y1hALOwTDpquYar+gDREqRasFPWKxkWAhk6h+RF+nKObPVf9N77wcTNvukGwOKbxRyJnKge0OPgAB1BkB9VVw==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
