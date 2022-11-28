@@ -1,6 +1,6 @@
 import { TermiiSmsProvider } from '@novu/termii'
-import { ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless';
-import { env } from '@stacksjs/utils' 
+import type { ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
+import { env } from '@stacksjs/utils'
 
 const provider = new TermiiSmsProvider({
   apiKey: env('TERMII_API_KEY', 'test'),
@@ -8,7 +8,7 @@ const provider = new TermiiSmsProvider({
 })
 
 async function send(options: ISmsOptions): Promise<ISendMessageSuccessResponse> {
-  return await provider.sendMessage(options);
+  return await provider.sendMessage(options)
 }
 
-export { send as Send, send } 
+export { send as Send, send }

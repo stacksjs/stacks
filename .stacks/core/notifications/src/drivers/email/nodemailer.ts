@@ -1,6 +1,6 @@
-import { NodemailerProvider } from '@novu/nodemailer';
-import { env } from '@stacksjs/utils' 
-import { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless';
+import { NodemailerProvider } from '@novu/nodemailer'
+import { env } from '@stacksjs/utils'
+import type { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless'
 
 const provider = new NodemailerProvider({
   from: env('NODEMAILER_FROM_EMAIL', 'test'),
@@ -9,7 +9,7 @@ const provider = new NodemailerProvider({
   password: env('NODEMAILER_PASSWORD', 'test'),
   port: env('NODEMAILER_PORT', 'test'),
   secure: env('NODEMAILER_SECURE', 'test'),
-});
+})
 
 async function send(options: IEmailOptions): Promise<ISendMessageSuccessResponse> {
   return await provider.sendMessage(options)
