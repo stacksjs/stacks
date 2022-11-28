@@ -1,10 +1,10 @@
-import { env } from '@stacksjs/utils' 
-import { SendgridEmailProvider } from '@novu/sendgrid';
-import { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless';
+import { env } from '@stacksjs/utils'
+import { SendgridEmailProvider } from '@novu/sendgrid'
+import type { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless'
 
 const provider = new SendgridEmailProvider({
-  apiKey: env('SENDGRID_API_KEY', 'test')
-});
+  apiKey: env('SENDGRID_API_KEY', 'test'),
+})
 
 async function send(options: IEmailOptions): Promise<ISendMessageSuccessResponse> {
   return await provider.sendMessage(options)
