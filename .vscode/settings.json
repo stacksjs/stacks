@@ -299,7 +299,8 @@
     "mergeable",
     "tauri",
     "typesense",
-    "memjs"
+    "memjs",
+    "frontends"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

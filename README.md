@@ -27,7 +27,7 @@ The goal of the Stacks framework is to _help you_ create & maintain frontends, b
 
 ## Features
 
-The Stacks framework is a harmony of the following engines:
+The Stacks framework is a harmony of several engines to build any web or desktop application, in highly-scalable ways. It consists of the following engines:
 
 ### Stacks UI
 
@@ -79,13 +79,14 @@ Focus on coding, not publishing.
 
 Enhanced productivity for developers. No more creating boilerplate.
 
-- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
-- 💪🏼 **Type Strong** _built-in end-to-end type safety_
-- 🛠️ **Utilities** _auto-imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
-- ✨ **Git workflows** _commit with ease_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
+- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
+- 💪🏼 **Type Strong** _built-in e2e type-safety_
+- ✨ **Git workflows** _committing with ease_
+- 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
+- 🛠️ **Utilities** _Collections, VueUse, and more_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
@@ -98,14 +99,14 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-curl -fsSL https://stacksjs.dev/setup | sh
+sh <(curl stacksjs.dev)
 
-# alternatively, if you know pnpm is already installed, get started via:
+# alternatively, given the proper Node.js version is installed, you may get started via:
 npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.16 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 7.17 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 

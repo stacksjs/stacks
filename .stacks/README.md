@@ -69,13 +69,14 @@ Focus on coding, not publishing.
 
 Enhanced productivity for developers. No more creating boilerplate.
 
-- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
-- 💪🏼 **Type Strong** _built-in end-to-end type safety_
-- 🛠️ **Utilities** _auto-imported components, functions, date, string, array, and object helpers. Collections, VueUse, and more_
-- ✨ **Git workflows** _commit with ease_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
+- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
+- 💪🏼 **Type Strong** _built-in e2e type-safety_
+- ✨ **Git workflows** _committing with ease_
+- 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
+- 🛠️ **Utilities** _Collections, VueUse, and more_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
