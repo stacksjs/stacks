@@ -142,7 +142,7 @@
     "test:coverage": "pnpm buddy test:coverage",
     "test:types": "pnpm buddy test:types"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/build": "workspace:*",

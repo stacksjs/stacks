@@ -1,10 +1,4 @@
-import type { SearchEngineDriver } from '@stacksjs/types'
-
-type SearchEngineDriverFactory<T> = (opts?: T) => SearchEngineDriver
-
-export interface CreateSearchEngineOptions {
-  driver?: SearchEngineDriver
-}
+import type { SearchEngineDriverFactory } from '@stacksjs/types'
 
 export function defineSearchEngineDriver<T = any>(factory: SearchEngineDriverFactory<T>): SearchEngineDriverFactory<T> {
   return factory

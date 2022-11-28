@@ -10,9 +10,18 @@
 
 _For internal usage only until the beta is released by the end of ~November._
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, serverless APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
+The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. It may be any of the following topics of
 
-Convention over configuration is our mantra—in beginner & expert-friendly ways.
+- Web & desktop app UIs
+- Serverless & traditional APIs
+- Framework-agnostic component & function libraries
+- Deployment & Release Manager
+- Interactive CLIs
+- Infrastructure maintenance
+
+... where Stacks helps you every step along the way.
+
+> Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
 ![Atomic UI & FX Design](./apps/docs/images/diagram.png)
 
@@ -40,6 +49,7 @@ Develop serverless (or server) functions with countless helpers to build scalabl
 - 📀 **Database** _MySQL, Postgres, Prisma, PlanetScale, Supabase, ..._
 - 👾 **Errors** _native type-safe error handling_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
+- 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** run your heavy workload in the background
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_

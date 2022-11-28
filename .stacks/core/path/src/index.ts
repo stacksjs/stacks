@@ -4,7 +4,7 @@ import { basename, delimiter, dirname, extname, format, isAbsolute, join, normal
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action
  *
- * @param path string - relative path to the file or directory
+ * @param path - relative path to the file or directory
  * @returns string - absolute path to the file or directory
  * @example
  * ```ts

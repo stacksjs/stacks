@@ -1,10 +1,11 @@
 import type { TestOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 import { intro, outro, runCommand } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
 
 export async function invoke(options: TestOptions) {
   const perf = intro('buddy test')
-  const result = await runCommand(NpmScript.Test, { ...options, debug: true })
+  const result = await runCommand(NpmScript.Test, { ...options, debug: true, cwd: projectPath() })
 
   if (result.isErr()) {
     outro('While running `buddy test`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

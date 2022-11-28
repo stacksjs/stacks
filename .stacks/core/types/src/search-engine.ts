@@ -1,7 +1,17 @@
 import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Document as Record, DocumentOptions as RecordOptions, Documents as Records, DocumentsResults as RecordsResults, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
 import type { MaybePromise } from '.'
 
-export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Record, RecordOptions, Records, RecordsResults, SearchEngineSettings, SearchParams, SearchResponse }
+type Search = any
+type Page = any
+type Pages = Page[]
+type Filter = any
+type Filters = Filter[]
+type Result = any
+type Results = Result[]
+type SearchFilter = any
+type SearchFilters = SearchFilter[]
+type Sorts = any
+type Sort = any
 
 export interface SearchEngineOptions {
   /**
@@ -15,7 +25,10 @@ export interface SearchEngineOptions {
   driver: 'meilisearch' | 'algolia'
 }
 
-type Search = any
+export interface MeiliSearchOptions {
+  apiKey: string
+  host: string
+}
 
 export interface SearchEngineDriver {
   client: MeiliSearch
@@ -43,29 +56,31 @@ export interface SearchEngineDriver {
   // Search
   search?: (query: string, indexName: string, options: SearchParams) => MaybePromise<Search>
 
-  calculatePagination: any
-  currentPage: any
-  filterName: any
-  filters: any
-  goToNextPage: any
-  goToPage: any
-  goToPrevPage: any
-  hits: any
-  index: any
-  lastPageNumber: any
-  perPage: any
-  query: any
-  results: any
-  searchFilters: any
-  searchParams: any
-  setTotalHits: any
-  sort: any
-  sorts: any
-  totalPages: any
+  calculatePagination: Pages
+  currentPage: Page
+  filterName: string
+  filters: Filters
+  goToNextPage: () => Page
+  goToPage: (pageNumber: number) => Page
+  goToPrevPage: () => Page
+  hits: Hits
+  index: Index
+  lastPage: Page
+  perPage: number
+  query: string
+  results: Results // SearchResponse
+  searchFilters: SearchFilters
+  searchParams: SearchParams
+  setTotalHits: number
+  sort: Sort
+  sorts: Sorts
+  totalPages: number
 }
 
+export type SearchEngineDriverFactory<T> = (opts?: T) => SearchEngineDriver
+
 /**
- * the TableStore interface is primarily used to unify the persisting of data to localStorage
+ * This interface is used to unify the persisting of data to localStorage
  */
 export interface SearchEngineStorage {
   /**
@@ -94,3 +109,5 @@ export interface SearchEngineStorage {
    */
   currentPage: number
 }
+
+export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Record, RecordOptions, Records, RecordsResults, SearchEngineSettings, SearchParams, SearchResponse }
