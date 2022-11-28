@@ -89,9 +89,10 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-curl -fsSL https://stacksjs.dev/setup | sh
+sh <(curl stacksjs.dev)
 
-# alternatively, if you know pnpm is already installed, get started via:
+# alternatively, if Node.js >= v18.12 is installed already,
+# you may also get started via:
 npx stacks new my-project
 ```
 

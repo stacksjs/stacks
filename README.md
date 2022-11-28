@@ -101,7 +101,8 @@ It's incredibly easy to get started with this framework. Simply run the followin
 ```bash
 sh <(curl stacksjs.dev)
 
-# alternatively, given the proper Node.js version is installed, you may get started via:
+# alternatively, if Node.js >= v18.12 is installed already,
+# you may also get started via:
 npx stacks new my-project
 ```
 
