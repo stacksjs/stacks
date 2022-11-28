@@ -2,7 +2,7 @@
   "name": "@stacksjs/drivers",
   "type": "module",
   "version": "0.42.2",
-  "packageManager": "pnpm@7.17.0",
+  "packageManager": "pnpm@7.17.1",
   "description": "Easily create a driver-based system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.17.0"
+    "pnpm": ">=7.17.1"
   },
   "scripts": {
     "build": "mkdist -d",

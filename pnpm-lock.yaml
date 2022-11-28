@@ -42,7 +42,7 @@ importers:
       '@stacksjs/utils': workspace:*
       '@stacksjs/x-ray': workspace:*
       only-allow: ^1.1.1
-      pnpm: '>=7.17.0'
+      pnpm: '>=7.17.1'
       typescript: ^4.9.3
     dependencies:
       '@stacksjs/actions': link:../core/actions
@@ -72,7 +72,7 @@ importers:
       '@stacksjs/x-ray': link:../core/x-ray
     devDependencies:
       only-allow: 1.1.1
-      pnpm: 7.17.0
+      pnpm: 7.17.1
       typescript: 4.9.3
 
   .stacks/components/vue:
@@ -150,7 +150,7 @@ importers:
       mkdist: ^1.0.0
       typescript: ^4.9.3
       unbuild: ^1.0.1
-      unplugin-auto-import: ^0.11.5
+      unplugin-auto-import: ^0.12.0
       unplugin-vue-components: ^0.22.11
       vite: ^3.2.4
       vite-plugin-inspect: ^0.7.9
@@ -173,7 +173,7 @@ importers:
       markdown-it-link-attributes: 4.0.1
       markdown-it-shiki: 0.6.1
       unbuild: 1.0.1
-      unplugin-auto-import: 0.11.5_rollup@2.79.1
+      unplugin-auto-import: 0.12.0_rollup@2.79.1
       unplugin-vue-components: 0.22.11_rollup@2.79.1+vue@3.2.45
       vite: 3.2.4
       vite-plugin-inspect: 0.7.9_rollup@2.79.1+vite@3.2.4
@@ -193,7 +193,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.216.0
+      '@aws-sdk/client-dynamodb': ^3.218.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.4
@@ -203,7 +203,7 @@ importers:
       redis: ^4.5.1
       typescript: ^4.9.3
     dependencies:
-      '@aws-sdk/client-dynamodb': 3.216.0
+      '@aws-sdk/client-dynamodb': 3.218.0
       '@stacksjs/config': link:../config
       '@types/memjs': 1.2.4
       memcached: 2.2.2
@@ -622,7 +622,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
       typescript: ^4.9.3
-      unplugin-auto-import: ^0.11.5
+      unplugin-auto-import: ^0.12.0
       unplugin-vue-components: ^0.22.11
       vite-plugin-inspect: ^0.7.9
       vite-plugin-vue-layouts: ^0.7.0
@@ -647,7 +647,7 @@ importers:
       markdown-it: 13.0.1
       mkdist: 1.0.0_typescript@4.9.3
       typescript: 4.9.3
-      unplugin-auto-import: 0.11.5
+      unplugin-auto-import: 0.12.0
       unplugin-vue-components: 0.22.11_vue@3.2.45
       vite-plugin-inspect: 0.7.9_vite@3.2.4
       vite-plugin-vue-layouts: 0.7.0_ltio2jrs4h243s6indlqgywoku
@@ -663,7 +663,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@unocss/transformer-compile-class': ^0.46.5
       mkdist: ^1.0.0
-      pinia: ^2.0.26
+      pinia: ^2.0.27
       typescript: ^4.9.3
       unocss: ^0.46.5
       vue: ^3.2.45
@@ -674,7 +674,7 @@ importers:
       '@julr/unocss-preset-forms': 0.0.2_unocss@0.46.5
       '@stacksjs/build': link:../build
       '@unocss/transformer-compile-class': 0.46.5
-      pinia: 2.0.26_mgnvym7yiazkylwwogi5r767ue
+      pinia: 2.0.27_mgnvym7yiazkylwwogi5r767ue
       unocss: 0.46.5_vite@3.2.4
       vue: 3.2.45
       vue-tsc: 1.0.9_typescript@4.9.3
@@ -940,15 +940,15 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@aws-sdk/client-dynamodb/3.216.0:
-    resolution: {integrity: sha512-FRtDGPk3zSLDl8WE9S0LjIjwnQwHg40ew67+oLGDtjcf6fji/iduoNu6rW4bEVcZR3nY2IEX/vckRpSkwCJjDA==}
+  /@aws-sdk/client-dynamodb/3.218.0:
+    resolution: {integrity: sha512-/VxPT0wkrJsCph4GVlzK9ifZMPFqvATriEspIwj8UQ7Ka+THthr/LOWrAwsK6EFQmfypvEB2gBvVP+N+ggdXYw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 2.0.0
       '@aws-crypto/sha256-js': 2.0.0
-      '@aws-sdk/client-sts': 3.216.0
+      '@aws-sdk/client-sts': 3.218.0
       '@aws-sdk/config-resolver': 3.215.0
-      '@aws-sdk/credential-provider-node': 3.216.0
+      '@aws-sdk/credential-provider-node': 3.218.0
       '@aws-sdk/fetch-http-handler': 3.215.0
       '@aws-sdk/hash-node': 3.215.0
       '@aws-sdk/invalid-dependency': 3.215.0
@@ -1026,8 +1026,8 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sso/3.216.0:
-    resolution: {integrity: sha512-9F7JLx9RXEXovg6V4ylqQtpH+sIqQBMIPIrRSGWiQu65rmQQLskRkUka94JsGsBzq1IQwrnqtsuP3Lb0XtwLRA==}
+  /@aws-sdk/client-sso/3.218.0:
+    resolution: {integrity: sha512-kVMlpjaVblxgb1G8q3wD65mKxO3RzKwnjUjIBmOHpmseXzlSkAdAvYcikaDoJP+CRmys4uXk5DN8c7ZdL0OmgA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 2.0.0
@@ -1066,14 +1066,14 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sts/3.216.0:
-    resolution: {integrity: sha512-8rpMZhZXh1kjsAvQ0WNBMDrnP4XneKkBQtt5XcDEmv/GpULt8jOIJnSIJQxt2gkRfd/I9MUC9C3aZNQoSMxa+g==}
+  /@aws-sdk/client-sts/3.218.0:
+    resolution: {integrity: sha512-0A81eHvryKFEPq7IeY34Opzh5b9bVhhLlf2fDy5VuZjCFf4R9vD2ceOANvFSJeMsmdlqVDq8U1mHYl0E6FRUug==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 2.0.0
       '@aws-crypto/sha256-js': 2.0.0
       '@aws-sdk/config-resolver': 3.215.0
-      '@aws-sdk/credential-provider-node': 3.216.0
+      '@aws-sdk/credential-provider-node': 3.218.0
       '@aws-sdk/fetch-http-handler': 3.215.0
       '@aws-sdk/hash-node': 3.215.0
       '@aws-sdk/invalid-dependency': 3.215.0
@@ -1141,13 +1141,13 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@aws-sdk/credential-provider-ini/3.216.0:
-    resolution: {integrity: sha512-tSfrhgRO/l83Ou6WSOE4HauTLbDCOLMo/23Q6oGO8cs/d874J5rE4UM7a9OzE3QdM3eVbdAP7kXUgUS6i71cUw==}
+  /@aws-sdk/credential-provider-ini/3.218.0:
+    resolution: {integrity: sha512-tDDrGW+4A+PQThVJ+l9ee03CsDoD0XLpOB5dcf+dr/dCHjcQ7x/CeVFZ8eM+XUtGQnZVvuzXZGwzS8bUWEdJIg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.215.0
       '@aws-sdk/credential-provider-imds': 3.215.0
-      '@aws-sdk/credential-provider-sso': 3.216.0
+      '@aws-sdk/credential-provider-sso': 3.218.0
       '@aws-sdk/credential-provider-web-identity': 3.215.0
       '@aws-sdk/property-provider': 3.215.0
       '@aws-sdk/shared-ini-file-loader': 3.215.0
@@ -1157,15 +1157,15 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-node/3.216.0:
-    resolution: {integrity: sha512-Tumt53phB454DTkNB7a1tyCfrkA4JUGHzNLya14VLResGIGW5Re64atahUcO/WS7aTEs5vfAhBXO+p9o4K1rhQ==}
+  /@aws-sdk/credential-provider-node/3.218.0:
+    resolution: {integrity: sha512-J9PB6XFA+V0mgxleuY5W6Jjh5WejV8HjMViTJQpp2JN+NWZP3bGvquUSQHRqWGRGg2fSJy6Z/J4zQ8fpPbGsdQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.215.0
       '@aws-sdk/credential-provider-imds': 3.215.0
-      '@aws-sdk/credential-provider-ini': 3.216.0
+      '@aws-sdk/credential-provider-ini': 3.218.0
       '@aws-sdk/credential-provider-process': 3.215.0
-      '@aws-sdk/credential-provider-sso': 3.216.0
+      '@aws-sdk/credential-provider-sso': 3.218.0
       '@aws-sdk/credential-provider-web-identity': 3.215.0
       '@aws-sdk/property-provider': 3.215.0
       '@aws-sdk/shared-ini-file-loader': 3.215.0
@@ -1185,11 +1185,11 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@aws-sdk/credential-provider-sso/3.216.0:
-    resolution: {integrity: sha512-1Cag6AUPU4wkeMnZDJvcXXJgwrlrIxbTcRsresJYBFvs1vGJGcTbjtWV0K6fiBRP66GtvuOL9WzQ/eqRf2J7Ag==}
+  /@aws-sdk/credential-provider-sso/3.218.0:
+    resolution: {integrity: sha512-HecWvmxD+xffmY8G4SfLRfCOgSoLFki45wOOU8ESgRM9fQp2+3CfRSyiThKZI5PTmE+xhPTRvmR61HUmQjEv8w==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso': 3.216.0
+      '@aws-sdk/client-sso': 3.218.0
       '@aws-sdk/property-provider': 3.215.0
       '@aws-sdk/shared-ini-file-loader': 3.215.0
       '@aws-sdk/token-providers': 3.216.0
@@ -9332,8 +9332,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pinia/2.0.26_mgnvym7yiazkylwwogi5r767ue:
-    resolution: {integrity: sha512-tSxZNUcMGxQOvKZRjPKXxd2+/2NZhRF/CoYVE/+K6uE/Z3v1Oi4fcQFpxu5nMB1dCchjXUZ+lz0tBxV5ntwmQQ==}
+  /pinia/2.0.27_mgnvym7yiazkylwwogi5r767ue:
+    resolution: {integrity: sha512-nOnXP0OFeL8R4WjAHsterU+11vptda643gH02xKNtSCDPiRzVfRYodOLihLDoa0gL1KKuQKV+KOzEgdt3YvqEw==}
     peerDependencies:
       '@vue/composition-api': ^1.4.0
       typescript: '>=4.4.4'
@@ -9362,8 +9362,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pnpm/7.17.0:
-    resolution: {integrity: sha512-0oy+VI/6r248MzFrr3jBTQ5qxC1wM+wP3YoGcoohPEMk+5LfQBYHsazdu8QDtuigr2jjaDi0hfg/c8k89jxiEA==}
+  /pnpm/7.17.1:
+    resolution: {integrity: sha512-O76jPxzoeja81Z/8YyTfuXt+f7qkpsyEJsNBreWYBLHY5rJkjvNE/bIUGQ2uD/rcYPEtmrZZYox21OjAMC9EGw==}
     engines: {node: '>=14.6'}
     hasBin: true
     dev: true
@@ -10936,8 +10936,8 @@ packages:
       - vite
     dev: false
 
-  /unplugin-auto-import/0.11.5:
-    resolution: {integrity: sha512-nvbL2AQwLRR8wbHpJ6L1EBVNmjN045RSedTa4NtsGRkSQFXkI1iKHs4dTqJwcKZsnFrZOAKtLPiN1/oQTObLZw==}
+  /unplugin-auto-import/0.12.0:
+    resolution: {integrity: sha512-y1flixUHt0UioxeUwXe4N9GmIJskBz7uoC2qFGaUJO1feN9PYITHhRVqfXxYt7VAaZ24InNIeZIAIoQbRm3ZPw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@vueuse/core': '*'
@@ -10955,8 +10955,8 @@ packages:
       - rollup
     dev: true
 
-  /unplugin-auto-import/0.11.5_rollup@2.79.1:
-    resolution: {integrity: sha512-nvbL2AQwLRR8wbHpJ6L1EBVNmjN045RSedTa4NtsGRkSQFXkI1iKHs4dTqJwcKZsnFrZOAKtLPiN1/oQTObLZw==}
+  /unplugin-auto-import/0.12.0_rollup@2.79.1:
+    resolution: {integrity: sha512-y1flixUHt0UioxeUwXe4N9GmIJskBz7uoC2qFGaUJO1feN9PYITHhRVqfXxYt7VAaZ24InNIeZIAIoQbRm3ZPw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@vueuse/core': '*'
