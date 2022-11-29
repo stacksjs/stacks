@@ -18,11 +18,10 @@ The goal of the Stacks framework is to _help you_ create & maintain frontends, b
 - Framework-agnostic component & function libraries
 - Deployment & Release Manager
 - Interactive CLIs
-- SaaS development
 
-... where Stacks helps you every step along the way.
+where Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
 
-> Convention over configuration is our mantra—in beginner & expert-friendly ways.
+> Convention over configuration is our mantra.
 
 ![Atomic UI & FX Design](./apps/docs/images/diagram.png)
 
