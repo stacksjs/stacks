@@ -105,6 +105,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Setup Memcache
+        uses: niden/actions-memcached@v7
+
       - name: Set Application Key
         run: pnpm buddy key:generate
 
