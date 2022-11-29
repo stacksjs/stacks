@@ -54,7 +54,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/x-ray": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.0.9"
+    "vue-component-meta": "^1.0.10"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
