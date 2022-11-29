@@ -97,7 +97,7 @@ buddy dev:pages # starts local playground pages dev server
 buddy dev:functions # stubs local the functions
 buddy dev:docs # starts local docs dev server
 
-# for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
+# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve # starts one of the dev servers (components, functions, pages, or docs)
 buddy serve:components # starts local playground dev server
 buddy serve:pages # starts local playground pages dev server

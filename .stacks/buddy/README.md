@@ -150,7 +150,7 @@ buddy dev:functions # stub local the functions
 buddy dev:docs # start local docs dev server
 buddy development # `buddy dev` alias
 
-# for Laravel users, `serve` may be a more familiar command. Hence, we aliased it:
+# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve
 buddy serve:components
 buddy serve:pages

@@ -318,7 +318,7 @@ check_path() {
 }
 
 install_node() {
-		if gum_func confirm 'Install Node?' --affirmative="add one-liner" --negative="skip"
+		if gum_func confirm 'Install Node?' --affirmative="install-node" --negative="skip"
 		then
       tea +nodejs.org
 		fi
