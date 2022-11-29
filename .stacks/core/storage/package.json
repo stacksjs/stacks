@@ -50,7 +50,7 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.0.0",
     "unstorage": "^1.0.1"
   },
   "devDependencies": {
