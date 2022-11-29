@@ -8,16 +8,16 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_For internal usage only until the beta is released by the end of ~November._
+_Pre-release until the public beta is released in ~December._
 
 The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. It may be any of the following topics of
 
-- Web & desktop app UIs
+- Application UIs (Web & Desktop)
 - Serverless & traditional APIs
+- Cloud infrastructure maintenance
 - Framework-agnostic component & function libraries
 - Deployment & Release Manager
 - Interactive CLIs
-- Infrastructure maintenance
 - SaaS development
 
 ... where Stacks helps you every step along the way.
@@ -32,7 +32,7 @@ The Stacks framework is a harmony of several engines to build any web or desktop
 
 ### Stacks UI
 
-Develop UIs with helpers for atomic design, component libraries, and more.
+_Develop UIs with helpers for atomic design, component libraries, and more._
 
 - 🧩 Components _develop UI components with ease_
 - 📚 Library Mode _auto-builds Vue & Web component libraries_
@@ -42,12 +42,12 @@ Develop UIs with helpers for atomic design, component libraries, and more.
 
 ### Stacks Functions
 
-Develop serverless (or server) functions with countless helpers to build scalable & fast APIs.
+_Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
-- 📀 **Database** _MySQL, Postgres, Prisma, PlanetScale, Supabase, ..._
+- 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
@@ -61,7 +61,7 @@ Develop serverless (or server) functions with countless helpers to build scalabl
 
 ### Stacks Cloud
 
-Create your own cloud. _With a few commands._
+_Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
@@ -71,14 +71,14 @@ Create your own cloud. _With a few commands._
 
 ### Stacks CI/CD
 
-Focus on coding, not publishing.
+_Focus on coding, not publishing._
 
 - 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
 ### Stacks DX
 
-Enhanced productivity for developers. No more creating boilerplate.
+_Enhanced productivity for developers. No more creating boilerplate._
 
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_

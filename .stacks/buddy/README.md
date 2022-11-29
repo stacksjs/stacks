@@ -22,7 +22,7 @@ The Stacks framework is a harmony of the following engines:
 
 ### Stacks UI
 
-Develop UIs with helpers for atomic design, component libraries, and more.
+_Develop UIs with helpers for atomic design, component libraries, and more._
 
 - 🧩 Components _develop UI components with ease_
 - 📚 Library Mode _auto-builds Vue & Web component libraries_
@@ -32,12 +32,12 @@ Develop UIs with helpers for atomic design, component libraries, and more.
 
 ### Stacks Functions
 
-Develop serverless (or server) functions with countless helpers to build scalable & fast APIs.
+_Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
-- 📀 **Database** _MySQL, Postgres, Prisma, PlanetScale, Supabase, ..._
+- 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - ⚙️ **Queues** run your heavy workload in the background
@@ -50,7 +50,7 @@ Develop serverless (or server) functions with countless helpers to build scalabl
 
 ### Stacks Cloud
 
-Create your own cloud. _With a few commands._
+Create your own Vercel-like cloud. _With a few commands._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
@@ -60,14 +60,14 @@ Create your own cloud. _With a few commands._
 
 ### Stacks CI/CD
 
-Focus on coding, not publishing.
+_Focus on coding, not publishing._
 
 - 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
 ### Stacks DX
 
-Enhanced productivity for developers. No more creating boilerplate.
+_Enhanced productivity for developers. No more creating boilerplate._
 
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_

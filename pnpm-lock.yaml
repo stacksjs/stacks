@@ -297,7 +297,7 @@ importers:
       mkdist: ^1.0.0
       typescript: ^4.9.3
     dependencies:
-      '@prisma/client': 4.6.1
+      '@prisma/client': 4.7.0
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -3526,8 +3526,8 @@ packages:
       esbuild: 0.15.16
       source-map-support: 0.5.21
 
-  /@esbuild-kit/esm-loader/2.5.1:
-    resolution: {integrity: sha512-UfG/KLaNGR48+C9e8cDrRowhN9u+d/aCKpnA3E3Zyevup76fIpKmzm8DWeNG40CbEN8ZN8HaEs+o63pRQrZ+Fw==}
+  /@esbuild-kit/esm-loader/2.5.3:
+    resolution: {integrity: sha512-7tPwjMtiCgJXDDmW5/HT0wXYVlY0W6M29C0KB8R7fuNDRxUC9+hB5pYNbRx6DhOYR8IGb9z//ozaQK9ulVEGLg==}
     dependencies:
       '@esbuild-kit/core-utils': 3.0.0
       get-tsconfig: 4.2.0
@@ -4214,8 +4214,8 @@ packages:
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
-  /@prisma/client/4.6.1:
-    resolution: {integrity: sha512-M1+NNrMzqaOIxT7PBGcTs3IZo7d1EW/+gVQd4C4gUgWBDGgD9AcIeZnUSidgWClmpMSgVUdnVORjsWWGUameYA==}
+  /@prisma/client/4.7.0:
+    resolution: {integrity: sha512-keXMa0oJWJGOzMEFKp+CEgzJPwnOtGSrnTWw6qMYxnypYrRFdNxqyA06EzELZexBhgM4oLooZ1jDJ3iy46wExA==}
     engines: {node: '>=14.17'}
     requiresBuild: true
     peerDependencies:
@@ -4224,11 +4224,11 @@ packages:
       prisma:
         optional: true
     dependencies:
-      '@prisma/engines-version': 4.6.1-3.694eea289a8462c80264df36757e4fdc129b1b32
+      '@prisma/engines-version': 4.7.0-74.39190b250ebc338586e25e6da45e5e783bc8a635
     dev: false
 
-  /@prisma/engines-version/4.6.1-3.694eea289a8462c80264df36757e4fdc129b1b32:
-    resolution: {integrity: sha512-HUCmkXAU2jqp2O1RvNtbE+seLGLyJGEABZS/R38rZjSAafAy0WzBuHq+tbZMnD+b5OSCsTVtIPVcuvx1ySxcWQ==}
+  /@prisma/engines-version/4.7.0-74.39190b250ebc338586e25e6da45e5e783bc8a635:
+    resolution: {integrity: sha512-ImczGEQ8NS1OUApEeyAGxC4uLTtQp0wI1+2wM4MeQLVwIQbyMHk1vOhWWE8Pwbi3rnzLcPvsIrd9sm6oNXhERw==}
     dev: false
 
   /@redis/bloom/1.1.0_@redis+client@1.4.2:
@@ -6833,7 +6833,7 @@ packages:
       ast-types: 0.13.4
       escodegen: 1.14.3
       esprima: 4.0.1
-      vm2: 3.9.11
+      vm2: 3.9.12
     dev: false
 
   /delayed-stream/1.0.0:
@@ -8472,7 +8472,7 @@ packages:
       cookie-es: 0.5.0
       destr: 1.2.1
       radix3: 1.0.0
-      ufo: 1.0.0
+      ufo: 1.0.1
     dev: false
 
   /handlebars/4.7.7:
@@ -9536,7 +9536,7 @@ packages:
       debug: 4.3.4
       execa: 6.1.0
       lilconfig: 2.0.6
-      listr2: 5.0.5
+      listr2: 5.0.6
       micromatch: 4.0.5
       normalize-path: 3.0.0
       object-inspect: 1.12.2
@@ -9558,11 +9558,11 @@ packages:
       http-shutdown: 1.2.2
       ip-regex: 5.0.0
       node-forge: 1.3.1
-      ufo: 1.0.0
+      ufo: 1.0.1
     dev: false
 
-  /listr2/5.0.5:
-    resolution: {integrity: sha512-DpBel6fczu7oQKTXMekeprc0o3XDgGMkD7JNYyX+X0xbwK+xgrx9dcyKoXKqpLSUvAWfmoePS7kavniOcq3r4w==}
+  /listr2/5.0.6:
+    resolution: {integrity: sha512-u60KxKBy1BR2uLJNTWNptzWQ1ob/gjMzIJPZffAENzpZqbMZ/5PrXXOomDcevIS/+IB7s1mmCEtSlT2qHWMqag==}
     engines: {node: ^14.13.1 || >=16.0.0}
     peerDependencies:
       enquirer: '>= 2.3.0 < 3'
@@ -10133,7 +10133,7 @@ packages:
       acorn: 8.8.1
       pathe: 1.0.0
       pkg-types: 1.0.1
-      ufo: 1.0.0
+      ufo: 1.0.1
 
   /mnemonist/0.38.3:
     resolution: {integrity: sha512-2K9QYubXx/NAjv4VLq1d1Ly8pWNC5L3BrixtdkyTegXWJIqY+zLNDhhX/A+ZwWt70tB1S8H4BE8FLYEFyNoOBw==}
@@ -10262,7 +10262,7 @@ packages:
       serve-static: 1.15.0
       source-map-support: 0.5.21
       std-env: 3.3.1
-      ufo: 1.0.0
+      ufo: 1.0.1
       unenv: 1.0.0
       unimport: 1.0.1_rollup@2.79.1
       unstorage: 1.0.1
@@ -10501,7 +10501,7 @@ packages:
     dependencies:
       destr: 1.2.1
       node-fetch-native: 1.0.1
-      ufo: 1.0.0
+      ufo: 1.0.1
     dev: false
 
   /ohash/1.0.0:
@@ -12487,7 +12487,7 @@ packages:
     dependencies:
       '@esbuild-kit/cjs-loader': 2.4.1
       '@esbuild-kit/core-utils': 3.0.0
-      '@esbuild-kit/esm-loader': 2.5.1
+      '@esbuild-kit/esm-loader': 2.5.3
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -12593,8 +12593,8 @@ packages:
     resolution: {integrity: sha512-fk6CmUgwKCfX79EzcDQQpSCMxrHstvbLswFChHS0Vump+kFkw7nJBfTZoC1j0bOGoY9I7R3n2DGek5ajbcYnOw==}
     dev: false
 
-  /ufo/1.0.0:
-    resolution: {integrity: sha512-DRty0ZBNlJ2R59y4mEupJRKLbkLQsc4qtxjpQv78AwEDuBkaUogMc2LkeqW3HddFlw6NwnXYfdThEZOiNgkmmQ==}
+  /ufo/1.0.1:
+    resolution: {integrity: sha512-boAm74ubXHY7KJQZLlXrtMz52qFvpsbOxDcZOnw/Wf+LS4Mmyu7JxmzD4tDLtUQtmZECypJ0FrCz4QIe6dvKRA==}
 
   /uglify-js/3.17.4:
     resolution: {integrity: sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==}
@@ -12901,7 +12901,7 @@ packages:
       mkdir: 0.0.2
       mri: 1.2.0
       ofetch: 1.0.0
-      ufo: 1.0.0
+      ufo: 1.0.1
       ws: 8.11.0
     transitivePeerDependencies:
       - bufferutil
@@ -13030,7 +13030,7 @@ packages:
       fs-extra: 10.1.0
       kolorist: 1.6.0
       sirv: 2.0.2
-      ufo: 1.0.0
+      ufo: 1.0.1
       vite: 3.2.4
     transitivePeerDependencies:
       - rollup
@@ -13048,7 +13048,7 @@ packages:
       fs-extra: 10.1.0
       kolorist: 1.6.0
       sirv: 2.0.2
-      ufo: 1.0.0
+      ufo: 1.0.1
       vite: 3.2.4_@types+node@18.11.9
     transitivePeerDependencies:
       - rollup
@@ -13339,8 +13339,8 @@ packages:
       - terser
     dev: false
 
-  /vm2/3.9.11:
-    resolution: {integrity: sha512-PFG8iJRSjvvBdisowQ7iVF580DXb1uCIiGaXgm7tynMR1uTBlv7UJlB1zdv5KJ+Tmq1f0Upnj3fayoEOPpCBKg==}
+  /vm2/3.9.12:
+    resolution: {integrity: sha512-OMmRsKh1gmdosFzuqmj6O43hqIStqXA24YbwjtUTO0TkOBP8yLNHLplbr4odnAzEcMnm9lt2r3R8kTivn8urMg==}
     engines: {node: '>=6.0'}
     hasBin: true
     dependencies:
