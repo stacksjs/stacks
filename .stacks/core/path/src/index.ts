@@ -146,6 +146,10 @@ export function modulesPath(path?: string) {
   return corePath(`modules/${path || ''}`)
 }
 
+export function notificationsPath(path?: string) {
+  return corePath(`notifications/${path || ''}`)
+}
+
 export function objectsPath(path?: string) {
   return corePath(`objects/${path || ''}`)
 }

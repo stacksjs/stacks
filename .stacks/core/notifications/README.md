@@ -26,6 +26,36 @@ import notifications from '@stacksjs/notifications'
 // wip
 ```
 
+## 🤖 Drivers
+
+### Email
+
+- Sendgrid
+- Mailgun
+- Mailjet
+- Netcore
+- Nodemailer
+- Post Mark
+- Ses
+- Mandrill
+- EmailJS
+
+### SMS
+
+- Twilio
+- Nexmo
+- Gupshup
+- Plivo
+- SMS77
+- SNS
+- Telnyx
+- Termii
+
+### Chat
+
+- Discord
+- Slack
+
 Learn more in the docs.
 
 ## 🧪 Testing

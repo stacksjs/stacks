@@ -59,6 +59,8 @@
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/modules/*": ["./core/modules/src/*"],
+      "@stacksjs/notifications": ["./core/notifications/src/index.ts"],
+      "@stacksjs/notifications/*": ["./core/notifications/src/*"],
       "@stacksjs/objects": ["./core/objects/src/index.ts"],
       "@stacksjs/objects/*": ["./core/objects/src/*"],
       "@stacksjs/path": ["./core/path/src/index.ts"],
