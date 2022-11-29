@@ -607,7 +607,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
-      fs-extra: ^10.1.0
+      fs-extra: ^11.0.0
       mkdist: ^1.0.0
       typescript: ^4.9.3
       unstorage: ^1.0.1
@@ -615,7 +615,7 @@ importers:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
-      fs-extra: 10.1.0
+      fs-extra: 11.0.0
       unstorage: 1.0.1
     devDependencies:
       '@stacksjs/path': link:../path
@@ -3862,9 +3862,6 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-<<<<<<< HEAD
-  /@ow3/eslint-config-basic/0.33.11_czs5uoqkd3podpy6vgtsxfc7au:
-=======
   /@novu/discord/0.9.0:
     resolution: {integrity: sha512-VgPdSIK63BsSXouR95wSJ/wBwkP3V4Jfp/jQBjrC0evc11mVmTgodmKVwGgpTYqEveFcbqTLNPg2TpBGqHqrBg==}
     engines: {node: '>=10'}
@@ -4107,8 +4104,7 @@ packages:
       - supports-color
     dev: false
 
-  /@ow3/eslint-config-basic/0.33.11_fnsv2sbzcckq65bwfk7a5xwslu:
->>>>>>> 38d3e133... chore: wip
+  /@ow3/eslint-config-basic/0.33.11_czs5uoqkd3podpy6vgtsxfc7au:
     resolution: {integrity: sha512-8Co6ea/AEMRk7mvwuYWvvW3S6EEAqrWeGsnVNG8pUIs6OnbBGREqCFbwODYoDtMaE1It2nJcoSud0hQ4eVkATA==}
     peerDependencies:
       eslint: '>=7.4.0'
@@ -8096,6 +8092,15 @@ packages:
       graceful-fs: 4.2.10
       jsonfile: 6.1.0
       universalify: 2.0.0
+
+  /fs-extra/11.0.0:
+    resolution: {integrity: sha512-4YxRvMi4P5C3WQTvdRfrv5UVqbISpqjORFQAW5QPiKAauaxNCwrEdIi6pG3tDFhKKpMen+enEhHIzB/tvIO+/w==}
+    engines: {node: '>=14.14'}
+    dependencies:
+      graceful-fs: 4.2.10
+      jsonfile: 6.1.0
+      universalify: 2.0.0
+    dev: false
 
   /fs-extra/8.1.0:
     resolution: {integrity: sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==}
