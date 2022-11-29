@@ -300,7 +300,18 @@
     "tauri",
     "typesense",
     "memjs",
-    "frontends"
+    "frontends",
+    "sendgrid",
+    "mailgun",
+    "mailjet",
+    "netcore",
+    "novu",
+    "gupshup",
+    "plivo",
+    "telnyx",
+    "termii",
+    "nexmo",
+    "vonage"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

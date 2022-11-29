@@ -3,7 +3,7 @@ import { env } from '@stacksjs/utils'
 import type { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless'
 
 const provider = new MailjetEmailProvider({
-  apiKey: env('MAILJET_APIKEY', 'test'),
+  apiKey: env('MAILJET_API_KEY', 'test'),
   apiSecret: env('MAILJET_API_SECRET', 'test'),
   from: env('MAILJET_FROM_EMAIL', 'test'),
 })

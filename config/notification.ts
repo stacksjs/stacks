@@ -26,7 +26,7 @@ export const notification = {
       username: env('MAILGUN_USERNAME', ''),
     },
     mailjet: {
-      key: env('MAILJET_APIKEY', ''),
+      key: env('MAILJET_API_KEY', ''),
       secret: env('MAILJET_API_SECRET', ''),
       from: env('MAILJET_FROM_EMAIL', ''),
     },
