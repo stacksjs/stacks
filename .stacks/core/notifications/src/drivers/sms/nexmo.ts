@@ -1,15 +1,22 @@
 import { NexmoSmsProvider } from '@novu/nexmo'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.nexmo
 
 const provider = new NexmoSmsProvider({
-  apiKey: env('VONAGE_API_KEY', 'test'),
-  apiSecret: env('VONAGE_API_SECRET', 'test'),
-  from: env('VONAGE_FROM_NUMBER', 'test'),
+  apiKey: env.key,
+  apiSecret: env.secret,
+  from: env.from,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Nexmo')}`),
+  )
 }
 
 export { send as Send, send }

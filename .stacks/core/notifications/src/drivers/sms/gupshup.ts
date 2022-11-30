@@ -1,14 +1,21 @@
 import { GupshupSmsProvider } from '@novu/gupshup'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.gupshup
 
 const provider = new GupshupSmsProvider({
-  userId: env('GUPSHUP_USER_ID', 'test'),
-  password: env('GUPSHUP_PASSWORD', 'test'),
+  userId: env.user,
+  password: env.password,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Gupshup')}`),
+  )
 }
 
 export { send as Send, send }

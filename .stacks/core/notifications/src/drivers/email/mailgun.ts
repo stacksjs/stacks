@@ -10,6 +10,7 @@ const provider = new MailgunEmailProvider({
   apiKey: env.key,
   domain: env.domain,
   username: env.username,
+  from: env.from,
 })
 
 function send(options: EmailOptions) {

@@ -1,14 +1,21 @@
 import { Sms77SmsProvider } from '@novu/sms77'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.sms77
 
 const provider = new Sms77SmsProvider({
-  apiKey: env('SMS77_API_KEY', 'test'),
-  from: env('SMS77_FROM', 'test'),
+  apiKey: env.key,
+  from: env.from,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Sms77')}`),
+  )
 }
 
 export { send as Send, send }

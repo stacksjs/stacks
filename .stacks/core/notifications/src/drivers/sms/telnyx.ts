@@ -1,15 +1,22 @@
 import { TelnyxSmsProvider } from '@novu/telnyx'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.telnyx
 
 const provider = new TelnyxSmsProvider({
-  apiKey: env('TELNYX_API_KEY', 'test'),
-  messageProfileId: env('TELNYX_MESSAGE_PROFILE_ID', 'test'),
-  from: env('TELNYX_FROM', 'test'),
+  apiKey: env.key,
+  messageProfileId: env.messageProfileId,
+  from: env.from,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Telnyx')}`),
+  )
 }
 
 export { send as Send, send }

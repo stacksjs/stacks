@@ -11,19 +11,22 @@ export const notification = {
   email: {
     sendgrid: {
       key: env('SENDGRID_API_KEY', 'test-value'),
+      from: env('SENDGRID_FROM', 'test-value'),
+      senderName: env('SENDGRID_SENDER_NAME', 'test-value'),
     },
     emailjs: {
       from: env('EMAILJS_FROM_EMAIL', 'test-value'),
       host: env('EMAILJS_HOST', 'test-value'),
       user: env('EMAILJS_USERNAME', 'test-value'),
       password: env('EMAILJS_PASSWORD', 'test-value'),
-      port: env('EMAILJS_PORT', 'test-value'),
-      secure: env('EMAILJS_SECURE', 'test-value'),
+      port: env('EMAILJS_PORT', 40),
+      secure: env('EMAILJS_SECURE', true),
     },
     mailgun: {
       key: env('MAILGUN_API_KEY', 'test-value'),
       domain: env('MAILGUN_DOMAIN', 'test-value'),
       username: env('MAILGUN_USERNAME', 'test-value'),
+      from: env('MAILGUN_FROM', 'test-value'),
     },
     mailjet: {
       key: env('MAILJET_API_KEY', 'test-value'),
@@ -35,18 +38,20 @@ export const notification = {
       from: env('MANDRILL_EMAIL', 'test-value'),
     },
     netcore: {
-      key: env('NETCORE_API_KEY'),
+      key: env('NETCORE_API_KEY', 'test-value'),
+      from: env('NETCORE_FROM', 'test-value'),
     },
     nodemailer: {
       from: env('NODEMAILER_FROM_EMAIL', 'test-value'),
       host: env('NODEMAILER_HOST', 'test-value'),
       user: env('NODEMAILER_USERNAME', 'test-value'),
       password: env('NODEMAILER_PASSWORD', 'test-value'),
-      port: env('NODEMAILER_PORT', 'test-value'),
-      secure: env('NODEMAILER_SECURE', 'test-value'),
+      port: env('NODEMAILER_PORT', 40),
+      secure: env('NODEMAILER_SECURE', true),
     },
     postmark: {
       key: env('POSTMARK_API_KEY', 'test-value'),
+      from: env('POSTMARK_FROM', 'test-value'),
     },
     ses: {
       region: env('SES_REGION', 'test-value'),

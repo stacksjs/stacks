@@ -8,6 +8,7 @@ const env = notification.email.postmark
 
 const provider = new PostmarkEmailProvider({
   apiKey: env.key,
+  from: env.from,
 })
 
 function send(options: EmailOptions) {

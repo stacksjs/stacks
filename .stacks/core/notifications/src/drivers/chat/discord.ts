@@ -1,10 +1,15 @@
 import { DiscordProvider } from '@novu/discord'
-import type { ChatOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { ChatOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
 
 const provider = new DiscordProvider({})
 
-async function send(options: ChatOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: ChatOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Discord')}`),
+  )
 }
 
 export { send as Send, send }

@@ -1,16 +1,23 @@
 import { SESEmailProvider } from '@novu/ses'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.email.ses
 
 const provider = new SESEmailProvider({
-  region: env('SES_REGION', 'test'),
-  accessKeyId: env('SES_ACCESS_KEY_ID', 'test'),
-  secretAccessKey: env('SES_SECRET_ACCESS_KEY', 'test'),
-  from: env('SES_FROM', 'test'),
+  region: env.region,
+  accessKeyId: env.key,
+  secretAccessKey: env.secret,
+  from: env.from,
 })
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('SES')}`),
+  )
 }
 
 export { send as Send, send }

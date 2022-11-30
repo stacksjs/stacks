@@ -1,15 +1,22 @@
 import { SNSSmsProvider } from '@novu/sns'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.sns
 
 const provider = new SNSSmsProvider({
-  region: env('SNS_REGION', 'test'),
-  accessKeyId: env('SNS_ACCESS_KEY_ID', 'test'),
-  secretAccessKey: env('SNS_SECRET_ACCESS_KEY', 'test'),
+  region: env.region,
+  accessKeyId: env.key,
+  secretAccessKey: env.secret,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('SNS')}`),
+  )
 }
 
 export { send as Send, send }

@@ -1,14 +1,21 @@
 import { TermiiSmsProvider } from '@novu/termii'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.termii
 
 const provider = new TermiiSmsProvider({
-  apiKey: env('TERMII_API_KEY', 'test'),
-  from: env('TERMII_SENDER', 'test'),
+  apiKey: env.key,
+  from: env.from,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Termii')}`),
+  )
 }
 
 export { send as Send, send }

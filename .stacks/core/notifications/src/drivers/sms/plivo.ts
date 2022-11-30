@@ -1,15 +1,22 @@
 import { PlivoSmsProvider } from '@novu/plivo'
-import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { SmsOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.sms.plivo
 
 const provider = new PlivoSmsProvider({
-  accountSid: env('PLIVO_ACCOUNT_ID', 'test'),
-  authToken: env('PLIVO_AUTH_TOKEN', 'test'),
-  from: env('PLIVO_FROM_NUMBER', 'test'),
+  accountSid: env.sid,
+  authToken: env.authToken,
+  from: env.from,
 })
 
-async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: SmsOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Plivo')}`),
+  )
 }
 
 export { send as Send, send }

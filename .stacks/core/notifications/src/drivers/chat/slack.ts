@@ -1,15 +1,22 @@
 import { SlackProvider } from '@novu/slack'
-import type { ChatOptions, SendMessageSuccessResponse } from '@stacksjs/types'
-import { env } from '@stacksjs/config'
+import { italic } from '@stacksjs/cli'
+import type { ChatOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.chat.slack
 
 const provider = new SlackProvider({
-  applicationId: env('SLACK_APPLICATION_ID', 'test'),
-  clientID: env('SLACK_CLIENT_ID', 'test'),
-  secretKey: env('SLACK_SECRET_KEY', 'test'),
+  applicationId: env.appId,
+  clientId: env.clientID,
+  secretKey: env.secret,
 })
 
-async function send(options: ChatOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: ChatOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Slack')}`),
+  )
 }
 
 export { send as Send, send }

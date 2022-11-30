@@ -6,7 +6,10 @@ import { notification } from '@stacksjs/config'
 
 const env = notification.email.netcore
 
-const provider = new NetCoreProvider(env.key)
+const provider = new NetCoreProvider({
+  apiKey: env.key,
+  from: env.from,
+})
 
 function send(options: EmailOptions) {
   return ResultAsync.fromPromise(
