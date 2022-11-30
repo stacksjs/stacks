@@ -7,7 +7,7 @@ export function config(key?: Config, fallback?: any) {
   return key ? c[key] : fallback
 }
 
-export function env(key: string, fallback: string) {
+export function env(key: string, fallback: any) {
   // console.log('isClient', isClient)
   // if (key && import.meta?.env)
   //   return import.meta.env[key]
@@ -23,7 +23,7 @@ export function determineDebugMode(options?: CliOptions) {
   if (options?.debug === true)
     return true
 
-  if (c.app.debug === true)
+  if (app.debug === true)
     return true
 
   return false
