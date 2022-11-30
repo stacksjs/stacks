@@ -1,28 +1,34 @@
 # Stacks Search Engine
 
-wip
+The Stacks Search Engine is a unified driver system to easily interact with search engines.
 
 ## ☘️ Features
 
-wip
+- 🔎 Advanced searching
+- 🎯 Filtering support
+- 📚 Pagination support
+- ⬇️ Sorting support
+- 🚘 Driver based
+- ⚡️ Meilisearch support
+- 💀 Headless functions & components
 
-- ⚡️
+## TODO
 
-wip
+- [ ] Driver: Algolia
+- [ ] Driver: TypeSense
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/search-engine
 ```
 
-Now, you can use it in your project:
+You may now use:
 
-```js
+```ts
 import { client } from '@stacksjs/search-engine'
 
+// showcase client and other methods
 // wip
 ```
 

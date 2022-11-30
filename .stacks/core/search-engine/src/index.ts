@@ -1,6 +1,5 @@
-export * from 'meilisearch'
+import { client } from './drivers/meilisearch'
 
 export function useSearchEngine() {
-  const searchEngine = ''
-  return searchEngine
+  return client
 }
