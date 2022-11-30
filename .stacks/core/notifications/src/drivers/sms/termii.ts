@@ -1,6 +1,6 @@
 import { TermiiSmsProvider } from '@novu/termii'
 import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new TermiiSmsProvider({
   apiKey: env('TERMII_API_KEY', 'test'),

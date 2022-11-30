@@ -1,6 +1,6 @@
 import { TelnyxSmsProvider } from '@novu/telnyx'
 import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new TelnyxSmsProvider({
   apiKey: env('TELNYX_API_KEY', 'test'),

@@ -1,4 +1,4 @@
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 /**
  * ### Cache Options

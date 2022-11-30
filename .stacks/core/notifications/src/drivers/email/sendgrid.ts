@@ -1,4 +1,4 @@
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 import { SendgridEmailProvider } from '@novu/sendgrid'
 import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 

@@ -1,6 +1,6 @@
 import { SlackProvider } from '@novu/slack'
 import type { ChatOptions, SendMessageSuccessResponse } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new SlackProvider({
   applicationId: env('SLACK_APPLICATION_ID', 'test'),

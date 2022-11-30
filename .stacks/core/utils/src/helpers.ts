@@ -59,14 +59,6 @@ export function determineResetPreset(preset?: string) {
   return []
 }
 
-export function env(key: string, fallback?: string) {
-  // console.log('isClient', isClient)
-  // if (key && import.meta?.env)
-  //   return import.meta.env[key]
-
-  return fallback
-}
-
 /**
  * Determines whether the specified value is a package manifest.
  */

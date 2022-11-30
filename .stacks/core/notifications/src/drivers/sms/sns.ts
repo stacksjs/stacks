@@ -1,6 +1,6 @@
 import { SNSSmsProvider } from '@novu/sns'
 import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new SNSSmsProvider({
   region: env('SNS_REGION', 'test'),

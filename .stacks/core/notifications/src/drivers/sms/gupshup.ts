@@ -1,6 +1,6 @@
 import { GupshupSmsProvider } from '@novu/gupshup'
 import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new GupshupSmsProvider({
   userId: env('GUPSHUP_USER_ID', 'test'),

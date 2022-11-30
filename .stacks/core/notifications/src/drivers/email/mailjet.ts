@@ -1,5 +1,5 @@
 import { MailjetEmailProvider } from '@novu/mailjet'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 
 const provider = new MailjetEmailProvider({

@@ -1,6 +1,6 @@
 import { TwilioSmsProvider } from '@novu/twilio'
 import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '@stacksjs/config'
 
 const provider = new TwilioSmsProvider({
   accountSid: env('TWILIO_ACCOUNT_SID', 'test'),
