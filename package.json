@@ -17,7 +17,26 @@
   },
   "keywords": [
     "your",
-    "features"
+    "features",
+    "emailjs",
+    "mailgun",
+    "mailjet",
+    "mandrill",
+    "netcore",
+    "nodemailer",
+    "postmark",
+    "sendgrid",
+    "ses",
+    "gupshup",
+    "nexmo",
+    "plivo",
+    "sms77",
+    "sns",
+    "telnyx",
+    "termii",
+    "twilio",
+    "discord",
+    "slack"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
