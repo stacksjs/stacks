@@ -26,10 +26,11 @@ pnpm i -D @stacksjs/search-engine
 You may now use:
 
 ```ts
-import { client } from '@stacksjs/search-engine'
+import { useSearchEngine } from '@stacksjs/search-engine'
 
-// showcase client and other methods
-// wip
+const client = useSearchEngine()
+const index = client.index(name)
+const results = client.search('Hello World')
 ```
 
 Learn more in the docs.

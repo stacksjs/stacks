@@ -1,6 +1,6 @@
 export interface DeployOptions {
   /**
-   * ### Deployment Host
+   * **Deployment Host**
    *
    * The host to deploy to.
    *

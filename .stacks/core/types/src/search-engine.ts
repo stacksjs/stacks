@@ -15,7 +15,7 @@ type Sort = any
 
 export interface SearchEngineOptions {
   /**
-   * ### Search Engine Driver
+   * **Search Engine Driver**
    *
    * The search engine to utilize.
    *
@@ -23,6 +23,11 @@ export interface SearchEngineOptions {
    * @see https://stacksjs.dev/docs/search-engine
    */
   driver: 'meilisearch' | 'algolia'
+
+  meilisearch?: {
+    host: string
+    apiKey: string
+  }
 }
 
 export interface MeiliSearchOptions {

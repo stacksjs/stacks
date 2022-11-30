@@ -1,7 +1,7 @@
 import type { DeployOptions as Options } from '@stacksjs/types'
 
 /**
- * ### Deployment Options
+ * **Deployment Options**
  *
  * This configuration defines all of your deploy options. Because Stacks is full-typed,
  * you may hover any of the options below and the definitions will be provided. In case

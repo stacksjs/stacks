@@ -1,7 +1,7 @@
 import type { LibraryOptions as Options } from '@stacksjs/types'
 
 /**
- * ### Library Options
+ * **Library Options**
  *
  * This configuration defines all of your library options. Because Stacks is full-typed, you
  * may hover any of the options below and the definitions will be provided. In case you

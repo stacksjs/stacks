@@ -1,5 +1,5 @@
 /**
- * ### Git Options
+ * **Git Options**
  *
  * This configuration defines all of your git options. Because Stacks is full-typed, you may
  * hover any of the options below and the definitions will be provided. In case you
@@ -7,7 +7,7 @@
  */
 export interface GitOptions {
   /**
-   * ### Git Hooks
+   * **Git Hooks**
    *
    * The git hooks to use.
    *
@@ -24,7 +24,7 @@ export interface GitOptions {
   hooks: GitHooks
 
   /**
-   * ### Git Commit Scopes
+   * **Git Commit Scopes**
    *
    * The git commit scopes to use.
    *
@@ -41,7 +41,7 @@ export interface GitOptions {
   scopes: string[]
 
   /**
-   * ### Git Commit Types
+   * **Git Commit Types**
    *
    * The git commit types to use.
    *
@@ -64,7 +64,7 @@ export interface GitOptions {
   }[]
 
   /**
-   * ### Messages—Options
+   * **Messages—Options**
    *
    * The git messages/prompts to use.
    *

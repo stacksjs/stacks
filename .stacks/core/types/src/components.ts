@@ -2,7 +2,7 @@ import type { Options } from 'unplugin-vue-components'
 
 export interface TagOption {
   /**
-   * ### Tag Name
+   * **Tag Name**
    *
    * This is the name of the component to be included in your library build.
    * When defining a tag, ensure that the name corresponds to a file within
@@ -26,7 +26,7 @@ export interface TagOption {
   name: string | string[]
 
   /**
-   * ### Tag Description
+   * **Tag Description**
    *
    * This is the description of your component. This value is
    * used when to provide additional information to IDEs.
@@ -40,7 +40,7 @@ export interface TagOption {
   description?: string
 
   /**
-   * ### Tag Attributes
+   * **Tag Attributes**
    *
    * These are your component's attributes. While it's an optional field, you should aim
    * to define all of your component attributes here, to provide as much context

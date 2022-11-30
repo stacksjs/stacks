@@ -1,7 +1,7 @@
 import type { SearchEngineOptions as Options } from '@stacksjs/types'
 
 /**
- * ### Search Engine Options
+ * **Search Engine Options**
  *
  * This configuration defines all of your search engine options. Because Stacks is full-typed,
  * you may hover any of the options below and the definitions will be provided. In case
@@ -9,4 +9,9 @@ import type { SearchEngineOptions as Options } from '@stacksjs/types'
  */
 export const searchEngine: Options = {
   driver: 'meilisearch',
+
+  meilisearch: {
+    host: '',
+    apiKey: '',
+  },
 }

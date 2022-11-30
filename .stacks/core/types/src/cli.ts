@@ -30,7 +30,7 @@ type SpinnerOptions = Ora
  */
 export interface CliOptions {
   /**
-   * ### CLI Debug Level
+   * **CLI Debug Level**
    *
    * When your application is in debug mode, a different level of information,
    * like stack traces, will be shown on every error that occurs within the
@@ -41,7 +41,7 @@ export interface CliOptions {
   debug?: boolean
 
   /**
-   * ### Current Work Directory
+   * **Current Work Directory**
    *
    * Based on the `cwd` value, that's where the command...
    *
@@ -50,7 +50,7 @@ export interface CliOptions {
   cwd?: string
 
   /**
-   * ### Loading Animation
+   * **Loading Animation**
    *
    * Should the command show a loading animation?
    * Please note, when debug mode is enabled,

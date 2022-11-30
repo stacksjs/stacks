@@ -1,7 +1,7 @@
 import type { UserOptions } from 'vite-plugin-vue-layouts'
 
 /**
- * ### Layout Options
+ * **Layout Options**
  *
  * The layout options.
  */

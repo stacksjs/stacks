@@ -50,7 +50,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/drivers": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@vueuse/core": "^9.6.0",
     "meilisearch": "^0.30.0",
     "vue": "^3.2.45"

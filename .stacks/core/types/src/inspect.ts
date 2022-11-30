@@ -1,7 +1,7 @@
 import type { Options } from 'vite-plugin-inspect'
 
 /**
- * ### Inspect Options
+ * **Inspect Options**
  *
  * The inspect options.
  *

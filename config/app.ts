@@ -2,7 +2,7 @@ import { type AppOptions as Options } from '@stacksjs/types'
 import { env } from '@stacksjs/config'
 
 /**
- * ### Application Options
+ * **Application Options**
  *
  * This configuration defines all of your application options. Because Stacks is full-typed,
  * you may hover any of the options below and the definitions will be provided. In case

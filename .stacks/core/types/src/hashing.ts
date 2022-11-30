@@ -13,7 +13,7 @@
  */
 export interface HashingOptions {
   /**
-   * ### Hashing Driver
+   * **Hashing Driver**
    *
    * This option controls the default hash driver that will be used to hash
    * passwords for your application. By default, the bcrypt algorithm is
@@ -24,7 +24,7 @@ export interface HashingOptions {
   driver: 'argon' | 'bcrypt'
 
   /**
-   * ### Bcrypt Option
+   * **Bcrypt Option**
    *
    * Here you may specify the configuration options that should be used when
    * passwords are hashed using the Bcrypt algorithm. This will allow you
@@ -35,7 +35,7 @@ export interface HashingOptions {
   bcrypt?: BcryptOptions
 
   /**
-   * ### Argon Options
+   * **Argon Options**
    *
    * Here you may specify the configuration options that should be used when
    * passwords are hashed using the Argon algorithm. These will allow you
@@ -47,7 +47,7 @@ export interface HashingOptions {
 }
 
 /**
- * ### Bcrypt Options
+ * **Bcrypt Options**
  *
  * Here you may specify the configuration options that should be used when
  * passwords are hashed using the Bcrypt algorithm. This will allow you
@@ -66,7 +66,7 @@ export interface BcryptOptions {
 }
 
 /**
- * ### Argon Options
+ * **Argon Options**
  *
  * Here you may specify the configuration options that should be used when
  * passwords are hashed using the Argon algorithm. These will allow you
@@ -76,7 +76,7 @@ export interface BcryptOptions {
  */
 export interface ArgonOptions {
   /**
-   * ### Argon Memory
+   * **Argon Memory**
    *
    * Amount of memory (in kibibytes) to use.
    *
@@ -86,7 +86,7 @@ export interface ArgonOptions {
   memory?: number
 
   /**
-   * ### Argon Parallelism
+   * **Argon Parallelism**
    *
    * Degree of parallelism (i.e. number of threads).
    *
@@ -96,7 +96,7 @@ export interface ArgonOptions {
   threads?: number
 
   /**
-   * ### Argon time
+   * **Argon time**
    *
    * Execution time.
    *

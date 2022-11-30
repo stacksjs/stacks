@@ -3,7 +3,7 @@ import { frameworkPath } from '@stacksjs/path'
 import { services } from './services'
 
 /**
- * ### Documentation Options
+ * **Documentation Options**
  *
  * This configuration defines all of your documentation options. Because Stacks is full-typed,
  * you may hover any of the options below and the definitions will be provided. In case

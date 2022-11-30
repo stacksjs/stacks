@@ -1,7 +1,7 @@
 import type { UserOptions } from 'vite-plugin-pages'
 
 /**
- * ### Pages Options
+ * **Pages Options**
  *
  * The pages options.
  */

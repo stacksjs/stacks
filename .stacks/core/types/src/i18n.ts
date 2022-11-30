@@ -10,7 +10,7 @@ interface VitePluginVueI18nOptions {
 }
 
 /**
- * ### Internationalization Options
+ * **Internationalization Options**
  *
  * The i18n option.
  *

@@ -1,7 +1,7 @@
 import { env } from '@stacksjs/config'
 
 /**
- * ### Notification Options
+ * **Notification Options**
  *
  * This configuration defines all of your notification options. Because Stacks is full-typed,
  * you may hover any of the options below and the definitions will be provided. In case

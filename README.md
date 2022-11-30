@@ -8,7 +8,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_Pre-release until the public beta is released in ~December._
+_Pre-release until public beta released. Coming ~December._
 
 The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. It may be any of the following topics of
 

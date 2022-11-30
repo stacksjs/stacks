@@ -189,7 +189,7 @@ export interface MarkdownEnv extends MarkdownItEnv {
 }
 
 /**
- * ### Markdown Options
+ * **Markdown Options**
  *
  * The Markdown options.
  *

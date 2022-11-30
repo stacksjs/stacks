@@ -12,7 +12,7 @@ export interface WebFontMeta {
 }
 
 /**
- * ### UI Engine Options
+ * **UI Engine Options**
  *
  * This type defines all of your UI Engine options. Because Stacks is full-typed, you may
  * hover any of the options below and the definitions will be provided. In case you
@@ -20,7 +20,7 @@ export interface WebFontMeta {
  */
 export interface UiOptions {
   /**
-   * ### Shortcuts
+   * **Shortcuts**
    *
    * Shortcuts provide you with the ability to combine
    * utility names for reusability purposes.
@@ -36,7 +36,7 @@ export interface UiOptions {
   shortcuts: Shortcuts
 
   /**
-   * ### Safelist
+   * **Safelist**
    *
    * Use the `safelist` option to ensure the generation of
    * those utility classes. This is useful when certain
@@ -54,7 +54,7 @@ export interface UiOptions {
   safelist: string
 
   /**
-   * ### Trigger String
+   * **Trigger String**
    *
    * The "trigger string" defines the class name markup
    * you want to add into your components.
@@ -69,7 +69,7 @@ export interface UiOptions {
   trigger?: string
 
   /**
-   * ### Class Prefix
+   * **Class Prefix**
    *
    * The prefix for the compiled class name. When transforming
    * all utility classes into a single class, this prefix
@@ -85,7 +85,7 @@ export interface UiOptions {
   classPrefix?: string
 
   /**
-   * ### Hash Function
+   * **Hash Function**
    *
    * The hash function used to generate the class name.
    *
@@ -104,7 +104,7 @@ export interface UiOptions {
   hashFn?: (str: string) => string
 
   /**
-   * ### CSS Resets—Preset
+   * **CSS Resets—Preset**
    *
    * Define a standard of reset CSS stylesheets. By default, the Tailwind
    * reset styles are utilized. You may set this value to `null`
@@ -120,7 +120,7 @@ export interface UiOptions {
   reset?: ResetPreset
 
   /**
-   * ### Fonts
+   * **Fonts**
    *
    * Define the local fonts you want to use. By default, Stacks provides
    * support for several local font providers. You may set this value
@@ -135,7 +135,7 @@ export interface UiOptions {
   fonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
 
   /**
-   * ### Web Fonts
+   * **Web Fonts**
    *
    * Define the web fonts you want to use. By default, Stacks provides
    * support for several web font providers. You may set this value
@@ -150,7 +150,7 @@ export interface UiOptions {
   webFonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
 
   /**
-   * ### Icon Sets
+   * **Icon Sets**
    *
    * This value defines the icon sets you want to use. When using icons, they
    * are displayed utilizing a technique called "icons in pure css."
@@ -174,7 +174,7 @@ export interface UiOptions {
 export type Shortcuts = UserShortcuts
 
 /**
- * ### Style Reset — Preset
+ * **Style Reset — Preset**
  *
  * This value sets the "reset preset." A preset defines certain
  * CSS defaults to be applied.

@@ -1,7 +1,7 @@
 // import type { ServicesOptions as Options } from '@stacksjs/types'
 
 /**
- * ### Services
+ * **Services**
  *
  * This configuration defines all of your services. Because Stacks is full-typed, you may
  * hover any of the options below and the definitions will be provided. In case you

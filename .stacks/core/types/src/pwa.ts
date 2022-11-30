@@ -1,7 +1,7 @@
 import type { Options } from 'vite-plugin-pwa'
 
 /**
- * ### PWA Options
+ * **PWA Options**
  *
  * The PWA options.
  */

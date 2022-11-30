@@ -1,7 +1,7 @@
 import type { GitOptions as Options } from '@stacksjs/types'
 
 /**
- * ### Git Options
+ * **Git Options**
  *
  * This configuration defines all of your git options. Because Stacks is full-typed, you may
  * hover any of the options below and the definitions will be provided. In case you
