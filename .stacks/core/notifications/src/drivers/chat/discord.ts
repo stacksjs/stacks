@@ -1,9 +1,9 @@
 import { DiscordProvider } from '@novu/discord'
-import type { IChatOptions, ISendMessageSuccessResponse } from '@novu/stateless'
+import type { ChatOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 
 const provider = new DiscordProvider({})
 
-async function send(options: IChatOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: ChatOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 

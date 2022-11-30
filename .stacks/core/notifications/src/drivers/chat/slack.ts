@@ -1,5 +1,5 @@
 import { SlackProvider } from '@novu/slack'
-import type { IChatOptions, ISendMessageSuccessResponse } from '@novu/stateless'
+import type { ChatOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 import { env } from '@stacksjs/utils'
 
 const provider = new SlackProvider({
@@ -8,7 +8,7 @@ const provider = new SlackProvider({
   secretKey: env('SLACK_SECRET_KEY', 'test'),
 })
 
-async function send(options: IChatOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: ChatOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 

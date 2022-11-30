@@ -1,5 +1,5 @@
 import { SNSSmsProvider } from '@novu/sns'
-import type { ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
+import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
 import { env } from '@stacksjs/utils'
 
 const provider = new SNSSmsProvider({
@@ -8,7 +8,7 @@ const provider = new SNSSmsProvider({
   secretAccessKey: env('SNS_SECRET_ACCESS_KEY', 'test'),
 })
 
-async function send(options: ISmsOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 

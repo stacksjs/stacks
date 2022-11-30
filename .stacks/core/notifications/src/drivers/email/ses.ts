@@ -1,6 +1,6 @@
 import { SESEmailProvider } from '@novu/ses'
 import { env } from '@stacksjs/utils'
-import type { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless'
+import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 
 const provider = new SESEmailProvider({
   region: env('SES_REGION', 'test'),
@@ -9,7 +9,7 @@ const provider = new SESEmailProvider({
   from: env('SES_FROM', 'test'),
 })
 
-async function send(options: IEmailOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 

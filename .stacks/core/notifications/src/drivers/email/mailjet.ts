@@ -1,6 +1,6 @@
 import { MailjetEmailProvider } from '@novu/mailjet'
 import { env } from '@stacksjs/utils'
-import type { IEmailOptions, ISendMessageSuccessResponse } from '@novu/stateless'
+import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
 
 const provider = new MailjetEmailProvider({
   apiKey: env('MAILJET_API_KEY', 'test'),
@@ -8,7 +8,7 @@ const provider = new MailjetEmailProvider({
   from: env('MAILJET_FROM_EMAIL', 'test'),
 })
 
-async function send(options: IEmailOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 

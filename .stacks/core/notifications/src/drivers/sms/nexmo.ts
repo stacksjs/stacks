@@ -1,5 +1,5 @@
 import { NexmoSmsProvider } from '@novu/nexmo'
-import type { ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
+import type { SendMessageSuccessResponse, SmsOptions } from '@stacksjs/types'
 import { env } from '@stacksjs/utils'
 
 const provider = new NexmoSmsProvider({
@@ -8,7 +8,7 @@ const provider = new NexmoSmsProvider({
   from: env('VONAGE_FROM_NUMBER', 'test'),
 })
 
-async function send(options: ISmsOptions): Promise<ISendMessageSuccessResponse> {
+async function send(options: SmsOptions): Promise<SendMessageSuccessResponse> {
   return await provider.sendMessage(options)
 }
 
