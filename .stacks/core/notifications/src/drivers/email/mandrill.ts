@@ -1,14 +1,21 @@
 import { MandrillProvider } from '@novu/mandrill'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.email.mandrill
 
 const provider = new MandrillProvider({
-  apiKey: env('MANDRILL_API_KEY', 'test'),
-  from: env('MANDRILL_EMAIL', 'test'),
+  apiKey: env.key,
+  from: env.from,
 })
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Mandrill')}`),
+  )
 }
 
 export { send as Send, send }

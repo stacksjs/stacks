@@ -50,6 +50,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
     "@novu/discord": "^0.9.0",
     "@novu/emailjs": "^0.9.0",
     "@novu/gupshup": "^0.9.0",

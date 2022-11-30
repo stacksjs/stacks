@@ -1,15 +1,22 @@
 import { MailjetEmailProvider } from '@novu/mailjet'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.email.mailjet
 
 const provider = new MailjetEmailProvider({
-  apiKey: env('MAILJET_API_KEY', 'test'),
-  apiSecret: env('MAILJET_API_SECRET', 'test'),
-  from: env('MAILJET_FROM_EMAIL', 'test'),
+  apiKey: env.key,
+  apiSecret: env.secret,
+  from: env.from,
 })
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Mailjet')}`),
+  )
 }
 
 export { send as Send, send }

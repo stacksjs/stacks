@@ -1,11 +1,18 @@
 import { NetCoreProvider } from '@novu/netcore'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
 
-const provider = new NetCoreProvider(env('NETCORE_API_KEY', 'test'))
+const env = notification.email.netcore
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+const provider = new NetCoreProvider(env.key)
+
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Netcore')}`),
+  )
 }
 
 export { send as Send, send }

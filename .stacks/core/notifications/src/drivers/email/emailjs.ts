@@ -1,18 +1,25 @@
 import { EmailJsProvider } from '@novu/emailjs'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.email.emailjs
 
 const provider = new EmailJsProvider({
-  from: env('EMAILJS_FROM_EMAIL', 'test'),
-  host: env('EMAILJS_HOST', 'test'),
-  user: env('EMAILJS_USERNAME', 'test'),
-  password: env('EMAILJS_PASSWORD', 'test'),
-  port: env('EMAILJS_PORT', 'test'),
-  secure: env('EMAILJS_SECURE', 'test'),
+  from: env.from,
+  host: env.host,
+  user: env.user,
+  password: env.password,
+  port: env.port,
+  secure: env.secure,
 })
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('EmailJS')}`),
+  )
 }
 
 export { send as Send, send }

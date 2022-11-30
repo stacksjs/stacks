@@ -1,18 +1,25 @@
 import { NodemailerProvider } from '@novu/nodemailer'
-import { env } from '@stacksjs/config'
-import type { EmailOptions, SendMessageSuccessResponse } from '@stacksjs/types'
+import { italic } from '@stacksjs/cli'
+import type { EmailOptions } from '@stacksjs/types'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
+
+const env = notification.email.nodemailer
 
 const provider = new NodemailerProvider({
-  from: env('NODEMAILER_FROM_EMAIL', 'test'),
-  host: env('NODEMAILER_HOST', 'test'),
-  user: env('NODEMAILER_USERNAME', 'test'),
-  password: env('NODEMAILER_PASSWORD', 'test'),
-  port: env('NODEMAILER_PORT', 'test'),
-  secure: env('NODEMAILER_SECURE', 'test'),
+  from: env.from,
+  host: env.host,
+  user: env.user,
+  password: env.password,
+  port: env.port,
+  secure: env.secure,
 })
 
-async function send(options: EmailOptions): Promise<SendMessageSuccessResponse> {
-  return await provider.sendMessage(options)
+function send(options: EmailOptions) {
+  return ResultAsync.fromPromise(
+    provider.sendMessage(options),
+    () => new Error(`Failed to send message using provider: ${italic('Nodemailer')}`),
+  )
 }
 
 export { send as Send, send }

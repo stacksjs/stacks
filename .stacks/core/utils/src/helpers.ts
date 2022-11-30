@@ -59,6 +59,20 @@ export function determineResetPreset(preset?: string) {
   return []
 }
 
+export function env(key?: string, fallback?: string) {
+  // console.log('isClient', isClient)
+  // if (key && import.meta?.env)
+  //   return import.meta.env[key]
+
+  return fallback
+}
+
+export function config(key?: string, fallback?: string) {
+  // eslint-disable-next-line no-console
+  console.log('key', key, 'fallback', fallback)
+  // return key ? configArr[key as string] : fallback
+}
+
 /**
  * Determines whether the specified value is a package manifest.
  */
