@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import { command } from '@stacksjs/cli'
+import { command, log } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
-import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { build, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './cli/'
 
@@ -45,11 +44,6 @@ async function main() {
 main()
 
 function errorHandler(error: Error): void {
-  let message = error.message || String(error)
-
-  if (process.env.DEBUG || process.env.NODE_ENV === 'development')
-    message = error.stack || message
-
-  console.error(message)
-  process.exit(ExitCode.FatalError)
+  log.error(error)
+  process.exit()
 }

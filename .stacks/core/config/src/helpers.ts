@@ -23,7 +23,7 @@ export function determineDebugMode(options?: CliOptions) {
   if (options?.debug === true)
     return true
 
-  if (app.debug === true)
+  if (c.app.debug === true)
     return true
 
   return false
