@@ -16,7 +16,6 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "your",
     "features",
     "emailjs",
     "mailgun",
@@ -36,7 +35,11 @@
     "termii",
     "twilio",
     "discord",
-    "slack"
+    "slack",
+    "notifications",
+    "sms",
+    "chat",
+    "push-notification"
   ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
