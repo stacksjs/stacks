@@ -54,7 +54,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@vueuse/core": "^9.6.0",
-    "@vueuse/head": "^1.0.18",
+    "@vueuse/head": "^1.0.19",
     "@vueuse/math": "^9.6.0",
     "@vueuse/shared": "^9.6.0",
     "defu": "^6.1.1",
