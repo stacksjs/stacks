@@ -1,3 +1,21 @@
-export * as email from './drivers/email'
-export * as chat from './drivers/chat'
-export * as sms from './drivers/sms'
+import * as email from './drivers/email'
+import * as chat from './drivers/chat'
+import * as sms from './drivers/sms'
+
+export function useNotification(driver = 'email') {
+  if (driver === 'email')
+    return email
+
+  if (driver === 'chat')
+    return chat
+
+  if (driver === 'sms')
+    return sms
+}
+
+export default {
+  email,
+  sms,
+  chat,
+  useNotification,
+}
