@@ -9,3 +9,4 @@
 
 // export const isWindow = (val: any): boolean => typeof window !== 'undefined' && toString(val) === '[object Window]'
 export const isBrowser = typeof window !== 'undefined'
+export const isServer = typeof document === 'undefined' // https://remix.run/docs/en/v1/pages/gotchas#typeof-window-checks
