@@ -14,7 +14,7 @@ The goal of the Stacks framework is to _help you_ create & maintain frontends, b
 
 Convention over configuration is our mantra—in beginner & expert-friendly ways.
 
-![Atomic UI & FX Design](./apps/docs/images/diagram.png)
+<!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
 ## Features
 

@@ -23,7 +23,7 @@ where Stacks helps you every step along the way—in beginner & expert-friendly 
 
 > Convention over configuration is our mantra.
 
-![Atomic UI & FX Design](./apps/docs/images/diagram.png)
+<!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
 ## Features
 
