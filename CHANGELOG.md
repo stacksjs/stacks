@@ -1,4 +1,13 @@
-# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.42.1...v0.0.0) (2022-11-23)
+# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.42.2...v0.0.0) (2022-12-02)
+
+
+### Features
+
+* add isServer util ([b1536c8](https://github.com/stacksjs/stacks/commit/b1536c81579a552980115b6ec719761dee3d8fe0))
+
+
+
+## [0.42.2](https://github.com/stacksjs/stacks/compare/v0.42.1...v0.42.2) (2022-11-23)
 
 
 
