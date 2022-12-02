@@ -50,10 +50,6 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*",
     "@novu/discord": "^0.9.0",
     "@novu/emailjs": "^0.9.0",
     "@novu/gupshup": "^0.9.0",
@@ -74,7 +70,11 @@
     "@novu/stateless": "^0.9.0",
     "@novu/telnyx": "^0.9.0",
     "@novu/termii": "^0.9.0",
-    "@novu/twilio": "^0.9.0"
+    "@novu/twilio": "^0.9.0",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

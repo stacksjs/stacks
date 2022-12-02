@@ -1,9 +1,9 @@
 import { describe, it } from 'vitest'
-import { mailgun } from '../../src/drivers/email'
+// import { mailgun } from '../../src/drivers/email'
 
-const notification = mailgun
+// const notification = mailgun
+// console.log(notification)
 
-console.log(notification)
 describe('Mailgun Test', () => {
   it('should send email', async () => {
 

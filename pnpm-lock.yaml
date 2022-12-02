@@ -4214,8 +4214,8 @@ packages:
       - typescript
     dev: false
 
-  /@permafrost-dev/pretty-format/1.1.0:
-    resolution: {integrity: sha512-eVYca3t3IrvTyxbzQGeYijXYItcByJy8XlAcxADX/Q2Sl6Rk4ukci4tnAcelEUxtsUAndFYURIcpJ6vr3LOs5g==}
+  /@permafrost-dev/pretty-format/1.1.1:
+    resolution: {integrity: sha512-q7BbbLCU/kT2OtSaVNB0penSjvCA6/ik45WeX5gcsFwygV8hRggagNtJenQl3c6ripjIfM6zhgqrz3oUY63hMw==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       ansi-regex: 5.0.1
@@ -10380,7 +10380,7 @@ packages:
     resolution: {integrity: sha512-UNTMhsT95j6lHnqtMdGYSV2TPFub1pYUkKvFEd795sLwoksSIZh483xQwwMKDWsrnyTYh6ghhXJpcWzhca+QaQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@permafrost-dev/pretty-format': 1.1.0
+      '@permafrost-dev/pretty-format': 1.1.1
       axios: 1.2.0
       dayjs: 1.11.6
       find-up: 5.0.0
@@ -11554,7 +11554,7 @@ packages:
       jest-worker: 26.6.2
       rollup: 2.79.1
       serialize-javascript: 4.0.0
-      terser: 5.16.0
+      terser: 5.16.1
     dev: false
 
   /rollup-plugin-visualizer/5.8.3_rollup@2.79.1:
@@ -12295,8 +12295,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /terser/5.16.0:
-    resolution: {integrity: sha512-KjTV81QKStSfwbNiwlBXfcgMcOloyuRdb62/iLFPGBcVNF4EXjhdYBhYHmbJpiBrVxZhDvltE11j+LBQUxEEJg==}
+  /terser/5.16.1:
+    resolution: {integrity: sha512-xvQfyfA1ayT0qdK47zskQgRZeWLoOQ8JQ6mIgRGVNwZKdQMU+5FkCBjmv4QjcrTzyZquRw2FVtlJSRUmMKQslw==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:

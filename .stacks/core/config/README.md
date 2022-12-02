@@ -21,9 +21,9 @@ pnpm i -D @stacksjs/config
 Now, you can use it in your project:
 
 ```js
-import config from '@stacksjs/config'
-// or
 import { app, deploy, docs, git, hashing, library, services, ui } from '@stacksjs/config'
+
+console.log(app)
 ```
 
 Learn more in the docs.
