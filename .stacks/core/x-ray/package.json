@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "consola": "^2.15.3",
-    "node-ray": "^1.19.2",
+    "node-ray": "^1.19.4",
     "vue-ray": "^1.17.3"
   },
   "devDependencies": {
