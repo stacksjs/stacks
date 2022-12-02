@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/security",
   "type": "module",
-  "version": "0.43.0",
+  "version": "0.43.1",
   "packageManager": "pnpm@7.17.1",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
