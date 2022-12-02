@@ -95,11 +95,11 @@ async function ensureEnv(path: string, options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
   await runCommand('fnm use', { ...options, cwd: path })
-  log.success('Environment is ready.')
+  log.success('Environment is ready')
 }
 
 async function install(path: string, options: CreateOptions) {
-  log.info('Installing & setting up Stacks.')
+  log.info('Installing & setting up Stacks')
   const res1 = await runCommand('pnpm install', { ...options, cwd: path })
 
   if (res1.isErr()) {

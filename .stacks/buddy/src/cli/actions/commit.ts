@@ -6,7 +6,7 @@ import { NpmScript } from '@stacksjs/types'
 export async function invoke(options: CleanOptions) {
   log.info('Committing...')
   await runNpmScript(NpmScript.Commit, options)
-  log.success('Committed.')
+  log.success('Committed')
 }
 
 /**

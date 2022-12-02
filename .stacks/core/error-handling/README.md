@@ -59,7 +59,7 @@ const command = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modul
 const result = await runCommand(command, options)
 
 if (result.isOk()) {
-  log.success('Cleaned up.')
+  log.success('Cleaned up')
   process.exit(ExitCode.Success)
 }
 

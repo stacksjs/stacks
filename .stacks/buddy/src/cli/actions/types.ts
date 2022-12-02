@@ -1,17 +1,16 @@
 import { log } from '@stacksjs/x-ray'
 import { runNpmScript } from '@stacksjs/utils'
-import { ExitCode, NpmScript, type TypesOptions } from '@stacksjs/types'
+import { NpmScript, type TypesOptions } from '@stacksjs/types'
 
 export async function invoke(options?: TypesOptions) {
-  try {
-    await runNpmScript(NpmScript.TypesFix, options)
-    log.success('Types were fixed.')
+  const results = await runNpmScript(NpmScript.TypesFix, options)
+
+  if (results.isErr()) {
+    log.error('There was an error fixing your types', results.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error fixing your types.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  log.success('Types are set')
 }
 
 /**

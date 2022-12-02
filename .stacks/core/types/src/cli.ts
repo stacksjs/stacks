@@ -134,6 +134,7 @@ export interface FreshOptions extends CliOptions {}
 export interface ReleaseOptions extends CliOptions {}
 export interface PreinstallOptions extends CliOptions {}
 export interface PrepublishOptions extends CliOptions {}
+export interface TypesOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 

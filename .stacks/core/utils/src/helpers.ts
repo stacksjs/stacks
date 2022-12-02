@@ -110,7 +110,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script))
-    return await runCommand(`pnpm run ${script}`, { ...options, cwd: frameworkPath() })
+    return await runCommand(`pnpm run ${script}`, { ...options, debug: true, cwd: frameworkPath() })
 
   log.error(`The specified npm script "${script}" does not exist in the package.json file`)
   process.exit(ExitCode.FatalError)

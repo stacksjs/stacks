@@ -7,7 +7,7 @@ export async function invoke(options?: CleanOptions) {
   const result = await runCommand(NpmScript.Clean, options)
 
   if (result.isOk()) {
-    log.success('Cleaned up.')
+    log.success('Cleaned up')
     process.exit(ExitCode.Success)
   }
 

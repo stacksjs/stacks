@@ -24,14 +24,13 @@ export async function lint(options: LintOptions) {
 }
 
 export async function lintFix(options?: LintOptions) {
-  try {
-    log.info('Fixing lint errors...')
-    await runNpmScript(NpmScript.LintFix, options)
-    log.success('Fixed lint errors.')
+  log.info('Fixing lint errors...')
+  const result = await runNpmScript(NpmScript.LintFix, options)
+
+  if (result.isErr()) {
+    log.error('There was an error lint fixing your code', result.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error lint fixing your code.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  log.success('Fixed lint errors')
 }

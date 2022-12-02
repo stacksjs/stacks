@@ -9,11 +9,10 @@ export async function invoke(options?: PreinstallOptions) {
 
     log.info('Preinstall check...')
     await spawn('npx only-allow pnpm', { stdio, cwd: projectPath() })
-    log.success('Environment ready.')
+    log.success('Environment ready')
   }
   catch (error) {
-    log.error('There was an error pre-installing your stack.')
-    log.error(error)
+    log.error('There was an error pre-installing your stack', error)
     process.exit(ExitCode.FatalError)
   }
 }

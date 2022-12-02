@@ -92,7 +92,7 @@ export async function updateFramework(options: UpdateOptions) {
   await storage.deleteFolder(projectPath('updates'))
 
   outro('Framework updated', { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }
 
 export async function downloadFrameworkUpdate(options: UpdateOptions) {
@@ -114,11 +114,11 @@ export async function updateDependencies(options: UpdateOptions) {
 
   if (result.isErr()) {
     outro('While running the update:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }
 
 export async function updatePackageManager(options: UpdateOptions) {
@@ -128,11 +128,11 @@ export async function updatePackageManager(options: UpdateOptions) {
 
   if (result.isErr()) {
     outro('While running the update:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro(`Updated to version: ${version}`, { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }
 
 export async function updateNode(options: UpdateOptions) {
@@ -141,9 +141,9 @@ export async function updateNode(options: UpdateOptions) {
 
   if (result.isErr()) {
     outro('While running the update:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro(`Updated your project's Node.js version to: ${process.version}`, { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }

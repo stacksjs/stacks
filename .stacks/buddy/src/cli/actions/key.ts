@@ -30,7 +30,7 @@ export async function generate(options: KeyOptions) {
       // spawn('cp .env.example .env', { stdio: debug, cwd: projectPath() })
 
     await setEnvValue('APP_KEY', await generateAppKey())
-    log.success('Application key set.')
+    log.success('Application key set')
 
     return true
   }

@@ -47,11 +47,10 @@ export async function component(options: MakeOptions) {
     const name = options.name
     log.info('Creating your component...')
     await createComponent(options)
-    log.success(`Created the ${italic(name)} component.`)
+    log.success(`Created ${italic(name)} component`)
   }
   catch (error) {
-    log.error('There was an error creating your component.')
-    log.error(error)
+    log.error('There was an error creating your component', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -79,7 +78,7 @@ export async function database(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
     await createDatabase(options)
-    log.success(`Created the ${italic(name)} database.`)
+    log.success(`Created ${italic(name)} database`)
   }
   catch (error) {
     log.error('There was an error creating your database.')
@@ -97,7 +96,7 @@ export async function factory(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
     await createDatabase(options)
-    log.success(`Created the ${italic(name)} factory.`)
+    log.success(`Created ${italic(name)} factory`)
   }
   catch (error) {
     log.error('There was an error creating your factory.')
@@ -115,11 +114,10 @@ export async function migration(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} migration...`)
     await createMigration(options)
-    log.success(`Created the ${italic(name)} migration.`)
+    log.success(`Created ${italic(name)} migration`)
   }
   catch (error) {
-    log.error('There was an error creating your migration.')
-    log.error(error)
+    log.error('There was an error creating your migration', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -133,11 +131,10 @@ export async function notification(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
-    log.success(`Created the ${italic(name)} notification.`)
+    log.success(`Created ${italic(name)} notification`)
   }
   catch (error) {
-    log.error('There was an error creating your notification.')
-    log.error(error)
+    log.error('There was an error creating your notification', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -151,11 +148,10 @@ export async function page(options: MakeOptions) {
     const name = options.name
     log.info('Creating your page...')
     createPage(options)
-    log.success(`Created the ${name} page.`)
+    log.success(`Created ${name} page`)
   }
   catch (error) {
-    log.error('There was an error creating your page.')
-    log.error(error)
+    log.error('There was an error creating your page', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -184,11 +180,10 @@ export async function fx(options: MakeOptions) {
     const name = options.name
     log.info('Creating your function...')
     await createFunction(options)
-    log.success(`Created the ${name} function.`)
+    log.success(`Created ${name} function`)
   }
   catch (error) {
-    log.error('There was an error creating your function.')
-    log.error(error)
+    log.error('There was an error creating your function', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -218,11 +213,10 @@ export async function language(options: MakeOptions) {
     const name = options.name
     log.info('Creating your translation file...')
     createLanguage(options)
-    log.success(`Created the ${name} translation file.`)
+    log.success(`Created ${name} translation file`)
   }
   catch (error) {
-    log.error('There was an error creating your language.')
-    log.error(error)
+    log.error('There was an error creating your language', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -244,11 +238,11 @@ export async function stack(options: MakeOptions) {
     const path = resolve(process.cwd(), name)
 
     await spawn(`giget stacks ${path}`)
-    log.success('Successfully scaffolded your project.')
+    log.success('Successfully scaffolded your project')
     log.info(`cd ${path} && pnpm install`)
   }
   catch (error) {
-    log.error('There was an error creating your stack.', error)
+    log.error('There was an error creating your stack', error)
     process.exit(ExitCode.FatalError)
   }
 }

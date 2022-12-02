@@ -1,7 +1,9 @@
 import { log } from '@stacksjs/x-ray'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
+import { projectPath } from '@stacksjs/path'
+import { runCommand } from '@stacksjs/cli'
 import { lintFix } from './lint'
 
 export async function invoke(options?: GeneratorOptions) {
@@ -37,67 +39,81 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  await runNpmScript(NpmScript.GenerateEntries, options)
-  log.success('Library entry points were generated successfully.')
+  const result = await runCommand('esno .stacks/core/actions/src/generate-package-json.ts', { ...options, debug: true, cwd: projectPath() })
+
+  if (result.isErr()) {
+    log.error('There was an error generating your library entry points', result.error)
+    process.exit()
+  }
+
+  log.success('Library entry points were generated successfully')
 }
 
 export async function vueCompat(options?: GeneratorOptions) {
-  await runNpmScript(NpmScript.GenerateVueCompat, options)
-  log.success('Libraries are now Vue 2 & 3 compatible.')
+  const result = await runNpmScript(NpmScript.GenerateVueCompat, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating Vue 2 compatibility', result.error)
+    process.exit()
+  }
+
+  log.success('Libraries are now Vue 2 & 3 compatible')
 }
 
 export async function webTypes(options?: GeneratorOptions) {
-  await runNpmScript(NpmScript.GenerateWebTypes, options)
-  log.success('Successfully generated the web-types.json file.')
+  const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating the web-types.json file', result.error)
+    process.exit()
+  }
+
+  log.success('Successfully generated the web-types.json file')
 }
 
 export async function vsCodeCustomData(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
-    await lintFix({ fix: true }) // the created json file needs to be linted
-    log.success('Successfully generated the custom-elements.json file.')
+  const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating the custom-elements.json file', result.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error generating the custom-elements.json file')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  await lintFix({ fix: true }) // the created json file needs to be linted
+  log.success('Successfully generated the custom-elements.json file')
 }
 
 export async function ideHelpers(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateIdeHelpers, options)
-    await lintFix({ fix: true }) // the created json file needs to be linted
-    log.success('Successfully generated IDE helpers.')
+  const result = await runNpmScript(NpmScript.GenerateIdeHelpers, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating IDE helpers', result.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error generating IDE helpers.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  await lintFix({ fix: true }) // the created json file needs to be linted
+  log.success('Successfully generated IDE helpers')
 }
 
 export async function componentMeta(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateComponentMeta, options)
-    await lintFix({ fix: true }) // the created json file needs to be linted
-    log.success('Successfully d component meta.')
+  const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating your component meta information', result.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error generating your component meta information.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  await lintFix({ fix: true }) // the created json file needs to be linted
+  log.success('Successfully generated component meta information')
 }
 
 export async function types(options?: GeneratorOptions) {
-  try {
-    await runNpmScript(NpmScript.GenerateTypes, options)
-    log.success('Types were generated successfully.')
+  const result = await runNpmScript(NpmScript.GenerateTypes, options)
+
+  if (result.isErr()) {
+    log.error('There was an error generating your types', result.error)
+    process.exit()
   }
-  catch (error) {
-    log.error('There was an error generating your types.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-  }
+
+  log.success('Types were generated successfully')
 }

@@ -26,7 +26,7 @@ export async function examples(options: ExamplesOptions) {
 export async function componentExample(options: ExamplesOptions) {
   if (hasComponents()) {
     await runNpmScript(NpmScript.ExampleVue, options)
-    log.success('Your component library was built successfully.')
+    log.success('Your component library was built successfully')
   }
   else {
     log.info('No components found.')
@@ -38,7 +38,7 @@ export async function webComponentExample(options: ExamplesOptions) {
   if (hasComponents()) {
     log.info('Building your Web Component library...')
     await runNpmScript(NpmScript.BuildWebComponents, options)
-    log.success('Your Web Component library was built successfully.')
+    log.success('Your Web Component library was built successfully')
   }
   else {
     log.info('No components found.')

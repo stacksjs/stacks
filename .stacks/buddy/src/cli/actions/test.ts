@@ -1,5 +1,5 @@
 import type { TestOptions } from '@stacksjs/types'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
@@ -9,7 +9,7 @@ export async function invoke(options: TestOptions) {
 
   if (result.isErr()) {
     outro('While running `buddy test`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro('Finished running tests', { startTime: perf, useSeconds: true })
@@ -21,7 +21,7 @@ export async function testUi(options: TestOptions) {
 
   if (result.isErr()) {
     outro('While running `buddy test:ui`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 }
 
@@ -40,11 +40,11 @@ export async function typecheck(options: TestOptions) {
 
   if (result.isErr()) {
     outro('While running `buddy test:types`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro('Finished typecheck', { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }
 
 export async function testCoverageReport(options: TestOptions) {
@@ -53,9 +53,9 @@ export async function testCoverageReport(options: TestOptions) {
 
   if (result.isErr()) {
     outro('While running `buddy test:coverage`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   outro('Generated the test coverage report', { startTime: perf, useSeconds: true })
-  process.exit(ExitCode.Success)
+  process.exit()
 }

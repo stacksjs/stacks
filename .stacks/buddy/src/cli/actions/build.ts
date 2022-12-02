@@ -45,7 +45,7 @@ export async function vueComponentLibrary(options: BuildOptions) {
   if (hasComponents()) {
     log.info('Building your component library...')
     await runNpmScript(NpmScript.BuildComponents, options)
-    log.success('Your component library was built successfully.')
+    log.success('Your component library was built successfully')
   }
   else {
     // todo: throw custom error here
@@ -60,7 +60,7 @@ export async function webComponentLibrary(options: BuildOptions) {
 
   if (hasComponents()) {
     await runNpmScript(NpmScript.BuildWebComponents, options)
-    log.success('Your Web Component library was built successfully.')
+    log.success('Your Web Component library was built successfully')
   }
   else {
     // todo: throw custom error here
@@ -71,13 +71,13 @@ export async function webComponentLibrary(options: BuildOptions) {
 export async function docs(options: BuildOptions) {
   log.info('Building the documentation site...')
   await runNpmScript(NpmScript.BuildDocs, options)
-  log.success('Docs built successfully.')
+  log.success('Docs built successfully')
 }
 
 export async function stacks(options: BuildOptions) {
   log.info('Building the Stacks Framework...')
   await runNpmScript(NpmScript.BuildStacks, options)
-  log.success('Stacks built successfully.')
+  log.success('Stacks built successfully')
 }
 
 export async function functionsLibrary(options: BuildOptions) {
@@ -85,9 +85,9 @@ export async function functionsLibrary(options: BuildOptions) {
     log.info('Building your functions library for production usages...')
     log.info('Production usages include: manual npm distribution and/or CDN distribution')
     await runNpmScript(NpmScript.BuildFunctions, options)
-    log.success('Functions library built successfully.')
+    log.success('Functions library built successfully')
   }
   else {
-    log.info('No functions found.')
+    log.info('No functions found')
   }
 }

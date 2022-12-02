@@ -37,7 +37,7 @@ export async function createVueLibraryEntryPoint() {
     data: generateEntryPointData('vue-components'),
   })
 
-  log.success('Created the Vue component library entry point.')
+  log.success('Created Vue component library entry point.')
 }
 
 export async function createWebComponentLibraryEntryPoint() {
@@ -48,7 +48,7 @@ export async function createWebComponentLibraryEntryPoint() {
     data: generateEntryPointData('web-components'),
   })
 
-  log.success('Created the Web Component library entry point.')
+  log.success('Created Web Component library entry point.')
 }
 
 export async function createFunctionLibraryEntryPoint() {
@@ -59,7 +59,7 @@ export async function createFunctionLibraryEntryPoint() {
     data: generateEntryPointData('functions'),
   })
 
-  log.success('Created the Functions library entry point.')
+  log.success('Created Functions library entry point.')
 }
 
 export function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {

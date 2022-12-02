@@ -312,7 +312,8 @@
     "termii",
     "nexmo",
     "vonage",
-    "sasl"
+    "sasl",
+    "prepublishing"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
