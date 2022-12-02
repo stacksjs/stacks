@@ -7,18 +7,18 @@ interface SearchEngineOptions {
   apiKey: string
 }
 
-function client(options: SearchEngineOptions) {
+function client(options?: SearchEngineOptions) {
   let host = searchEngine.meilisearch?.host
   let apiKey = searchEngine.meilisearch?.apiKey
 
-  if (options.host)
+  if (options?.host)
     host = options.host
 
-  if (options.apiKey)
+  if (options?.apiKey)
     apiKey = options.apiKey
 
   if (!host) {
-    log.error('Please specify a host.')
+    log.error('Please specify a search engine host.')
     process.exit()
   }
 
@@ -26,7 +26,7 @@ function client(options: SearchEngineOptions) {
 }
 
 async function search(index: string, params: any) {
-  return await client
+  return await client()
     .index(index)
     .search(params.query, { limit: params.perPage, offset: params.page * params.perPage })
 }
