@@ -1,4 +1,4 @@
-import { env } from '@stacksjs/config'
+import { env } from '@stacksjs/utils'
 
 /**
  * **Notification Options**

@@ -9,7 +9,7 @@ import { type DebugOptions as Options } from '@stacksjs/types'
  */
 export const debug: Options = {
   driver: 'ray',
-  enable: true,
+  enabled: true,
   host: 'localhost',
   port: 23517,
 }

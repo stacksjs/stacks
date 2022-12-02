@@ -1,4 +1,4 @@
-import { env } from '@stacksjs/config'
+import { env } from '@stacksjs/utils'
 
 /**
  * **Cache Options**
@@ -16,9 +16,10 @@ export const cache = {
     host: env('REDIS_HOST', '127.0.0.1'),
     port: env('REDIS_PORT', '6379'),
   },
+
   memcached: {
     driver: 'memcached',
-    persistent_id: env('MEMCACHED_PERSISTENT_ID'),
+    persistent_id: env('MEMCACHED_PERSISTENT_ID', ''),
     sasl: [
       env('MEMCACHED_USERNAME', ''),
       env('MEMCACHED_PASSWORD', ''),
@@ -35,10 +36,10 @@ export const cache = {
 
   dynamodb: {
     driver: 'dynamodb',
-    key: env('AWS_ACCESS_KEY_ID'),
-    secret: env('AWS_SECRET_ACCESS_KEY'),
+    key: env('AWS_ACCESS_KEY_ID', ''),
+    secret: env('AWS_SECRET_ACCESS_KEY', ''),
     region: env('AWS_DEFAULT_REGION', 'us-east-1'),
     table: env('DYNAMODB_CACHE_TABLE', 'cache'),
-    endpoint: env('DYNAMODB_ENDPOINT'),
+    endpoint: env('DYNAMODB_ENDPOINT', ''),
   },
 }

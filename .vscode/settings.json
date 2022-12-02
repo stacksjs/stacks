@@ -311,7 +311,8 @@
     "telnyx",
     "termii",
     "nexmo",
-    "vonage"
+    "vonage",
+    "sasl"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
