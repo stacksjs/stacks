@@ -1,8 +1,6 @@
 import { defineBuildConfig } from 'unbuild'
 import { alias } from './alias'
 
-// console.log('alias', alias)
-
 export default defineBuildConfig({
   failOnWarn: false, // it may fail for "Potential missing package.json files: dist/index.mjs, dist/index.d.ts"
   alias,
