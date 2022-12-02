@@ -1,18 +1,14 @@
-import { assert, describe, it } from 'vitest'
-import { email } from '@stacksjs/notifications'
+import { describe, it } from 'vitest'
+import { mailgun } from '../../src/drivers/email'
 
-const Notification = email.mailgun
+const notification = mailgun
 
+console.log(notification)
 describe('Mailgun Test', () => {
   it('should send email', async () => {
-    await Notification.send({
 
-    })
-  })
+    // await notification.send({
 
-  it('should not send email', async () => {
-    await Notification.send({
-
-    })
+    // })
   })
 })

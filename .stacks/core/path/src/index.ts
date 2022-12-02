@@ -281,6 +281,7 @@ export const path = {
   xRayPath,
   modulesPath,
   objectsPath,
+  notificationsPath,
   packageJsonPath,
   pagesPath,
   pathPath,
