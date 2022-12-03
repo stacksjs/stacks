@@ -1,6 +1,6 @@
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { actionsPath, frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { ui } from '@stacksjs/config'
 
@@ -110,10 +110,32 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script))
-    return await runCommand(`pnpm run ${script}`, { ...options, debug: true, cwd: frameworkPath() })
+    return await runCommand(`pnpm run ${script}`, options)
 
   log.error(`The specified npm script "${script}" does not exist in the package.json file`)
   process.exit(ExitCode.FatalError)
+}
+
+/**
+ * Run a command the Stacks way.
+ *
+ * @param command The action to invoke.
+ * @param options The options to pass to the command.
+ * @returns The result of the command.
+ */
+export async function runAction(action: string, options?: CliOptions) {
+  let path
+
+  if (hasAction(action))
+    path = projectPath(`functions/actions/${action}.ts`)
+  else
+    path = actionsPath(`src/${action}.ts`)
+
+  return await runCommand(`esno ${path}`, { ...options, debug: true, cwd: actionsPath() })
+}
+
+function hasAction(action: string) {
+  return storage.isFile(frameworkPath(`functions/actions/${action}.ts`))
 }
 
 /**

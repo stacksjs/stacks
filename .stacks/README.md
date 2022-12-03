@@ -34,6 +34,7 @@ _Develop UIs with helpers for atomic design, component libraries, and more._
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
+- 🪄 **AI** _Deep OpenAI integration_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._

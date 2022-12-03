@@ -313,7 +313,8 @@
     "nexmo",
     "vonage",
     "sasl",
-    "prepublishing"
+    "prepublishing",
+    "openai"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

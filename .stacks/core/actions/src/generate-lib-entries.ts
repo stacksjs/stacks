@@ -13,6 +13,5 @@ else {
 
 if (hasFunctions())
   await generateLibEntry('functions')
-
 else
   log.info('No functions found. Skipping building function entry point.')

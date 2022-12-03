@@ -1,26 +1,26 @@
 {
-  "name": "@stacksjs/desktop",
+  "name": "@stacksjs/ai",
   "type": "module",
   "version": "0.43.1",
   "packageManager": "pnpm@7.17.1",
-  "description": "The Stacks Desktop engine.",
+  "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/desktop#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/ai#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/desktop"
+    "directory": "./.stacks/core/ai"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "desktop",
-    "automation",
-    "tauri",
-    "vite",
+    "ai",
+    "openai",
+    "artificial intelligence",
+    "api",
     "stacks"
   ],
   "main": "dist/index.mjs",
@@ -42,6 +42,10 @@
     "dev": "mkdist -d",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
