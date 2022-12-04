@@ -1,18 +1,12 @@
 # Stacks Config
 
-This package contains the Stacks configurations.
+This package simplifies accessing your Stacks configuration.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- ⚡️ API to access your Stacks config
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/config
@@ -20,10 +14,10 @@ pnpm i -D @stacksjs/config
 
 Now, you can use it in your project:
 
-```js
+```ts
 import { app, deploy, docs, git, hashing, library, services, ui } from '@stacksjs/config'
 
-console.log(app)
+console.log(app) // { name: 'Your App Name', env: 'local', url: 'https://localhost', ... }
 ```
 
 Learn more in the docs.

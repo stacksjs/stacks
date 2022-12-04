@@ -1,6 +1,25 @@
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
+ * Returns the path to the `ai` directory. The AI directory
+ * contains the core Stacks' AI logic which currently
+ * is a wrapper of the OpenAI API.
+ *
+ * @param path - relative path to the file or directory
+ * @returns string - absolute path to the file or directory
+ * @example
+ * ```ts
+ * import { aiPath } from '@stacks/paths'
+ *
+ * console.log('path is', aiPath())
+ * // path is /Users/chrisbreuer/Code/stacks/.stacks/core/ai
+ * ```
+ */
+export function aiPath(path?: string) {
+  return corePath(`ai/${path || ''}`)
+}
+
+/**
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action
  *
@@ -251,6 +270,7 @@ export function utilsPath(path?: string) {
 }
 
 export const path = {
+  aiPath,
   actionsPath,
   aliasPath,
   arraysPath,

@@ -1,10 +1,14 @@
 # Stacks AI
 
-wip
+This package contains a pretty wrapper for the OpenAI API.
 
 ## ☘️ Features
 
 - 🔎 Pretty API wrapper
+- 🤷🏼‍♂️ git Diff Interpreter
+- 🪐 GitHub integration
+- 💨 Zero-config
+- 🐶 Buddy CLI commands
 
 ## TODO
 
@@ -13,7 +17,7 @@ wip
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/search-engine
+pnpm i -D @stacksjs/ai
 ```
 
 You may now use:

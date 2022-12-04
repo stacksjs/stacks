@@ -6,6 +6,8 @@ import p from '@stacksjs/path'
 
 const alias: Record<string, string> = {
   '~/*': p.projectPath('*'),
+  '@stacksjs/ai': p.aiPath('src/index.ts'),
+  '@stacksjs/ai/*': p.aiPath('src/*'),
   '@stacksjs/actions': p.actionsPath('src/index.ts'),
   '@stacksjs/actions/*': p.actionsPath('src/*'),
   '@stacksjs/alias': p.aliasPath(),

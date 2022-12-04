@@ -1,18 +1,18 @@
 # Stacks Cloud
 
-wip
+This package assists you in setting up & maintaining your application's cloud infrastructure.
 
 ## ☘️ Features
 
-wip
+- Cloud Creation & Management
+- Domain Management
+- Stacks Buddy Commands
 
-- ⚡️
+### TODO
 
-wip
+- [ ] Driver: AWS
 
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/cloud
@@ -20,7 +20,7 @@ pnpm i -D @stacksjs/cloud
 
 Now, you can use it in your project:
 
-```js
+```ts
 import cloud from '@stacksjs/cloud'
 
 // wip

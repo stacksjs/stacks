@@ -1,6 +1,11 @@
 import { defineBuildConfig } from 'unbuild'
+import { projectPath } from '@stacksjs/path'
 
 export default defineBuildConfig({
+  alias: {
+    'config/*': projectPath('config/*'),
+    'config': projectPath('config'),
+  },
   entries: [
     './src/index',
   ],

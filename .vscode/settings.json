@@ -314,7 +314,8 @@
     "vonage",
     "sasl",
     "prepublishing",
-    "openai"
+    "openai",
+    "chrisbreuer",
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"
