@@ -1,5 +1,5 @@
 {
-  "name": "your-name",
+  "name": "your-app",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@7.18.0",
