@@ -2,7 +2,7 @@
   "name": "@stacksjs/dashboard",
   "type": "module",
   "version": "0.43.1",
-  "packageManager": "pnpm@7.17.1",
+  "packageManager": "pnpm@7.18.0",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.17.1"
+    "pnpm": ">=7.18.0"
   },
   "scripts": {
     "build": "mkdist -d",

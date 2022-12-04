@@ -2,7 +2,7 @@
   "name": "@stacksjs/git",
   "type": "module",
   "version": "0.43.1",
-  "packageManager": "pnpm@7.17.1",
+  "packageManager": "pnpm@7.18.0",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.17.1"
+    "pnpm": ">=7.18.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -47,7 +47,7 @@
     "bumpp": "^8.2.1",
     "commitizen": "^4.2.5",
     "conventional-changelog-cli": "^2.2.2",
-    "cz-git": "^1.3.12",
+    "cz-git": "^1.4.0",
     "giget": "^1.0.0",
     "simple-git-hooks": "^2.8.1"
   },
