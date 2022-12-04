@@ -126,16 +126,20 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
 export async function runAction(action: string, options?: CliOptions) {
   let path
 
-  if (hasAction(action))
-    path = projectPath(`functions/actions/${action}.ts`)
-  else
-    path = actionsPath(`src/${action}.ts`)
+  if (!hasAction(action))
+    log.error(`The specified action "${action}" does not exist`)
 
   return await runCommand(`esno ${path}`, { ...options, debug: true, cwd: actionsPath() })
 }
 
 function hasAction(action: string) {
-  return storage.isFile(frameworkPath(`functions/actions/${action}.ts`))
+  if (storage.isFile(functionsPath(`actions/${action}.ts`)))
+    return true
+
+  if (actionsPath(`src/${action}.ts`))
+    return true
+
+  return false
 }
 
 /**
