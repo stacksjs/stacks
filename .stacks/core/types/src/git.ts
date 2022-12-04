@@ -90,8 +90,8 @@ export interface GitOptions {
     subject: string
     body: string
     breaking: string
-    footerPrefixsSelect: string
-    customFooterPrefixs: string
+    footerPrefixesSelect: string
+    customFooterPrefixes: string
     footer: string
     confirmCommit: string
   }
