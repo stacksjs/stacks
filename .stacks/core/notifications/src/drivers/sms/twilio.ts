@@ -12,7 +12,7 @@ const provider = new TwilioSmsProvider({
   from: env.from,
 })
 
-async function send(options: SmsOptions) {
+function send(options: SmsOptions) {
   return ResultAsync.fromPromise(
     provider.sendMessage(options),
     () => new Error(`Failed to send message using provider: ${italic('Twilio')}`),

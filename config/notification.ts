@@ -23,10 +23,10 @@ export const notification = {
       secure: env('EMAILJS_SECURE', true),
     },
     mailgun: {
-      key: env('MAILGUN_API_KEY', 'e674b18fa7bd4a64075c00e2b849b470-bdb2c8b4-9c7753d3'),
-      domain: env('MAILGUN_DOMAIN', 'http://localhost:8000'),
-      username: env('MAILGUN_USERNAME', 'postmaster@sandbox3a5720d057c6408f837dbbc6a278fd49.mailgun.org'),
-      from: env('MAILGUN_FROM', 'repuestobrian2@gmail'),
+      key: env('MAILGUN_API_KEY', 'test-value'),
+      domain: env('MAILGUN_DOMAIN', 'test-value'),
+      username: env('MAILGUN_USERNAME', 'test-value'),
+      from: env('MAILGUN_FROM', 'test-value'),
     },
     mailjet: {
       key: env('MAILJET_API_KEY', 'test-value'),
@@ -62,9 +62,9 @@ export const notification = {
   },
   sms: {
     twilio: {
-      sid: env('TWILIO_ACCOUNT_SID', 'AC716a57296c0abb1914ea7655d1d8b9c2'),
-      authToken: env('TWILIO_AUTH_TOKEN', 'e19c4655b8a55a363e77757de31827e1'),
-      from: env('TWILIO_FROM_NUMBER', '+16506402359'),
+      sid: env('TWILIO_ACCOUNT_SID', 'test-value'),
+      authToken: env('TWILIO_AUTH_TOKEN', 'test-value'),
+      from: env('TWILIO_FROM_NUMBER', 'test-value'),
     },
     nexmo: {
       key: env('VONAGE_API_KEY', 'test-value'),
