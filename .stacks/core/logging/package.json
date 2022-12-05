@@ -1,35 +1,28 @@
 {
-  "name": "@stacksjs/x-ray",
+  "name": "@stacksjs/logging",
   "type": "module",
   "version": "0.43.1",
   "packageManager": "pnpm@7.18.0",
-  "description": "All you need to debug, log & analyze, easily.",
+  "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/x-ray#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/logging#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/x-ray"
+    "directory": "./.stacks/core/logging"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "x-ray",
-    "ray",
-    "debug",
-    "dump",
-    "logs",
-    "console",
-    "consola",
-    "type safe",
-    "stacks"
+    "logging",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
   ],
-  "main": "dist/index.mjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -48,8 +41,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/logging": "workspace:*",
-    "node-ray": "^1.19.4"
+    "consola": "^2.15.3",
+    "vue-ray": "^1.17.3"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

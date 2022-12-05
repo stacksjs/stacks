@@ -314,7 +314,8 @@
     "sasl",
     "prepublishing",
     "openai",
-    "chrisbreuer"
+    "chrisbreuer",
+    "dinero"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

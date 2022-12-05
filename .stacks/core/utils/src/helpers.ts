@@ -1,6 +1,6 @@
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import { type CliOptions, ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
-import { actionsPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { ui } from '@stacksjs/config'
 
@@ -117,32 +117,6 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
 }
 
 /**
- * Run a command the Stacks way.
- *
- * @param command The action to invoke.
- * @param options The options to pass to the command.
- * @returns The result of the command.
- */
-export async function runAction(action: string, options?: CliOptions) {
-  let path
-
-  if (!hasAction(action))
-    log.error(`The specified action "${action}" does not exist`)
-
-  return await runCommand(`esno ${path}`, { ...options, debug: true, cwd: actionsPath() })
-}
-
-function hasAction(action: string) {
-  if (storage.isFile(functionsPath(`actions/${action}.ts`)))
-    return true
-
-  if (actionsPath(`src/${action}.ts`))
-    return true
-
-  return false
-}
-
-/**
  * Determines whether the specified NPM script exists in the given manifest.
  */
 export function hasScript(manifest: Manifest, script: NpmScript): boolean {
@@ -154,5 +128,7 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   return false
 }
 
+export * from '@dinero.js/currencies'
+export * from 'dinero.js'
 export * as detectIndent from 'detect-indent'
 export { detectNewline } from 'detect-newline'

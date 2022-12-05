@@ -25,13 +25,13 @@ The Stacks Dashboard.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/x-ray
+pnpm i -D @stacksjs/dashboard
 ```
 
 Now, you can use it in your project:
 
 ```js
-import { log } from '@stacksjs/x-ray'
+import { log } from '@stacksjs/logging'
 
 log('some description') // aliases to log.log()
 log.debug('some debug description')

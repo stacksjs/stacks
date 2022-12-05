@@ -1,5 +1,5 @@
 import { intro, log, outro } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/utils'
+import { runAction } from '@stacksjs/actions'
 import type { CliOptions as ReleaseOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 

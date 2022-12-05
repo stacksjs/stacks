@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/x-ray'
+import { log } from '@stacksjs/logging'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import type { LintOptions } from '@stacksjs/types'

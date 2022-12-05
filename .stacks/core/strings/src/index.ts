@@ -54,9 +54,9 @@ export function ensureSuffix(suffix: string, str: string) {
  * ```
  * const result = template(
  *   'Hello {0}! My name is {1}.',
- *   'Inès',
- *   'Anthony'
- * ) // Hello Inès! My name is Anthony.
+ *   'Buddy',
+ *   'Chris'
+ * ) // Hello Buddy! My name is Chris.
  * ```
  */
 export function template(str: string, ...args: any[]): string {

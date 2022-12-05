@@ -5,7 +5,7 @@ export async function invoke(options: AddOptions) {
   if (options?.table)
     await addTable()
 
-  else if (options.calendar)
+  if (options?.calendar)
     await addCalendar()
 }
 

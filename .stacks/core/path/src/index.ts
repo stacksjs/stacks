@@ -113,6 +113,10 @@ export function docsPath(path?: string) {
   return corePath(`docs/${path || ''}`)
 }
 
+export function domainsPath(path?: string) {
+  return corePath(`domains/${path || ''}`)
+}
+
 export function driversPath(path?: string) {
   return corePath(`drivers/${path || ''}`)
 }
@@ -155,6 +159,10 @@ export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'fu
 
 export function lintPath(path?: string) {
   return corePath(`lint/${path || ''}`)
+}
+
+export function loggingPath(path?: string) {
+  return corePath(`logging/${path || ''}`)
 }
 
 export function xRayPath(path?: string) {
@@ -288,6 +296,7 @@ export const path = {
   dashboardPath,
   desktopPath,
   docsPath,
+  domainsPath,
   driversPath,
   errorHandlingPath,
   examplesPath,
@@ -298,6 +307,7 @@ export const path = {
   langPath,
   libraryEntryPath,
   lintPath,
+  loggingPath,
   xRayPath,
   modulesPath,
   objectsPath,

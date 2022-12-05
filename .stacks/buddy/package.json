@@ -122,7 +122,7 @@
     "key": "pnpm buddy key",
     "key:generate": "pnpm buddy key:generate",
     "commit": "git cz",
-    "release": "esno ./core/actions/src/generate-package-json.ts && pnpm lint:fix && bumpp ../package.json ./package.json ./core/**/package.json ../package.json --execute 'pnpm run changelog' --all",
+    "release": "pnpm buddy release",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm buddy generate",
     "generate:entries": "pnpm buddy generate:entries",
@@ -154,6 +154,7 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/git": "workspace:*",
     "@stacksjs/lint": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -165,8 +166,7 @@
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/x-ray": "workspace:*"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
     "only-allow": "^1.1.1",
@@ -178,5 +178,8 @@
       "path": "node_modules/cz-git"
     }
   },
-  "web-types": "./web-types.json"
+  "web-types": "./web-types.json",
+  "dependencies": {
+    "pluralize": "^8.0.0"
+  }
 }

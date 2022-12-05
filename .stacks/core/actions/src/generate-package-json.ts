@@ -9,4 +9,3 @@ if (hasComponents()) {
 
 if (hasFunctions())
   await generatePackageJson('functions')
-

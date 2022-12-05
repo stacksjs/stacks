@@ -1,25 +1,28 @@
-# Stacks X-Ray
+# Stacks Logging
 
-Visualize & debug your application logs.
+The Stacks logging system.
 
 ## ☘️ Features
 
-- Works in browser & server
-- Visualizes logs
-- Debugs logs
+- Logging tooling
 
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/x-ray
+pnpm i -D @stacksjs/logging
 ```
 
 Now, you can use it in your project:
 
-```ts
-import xRay from '@stacksjs/x-ray'
+```js
+import { log } from '@stacksjs/logging'
 
-// wip
+log('some description') // aliases to log.log()
+log.debug('some debug description')
+log.info('some info description')
+log.warn('some warning description')
+log.error('some error description')
+// and more...
 ```
 
 Learn more in the docs.

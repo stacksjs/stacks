@@ -4,7 +4,7 @@
  * This action generates the component meta.
  */
 
-import { log } from '@stacksjs/x-ray'
+import { log } from '@stacksjs/logging'
 import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from './helpers/component-meta'
 

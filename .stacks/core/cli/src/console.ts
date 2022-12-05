@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/x-ray'
+import { log } from '@stacksjs/logging'
 import Prompts from 'prompts'
 
 const { prompts } = Prompts

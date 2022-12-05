@@ -25,9 +25,11 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/desktop': workspace:*
       '@stacksjs/docs': workspace:*
+      '@stacksjs/domains': workspace:*
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/git': workspace:*
       '@stacksjs/lint': workspace:*
+      '@stacksjs/logging': workspace:*
       '@stacksjs/modules': workspace:*
       '@stacksjs/objects': workspace:*
       '@stacksjs/path': workspace:*
@@ -40,8 +42,8 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
-      '@stacksjs/x-ray': workspace:*
       only-allow: ^1.1.1
+      pluralize: ^8.0.0
       pnpm: '>=7.18.0'
       typescript: ^4.9.3
     dependencies:
@@ -54,9 +56,11 @@ importers:
       '@stacksjs/config': link:../core/config
       '@stacksjs/desktop': link:../core/desktop
       '@stacksjs/docs': link:../core/docs
+      '@stacksjs/domains': link:../core/domains
       '@stacksjs/error-handling': link:../core/error-handling
       '@stacksjs/git': link:../core/git
       '@stacksjs/lint': link:../core/lint
+      '@stacksjs/logging': link:../core/logging
       '@stacksjs/modules': link:../core/modules
       '@stacksjs/objects': link:../core/objects
       '@stacksjs/path': link:../core/path
@@ -69,7 +73,7 @@ importers:
       '@stacksjs/types': link:../core/types
       '@stacksjs/ui': link:../core/ui
       '@stacksjs/utils': link:../core/utils
-      '@stacksjs/x-ray': link:../core/x-ray
+      pluralize: 8.0.0
     devDependencies:
       only-allow: 1.1.1
       pnpm: 7.18.0
@@ -89,26 +93,28 @@ importers:
 
   .stacks/core/actions:
     specifiers:
+      '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
+      '@stacksjs/logging': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/storage': workspace:*
       '@stacksjs/strings': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
-      '@stacksjs/x-ray': workspace:*
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
       typescript: ^4.9.3
       vue-component-meta: ^1.0.11
     dependencies:
+      '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
+      '@stacksjs/logging': link:../logging
       '@stacksjs/path': link:../path
       '@stacksjs/storage': link:../storage
       '@stacksjs/strings': link:../strings
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
-      '@stacksjs/x-ray': link:../x-ray
       markdown-it: 13.0.1
       vue-component-meta: 1.0.11_typescript@4.9.3
     devDependencies:
@@ -233,10 +239,11 @@ importers:
     specifiers:
       '@antfu/install-pkg': ^0.1.1
       '@stacksjs/config': workspace:*
+      '@stacksjs/error-handling': workspace:*
+      '@stacksjs/logging': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      '@stacksjs/x-ray': workspace:*
       cac: ^6.7.14
       esno: ^0.16.3
       execa: ^6.1.0
@@ -246,9 +253,10 @@ importers:
     dependencies:
       '@antfu/install-pkg': 0.1.1
       '@stacksjs/config': link:../config
+      '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/logging': link:../logging
       '@stacksjs/path': link:../path
       '@stacksjs/types': link:../types
-      '@stacksjs/x-ray': link:../x-ray
       cac: 6.7.14
       execa: 6.1.0
       ora: 6.1.2
@@ -355,6 +363,16 @@ importers:
       mkdist: 1.0.0_typescript@4.9.3
       typescript: 4.9.3
 
+  .stacks/core/domains:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.0.0
+      typescript: ^4.9.3
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.3
+      typescript: 4.9.3
+
   .stacks/core/drivers:
     specifiers:
       '@stacksjs/config': workspace:*
@@ -422,6 +440,21 @@ importers:
       '@types/eslint': 8.4.10
       eslint: 8.29.0
       lint-staged: 13.1.0
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.3
+      typescript: 4.9.3
+
+  .stacks/core/logging:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      consola: ^2.15.3
+      mkdist: ^1.0.0
+      typescript: ^4.9.3
+      vue-ray: ^1.17.3
+    dependencies:
+      consola: 2.15.3
+      vue-ray: 1.17.3
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.3
@@ -777,6 +810,7 @@ importers:
       defu: ^6.1.1
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
+      dinero.js: 2.0.0-alpha.11
       esno: ^0.16.3
       fast-glob: ^3.2.12
       kolorist: 1.6.0
@@ -799,6 +833,7 @@ importers:
       defu: 6.1.1
       detect-indent: 7.0.1
       detect-newline: 4.0.0
+      dinero.js: 2.0.0-alpha.11
       esno: 0.16.3
       fast-glob: 3.2.12
       kolorist: 1.6.0
@@ -812,18 +847,18 @@ importers:
 
   .stacks/core/x-ray:
     specifiers:
+      '@stacksjs/logging': workspace:*
       '@stacksjs/testing': workspace:*
-      consola: ^2.15.3
       mkdist: ^1.0.0
       node-ray: ^1.19.4
-      vue-ray: ^1.17.3
+      typescript: ^4.9.3
     dependencies:
-      consola: 2.15.3
+      '@stacksjs/logging': link:../logging
       node-ray: 1.19.4
-      vue-ray: 1.17.3
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.0.0
+      mkdist: 1.0.0_typescript@4.9.3
+      typescript: 4.9.3
 
   .stacks/fonts/hubot-sans:
     specifiers: {}
@@ -3503,6 +3538,22 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: false
     optional: true
+
+  /@dinero.js/calculator-number/2.0.0-alpha.11:
+    resolution: {integrity: sha512-2bj8GVUjG1vCxoU9QZykIhnEH+8ltnsp9Oca48LNB3mmn+QG0xdsO3PGyhpmcWdlnQ2fN7mslS6e3KpiG5aj1Q==}
+    dependencies:
+      '@dinero.js/core': 2.0.0-alpha.11
+    dev: false
+
+  /@dinero.js/core/2.0.0-alpha.11:
+    resolution: {integrity: sha512-o/Mx6PUYvlAnN2Xhb8kZ0hDb3VyD0liPS7Xd9YKSAqxR4DByfRwRorPxZ2Kn93vlXdSGCEiv37wC25ltvOFgWQ==}
+    dependencies:
+      '@dinero.js/currencies': 2.0.0-alpha.11
+    dev: false
+
+  /@dinero.js/currencies/2.0.0-alpha.11:
+    resolution: {integrity: sha512-kLYgRnCmhfM6xi1X6fwwuVsIlLml2mJZmOiWVHKoReNVY8UL6VIAN8T7vZ+i9s3wKPxSV/1rG8MixZxwjK5u1Q==}
+    dev: false
 
   /@docsearch/css/3.3.0:
     resolution: {integrity: sha512-rODCdDtGyudLj+Va8b6w6Y85KE85bXRsps/R4Yjwt5vueXKXZQKYw0aA9knxLBT6a/bI/GMrAcmCR75KYOM6hg==}
@@ -6925,6 +6976,14 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: false
     optional: true
+
+  /dinero.js/2.0.0-alpha.11:
+    resolution: {integrity: sha512-+o4yGK7Nc0ViY/JHlCWOX9cDcGCS2BsU6RmWM1+PpL16JDjn5nr6ZX3g+mG4ChyrEMV06Jsdg6YO16EOJfAViw==}
+    dependencies:
+      '@dinero.js/calculator-number': 2.0.0-alpha.11
+      '@dinero.js/core': 2.0.0-alpha.11
+      '@dinero.js/currencies': 2.0.0-alpha.11
+    dev: false
 
   /dir-glob/3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}

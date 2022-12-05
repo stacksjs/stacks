@@ -52,9 +52,10 @@
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/x-ray": "workspace:*",
     "cac": "^6.7.14",
     "execa": "^6.1.0",
     "ora": "^6.1.2",

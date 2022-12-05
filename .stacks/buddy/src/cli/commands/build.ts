@@ -1,7 +1,7 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { invoke as startBuildProcess } from '../actions/build'
+import { invoke as startBuildProcess } from '@stacksjs/actions/cli/build'
 
 const descriptions = {
   components: 'Build your component library',

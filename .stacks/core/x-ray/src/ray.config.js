@@ -1,3 +1,4 @@
+// TODO: this should be normalized and pulled from a published config file
 module.exports = {
   enable: true,
   host: 'localhost',

@@ -7,5 +7,4 @@ if (result.isErr()) {
   process.exit()
 }
 
-// eslint-disable-next-line no-console
-console.log(result.value)
+// console.log(result.value)

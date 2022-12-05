@@ -9,5 +9,5 @@ export * from './vendor'
 
 export * from '@vueuse/core'
 export * from '@vueuse/math'
-export * from '@vueuse/head'
+// export * from '@vueuse/head'
 export * from '@vueuse/shared'
