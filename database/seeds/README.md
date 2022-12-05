@@ -1,10 +1,11 @@
 # Database Seeding
 
-- use Copilot here to generate
+## What are Database Seeders?
 
-## note in md style
+Database seeders are a way to generate the type of fake to seed your database with. They are a great way to quickly seed your database with test data.
 
-This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
+> **Note**
+> This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
 
 ## Usage
 

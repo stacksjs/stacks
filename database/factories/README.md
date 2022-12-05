@@ -1,10 +1,9 @@
 # Database Factories
 
-- use Copilot here to generate
+Database factories are a way to generate fake data for your database. They are a great way to quickly seed your database with test data.
 
-## note in md style
-
-This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
+> **Note**
+> This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
 
 ## Usage
 

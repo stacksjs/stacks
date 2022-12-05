@@ -1,10 +1,9 @@
 # Database Migrations
 
-- use Copilot here to generate
+Database migrations are a way to version your database schema. They are a great way to keep your database in sync with your application.
 
-## note in md style
-
-This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
+> **Note**
+> This file may be deleted but in the meantime, let it remind you of the API 🤙🏼
 
 ## Usage
 
