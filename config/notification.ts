@@ -62,7 +62,7 @@ export const notification = {
   },
   sms: {
     twilio: {
-      sid: env('TWILIO_ACCOUNT_SID', 'test-value'),
+      sid: env('TWILIO_ACCOUNT_SID', 'ACTEST'),
       authToken: env('TWILIO_AUTH_TOKEN', 'test-value'),
       from: env('TWILIO_FROM_NUMBER', 'test-value'),
     },
