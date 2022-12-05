@@ -54,6 +54,8 @@
       "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],
       "@stacksjs/desktop": ["./core/desktop/src/index.ts"],
       "@stacksjs/desktop/*": ["./core/desktop/src/*"],
+      "@stacksjs/domains": ["./core/domains/src/index.ts"],
+      "@stacksjs/domains/*": ["./core/domains/src/*"],
       "@stacksjs/drivers": ["./core/drivers/src/index.ts"],
       "@stacksjs/drivers/*": ["./core/drivers/src/*"],
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],

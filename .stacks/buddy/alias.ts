@@ -31,6 +31,8 @@ const alias: Record<string, string> = {
   '@stacksjs/desktop/*': p.desktopPath('src/*'),
   '@stacksjs/docs': p.docsPath('src/index.ts'),
   '@stacksjs/docs/*': p.docsPath('src/*'),
+  '@stacksjs/domains': p.domainsPath('src/index.ts'),
+  '@stacksjs/domains/*': p.domainsPath('src/*'),
   '@stacksjs/drivers': p.driversPath('src/index.ts'),
   '@stacksjs/drivers/*': p.driversPath('src/*'),
   '@stacksjs/error-handling': p.errorHandlingPath('src/index.ts'),
