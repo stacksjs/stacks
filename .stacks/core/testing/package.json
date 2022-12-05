@@ -46,9 +46,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vitest/coverage-istanbul": "^0.25.3",
-    "@vitest/ui": "^0.25.3",
-    "vitest": "^0.25.3"
+    "@vitest/coverage-istanbul": "^0.25.4",
+    "@vitest/ui": "^0.25.4",
+    "vitest": "^0.25.4"
   },
   "devDependencies": {
     "mkdist": "^0.4.1",

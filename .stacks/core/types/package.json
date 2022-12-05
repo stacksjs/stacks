@@ -53,10 +53,10 @@
     "@types/fs-extra": "^9.0.13",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.11.10",
+    "@types/node": "^18.11.11",
     "@types/nprogress": "^0.2.0",
     "@types/pluralize": "^0.0.29",
-    "@types/prompts": "^2.4.1",
+    "@types/prompts": "^2.4.2",
     "cac": "^6.7.14",
     "markdown-it": "^13.0.1",
     "mkdist": "^1.0.0",
@@ -66,6 +66,6 @@
     "vite-plugin-inspect": "^0.7.9",
     "vite-plugin-vue-layouts": "^0.7.0",
     "vite-ssg": "^0.22.0",
-    "vitepress": "1.0.0-alpha.29"
+    "vitepress": "1.0.0-alpha.30"
   }
 }
