@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.43.1",
   "packageManager": "pnpm@7.18.0",
-  "description": "All you need to debug, log & analyze, easily.",
+  "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

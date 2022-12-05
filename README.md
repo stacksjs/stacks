@@ -57,7 +57,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
 - 🌪️ **Validation** _e2e type-safety (frontend knows what the backend knows)_
-- 📈 **X-Ray** _All you need to debug, log & analyze, easily_
+- 📈 **X-Ray** _All you need to debug, log & analyze_
 
 ### Stacks Cloud
 
@@ -108,7 +108,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.17 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 7.18 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
