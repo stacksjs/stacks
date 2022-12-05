@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { email } from '@stacksjs/notifications'  
 
-const notification = email.mailgun
+const notification = email.sendgrid
 
-describe('Mailgun Test', () => {
+describe('Sendgrid Test', () => {
   it('should not send email', async () => {
    let test = await notification.send({
       from: 'repuestobrian2@gmail.com',
