@@ -1,14 +1,12 @@
 import { describe, it } from 'vitest'
-// import { mailgun } from '../../src/drivers/email'
+import { email } from '@stacksjs/notifications'  
 
-// const notification = mailgun
-// console.log(notification)
-
+let notif = email
 describe('Mailgun Test', () => {
   it('should send email', async () => {
 
-    // await notification.send({
-
-    // })
   })
 })
+
+
+

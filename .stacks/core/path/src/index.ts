@@ -93,8 +93,8 @@ export function componentsPath(path?: string) {
   return projectPath(`components/${path || ''}`)
 }
 
-export function configPath() {
-  return frameworkPath('config.ts')
+export function configPath(path?: string) {
+  return corePath(`config/${path || ''}`)
 }
 
 export function corePath(path?: string) {
