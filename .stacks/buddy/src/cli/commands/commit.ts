@@ -1,5 +1,5 @@
 import type { CLI, FreshOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/cli/commit'
+import { invoke } from '@stacksjs/actions/buddy/commit'
 
 const descriptions = {
   commit: 'Commit your stashed changes',

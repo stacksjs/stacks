@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { types as generateTypes } from '@stacksjs/actions/cli/generate'
+import { types as generateTypes } from '@stacksjs/actions/buddy/generate'
 
 const descriptions = {
   generate: 'Generate the types of & for your library/libraries',

@@ -1,5 +1,5 @@
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/cli/release'
+import { invoke } from '@stacksjs/actions/buddy/release'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',

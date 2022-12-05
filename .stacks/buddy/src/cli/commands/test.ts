@@ -1,5 +1,5 @@
 import type { CLI, TestOptions } from '@stacksjs/types'
-import { invoke, testCoverageReport, testUi, typecheck } from '@stacksjs/actions/cli/test'
+import { invoke, testCoverageReport, testUi, typecheck } from '@stacksjs/actions/buddy/test'
 
 const descriptions = {
   command: 'Runs your test suite',

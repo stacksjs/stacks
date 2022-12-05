@@ -4,7 +4,7 @@ import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { generate as generateAppKey } from '@stacksjs/actions/cli/key'
+import { generate as generateAppKey } from '@stacksjs/actions/buddy/key'
 
 const descriptions = {
   command: 'Create a new Stacks project',

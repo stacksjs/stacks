@@ -1,5 +1,5 @@
 import type { CLI, KeyOptions } from '@stacksjs/types'
-import { generate as generateAppKey } from '@stacksjs/actions/cli/key'
+import { generate as generateAppKey } from '@stacksjs/actions/buddy/key'
 
 async function key(stacks: CLI) {
   const descriptions = {

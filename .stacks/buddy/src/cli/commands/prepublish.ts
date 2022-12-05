@@ -1,5 +1,5 @@
 import type { CLI, PrepublishOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/cli/prepublish'
+import { invoke } from '@stacksjs/actions/buddy/prepublish'
 
 const descriptions = {
   command: 'Run your prepublish script',

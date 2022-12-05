@@ -1,5 +1,5 @@
 import type { CLI, CommitOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/cli/fresh'
+import { invoke } from '@stacksjs/actions/buddy/fresh'
 
 const descriptions = {
   fresh: 'Reinstalls your npm dependencies',

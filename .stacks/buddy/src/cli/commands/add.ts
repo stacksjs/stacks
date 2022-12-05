@@ -1,7 +1,7 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { add as startAddProcess } from '@stacksjs/actions/cli/add'
+import { add as startAddProcess } from '@stacksjs/actions/buddy/add'
 
 const descriptions = {
   add: 'Add a stack to your project (coming soon)',
