@@ -134,7 +134,7 @@ export function frameworkPath(path?: string) {
 }
 
 export function fsPath(path?: string) {
-  return corePath(`fs/${path || ''}`)
+  return corePath(`storage/${path || ''}`)
 }
 
 export function functionsPath(path?: string) {
