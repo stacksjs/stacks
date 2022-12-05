@@ -1,10 +1,19 @@
 import { describe, it } from 'vitest'
 import { email } from '@stacksjs/notifications'  
 
-let notif = email
-describe('Mailgun Test', () => {
-  it('should send email', async () => {
+const notification = email.mailgun
 
+
+describe('Mailgun Test', () => {
+  it('should not send email', async () => {
+   let test = await notification.send({
+      from: 'repuestobrian2@gmail.com',
+      to: 'repuestobrian@gmail',
+      subject: 'Test Email',
+      html: '<p> Test </p>'
+    })
+
+    expect(test.error).toThrowError(Error)
   })
 })
 
