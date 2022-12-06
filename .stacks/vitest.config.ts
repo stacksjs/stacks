@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { alias } from './buddy/alias'
+import { alias } from '@stacksjs/alias'
 
 export default defineConfig({
   root: '..',

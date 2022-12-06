@@ -35,7 +35,7 @@
       "~/*": ["../*"],
       "@stacksjs/actions": ["./core/actions/src/index.ts"],
       "@stacksjs/actions/*": ["./core/actions/src/*"],
-      "@stacksjs/alias": ["buddy/alias.ts"],
+      "@stacksjs/alias": ["./core/alias/src/index.ts"],
       "@stacksjs/arrays/*": ["./core/arrays/src/*"],
       "@stacksjs/arrays": ["./core/arrays/src/index.ts"],
       "@stacksjs/build": ["./core/build/src/index.ts"],

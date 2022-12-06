@@ -38,7 +38,7 @@ export function actionsPath(path?: string) {
 }
 
 export function aliasPath() {
-  return runtimePath('alias.ts')
+  return corePath('alias/src/index.ts')
 }
 
 export function runtimePath(path?: string) {

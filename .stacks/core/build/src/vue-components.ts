@@ -4,7 +4,7 @@ import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@s
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
-import { alias } from '../../../buddy/alias'
+import { alias } from '@stacksjs/alias'
 import { autoImports, components, cssEngine, inspect, preview, uiEngine } from '.'
 
 export const vueComponentsConfig: ViteConfig = {

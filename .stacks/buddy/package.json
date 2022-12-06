@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.43.1",
   "packageManager": "pnpm@7.18.0",
-  "description": "The Stacks runtime, named Buddy.",
+  "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -142,6 +142,7 @@
   },
   "peerDependencies": {
     "@stacksjs/actions": "workspace:*",
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/cli": "workspace:*",

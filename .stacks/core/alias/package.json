@@ -1,37 +1,23 @@
 {
-  "name": "@stacksjs/strings",
+  "name": "@stacksjs/alias",
   "type": "module",
   "version": "0.43.1",
   "packageManager": "pnpm@7.18.0",
-  "description": "The Stacks string utilities.",
+  "description": "The Stacks aliases.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/strings#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/alias#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/strings"
+    "directory": "./.stacks/core/alias"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "strings",
-    "camel case",
-    "capital case",
-    "constant case",
-    "dot case",
-    "header case",
-    "no case",
-    "param case",
-    "kebab case",
-    "pascal case",
-    "path case",
-    "sentence case",
-    "snake case",
-    "utilities",
-    "functions",
+    "alias",
     "stacks"
   ],
   "main": "dist/index.mjs",
@@ -49,21 +35,17 @@
     "pnpm": ">=7.18.0"
   },
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@types/pluralize": "^0.0.29",
-    "change-case": "^4.1.2",
-    "pluralize": "^8.0.0"
+    "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
-    "typescript": "^4.9.3",
-    "unbuild": "^1.0.1"
+    "typescript": "^4.9.3"
   }
 }
