@@ -62,9 +62,10 @@ export const notification = {
   },
   sms: {
     twilio: {
-      sid: env('TWILIO_ACCOUNT_SID', 'test-value'),
+      sid: env('TWILIO_ACCOUNT_SID', 'ACTEST'),
       authToken: env('TWILIO_AUTH_TOKEN', 'test-value'),
       from: env('TWILIO_FROM_NUMBER', 'test-value'),
+      to: env('TWILIO_TO_NUMBER', 'test-value'),
     },
     nexmo: {
       key: env('VONAGE_API_KEY', 'test-value'),
