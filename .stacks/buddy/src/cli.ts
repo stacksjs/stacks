@@ -2,10 +2,7 @@
 import { command, log } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
 import { version } from '../package.json'
-import { setup } from './cli/'
-// import { build, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './cli/'
-
-console.log('here')
+import { build, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './cli/'
 
 const cli = command('stacks')
 
