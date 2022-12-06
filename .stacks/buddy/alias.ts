@@ -75,7 +75,7 @@ const alias: Record<string, string> = {
   '@stacksjs/utils/*': p.utilsPath('src/*'),
   'framework/*': p.frameworkPath('*'),
   'stacks': p.frameworkPath('src/index.ts'),
-  'stacks/*': p.frameworkPath('src/*'),
+  '../../*': p.frameworkPath('src/*'),
   'config/*': p.projectPath('config/*'),
   'components/*': p.componentsPath('*'),
   'functions/*': p.functionsPath('*'),

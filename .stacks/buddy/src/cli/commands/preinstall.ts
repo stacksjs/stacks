@@ -1,5 +1,5 @@
 import type { CLI, PreinstallOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/buddy/preinstall'
+import { invoke } from '../../actions/preinstall'
 
 const descriptions = {
   command: 'Run your preinstall script',

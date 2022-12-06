@@ -12,7 +12,7 @@ import {
   notification as makeNotification,
   page as makePage,
   stack as makeStack,
-} from '@stacksjs/actions/buddy/make'
+} from '../../actions/make'
 
 const descriptions = {
   component: 'Create a new component',

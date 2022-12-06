@@ -1,5 +1,5 @@
 import type { CLI, LintOptions } from '@stacksjs/types'
-import { invoke, lintFix } from '@stacksjs/actions/buddy/lint'
+import { invoke, lintFix } from '../../actions/lint'
 
 const descriptions = {
   lint: 'Automagically lints your codebase',

@@ -1,5 +1,5 @@
 import type { CLI, CleanOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/buddy/clean'
+import { invoke } from '../../actions/clean'
 
 const descriptions = {
   clean: 'Removes all node_modules & lock files',
