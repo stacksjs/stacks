@@ -34,18 +34,18 @@ The Stacks framework is a harmony of several engines to build any web or desktop
 _Develop UIs with helpers for atomic design, component libraries, and more._
 
 - 🧩 **Components** _a primitive to develop UI components_
-- 📚 **Library** _auto-builds Components into Vue & Web component libraries_
-- 📊 **Pages** _"a routing & templating engine that makes sense" using Components—SSG & PWA ready_
-- 🖥️ **Desktop** _Components as desktop elements_
+- 📚 **Library** _auto-builds components into Vue & Web component libraries_
+- 📊 **Pages** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
+- 🖥️ **Desktop** _components as desktop elements_
 - ⚡️ Powered by Vue, Vite, UnoCSS & Tauri
 
 ### Stacks Functions
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
-- 🪄 **AI** _Deep OpenAI integration_
+- 🪄 **AI** _deep OpenAI integration_
 - 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
+- 🏎️ **Cache** _Redis, DynamoDB, SingleStore, and more_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
 - 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
@@ -57,7 +57,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
 - 🌪️ **Validation** _e2e type-safety (frontend knows what the backend knows)_
-- 📈 **X-Ray** _All you need to debug, log & analyze_
+- 📈 **X-Ray** _all you need to debug, log & analyze_
 
 ### Stacks Cloud
 
@@ -88,7 +88,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ✨ **Git workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest_
+- 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
