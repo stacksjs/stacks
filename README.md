@@ -34,7 +34,7 @@ The Stacks framework is a harmony of several engines to build any web or desktop
 _Develop UIs with helpers for atomic design, component libraries, and more._
 
 - 🧩 **Components** _a primitive to develop UI components_
-- 🤖 **Functions** _a primitive to develop UI components_
+- 🤖 **Functions** _the user interface's superpower_
 - 📚 **Library** _auto-builds components into Vue & Web component libraries_
 - 📊 **Pages** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
 - 🖥️ **Desktop** _components as desktop elements_
@@ -75,7 +75,7 @@ _Create your personal or professional Vercel-like cloud._
 
 _Focus on coding, not publishing._
 
-- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
+- 🚀 **Deployment Manager** _take the sweat out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
 ### Stacks DX

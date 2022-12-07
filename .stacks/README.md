@@ -74,7 +74,7 @@ _Create your personal or professional Vercel-like cloud._
 
 _Focus on coding, not publishing._
 
-- 🚀 **Deployment Manager** _take the sweat & stress out of production deployments (AWS, Vercel, Netlify, and more)_
+- 🚀 **Deployment Manager** _take the sweat out of production deployments (AWS, Vercel, Netlify, and more)_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
 ### Stacks DX
