@@ -8,20 +8,20 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_Pre-release until public beta released. Coming ~December._
+_Pre-release until public beta released. Coming December._
 
 The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid application development framework, meeting all your full stack needs.
 
 - Application UIs _(Web & Desktop)_
 - Serverless & traditional APIs
-- Cloud infrastructure creation & maintenance _(IaC)_
+- Cloud infrastructure creation & maintenance
 - Interactive CLIs
 - Framework-agnostic component & function libraries
 - Deployment & Release Manager _(CI & CD)_
 
 Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
 
-> Convention over configuration is our mantra.
+> Convention over configuration is our mantra. _- Chris_
 
 <!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
