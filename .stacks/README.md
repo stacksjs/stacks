@@ -8,17 +8,26 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_For internal usage only until the beta is released by the end of ~November._
+_Pre-release until public beta released. Coming ~December._
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds without having to worry about the boilerplate. Whether it's SSG pages, npm distributed & framework-agnostic component & function libraries, serverless APIs, Stacks helps you every step along the way, including production deployments and the maintenance of its related infrastructure (server or serverless).
+The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid application development framework, meeting all your full stack needs.
 
-Convention over configuration is our mantra—in beginner & expert-friendly ways.
+- Application UIs _(Web & Desktop)_
+- Serverless & traditional APIs
+- Cloud infrastructure creation & maintenance _(IaC)_
+- Interactive CLIs
+- Framework-agnostic component & function libraries
+- Deployment & Release Manager _(CI & CD)_
+
+Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
+
+> Convention over configuration is our mantra.
 
 <!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
 ## Features
 
-The Stacks framework is a harmony of the following engines:
+The Stacks framework is a harmony of several engines to build any web or desktop application, in highly-scalable ways. It consists of the following engines:
 
 ### Stacks UI
 
@@ -27,7 +36,7 @@ _Develop UIs with helpers for atomic design, component libraries, and more._
 - 🧩 Components _develop UI components with ease_
 - 📚 Library Mode _auto-builds Vue & Web component libraries_
 - 📊 Pages _SSG & PWA support using components_
-- 🖥️ Desktop _components as desktop elements, powered by Tauri_
+- 🖥️ Desktop _components as desktop elements_
 - ⚡️ Powered by Vue, Vite, UnoCSS & Tauri
 
 ### Stacks Functions
@@ -37,11 +46,12 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🪄 **AI** _Deep OpenAI integration_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
-- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
 - 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
-- ⚙️ **Queues** run your heavy workload in the background
+- 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
+- ⚙️ **Queues** _run your heavy workload in the background_
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
@@ -51,13 +61,14 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 ### Stacks Cloud
 
-Create your own Vercel-like cloud. _With a few commands._
+_Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _your own CloudFront CDN_
+- 🚏 **CDN** _your own pre-configured CloudFront CDN_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
+- 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_
 
 ### Stacks CI/CD
 
@@ -98,7 +109,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.16 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 7.18 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 

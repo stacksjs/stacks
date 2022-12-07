@@ -34,7 +34,7 @@ export function aiPath(path?: string) {
  * ```
  */
 export function actionsPath(path?: string) {
-  return corePath(`actions/${path || ''}`)
+  return corePath(`actions/src/${path || ''}`)
 }
 
 export function aliasPath() {

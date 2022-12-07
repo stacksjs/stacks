@@ -10,16 +10,16 @@
 
 _Pre-release until public beta released. Coming ~December._
 
-The goal of the Stacks framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. It may be any of the following topics of
+The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid application development framework, meeting all your full stack needs.
 
-- Application UIs (Web & Desktop)
+- Application UIs _(Web & Desktop)_
 - Serverless & traditional APIs
-- Cloud infrastructure maintenance
-- Framework-agnostic component & function libraries
-- Deployment & Release Manager
+- Cloud infrastructure creation & maintenance _(IaC)_
 - Interactive CLIs
+- Framework-agnostic component & function libraries
+- Deployment & Release Manager _(CI & CD)_
 
-where Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
+Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
 
 > Convention over configuration is our mantra.
 
@@ -46,12 +46,12 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🪄 **AI** _Deep OpenAI integration_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** Redis, DynamoDB, SingleStore, and more
-- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac. Without requirements._
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
 - 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
-- ⚙️ **Queues** run your heavy workload in the background
+- ⚙️ **Queues** _run your heavy workload in the background_
 - 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
@@ -65,9 +65,10 @@ _Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _your own CloudFront CDN_
+- 🚏 **CDN** _your own pre-configured CloudFront CDN_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
+- 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_
 
 ### Stacks CI/CD
 

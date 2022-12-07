@@ -189,5 +189,9 @@ export const enum NpmScript {
   Wip = 'wip',
 }
 
+export const enum Action {
+  Release = 'release',
+}
+
 export type { CAC as CLI } from 'cac'
 export type { ExecaReturnValue as CommandResult } from 'execa'

@@ -1,4 +1,4 @@
-import { ray } from '../src/index'
+import { ray } from '..'
 
 export default defineEventHandler(async () => {
   ray('foo bar test')
