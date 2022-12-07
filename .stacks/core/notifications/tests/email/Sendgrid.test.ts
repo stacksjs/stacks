@@ -10,7 +10,7 @@ describe('Sendgrid Test', () => {
       from: env.email.sendgrid.from,
       to: 'repuestobrian2@gmail.com',
       subject: 'Test Email',
-      html: '<p> Test </p>'
+      html: '<p> Test Email using SG!</p>'
     })
 
     expect(test).toBeDefined()
