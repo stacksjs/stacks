@@ -1,5 +1,19 @@
-import { ray } from 'node-ray'
+// import { ray } from 'node-ray'
 
-const debug = ray
+import request from './http'
 
-export { debug, ray }
+// const debug = ray
+
+// export { debug, ray }
+
+function ray(content: any): void {
+  request('http://localhost:3000/api/store-logs', 'POST', {
+    content,
+    file: 'TestController.php',
+    expanded: false,
+    color: 'indigo',
+    time: '09:20:35',
+  })
+}
+
+export { ray }
