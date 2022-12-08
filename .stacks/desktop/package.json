@@ -20,25 +20,16 @@
     "preview": "vite --config ../core/build/src/desktop.ts preview"
   },
   "dependencies": {
-    "@mdi/font": "7.0.96",
     "@tauri-apps/api": "1.0.2",
-    "@unocss/reset": "^0.47.4",
-    "axios": "^1.2.1",
-    "roboto-fontface": "0.10.0",
-    "typescript": "^4.9.3",
     "unified-network": "0.4.0",
     "unstorage": "^1.0.1",
     "vue": "3.2.37",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@ow3/eslint-config": "^0.33.11",
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@tauri-apps/cli": "1.0.5",
-    "@unocss/vite": "^0.47.4",
-    "@vitejs/plugin-vue": "3.0.1",
-    "nitropack": "^1.0.0",
-    "sass": "1.54.0",
-    "unocss": "^0.47.4",
-    "vite": "3.0.3"
+    "typescript": "^4.9.3"
   }
 }
