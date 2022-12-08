@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["functions", "composables", "library", "typescript", "javascript"],
+  "keywords": ["functions","composables","library","typescript","javascript"],
   "contributors": ["Chris Breuer <chris@ow3.org>"],
   "exports": {
     ".": {

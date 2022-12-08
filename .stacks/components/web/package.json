@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["custom-elements", "web-components", "library", "framework-agnostic", "typescript", "javascript"],
+  "keywords": ["custom-elements","web-components","library","framework-agnostic","typescript","javascript"],
   "contributors": ["Chris Breuer <chris@ow3.org>"],
   "exports": {
     ".": {

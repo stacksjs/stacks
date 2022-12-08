@@ -16,7 +16,7 @@ export async function runAction(action: string) {
     return err(`The specified action "${action}" does not exist`)
 
   try {
-    return await import(actionsPath(`${action}.ts`))
+    return await import(actionsPath(`${action}.ts`)) as any
   }
   catch (error) {
     return err(error)
