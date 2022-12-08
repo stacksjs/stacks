@@ -1,6 +1,8 @@
 # Your Apps
 
-This folder contains your framework-bootstrapped applications. Based on the answers provided during the installation process, you will find the following apps:
+This folder contains your framework-bootstrapped applications.
+
+Based on the answers provided during the Stacks install process, you will find the following apps:
 
 - 🌐 A Web app _(SSG & PWA ready)_
 - 🖥️ A Desktop app _(Mac, Linux, Windows)_
