@@ -29,8 +29,7 @@
     "unified-network": "0.4.0",
     "unstorage": "^1.0.1",
     "vue": "3.2.37",
-    "vue3-highlightjs": "^1.0.5",
-    "vuetify": "3.0.0-beta.5"
+    "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
     "@ow3/eslint-config": "^0.33.11",
