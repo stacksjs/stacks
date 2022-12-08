@@ -1,0 +1,69 @@
+{
+  "name": "@stacksjs/desktop",
+  "type": "module",
+  "version": "0.43.1",
+  "packageManager": "pnpm@7.18.0",
+  "description": "The Stacks Desktop engine.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/desktop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/desktop"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "desktop",
+    "nexmo",
+    "twilio",
+    "aws",
+    "sms",
+    "email",
+    "database",
+    "slack",
+    "discord",
+    "webhooks",
+    "stacks",
+    "Maizzle",
+    "maizzle"
+  ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.12.1",
+    "pnpm": ">=7.18.0"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/server": "workspace:*",
+    "@tauri-apps/cli": "1.0.5",
+    "@tauri-apps/api": "1.0.2",
+    "unified-network": "0.4.0",
+    "unstorage": "^1.0.1",
+    "vue": "3.2.37",
+    "vue3-highlightjs": "^1.0.5"
+  },
+  "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
+    "mkdist": "^1.0.0",
+    "typescript": "^4.9.4"
+  }
+}

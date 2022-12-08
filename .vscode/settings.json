@@ -316,7 +316,8 @@
     "openai",
     "chrisbreuer",
     "dinero",
-    "maizzle"
+    "maizzle",
+    "highlightjs"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

@@ -1,5 +1,5 @@
 {
-  "name": "stacks-desktop-app-name",
+  "name": "your-desktop-app-name",
   "type": "module",
   "version": "",
   "private": true,
@@ -20,16 +20,6 @@
     "preview": "vite --config ../core/build/src/desktop.ts preview"
   },
   "dependencies": {
-    "@tauri-apps/api": "1.2.0",
-    "unified-network": "0.6.2",
-    "unstorage": "^1.0.1",
-    "vue": "3.2.45",
-    "vue3-highlightjs": "^1.0.5"
-  },
-  "devDependencies": {
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@tauri-apps/cli": "1.2.1",
-    "typescript": "^4.9.4"
+    "@stacksjs/desktop": "workspace:*"
   }
 }
