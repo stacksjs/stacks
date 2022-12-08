@@ -3,7 +3,7 @@
   "type": "module",
   "version": "",
   "private": true,
-  "description": "Vite + Tauri + Vuetify bundled together to use",
+  "description": "The Stacks desktop engine.",
   "author": "Chris Breuer <chris@ow3.org>",
   "license": "MIT",
   "repository": {
@@ -13,11 +13,11 @@
   },
   "main": "index.js",
   "scripts": {
-    "serve": "vite",
+    "serve": "vite --config ../core/build/src/desktop.ts",
     "serve:tauri": "VITE_NETWORK_PROCESSOR=tauri vite",
     "serve:native": "tauri dev",
-    "build": "VITE_NETWORK_PROCESSOR=tauri vite build && tauri build",
-    "preview": "vite preview"
+    "build": "VITE_NETWORK_PROCESSOR=tauri vite build --config ../core/build/src/desktop.ts && tauri build",
+    "preview": "vite --config ../core/build/src/desktop.ts preview"
   },
   "dependencies": {
     "@mdi/font": "7.0.96",

@@ -1,4 +1,6 @@
+import { app } from '@stacksjs/config'
+
 export const config = {
-  port: 3333,
+  port: app.port,
   open: true,
 }

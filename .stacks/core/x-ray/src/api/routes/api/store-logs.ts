@@ -17,6 +17,6 @@ async function appendLogs(log: Log) {
   await storage.setItem('logs', newLogs)
 }
 
-function clearStorage() {
-  storage.clear()
-}
+// function clearStorage() {
+//   storage.clear()
+// }
