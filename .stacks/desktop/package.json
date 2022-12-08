@@ -1,12 +1,16 @@
 {
-  "name": "vite-tauri-template",
+  "name": "stacks-desktop-app-name",
   "type": "module",
-  "version": "1.0.0",
+  "version": "",
   "private": true,
   "description": "Vite + Tauri + Vuetify bundled together to use",
-  "author": "Yoones Khoshghadam <yooneskh@gmail.com>",
+  "author": "Chris Breuer <chris@ow3.org>",
   "license": "MIT",
-  "repository": "git@github.com:yooneskh/vite-vuetify-template.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/desktop"
+  },
   "main": "index.js",
   "scripts": {
     "serve": "vite",
