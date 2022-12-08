@@ -2,7 +2,7 @@
   "name": "@stacksjs/server",
   "type": "module",
   "version": "0.43.1",
-  "packageManager": "pnpm@7.18.0",
+  "packageManager": "pnpm@7.18.1",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.18.0"
+    "pnpm": ">=7.18.1"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -53,6 +53,6 @@
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.4"
   }
 }

@@ -43,8 +43,8 @@ importers:
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
       only-allow: ^1.1.1
-      pnpm: '>=7.18.0'
-      typescript: ^4.9.3
+      pnpm: '>=7.18.1'
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/actions': link:../core/actions
       '@stacksjs/alias': link:../core/alias
@@ -102,7 +102,7 @@ importers:
       '@stacksjs/utils': workspace:*
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vue-component-meta: ^1.0.11
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -126,7 +126,7 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -140,7 +140,7 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/path': link:../path
     devDependencies:
@@ -152,7 +152,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -162,7 +162,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -181,8 +181,8 @@ importers:
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.7.2
       mkdist: ^1.0.0
-      typescript: ^4.9.3
-      unbuild: ^1.0.1
+      typescript: ^4.9.4
+      unbuild: ^1.0.2
       unplugin-auto-import: ^0.12.0
       unplugin-vue-components: ^0.22.11
       vite: ^3.2.5
@@ -227,7 +227,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.224.0
+      '@aws-sdk/client-dynamodb': ^3.226.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.4
@@ -235,7 +235,7 @@ importers:
       memjs: ^1.3.0
       mkdist: ^1.0.0
       redis: ^4.5.1
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@aws-sdk/client-dynamodb': 3.226.0
       '@stacksjs/config': link:../config
@@ -283,7 +283,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -294,7 +294,7 @@ importers:
       '@stacksjs/testing': workspace:*
       collect.js: ^4.34.3
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       collect.js: 4.34.3
     devDependencies:
@@ -307,8 +307,8 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
-      unbuild: ^1.0.1
+      typescript: ^4.9.4
+      unbuild: ^1.0.2
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -331,7 +331,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@prisma/client': 4.7.1
       '@stacksjs/utils': link:../utils
@@ -345,7 +345,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -357,7 +357,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vitepress: 1.0.0-alpha.30
     dependencies:
       vitepress: 1.0.0-alpha.30_tbpndr44ulefs3hehwpi2mkf2y
@@ -370,7 +370,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -382,7 +382,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -397,7 +397,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       neverthrow: ^5.1.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@ow3/eslint-config': 0.33.11_ha6vam6werchizxrnqvarmz2zu
       neverthrow: 5.1.0
@@ -410,13 +410,13 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       bumpp: ^8.2.1
-      commitizen: ^4.2.5
+      commitizen: ^4.2.6
       conventional-changelog-cli: ^2.2.2
       cz-git: ^1.4.0
       giget: ^1.0.0
       mkdist: ^1.0.0
       simple-git-hooks: ^2.8.1
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       bumpp: 8.2.1
       commitizen: 4.2.6
@@ -437,7 +437,7 @@ importers:
       eslint: ^8.29.0
       lint-staged: ^13.1.0
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@ow3/eslint-config': 0.33.11_ha6vam6werchizxrnqvarmz2zu
       '@types/eslint': 8.4.10
@@ -453,7 +453,7 @@ importers:
       '@stacksjs/testing': workspace:*
       consola: ^2.15.3
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vue-ray: ^1.17.3
     dependencies:
       consola: 2.15.3
@@ -470,7 +470,7 @@ importers:
       '@types/nprogress': ^0.2.0
       mkdist: ^1.0.0
       nprogress: ^0.2.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -512,7 +512,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@maizzle/framework': 4.3.1_glob@7.2.3
       '@novu/discord': 0.9.0
@@ -550,7 +550,7 @@ importers:
       '@stacksjs/collections': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
@@ -563,7 +563,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       pathe: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       pathe: 1.0.0
     devDependencies:
@@ -575,7 +575,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -585,7 +585,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -595,7 +595,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.45
@@ -612,7 +612,7 @@ importers:
       '@vueuse/core': ^9.6.0
       meilisearch: ^0.30.0
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vue: ^3.2.45
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -634,7 +634,7 @@ importers:
       crypto-js: ^4.1.1
       js-base64: ^3.7.3
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -652,7 +652,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       nitropack: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       vite: ^3.2.5
     dependencies:
       '@stacksjs/path': link:../path
@@ -672,7 +672,7 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.0
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       unstorage: ^1.0.1
     dependencies:
       '@stacksjs/arrays': link:../arrays
@@ -694,8 +694,8 @@ importers:
       change-case: ^4.1.2
       mkdist: ^1.0.0
       pluralize: ^8.0.0
-      typescript: ^4.9.3
-      unbuild: ^1.0.1
+      typescript: ^4.9.4
+      unbuild: ^1.0.2
     dependencies:
       '@stacksjs/alias': link:../alias
       '@types/pluralize': 0.0.29
@@ -709,11 +709,11 @@ importers:
 
   .stacks/core/testing:
     specifiers:
-      '@vitest/coverage-istanbul': ^0.25.4
-      '@vitest/ui': ^0.25.4
+      '@vitest/coverage-istanbul': ^0.25.6
+      '@vitest/ui': ^0.25.6
       mkdist: ^0.4.1
-      typescript: ^4.9.3
-      vitest: ^0.25.4
+      typescript: ^4.9.4
+      vitest: ^0.25.6
     dependencies:
       '@vitest/coverage-istanbul': 0.25.6_@vitest+ui@0.25.6
       '@vitest/ui': 0.25.6
@@ -741,7 +741,7 @@ importers:
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       unplugin-auto-import: ^0.12.0
       unplugin-vue-components: ^0.22.11
       vite-plugin-inspect: ^0.7.9
@@ -784,7 +784,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.47.5
       mkdist: ^1.0.0
       pinia: ^2.0.27
-      typescript: ^4.9.3
+      typescript: ^4.9.4
       unocss: ^0.47.5
       vue: ^3.2.45
       vue-tsc: ^1.0.11
@@ -813,7 +813,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@vueuse/core': ^9.6.0
-      '@vueuse/head': ^1.0.20
+      '@vueuse/head': ^1.0.22
       '@vueuse/math': ^9.6.0
       '@vueuse/shared': ^9.6.0
       defu: ^6.1.1
@@ -827,7 +827,7 @@ importers:
       p-limit: ^4.0.0
       rimraf: ^3.0.2
       throttle-debounce: ^5.0.0
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -860,7 +860,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       node-ray: ^1.19.4
-      typescript: ^4.9.3
+      typescript: ^4.9.4
     dependencies:
       '@stacksjs/logging': link:../logging
       node-ray: 1.19.4
@@ -873,23 +873,23 @@ importers:
     specifiers:
       '@stacksjs/build': workspace:*
       '@stacksjs/server': workspace:*
-      '@tauri-apps/api': 1.0.2
-      '@tauri-apps/cli': 1.0.5
-      typescript: ^4.9.3
-      unified-network: 0.4.0
+      '@tauri-apps/api': 1.2.0
+      '@tauri-apps/cli': 1.2.1
+      typescript: ^4.9.4
+      unified-network: 0.6.2
       unstorage: ^1.0.1
-      vue: 3.2.37
+      vue: 3.2.45
       vue3-highlightjs: ^1.0.5
     dependencies:
-      '@tauri-apps/api': 1.0.2
-      unified-network: 0.4.0
+      '@tauri-apps/api': 1.2.0
+      unified-network: 0.6.2
       unstorage: 1.0.1
-      vue: 3.2.37
-      vue3-highlightjs: 1.0.5_vue@3.2.37
+      vue: 3.2.45
+      vue3-highlightjs: 1.0.5_vue@3.2.45
     devDependencies:
       '@stacksjs/build': link:../core/build
       '@stacksjs/server': link:../core/server
-      '@tauri-apps/cli': 1.0.5
+      '@tauri-apps/cli': 1.2.1
       typescript: 4.9.4
 
   .stacks/fonts/hubot-sans:
@@ -4836,13 +4836,13 @@ packages:
       defer-to-connect: 2.0.1
     dev: false
 
-  /@tauri-apps/api/1.0.2:
-    resolution: {integrity: sha512-yuNW0oeJ1/ZA7wNF1KgxhHrSu5viPVzY/UgUczzN5ptLM8dH15Juy5rEGkoHfeXGju90Y/l22hi3BtIrp/za+w==}
-    engines: {node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+  /@tauri-apps/api/1.2.0:
+    resolution: {integrity: sha512-lsI54KI6HGf7VImuf/T9pnoejfgkNoXveP14pVV7XarrQ46rOejIVJLFqHI9sRReJMGdh2YuCoI3cc/yCWCsrw==}
+    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
-  /@tauri-apps/cli-darwin-arm64/1.0.5:
-    resolution: {integrity: sha512-oxpFb9ZeMiC3xPUJ9NsXWCnnwFSVkPbJUvDKpc9IaoDIUpsMTV72W4P0Nh0uQRbyhx4modPpstt7+ONypNVYNg==}
+  /@tauri-apps/cli-darwin-arm64/1.2.1:
+    resolution: {integrity: sha512-WiAxSON52owFI65Whd3NjcKjXdO1zJfafBVZ3v+Y3F2zlXhRPiirXbtefAc3mvN56zDz/pfi018Qb4XesuVzHA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -4850,8 +4850,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-darwin-x64/1.0.5:
-    resolution: {integrity: sha512-hRNYC6L9edz2dEqK33tssPylF2ti6x6udidBlGWc5GSoeEb/05qKMEA1MESQYKBG+4q+wjJvACA2vvz6AfgJ3Q==}
+  /@tauri-apps/cli-darwin-x64/1.2.1:
+    resolution: {integrity: sha512-jfumnrn7RYKVtDmHgrQhImoxpqT51bDrO4KxgpIXaYSaf6MdG2JT72dwUovPrURw0JX2Z/Elihq+dYbrsKoV/w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -4859,8 +4859,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm-gnueabihf/1.0.5:
-    resolution: {integrity: sha512-hc/Jp3TtFpxB8XVkLEwWy7MNcUBlS8rNCafQBUt4KSElXB+/oGo50jPO+wd5GSMSOR59UCzH08v11P0b+sAa/w==}
+  /@tauri-apps/cli-linux-arm-gnueabihf/1.2.1:
+    resolution: {integrity: sha512-n4p6Ekn6Wa9X/klUGevEGgoWAGApGGsLrJYE4c8bKTbAUfQ9Nyzjh8gK/GDii1dg9oRW0FdXDa6BJa7aEEj9sA==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
@@ -4868,8 +4868,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm64-gnu/1.0.5:
-    resolution: {integrity: sha512-btFlkD2PG+yzJBZzWeJmyCy8ZV+iys2Jl66Fs4g9lSi3KrBDnyfQ26RpGZb2pRfkkcVP8/x1WSfByO+Rj+PTBA==}
+  /@tauri-apps/cli-linux-arm64-gnu/1.2.1:
+    resolution: {integrity: sha512-oAHkQQGfNCh8pQQHuDzzqt+S5sOj3tiUkySaquR2z/AQEHeDGAMrRGLZwOiDw9Xvu7qxFiF9H0e5OMK7BkncDw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -4877,8 +4877,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-arm64-musl/1.0.5:
-    resolution: {integrity: sha512-p5JFdWab2AWhfgAZW/mgOLu+YiIJXKV0NdATGmdiBgQCMmz1k/FM8iOFApCgGbo3/zkR58cJ7Z7hyWmQ07M6Pw==}
+  /@tauri-apps/cli-linux-arm64-musl/1.2.1:
+    resolution: {integrity: sha512-1dEZ5fdFYkMyB1U7ZkDJUlwYwCeqy9Y3vXmtZ6pCxrvgs844s8+RIFDuMU42pTN+lUxfFeQARmv0LpS4eF/QWQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -4886,8 +4886,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-x64-gnu/1.0.5:
-    resolution: {integrity: sha512-fOXR635AXxwSO7MCfBhMLnGpcg1H83XGw9ocuyg4jjvtE8QoYPwC4ksfb5lLhDVMui9iIKY93NAK3EkQiSGGmQ==}
+  /@tauri-apps/cli-linux-x64-gnu/1.2.1:
+    resolution: {integrity: sha512-wkgCD3s5P6tgBPnn0/gDx7MXMx2Hx+jdA+JP8zdCq4cIeYXlxdZG/zXbHb5ldPadNh582lzHiGg+Pmc+wDg2fA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -4895,8 +4895,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-linux-x64-musl/1.0.5:
-    resolution: {integrity: sha512-8be4zJVkuMs427JqONhFx5Ia5zWsQ5tbZXd80C3dHNL+5/3VIOK6nGQ0iijyZSLXiE9JKEH2jp1EHB+1TVJRcw==}
+  /@tauri-apps/cli-linux-x64-musl/1.2.1:
+    resolution: {integrity: sha512-zD+a+5cSlYVU0ECOojWp71ok/9jE0DJufzb9oky17XIKV/oiOAG60z4OYRe+oqxYS1TcBt+pUa1/2zlu/6SRdA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -4904,8 +4904,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-win32-ia32-msvc/1.0.5:
-    resolution: {integrity: sha512-WpnIfzS1e4InGhvd1IDSKC3w6kbI5c6oJgMmtkMTBlhjhiZXhZmQF4XA784A5Y13pzsbXnbNJKOp8DuPVkoTRQ==}
+  /@tauri-apps/cli-win32-ia32-msvc/1.2.1:
+    resolution: {integrity: sha512-nEgdRd8czaKL1RQfj946dsfzlk6atmD95Fm7NVTVOe77PFHTS3ztHeWK7X6jirCaOF3h/F7qpJVCU6JMnq2tfA==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
@@ -4913,8 +4913,8 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli-win32-x64-msvc/1.0.5:
-    resolution: {integrity: sha512-8iEhVD3X4LZfrlxEPOV+mAj4QrJrEqKTICiJnwmgjvhYQOOsNHzg5kca7pcBbqcgorQOBydLpfGJtxWRusVPaw==}
+  /@tauri-apps/cli-win32-x64-msvc/1.2.1:
+    resolution: {integrity: sha512-ceWiQkmNNRrnfgbLMnndT4QF1IyLK7aOJsMqS/HueshAwmVQWnC1DUE0C58Taetgq38Cavc4gGnZOCHuH6ZuTw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -4922,20 +4922,20 @@ packages:
     dev: true
     optional: true
 
-  /@tauri-apps/cli/1.0.5:
-    resolution: {integrity: sha512-vbY+MwK+xN65x0R/o16UQPxBtJl8pmzVzC0TZKokZfmeOkomoqOEOinSwznAMeyR1ZMJW+fXVgJCPvGsRQ0LGg==}
+  /@tauri-apps/cli/1.2.1:
+    resolution: {integrity: sha512-JrFFT1/4V+AGSRjKdgszZwOr+/a1519LDhNxBkbsIg6D/kFK+3kk1qImaQBY9DvvIWK6IV4whc8OAkgxm+Sl3w==}
     engines: {node: '>= 10'}
     hasBin: true
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 1.0.5
-      '@tauri-apps/cli-darwin-x64': 1.0.5
-      '@tauri-apps/cli-linux-arm-gnueabihf': 1.0.5
-      '@tauri-apps/cli-linux-arm64-gnu': 1.0.5
-      '@tauri-apps/cli-linux-arm64-musl': 1.0.5
-      '@tauri-apps/cli-linux-x64-gnu': 1.0.5
-      '@tauri-apps/cli-linux-x64-musl': 1.0.5
-      '@tauri-apps/cli-win32-ia32-msvc': 1.0.5
-      '@tauri-apps/cli-win32-x64-msvc': 1.0.5
+      '@tauri-apps/cli-darwin-arm64': 1.2.1
+      '@tauri-apps/cli-darwin-x64': 1.2.1
+      '@tauri-apps/cli-linux-arm-gnueabihf': 1.2.1
+      '@tauri-apps/cli-linux-arm64-gnu': 1.2.1
+      '@tauri-apps/cli-linux-arm64-musl': 1.2.1
+      '@tauri-apps/cli-linux-x64-gnu': 1.2.1
+      '@tauri-apps/cli-linux-x64-musl': 1.2.1
+      '@tauri-apps/cli-win32-ia32-msvc': 1.2.1
+      '@tauri-apps/cli-win32-x64-msvc': 1.2.1
     dev: true
 
   /@tootallnate/once/1.1.2:
@@ -5582,15 +5582,6 @@ packages:
       uuid: 8.3.2
     dev: false
 
-  /@vue/compiler-core/3.2.37:
-    resolution: {integrity: sha512-81KhEjo7YAOh0vQJoSmAD68wLfYqJvoiD4ulyedzF+OEk/bk6/hx3fTNVfuzugIIaTrOx4PGx6pAiBRe5e9Zmg==}
-    dependencies:
-      '@babel/parser': 7.20.5
-      '@vue/shared': 3.2.37
-      estree-walker: 2.0.2
-      source-map: 0.6.1
-    dev: false
-
   /@vue/compiler-core/3.2.45:
     resolution: {integrity: sha512-rcMj7H+PYe5wBV3iYeUgbCglC+pbpN8hBLTJvRiK2eKQiWqu+fG9F+8sW99JdL4LQi7Re178UOxn09puSXvn4A==}
     dependencies:
@@ -5599,33 +5590,11 @@ packages:
       estree-walker: 2.0.2
       source-map: 0.6.1
 
-  /@vue/compiler-dom/3.2.37:
-    resolution: {integrity: sha512-yxJLH167fucHKxaqXpYk7x8z7mMEnXOw3G2q62FTkmsvNxu4FQSu5+3UMb+L7fjKa26DEzhrmCxAgFLLIzVfqQ==}
-    dependencies:
-      '@vue/compiler-core': 3.2.37
-      '@vue/shared': 3.2.37
-    dev: false
-
   /@vue/compiler-dom/3.2.45:
     resolution: {integrity: sha512-tyYeUEuKqqZO137WrZkpwfPCdiiIeXYCcJ8L4gWz9vqaxzIQRccTSwSWZ/Axx5YR2z+LvpUbmPNXxuBU45lyRw==}
     dependencies:
       '@vue/compiler-core': 3.2.45
       '@vue/shared': 3.2.45
-
-  /@vue/compiler-sfc/3.2.37:
-    resolution: {integrity: sha512-+7i/2+9LYlpqDv+KTtWhOZH+pa8/HnX/905MdVmAcI/mPQOBwkHHIzrsEsucyOIZQYMkXUiTkmZq5am/NyXKkg==}
-    dependencies:
-      '@babel/parser': 7.20.5
-      '@vue/compiler-core': 3.2.37
-      '@vue/compiler-dom': 3.2.37
-      '@vue/compiler-ssr': 3.2.37
-      '@vue/reactivity-transform': 3.2.37
-      '@vue/shared': 3.2.37
-      estree-walker: 2.0.2
-      magic-string: 0.25.9
-      postcss: 8.4.19
-      source-map: 0.6.1
-    dev: false
 
   /@vue/compiler-sfc/3.2.45:
     resolution: {integrity: sha512-1jXDuWah1ggsnSAOGsec8cFjT/K6TMZ0sPL3o3d84Ft2AYZi2jWJgRMjw4iaK0rBfA89L5gw427H4n1RZQBu6Q==}
@@ -5641,13 +5610,6 @@ packages:
       postcss: 8.4.19
       source-map: 0.6.1
 
-  /@vue/compiler-ssr/3.2.37:
-    resolution: {integrity: sha512-7mQJD7HdXxQjktmsWp/J67lThEIcxLemz1Vb5I6rYJHR5vI+lON3nPGOH3ubmbvYGt8xEUaAr1j7/tIFWiEOqw==}
-    dependencies:
-      '@vue/compiler-dom': 3.2.37
-      '@vue/shared': 3.2.37
-    dev: false
-
   /@vue/compiler-ssr/3.2.45:
     resolution: {integrity: sha512-6BRaggEGqhWht3lt24CrIbQSRD5O07MTmd+LjAn5fJj568+R9eUD2F7wMQJjX859seSlrYog7sUtrZSd7feqrQ==}
     dependencies:
@@ -5656,16 +5618,6 @@ packages:
 
   /@vue/devtools-api/6.4.5:
     resolution: {integrity: sha512-JD5fcdIuFxU4fQyXUu3w2KpAJHzTVdN+p4iOX2lMWSHMOoQdMAcpFLZzm9Z/2nmsoZ1a96QEhZ26e50xLBsgOQ==}
-
-  /@vue/reactivity-transform/3.2.37:
-    resolution: {integrity: sha512-IWopkKEb+8qpu/1eMKVeXrK0NLw9HicGviJzhJDEyfxTR9e1WtpnnbYkJWurX6WwoFP0sz10xQg8yL8lgskAZg==}
-    dependencies:
-      '@babel/parser': 7.20.5
-      '@vue/compiler-core': 3.2.37
-      '@vue/shared': 3.2.37
-      estree-walker: 2.0.2
-      magic-string: 0.25.9
-    dev: false
 
   /@vue/reactivity-transform/3.2.45:
     resolution: {integrity: sha512-BHVmzYAvM7vcU5WmuYqXpwaBHjsS8T63jlKGWVtHxAHIoMIlmaMyurUSEs1Zcg46M4AYT5MtB1U274/2aNzjJQ==}
@@ -5676,23 +5628,10 @@ packages:
       estree-walker: 2.0.2
       magic-string: 0.25.9
 
-  /@vue/reactivity/3.2.37:
-    resolution: {integrity: sha512-/7WRafBOshOc6m3F7plwzPeCu/RCVv9uMpOwa/5PiY1Zz+WLVRWiy0MYKwmg19KBdGtFWsmZ4cD+LOdVPcs52A==}
-    dependencies:
-      '@vue/shared': 3.2.37
-    dev: false
-
   /@vue/reactivity/3.2.45:
     resolution: {integrity: sha512-PRvhCcQcyEVohW0P8iQ7HDcIOXRjZfAsOds3N99X/Dzewy8TVhTCT4uXpAHfoKjVTJRA0O0K+6QNkDIZAxNi3A==}
     dependencies:
       '@vue/shared': 3.2.45
-
-  /@vue/runtime-core/3.2.37:
-    resolution: {integrity: sha512-JPcd9kFyEdXLl/i0ClS7lwgcs0QpUAWj+SKX2ZC3ANKi1U4DOtiEr6cRqFXsPwY5u1L9fAjkinIdB8Rz3FoYNQ==}
-    dependencies:
-      '@vue/reactivity': 3.2.37
-      '@vue/shared': 3.2.37
-    dev: false
 
   /@vue/runtime-core/3.2.45:
     resolution: {integrity: sha512-gzJiTA3f74cgARptqzYswmoQx0fIA+gGYBfokYVhF8YSXjWTUA2SngRzZRku2HbGbjzB6LBYSbKGIaK8IW+s0A==}
@@ -5700,30 +5639,12 @@ packages:
       '@vue/reactivity': 3.2.45
       '@vue/shared': 3.2.45
 
-  /@vue/runtime-dom/3.2.37:
-    resolution: {integrity: sha512-HimKdh9BepShW6YozwRKAYjYQWg9mQn63RGEiSswMbW+ssIht1MILYlVGkAGGQbkhSh31PCdoUcfiu4apXJoPw==}
-    dependencies:
-      '@vue/runtime-core': 3.2.37
-      '@vue/shared': 3.2.37
-      csstype: 2.6.21
-    dev: false
-
   /@vue/runtime-dom/3.2.45:
     resolution: {integrity: sha512-cy88YpfP5Ue2bDBbj75Cb4bIEZUMM/mAkDMfqDTpUYVgTf/kuQ2VQ8LebuZ8k6EudgH8pYhsGWHlY0lcxlvTwA==}
     dependencies:
       '@vue/runtime-core': 3.2.45
       '@vue/shared': 3.2.45
       csstype: 2.6.21
-
-  /@vue/server-renderer/3.2.37_vue@3.2.37:
-    resolution: {integrity: sha512-kLITEJvaYgZQ2h47hIzPh2K3jG8c1zCVbp/o/bzQOyvzaKiCquKS7AaioPI28GNxIsE/zSx+EwWYsNxDCX95MA==}
-    peerDependencies:
-      vue: 3.2.37
-    dependencies:
-      '@vue/compiler-ssr': 3.2.37
-      '@vue/shared': 3.2.37
-      vue: 3.2.37
-    dev: false
 
   /@vue/server-renderer/3.2.45_vue@3.2.45:
     resolution: {integrity: sha512-ebiMq7q24WBU1D6uhPK//2OTR1iRIyxjF5iVq/1a5I1SDMDyDu4Ts6fJaMnjrvD3MqnaiFkKQj+LKAgz5WIK3g==}
@@ -5733,10 +5654,6 @@ packages:
       '@vue/compiler-ssr': 3.2.45
       '@vue/shared': 3.2.45
       vue: 3.2.45
-
-  /@vue/shared/3.2.37:
-    resolution: {integrity: sha512-4rSJemR2NQIo9Klm1vabqWjD8rs/ZaJSzMxkMNeJS6lHiUjjUeYFbooN19NgFjztubEKh3WlZUeOLVdbbUWHsw==}
-    dev: false
 
   /@vue/shared/3.2.45:
     resolution: {integrity: sha512-Ewzq5Yhimg7pSztDV+RH1UDKBzmtqieXQlpTVm2AwraoRL/Rks96mvd8Vgi7Lj+h+TH8dv7mXD3FRZR3TUvbSg==}
@@ -15702,8 +15619,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /unified-network/0.4.0:
-    resolution: {integrity: sha512-6ssF0YNF7l9w04a/17oedT2tCcWXe25pS5M+27E61QwQPHfCI5Uh2kJjoA0R8UumBMKbtJ4EGaRDMkRRN9V9+w==}
+  /unified-network/0.6.2:
+    resolution: {integrity: sha512-cy7yqZl9Mwh/JR0oxbg+ykh949dlh+He3+L5jOS1hqvzDe47sBugjJxm1Z4VPVs2aEhRSGgMETzKu3WlO+ePGw==}
     dev: false
 
   /unimport/1.0.1:
@@ -16560,16 +16477,6 @@ packages:
       typescript: 4.9.4
     dev: false
 
-  /vue/3.2.37:
-    resolution: {integrity: sha512-bOKEZxrm8Eh+fveCqS1/NkG/n6aMidsI6hahas7pa0w/l7jkbssJVsRhVDs07IdDq7h9KHswZOgItnwJAgtVtQ==}
-    dependencies:
-      '@vue/compiler-dom': 3.2.37
-      '@vue/compiler-sfc': 3.2.37
-      '@vue/runtime-dom': 3.2.37
-      '@vue/server-renderer': 3.2.37_vue@3.2.37
-      '@vue/shared': 3.2.37
-    dev: false
-
   /vue/3.2.45:
     resolution: {integrity: sha512-9Nx/Mg2b2xWlXykmCwiTUCWHbWIj53bnkizBxKai1g61f2Xit700A1ljowpTIM11e3uipOeiPcSqnmBg6gyiaA==}
     dependencies:
@@ -16579,13 +16486,13 @@ packages:
       '@vue/server-renderer': 3.2.45_vue@3.2.45
       '@vue/shared': 3.2.45
 
-  /vue3-highlightjs/1.0.5_vue@3.2.37:
+  /vue3-highlightjs/1.0.5_vue@3.2.45:
     resolution: {integrity: sha512-Q4YNPXu0X5VMBnwPVOk+IQf1Ohp9jFdMitEAmzaz8qVVefcQpN6Dx4BnDGKxja3TLDVF+EgL136wC8YzmoCX9w==}
     peerDependencies:
       vue: ^3.0.0
     dependencies:
       highlight.js: 10.7.3
-      vue: 3.2.37
+      vue: 3.2.45
     dev: false
 
   /w3c-xmlserializer/4.0.0:
