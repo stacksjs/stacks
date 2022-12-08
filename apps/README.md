@@ -1,11 +1,16 @@
-# Your Apps
+# 🤖 Your Apps
 
-This folder contains your applications. The default apps scaffolded for you
+This folder contains your framework bootstrapped applications. Based on the answers provided during the installation process, you will find the following apps:
 
-- a "docs site"
-- a CLI
+- a documentation site _(powered by VitePress)_
+- a CLI _(built your own commands)_
+- a Desktop application _(Mac, Linux, Windows)_
+- a web app _(SSG & PWA ready)_
 
-Feel free to adjust them to your needs check out the docs when needed, or our Discord. If you are curious about other potential apps: it could be a VS Code plugin, a mobile app, a desktop app, ...—whatever your application/ecosystem requires.
+Feel free to adjust the bootstrapped apps to your needs. _You may also find lots of useful information in our docs._
+
+> **Note**
+> You can create as many as apps you want and name them however. The only requirement is that they are located in this folder for CI/CD reasons.
 
 ## 💪🏼 Contributing
 
