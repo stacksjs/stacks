@@ -35,9 +35,9 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 
 - 🧩 **Components** _a Stacks primitive to develop user interfaces_
 - 🤖 **Functions** _grant your UI superpowers_
-- 📚 **Library** _auto-builds component & function libraries_
-- 📊 **Pages** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
+- 🌐 **Web** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
 - 🖥️ **Desktop** _components as desktop elements_
+- 📚 **Library** _auto-builds component & function libraries_
 - ⚡️ Powered by Vue, Vite, UnoCSS & Tauri
 
 ### Stacks Functions

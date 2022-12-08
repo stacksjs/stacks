@@ -2,10 +2,10 @@
 
 This folder contains your framework bootstrapped applications. Based on the answers provided during the installation process, you will find the following apps:
 
-- a documentation site _(powered by VitePress)_
-- a CLI _(built your own commands)_
-- a Desktop application _(Mac, Linux, Windows)_
 - a web app _(SSG & PWA ready)_
+- a Desktop application _(Mac, Linux, Windows)_
+- a CLI _(built your own commands)_
+- a markdown-powered site, like a documentation _(powered by VitePress)_
 
 Feel free to adjust the bootstrapped apps to your needs. _You may also find lots of useful information in our docs._
 
