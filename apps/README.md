@@ -1,4 +1,4 @@
-# 🤖 Your Apps
+# Your Apps
 
 This folder contains your framework bootstrapped applications. Based on the answers provided during the installation process, you will find the following apps:
 
