@@ -2,10 +2,10 @@ import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import { ui as options } from '@stacksjs/config'
+import { ui } from '@stacksjs/config'
 
 const config: UserConfig = defineConfig({
-  shortcuts: options.shortcuts,
+  shortcuts: ui.shortcuts,
 
   presets: [
     presetWind(), // allows for Tailwind utility classes
@@ -14,7 +14,7 @@ const config: UserConfig = defineConfig({
     presetIcons({
       prefix: 'i-',
       warn: true,
-      collections: options.icons,
+      collections: ui.icons,
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
