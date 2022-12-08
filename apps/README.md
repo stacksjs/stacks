@@ -2,15 +2,15 @@
 
 This folder contains your framework bootstrapped applications. Based on the answers provided during the installation process, you will find the following apps:
 
-- a web app _(SSG & PWA ready)_
-- a Desktop application _(Mac, Linux, Windows)_
-- a CLI _(built your own commands)_
-- a markdown-powered site, like a documentation _(powered by VitePress)_
+- 🌐 A Web app _(SSG & PWA ready)_
+- 🖥️ A Desktop app _(Mac, Linux, Windows)_
+- 🤖 A CLI _(built your own commands)_
+- 📚 A Markdown-powered site _(like a documentation site)_
 
 Feel free to adjust the bootstrapped apps to your needs. _You may also find lots of useful information in our docs._
 
 > **Note**
-> You can create as many as apps you want and name them however. The only requirement is that they are located in this folder for CI/CD reasons.
+> You can create as many as apps you want and name them however. For CI/CD reasons, though, the only requirement is that additional apps are located in this folder.
 
 ## 💪🏼 Contributing
 
