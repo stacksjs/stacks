@@ -168,6 +168,9 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
+  "dependencies": {
+    "pluralize": "^8.0.0"
+  },
   "devDependencies": {
     "only-allow": "^1.1.1",
     "pnpm": ">=7.18.0",
@@ -178,8 +181,5 @@
       "path": "node_modules/cz-git"
     }
   },
-  "web-types": "./web-types.json",
-  "dependencies": {
-    "pluralize": "^8.0.0"
-  }
+  "web-types": "./web-types.json"
 }

@@ -315,7 +315,8 @@
     "prepublishing",
     "openai",
     "chrisbreuer",
-    "dinero"
+    "dinero",
+    "maizzle"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

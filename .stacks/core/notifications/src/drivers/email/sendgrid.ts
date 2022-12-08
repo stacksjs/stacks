@@ -1,11 +1,11 @@
+import { log } from '@stacksjs/logging'
 import { SendgridEmailProvider } from '@novu/sendgrid'
 import { italic } from '@stacksjs/cli'
-import tailwindConfig from './tailwind.config.js'
 import type { EmailOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
-
-const Maizzle = require('@maizzle/framework')
+import * as Maizzle from '@maizzle/framework'
+import tailwindConfig from './tailwind.config.js'
 
 const env = notification.email.sendgrid
 
@@ -16,10 +16,10 @@ const provider = new SendgridEmailProvider({
 })
 
 async function send(options: EmailOptions, css?: string) {
-  const template =   `
+  const template = `
   <extends src="./core/notifications/src/drivers/email/template.html">
     <block name="template">
-      ${ options.html }
+      ${options.html}
     </block>
   </extends>`
 
@@ -28,17 +28,15 @@ async function send(options: EmailOptions, css?: string) {
     {
       tailwind: {
         config: tailwindConfig,
-        css: css,
+        css,
       },
-    }
+    },
   )
-  .then(({ html }: any) => {
-    options.html = html
-  })
-  .catch(
-    (error: any) => console.log(error)
-  )
-  
+    .then(({ html }: any) => {
+      options.html = html
+    })
+    .catch((error: any) => log.error(`Failed to render email template using provider: ${italic('Sendgrid')}`, error))
+
   return ResultAsync.fromPromise(
     provider.sendMessage(options),
     () => new Error(`Failed to send message using provider: ${italic('Sendgrid')}`),
