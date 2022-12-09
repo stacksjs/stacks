@@ -14,7 +14,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "vite --config ../core/build/src/desktop.ts",
-    "serve:tauri": "VITE_NETWORK_PROCESSOR=tauri vite",
+    "serve:tauri": "VITE_NETWORK_PROCESSOR=tauri vite --config ../core/build/src/desktop.ts",
     "serve:native": "tauri dev",
     "build": "VITE_NETWORK_PROCESSOR=tauri vite build --config ../core/build/src/desktop.ts && tauri build",
     "preview": "vite --config ../core/build/src/desktop.ts preview"

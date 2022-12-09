@@ -888,9 +888,11 @@ importers:
       mkdist: ^1.0.0
       node-ray: ^1.19.4
       typescript: ^4.9.4
+      vue3-highlightjs: ^1.0.5
     dependencies:
       '@stacksjs/logging': link:../logging
       node-ray: 1.19.4
+      vue3-highlightjs: 1.0.5_vue@3.2.45
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
