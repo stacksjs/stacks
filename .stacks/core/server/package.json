@@ -46,6 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "nitropack": "^1.0.0",
     "vite": "^3.2.5"

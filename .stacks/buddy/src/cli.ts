@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { command, log } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
-import { version } from '../package.json'
+import { version } from '../package.json' assert { type: 'json' }
 import { build, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
 
 const cli = command('stacks')

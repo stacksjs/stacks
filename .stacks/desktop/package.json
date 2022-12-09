@@ -19,7 +19,8 @@
     "build": "VITE_NETWORK_PROCESSOR=tauri vite build --config ../core/build/src/desktop.ts && tauri build",
     "preview": "vite --config ../core/build/src/desktop.ts preview"
   },
-  "dependencies": {
+  "peerDependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/desktop": "workspace:*"
   }
 }

@@ -47,6 +47,7 @@
     "@intlify/vite-plugin-vue-i18n": "^6.0.3",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",

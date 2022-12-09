@@ -41,6 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {

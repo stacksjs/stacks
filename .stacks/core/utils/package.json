@@ -47,6 +47,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/lint": "workspace:*",

@@ -43,12 +43,14 @@
   },
   "scripts": {
     "build": "mkdist -d",
+    "serve": "vite --config ../build/src/desktop.ts",
     "dev": "mkdist -d",
     "serve:tauri": "vite",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/desktop": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "node-ray": "^1.19.4"
   },
@@ -56,6 +58,7 @@
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",
     "typescript": "^4.9.4"
+
   },
   "dependencies": {
     "vue3-highlightjs": "^1.0.5"

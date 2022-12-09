@@ -44,6 +44,9 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "@stacksjs/utils": "workspace:*"
+  },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.0.0",

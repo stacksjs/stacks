@@ -1,5 +1,5 @@
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
-import { version } from 'framework/components/vue/package.json'
+import { version } from 'framework/components/vue/package.json' assert {type: 'json'}
 import { componentsPath, frameworkPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 
