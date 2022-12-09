@@ -103,7 +103,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vue-component-meta: ^1.0.11
+      vue-component-meta: ^1.0.12
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -770,7 +770,7 @@ importers:
       '@types/fs-extra': ^9.0.13
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
-      '@types/node': ^18.11.11
+      '@types/node': ^18.11.12
       '@types/nprogress': ^0.2.0
       '@types/pluralize': ^0.0.29
       '@types/prompts': ^2.4.2
@@ -820,11 +820,11 @@ importers:
       '@stacksjs/testing': workspace:*
       '@unocss/transformer-compile-class': ^0.47.5
       mkdist: ^1.0.0
-      pinia: ^2.0.27
+      pinia: ^2.0.28
       typescript: ^4.9.4
       unocss: ^0.47.5
       vue: ^3.2.45
-      vue-tsc: ^1.0.11
+      vue-tsc: ^1.0.12
     dependencies:
       '@iconify-json/heroicons-outline': 1.1.5
       '@iconify-json/heroicons-solid': 1.1.6

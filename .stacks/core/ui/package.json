@@ -53,10 +53,10 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.47.5",
-    "pinia": "^2.0.27",
+    "pinia": "^2.0.28",
     "unocss": "^0.47.5",
     "vue": "^3.2.45",
-    "vue-tsc": "^1.0.11"
+    "vue-tsc": "^1.0.12"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
