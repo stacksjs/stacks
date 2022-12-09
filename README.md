@@ -66,7 +66,8 @@ _Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _your own pre-configured CloudFront CDN_
+- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks_
+- 🤌🏼 **Brotli & gzip** _optimized request compressions to speed up page load times_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 - 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_

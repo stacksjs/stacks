@@ -1,8 +1,8 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
-// import { version } from '../package.json' assert {type: 'json'}
+import { version } from '../package.json'
 import { log } from './console'
 import { spinner } from './spinner'
-import { bgCyan, bold, cyan, green, italic, red } from './utilities'
+import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 
 /**
  * Prints the intro message.
@@ -10,8 +10,7 @@ import { bgCyan, bold, cyan, green, italic, red } from './utilities'
 export function intro(command: string, options?: IntroOptions) {
   console.log()
 
-  // TODO: Chris can restore this when package.json import is taken care off
-  console.log(cyan(bold('Stacks CLI')))
+  console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()
 
   log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)

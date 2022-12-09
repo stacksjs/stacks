@@ -37,7 +37,6 @@
   ],
   "files": [
     "dist",
-    "package.json",
     "README.md"
   ],
   "engines": {
@@ -53,7 +52,6 @@
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",

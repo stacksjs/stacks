@@ -47,11 +47,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
     "@iconify-json/heroicons-outline": "^1.1.5",
     "@iconify-json/heroicons-solid": "^1.1.6",
     "@julr/unocss-preset-forms": "^0.0.2",
     "@stacksjs/build": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.47.5",
     "pinia": "^2.0.27",
     "unocss": "^0.47.5",
