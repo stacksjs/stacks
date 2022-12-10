@@ -12,7 +12,7 @@ _Pre-release until public beta released. Coming December._
 
 The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid application development framework, meeting all your full stack needs.
 
-- Application UIs _(Web & Desktop)_
+- Web & Desktop applications
 - Serverless & traditional APIs
 - Cloud infrastructure creation & maintenance
 - Interactive CLIs
@@ -21,7 +21,7 @@ The goal of the framework is to _help you_ create & maintain frontends, backends
 
 Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
 
-> Convention over configuration is our mantra. _- Chris_
+> “Convention over configuration” is the Stacks mantra. _- Chris Breuer_
 
 <!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
@@ -66,7 +66,8 @@ _Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _your own pre-configured CloudFront CDN_
+- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks_
+- 🤌🏼 **Brotli & gzip** _optimized request compressions to speed up page load times_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 - 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_
