@@ -430,11 +430,11 @@ importers:
       '@ow3/eslint-config': ^0.33.11
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
-      neverthrow: ^5.1.0
+      neverthrow: ^6.0.0
       typescript: ^4.9.4
     dependencies:
       '@ow3/eslint-config': 0.33.11_ha6vam6werchizxrnqvarmz2zu
-      neverthrow: 5.1.0
+      neverthrow: 6.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -12264,8 +12264,8 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: false
 
-  /neverthrow/5.1.0:
-    resolution: {integrity: sha512-tgoYQZjAG+30dcUM35FL8FSQA52WQ6QPnk9laHUZBZ7CliB2vdR1aU7Svr10kyHJ3gwTzMTAajKT5xbdi0QS+Q==}
+  /neverthrow/6.0.0:
+    resolution: {integrity: sha512-kPZKRs4VkdloCGQXPoP84q4sT/1Z+lYM61AXyV8wWa2hnuo5KpPBF2S3crSFnMrOgUISmEBP8Vo/ngGZX60NhA==}
     dev: false
 
   /new-github-release-url/1.0.0:
