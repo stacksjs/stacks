@@ -1,8 +1,7 @@
 import { MailgunEmailProvider } from '@novu/mailgun'
-import { italic } from '@stacksjs/cli'
 import type { EmailOptions } from '@stacksjs/types'
-import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
+import emailSend from './functions/emailSend'
 
 const env = notification.email.mailgun
 
@@ -13,11 +12,8 @@ const provider = new MailgunEmailProvider({
   from: env.from,
 })
 
-function send(options: EmailOptions) {
-  return ResultAsync.fromPromise(
-    provider.sendMessage(options),
-    () => new Error(`Failed to send message using provider: ${italic('Mailgun')}`),
-  )
+async function send(options: EmailOptions, css?: string) {
+  return emailSend(options, provider, 'Mailgun', css)
 }
 
 export { send as Send, send }

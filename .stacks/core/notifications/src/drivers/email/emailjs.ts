@@ -1,8 +1,7 @@
 import { EmailJsProvider } from '@novu/emailjs'
-import { italic } from '@stacksjs/cli'
 import type { EmailOptions } from '@stacksjs/types'
-import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
+import emailSend from './functions/emailSend'
 
 const env = notification.email.emailjs
 
@@ -15,11 +14,8 @@ const provider = new EmailJsProvider({
   secure: env.secure,
 })
 
-function send(options: EmailOptions) {
-  return ResultAsync.fromPromise(
-    provider.sendMessage(options),
-    () => new Error(`Failed to send message using provider: ${italic('EmailJS')}`),
-  )
+async function send(options: EmailOptions, css?: string) {
+  return emailSend(options, provider, 'EmailJS', css)
 }
 
 export { send as Send, send }
