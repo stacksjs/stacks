@@ -1,4 +1,7 @@
+import email from '@stacks/config'
+
 module.exports = {
+  ...email,
   theme: {
     screens: {
       sm: '480px',
