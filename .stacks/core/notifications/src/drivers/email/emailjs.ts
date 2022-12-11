@@ -1,7 +1,7 @@
 import { EmailJsProvider } from '@novu/emailjs'
 import type { EmailOptions } from '@stacksjs/types'
 import { notification } from '@stacksjs/config'
-import emailSend from './functions/emailSend'
+import { send as sendEmail } from './actions/send'
 
 const env = notification.email.emailjs
 
@@ -15,7 +15,7 @@ const provider = new EmailJsProvider({
 })
 
 async function send(options: EmailOptions, css?: string) {
-  return emailSend(options, provider, 'EmailJS', css)
+  return sendEmail(options, provider, 'EmailJS', css)
 }
 
 export { send as Send, send }

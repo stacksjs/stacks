@@ -2,10 +2,10 @@ import type { EmailOptions } from '@stacksjs/types'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { ResultAsync } from '@stacksjs/error-handling'
-import tailwindConfig from "../tailwind.config"
+import * as tailwindConfig from "../tailwind.config"
 import * as Maizzle from '@maizzle/framework'
 
-export default async function emailSend(options: EmailOptions, provider: any, providerName: string, css?: string) {
+export async function send(options: EmailOptions, provider: any, providerName: string, css?: string) {
   const template = `
   <extends src="./core/notifications/src/drivers/email/template.html">
     <block name="template">

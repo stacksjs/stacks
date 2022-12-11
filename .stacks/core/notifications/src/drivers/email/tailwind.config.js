@@ -1,4 +1,4 @@
-import email from '@stacks/config'
+import { email } from '@stacks/config'
 
 module.exports = {
   ...email,
