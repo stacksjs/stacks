@@ -1,6 +1,6 @@
 import { email } from '@stacks/config'
 
-module.exports = {
+export const config = {
   ...email,
   theme: {
     screens: {

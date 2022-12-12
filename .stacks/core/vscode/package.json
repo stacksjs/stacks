@@ -1,0 +1,36 @@
+{
+  "name": "stacks-vscode",
+  "displayName": "stacks",
+  "version": "0.0.1",
+  "description": "A collection of extensions for working with Stacks Applications in VS Code",
+  "keywords": [
+    "stacks",
+    "stacksjs",
+    "extension pack",
+    "stacks extension collection"
+  ],
+  "categories": [
+    "Extension Packs"
+  ],
+  "galleryBanner": {
+    "color": "#47B784",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "extensionPack": [
+    "vue.volar",
+    "voorjaar.windicss-intellisense",
+    "dbaeumer.vscode-eslint",
+    "streetsidesoftware.code-spell-checker",
+    "davidanson.vscode-markdownlint",
+    "antfu.unocss",
+    "alefragnani.Bookmarks",
+    "christian-kohler.npm-intellisense",
+    "wmaurer.vscode-jumpy",
+    "Gruntfuggly.todo-tree",
+    "IBM.output-colorizer",
+    "ZixuanChen.vitest-explorer"
+  ]
+}

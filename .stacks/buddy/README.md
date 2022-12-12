@@ -21,7 +21,7 @@ The goal of the framework is to _help you_ create & maintain frontends, backends
 
 Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
 
-> “Convention over configuration” is the Stacks mantra. _- Chris Breuer_
+> “Convention over configuration” is the Stacks mantra. _- Chris_
 
 <!-- ![Atomic UI & FX Design](./apps/docs/images/diagram.png) -->
 
@@ -68,6 +68,7 @@ _Create your personal or professional Vercel-like cloud._
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks_
 - 🤌🏼 **Brotli & gzip** _optimized request compressions to speed up page load times_
+- 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 - 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_
@@ -87,8 +88,9 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
 - 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
-- ✨ **Git workflows** _committing with ease_
+- ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
+- ⏩ **Code Snippets** _say goodbye to the boilerplate_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
 

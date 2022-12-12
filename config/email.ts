@@ -1,3 +1,3 @@
 export const email = {
-    // Tailwind Configs here
+  // Tailwind Configs here
 }

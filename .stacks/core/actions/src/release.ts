@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { frameworkPath } from '@stacksjs/path'
 import { runAction } from '@stacksjs/actions'
 import { runNpmScript } from '@stacksjs/utils'
 import { NpmScript } from '@stacksjs/types'
@@ -12,13 +12,8 @@ import { NpmScript } from '@stacksjs/types'
  * Run changelog
  */
 
-// eslint-disable-next-line no-console
-console.log('here')
-
 await runAction('generate-package-json')
 // eslint-disable-next-line no-console
 console.log('here2')
-await runNpmScript(NpmScript.LintFix, { cwd: projectPath() })
+await runNpmScript(NpmScript.LintFix, { debug: true, cwd: frameworkPath() })
 await runNpmScript(NpmScript.Release, { debug: true, cwd: frameworkPath() })
-
-// ok('Release complete')
