@@ -8,7 +8,7 @@ import { config } from '../tailwind.config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string) {
   const template = `
-  <extends src="./core/notifications/src/template/index.html">
+  <extends src="./core/notifications/src/utils/template.html">
     <block name="template">
       ${options.html}
     </block>
