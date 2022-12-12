@@ -3,8 +3,8 @@ import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { ResultAsync } from '@stacksjs/error-handling'
 import * as Maizzle from '@maizzle/framework'
-import { config } from '../tailwind.config'
 import { maizzle } from '@stacksjs/config'
+import { config } from '../tailwind.config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string) {
   const template = `
@@ -20,7 +20,7 @@ export async function send(options: EmailOptions, provider: any, providerName: s
       tailwind: {
         config,
         css,
-        maizzle
+        maizzle,
       },
     },
   )

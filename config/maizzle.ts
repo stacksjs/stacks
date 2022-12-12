@@ -1,4 +1,3 @@
 export const maizzle = {
-    // Maizzle configs here
-  }
-  
+  // Maizzle configs here
+}

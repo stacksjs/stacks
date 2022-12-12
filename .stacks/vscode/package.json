@@ -3,6 +3,17 @@
   "displayName": "stacks",
   "version": "0.0.1",
   "description": "A collection of extensions for working with Stacks Applications in VS Code",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/vscode#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
   "keywords": [
     "stacks",
     "stacksjs",
