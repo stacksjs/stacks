@@ -51,7 +51,7 @@ export async function component(options: MakeOptions) {
   }
   catch (error) {
     log.error('There was an error creating your component', error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 }
 
@@ -81,9 +81,8 @@ export async function database(options: MakeOptions) {
     log.success(`Created ${italic(name)} database`)
   }
   catch (error) {
-    log.error('There was an error creating your database.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your database.', error)
+    process.exit()
   }
 }
 
@@ -100,9 +99,8 @@ export async function factory(options: MakeOptions) {
     log.success(`Created ${italic(name)} factory`)
   }
   catch (error) {
-    log.error('There was an error creating your factory.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your factory.', error)
+    process.exit()
   }
 }
 
