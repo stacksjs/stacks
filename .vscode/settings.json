@@ -285,7 +285,8 @@
     "defaultcontent",
     "vslot",
     "vmodel",
-    "vfor"
+    "vfor",
+    "cossssmin"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

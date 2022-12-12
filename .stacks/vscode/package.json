@@ -42,6 +42,7 @@
     "wmaurer.vscode-jumpy",
     "Gruntfuggly.todo-tree",
     "IBM.output-colorizer",
-    "ZixuanChen.vitest-explorer"
+    "ZixuanChen.vitest-explorer",
+    "cossssmin.posthtml"
   ]
 }
