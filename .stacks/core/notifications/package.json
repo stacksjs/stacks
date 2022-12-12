@@ -2,7 +2,7 @@
   "name": "@stacksjs/notifications",
   "type": "module",
   "version": "0.43.1",
-  "packageManager": "pnpm@7.18.1",
+  "packageManager": "pnpm@7.18.2",
   "description": "The Stacks notifications integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -43,7 +43,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.18.1"
+    "pnpm": ">=7.18.2"
   },
   "scripts": {
     "build": "mkdist -d",
