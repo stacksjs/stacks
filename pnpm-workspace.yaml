@@ -5,6 +5,7 @@ packages:
   - ./.stacks/fonts/*
   - ./.stacks/functions
   - ./.stacks/desktop
+  - ./.stacks/vscode
   - ./.stacks
   - ./apps/*
   - ./
