@@ -32,14 +32,14 @@ const config: UserConfig = defineConfig({
 
   transformers: [
     transformerCompileClass({
-      classPrefix: options.classPrefix,
-      trigger: options.trigger,
+      classPrefix: ui.classPrefix,
+      trigger: ui.trigger,
     }),
     transformerDirectives(),
     transformerVariantGroup(),
   ],
 
-  safelist: options.safelist.split(' '),
+  safelist: ui.safelist.split(' '),
 })
 
 export default config
