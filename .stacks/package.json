@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.43.1",
   "private": "true",
-  "packageManager": "pnpm@7.18.1",
+  "packageManager": "pnpm@7.18.2",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -62,7 +62,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.18.1"
+    "pnpm": ">=7.18.2"
   },
   "scripts": {
     "buddy": "esno ./buddy/src/cli.ts",
