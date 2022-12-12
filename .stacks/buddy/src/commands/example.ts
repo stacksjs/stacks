@@ -1,7 +1,7 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ExamplesOption, ExamplesOptions } from '@stacksjs/types'
 import { italic, log, prompts } from '@stacksjs/cli'
-import { componentExample, invoke as runExample, webComponentExample } from '../actions/examples'
+import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
 
 const descriptions = {
   example: 'Which example do you want to see?',

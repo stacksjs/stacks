@@ -1,7 +1,7 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { add } from '@stacksjs/actions/add'
+import { invoke } from '@stacksjs/actions/add'
 
 const descriptions = {
   add: 'Add a stack to your project (coming soon)',
@@ -11,7 +11,7 @@ const descriptions = {
   debug: 'Enable debug mode',
 }
 
-async function build(stacks: CLI) {
+async function add(stacks: CLI) {
   stacks
     .command('add', descriptions.add)
     .option('-t, --table', descriptions.table, { default: false })
@@ -34,7 +34,7 @@ async function build(stacks: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await add(options)
+      await invoke(options)
 
       process.exit(ExitCode.Success)
     })
@@ -44,7 +44,7 @@ async function build(stacks: CLI) {
     .option('-t, --table', descriptions.table, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await add(options)
+      await invoke(options)
     })
 
   stacks
@@ -52,7 +52,7 @@ async function build(stacks: CLI) {
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await add(options)
+      await invoke(options)
     })
 }
 
@@ -60,4 +60,4 @@ function hasNoOptions(options: AddOptions) {
   return !options.all && !options.table && !options.calendar
 }
 
-export { build }
+export { add }

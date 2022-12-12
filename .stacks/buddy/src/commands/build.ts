@@ -1,7 +1,7 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { invoke as startBuildProcess } from '../actions/build'
+import { invoke } from '@stacksjs/actions/build'
 
 const descriptions = {
   components: 'Build your component library',
@@ -47,7 +47,7 @@ async function build(stacks: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await startBuildProcess(options)
+      await invoke(options)
 
       process.exit(ExitCode.Success)
     })
@@ -57,7 +57,7 @@ async function build(stacks: CLI) {
     .option('-c, --components', descriptions.components, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 
   stacks
@@ -65,7 +65,7 @@ async function build(stacks: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 
   stacks
@@ -74,7 +74,7 @@ async function build(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 
   stacks
@@ -84,7 +84,7 @@ async function build(stacks: CLI) {
     .alias('build:elements')
     .alias('build:wc')
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 
   stacks
@@ -92,7 +92,7 @@ async function build(stacks: CLI) {
     .option('-d, --docs', descriptions.docs, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 
   stacks
@@ -100,7 +100,7 @@ async function build(stacks: CLI) {
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startBuildProcess(options)
+      await invoke(options)
     })
 }
 
