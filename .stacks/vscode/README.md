@@ -9,7 +9,7 @@ A collection of extensions for working with Stacks Applications in VS Code to ma
 - [Jumpy](https://marketplace.visualstudio.com/items?itemName=wmaurer.vscode-jumpy) - We lose a lot of time scanning with a mouse, time we can get back by using our keyboard instead. Jumpy provides fast cursor movement by giving you a couple of keys that offer a hook to get to another part of the document.
 - [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - a plugin that auto-completes npm modules in import statements.
 - [ES6 Snippets](https://marketplace.visualstudio.com/items?itemName=xabikos.JavaScriptSnippets) - quickly spin up ES6 JavaScript with only 3 or 4 characters.
-- [Windi CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Windi CSS IntelliSense enhances the development experience by providing VS Code users with advanced features such as autocompletion, syntax highlighting, code folding, and more.
+- [CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense) - Windi CSS IntelliSense enhances the development experience by providing VS Code users with advanced features such as autocompletion, syntax highlighting, code folding, and more.
 - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Integrates ESLint into VS Code.
 - [Spelling Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - A simple source code spell checker for code.
 - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) - Markdown/CommonMark linting and style checking for Visual Studio Code.
@@ -17,6 +17,7 @@ A collection of extensions for working with Stacks Applications in VS Code to ma
 - [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree) - This extension quickly searches (using ripgrep) your workspace for comment tags like TODO and FIXME, and displays them in a tree view in the activity bar. The view can be dragged out of the activity bar into the explorer pane (or anywhere else you would prefer it to be).
 - [Log Output Colorizer](https://marketplace.visualstudio.com/items?itemName=IBM.output-colorizer) - Language extension for VS Code that adds syntax colorization for both the output/debug/extensions panel and *.log files.
 - [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=antfu.vitest-explorer) - A VS Code extension for the Vitest test runner.
+- [PostHTML Snippets](https://marketplace.visualstudio.com/items?itemName=cossssmin.posthtml) - Quickly build HTML emails with utility-first CSS.
 
 ## Relevant Links
 

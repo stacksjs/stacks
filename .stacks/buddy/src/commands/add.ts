@@ -1,7 +1,7 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { add as startAddProcess } from '../actions/add'
+import { add } from '@stacksjs/actions/add'
 
 const descriptions = {
   add: 'Add a stack to your project (coming soon)',
@@ -34,7 +34,7 @@ async function build(stacks: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await startAddProcess(options)
+      await add(options)
 
       process.exit(ExitCode.Success)
     })
@@ -44,7 +44,7 @@ async function build(stacks: CLI) {
     .option('-t, --table', descriptions.table, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startAddProcess(options)
+      await add(options)
     })
 
   stacks
@@ -52,7 +52,7 @@ async function build(stacks: CLI) {
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await startAddProcess(options)
+      await add(options)
     })
 }
 
