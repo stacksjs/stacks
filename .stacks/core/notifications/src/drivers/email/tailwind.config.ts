@@ -1,4 +1,4 @@
-import { email } from '@stacks/config'
+import { email } from '@stacksjs/config'
 
 export const config = {
   ...email,

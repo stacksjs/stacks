@@ -1,3 +1,7 @@
 export const email = {
-  // Tailwind Configs here
+  // Email Tailwind config here
+}
+
+export const maizzle = {
+  // Maizzle config here
 }
