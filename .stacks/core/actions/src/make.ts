@@ -88,6 +88,7 @@ export async function database(options: MakeOptions) {
 }
 
 export async function createDatabase(options: MakeOptions) {
+  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
@@ -106,6 +107,7 @@ export async function factory(options: MakeOptions) {
 }
 
 export async function createFactory(options: MakeOptions) {
+  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
@@ -123,6 +125,7 @@ export async function migration(options: MakeOptions) {
 }
 
 export async function createMigration(options: MakeOptions) {
+  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
@@ -140,6 +143,7 @@ export async function notification(options: MakeOptions) {
 }
 
 export async function createNotification(options: MakeOptions) {
+  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
