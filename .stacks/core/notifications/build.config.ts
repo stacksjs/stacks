@@ -1,10 +1,8 @@
 import { defineBuildConfig } from 'unbuild'
-import { email } from '@stacksjs/config'
 
 export default defineBuildConfig({
-  email.style,
   entries: [
-    './src/index',
+    './src/utils/config',
   ],
   declaration: true,
   clean: true,
@@ -12,4 +10,5 @@ export default defineBuildConfig({
     emitCJS: true,
     inlineDependencies: true,
   },
+  failOnWarn: false,
 })

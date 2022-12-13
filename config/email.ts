@@ -1,15 +1,11 @@
 export const email = {
-  // Email Tailwind config here
-  build: {},
-  style: {
-    build: {
-      templates: {
-        destination: {
-          path: 'build_production',
-        },
+  build: {
+    templates: {
+      destination: {
+        path: 'build_production',
       },
     },
-    inlineCSS: true,
-    removeUnusedCSS: true,
   },
+  inlineCSS: true,
+  removeUnusedCSS: true,
 }
