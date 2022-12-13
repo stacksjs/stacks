@@ -1,7 +1,7 @@
 import { email } from '@stacksjs/config'
 
 export const config = {
-  ...email,
+  ...email.build,
   theme: {
     screens: {
       sm: '480px',

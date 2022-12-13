@@ -1,7 +1,15 @@
 export const email = {
   // Email Tailwind config here
-}
-
-export const maizzle = {
-  // Maizzle config here
+  build: {},
+  maizzle: {
+    build: {
+      templates: {
+        destination: {
+          path: 'build_production',
+        },
+      },
+    },
+    inlineCSS: true,
+    removeUnusedCSS: true,
+  },
 }
