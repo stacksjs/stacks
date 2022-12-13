@@ -1,7 +1,7 @@
 export const email = {
   // Email Tailwind config here
   build: {},
-  maizzle: {
+  style: {
     build: {
       templates: {
         destination: {

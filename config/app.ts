@@ -39,5 +39,5 @@ export const app: Options = {
       body: 'Inter',
       title: 'Roboto',
     },
-  }
+  },
 }

@@ -130,11 +130,11 @@ export interface AppOptions {
   // inspect: <InspectOptions>{},
 
   /**
-   * **Cipher**
+   * **Font**
    *
    * Description WIP.
    *
-   * @default object {}
+   * @default object
    */
-  font: object,
+  font: object
 }
