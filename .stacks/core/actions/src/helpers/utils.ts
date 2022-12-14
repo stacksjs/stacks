@@ -1,6 +1,6 @@
 import storage from '@stacksjs/storage'
 import { runCommand } from '@stacksjs/cli'
-import { actionsPath } from '@stacksjs/path'
+import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { CliOptions } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'
 
