@@ -27,7 +27,7 @@ export async function send(options: EmailOptions, provider: any, providerName: s
     .then(({ html }: any) => {
       options.html = html
     })
-    .catch((error: any) => log.error(`Failed to render email template using provider: ${italic(providerName)}`, error))
+    .catch((error: any) => log.error(`Failed to render email template using provider: ${italic(providerName)}.`, error))
 
   return ResultAsync.fromPromise(
     provider.sendMessage(options),

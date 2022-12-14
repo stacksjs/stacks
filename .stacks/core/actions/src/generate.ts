@@ -42,7 +42,7 @@ export async function libEntries(options: GeneratorOptions) {
   const result = await runCommand('esno .stacks/core/actions/src/generate-package-json.ts', { ...options, debug: true, cwd: projectPath() })
 
   if (result.isErr()) {
-    log.error('There was an error generating your library entry points', result.error)
+    log.error('There was an error generating your library entry points.', result.error)
     process.exit()
   }
 
@@ -53,7 +53,7 @@ export async function vueCompat(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateVueCompat, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating Vue 2 compatibility', result.error)
+    log.error('There was an error generating Vue 2 compatibility.', result.error)
     process.exit()
   }
 
@@ -64,7 +64,7 @@ export async function webTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating the web-types.json file', result.error)
+    log.error('There was an error generating the web-types.json file.', result.error)
     process.exit()
   }
 
@@ -75,7 +75,7 @@ export async function vsCodeCustomData(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating the custom-elements.json file', result.error)
+    log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit()
   }
 
@@ -87,7 +87,7 @@ export async function ideHelpers(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateIdeHelpers, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating IDE helpers', result.error)
+    log.error('There was an error generating IDE helpers.', result.error)
     process.exit()
   }
 
@@ -99,7 +99,7 @@ export async function componentMeta(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating your component meta information', result.error)
+    log.error('There was an error generating your component meta information.', result.error)
     process.exit()
   }
 
@@ -111,7 +111,7 @@ export async function types(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateTypes, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating your types', result.error)
+    log.error('There was an error generating your types.', result.error)
     process.exit()
   }
 

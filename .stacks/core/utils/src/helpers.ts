@@ -1,5 +1,5 @@
 import { log, runCommand, spawn } from '@stacksjs/cli'
-import { type CliOptions, ExitCode, type Manifest, type NpmScript } from '@stacksjs/types'
+import { type CliOptions, type Manifest, type NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { ui } from '@stacksjs/config'
@@ -112,8 +112,8 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   if (isManifest(manifest) && hasScript(manifest, script))
     return await runCommand(`pnpm run ${script}`, options)
 
-  log.error(`The specified npm script "${script}" does not exist in the package.json file`)
-  process.exit(ExitCode.FatalError)
+  log.error(`The specified npm script "${script}" does not exist in the package.json file.`)
+  process.exit()
 }
 
 /**

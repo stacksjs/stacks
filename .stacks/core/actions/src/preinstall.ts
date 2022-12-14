@@ -1,6 +1,6 @@
 import { log, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { ExitCode, type PreinstallOptions } from '@stacksjs/types'
+import type { PreinstallOptions } from '@stacksjs/types'
 import { determineDebugMode } from '@stacksjs/config'
 
 export async function invoke(options?: PreinstallOptions) {
@@ -12,8 +12,8 @@ export async function invoke(options?: PreinstallOptions) {
     log.success('Environment ready')
   }
   catch (error) {
-    log.error('There was an error pre-installing your stack', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error pre-installing your stack.', error)
+    process.exit()
   }
 }
 

@@ -5,7 +5,7 @@ import { library } from '@stacksjs/config'
 import { packageManager } from '../../package.json' assert { type: 'json' }
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
-  let name, description, directory, keywords, config
+  let name, description, directory, keywords, config, prettyName
 
   if (type === 'vue-components') {
     name = library.vueComponents.name
@@ -80,7 +80,6 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
 `,
     })
 
-    let prettyName
     if (type === 'vue-components')
       prettyName = 'Vue Component library'
     else if (type === 'web-components')
@@ -91,6 +90,6 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     log.success(`Created ${prettyName} package.json`)
   }
   catch (err) {
-    log.error(err)
+    log.error(`There was an error creating the ${prettyName} package.json.`, err)
   }
 }

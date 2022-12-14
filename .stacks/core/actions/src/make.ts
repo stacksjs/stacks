@@ -2,7 +2,6 @@ import { italic, log, spawn } from '@stacksjs/cli'
 import { writeTextFile } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
@@ -50,7 +49,7 @@ export async function component(options: MakeOptions) {
     log.success(`Created ${italic(name)} component`)
   }
   catch (error) {
-    log.error('There was an error creating your component', error)
+    log.error('There was an error creating your component.', error)
     process.exit()
   }
 }
@@ -117,8 +116,8 @@ export async function migration(options: MakeOptions) {
     log.success(`Created ${italic(name)} migration`)
   }
   catch (error) {
-    log.error('There was an error creating your migration', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your migration.', error)
+    process.exit()
   }
 }
 
@@ -135,8 +134,8 @@ export async function notification(options: MakeOptions) {
     log.success(`Created ${italic(name)} notification`)
   }
   catch (error) {
-    log.error('There was an error creating your notification', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your notification.', error)
+    process.exit()
   }
 }
 
@@ -153,8 +152,8 @@ export async function page(options: MakeOptions) {
     log.success(`Created ${name} page`)
   }
   catch (error) {
-    log.error('There was an error creating your page', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your page.', error)
+    process.exit()
   }
 }
 
@@ -185,8 +184,8 @@ export async function fx(options: MakeOptions) {
     log.success(`Created ${name} function`)
   }
   catch (error) {
-    log.error('There was an error creating your function', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your function.', error)
+    process.exit()
   }
 }
 
@@ -218,8 +217,8 @@ export async function language(options: MakeOptions) {
     log.success(`Created ${name} translation file`)
   }
   catch (error) {
-    log.error('There was an error creating your language', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your language.', error)
+    process.exit()
   }
 }
 
@@ -244,7 +243,7 @@ export async function stack(options: MakeOptions) {
     log.info(`cd ${path} && pnpm install`)
   }
   catch (error) {
-    log.error('There was an error creating your stack', error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error creating your stack.', error)
+    process.exit()
   }
 }

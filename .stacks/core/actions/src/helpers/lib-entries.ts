@@ -3,7 +3,7 @@ import { log } from '@stacksjs/logging'
 import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
-import { ExitCode, type LibEntryType } from '@stacksjs/types'
+import type { LibEntryType } from '@stacksjs/types'
 import { library } from '@stacksjs/config'
 
 /**
@@ -24,8 +24,8 @@ export async function generateLibEntry(type: LibEntryType) {
       await createFunctionLibraryEntryPoint()
   }
   catch (err) {
-    log.error(err)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error generating the library entry point.', err)
+    process.exit()
   }
 }
 
@@ -68,7 +68,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   if (type === 'functions') {
     if (!library.functions.functions) {
       log.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
-      process.exit(ExitCode.FatalError)
+      process.exit()
     }
 
     for (const fx of library.functions.functions) {
@@ -85,7 +85,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   if (type === 'vue-components') {
     if (!library.vueComponents.tags) {
       log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
-      process.exit(ExitCode.FatalError)
+      process.exit()
     }
 
     arr = determineResetPreset()
@@ -109,7 +109,7 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
   if (!library.webComponents.tags) {
     log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   for (const component of library.webComponents.tags.map(tag => tag.name)) {

@@ -13,7 +13,7 @@ export async function generateVsCodeCustomData() {
     })
   }
   catch (err) {
-    log.error(err)
+    log.error('There was an error generating the VS Code custom data file.', err)
   }
 }
 

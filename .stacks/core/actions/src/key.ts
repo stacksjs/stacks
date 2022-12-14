@@ -2,7 +2,6 @@ import { getRandomValues } from 'node:crypto'
 import { log, runCommand } from '@stacksjs/cli'
 // import { generateAppKey } from '@stacksjs/security'
 import type { CliOptions as KeyOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
 import { setEnvValue } from '@stacksjs/utils'
 import { isFile } from '@stacksjs/storage'
 import utf8 from 'crypto-js/enc-utf8'
@@ -35,9 +34,8 @@ export async function generate(options: KeyOptions) {
     return true
   }
   catch (error) {
-    log.error('There was an error generating your key.')
-    log.error(error)
-    process.exit(ExitCode.FatalError)
+    log.error('There was an error generating your key.', error)
+    process.exit()
   }
 }
 

@@ -45,7 +45,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       if (hasNoOptions(options)) {
@@ -85,7 +85,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeComponent(options)
@@ -101,7 +101,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeDatabase(options)
@@ -117,7 +117,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeMigration(options)
@@ -133,7 +133,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeFactory(options)
@@ -149,7 +149,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makePage(options)
@@ -173,7 +173,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeLanguage(options)
@@ -189,7 +189,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeNotification(options)
@@ -205,7 +205,7 @@ async function make(stacks: CLI) {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       await makeStack(options)

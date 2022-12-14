@@ -58,7 +58,7 @@
     "stacks": "pnpm run buddy",
     "stx": "pnpm run buddy",
     "preinstall": "npx only-allow pnpm",
-    "prepublishOnly": "pnpm buddy prepublish",
+    "prepublish": "pnpm buddy prepublish",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
     "update": "pnpm buddy update",

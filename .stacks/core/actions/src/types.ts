@@ -6,7 +6,7 @@ export async function invoke(options?: TypesOptions) {
   const results = await runNpmScript(NpmScript.TypesFix, options)
 
   if (results.isErr()) {
-    log.error('There was an error fixing your types', results.error)
+    log.error('There was an error fixing your types.', results.error)
     process.exit()
   }
 

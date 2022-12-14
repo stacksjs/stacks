@@ -28,7 +28,7 @@ export async function lintFix(options?: LintOptions) {
   const result = await runNpmScript(NpmScript.LintFix, options)
 
   if (result.isErr()) {
-    log.error('There was an error lint fixing your code', result.error)
+    log.error('There was an error lint fixing your code.', result.error)
     process.exit()
   }
 

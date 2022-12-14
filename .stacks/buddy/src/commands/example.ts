@@ -31,7 +31,7 @@ async function example(stacks: CLI) {
 
       if (answer !== null) {
         log.error(`You did not provide an answer. Please try again, ${italic('or report the issue')}`)
-        process.exit(ExitCode.InvalidArgument)
+        process.exit()
       }
 
       if (answer === 'components')

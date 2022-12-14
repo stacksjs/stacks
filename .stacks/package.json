@@ -68,7 +68,7 @@
     "buddy": "esno ./buddy/src/cli.ts",
     "stx": "pnpm run stacks",
     "stacks": "pnpm run stacks",
-    "prepublishOnly": "pnpm buddy prepublish",
+    "prepublish": "pnpm buddy prepublish",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
     "update": "pnpm buddy update",
