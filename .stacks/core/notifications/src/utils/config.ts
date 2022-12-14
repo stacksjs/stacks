@@ -1,1 +1,5 @@
-export { email } from '@stacksjs/config'
+import { email } from '@stacksjs/config'
+
+export default {
+  email
+}
