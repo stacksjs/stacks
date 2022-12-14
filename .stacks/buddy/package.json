@@ -83,7 +83,7 @@
     "build:functions": "npx vite build -c ./core/build/src/functions.ts",
     "build:docs": "npx vitepress build ../apps/docs",
     "build:pages": "npx vite-ssg build ./pages -c ./core/build/src/pages.ts",
-    "build:core": "pnpm --filter './core/**' --filter='!./core/config' build && pnpm --filter './core/config' build",
+    "build:core": "pnpm --filter '../core/**' --filter='!../core/config' build && pnpm --filter '../core/config' build",
     "build:cli": "npx unbuild",
     "build:runtime": "pnpm run build:cli",
     "build:desktop": "wip",
