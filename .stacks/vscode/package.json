@@ -33,7 +33,7 @@
     "release": "vsce publish"
   },
   "galleryBanner": {
-    "color": "#47B784",
+    "color": "#d7e4f5",
     "theme": "dark"
   },
   "extensionPack": [

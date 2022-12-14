@@ -27,7 +27,7 @@ Stacks helps you every step along the way—in beginner & expert-friendly ways, 
 
 ## Features
 
-The Stacks framework is a harmony of several engines to build any web and/or desktop application, in highly-scalable ways. It consists of the following engines:
+The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
 
 ### Stacks UI
 
