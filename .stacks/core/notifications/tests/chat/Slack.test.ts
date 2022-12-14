@@ -12,4 +12,13 @@ describe('Slack Test', () => {
 
     expect(test).toBeDefined()
   })
+
+  it('should not send chat if webhook is empty', async () => {
+    const test = await notification.send({
+      content: 'Test Slack Message!',
+      webhookUrl: '',
+    })
+
+    expect(test.error).toThrowError()
+  })
 })

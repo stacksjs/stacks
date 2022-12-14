@@ -14,4 +14,14 @@ describe('Twilio Test', () => {
 
     expect(test).toBeDefined()
   })
+
+  it('should not send sms if receiver is empty', async () => {
+    const test = await notif.send({
+      content: 'Test SMS from Stacks',
+      to: '',
+      from: notification.sms.twilio.from,
+    })
+
+    expect(test.error).toThrowError(Error)
+  })
 })

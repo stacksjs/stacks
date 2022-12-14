@@ -12,8 +12,19 @@ describe('Sendgrid Test', () => {
       subject: 'Test Email',
       html: '<p> Test Email using SG!</p>',
     })
-
+    
     expect(test).toBeDefined()
+  })
+
+  it('should not send email when receiver is empty', async () => {
+    const test = await notification.send({
+      from: env.email.sendgrid.from,
+      to: '',
+      subject: 'Test Email',
+      html: '<p> Test Email using SG!</p>',
+    })
+
+    expect(test.error).toThrowError(Error)
   })
 })
 
