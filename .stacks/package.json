@@ -129,7 +129,7 @@
     "key": "pnpm buddy key",
     "key:generate": "pnpm buddy key:generate",
     "commit": "git cz",
-    "release": "bumpp ./package.json ./buddy/package.json ./core/**/package.json --execute 'pnpm run changelog' --all",
+    "release": "bumpp ./package.json ./buddy/package.json ./core/**/package.json ./vscode/package.json --execute 'pnpm run changelog' --all",
     "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate": "pnpm buddy generate",
     "generate:entries": "pnpm buddy generate:entries",

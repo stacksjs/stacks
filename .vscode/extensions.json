@@ -1,6 +1,5 @@
 {
-  // TODO: the only recommended extension should be Stacks
   "recommendations": [
-    "stacks.stacks"
+    "Stacks.stacks"
   ]
 }
