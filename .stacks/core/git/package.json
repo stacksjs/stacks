@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/git",
   "type": "module",
-  "version": "0.44.2",
+  "version": "0.44.3",
   "packageManager": "pnpm@7.18.2",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
