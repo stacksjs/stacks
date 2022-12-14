@@ -1,8 +1,8 @@
 {
+  "publisher": "Stacks",
   "name": "stacks-vscode",
   "displayName": "stacks",
   "version": "0.0.1",
-  "publisher": "Stacks",
   "description": "A collection of extensions for working with Stacks Applications in VS Code",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -21,19 +21,19 @@
     "extension pack",
     "stacks extension collection"
   ],
+  "categories": [
+    "Extension Packs"
+  ],
+  "engines": {
+    "vscode": "^1.74.0"
+  },
   "scripts": {
     "package": "vsce package",
     "release": "vsce publish"
   },
-  "categories": [
-    "Extension Packs"
-  ],
   "galleryBanner": {
     "color": "#47B784",
     "theme": "dark"
-  },
-  "engines": {
-    "vscode": "^1.74.0"
   },
   "extensionPack": [
     "vue.volar",

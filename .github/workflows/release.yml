@@ -51,7 +51,6 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-
       - name: Create GitHub release
         run: npx changelogithub
         env:
