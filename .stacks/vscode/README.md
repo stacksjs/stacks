@@ -2,6 +2,8 @@
 
 A collection of extensions for working with Stacks Applications in VS Code to make application development easier and more fun.
 
+Please note, the Stacks framework auto-configures any extension that needs to be configured.
+
 ## Extensions Included
 
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Vue Language Features is a language support extension built for Vue, Vitepress and petite-vue. this is based on @vue/reactivity to calculate everything on-demand, to implement native TypeScript language service level performance ⚡
@@ -27,7 +29,7 @@ We welcome contributions to this extension pack.
 
 ```bash
 pnpm run package // to create a .vsix file
-code --install-extension stacks-vscode-0.0.1.vsix // to install the extension locally
+code --install-extension stacks-vscode-0.44.2.vsix // to install the extension locally
 ```
 
 _If you would like to add an extension, please open an issue or start a Discussion first 🙏🏼._
