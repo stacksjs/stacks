@@ -102,6 +102,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
+      esno: ^0.16.3
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
       typescript: ^4.9.4
@@ -115,6 +116,7 @@ importers:
       '@stacksjs/strings': link:../strings
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
+      esno: 0.16.3
       markdown-it: 13.0.1
       vue-component-meta: 1.0.13_typescript@4.9.4
     devDependencies:

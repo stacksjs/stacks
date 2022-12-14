@@ -1,6 +1,7 @@
 import storage from '@stacksjs/storage'
-import { actionsPath, functionsPath } from '@stacksjs/path'
-// import type { CliOptions } from '@stacksjs/types'
+import { runCommand } from '@stacksjs/cli'
+import { actionsPath } from '@stacksjs/path'
+import type { CliOptions } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'
 
 /**
@@ -10,13 +11,13 @@ import { err } from '@stacksjs/error-handling'
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-// export async function runAction(action: string, options: CliOptions) {
-export async function runAction(action: string) {
+export async function runAction(action: string, options: CliOptions) {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist`)
 
   try {
-    return await import(actionsPath(`${action}.ts`)) as any
+    const command = `esno ${actionsPath(`${action}.ts`)}`
+    return await runCommand(command, options)
   }
   catch (error) {
     return err(error)

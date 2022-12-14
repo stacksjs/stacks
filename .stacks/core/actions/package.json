@@ -57,7 +57,8 @@
     "vue-component-meta": "^1.0.13"
   },
   "dependencies": {
-    "@stacksjs/strings": "workspace:*"
+    "@stacksjs/strings": "workspace:*",
+    "esno": "^0.16.3"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
