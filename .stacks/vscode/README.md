@@ -19,6 +19,19 @@ A collection of extensions for working with Stacks Applications in VS Code to ma
 - [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=antfu.vitest-explorer) - A VS Code extension for the Vitest test runner.
 - [PostHTML Snippets](https://marketplace.visualstudio.com/items?itemName=cossssmin.posthtml) - Quickly build HTML emails with utility-first CSS.
 
+## Contributing
+
+We welcome contributions to this extension pack.
+
+## Local Usage
+
+```bash
+pnpm run package // to create a .vsix file
+code --install-extension stacks-vscode-0.0.1.vsix // to install the extension locally
+```
+
+_If you would like to add an extension, please open an issue or start a Discussion first 🙏🏼._
+
 ## Relevant Links
 
 - [GitHub](https://github.com/stacks/stacks)

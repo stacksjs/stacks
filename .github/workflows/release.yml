@@ -46,6 +46,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
+      - name: Publish VS Code Extension
+        run: pnpm --filter './.stacks/vscode' release
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+
       - name: Create GitHub release
         run: npx changelogithub
         env:

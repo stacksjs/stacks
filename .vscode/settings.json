@@ -286,7 +286,8 @@
     "vslot",
     "vmodel",
     "vfor",
-    "cossssmin"
+    "cossssmin",
+    "vsix"
   ],
   "html.customData": [
     "./.stacks/custom-elements.json"

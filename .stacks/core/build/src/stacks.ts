@@ -6,7 +6,6 @@ import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
 import VueI18n from '@intlify/vite-plugin-vue-i18n'
-import Preview from 'vite-plugin-vue-component-preview'
 import type { PluginOption } from 'vite'
 import Markdown from 'vite-plugin-vue-markdown'
 import LinkAttributes from 'markdown-it-link-attributes'
@@ -21,10 +20,6 @@ import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, fun
 
 function inspect(options?: InspectOptions) {
   return Inspect(options)
-}
-
-function preview() {
-  return Preview
 }
 
 function layouts(options?: LayoutOptions) {
@@ -200,4 +195,4 @@ const componentPreset = (isWebComponent = false) => <PluginOption>[
 //   //
 // ]
 
-export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, preview, layouts, i18n }
+export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, layouts, i18n }
