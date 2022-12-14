@@ -94,7 +94,7 @@
     "build:pages": "npx vite-ssg build ./pages -c ./core/build/src/pages.ts",
     "build:cli": "npx unbuild",
     "build:core": "pnpm --filter './core/**' --filter='!./core/config' build && pnpm --filter './core/config' build",
-    "build:stacks": "npx mkdist -d && pnpm build:cli && pnpm build:core",
+    "build:stacks": "npx mkdist -d && pnpm build:cli && pnpm build:core && cp ./core/* ./",
     "build:all": "wip",
     "prod": "pnpm run build",
     "prod:components": "pnpm run build:components",

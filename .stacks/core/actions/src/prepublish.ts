@@ -4,7 +4,8 @@ import { NpmScript, type PrepublishOptions } from '@stacksjs/types'
 
 export async function invoke(options?: PrepublishOptions) {
   log.info('Running prepublish command...')
-  const result = await runNpmScript(NpmScript.Prepublish, options)
+  // right before we publish, we need to build the Stacks
+  const result = await runNpmScript(NpmScript.BuildStacks, options)
 
   if (result.isErr()) {
     log.error('There was an error prepublishing your stack.', result.error)
