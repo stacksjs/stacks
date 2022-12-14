@@ -13,7 +13,5 @@ import { NpmScript } from '@stacksjs/types'
  */
 
 await runAction('generate-package-json')
-// eslint-disable-next-line no-console
-console.log('here2')
 await runNpmScript(NpmScript.LintFix, { debug: true, cwd: frameworkPath() })
 await runNpmScript(NpmScript.Release, { debug: true, cwd: frameworkPath() })
