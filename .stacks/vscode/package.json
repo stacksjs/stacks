@@ -1,7 +1,7 @@
 {
   "publisher": "Stacks",
-  "name": "stacks-vscode",
-  "displayName": "stacks",
+  "name": "stacks",
+  "displayName": "Stacks",
   "version": "0.0.1",
   "description": "A collection of extensions for working with Stacks Applications in VS Code",
   "license": "MIT",
