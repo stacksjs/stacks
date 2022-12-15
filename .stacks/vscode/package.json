@@ -3,6 +3,7 @@
   "name": "stacks",
   "displayName": "Stacks",
   "version": "0.44.7",
+  "private": true,
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
