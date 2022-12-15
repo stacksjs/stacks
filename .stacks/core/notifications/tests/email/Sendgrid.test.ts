@@ -12,7 +12,7 @@ describe('Sendgrid Test', () => {
       subject: 'Test Email',
       html: '<p> Test Email using SG!</p>',
     })
-    
+
     expect(test).toBeDefined()
   })
 
