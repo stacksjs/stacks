@@ -42,9 +42,9 @@
     "pnpm": ">=7.18.2"
   },
   "scripts": {
-    "build": "",
+    "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",
-    "dev": "",
+    "dev": "echo 'wip'",
     "serve:tauri": "vite",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
