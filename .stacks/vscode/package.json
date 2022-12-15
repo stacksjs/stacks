@@ -34,7 +34,7 @@
   },
   "galleryBanner": {
     "color": "#d7e4f5",
-    "theme": "dark"
+    "theme": "light"
   },
   "extensionPack": [
     "vue.volar",
