@@ -16,13 +16,12 @@ async function release(stacks: CLI) {
       const perf = intro('buddy release')
       const result = await runAction(Action.Release, options)
 
-      if (result.isOk()) {
-        outro('Triggered CI/CD release workflow', { startTime: perf, useSeconds: true })
-        return result.value
+      if (result.isErr()) {
+        log.error(result.error)
+        process.exit()
       }
 
-      log.error(result.error)
-      process.exit()
+      outro('Triggered CI/CD release workflow', { startTime: perf, useSeconds: true })
     })
 }
 
