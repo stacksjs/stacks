@@ -1,9 +1,8 @@
 {
   "publisher": "Stacks",
-  "name": "stacks",
+  "name": "stacks-vscode",
   "displayName": "Stacks",
   "version": "0.44.9",
-  "private": true,
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
