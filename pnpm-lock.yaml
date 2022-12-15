@@ -83,13 +83,13 @@ importers:
     specifiers:
       stacks: workspace:*
     devDependencies:
-      stacks: link:../../vscode
+      stacks: link:../..
 
   .stacks/components/web:
     specifiers:
       stacks: workspace:*
     devDependencies:
-      stacks: link:../../vscode
+      stacks: link:../..
 
   .stacks/core/actions:
     specifiers:
@@ -479,6 +479,16 @@ importers:
       cz-git: 1.4.1
       giget: 1.0.0
       simple-git-hooks: 2.8.1
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.4
+      typescript: 4.9.4
+
+  .stacks/core/health:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.0.0
+      typescript: ^4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -957,7 +967,7 @@ importers:
     specifiers:
       stacks: workspace:*
     devDependencies:
-      stacks: link:../vscode
+      stacks: link:..
 
   .stacks/vscode:
     specifiers:
