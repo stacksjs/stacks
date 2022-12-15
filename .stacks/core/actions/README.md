@@ -13,15 +13,13 @@ This package contains the Stacks Actions.
 
 ## 🤖 Usage
 
-wip
-
 ```bash
 pnpm i -D @stacksjs/actions
 ```
 
 Now, you can use it in your project:
 
-```js
+```ts
 import actions from '@stacksjs/actions'
 
 // wip

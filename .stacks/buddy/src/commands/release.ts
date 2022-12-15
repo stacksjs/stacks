@@ -17,7 +17,7 @@ async function release(stacks: CLI) {
       const result = await runAction(Action.Release, options)
 
       if (result.isErr()) {
-        log.error(result.error)
+        log.error('Failed to trigger the CI/CD release workflow.', result.error)
         process.exit()
       }
 

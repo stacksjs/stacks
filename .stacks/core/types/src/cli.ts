@@ -191,6 +191,7 @@ export const enum NpmScript {
 
 export const enum Action {
   Release = 'release',
+  Prepublish = 'prepublish',
 }
 
 export type { CAC as CLI } from 'cac'

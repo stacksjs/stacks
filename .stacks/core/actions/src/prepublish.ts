@@ -1,25 +1,16 @@
 import { log } from '@stacksjs/logging'
+import { runtimePath } from '@stacksjs/path'
 import { runNpmScript } from '@stacksjs/utils'
-import { NpmScript, type PrepublishOptions } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 
-export async function invoke(options?: PrepublishOptions) {
-  log.info('Running prepublish command...')
-  // right before we publish, we need to build Stacks
-  const result = await runNpmScript(NpmScript.BuildStacks, options)
+log.info('Running prepublish command...')
 
-  if (result.isErr()) {
-    log.error('There was an error prepublishing your stack.', result.error)
-    process.exit()
-  }
+// right before we publish, we need to build Stacks
+const result = await runNpmScript(NpmScript.BuildStacks, { debug: true, cwd: runtimePath() })
 
-  log.success('Prepublishing completed')
+if (result.isErr()) {
+  log.error('There was an error while prepublishing your stack, during the process of building Stacks.', result.error)
+  process.exit()
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
-export async function prepublish(options: PrepublishOptions) {
-  return invoke(options)
-}
+log.success('Prepublishing completed')

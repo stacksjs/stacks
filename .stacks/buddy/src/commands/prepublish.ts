@@ -1,5 +1,6 @@
 import type { CLI, PrepublishOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/prepublish'
+import { Action } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
 
 const descriptions = {
   command: 'Run your prepublish script',
@@ -11,7 +12,7 @@ async function prepublish(stacks: CLI) {
     .command('prepublish', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: PrepublishOptions) => {
-      await invoke(options)
+      await runAction(Action.Prepublish, options)
     })
 }
 
