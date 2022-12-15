@@ -94,7 +94,7 @@
       "functions/*": ["../functions/*"],
       "config/*": ["../config/*"],
       "components/*": ["../components/*"],
-      "pages/*": ["../pages/*"]
+      "views/*": ["../views/*"]
     }
   },
   "include": [
@@ -102,7 +102,7 @@
     "./**/*",
     "../components/**/*",
     "../functions/**/*",
-    "../pages/**/*"
+    "../views/**/*"
   ],
   "exclude": [
     "./vitest.config.ts",
