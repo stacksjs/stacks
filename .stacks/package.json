@@ -2,7 +2,6 @@
   "name": "stacks",
   "type": "module",
   "version": "0.44.8",
-  "private": "true",
   "packageManager": "pnpm@7.18.2",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",

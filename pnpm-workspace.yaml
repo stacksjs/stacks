@@ -7,5 +7,4 @@ packages:
   - ./.stacks/desktop
   - ./.stacks/vscode
   - ./.stacks
-  - ./apps/*
   - ./
