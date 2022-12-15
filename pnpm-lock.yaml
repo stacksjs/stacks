@@ -6,7 +6,7 @@ importers:
     specifiers:
       stacks: workspace:*
     dependencies:
-      stacks: link:.stacks/vscode
+      stacks: link:.stacks
 
   .stacks:
     specifiers:
