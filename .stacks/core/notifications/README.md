@@ -1,16 +1,13 @@
 # Stacks Notifications
 
+Stacks Notifications is a unified driver system for sending messages/notifications. It supports sending emails, SMS messages, and chat messages.
+
 ## ☘️ Features
 
 - 📦 Send Emails
-- Email Styling
-- Send SMS messages
-- Send Chat messages
-
-Stacks Notifications is a unified driver for sending messages/notifications!
-
-## ☘️ Features
-
+- 🎨 Email Styling
+- 📱 Send SMS messages
+- 💬 Send Chat messages
 
 ## TODO
 
@@ -25,7 +22,7 @@ Stacks Notifications is a unified driver for sending messages/notifications!
 pnpm i -D @stacksjs/notifications
 ```
 
-Now, you can use it in your project:
+You may now use it in your project:
 
 ```ts
 import { notification } from '@stacksjs/notifications'
@@ -65,6 +62,8 @@ type SMSOptions = {
 Available drivers are listed below, with the proper variables needed to get started.
 
 ### Email
+
+Email drivers are configured with the following environment variables:
 
 #### Sendgrid
 
@@ -145,6 +144,8 @@ EMAILJS_SECURE=true
 
 ### SMS
 
+SMS drivers are configured with the following environment variables:
+
 #### Twilio
 
 ```bash
@@ -207,6 +208,8 @@ TERMII_SENDER=from@example.com
 ```
 
 ### Chat
+
+Chat drivers are configured with the following environment variables:
 
 #### Discord
 
