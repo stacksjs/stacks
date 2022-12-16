@@ -28,13 +28,68 @@ import notifications from '@stacksjs/notifications'
 
 ## 🤖 Drivers
 
+- To use the drivers, import notifications and the driver name. E.g Sendgrid
+
+ ```js
+    import notifications from '@stacksjs/notifications'
+
+    const notification = notifications.sendgrid
+
+    notification.send({})
+ ```
+
+Available drivers are listed below:
+
 ### Email
 
 - Sendgrid
+  - Variables
+
+    ```
+    SENDGRID_API_KEY=SG123
+    SENDGRID_FROM=from@example.com
+    SENDGRID_SENDER_NAME=Sender
+    ```
+
 - Mailgun
+  - Variables
+
+    ```
+    MAILGUN_API_KEY=MG123
+    MAILGUN_DOMAIN=example.com
+    MAILGUN_USERNAME=usernamexample
+    MAILGUN_FROM=from@example.com
+    ```
+
 - Mailjet
+  - Variables
+
+    ```
+    MAILJET_API_KEY=MJ123
+    MAILJET_API_SECRET=MJTESTSECRET
+    MAILJET_FROM_EMAIL=from@example.com
+    ```
+
 - Netcore
+  - Variables
+
+    ```
+    NETCORE_API_KEY=NC123
+    NETCORE_FROM=from@example.com
+    ```
+
 - Nodemailer
+  - Variables
+
+    ```
+    NODEMAILER_FROM_EMAIL=from@example.com
+    NODEMAILER_HOST=example.com
+    NODEMAILER_USERNAME=username
+    NODEMAILER_PASSWORD=password
+    NODEMAILER_PORT=25
+    NODEMAILER_SECURE=true
+    ```
+
 - Post Mark
 - Ses
 - Mandrill
