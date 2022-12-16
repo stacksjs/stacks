@@ -8,13 +8,13 @@ import { env } from '@stacksjs/utils'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
- export const notification: Options = {
+export const notification: Options = {
   driver: env('NOTIFICATION_DRIVER', 'sendgrid'),
 
   novu: {
-    key: env('NOVU_API_KEY', 'test-key')
+    key: env('NOVU_API_KEY', 'test-key'),
   },
-  
+
   email: {
     sendgrid: {
       key: env('SENDGRID_API_KEY', 'test-value'),
