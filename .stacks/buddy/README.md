@@ -91,6 +91,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
 - ⏩ **Code Snippets** _say goodbye to the boilerplate_
+- 🔤 **Spell Checker** _be notified once when there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
 
