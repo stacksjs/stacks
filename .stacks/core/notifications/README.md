@@ -31,12 +31,39 @@ import notifications from '@stacksjs/notifications'
 - To use the drivers, import notifications and the driver name. E.g Sendgrid
 
  ```js
-    import notifications from '@stacksjs/notifications'
+import notifications from '@stacksjs/notifications'
 
-    const notification = notifications.sendgrid
+const notification = notifications.sendgrid
 
-    notification.send({})
+notification.send(Options)
  ```
+
+There are several types of Options for Chat, Email, and SMS drivers.
+
+```js
+ChatOptions = {
+  webhookUrl: string;
+  content: string;
+}
+
+EmailOptions = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  from?: string;
+  text?: string;
+  attachments?: IAttachmentOptions[];
+  id?: string;
+}
+
+SMSOptions = {
+  to: string;
+  content: string;
+  from?: string;
+  attachments?: IAttachmentOptions[];
+  id?: string;
+}
+```
 
 Available drivers are listed below:
 
@@ -131,11 +158,57 @@ Available drivers are listed below:
 ### SMS
 
 - Twilio
+  - Variables
+
+    ```
+    TWILIO_ACCOUNT_SID=ACtest
+    TWILIO_AUTH_TOKEN=testtoken
+    TWILIO_FROM_NUMBER=+112345
+    TWILIO_TO_NUMBER=+145678
+    ```
+
 - Nexmo
+  - Variables
+
+    ```
+    VONAGE_API_KEY=VN123
+    VONAGE_API_SECRET=testkey
+    VONAGE_FROM_NUMBER=+112345
+    ```
+
 - Gupshup
+  - Variables
+
+    ```
+    GUPSHUP_USER_ID=GU123
+    GUPSHUP_PASSWORD=password
+    ```
+
 - Plivo
+  - Variables
+
+    ```
+    PLIVO_ACCOUNT_ID=PA123
+    PLIVO_AUTH_TOKEN=testtoken
+    PLIVO_FROM_NUMBER=+112345
+    ```
+
 - SMS77
+  - Variables
+
+    ```
+    SMS77_API_KEY=SA123
+    SMS77_FROM=from@example.com
+    ```
+
 - SNS
+  - Variables
+
+    ```
+    SMS77_API_KEY=SA123
+    SMS77_FROM=from@example.com
+    ```
+
 - Telnyx
 - Termii
 
