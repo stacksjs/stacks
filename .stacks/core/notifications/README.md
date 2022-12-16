@@ -28,20 +28,14 @@ pnpm i -D @stacksjs/notifications
 Now, you can use it in your project:
 
 ```ts
-import notifications from '@stacksjs/notifications'
+import { notification } from '@stacksjs/notifications'
+
+notification.send(options)
 ```
 
 ## 🤖 Drivers
 
-To use the drivers, import the `notification` object, for example:
-
- ```ts
-import { notification } from '@stacksjs/notifications'
-
-notification.send(Options)
- ```
-
-There are different option types for Chat, Email, and SMS drivers.
+There are different option types for Chat, Email, and SMS drivers. To use any driver, simply configure the notification `options` object.
 
 ```ts
 type ChatOptions = {
@@ -68,7 +62,7 @@ type SMSOptions = {
 }
 ```
 
-Available drivers are listed below, with the variables needed to get started!
+Available drivers are listed below, with the proper variables needed to get started.
 
 ### Email
 
