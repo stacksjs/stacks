@@ -1,13 +1,13 @@
 import type { CLI, PreinstallOptions } from '@stacksjs/types'
 import { invoke } from '@stacksjs/actions/preinstall'
 
-const descriptions = {
-  command: 'Run your preinstall script',
-  debug: 'Enable debug mode',
-}
+async function preinstall(buddy: CLI) {
+  const descriptions = {
+    command: 'Run your preinstall script',
+    debug: 'Enable debug mode',
+  }
 
-async function preinstall(stacks: CLI) {
-  stacks
+  buddy
     .command('preinstall', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: PreinstallOptions) => {

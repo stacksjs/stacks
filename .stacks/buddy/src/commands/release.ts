@@ -8,8 +8,8 @@ const descriptions = {
   debug: 'Enable debug mode',
 }
 
-async function release(stacks: CLI) {
-  stacks
+async function release(buddy: CLI) {
+  buddy
     .command('release', descriptions.release)
     .option('--debug', descriptions.debug, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {

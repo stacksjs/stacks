@@ -3,20 +3,20 @@ import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
 import { componentMeta, ideHelpers, libEntries, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
 
-const descriptions = {
-  command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
-  types: 'Generate your TypeScript types',
-  entries: 'Generate your function & component library entry points',
-  webTypes: 'Generate web-types.json for IDEs',
-  customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
-  ideHelpers: 'Generate IDE helpers',
-  vueCompat: 'Generate Vue 2 & 3 compatibility',
-  componentMeta: 'Generate component meta information',
-  debug: 'Enable debug mode',
-}
+async function generate(buddy: CLI) {
+  const descriptions = {
+    command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
+    types: 'Generate your TypeScript types',
+    entries: 'Generate your function & component library entry points',
+    webTypes: 'Generate web-types.json for IDEs',
+    customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
+    ideHelpers: 'Generate IDE helpers',
+    vueCompat: 'Generate Vue 2 & 3 compatibility',
+    componentMeta: 'Generate component meta information',
+    debug: 'Enable debug mode',
+  }
 
-async function generate(stacks: CLI) {
-  stacks
+  buddy
     .command('generate', descriptions.command)
     .option('-t, --types', descriptions.types)
     .option('-e, --entries', descriptions.entries)
@@ -52,7 +52,7 @@ async function generate(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('generate:types', descriptions.types)
     .option('--debug', descriptions.debug, { default: false })
     .alias('types:generate')
@@ -60,42 +60,42 @@ async function generate(stacks: CLI) {
       await types(options)
     })
 
-  stacks
+  buddy
     .command('generate:entries', descriptions.entries)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await libEntries(options)
     })
 
-  stacks
+  buddy
     .command('generate:vue-compatibility', descriptions.vueCompat)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await vueCompat(options)
     })
 
-  stacks
+  buddy
     .command('generate:web-types', descriptions.webTypes)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await webTypes(options)
     })
 
-  stacks
+  buddy
     .command('generate:vscode-custom-data', descriptions.customData)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await vsCodeCustomData(options)
     })
 
-  stacks
+  buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await ideHelpers(options)
     })
 
-  stacks
+  buddy
     .command('generate:component-meta', descriptions.componentMeta)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {

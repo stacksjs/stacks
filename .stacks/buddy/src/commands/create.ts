@@ -6,21 +6,21 @@ import { resolve } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { generate as generateAppKey } from '@stacksjs/actions/key'
 
-const descriptions = {
-  command: 'Create a new Stacks project',
-  ui: 'Are you building a UI?',
-  components: 'Are you building UI components?',
-  webComponents: 'Automagically built optimized custom elements/web components?',
-  vue: 'Automagically built a Vue component library?',
-  pages: 'How about pages?',
-  functions: 'Are you developing functions/composables?',
-  api: 'Are you building an API?',
-  database: 'Do you need a database?',
-  debug: 'Enable debug mode',
-}
+async function create(buddy: CLI) {
+  const descriptions = {
+    command: 'Create a new Stacks project',
+    ui: 'Are you building a UI?',
+    components: 'Are you building UI components?',
+    webComponents: 'Automagically built optimized custom elements/web components?',
+    vue: 'Automagically built a Vue component library?',
+    pages: 'How about pages?',
+    functions: 'Are you developing functions/composables?',
+    api: 'Are you building an API?',
+    database: 'Do you need a database?',
+    debug: 'Enable debug mode',
+  }
 
-async function create(stacks: CLI) {
-  stacks
+  buddy
     .command('new <name>', descriptions.command)
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false

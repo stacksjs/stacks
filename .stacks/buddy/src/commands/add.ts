@@ -3,16 +3,16 @@ import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
 import { invoke } from '@stacksjs/actions/add'
 
-const descriptions = {
-  add: 'Add a stack to your project (coming soon)',
-  table: 'Add the Table Stack to your project',
-  calendar: 'Add the Calendar Stack to your project',
-  all: 'Add all stacks',
-  debug: 'Enable debug mode',
-}
+async function add(buddy: CLI) {
+  const descriptions = {
+    add: 'Add a stack to your project (coming soon)',
+    table: 'Add the Table Stack to your project',
+    calendar: 'Add the Calendar Stack to your project',
+    all: 'Add all stacks',
+    debug: 'Enable debug mode',
+  }
 
-async function add(stacks: CLI) {
-  stacks
+  buddy
     .command('add', descriptions.add)
     .option('-t, --table', descriptions.table, { default: false })
     .option('-c, --calendar', descriptions.calendar, { default: false })
@@ -39,7 +39,7 @@ async function add(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('add:table', descriptions.table)
     .option('-t, --table', descriptions.table, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -47,7 +47,7 @@ async function add(stacks: CLI) {
       await invoke(options)
     })
 
-  stacks
+  buddy
     .command('add:calendar', descriptions.calendar)
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--debug', descriptions.debug, { default: false })

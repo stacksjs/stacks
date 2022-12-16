@@ -3,16 +3,16 @@ import type { CLI, ExamplesOption, ExamplesOptions } from '@stacksjs/types'
 import { italic, log, prompts } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
 
-const descriptions = {
-  example: 'Which example do you want to see?',
-  components: 'Test your libraries against your built bundle',
-  vue: 'Test your Vue component library',
-  webComponents: 'Test your web component library',
-  debug: 'Enable debug mode',
-}
+async function example(buddy: CLI) {
+  const descriptions = {
+    example: 'Which example do you want to see?',
+    components: 'Test your libraries against your built bundle',
+    vue: 'Test your Vue component library',
+    webComponents: 'Test your web component library',
+    debug: 'Enable debug mode',
+  }
 
-async function example(stacks: CLI) {
-  stacks
+  buddy
     .command('example', descriptions.example)
     .option('-c, --components', descriptions.components)
     .option('-v, --vue', descriptions.vue)
@@ -44,7 +44,7 @@ async function example(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('example:vue', descriptions.vue)
     .option('-v, --vue', descriptions.debug, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -53,7 +53,7 @@ async function example(stacks: CLI) {
       await runExample(options)
     })
 
-  stacks
+  buddy
     .command('example:web-components', 'Test your Web Component library.')
     .option('-w, --web-components', descriptions.debug, { default: true })
     .option('--debug', descriptions.debug, { default: false })

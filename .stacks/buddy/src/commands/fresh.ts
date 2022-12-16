@@ -3,13 +3,13 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-const descriptions = {
-  fresh: 'Reinstalls your npm dependencies',
-  debug: 'Enable debug mode',
-}
+async function fresh(buddy: CLI) {
+  const descriptions = {
+    fresh: 'Reinstalls your npm dependencies',
+    debug: 'Enable debug mode',
+  }
 
-async function fresh(stacks: CLI) {
-  stacks
+  buddy
     .command('fresh', descriptions.fresh)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CommitOptions) => {

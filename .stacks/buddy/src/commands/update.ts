@@ -3,20 +3,20 @@ import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
 import { invoke as updateStacks } from '@stacksjs/actions/update'
 
-const descriptions = {
-  command: 'Update dependencies, framework, package manager, and/or Node',
-  framework: 'Update the Stacks framework',
-  dependencies: 'Update your dependencies',
-  packageManager: 'Update your package manager, i.e. pnpm',
-  node: 'Update Node to the version defined in ./node-version',
-  all: 'Update Node, package manager, project dependencies, and framework',
-  force: 'Overwrite possible local updates with remote framework updates',
-  debug: 'Enable debug mode',
-  select: 'What are you trying to update?',
-}
+async function update(buddy: CLI) {
+  const descriptions = {
+    command: 'Update dependencies, framework, package manager, and/or Node',
+    framework: 'Update the Stacks framework',
+    dependencies: 'Update your dependencies',
+    packageManager: 'Update your package manager, i.e. pnpm',
+    node: 'Update Node to the version defined in ./node-version',
+    all: 'Update Node, package manager, project dependencies, and framework',
+    force: 'Overwrite possible local updates with remote framework updates',
+    debug: 'Enable debug mode',
+    select: 'What are you trying to update?',
+  }
 
-async function update(stacks: CLI) {
-  stacks
+  buddy
     .command('update', descriptions.command)
     .option('-c, --framework', descriptions.framework, { default: false })
     .option('-d, --dependencies', descriptions.dependencies, { default: false })
@@ -47,7 +47,7 @@ async function update(stacks: CLI) {
       await updateStacks(options)
     })
 
-  stacks
+  buddy
     .command('update:framework', descriptions.framework)
     .option('-f, --framework', descriptions.framework, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -56,7 +56,7 @@ async function update(stacks: CLI) {
       await updateStacks(options)
     })
 
-  stacks
+  buddy
     .command('update:dependencies', descriptions.dependencies)
     .option('-d, --dependencies', descriptions.dependencies, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -66,7 +66,7 @@ async function update(stacks: CLI) {
       await updateStacks(options)
     })
 
-  stacks
+  buddy
     .command('update:package-manager', descriptions.packageManager)
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -76,15 +76,15 @@ async function update(stacks: CLI) {
     .action(async (options: UpdateOptions) => {
       options.version = 'latest'
 
-      if (stacks.args[0])
-        options.version = stacks.args[0]
+      if (buddy.args[0])
+        options.version = buddy.args[0]
 
       await updateStacks(options)
 
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('update:node', descriptions.node)
     .option('-n, --node', descriptions.node, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -92,7 +92,7 @@ async function update(stacks: CLI) {
       await updateStacks(options)
     })
 
-  stacks
+  buddy
     .command('update:all', descriptions.all)
     .option('-a, --all', descriptions.all, { default: true })
     .option('--debug', descriptions.debug, { default: false })

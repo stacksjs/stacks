@@ -3,17 +3,17 @@ import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
 import { components, desktop, docs, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
-const descriptions = {
-  components: 'Start the Components development server',
-  desktop: 'Start the Desktop development server',
-  functions: 'Start the Functions development server',
-  docs: 'Start the Documentation development server',
-  pages: 'Start the Pages development server',
-  debug: 'Enable debug mode',
-}
+async function dev(buddy: CLI) {
+  const descriptions = {
+    components: 'Start the Components development server',
+    desktop: 'Start the Desktop development server',
+    functions: 'Start the Functions development server',
+    docs: 'Start the Documentation development server',
+    pages: 'Start the Pages development server',
+    debug: 'Enable debug mode',
+  }
 
-async function dev(stacks: CLI) {
-  stacks
+  buddy
     .command('dev', 'Start the development server for any of the following')
     .option('-c, --components', descriptions.components)
     .option('-f, --functions', descriptions.functions)
@@ -53,35 +53,35 @@ async function dev(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('dev:components', descriptions.components)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await startDevelopmentServer(options)
     })
 
-  stacks
+  buddy
     .command('dev:docs', descriptions.docs)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await docs(options)
     })
 
-  stacks
+  buddy
     .command('dev:desktop', descriptions.desktop)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await desktop(options)
     })
 
-  stacks
+  buddy
     .command('dev:functions', descriptions.functions)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await functions(options)
     })
 
-  stacks
+  buddy
     .command('dev:pages', descriptions.pages)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {

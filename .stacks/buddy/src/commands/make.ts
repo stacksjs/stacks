@@ -14,21 +14,21 @@ import {
   stack as makeStack,
 } from '@stacksjs/actions/make'
 
-const descriptions = {
-  component: 'Create a new component',
-  page: 'Create a new page',
-  function: 'Create a new function',
-  language: 'Create a new language',
-  database: 'Create a new database',
-  migration: 'Create a new migration',
-  factory: 'Create a new factory',
-  notification: 'Create a new notification',
-  stack: 'Create a new new stack',
-  debug: 'Enable debug mode',
-}
+async function make(buddy: CLI) {
+  const descriptions = {
+    component: 'Create a new component',
+    page: 'Create a new page',
+    function: 'Create a new function',
+    language: 'Create a new language',
+    database: 'Create a new database',
+    migration: 'Create a new migration',
+    factory: 'Create a new factory',
+    notification: 'Create a new notification',
+    stack: 'Create a new new stack',
+    debug: 'Enable debug mode',
+  }
 
-async function make(stacks: CLI) {
-  stacks
+  buddy
     .command('make', 'The make command')
     .option('-c, --component', descriptions.component, { default: false })
     .option('-p, --page', descriptions.page, { default: false })
@@ -41,7 +41,7 @@ async function make(stacks: CLI) {
     .option('-s, --stack', descriptions.stack, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0]
+      const name = buddy.args[0]
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
@@ -75,12 +75,12 @@ async function make(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('make:component', descriptions.component)
     .option('--n, -name', 'The name of the component')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -91,12 +91,12 @@ async function make(stacks: CLI) {
       await makeComponent(options)
     })
 
-  stacks
+  buddy
     .command('make:database', descriptions.database)
     .option('--n, -name', 'The name of the database')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -107,12 +107,12 @@ async function make(stacks: CLI) {
       await makeDatabase(options)
     })
 
-  stacks
+  buddy
     .command('make:migration', descriptions.migration)
     .option('--n, -name', 'The name of the migration')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -123,12 +123,12 @@ async function make(stacks: CLI) {
       await makeMigration(options)
     })
 
-  stacks
+  buddy
     .command('make:factory', descriptions.factory)
     .option('--n, -name', 'The name of the factory')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -139,12 +139,12 @@ async function make(stacks: CLI) {
       await makeFactory(options)
     })
 
-  stacks
+  buddy
     .command('make:page', descriptions.page)
     .option('--n, -name', 'The name of the page')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -155,7 +155,7 @@ async function make(stacks: CLI) {
       await makePage(options)
     })
 
-  stacks
+  buddy
     .command('make:function', descriptions.function)
     .option('--n, -name', 'The name of the function')
     .option('--debug', descriptions.debug, { default: false })
@@ -163,12 +163,12 @@ async function make(stacks: CLI) {
       await makeFunction(options)
     })
 
-  stacks
+  buddy
     .command('make:lang', descriptions.language)
     .option('--n, -name', 'The name of the language')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -179,12 +179,12 @@ async function make(stacks: CLI) {
       await makeLanguage(options)
     })
 
-  stacks
+  buddy
     .command('make:notification', descriptions.notification)
     .option('--n, -name', 'The name of the notification')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
@@ -195,12 +195,12 @@ async function make(stacks: CLI) {
       await makeNotification(options)
     })
 
-  stacks
+  buddy
     .command('make:stack', descriptions.stack)
     .option('--n, -name', 'The name of the stack')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const name = stacks.args[0] || options.name
+      const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {

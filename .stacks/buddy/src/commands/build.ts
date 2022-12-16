@@ -3,20 +3,20 @@ import { Action, ExitCode } from '@stacksjs/types'
 import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
-const descriptions = {
-  components: 'Build your component library',
-  vueComponents: 'Build your Vue component library',
-  webComponents: 'Build your framework agnostic web component library',
-  elements: 'An alias to the -w flag',
-  functions: 'Build your function library',
-  pages: 'Build your SSG pages',
-  docs: 'Build your documentation site',
-  stacks: 'Build Stacks framework',
-  debug: 'Enable debug mode',
-}
+async function build(buddy: CLI) {
+  const descriptions = {
+    components: 'Build your component library',
+    vueComponents: 'Build your Vue component library',
+    webComponents: 'Build your framework agnostic web component library',
+    elements: 'An alias to the -w flag',
+    functions: 'Build your function library',
+    pages: 'Build your SSG pages',
+    docs: 'Build your documentation site',
+    stacks: 'Build Stacks framework',
+    debug: 'Enable debug mode',
+  }
 
-async function build(stacks: CLI) {
-  stacks
+  buddy
     .command('build', 'Automagically build any of your libraries/packages for production use. Select any of the following packages')
     .option('-c, --components', descriptions.components)
     .option('-v, --vue-components', descriptions.vueComponents) // these are automatically built with your -c option as well
@@ -52,7 +52,7 @@ async function build(stacks: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  stacks
+  buddy
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .option('-c, --components', descriptions.components, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -60,7 +60,7 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildComponentLibs, options)
     })
 
-  stacks
+  buddy
     .command('build:cli', 'Automagically build the CLI')
     .option('-c, --components', descriptions.components, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -68,7 +68,7 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildCli, options)
     })
 
-  stacks
+  buddy
     .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -76,7 +76,7 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildFunctionLib, options)
     })
 
-  stacks
+  buddy
     .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
     .option('-v, --vue-components', descriptions.vueComponents, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -85,7 +85,7 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildVueComponentLib, options)
     })
 
-  stacks
+  buddy
     .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
     .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -95,7 +95,7 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildWebComponentLib, options)
     })
 
-  stacks
+  buddy
     .command('build:docs', 'Automagically build your documentation site.')
     .option('-d, --docs', descriptions.docs, { default: true })
     .option('--debug', descriptions.debug, { default: false })
@@ -103,11 +103,12 @@ async function build(stacks: CLI) {
       await runAction(Action.BuildDocs, options)
     })
 
-  stacks
-    .command('build:stacks', 'Build the core Stacks framework.')
+  buddy
+    .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
+      console.log('here')
       const perf = intro('buddy release')
       const result = await runAction(Action.BuildStacks, options)
 
