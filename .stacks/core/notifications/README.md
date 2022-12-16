@@ -2,7 +2,22 @@
 
 ## ☘️ Features
 
-- ⚡️
+- 📦 Send Emails
+- Email Styling
+- Send SMS messages
+- Send Chat messages
+
+Stacks Notifications is a unified driver for sending messages/notifications!
+
+## ☘️ Features
+
+
+## TODO
+
+- [ ] Driver: FCM
+- [ ] Driver: Expo
+- [ ] Driver: SNS (Push)
+- [ ] Driver: Pushwoosh
 
 ## 🤖 Usage
 
@@ -14,13 +29,11 @@ Now, you can use it in your project:
 
 ```js
 import notifications from '@stacksjs/notifications'
-
-// wip
 ```
 
 ## 🤖 Drivers
 
-- To use the drivers, import notifications and the driver name. E.g Sendgrid
+- To use the drivers, import notifications and the driver name. E.g for Sendgrid:
 
  ```js
 import notifications from '@stacksjs/notifications'
@@ -215,7 +228,7 @@ SLACK_CLIENT_ID=SCID123
 SLACK_SECRET_KEY=SSK123
 ```
 
-Learn qmore in the docs.
+Learn more in the docs.
 
 ## 🧪 Testing
 
@@ -240,6 +253,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [Novu](https://novu.co/)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
