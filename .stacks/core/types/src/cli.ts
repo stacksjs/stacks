@@ -192,6 +192,14 @@ export const enum NpmScript {
 export const enum Action {
   Release = 'release',
   Prepublish = 'prepublish',
+  BuildStacks = 'build-stacks',
+  BuildComponentLibs = 'build-component-libs',
+  BuildVueComponentLib = 'build-vue-component-lib',
+  BuildWebComponentLib = 'build-web-component-lib',
+  BuildCli = 'build-cli',
+  BuildDocs = 'build-docs',
+  BuildFunctionLib = 'build-function-lib',
+  Fresh = 'fresh',
 }
 
 export type { CAC as CLI } from 'cac'

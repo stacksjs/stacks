@@ -1,7 +1,7 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import { prompts } from '@stacksjs/cli'
-import { invoke } from '@stacksjs/actions/build'
+import { Action, ExitCode } from '@stacksjs/types'
+import { intro, log, outro, prompts } from '@stacksjs/cli'
+import { runAction } from '@stacksjs/actions'
 
 const descriptions = {
   components: 'Build your component library',
@@ -47,7 +47,7 @@ async function build(stacks: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await invoke(options)
+      await runAction(Action.BuildStacks, options)
 
       process.exit(ExitCode.Success)
     })
@@ -57,7 +57,15 @@ async function build(stacks: CLI) {
     .option('-c, --components', descriptions.components, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAction(Action.BuildComponentLibs, options)
+    })
+
+  stacks
+    .command('build:cli', 'Automagically build the CLI')
+    .option('-c, --components', descriptions.components, { default: true })
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: BuildOptions) => {
+      await runAction(Action.BuildCli, options)
     })
 
   stacks
@@ -65,7 +73,7 @@ async function build(stacks: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAction(Action.BuildFunctionLib, options)
     })
 
   stacks
@@ -74,7 +82,7 @@ async function build(stacks: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAction(Action.BuildVueComponentLib, options)
     })
 
   stacks
@@ -84,7 +92,7 @@ async function build(stacks: CLI) {
     .alias('build:elements')
     .alias('build:wc')
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAction(Action.BuildWebComponentLib, options)
     })
 
   stacks
@@ -92,7 +100,7 @@ async function build(stacks: CLI) {
     .option('-d, --docs', descriptions.docs, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAction(Action.BuildDocs, options)
     })
 
   stacks
@@ -100,7 +108,15 @@ async function build(stacks: CLI) {
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      const perf = intro('buddy release')
+      const result = await runAction(Action.BuildStacks, options)
+
+      if (result.isErr()) {
+        log.error('Failed to build Stacks.', result.error)
+        process.exit()
+      }
+
+      outro('Stacks built successfully', { startTime: perf, useSeconds: true })
     })
 }
 

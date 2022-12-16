@@ -15,7 +15,8 @@ export async function runAction(action: string, options?: CliOptions) {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist`)
 
-  const cmd = `esno ${actionsPath(`${action}.ts`)}`
+  const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
+
   return await runCommand(cmd, options)
 }
 

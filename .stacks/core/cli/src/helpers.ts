@@ -24,7 +24,7 @@ export function intro(command: string, options?: IntroOptions) {
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options: OutroOptions, error?: Error) {
+export function outro(text: string, options: OutroOptions, error?: Error | string) {
   if (options.isError) {
     if (error)
       log.error(error)
