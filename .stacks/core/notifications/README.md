@@ -57,7 +57,7 @@ Available drivers are listed below:
     ```
     MAILGUN_API_KEY=MG123
     MAILGUN_DOMAIN=example.com
-    MAILGUN_USERNAME=usernamexample
+    MAILGUN_USERNAME=username
     MAILGUN_FROM=from@example.com
     ```
 
@@ -91,9 +91,42 @@ Available drivers are listed below:
     ```
 
 - Post Mark
+  - Variables
+
+    ```
+    POSTMARK_API_KEY=PM123
+    POSTMARK_FROM=from@example.com
+    ```
+
 - Ses
+  - Variables
+
+    ```
+    SES_REGION=US
+    SES_ACCESS_KEY_ID=testkey123
+    SES_SECRET_ACCESS_KEY=testaccesskey123
+    SES_FROM=from@example.com
+    ```
+
 - Mandrill
+  - Variables
+
+    ```
+    MANDRILL_API_KEY=Ma123
+    MANDRILL_EMAIL=from@example.com
+    ```
+
 - EmailJS
+  - Variables
+
+    ```
+    EMAILJS_FROM_EMAIL=from@example.com
+    EMAILJS_HOST=example.com
+    EMAILJS_USERNAME=username
+    EMAILJS_PASSWORD=password
+    EMAILJS_PORT=25
+    EMAILJS_SECURE=true
+    ```
 
 ### SMS
 
