@@ -81,7 +81,7 @@
       "scope": "user",
       "addWords": true
     },
-    "custom": true, // Enable the `custom` dictionary
+    "custom": true // Enable the `custom` dictionary
   },
   "prettier.enable": false, // to ensure it is disabled
   "terminal.integrated.scrollback": 10000,

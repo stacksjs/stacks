@@ -35,27 +35,27 @@ notification.send(options)
 There are different option types for Chat, Email, and SMS drivers. To use any driver, simply configure the notification `options` object.
 
 ```ts
-type ChatOptions = {
-  webhookUrl: string;
-  content: string;
+interface ChatOptions {
+  webhookUrl: string
+  content: string
 }
 
-type EmailOptions = {
-  to: string | string[];
-  subject: string;
-  html: string;
-  from?: string;
-  text?: string;
-  attachments?: IAttachmentOptions[];
-  id?: string;
+interface EmailOptions {
+  to: string | string[]
+  subject: string
+  html: string
+  from?: string
+  text?: string
+  attachments?: IAttachmentOptions[]
+  id?: string
 }
 
-type SMSOptions = {
-  to: string;
-  content: string;
-  from?: string;
-  attachments?: IAttachmentOptions[];
-  id?: string;
+interface SMSOptions {
+  to: string
+  content: string
+  from?: string
+  attachments?: IAttachmentOptions[]
+  id?: string
 }
 ```
 
