@@ -8,6 +8,8 @@ import { env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export const notification = {
+  driver: env('NOTIFICATION_DRIVER', 'email'),
+
   email: {
     sendgrid: {
       key: env('SENDGRID_API_KEY', 'test-value'),
@@ -60,6 +62,7 @@ export const notification = {
       from: env('SES_FROM', 'test-value'),
     },
   },
+
   sms: {
     twilio: {
       sid: env('TWILIO_ACCOUNT_SID', 'ACTEST'),
@@ -100,9 +103,10 @@ export const notification = {
       from: env('TERMII_SENDER', 'test-value'),
     },
   },
+
   chat: {
     discord: {
-  
+
     },
     slack: {
       appId: env('SLACK_APPLICATION_ID', 'test-value'),
