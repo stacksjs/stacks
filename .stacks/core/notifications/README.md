@@ -1,18 +1,10 @@
 # Stacks Notifications
 
-wip
-
 ## ☘️ Features
-
-wip
 
 - ⚡️
 
-wip
-
 ## 🤖 Usage
-
-wip
 
 ```bash
 pnpm i -D @stacksjs/notifications
@@ -65,164 +57,165 @@ SMSOptions = {
 }
 ```
 
-Available easy-to-user drivers are listed below, with the variables needed to be set!
+Available drivers are listed below, with the variables needed to get started!
 
 ### Email
 
-- Sendgrid
+#### Sendgrid
 
-    ```
-    SENDGRID_API_KEY=SG123
-    SENDGRID_FROM=from@example.com
-    SENDGRID_SENDER_NAME=Sender
-    ```
+```bash
+SENDGRID_API_KEY=SG123
+SENDGRID_FROM=from@example.com
+SENDGRID_SENDER_NAME=Sender
+```
 
-- Mailgun
+#### Mailgun
 
-    ```
-    MAILGUN_API_KEY=MG123
-    MAILGUN_DOMAIN=example.com
-    MAILGUN_USERNAME=username
-    MAILGUN_FROM=from@example.com
-    ```
+```bash
+MAILGUN_API_KEY=MG123
+MAILGUN_DOMAIN=example.com
+MAILGUN_USERNAME=username
+MAILGUN_FROM=from@example.com
+```
 
-- Mailjet
+#### Mailjet
 
-    ```
-    MAILJET_API_KEY=MJ123
-    MAILJET_API_SECRET=MJTESTSECRET
-    MAILJET_FROM_EMAIL=from@example.com
-    ```
+```bash
+MAILJET_API_KEY=MJ123
+MAILJET_API_SECRET=MJTESTSECRET
+MAILJET_FROM_EMAIL=from@example.com
+```
 
-- Netcore
+#### Netcore
 
-    ```
-    NETCORE_API_KEY=NC123
-    NETCORE_FROM=from@example.com
-    ```
+```bash
+NETCORE_API_KEY=NC123
+NETCORE_FROM=from@example.com
+```
 
-- Nodemailer
+#### Nodemailer
 
-    ```
-    NODEMAILER_FROM_EMAIL=from@example.com
-    NODEMAILER_HOST=example.com
-    NODEMAILER_USERNAME=username
-    NODEMAILER_PASSWORD=password
-    NODEMAILER_PORT=25
-    NODEMAILER_SECURE=true
-    ```
+```bash
+NODEMAILER_FROM_EMAIL=from@example.com
+NODEMAILER_HOST=example.com
+NODEMAILER_USERNAME=username
+NODEMAILER_PASSWORD=password
+NODEMAILER_PORT=25
+NODEMAILER_SECURE=true
+```
 
-- Post Mark
+#### Postmark
 
-    ```
-    POSTMARK_API_KEY=PM123
-    POSTMARK_FROM=from@example.com
-    ```
+```bash
+POSTMARK_API_KEY=PM123
+POSTMARK_FROM=from@example.com
+```
 
-- Ses
+#### AWS SES
 
-    ```
-    SES_REGION=US
-    SES_ACCESS_KEY_ID=testkey123
-    SES_SECRET_ACCESS_KEY=testaccesskey123
-    SES_FROM=from@example.com
-    ```
+```bash
+SES_REGION=US
+SES_ACCESS_KEY_ID=testkey123
+SES_SECRET_ACCESS_KEY=testaccesskey123
+SES_FROM=from@example.com
+```
 
-- Mandrill
+#### Mandrill
 
-    ```
-    MANDRILL_API_KEY=Ma123
-    MANDRILL_EMAIL=from@example.com
-    ```
+```bash
+MANDRILL_API_KEY=Ma123
+MANDRILL_EMAIL=from@example.com
+```
 
-- EmailJS
+#### EmailJS
 
-    ```
-    EMAILJS_FROM_EMAIL=from@example.com
-    EMAILJS_HOST=example.com
-    EMAILJS_USERNAME=username
-    EMAILJS_PASSWORD=password
-    EMAILJS_PORT=25
-    EMAILJS_SECURE=true
-    ```
+```bash
+EMAILJS_FROM_EMAIL=from@example.com
+EMAILJS_HOST=example.com
+EMAILJS_USERNAME=username
+EMAILJS_PASSWORD=password
+EMAILJS_PORT=25
+EMAILJS_SECURE=true
+```
 
 ### SMS
 
-- Twilio
+#### Twilio
 
-    ```
-    TWILIO_ACCOUNT_SID=ACtest
-    TWILIO_AUTH_TOKEN=testtoken
-    TWILIO_FROM_NUMBER=+112345
-    TWILIO_TO_NUMBER=+145678
-    ```
+```bash
+TWILIO_ACCOUNT_SID=ACtest
+TWILIO_AUTH_TOKEN=testtoken
+TWILIO_FROM_NUMBER=+112345
+TWILIO_TO_NUMBER=+145678
+```
 
-- Nexmo
+#### Nexmo
 
-    ```
-    VONAGE_API_KEY=VN123
-    VONAGE_API_SECRET=testkey
-    VONAGE_FROM_NUMBER=+112345
-    ```
+```bash
+VONAGE_API_KEY=VN123
+VONAGE_API_SECRET=testkey
+VONAGE_FROM_NUMBER=+112345
+```
 
-- Gupshup
+#### Gupshup
 
-    ```
-    GUPSHUP_USER_ID=GU123
-    GUPSHUP_PASSWORD=password
-    ```
+```bash
+GUPSHUP_USER_ID=GU123
+GUPSHUP_PASSWORD=password
+```
 
-- Plivo
+#### Plivo
 
-    ```
-    PLIVO_ACCOUNT_ID=PA123
-    PLIVO_AUTH_TOKEN=testtoken
-    PLIVO_FROM_NUMBER=+112345
-    ```
+```bash
+PLIVO_ACCOUNT_ID=PA123
+PLIVO_AUTH_TOKEN=testtoken
+PLIVO_FROM_NUMBER=+112345
+```
 
-- SMS77
+#### SMS77
 
-    ```
-    SMS77_API_KEY=SA123
-    SMS77_FROM=from@example.com
-    ```
+```bash
+SMS77_API_KEY=SA123
+SMS77_FROM=from@example.com
+```
 
-- SNS
+#### SNS
 
-    ```
-    SMS77_API_KEY=SA123
-    SMS77_FROM=from@example.com
-    ```
+```bash
+SMS77_API_KEY=SA123
+SMS77_FROM=from@example.com
+```
 
-- Telnyx
+#### Telnyx
 
-    ```
-    TELNYX_API_KEY=TA123
-    TELNYX_MESSAGE_PROFILE_ID=testprofileid
-    TELNYX_FROM=from@example.com
-    ```
+```bash
+TELNYX_API_KEY=TA123
+TELNYX_MESSAGE_PROFILE_ID=testprofileid
+TELNYX_FROM=from@example.com
+```
 
-- Termii
+#### Termii
 
-    ```
-    TERMII_API_KEY=TermA123
-    TERMII_SENDER=from@example.com
-    ```
+```bash
+TERMII_API_KEY=TermA123
+TERMII_SENDER=from@example.com
+```
 
 ### Chat
 
-- Discord
-  - None
-  
-- Slack
+#### Discord
 
-    ```
-    SLACK_APPLICATION_ID=SAID123
-    SLACK_CLIENT_ID=SCID123
-    SLACK_SECRET_KEY=SSK123
-    ```
+- None
 
-Learn more in the docs.
+#### Slack
+
+```
+SLACK_APPLICATION_ID=SAID123
+SLACK_CLIENT_ID=SCID123
+SLACK_SECRET_KEY=SSK123
+```
+
+Learn qmore in the docs.
 
 ## 🧪 Testing
 
