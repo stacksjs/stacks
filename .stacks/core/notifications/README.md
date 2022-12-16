@@ -30,7 +30,7 @@ import { notification } from '@stacksjs/notifications'
 notification.send(options)
 ```
 
-## 🤖 Drivers
+## 🏎️ Drivers
 
 There are different option types for Chat, Email, and SMS drivers. To use any driver, simply configure the notification `options` object.
 
