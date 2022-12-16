@@ -65,12 +65,11 @@ SMSOptions = {
 }
 ```
 
-Available drivers are listed below:
+Available easy-to-user drivers are listed below, with the variables needed to be set!
 
 ### Email
 
 - Sendgrid
-  - Variables
 
     ```
     SENDGRID_API_KEY=SG123
@@ -79,7 +78,6 @@ Available drivers are listed below:
     ```
 
 - Mailgun
-  - Variables
 
     ```
     MAILGUN_API_KEY=MG123
@@ -89,7 +87,6 @@ Available drivers are listed below:
     ```
 
 - Mailjet
-  - Variables
 
     ```
     MAILJET_API_KEY=MJ123
@@ -98,7 +95,6 @@ Available drivers are listed below:
     ```
 
 - Netcore
-  - Variables
 
     ```
     NETCORE_API_KEY=NC123
@@ -106,7 +102,6 @@ Available drivers are listed below:
     ```
 
 - Nodemailer
-  - Variables
 
     ```
     NODEMAILER_FROM_EMAIL=from@example.com
@@ -118,7 +113,6 @@ Available drivers are listed below:
     ```
 
 - Post Mark
-  - Variables
 
     ```
     POSTMARK_API_KEY=PM123
@@ -126,7 +120,6 @@ Available drivers are listed below:
     ```
 
 - Ses
-  - Variables
 
     ```
     SES_REGION=US
@@ -136,7 +129,6 @@ Available drivers are listed below:
     ```
 
 - Mandrill
-  - Variables
 
     ```
     MANDRILL_API_KEY=Ma123
@@ -144,7 +136,6 @@ Available drivers are listed below:
     ```
 
 - EmailJS
-  - Variables
 
     ```
     EMAILJS_FROM_EMAIL=from@example.com
@@ -158,7 +149,6 @@ Available drivers are listed below:
 ### SMS
 
 - Twilio
-  - Variables
 
     ```
     TWILIO_ACCOUNT_SID=ACtest
@@ -168,7 +158,6 @@ Available drivers are listed below:
     ```
 
 - Nexmo
-  - Variables
 
     ```
     VONAGE_API_KEY=VN123
@@ -177,7 +166,6 @@ Available drivers are listed below:
     ```
 
 - Gupshup
-  - Variables
 
     ```
     GUPSHUP_USER_ID=GU123
@@ -185,7 +173,6 @@ Available drivers are listed below:
     ```
 
 - Plivo
-  - Variables
 
     ```
     PLIVO_ACCOUNT_ID=PA123
@@ -194,7 +181,6 @@ Available drivers are listed below:
     ```
 
 - SMS77
-  - Variables
 
     ```
     SMS77_API_KEY=SA123
@@ -202,7 +188,6 @@ Available drivers are listed below:
     ```
 
 - SNS
-  - Variables
 
     ```
     SMS77_API_KEY=SA123
@@ -210,12 +195,32 @@ Available drivers are listed below:
     ```
 
 - Telnyx
+
+    ```
+    TELNYX_API_KEY=TA123
+    TELNYX_MESSAGE_PROFILE_ID=testprofileid
+    TELNYX_FROM=from@example.com
+    ```
+
 - Termii
+
+    ```
+    TERMII_API_KEY=TermA123
+    TERMII_SENDER=from@example.com
+    ```
 
 ### Chat
 
 - Discord
+  - None
+  
 - Slack
+
+    ```
+    SLACK_APPLICATION_ID=SAID123
+    SLACK_CLIENT_ID=SCID123
+    SLACK_SECRET_KEY=SSK123
+    ```
 
 Learn more in the docs.
 

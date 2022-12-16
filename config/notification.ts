@@ -102,7 +102,7 @@ export const notification = {
   },
   chat: {
     discord: {
-
+  
     },
     slack: {
       appId: env('SLACK_APPLICATION_ID', 'test-value'),
