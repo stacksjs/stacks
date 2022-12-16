@@ -27,31 +27,29 @@ pnpm i -D @stacksjs/notifications
 
 Now, you can use it in your project:
 
-```js
+```ts
 import notifications from '@stacksjs/notifications'
 ```
 
 ## 🤖 Drivers
 
-- To use the drivers, import notifications and the driver name. E.g for Sendgrid:
+To use the drivers, import the `notification` object, for example:
 
- ```js
-import notifications from '@stacksjs/notifications'
-
-const notification = notifications.sendgrid
+ ```ts
+import { notification } from '@stacksjs/notifications'
 
 notification.send(Options)
  ```
 
-There are several types of Options for Chat, Email, and SMS drivers.
+There are different option types for Chat, Email, and SMS drivers.
 
-```js
-ChatOptions = {
+```ts
+type ChatOptions = {
   webhookUrl: string;
   content: string;
 }
 
-EmailOptions = {
+type EmailOptions = {
   to: string | string[];
   subject: string;
   html: string;
@@ -61,7 +59,7 @@ EmailOptions = {
   id?: string;
 }
 
-SMSOptions = {
+type SMSOptions = {
   to: string;
   content: string;
   from?: string;
