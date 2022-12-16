@@ -394,9 +394,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vitepress: 1.0.0-alpha.31
+      vitepress: 1.0.0-alpha.32
     dependencies:
-      vitepress: 1.0.0-alpha.31_tbpndr44ulefs3hehwpi2mkf2y
+      vitepress: 1.0.0-alpha.32_tbpndr44ulefs3hehwpi2mkf2y
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -679,7 +679,7 @@ importers:
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
-      '@vueuse/core': ^9.6.0
+      '@vueuse/core': ^9.7.0
       meilisearch: ^0.30.0
       mkdist: ^1.0.0
       typescript: ^4.9.4
@@ -687,7 +687,7 @@ importers:
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
-      '@vueuse/core': 9.6.0_vue@3.2.45
+      '@vueuse/core': 9.7.0_vue@3.2.45
       meilisearch: 0.30.0
       vue: 3.2.45
     devDependencies:
@@ -819,7 +819,7 @@ importers:
       vite-plugin-inspect: ^0.7.10
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.22.1
-      vitepress: 1.0.0-alpha.31
+      vitepress: 1.0.0-alpha.32
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.1
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -844,7 +844,7 @@ importers:
       vite-plugin-inspect: 0.7.10_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_3nkpb5yzbuphqhegz2uv6y4s3u
       vite-ssg: 0.22.1_wg5sslydmzl6un74innclax7im
-      vitepress: 1.0.0-alpha.31_jxge4szrecc54xj562j6nv3uwi
+      vitepress: 1.0.0-alpha.32_jxge4szrecc54xj562j6nv3uwi
 
   .stacks/core/ui:
     specifiers:
@@ -887,10 +887,10 @@ importers:
       '@stacksjs/storage': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      '@vueuse/core': ^9.6.0
+      '@vueuse/core': ^9.7.0
       '@vueuse/head': ^1.0.22
-      '@vueuse/math': ^9.6.0
-      '@vueuse/shared': ^9.6.0
+      '@vueuse/math': ^9.7.0
+      '@vueuse/shared': ^9.7.0
       defu: ^6.1.1
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
@@ -911,10 +911,10 @@ importers:
       '@stacksjs/path': link:../path
       '@stacksjs/storage': link:../storage
       '@stacksjs/types': link:../types
-      '@vueuse/core': 9.6.0_vue@3.2.45
+      '@vueuse/core': 9.7.0_vue@3.2.45
       '@vueuse/head': 1.0.22_vue@3.2.45
-      '@vueuse/math': 9.6.0_vue@3.2.45
-      '@vueuse/shared': 9.6.0_vue@3.2.45
+      '@vueuse/math': 9.7.0_vue@3.2.45
+      '@vueuse/shared': 9.7.0_vue@3.2.45
       defu: 6.1.1
       detect-indent: 7.0.1
       detect-newline: 4.0.0
@@ -5940,12 +5940,12 @@ packages:
   /@vue/shared/3.2.45:
     resolution: {integrity: sha512-Ewzq5Yhimg7pSztDV+RH1UDKBzmtqieXQlpTVm2AwraoRL/Rks96mvd8Vgi7Lj+h+TH8dv7mXD3FRZR3TUvbSg==}
 
-  /@vueuse/core/9.6.0_vue@3.2.45:
-    resolution: {integrity: sha512-qGUcjKQXHgN+jqXEgpeZGoxdCbIDCdVPz3QiF1uyecVGbMuM63o96I1GjYx5zskKgRI0FKSNsVWM7rwrRMTf6A==}
+  /@vueuse/core/9.7.0_vue@3.2.45:
+    resolution: {integrity: sha512-/AGY/t7jJPxCyRoVTygNKoroTiCvRaaZIW+yeSlBCnI7QRpQ9cvXNTdNaSl3GvSyFbn83+XwZwEZvI1OpQfeGw==}
     dependencies:
       '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.6.0
-      '@vueuse/shared': 9.6.0_vue@3.2.45
+      '@vueuse/metadata': 9.7.0
+      '@vueuse/shared': 9.7.0_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -5962,21 +5962,21 @@ packages:
       '@unhead/vue': 1.0.13_vue@3.2.45
       vue: 3.2.45
 
-  /@vueuse/math/9.6.0_vue@3.2.45:
-    resolution: {integrity: sha512-bYTFZjTcJwgqPdY7SaxS/J5mrWy1QaESxD5HK5UhXY49DUYf4jjZxXjMVBObM/A46jQgRolqSEQDOXrrpEfEww==}
+  /@vueuse/math/9.7.0_vue@3.2.45:
+    resolution: {integrity: sha512-FjMqs1t7YxfF8omaeC597CzOjSLZF6gGyeSDgnXFf3oS2nOur79SmK3Gz/hz1X2flrG2FZYG7WvVuoNhu20SWA==}
     dependencies:
-      '@vueuse/shared': 9.6.0_vue@3.2.45
+      '@vueuse/shared': 9.7.0_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
     dev: false
 
-  /@vueuse/metadata/9.6.0:
-    resolution: {integrity: sha512-sIC8R+kWkIdpi5X2z2Gk8TRYzmczDwHRhEFfCu2P+XW2JdPoXrziqsGpDDsN7ykBx4ilwieS7JUIweVGhvZ93w==}
+  /@vueuse/metadata/9.7.0:
+    resolution: {integrity: sha512-M7WsAgw28FNtTH0bzsGuHEtJOPJqPpyeHS6PHq+8UesLgNjZ9waMAntiUrgUQlxt09M4i2lH7y9sRi0jkfeXGA==}
 
-  /@vueuse/shared/9.6.0_vue@3.2.45:
-    resolution: {integrity: sha512-/eDchxYYhkHnFyrb00t90UfjCx94kRHxc7J1GtBCqCG4HyPMX+krV9XJgVtWIsAMaxKVU4fC8NSUviG1JkwhUQ==}
+  /@vueuse/shared/9.7.0_vue@3.2.45:
+    resolution: {integrity: sha512-pwmt1y3TJ2s5KqWmkv9ZKEV59GwuZQZk8XLiU+hGswz0jej318ozbea9E4A/A50ksyM26swSFr7sZ9llNPsZHg==}
     dependencies:
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
@@ -16780,15 +16780,15 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.31_jxge4szrecc54xj562j6nv3uwi:
-    resolution: {integrity: sha512-FWFXLs7WLbFbemxjBWo2S2+qUZCIoeLLyAKfVUpIu3LUB8oQ8cyIANRGO6f6zsM51u2bvJU9Sm+V6Z0WjOWS2Q==}
+  /vitepress/1.0.0-alpha.32_jxge4szrecc54xj562j6nv3uwi:
+    resolution: {integrity: sha512-Q45N1cLdRr8MAu/+wAKKow7CNQD4sNBlSNsW1UxYfkvSgwPN/dlEmpEkQl/uOpE3C1kv3jvvEJVY0RAIaJFWYQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.0
       '@docsearch/js': 3.3.0_tbpndr44ulefs3hehwpi2mkf2y
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.1+vue@3.2.45
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.6.0_vue@3.2.45
+      '@vueuse/core': 9.7.0_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.11.1
       vite: 4.0.1_@types+node@18.11.15
@@ -16807,15 +16807,15 @@ packages:
       - terser
     dev: true
 
-  /vitepress/1.0.0-alpha.31_tbpndr44ulefs3hehwpi2mkf2y:
-    resolution: {integrity: sha512-FWFXLs7WLbFbemxjBWo2S2+qUZCIoeLLyAKfVUpIu3LUB8oQ8cyIANRGO6f6zsM51u2bvJU9Sm+V6Z0WjOWS2Q==}
+  /vitepress/1.0.0-alpha.32_tbpndr44ulefs3hehwpi2mkf2y:
+    resolution: {integrity: sha512-Q45N1cLdRr8MAu/+wAKKow7CNQD4sNBlSNsW1UxYfkvSgwPN/dlEmpEkQl/uOpE3C1kv3jvvEJVY0RAIaJFWYQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.0
       '@docsearch/js': 3.3.0_tbpndr44ulefs3hehwpi2mkf2y
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.1+vue@3.2.45
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.6.0_vue@3.2.45
+      '@vueuse/core': 9.7.0_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.11.1
       vite: 4.0.1
