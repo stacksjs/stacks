@@ -46,7 +46,7 @@ interface EmailOptions {
   html: string
   from?: string
   text?: string
-  attachments?: IAttachmentOptions[]
+  attachments?: AttachmentOptions[]
   id?: string
 }
 
@@ -54,7 +54,7 @@ interface SMSOptions {
   to: string
   content: string
   from?: string
-  attachments?: IAttachmentOptions[]
+  attachments?: AttachmentOptions[]
   id?: string
 }
 ```
