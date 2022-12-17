@@ -2,10 +2,10 @@ import storage from '@stacksjs/storage'
 import { runCommand } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { CliOptions } from '@stacksjs/types'
-import { err } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 
 /**
- * Run a command the Stacks way.
+ * Run an Action the Stacks way.
  *
  * @param command The action to invoke.
  * @param options The options to pass to the command.
@@ -18,6 +18,23 @@ export async function runAction(action: string, options?: CliOptions) {
   const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
 
   return await runCommand(cmd, options)
+}
+
+/**
+ * Run Actions the Stacks way.
+ *
+ * @param command The action to invoke.
+ * @param options The options to pass to the command.
+ * @returns The result of the command.
+ */
+export async function runActions(actions: string[], options?: CliOptions) {
+  for (const action of actions) {
+    const result = await runAction(action, options)
+    if (result.isErr())
+      return result
+  }
+
+  return ok()
 }
 
 export function hasAction(action: string) {

@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/logging'
-import { NpmScript } from '@stacksjs/types'
+import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { runCommand } from '@stacksjs/cli'
-import { lintFix } from './lint'
+import { runAction } from './helpers'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)
@@ -79,7 +79,7 @@ export async function vsCodeCustomData(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await lintFix({ fix: true }) // the created json file needs to be linted
+  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
   log.success('Successfully generated the custom-elements.json file')
 }
 
@@ -91,7 +91,7 @@ export async function ideHelpers(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await lintFix({ fix: true }) // the created json file needs to be linted
+  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
   log.success('Successfully generated IDE helpers')
 }
 
@@ -103,7 +103,7 @@ export async function componentMeta(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await lintFix({ fix: true }) // the created json file needs to be linted
+  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
   log.success('Successfully generated component meta information')
 }
 

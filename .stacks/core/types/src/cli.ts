@@ -200,6 +200,9 @@ export const enum Action {
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
   Fresh = 'fresh',
+  GeneratePackageJsons = 'generate-package-jsons',
+  Lint = 'lint',
+  LintFix = 'lint-fix',
 }
 
 export type { CAC as CLI } from 'cac'
