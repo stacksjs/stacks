@@ -1,8 +1,8 @@
-# Routes
+# Language Files
 
-You may use routes to create API endpoints.
+This folder contains the language files for your application. If you are building an internationalized application, you should populate this directory with the appropriate language files.
 
-To learn more about Stacks Routes, check out the [documentation](https://stacksjs.dev).
+To learn more about Stacks Internationalization, check out the [documentation](https://stacksjs.dev).
 
 > **Note**
 > If your project does not require any routes, you can remove this folder._

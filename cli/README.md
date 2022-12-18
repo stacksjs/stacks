@@ -1,11 +1,11 @@
-# Routes
+# Your CLI
 
-You may use routes to create API endpoints.
+This folder contains the source code for your CLI. The CLI is a command line interface that allows you to interact with your project. Stacks provides many helpers to make it easy to create your own commands/CLIs.
 
-To learn more about Stacks Routes, check out the [documentation](https://stacksjs.dev).
+To learn more about how to develop your own CLI, check out the [documentation](https://stacksjs.dev).
 
 > **Note**
-> If your project does not require any routes, you can remove this folder._
+> If your project does not require a custom CLI, you can remove this folder._
 
 ## 💪🏼 Contributing
 
