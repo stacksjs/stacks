@@ -53,12 +53,12 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** _run your heavy workload in the background_
-- 🏎️ **Realtime** _"everything you need to build dynamic real-time apps"_
+- 💬 **Realtime** _"everything you need to build dynamic real-time apps"_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
 - 🌪️ **Validation** _e2e type-safety (frontend knows what the backend knows)_
-- 📈 **X-Ray** _all you need to debug, log & analyze_
+- 🎯 **X-Ray** _all you need to debug, log & analyze_
 
 ### Stacks Cloud
 
