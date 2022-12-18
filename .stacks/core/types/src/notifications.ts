@@ -119,7 +119,7 @@ export interface NotificationOptions {
   chat: {
     slack: {
       appId: string
-      clientID: string
+      clientId: string
       secret: string
     }
   }

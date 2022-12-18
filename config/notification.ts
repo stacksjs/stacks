@@ -110,12 +110,10 @@ export const notification: Options = {
   },
 
   chat: {
-    discord: {
-
-    },
+    // discord: {},
     slack: {
       appId: env('SLACK_APPLICATION_ID', 'test-value'),
-      clientID: env('SLACK_CLIENT_ID', 'test-value'),
+      clientId: env('SLACK_CLIENT_ID', 'test-value'),
       secret: env('SLACK_SECRET_KEY', 'test-value'),
     },
   },

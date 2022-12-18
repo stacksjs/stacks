@@ -104,6 +104,13 @@ async function build(buddy: CLI) {
     })
 
   buddy
+    .command('build:core', 'Automagically build the Stacks core.')
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: BuildOptions) => {
+      await runAction(Action.BuildCore, options)
+    })
+
+  buddy
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })

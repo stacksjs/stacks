@@ -8,7 +8,7 @@ const env = notification.chat.slack
 
 const provider = new SlackProvider({
   applicationId: env.appId,
-  clientId: env.clientID,
+  clientId: env.clientId,
   secretKey: env.secret,
 })
 

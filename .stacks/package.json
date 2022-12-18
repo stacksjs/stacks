@@ -92,7 +92,7 @@
     "build:docs": "npx vitepress build ../apps/docs",
     "build:pages": "npx vite-ssg build ./pages -c ./core/build/src/pages.ts",
     "build:cli": "pnpm buddy build:cli",
-    "build:core": "pnpm --filter './core/**' --filter='!./core/config' build && pnpm --filter './core/config' build",
+    "build:core": "pnpm buddy build:core",
     "build:stacks": "pnpm buddy build:stacks",
     "build:all": "wip",
     "prod": "pnpm run build",

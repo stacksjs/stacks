@@ -408,7 +408,7 @@ Made with ❤️
 [npm-downloads-src]: https://img.shields.io/npm/dm/stacks?style=flat-square
 [npm-downloads-href]: https://npmjs.com/package/stacks
 
-[github-actions-src]: https://img.shields.io/github/workflow/status/stacksjs/stacks/CI/main?style=flat-square
+[github-actions-src]: https://img.shields.io/github/actions/workflow/status/stacksjs/stacks/ci.yml?style=flat-square&branch=main
 [github-actions-href]: https://github.com/stacksjs/stacks/actions?query=workflow%3Aci
 
 <!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/stacks/main?style=flat-square
