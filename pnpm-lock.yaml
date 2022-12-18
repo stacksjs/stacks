@@ -4637,8 +4637,8 @@ packages:
       - typescript
     dev: false
 
-  /@permafrost-dev/pretty-format/1.1.3:
-    resolution: {integrity: sha512-WdqYsAhO4F+QhWX0dUeivScy9qvr5bI7WeXbDJk2y3Q3uabdFeCnGmsfJgPeJNrXTIBWZrk7h+LGr1bThLblFQ==}
+  /@permafrost-dev/pretty-format/1.1.4:
+    resolution: {integrity: sha512-zfRR1IVLrLF78zvMviBn0JGFCRX8EyAvTuB5+OFee6nIJA7vOcMKHACLOAtXoiXLlmWvHKrME1MPt3Ts3fUZEA==}
     engines: {node: '>=14'}
     dependencies:
       ansi-regex: 4.1.1
@@ -12535,7 +12535,7 @@ packages:
     resolution: {integrity: sha512-UNTMhsT95j6lHnqtMdGYSV2TPFub1pYUkKvFEd795sLwoksSIZh483xQwwMKDWsrnyTYh6ghhXJpcWzhca+QaQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@permafrost-dev/pretty-format': 1.1.3
+      '@permafrost-dev/pretty-format': 1.1.4
       axios: 1.2.1
       dayjs: 1.11.7
       find-up: 5.0.0

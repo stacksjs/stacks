@@ -14,7 +14,7 @@ async function fresh(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CommitOptions) => {
       const perf = intro('buddy fresh')
-      const result = await runAction(Action.Fresh, options)
+      const result = await runAction(Action.Fresh, options, true)
 
       if (result.isErr()) {
         outro('While running the fresh command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

@@ -13,7 +13,7 @@ export function intro(command: string, options?: IntroOptions) {
   console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()
 
-  log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
+  log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command...`)
 
   if (options?.showPerformance === false)
     return
