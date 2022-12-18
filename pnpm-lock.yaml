@@ -783,7 +783,7 @@ importers:
     specifiers:
       '@vitest/coverage-istanbul': ^0.25.8
       '@vitest/ui': ^0.25.8
-      mkdist: ^0.4.1
+      mkdist: ^1.0.0
       typescript: ^4.9.4
       vitest: ^0.25.8
     dependencies:
@@ -791,7 +791,7 @@ importers:
       '@vitest/ui': 0.25.8
       vitest: 0.25.8_@vitest+ui@0.25.8
     devDependencies:
-      mkdist: 0.4.1_typescript@4.9.4
+      mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
 
   .stacks/core/types:
@@ -12241,28 +12241,6 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
-
-  /mkdist/0.4.1_typescript@4.9.4:
-    resolution: {integrity: sha512-3uMNUdekmD2rVXOy6fCtOqtUKaB0L86OfrcBoKrQxtX9JZZZrG98aQV1CkNkaHMc7LLq0U2UdVEVGJ3l5P2x3A==}
-    hasBin: true
-    peerDependencies:
-      sass: ^1.56.1
-      typescript: '>=4.8.4'
-    peerDependenciesMeta:
-      sass:
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      defu: 6.1.1
-      esbuild: 0.15.18
-      fs-extra: 10.1.0
-      globby: 13.1.3
-      jiti: 1.16.0
-      mri: 1.2.0
-      pathe: 1.0.0
-      typescript: 4.9.4
-    dev: true
 
   /mkdist/1.0.0:
     resolution: {integrity: sha512-aJke+yvXwwcrOh+3KfAdDgDA+MPe7c+R8hQ7IPfp0gqL1/WPZZUS9rwS6CNjdwDJmHm6DTMA9KwX1FNjZG3I1Q==}
