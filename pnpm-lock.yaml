@@ -781,15 +781,15 @@ importers:
 
   .stacks/core/testing:
     specifiers:
-      '@vitest/coverage-istanbul': ^0.25.8
-      '@vitest/ui': ^0.25.8
+      '@vitest/coverage-istanbul': ^0.26.0
+      '@vitest/ui': ^0.26.0
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vitest: ^0.25.8
+      vitest: ^0.26.0
     dependencies:
-      '@vitest/coverage-istanbul': 0.25.8_@vitest+ui@0.25.8
-      '@vitest/ui': 0.25.8
-      vitest: 0.25.8_@vitest+ui@0.25.8
+      '@vitest/coverage-istanbul': 0.26.0_@vitest+ui@0.26.0
+      '@vitest/ui': 0.26.0
+      vitest: 0.26.0_@vitest+ui@0.26.0
     devDependencies:
       mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
@@ -894,7 +894,7 @@ importers:
       defu: ^6.1.1
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
-      dinero.js: 2.0.0-alpha.12
+      dinero.js: 2.0.0-alpha.13
       esno: ^0.16.3
       fast-glob: ^3.2.12
       kolorist: 1.6.0
@@ -918,7 +918,7 @@ importers:
       defu: 6.1.1
       detect-indent: 7.0.1
       detect-newline: 4.0.0
-      dinero.js: 2.0.0-alpha.12
+      dinero.js: 2.0.0-alpha.13
       esno: 0.16.3
       fast-glob: 3.2.12
       kolorist: 1.6.0
@@ -3657,20 +3657,20 @@ packages:
     dev: false
     optional: true
 
-  /@dinero.js/calculator-number/2.0.0-alpha.12:
-    resolution: {integrity: sha512-ymSUkvpZQ8MFAhTiWJoIM6aEIScgtlPqEX0OSjvmJWcEbgwdYKwp/d5mQvq4kYvv0QEV0rKHx9VjSWtfgTf11A==}
+  /@dinero.js/calculator-number/2.0.0-alpha.13:
+    resolution: {integrity: sha512-Mo/0FUVFq4dVb/RfBIASUxPFbQbkHYC0VBe36DgWfbbhwG6K6ONuzTLBU5W6LdrMpB7D/CxgZISdQ0pyZKwg9w==}
     dependencies:
-      '@dinero.js/core': 2.0.0-alpha.12
+      '@dinero.js/core': 2.0.0-alpha.13
     dev: false
 
-  /@dinero.js/core/2.0.0-alpha.12:
-    resolution: {integrity: sha512-yAsYue9niebZd1cDBdYOVhfRkqVi21j3C6oCOvgU1MynK0V0AQPnLtOXXZ2hIgvbGXouGoamnzyhLpoX6T7KvQ==}
+  /@dinero.js/core/2.0.0-alpha.13:
+    resolution: {integrity: sha512-RLZz8WmYe1ehqD2YtTpzCzdk0Hqf6oaAVmRlULLkua6vuEVEXjPQEhuyTMLHcS6/Gppy9nuEw8mpSNvU+Sy8QQ==}
     dependencies:
-      '@dinero.js/currencies': 2.0.0-alpha.12
+      '@dinero.js/currencies': 2.0.0-alpha.13
     dev: false
 
-  /@dinero.js/currencies/2.0.0-alpha.12:
-    resolution: {integrity: sha512-iTW1wAChvOHk45iym8J7K74p3wy+WqOab6ia8bjJnvHGhRgkETF472TKahmkBlB+4pBo2rkvXUCZQJqUTBakSw==}
+  /@dinero.js/currencies/2.0.0-alpha.13:
+    resolution: {integrity: sha512-vEfDara+xAqOrLww80FyFVw4usWcCsR4HwhaoCvwIzB5UdsLPDeUviAGFi8CoWjtLCR44iIeOHdn9jDr7Jj+TQ==}
     dev: false
 
   /@docsearch/css/3.3.0:
@@ -5758,8 +5758,8 @@ packages:
       vite: 4.0.2
       vue: 3.2.45
 
-  /@vitest/coverage-istanbul/0.25.8_@vitest+ui@0.25.8:
-    resolution: {integrity: sha512-dll4gIr5by1+wHZsB9o6gxbOKKmpW7MSJD59fn0XrTBpsG2vJcGho8XekMFjZqilqa0xItQ+wv8lVc/K6dqhaw==}
+  /@vitest/coverage-istanbul/0.26.0_@vitest+ui@0.26.0:
+    resolution: {integrity: sha512-rmXjOipkwnmhAyJ8wCLY0bJBUI/MjA3yMElnGIBTQbEQsgJVUQoLKkwZNYg1RD/yiuq7wpqRXF2pU4+b5DpOgw==}
     dependencies:
       istanbul-lib-coverage: 3.2.0
       istanbul-lib-instrument: 5.2.1
@@ -5767,7 +5767,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       test-exclude: 6.0.0
-      vitest: 0.25.8_@vitest+ui@0.25.8
+      vitest: 0.26.0_@vitest+ui@0.26.0
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@vitest/browser'
@@ -5782,9 +5782,11 @@ packages:
       - terser
     dev: false
 
-  /@vitest/ui/0.25.8:
-    resolution: {integrity: sha512-wfuhghldD5QHLYpS46GK8Ru8P3XcMrWvFjRQD21KNzc9Y/qtJsqoC8KmT6xWVkMNw4oHYixpo3a4ZySRJdserw==}
+  /@vitest/ui/0.26.0:
+    resolution: {integrity: sha512-aEThdF469KCaU8m0eQ3C8TRa1UOlDjHEdIzmqKdKrwYtZrDsx/CHTzb6wXjmr7L+ldHyCctkss7uNTlMXRQjtg==}
     dependencies:
+      fast-glob: 3.2.12
+      flatted: 3.2.7
       sirv: 2.0.2
     dev: false
 
@@ -8134,12 +8136,12 @@ packages:
     dev: false
     optional: true
 
-  /dinero.js/2.0.0-alpha.12:
-    resolution: {integrity: sha512-AGtnplgVjFJqMu954yCwI+mfXyF9S4d9y1CetGqA1MJYGd26S9J8+15E7WpfVfKeYbVoN4jSxgp040RGg5MG3Q==}
+  /dinero.js/2.0.0-alpha.13:
+    resolution: {integrity: sha512-xuBgE/3/67SXOW/UKjmaRd/YJQkUSlYS+6DvfglFg1Mbfn2K7cp+WQcgU76CLJpJPkJABgILsPjw1Om9OJ5puA==}
     dependencies:
-      '@dinero.js/calculator-number': 2.0.0-alpha.12
-      '@dinero.js/core': 2.0.0-alpha.12
-      '@dinero.js/currencies': 2.0.0-alpha.12
+      '@dinero.js/calculator-number': 2.0.0-alpha.13
+      '@dinero.js/core': 2.0.0-alpha.13
+      '@dinero.js/currencies': 2.0.0-alpha.13
     dev: false
 
   /dir-glob/3.0.1:
@@ -13268,6 +13270,10 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
 
+  /pathe/0.2.0:
+    resolution: {integrity: sha512-sTitTPYnn23esFR3RlqYBWn4c45WGeLcsKzQiUpXJAyfcWkolvlYpV8FLo7JishK946oQwMFUCHXQ9AjGPKExw==}
+    dev: false
+
   /pathe/1.0.0:
     resolution: {integrity: sha512-nPdMG0Pd09HuSsr7QOKUXO2Jr9eqaDiZvDwdyIhNG5SHYujkQHYKDfGQkulBxvbDHz8oHLsTgKN86LSwYzSHAg==}
 
@@ -16453,6 +16459,27 @@ packages:
       extsprintf: 1.3.0
     dev: false
 
+  /vite-node/0.26.0_@types+node@18.11.17:
+    resolution: {integrity: sha512-nLtHWCv6reONl1oFsKhQ/LT7n3UNLpvVARAJlmGrQV6qSElht/9AdN41Pa+WSkw2Winh682UzM0Yw0GNlfqejw==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    dependencies:
+      debug: 4.3.4
+      mlly: 1.0.0
+      pathe: 0.2.0
+      source-map: 0.6.1
+      source-map-support: 0.5.21
+      vite: 4.0.2_@types+node@18.11.17
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: false
+
   /vite-plugin-inspect/0.7.10_rollup@2.79.1+vite@4.0.2:
     resolution: {integrity: sha512-E4r1tDNMw9XLBXk+3lWBQ5N4GfMQHjm5pzcs4SIATAgnEiGTDE9AlYQ9R6gmRmzFoUH7B5SK9Z5s3o0+LfRsDw==}
     engines: {node: '>=14'}
@@ -16807,8 +16834,8 @@ packages:
       - terser
     dev: false
 
-  /vitest/0.25.8_@vitest+ui@0.25.8:
-    resolution: {integrity: sha512-X75TApG2wZTJn299E/TIYevr4E9/nBo1sUtZzn0Ci5oK8qnpZAZyhwg0qCeMSakGIWtc6oRwcQFyFfW14aOFWg==}
+  /vitest/0.26.0_@vitest+ui@0.26.0:
+    resolution: {integrity: sha512-5kUnms5WOa0qrDCJePEPB13v9mhr+ZT1Qy0qNg0eVj1X7/Fx4GY4L1e5s3OH+BQ/J7M5WtaKsUGv9l1pbC7v2Q==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
@@ -16832,7 +16859,7 @@ packages:
       '@types/chai': 4.3.4
       '@types/chai-subset': 1.3.3
       '@types/node': 18.11.17
-      '@vitest/ui': 0.25.8
+      '@vitest/ui': 0.26.0
       acorn: 8.8.1
       acorn-walk: 8.2.0
       chai: 4.3.7
@@ -16844,6 +16871,7 @@ packages:
       tinypool: 0.3.0
       tinyspy: 1.0.2
       vite: 4.0.2_@types+node@18.11.17
+      vite-node: 0.26.0_@types+node@18.11.17
     transitivePeerDependencies:
       - less
       - sass
