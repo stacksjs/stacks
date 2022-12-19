@@ -9,15 +9,7 @@ const driverMap = {
 }
 
 const useNotification = (driver = 'email') => {
-  // return driverMap?.[driver as keyof typeof driverMap]
-  if (driver === 'email')
-    return email
-
-  if (driver === 'chat')
-    return chat
-
-  if (driver === 'sms')
-    return sms
+  return driverMap?.[driver as keyof typeof driverMap]
 }
 
 export {
