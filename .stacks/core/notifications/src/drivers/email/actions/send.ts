@@ -31,6 +31,6 @@ export async function send(options: EmailOptions, provider: any, providerName: s
 
   return ResultAsync.fromPromise(
     provider.sendMessage(options),
-    () => new Error(`Failed to send message using provider: ${italic('Sendgrid')}`),
+    () => new Error(`Failed to send message using provider: ${italic(providerName)}`),
   )
 }

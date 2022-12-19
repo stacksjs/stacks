@@ -1,25 +1,28 @@
-export * as email from './drivers/email'
-export * as chat from './drivers/chat'
-export * as sms from './drivers/sms'
+import * as email from './drivers/email'
+import * as chat from './drivers/chat'
+import * as sms from './drivers/sms'
 
-// const driverMap = {
-//   email,
-//   chat,
-//   sms,
-// }
+const driverMap = {
+  email,
+  chat,
+  sms,
+}
 
-// export function useNotification(driver = 'email') {
-//   // return driverMap?.[driver as keyof typeof driverMap]
-//   if (driver === 'email')
-//     return email
+const useNotification = (driver = 'email') => {
+  // return driverMap?.[driver as keyof typeof driverMap]
+  if (driver === 'email')
+    return email
 
-//   if (driver === 'chat')
-//     return chat
+  if (driver === 'chat')
+    return chat
 
-//   if (driver === 'sms')
-//     return sms
-// }
+  if (driver === 'sms')
+    return sms
+}
 
-// export default {
-//   useNotification,
-// }
+export {
+    email,
+    chat,
+    sms,
+    useNotification
+}
