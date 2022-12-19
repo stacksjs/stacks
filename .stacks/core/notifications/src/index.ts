@@ -21,8 +21,8 @@ const useNotification = (driver = 'email') => {
 }
 
 export {
-    email,
-    chat,
-    sms,
-    useNotification
+  email,
+  chat,
+  sms,
+  useNotification,
 }

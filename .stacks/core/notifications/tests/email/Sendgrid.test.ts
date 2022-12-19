@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { email, useNotification } from '@stacksjs/notifications'
 import { notification as env } from '@stacksjs/config'
 
-
-
 describe('Sendgrid Test', () => {
   it('should send email', async () => {
     const notification = email.sendgrid
@@ -28,7 +26,6 @@ describe('Sendgrid Test', () => {
 
     expect(test).toBeDefined()
   })
-
 
   it('should not send email when receiver is empty', async () => {
     const notification = email.sendgrid
