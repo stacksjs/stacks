@@ -679,7 +679,7 @@ importers:
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
-      '@vueuse/core': ^9.8.0
+      '@vueuse/core': ^9.8.2
       meilisearch: ^0.30.0
       mkdist: ^1.0.0
       typescript: ^4.9.4
@@ -687,7 +687,7 @@ importers:
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
-      '@vueuse/core': 9.8.0_vue@3.2.45
+      '@vueuse/core': 9.8.2_vue@3.2.45
       meilisearch: 0.30.0
       vue: 3.2.45
     devDependencies:
@@ -887,10 +887,10 @@ importers:
       '@stacksjs/storage': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      '@vueuse/core': ^9.8.0
+      '@vueuse/core': ^9.8.2
       '@vueuse/head': ^1.0.22
-      '@vueuse/math': ^9.8.0
-      '@vueuse/shared': ^9.8.0
+      '@vueuse/math': ^9.8.2
+      '@vueuse/shared': ^9.8.2
       defu: ^6.1.1
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
@@ -911,10 +911,10 @@ importers:
       '@stacksjs/path': link:../path
       '@stacksjs/storage': link:../storage
       '@stacksjs/types': link:../types
-      '@vueuse/core': 9.8.0_vue@3.2.45
+      '@vueuse/core': 9.8.2_vue@3.2.45
       '@vueuse/head': 1.0.22_vue@3.2.45
-      '@vueuse/math': 9.8.0_vue@3.2.45
-      '@vueuse/shared': 9.8.0_vue@3.2.45
+      '@vueuse/math': 9.8.2_vue@3.2.45
+      '@vueuse/shared': 9.8.2_vue@3.2.45
       defu: 6.1.1
       detect-indent: 7.0.1
       detect-newline: 4.0.0
@@ -5969,18 +5969,18 @@ packages:
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
+    dev: false
 
-  /@vueuse/core/9.8.0_vue@3.2.45:
-    resolution: {integrity: sha512-TsnPwRu35TQ6RumwelfnK4SmXBgapPcsATffNA96LyXZiboKPSjZAix0wvNm83fcQOg7YVDbQIUxGXpIQwuueQ==}
+  /@vueuse/core/9.8.2_vue@3.2.45:
+    resolution: {integrity: sha512-aWiCmcYIpPt7xjuqYiceODEMHchDYthrJ4AqI+FXPZrR23PZOqdiktbUVyQl2kGlR3H4i9UJ/uimQrwhz9UouQ==}
     dependencies:
       '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.8.0
-      '@vueuse/shared': 9.8.0_vue@3.2.45
+      '@vueuse/metadata': 9.8.2
+      '@vueuse/shared': 9.8.2_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
-    dev: false
 
   /@vueuse/head/1.0.22_vue@3.2.45:
     resolution: {integrity: sha512-YmUdbzNdCnhmrAFxGnJS+Rixj+swE+TQC9OEaYDHIro6gE7W11jugcdwVP00HrA4WRQhg+TOQ4YcY2oL/PP1hw==}
@@ -5993,10 +5993,10 @@ packages:
       '@unhead/vue': 1.0.13_vue@3.2.45
       vue: 3.2.45
 
-  /@vueuse/math/9.8.0_vue@3.2.45:
-    resolution: {integrity: sha512-rWv3jWxTENyttWwlXYpNWSJn4Q6rk7r+6jGZ3dVLQt5AHYcS+g3tLtES++PK0yvHw8X8XPmFhb1Y4Y4quoGe7g==}
+  /@vueuse/math/9.8.2_vue@3.2.45:
+    resolution: {integrity: sha512-uls1RC+qtl6+ssV7nJ/C2pRRwzrSWOJCbsVeyXamzu988KO0a/9lZVDvnmaDrHxORMbkDgRZKj438FwXWVcsHw==}
     dependencies:
-      '@vueuse/shared': 9.8.0_vue@3.2.45
+      '@vueuse/shared': 9.8.2_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -6005,10 +6005,10 @@ packages:
 
   /@vueuse/metadata/9.7.0:
     resolution: {integrity: sha512-M7WsAgw28FNtTH0bzsGuHEtJOPJqPpyeHS6PHq+8UesLgNjZ9waMAntiUrgUQlxt09M4i2lH7y9sRi0jkfeXGA==}
-
-  /@vueuse/metadata/9.8.0:
-    resolution: {integrity: sha512-Izw87Dm3vCpQqJNbOG6nt8GDCYjphOxds59WQFwKDxMIjyIxoGDFz5YVvkzPKCCpd+xErdi1g+MEyVTrASLeyg==}
     dev: false
+
+  /@vueuse/metadata/9.8.2:
+    resolution: {integrity: sha512-N4E/BKS+9VsUeD4WLVRU1J2kCOLh+iikBcMtipFcTyL204132vDYHs27zLAVabJYGnhC0dIVGdhg9pbOZiY2TQ==}
 
   /@vueuse/shared/9.7.0_vue@3.2.45:
     resolution: {integrity: sha512-pwmt1y3TJ2s5KqWmkv9ZKEV59GwuZQZk8XLiU+hGswz0jej318ozbea9E4A/A50ksyM26swSFr7sZ9llNPsZHg==}
@@ -6017,15 +6017,15 @@ packages:
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
+    dev: false
 
-  /@vueuse/shared/9.8.0_vue@3.2.45:
-    resolution: {integrity: sha512-Cm9n23SGDrP/8Nw6n40CtC1QTnd5nvv0mZmakOXPStYxF1O4JH+CDVXW2wVobS0S3QyriWTPWOWiyVEJtk3c+A==}
+  /@vueuse/shared/9.8.2_vue@3.2.45:
+    resolution: {integrity: sha512-ACjrPQzowd5dnabNJt9EoGVobco9/ENiA5qP53vjiuxndlJYuc/UegwhXC7KdQbPX4F45a50+45K3g1wNqOzmA==}
     dependencies:
       vue-demi: 0.13.11_vue@3.2.45
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
-    dev: false
 
   /@zhead/schema/1.0.7:
     resolution: {integrity: sha512-jN2ipkz39YrHd8uulgw/Y7x8iOxvR/cTkin/E9zRQVP5JBIrrJMiGyFFj6JBW4Q029xJ5dKtpwy/3RZWpz+dkQ==}
@@ -16879,7 +16879,7 @@ packages:
       '@docsearch/js': 3.3.0_2r467mdhb7mblpaox4bg7fatdi
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.45
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.7.0_vue@3.2.45
+      '@vueuse/core': 9.8.2_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.11.1
       vite: 4.0.2_@types+node@18.11.17
