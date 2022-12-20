@@ -50,7 +50,7 @@ export interface CliOptions {
   cwd?: string
 
   /**
-   * **Loading Animation**
+   * **Should show loading animation spinner?**
    *
    * Should the command show a loading animation?
    * Please note, when debug mode is enabled,
@@ -58,7 +58,7 @@ export interface CliOptions {
    *
    * @default true
    */
-  shouldBeAnimated?: boolean | SpinnerOptions
+  shouldShowSpinner?: boolean | SpinnerOptions
 }
 
 export type { Ora as SpinnerOptions } from 'ora'
@@ -200,8 +200,8 @@ export const enum Action {
   BuildCore = 'build-core',
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
-  Fresh = 'fresh',
-  GeneratePackageJsons = 'generate-package-jsons',
+  Fresh = 'fresh', // wip: spinner missing
+  GeneratePackageJsons = 'generate-package-jsons', // wip: loop issue
   Lint = 'lint',
   LintFix = 'lint-fix',
 }

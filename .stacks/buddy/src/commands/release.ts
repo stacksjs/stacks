@@ -13,7 +13,7 @@ async function release(buddy: CLI) {
     .command('release', descriptions.release)
     .option('--debug', descriptions.debug, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
-      const perf = intro('buddy release')
+      const startTime = intro('buddy release')
       const result = await runAction(Action.Release, options)
 
       if (result.isErr()) {
@@ -21,7 +21,7 @@ async function release(buddy: CLI) {
         process.exit()
       }
 
-      outro('Triggered CI/CD release workflow', { startTime: perf, useSeconds: true })
+      outro('Triggered CI/CD release workflow', { startTime, useSeconds: true })
     })
 }
 

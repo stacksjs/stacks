@@ -1,6 +1,7 @@
 import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { determineDebugMode } from '@stacksjs/config'
-import { ResultAsync } from '@stacksjs/error-handling'
+import type { Err } from '@stacksjs/error-handling'
+import { ResultAsync, err } from '@stacksjs/error-handling'
 import { projectPath } from '@stacksjs/path'
 import { italic } from '@stacksjs/cli'
 import { spawn } from '../command'
@@ -42,21 +43,27 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[]> {
-  let spinner: Spinner | undefined
-
-  if (!determineDebugMode(options))
-    spinner = startAnimation()
-
+export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Err<never, string>> {
+  console.log('here?')
   const results: Result<CommandResult<string>, Error>[] = []
+
+  console.log(' here2')
+
+  if (!commands.length)
+    return err('No actions were specified')
+
+  console.log(' here3')
+  const spinner = determineSpinner(options)
+
+  console.log('spinner', spinner)
 
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result.isOk())
+    if (result?.isOk())
       results.push(result)
 
-    if (result.isErr()) {
+    if (result?.isErr()) {
       if (spinner)
         spinner.fail('Failed to run command.')
 
@@ -69,4 +76,11 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
     spinner.stop()
 
   return results
+}
+
+function determineSpinner(options?: CliOptions): Spinner | undefined {
+  if (!determineDebugMode(options))
+    return startAnimation()
+
+  return undefined
 }

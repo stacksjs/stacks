@@ -91,6 +91,7 @@ itemprop
 jiti
 jsdelivr
 jsdevtools
+jsons
 julr
 kibibytes
 kohler

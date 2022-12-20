@@ -109,7 +109,7 @@ export async function setEnvValue(key: string, value: string) {
 export async function runNpmScript(script: NpmScript, options?: CliOptions) {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
-  if (isManifest(manifest) && hasScript(manifest, script))
+  if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
     return await runCommand(`pnpm run ${script}`, options)
 
   log.error(`The specified npm script "${script}" does not exist in the package.json file.`)

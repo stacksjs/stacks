@@ -1,8 +1,9 @@
 import storage from '@stacksjs/storage'
-import { runCommand } from '@stacksjs/cli'
+import { runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { CliOptions } from '@stacksjs/types'
-import { err, ok } from '@stacksjs/error-handling'
+import type { CliOptions, CommandResult } from '@stacksjs/types'
+import type { Err, Result } from '@stacksjs/error-handling'
+import { err } from '@stacksjs/error-handling'
 
 /**
  * Run an Action the Stacks way.
@@ -16,8 +17,10 @@ export async function runAction(action: string, options?: CliOptions) {
     return err(`The specified action "${action}" does not exist`)
 
   const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
+  // the issue is here, runCommand is not compatible with shouldShowSpinner. Only runCommands() & runActions() are.
+  const result = await runCommand(cmd, options)
 
-  return await runCommand(cmd, options)
+  return result
 }
 
 /**
@@ -27,14 +30,20 @@ export async function runAction(action: string, options?: CliOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: CliOptions) {
+export async function runActions(actions: string[], options?: CliOptions): Promise<Err<never, string> | Result<CommandResult<string>, Error>[]> {
+  if (!actions.length)
+    return err('No actions were specified')
+
   for (const action of actions) {
-    const result = await runAction(action, options)
-    if (result.isErr())
-      return result
+    // eslint-disable-next-line no-console
+    console.log('here')
+    if (!hasAction(action))
+      return err(`The specified action "${action}" does not exist`)
   }
 
-  return ok()
+  const commands = actions.map(action => `npx esno ${actionsPath(`${action}.ts`)}`)
+
+  return await runCommands(commands, options)
 }
 
 export function hasAction(action: string) {
