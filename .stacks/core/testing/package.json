@@ -47,8 +47,8 @@
   },
   "peerDependencies": {
     "@vitest/coverage-istanbul": "^0.26.0",
-    "@vitest/ui": "^0.26.0",
-    "vitest": "^0.26.0"
+    "@vitest/ui": "^0.26.1",
+    "vitest": "^0.26.1"
   },
   "devDependencies": {
     "mkdist": "^1.0.0",
