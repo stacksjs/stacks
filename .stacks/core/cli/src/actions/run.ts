@@ -43,12 +43,12 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Err<never, string>> {
+export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
   const results: Result<CommandResult<string>, Error>[] = []
   const numberOfCommands = commands.length
 
   if (!numberOfCommands)
-    return err('No actions were specified')
+    return err('No commands were specified')
 
   const spinner = determineSpinner(options)
 

@@ -45,11 +45,13 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
 }
 
 export function startAnimation() {
-  const spin = spinner('Running...').start()
-  const pleaseWait = 'This may take a little while...'
+  const spin = spinner({
+    text: 'Executing...',
+  }).start()
 
   setTimeout(() => {
-    spin.text = italic(pleaseWait)
+    spin.text = italic('This may take a little while...')
+    spin.spinner = 'clock'
   }, 5000)
 
   return spin

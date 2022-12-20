@@ -18,14 +18,9 @@ export async function runAction(action: string, options?: CliOptions): Promise<R
 
   const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
 
-  if (options?.shouldShowSpinner) {
-    const results = await runCommands([cmd], options)
-
-    if (Array.isArray(results) && results.length === 1)
-      return results[0]
-  }
-
-  return await runCommand(cmd, options)
+  return options?.shouldShowSpinner
+    ? await runCommands([cmd], options)
+    : await runCommand(cmd, options)
 }
 
 /**
@@ -40,8 +35,6 @@ export async function runActions(actions: string[], options?: CliOptions): Promi
     return err('No actions were specified')
 
   for (const action of actions) {
-    // eslint-disable-next-line no-console
-    console.log('here')
     if (!hasAction(action))
       return err(`The specified action "${action}" does not exist`)
   }

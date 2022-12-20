@@ -1,6 +1,6 @@
 {
   "publisher": "Stacks",
-  "name": "stacks-vscode",
+  "name": "vscode-stacks",
   "displayName": "Stacks",
   "version": "0.44.12",
   "description": "A modern Stacks development environment.",
@@ -37,7 +37,7 @@
     "theme": "light"
   },
   "extensionPack": [
-    "vue.volar",
+    "vue.vscode-typescript-vue-plugin",
     "voorjaar.windicss-intellisense",
     "dbaeumer.vscode-eslint",
     "streetsidesoftware.code-spell-checker",
