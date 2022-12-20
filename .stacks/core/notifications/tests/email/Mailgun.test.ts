@@ -38,4 +38,3 @@ describe('Mailgun Test', () => {
     expect(test.error).toThrowError(Error)
   })
 })
-

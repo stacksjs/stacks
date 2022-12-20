@@ -1,4 +1,5 @@
 // TODO: this should be normalized and pulled from a published config file
+// TODO: is it possible for this to be a modern js file? (import/export)
 module.exports = {
   enable: true,
   host: 'localhost',

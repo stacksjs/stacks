@@ -39,4 +39,3 @@ describe('Sendgrid Test', () => {
     expect(test.error).toThrowError(Error)
   })
 })
-

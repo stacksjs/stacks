@@ -374,4 +374,3 @@ function colorFiltered(color: string): Boolean {
     </div>
   </div>
 </template>
-

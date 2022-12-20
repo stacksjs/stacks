@@ -79,4 +79,3 @@ describe('RedisTest', () => {
     expect(await get('test')).toBe(null)
   })
 })
-

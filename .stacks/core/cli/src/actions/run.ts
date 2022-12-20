@@ -44,18 +44,13 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @returns The result of the command.
  */
 export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Err<never, string>> {
-  console.log('here?')
   const results: Result<CommandResult<string>, Error>[] = []
+  const numberOfCommands = commands.length
 
-  console.log(' here2')
-
-  if (!commands.length)
+  if (!numberOfCommands)
     return err('No actions were specified')
 
-  console.log(' here3')
   const spinner = determineSpinner(options)
-
-  console.log('spinner', spinner)
 
   for (const command of commands) {
     const result = await runCommand(command, options)
@@ -74,6 +69,9 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
   if (spinner)
     spinner.stop()
+
+  if (numberOfCommands === 1)
+    return results[0]
 
   return results
 }

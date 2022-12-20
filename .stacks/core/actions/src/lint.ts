@@ -10,4 +10,3 @@ if (result.isErr()) {
 }
 
 outro('Linted', { startTime: perf, useSeconds: true })
-

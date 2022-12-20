@@ -342,7 +342,7 @@ importers:
       mkdist: ^1.0.0
       typescript: ^4.9.4
     dependencies:
-      '@prisma/client': 4.7.1
+      '@prisma/client': 4.8.0
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -4230,7 +4230,7 @@ packages:
       posthtml-attrs-parser: 0.1.1
       posthtml-base-url: 1.1.0
       posthtml-content: 0.1.2
-      posthtml-expressions: 1.10.0_posthtml@0.16.6
+      posthtml-expressions: 1.11.0_posthtml@0.16.6
       posthtml-extend: 0.6.5
       posthtml-extra-attributes: 1.0.1_posthtml@0.16.6
       posthtml-fetch: 2.2.0
@@ -4677,8 +4677,8 @@ packages:
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
-  /@prisma/client/4.7.1:
-    resolution: {integrity: sha512-/GbnOwIPtjiveZNUzGXOdp7RxTEkHL4DZP3vBaFNadfr6Sf0RshU5EULFzVaSi9i9PIK9PYd+1Rn7z2B2npb9w==}
+  /@prisma/client/4.8.0:
+    resolution: {integrity: sha512-Y1riB0p2W52kh3zgssP/YAhln3RjBFcJy3uwEiyjmU+TQYh6QTZDRFBo3JtBWuq2FyMOl1Rye8jxzUP+n0l5Cg==}
     engines: {node: '>=14.17'}
     requiresBuild: true
     peerDependencies:
@@ -4687,11 +4687,11 @@ packages:
       prisma:
         optional: true
     dependencies:
-      '@prisma/engines-version': 4.7.1-1.272861e07ab64f234d3ffc4094e32bd61775599c
+      '@prisma/engines-version': 4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe
     dev: false
 
-  /@prisma/engines-version/4.7.1-1.272861e07ab64f234d3ffc4094e32bd61775599c:
-    resolution: {integrity: sha512-Bd4LZ+WAnUHOq31e9X/ihi5zPlr4SzTRwUZZYxvWOxlerIZ7HJlVa9zXpuKTKLpI9O1l8Ec4OYCKsivWCs5a3Q==}
+  /@prisma/engines-version/4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe:
+    resolution: {integrity: sha512-MHSOSexomRMom8QN4t7bu87wPPD+pa+hW9+71JnVcF3DqyyO/ycCLhRL1we3EojRpZxKvuyGho2REQsMCvxcJw==}
     dev: false
 
   /@redis/bloom/1.1.0_@redis+client@1.4.2:
@@ -5836,7 +5836,7 @@ packages:
       '@vue/compiler-sfc': 3.2.45
       '@vue/reactivity': 3.2.45
       '@vue/shared': 3.2.45
-      minimatch: 5.1.1
+      minimatch: 5.1.2
       vue-template-compiler: 2.7.14
     dev: false
 
@@ -5959,18 +5959,6 @@ packages:
   /@vue/shared/3.2.45:
     resolution: {integrity: sha512-Ewzq5Yhimg7pSztDV+RH1UDKBzmtqieXQlpTVm2AwraoRL/Rks96mvd8Vgi7Lj+h+TH8dv7mXD3FRZR3TUvbSg==}
 
-  /@vueuse/core/9.7.0_vue@3.2.45:
-    resolution: {integrity: sha512-/AGY/t7jJPxCyRoVTygNKoroTiCvRaaZIW+yeSlBCnI7QRpQ9cvXNTdNaSl3GvSyFbn83+XwZwEZvI1OpQfeGw==}
-    dependencies:
-      '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.7.0
-      '@vueuse/shared': 9.7.0_vue@3.2.45
-      vue-demi: 0.13.11_vue@3.2.45
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
-
   /@vueuse/core/9.8.2_vue@3.2.45:
     resolution: {integrity: sha512-aWiCmcYIpPt7xjuqYiceODEMHchDYthrJ4AqI+FXPZrR23PZOqdiktbUVyQl2kGlR3H4i9UJ/uimQrwhz9UouQ==}
     dependencies:
@@ -6003,21 +5991,8 @@ packages:
       - vue
     dev: false
 
-  /@vueuse/metadata/9.7.0:
-    resolution: {integrity: sha512-M7WsAgw28FNtTH0bzsGuHEtJOPJqPpyeHS6PHq+8UesLgNjZ9waMAntiUrgUQlxt09M4i2lH7y9sRi0jkfeXGA==}
-    dev: false
-
   /@vueuse/metadata/9.8.2:
     resolution: {integrity: sha512-N4E/BKS+9VsUeD4WLVRU1J2kCOLh+iikBcMtipFcTyL204132vDYHs27zLAVabJYGnhC0dIVGdhg9pbOZiY2TQ==}
-
-  /@vueuse/shared/9.7.0_vue@3.2.45:
-    resolution: {integrity: sha512-pwmt1y3TJ2s5KqWmkv9ZKEV59GwuZQZk8XLiU+hGswz0jej318ozbea9E4A/A50ksyM26swSFr7sZ9llNPsZHg==}
-    dependencies:
-      vue-demi: 0.13.11_vue@3.2.45
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
 
   /@vueuse/shared/9.8.2_vue@3.2.45:
     resolution: {integrity: sha512-ACjrPQzowd5dnabNJt9EoGVobco9/ENiA5qP53vjiuxndlJYuc/UegwhXC7KdQbPX4F45a50+45K3g1wNqOzmA==}
@@ -9433,7 +9408,7 @@ packages:
   /filelist/1.0.4:
     resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
     dependencies:
-      minimatch: 5.1.1
+      minimatch: 5.1.2
     dev: false
 
   /fill-range/7.0.1:
@@ -9903,7 +9878,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 5.1.1
+      minimatch: 5.1.2
       once: 1.4.0
 
   /global-dirs/0.1.1:
@@ -12212,8 +12187,8 @@ packages:
     dependencies:
       brace-expansion: 1.1.11
 
-  /minimatch/5.1.1:
-    resolution: {integrity: sha512-362NP+zlprccbEt/SkxKfRMHnNY85V74mVnpUpNyr3F35covl09Kec7/sEFLt3RA4oXmewtoaanoIf67SE5Y5g==}
+  /minimatch/5.1.2:
+    resolution: {integrity: sha512-bNH9mmM9qsJ2X4r2Nat1B//1dJVcn3+iBLa3IgqJ7EbGaDNepL9QSHOxN4ng33s52VMMhhIfgCYDk3C4ZmlDAg==}
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
@@ -12481,7 +12456,7 @@ packages:
       std-env: 3.3.1
       ufo: 1.0.1
       unenv: 1.0.0
-      unimport: 1.0.2_rollup@2.79.1
+      unimport: 1.1.0_rollup@2.79.1
       unstorage: 1.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -13613,8 +13588,8 @@ packages:
       when: 3.7.8
     dev: false
 
-  /posthtml-expressions/1.10.0_posthtml@0.16.6:
-    resolution: {integrity: sha512-c8njTjfqkDNhfx/ItK1N2D16Y2SNJ5fxH1+sOrP3FdMWiJxDBhDoR7gj3NU0jWFkbV+VSIn/asLcp9c8aI7WRQ==}
+  /posthtml-expressions/1.11.0_posthtml@0.16.6:
+    resolution: {integrity: sha512-Un7J/UugURkoxCuFJ+1UwzmXe19hPrfUBOYgrjf2ipkCyghSh8L3ldwKttgjs8GI+4aPPUFThAted0J2tpORnA==}
     engines: {node: '>=10'}
     dependencies:
       fclone: 1.0.11
@@ -13631,7 +13606,7 @@ packages:
     dependencies:
       deepmerge: 4.2.2
       posthtml: 0.16.6
-      posthtml-expressions: 1.10.0_posthtml@0.16.6
+      posthtml-expressions: 1.11.0_posthtml@0.16.6
       posthtml-parser: 0.11.0
     dev: false
 
@@ -13653,7 +13628,7 @@ packages:
       is-url: 1.2.4
       lodash.merge: 4.6.2
       posthtml: 0.16.6
-      posthtml-expressions: 1.10.0_posthtml@0.16.6
+      posthtml-expressions: 1.11.0_posthtml@0.16.6
       posthtml-match-helper: 1.0.3_posthtml@0.16.6
     dev: false
 
@@ -13682,7 +13657,7 @@ packages:
     dependencies:
       is-json: 2.0.1
       lodash: 4.17.21
-      posthtml-expressions: 1.10.0_posthtml@0.16.6
+      posthtml-expressions: 1.11.0_posthtml@0.16.6
       posthtml-match-helper: 1.0.3_posthtml@0.16.6
       posthtml-render: 3.0.0
     transitivePeerDependencies:
@@ -14220,7 +14195,7 @@ packages:
   /readdir-glob/1.1.2:
     resolution: {integrity: sha512-6RLVvwJtVwEDfPdn6X6Ille4/lxGl0ATOY4FN/B9nxQcgOazvvI0nodiD19ScKq0PvA/29VpaOQML36o5IzZWA==}
     dependencies:
-      minimatch: 5.1.1
+      minimatch: 5.1.2
     dev: false
 
   /readdirp/3.6.0:
@@ -16120,8 +16095,8 @@ packages:
     resolution: {integrity: sha512-cy7yqZl9Mwh/JR0oxbg+ykh949dlh+He3+L5jOS1hqvzDe47sBugjJxm1Z4VPVs2aEhRSGgMETzKu3WlO+ePGw==}
     dev: false
 
-  /unimport/1.0.2:
-    resolution: {integrity: sha512-DcYkDwl1XMZNmyEKUFzVzHAul0FZcj9m0OM/WRfaAtg6Gw1waYlypYJl6qAg31k57TnNPwGDCAxYPodYC5qomQ==}
+  /unimport/1.1.0:
+    resolution: {integrity: sha512-dSufi3POQWUVAMU6DxXu39U0cWzz5m3FtQBUbgDJTkCpeRfyiYhDg+BOz6UPKfDPtEhkbshV8JoMV3I8i/mQ+A==}
     dependencies:
       '@rollup/pluginutils': 5.0.2
       escape-string-regexp: 5.0.0
@@ -16138,8 +16113,8 @@ packages:
       - rollup
     dev: true
 
-  /unimport/1.0.2_rollup@2.79.1:
-    resolution: {integrity: sha512-DcYkDwl1XMZNmyEKUFzVzHAul0FZcj9m0OM/WRfaAtg6Gw1waYlypYJl6qAg31k57TnNPwGDCAxYPodYC5qomQ==}
+  /unimport/1.1.0_rollup@2.79.1:
+    resolution: {integrity: sha512-dSufi3POQWUVAMU6DxXu39U0cWzz5m3FtQBUbgDJTkCpeRfyiYhDg+BOz6UPKfDPtEhkbshV8JoMV3I8i/mQ+A==}
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       escape-string-regexp: 5.0.0
@@ -16236,7 +16211,7 @@ packages:
       '@rollup/pluginutils': 5.0.2
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      unimport: 1.0.2
+      unimport: 1.1.0
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
@@ -16255,7 +16230,7 @@ packages:
       '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      unimport: 1.0.2_rollup@2.79.1
+      unimport: 1.1.0_rollup@2.79.1
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
@@ -16278,7 +16253,7 @@ packages:
       fast-glob: 3.2.12
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      minimatch: 5.1.1
+      minimatch: 5.1.2
       resolve: 1.22.1
       unplugin: 1.0.1
       vue: 3.2.45
@@ -16304,7 +16279,7 @@ packages:
       fast-glob: 3.2.12
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      minimatch: 5.1.1
+      minimatch: 5.1.2
       resolve: 1.22.1
       unplugin: 1.0.1
       vue: 3.2.45
@@ -16852,7 +16827,7 @@ packages:
       '@docsearch/js': 3.3.0_2r467mdhb7mblpaox4bg7fatdi
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.45
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.7.0_vue@3.2.45
+      '@vueuse/core': 9.8.2_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.11.1
       vite: 4.0.2

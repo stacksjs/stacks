@@ -12,15 +12,20 @@ import { err } from '@stacksjs/error-handling'
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: CliOptions) {
+export async function runAction(action: string, options?: CliOptions): Promise<Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist`)
 
   const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
-  // the issue is here, runCommand is not compatible with shouldShowSpinner. Only runCommands() & runActions() are.
-  const result = await runCommand(cmd, options)
 
-  return result
+  if (options?.shouldShowSpinner) {
+    const results = await runCommands([cmd], options)
+
+    if (Array.isArray(results) && results.length === 1)
+      return results[0]
+  }
+
+  return await runCommand(cmd, options)
 }
 
 /**
