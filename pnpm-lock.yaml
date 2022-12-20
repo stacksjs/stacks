@@ -234,7 +234,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.234.0
+      '@aws-sdk/client-dynamodb': ^3.235.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.4
@@ -336,7 +336,7 @@ importers:
 
   .stacks/core/database:
     specifiers:
-      '@prisma/client': ^4.7.1
+      '@prisma/client': ^4.8.0
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.0.0
