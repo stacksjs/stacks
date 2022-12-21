@@ -1,5 +1,6 @@
+# Stacks Changelog
 
-## v0.46.0...main
+## v0.46.0...v0.46.1
 
 
 ### 🩹 Fixes
@@ -9,6 +10,7 @@
 ### 🏡 Chore
 
   - Add changelog (c4d5ed80)
+  - Release v0.46.1 (549e9346)
 
 ### ❤️  Contributors
 
