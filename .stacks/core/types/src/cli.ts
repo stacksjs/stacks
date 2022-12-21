@@ -226,6 +226,7 @@ export const enum Action {
   BuildCore = 'build-core', // ✅
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
+  Changelog = 'changelog', // wip
   Fresh = 'fresh', // ✅
   GeneratePackageJsons = 'generate-package-jsons', // ✅
   Lint = 'lint', // ✅

@@ -45,8 +45,8 @@
   },
   "peerDependencies": {
     "bumpp": "^8.2.1",
+    "changelogen": "^0.4.0",
     "commitizen": "^4.2.6",
-    "conventional-changelog-cli": "^2.2.2",
     "cz-git": "^1.4.1",
     "giget": "^1.0.0",
     "simple-git-hooks": "^2.8.1"

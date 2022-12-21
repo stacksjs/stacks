@@ -125,7 +125,7 @@
     "key:generate": "pnpm buddy key:generate",
     "commit": "git cz",
     "release": "pnpm buddy release",
-    "changelog": "cd .. && conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "changelog": "pnpm buddy changelog",
     "generate": "pnpm buddy generate",
     "generate:entries": "pnpm buddy generate:entries",
     "generate:vue-compat": "esno ./core/actions/src/generate-vue-compat.ts",
