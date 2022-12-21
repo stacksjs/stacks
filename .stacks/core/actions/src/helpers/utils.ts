@@ -14,7 +14,7 @@ import { err } from '@stacksjs/error-handling'
  */
 export async function runAction(action: string, options?: CliOptions): Promise<Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
   if (!hasAction(action))
-    return err(`The specified action "${action}" does not exist`)
+    return err(`The specified action "${action}" does not exist.`)
 
   const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
 

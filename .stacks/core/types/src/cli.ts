@@ -61,6 +61,15 @@ export interface CliOptions {
   shouldShowSpinner?: boolean | SpinnerOptions
 
   /**
+   * **Spinner Text**
+   *
+   * The text to show when the spinner is shown.
+   *
+   * @default 'Executing...'
+   */
+  spinnerText?: string
+
+  /**
    * **Should the command be run inside a shell?**
    *
    * If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe`

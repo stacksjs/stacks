@@ -44,9 +44,12 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
   }
 }
 
-export function startAnimation() {
+export function startSpinner(text?: string) {
+  if (!text)
+    text = 'Executing...'
+
   const spin = spinner({
-    text: 'Executing...',
+    text,
   }).start()
 
   setTimeout(() => {

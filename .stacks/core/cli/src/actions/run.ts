@@ -5,7 +5,7 @@ import { ResultAsync, err } from '@stacksjs/error-handling'
 import { projectPath } from '@stacksjs/path'
 import { italic } from '@stacksjs/cli'
 import { spawn } from '../command'
-import { startAnimation } from '../helpers'
+import { startSpinner } from '../helpers'
 
 /**
  * Execute a command.
@@ -79,7 +79,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
 function determineSpinner(options?: CliOptions): Spinner | undefined {
   if (!determineDebugMode(options))
-    return startAnimation()
+    return startSpinner(options?.spinnerText)
 
   return undefined
 }
