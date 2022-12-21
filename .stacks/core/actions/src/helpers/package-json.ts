@@ -87,7 +87,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
     else if (type === 'functions')
       prettyName = 'Function Library'
 
-    log.success(`Created ${prettyName} package.json`)
+    log.success(`Created the ${prettyName} package.json file.`)
   }
   catch (err) {
     log.error(`There was an error creating the ${prettyName} package.json.`, err)

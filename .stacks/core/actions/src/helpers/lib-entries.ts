@@ -37,7 +37,7 @@ export async function createVueLibraryEntryPoint() {
     data: generateEntryPointData('vue-components'),
   })
 
-  log.success('Created Vue component library entry point.')
+  log.success('Created the Vue component library entry point.')
 }
 
 export async function createWebComponentLibraryEntryPoint() {

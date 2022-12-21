@@ -18,9 +18,10 @@ import { startAnimation } from '../helpers'
 export function exec(command: string, options?: CliOptions) {
   const cwd = options?.cwd || projectPath()
   const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
+  const shell = options?.shell || false
 
   return ResultAsync.fromPromise(
-    spawn(command, { stdio, cwd }),
+    spawn(command, { stdio, cwd, shell }),
     () => new Error(`Failed to run command: ${italic(command)}`),
   )
 }

@@ -59,6 +59,22 @@ export interface CliOptions {
    * @default true
    */
   shouldShowSpinner?: boolean | SpinnerOptions
+
+  /**
+   * **Should the command be run inside a shell?**
+   *
+   * If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe`
+   * on Windows. A different shell can be specified as a string. The shell should
+   * understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+   *
+   * We recommend against using this option since it is:
+   *  - not cross-platform, encouraging shell-specific syntax.
+   *  - slower, because of the additional shell interpretation.
+   *  - unsafe, potentially allowing command injection.
+   *
+   * @default false
+   */
+  shell?: boolean
 }
 
 export type { Ora as SpinnerOptions } from 'ora'
@@ -190,6 +206,7 @@ export const enum NpmScript {
 }
 
 export const enum Action {
+  Bump = 'bump',
   Release = 'release',
   Prepublish = 'prepublish',
   BuildStacks = 'build-stacks',
@@ -204,6 +221,7 @@ export const enum Action {
   GeneratePackageJsons = 'generate-package-jsons', // wip: loop issue
   Lint = 'lint',
   LintFix = 'lint-fix',
+  FixLintIssues = 'fix-lint-issues',
 }
 
 export type { CAC as CLI } from 'cac'
