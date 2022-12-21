@@ -2,7 +2,7 @@
 import { command, log } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
 import { version } from '../package.json' assert { type: 'json' }
-import { build, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
+import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
 
 const cli = command('stacks')
 
@@ -25,6 +25,7 @@ async function main() {
     await generate(cli)
     await dev(cli)
     await build(cli)
+    await changelog(cli)
     await clean(cli)
     await commit(cli)
     await fresh(cli)

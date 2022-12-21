@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function fresh(buddy: CLI) {
+async function changelog(buddy: CLI) {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
     debug: 'Enable debug mode',
@@ -26,4 +26,4 @@ async function fresh(buddy: CLI) {
     })
 }
 
-export { fresh }
+export { changelog }
