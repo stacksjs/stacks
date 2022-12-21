@@ -2,7 +2,7 @@
   "name": "@stacksjs/git",
   "type": "module",
   "version": "0.45.1",
-  "packageManager": "pnpm@7.18.2",
+  "packageManager": "pnpm@7.19.0",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.18.2"
+    "pnpm": ">=7.19.0"
   },
   "scripts": {
     "build": "mkdist -d",

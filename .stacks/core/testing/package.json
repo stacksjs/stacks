@@ -2,7 +2,7 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "version": "0.45.1",
-  "packageManager": "pnpm@7.18.2",
+  "packageManager": "pnpm@7.19.0",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.18.2"
+    "pnpm": ">=7.19.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -46,9 +46,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vitest/coverage-istanbul": "^0.26.0",
-    "@vitest/ui": "^0.26.1",
-    "vitest": "^0.26.1"
+    "@vitest/coverage-istanbul": "^0.26.2",
+    "@vitest/ui": "^0.26.2",
+    "vitest": "^0.26.2"
   },
   "devDependencies": {
     "mkdist": "^1.0.0",
