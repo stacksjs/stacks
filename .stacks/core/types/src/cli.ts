@@ -215,7 +215,7 @@ export const enum NpmScript {
 }
 
 export const enum Action {
-  Bump = 'bump',
+  Bump = 'bump', // wip - changelog action
   Release = 'release',
   Prepublish = 'prepublish',
   BuildStacks = 'build-stacks',
@@ -227,7 +227,7 @@ export const enum Action {
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
   Fresh = 'fresh', // ✅
-  GeneratePackageJsons = 'generate-package-jsons', // wip: loop issue
+  GeneratePackageJsons = 'generate-package-jsons', // ✅
   Lint = 'lint', // ✅
   LintFix = 'lint-fix', // ✅
   FixLintIssues = 'fix-lint-issues',
