@@ -231,7 +231,6 @@ export const enum Action {
   GeneratePackageJsons = 'generate-package-jsons', // ✅
   Lint = 'lint', // ✅
   LintFix = 'lint-fix', // ✅
-  FixLintIssues = 'fix-lint-issues',
   Test = 'test', // ✅
   TestUi = 'test-ui', // ✅
   TestCoverage = 'test-coverage', // ✅

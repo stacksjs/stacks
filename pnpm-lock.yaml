@@ -887,6 +887,7 @@ importers:
       '@stacksjs/storage': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
+      '@types/throttle-debounce': ^5.0.0
       '@vueuse/core': ^9.8.2
       '@vueuse/head': ^1.0.22
       '@vueuse/math': ^9.8.2
@@ -927,6 +928,7 @@ importers:
       throttle-debounce: 5.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
+      '@types/throttle-debounce': 5.0.0
       mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
 
@@ -5416,6 +5418,10 @@ packages:
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
     dev: false
+
+  /@types/throttle-debounce/5.0.0:
+    resolution: {integrity: sha512-Pb7k35iCGFcGPECoNE4DYp3Oyf2xcTd3FbFQxXUI9hEYKUl6YX+KLf7HrBmgVcD05nl50LIH6i+80js4iYmWbw==}
+    dev: true
 
   /@types/trusted-types/2.0.2:
     resolution: {integrity: sha512-F5DIZ36YVLE+PN+Zwws4kJogq47hNgX3Nx6WyDJ3kcplxyke3XIzB8uK5n/Lpm1HBsbGzd6nmGehL8cPekP+Tg==}

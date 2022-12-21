@@ -1,4 +1,5 @@
 import { NpmScript } from '@stacksjs/types'
-import { runCommand } from '@stacksjs/cli'
+import { runCommands } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
 
-await runCommand(NpmScript.Test, { debug: true })
+await runCommands([NpmScript.TestTypes], { cwd: projectPath(), spinnerText: 'Type checking...', debug: true })

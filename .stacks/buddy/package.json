@@ -137,7 +137,7 @@
     "types:generate": "vue-tsc --declaration --emitDeclarationOnly && esno ./core/actions/src/copy-types.ts",
     "types:fix": "esno actions/src/fix-types.ts",
     "add": "pnpm buddy add",
-    "test": "vitest --config vitest.config.ts",
+    "test": "pnpm buddy test",
     "test:ui": "pnpm buddy test:ui",
     "test:coverage": "pnpm buddy test:coverage",
     "test:types": "pnpm buddy test:types"

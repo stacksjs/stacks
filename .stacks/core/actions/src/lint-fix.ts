@@ -1,5 +1,5 @@
-import { runAction } from '@stacksjs/actions'
+import { runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { Action } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 
-await runAction(Action.FixLintIssues, { cwd: projectPath(), shouldShowSpinner: true, spinnerText: 'Linting...' })
+await runCommand(NpmScript.LintFix, { cwd: projectPath(), shouldShowSpinner: true, spinnerText: 'Linting...' })
