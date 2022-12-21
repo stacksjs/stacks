@@ -108,6 +108,7 @@
     "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../components/vue/dist dist && npx vite serve -c ../../core/build/example-vue.ts",
     "example:web-components": "pnpm run build:web-components && cd examples/web && ln -sf ../../components/web/dist dist && npx vite serve -c ../../core/build/example-wc.ts",
     "lint": "pnpm buddy lint",
+    "lint:stacks": "pnpm buddy lint:stacks",
     "lint:fix": "pnpm buddy lint:fix",
     "serve": "pnpm buddy serve",
     "serve:pages": "pnpm run dev:pages",

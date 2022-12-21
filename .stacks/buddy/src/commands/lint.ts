@@ -5,8 +5,9 @@ import { runAction } from '@stacksjs/actions'
 
 async function lint(buddy: CLI) {
   const descriptions = {
-    lint: 'Automagically lints your codebase',
-    lintFix: 'Automagically fixes lint errors',
+    lint: 'Automagically lints your project codebase',
+    lintStacks: 'Automagically lints the whole codebase',
+    lintFix: 'Automagically fixes all lint errors',
     debug: 'Enable debug mode',
   }
 
@@ -16,10 +17,26 @@ async function lint(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: LintOptions) => {
       const perf = intro('buddy lint')
-      const result = await runAction(Action.Lint, options)
+      const result = await runAction(Action.Lint, { ...options, shouldShowSpinner: true, spinnerText: 'Linting...' })
 
       if (result.isErr()) {
-        outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        process.exit()
+      }
+
+      outro('Linted', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
+    .command('lint:stacks', descriptions.lintStacks)
+    .option('-f, --fix', descriptions.lintFix, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
+    .action(async (options: LintOptions) => {
+      const perf = intro('buddy lint:stacks')
+      const result = await runAction(Action.LintStacks, { ...options, shouldShowSpinner: true, spinnerText: 'Linting...' })
+
+      if (result.isErr()) {
+        outro('While running `buddy lint:stacks`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 

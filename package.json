@@ -94,6 +94,7 @@
     "example:vue": "pnpm buddy example:vue",
     "example:web-components": "pnpm buddy example:web-components",
     "lint": "pnpm buddy lint",
+    "lint:stacks": "pnpm buddy lint:stacks",
     "lint:fix": "pnpm buddy lint:fix",
     "serve": "pnpm buddy serve",
     "serve:pages": "pnpm buddy serve:pages",

@@ -14,7 +14,7 @@ async function fresh(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = intro('buddy fresh')
-      const result = await runAction(Action.Fresh, { ...options, shouldShowSpinner: true })
+      const result = await runAction(Action.Fresh, { ...options, shouldShowSpinner: true, spinnerText: 'Reinstalling your dependencies...' })
 
       if (result.isErr()) {
         outro('While running the fresh command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

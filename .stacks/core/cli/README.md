@@ -51,7 +51,7 @@ async function install() {
   try {
     const spin = spinner('Running...').start()
     setTimeout(() => {
-      spin.text = italic('This may take a little while...')
+      spin.text = italic('This may take a few moments...')
     }, 5000)
     await spawn('pnpm install')
     spin.stop()

@@ -53,7 +53,7 @@ export function startSpinner(text?: string) {
   }).start()
 
   setTimeout(() => {
-    spin.text = italic('This may take a little while...')
+    spin.text = italic('This may take a few moments...')
     spin.spinner = 'clock'
   }, 5000)
 

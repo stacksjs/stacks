@@ -186,7 +186,8 @@ export const enum NpmScript {
   UpdateFramework = 'update:framework',
   UpdatePackageManager = 'update:package-manager',
   UpdateNode = 'pnpm env use',
-  Lint = 'eslint .',
+  Lint = 'eslint . --ignore-path ./.stacks/core',
+  LintStacks = 'eslint ./.stacks/',
   LintFix = 'eslint . --fix',
   MakeStack = 'make:stack',
   Test = 'vitest --config .stacks/vitest.config.ts',
@@ -228,7 +229,8 @@ export const enum Action {
   BuildFunctionLib = 'build-function-lib',
   Fresh = 'fresh', // ✅
   GeneratePackageJsons = 'generate-package-jsons', // wip: loop issue
-  Lint = 'lint',
+  Lint = 'lint', // should only lint the project
+  LintStacks = 'lint-stacks', // wip
   LintFix = 'lint-fix',
   FixLintIssues = 'fix-lint-issues',
 }
