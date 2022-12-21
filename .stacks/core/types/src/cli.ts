@@ -232,6 +232,10 @@ export const enum Action {
   Lint = 'lint', // ✅
   LintFix = 'lint-fix', // ✅
   FixLintIssues = 'fix-lint-issues',
+  Test = 'test',
+  TestUi = 'test-ui',
+  TestCoverage = 'test-coverage',
+  Typecheck = 'typecheck',
 }
 
 export type { CAC as CLI } from 'cac'

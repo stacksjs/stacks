@@ -7,7 +7,9 @@ import { Action } from '@stacksjs/types'
 await runActions([
   Action.GeneratePackageJsons, // generate the package.json's for each package
   Action.LintFix, // ensure there are no lint errors
-  Action.Bump, // bump the versions, generate the changelog, and push the changes, including the git version tag
+  Action.Test, // run the tests
+  Action.GenerateChangelog, // generate the changelog
+  Action.Bump, // bump the versions, create the git (version) tag, commit & push the changes
 ], { debug: true, cwd: frameworkPath() }) // debug mode needs to be enabled to see the output due to the interactive prompts
 
 // log.success('Successfully released the Stacks framework')
