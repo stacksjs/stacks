@@ -189,9 +189,9 @@ export const enum NpmScript {
   Lint = 'eslint .',
   LintFix = 'eslint . --fix',
   MakeStack = 'make:stack',
-  Test = 'vitest --config .stacks/vitest.config.ts',
-  TestUi = 'vitest --config .stacks/vitest.config.ts --ui',
-  TestCoverage = 'vitest --config .stacks/vitest.config.ts --coverage',
+  Test = 'vitest --config vitest.config.ts',
+  TestUi = 'vitest --config vitest.config.ts --ui',
+  TestCoverage = 'vitest --config vitest.config.ts --coverage',
   TestTypes = 'vue-tsc --noEmit',
   Generate = 'generate',
   GenerateTypes = 'generate:types',
@@ -232,10 +232,10 @@ export const enum Action {
   Lint = 'lint', // ✅
   LintFix = 'lint-fix', // ✅
   FixLintIssues = 'fix-lint-issues',
-  Test = 'test',
-  TestUi = 'test-ui',
-  TestCoverage = 'test-coverage',
-  Typecheck = 'typecheck',
+  Test = 'test', // ✅
+  TestUi = 'test-ui', // ✅
+  TestCoverage = 'test-coverage', // ✅
+  Typecheck = 'typecheck', // wip
 }
 
 export type { CAC as CLI } from 'cac'
