@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ai",
   "type": "module",
-  "version": "0.45.0",
+  "version": "0.45.1",
   "packageManager": "pnpm@7.18.2",
   "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",

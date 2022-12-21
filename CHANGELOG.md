@@ -1,4 +1,8 @@
-# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.44.12...v0.0.0) (2022-12-21)
+# [0.0.0](https://github.com/stacksjs/stacks/compare/v0.45.0...v0.0.0) (2022-12-21)
+
+
+
+# [0.45.0](https://github.com/stacksjs/stacks/compare/v0.44.12...v0.45.0) (2022-12-21)
 
 
 
