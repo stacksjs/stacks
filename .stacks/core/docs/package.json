@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.45.2",
+  "version": "0.46.0",
   "packageManager": "pnpm@7.19.0",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
