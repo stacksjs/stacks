@@ -52,6 +52,6 @@
     "cossssmin.posthtml"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.15.0"
+    "@vscode/vsce": "^2.16.0"
   }
 }
