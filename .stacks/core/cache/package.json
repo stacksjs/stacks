@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cache",
   "type": "module",
-  "version": "0.46.0",
+  "version": "0.46.1",
   "packageManager": "pnpm@7.19.0",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",

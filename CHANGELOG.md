@@ -1,4 +1,19 @@
 
+## v0.46.0...main
+
+
+### 🩹 Fixes
+
+  - Properly define changelog command (70c12b26)
+
+### 🏡 Chore
+
+  - Add changelog (c4d5ed80)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.1.0...v0.45.2
 
 ### 🚀 Enhancements
