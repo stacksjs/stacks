@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+## v0.46.1...v0.46.1-1-geb8e83c3
+
+
+### 🩹 Fixes
+
+  - Ensure changelog generation from previous to current version (eb8e83c3)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.46.0...v0.46.1
 
 
