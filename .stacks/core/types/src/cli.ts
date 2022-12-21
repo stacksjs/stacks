@@ -223,10 +223,10 @@ export const enum Action {
   BuildVueComponentLib = 'build-vue-component-lib',
   BuildWebComponentLib = 'build-web-component-lib',
   BuildCli = 'build-cli',
-  BuildCore = 'build-core',
+  BuildCore = 'build-core', // ✅
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
-  Fresh = 'fresh', // wip: spinner missing
+  Fresh = 'fresh', // ✅
   GeneratePackageJsons = 'generate-package-jsons', // wip: loop issue
   Lint = 'lint',
   LintFix = 'lint-fix',

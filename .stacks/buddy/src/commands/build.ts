@@ -105,9 +105,17 @@ async function build(buddy: CLI) {
 
   buddy
     .command('build:core', 'Automagically build the Stacks core.')
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: true })
     .action(async (options: BuildOptions) => {
-      await runAction(Action.BuildCore, options)
+      const startTime = intro('buddy build:core')
+      const result = await runAction(Action.BuildCore, options)
+
+      if (result.isErr()) {
+        log.error('Failed to build the Stacks core.', result.error)
+        process.exit()
+      }
+
+      outro('Stacks core built successfully', { startTime, useSeconds: true })
     })
 
   buddy
@@ -115,8 +123,7 @@ async function build(buddy: CLI) {
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      console.log('here')
-      const perf = intro('buddy release')
+      const startTime = intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
 
       if (result.isErr()) {
@@ -124,7 +131,7 @@ async function build(buddy: CLI) {
         process.exit()
       }
 
-      outro('Stacks built successfully', { startTime: perf, useSeconds: true })
+      outro('Stacks built successfully', { startTime, useSeconds: true })
     })
 }
 
