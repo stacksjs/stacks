@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+## v0.46.2...v0.46.2-7-g8c3eb1df
+
+
+### 🏡 Chore
+
+  - Wip (a80e6839)
+  - Wip (763c5d42)
+  - Wip (514b0afa)
+  - Wip (8c3eb1df)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.46.1...v0.46.1-1-geb8e83c3
 
 

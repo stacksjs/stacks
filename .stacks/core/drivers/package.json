@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/drivers",
   "type": "module",
-  "version": "0.46.2",
+  "version": "0.46.3",
   "packageManager": "pnpm@7.19.0",
   "description": "Easily create a driver-based system.",
   "author": "Chris Breuer",

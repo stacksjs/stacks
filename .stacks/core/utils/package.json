@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.46.2",
+  "version": "0.46.3",
   "packageManager": "pnpm@7.19.0",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
@@ -70,8 +70,8 @@
     "throttle-debounce": "^5.0.0"
   },
   "devDependencies": {
-    "@types/throttle-debounce": "^5.0.0",
     "@stacksjs/testing": "workspace:*",
+    "@types/throttle-debounce": "^5.0.0",
     "mkdist": "^1.0.0",
     "typescript": "^4.9.4"
   }
