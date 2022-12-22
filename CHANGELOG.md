@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+## v0.46.3...v0.46.3-1-g7fa094e8
+
+
+### 🏡 Chore
+
+  - Use spinner when lint fixing (7fa094e8)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.46.2...v0.46.2-7-g8c3eb1df
 
 
