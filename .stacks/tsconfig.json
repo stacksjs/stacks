@@ -80,6 +80,8 @@
       "@stacksjs/storage/*": ["./core/storage/src/*"],
       "@stacksjs/strings": ["./core/strings/src/index.ts"],
       "@stacksjs/strings/*": ["./core/strings/src/*"],
+      "@stacksjs/testing": ["./core/testing/src/index.ts"],
+      "@stacksjs/testing/*": ["./core/testing/src/*"],
       "@stacksjs/types": ["./core/types/src/index.ts"],
       "@stacksjs/types/*": ["./core/types/src/*"],
       "@stacksjs/ui": ["./core/ui/src/index.ts"],

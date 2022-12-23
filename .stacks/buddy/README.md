@@ -114,7 +114,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.18 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 7.19 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 

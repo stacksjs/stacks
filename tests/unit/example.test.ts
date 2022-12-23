@@ -1,4 +1,4 @@
-import { assert, describe, test } from 'vitest'
+import { assert, describe, test } from 'stacks'
 
 describe('example test', () => {
   test('assert', () => {

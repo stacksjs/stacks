@@ -235,6 +235,7 @@ export const enum Action {
   TestUi = 'test-ui', // ✅
   TestCoverage = 'test-coverage', // ✅
   Typecheck = 'typecheck', // wip
+  KeyGenerate = 'key-generate', // wip
 }
 
 export type { CAC as CLI } from 'cac'

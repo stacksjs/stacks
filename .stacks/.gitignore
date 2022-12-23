@@ -10,3 +10,7 @@ core/build/entries/*.ts
 **/dist/**/*.d.ts
 **/dist/**/*.d.cts
 **/dist/**/*.d.mts
+node_modules/
+/test-results/
+/playwright-report/
+/playwright/.cache/

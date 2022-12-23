@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+import { runAction } from '@stacksjs/actions'
 import { command, log } from '@stacksjs/cli'
 import { isProjectCreated } from '@stacksjs/utils'
-import { version } from '../package.json' assert { type: 'json' }
+import { Action } from '@stacksjs/types'
+import { version } from '../package.json'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
 
 const cli = command('stacks')
@@ -16,6 +18,8 @@ async function main() {
   await key(cli)
 
   if (!await isProjectCreated()) {
+    runAction(Action.KeyGenerate)
+
     await create(cli)
   }
   else {

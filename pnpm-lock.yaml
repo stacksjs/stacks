@@ -10,9 +10,12 @@ importers:
 
   .stacks:
     specifiers:
+      '@playwright/test': ^1.29.1
       '@stacksjs/buddy': workspace:*
     dependencies:
       '@stacksjs/buddy': link:buddy
+    devDependencies:
+      '@playwright/test': 1.29.1
 
   .stacks/buddy:
     specifiers:
@@ -4672,6 +4675,15 @@ packages:
       tiny-glob: 0.2.9
       tslib: 2.4.1
     dev: false
+
+  /@playwright/test/1.29.1:
+    resolution: {integrity: sha512-iQxk2DX5U9wOGV3+/Jh9OHPsw5H3mleUL2S4BgQuwtlAfK3PnKvn38m4Rg9zIViGHVW24opSm99HQm/UFLEy6w==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      '@types/node': 18.11.17
+      playwright-core: 1.29.1
+    dev: true
 
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
@@ -13157,6 +13169,12 @@ packages:
       jsonc-parser: 3.2.0
       mlly: 1.0.0
       pathe: 1.0.0
+
+  /playwright-core/1.29.1:
+    resolution: {integrity: sha512-20Ai3d+lMkWpI9YZYlxk8gxatfgax5STW8GaMozAHwigLiyiKQrdkt7gaoT9UQR8FIVDg6qVXs9IoZUQrDjIIg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
 
   /plivo/4.36.0:
     resolution: {integrity: sha512-jhd61SkiMXkWDZc+NFNqD5yheyQSl2dpdcLzpOx2u/ddUV1PX+nGwZ+gEp1wZ2B4V/l/qwVk8QHcXRN+VtT+Gg==}
