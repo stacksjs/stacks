@@ -104,7 +104,7 @@ async function install(path: string, options: CreateOptions) {
 
   if (result.isErr()) {
     log.error(result.error)
-    process.exit(ExitCode.FatalError)
+    process.exit()
   }
 
   result = await runCommand('cp .env.example .env', { ...options, cwd: path })

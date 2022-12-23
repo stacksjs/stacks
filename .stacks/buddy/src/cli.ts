@@ -2,6 +2,7 @@
 import { runAction } from '@stacksjs/actions'
 import { command, log } from '@stacksjs/cli'
 import { env, isProjectCreated } from '@stacksjs/utils'
+import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 import { version } from '../package.json'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
@@ -19,32 +20,38 @@ async function main() {
 
   // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
-    console.log('here?')
     if (env('APP_ENV') !== 'production') {
-      console.log('here2?')
-      await runAction(Action.KeyGenerate, { cwd: projectPath(), debug: true })
+      log.info('Project not initialized, generating application key...')
+      const result = await runAction(Action.KeyGenerate, { cwd: projectPath(), debug: true })
+      if (result.isErr()) {
+        log.error(result.error)
+        process.exit()
+      }
+      log.info('Application key generated.')
     }
-    else { log.info('Please run `buddy key:generate` to generate an application key.') }
+    else {
+      log.error('Please run `buddy key:generate` to generate an application key.')
+      process.exit()
+    }
 
     await create(cli)
   }
-  else {
-    await preinstall(cli)
-    await prepublish(cli)
-    await update(cli)
-    await generate(cli)
-    await dev(cli)
-    await build(cli)
-    await changelog(cli)
-    await clean(cli)
-    await commit(cli)
-    await fresh(cli)
-    await lint(cli)
-    await release(cli)
-    await make(cli)
-    await example(cli)
-    await test(cli)
-  }
+
+  await preinstall(cli)
+  await prepublish(cli)
+  await update(cli)
+  await generate(cli)
+  await dev(cli)
+  await build(cli)
+  await changelog(cli)
+  await clean(cli)
+  await commit(cli)
+  await fresh(cli)
+  await lint(cli)
+  await release(cli)
+  await make(cli)
+  await example(cli)
+  await test(cli)
 
   cli.help()
   cli.version(version)
