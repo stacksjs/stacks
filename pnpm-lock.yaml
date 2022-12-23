@@ -10,12 +10,9 @@ importers:
 
   .stacks:
     specifiers:
-      '@playwright/test': ^1.29.1
       '@stacksjs/buddy': workspace:*
     dependencies:
       '@stacksjs/buddy': link:buddy
-    devDependencies:
-      '@playwright/test': 1.29.1
 
   .stacks/buddy:
     specifiers:
@@ -784,12 +781,14 @@ importers:
 
   .stacks/core/testing:
     specifiers:
+      '@playwright/test': ^1.29.1
       '@vitest/coverage-istanbul': ^0.26.2
       '@vitest/ui': ^0.26.2
       mkdist: ^1.0.0
       typescript: ^4.9.4
       vitest: ^0.26.2
     dependencies:
+      '@playwright/test': 1.29.1
       '@vitest/coverage-istanbul': 0.26.2_@vitest+ui@0.26.2
       '@vitest/ui': 0.26.2
       vitest: 0.26.2_@vitest+ui@0.26.2
@@ -799,7 +798,7 @@ importers:
 
   .stacks/core/types:
     specifiers:
-      '@mdit-vue/plugin-component': ^0.11.1
+      '@mdit-vue/plugin-component': ^0.11.2
       '@mdit-vue/plugin-frontmatter': ^0.11.1
       '@mdit-vue/types': ^0.11.0
       '@rollup/pluginutils': ^5.0.2
@@ -824,7 +823,7 @@ importers:
       vite-ssg: ^0.22.1
       vitepress: 1.0.0-alpha.33
     devDependencies:
-      '@mdit-vue/plugin-component': 0.11.1
+      '@mdit-vue/plugin-component': 0.11.2
       '@mdit-vue/plugin-frontmatter': 0.11.1
       '@mdit-vue/types': 0.11.0
       '@rollup/pluginutils': 5.0.2
@@ -4013,8 +4012,8 @@ packages:
       vue-i18n:
         optional: true
     dependencies:
-      '@intlify/message-compiler': 9.3.0-beta.10
-      '@intlify/shared': 9.3.0-beta.10
+      '@intlify/message-compiler': 9.3.0-beta.11
+      '@intlify/shared': 9.3.0-beta.11
       jsonc-eslint-parser: 1.4.1
       source-map: 0.6.1
       vue-i18n: 9.2.2_vue@3.2.45
@@ -4046,11 +4045,11 @@ packages:
       source-map: 0.6.1
     dev: false
 
-  /@intlify/message-compiler/9.3.0-beta.10:
-    resolution: {integrity: sha512-RoOC6yceOykLRhN0NlbkNOBUx1el6iphx3W8NfOx3jHVNtfT1FYokx14/5sU3F1F0uxeG4sp6q+ppKvaF8o+ww==}
+  /@intlify/message-compiler/9.3.0-beta.11:
+    resolution: {integrity: sha512-gGGfBGzM7JBXp1Q9gbDAy5jELz9ho3ILqnpxp2yp64+gkqohrqc2YXIvCdwZoc6AtKIh/Zmv4sWVqxkvMsBWtQ==}
     engines: {node: '>= 14'}
     dependencies:
-      '@intlify/shared': 9.3.0-beta.10
+      '@intlify/shared': 9.3.0-beta.11
       source-map: 0.6.1
     dev: false
 
@@ -4059,8 +4058,8 @@ packages:
     engines: {node: '>= 14'}
     dev: false
 
-  /@intlify/shared/9.3.0-beta.10:
-    resolution: {integrity: sha512-h93uAanbAt/XgjDHclrVB7xix6r7Uz11wx0iGNOCdHP7aA2LCJjUT3uNbekJjjbo+Fl5jzTSJZdm2SexzoqhRA==}
+  /@intlify/shared/9.3.0-beta.11:
+    resolution: {integrity: sha512-CtbotesxTRiC3bRyXyv1NG39fkqJ790f8z8xFaeIXSZpOdiyxoh5BIyypCzSFQZDGLwz0Q9gyWbW1XpxQJm68Q==}
     engines: {node: '>= 14'}
     dev: false
 
@@ -4080,7 +4079,7 @@ packages:
         optional: true
     dependencies:
       '@intlify/bundle-utils': 3.4.0_vue-i18n@9.2.2
-      '@intlify/shared': 9.3.0-beta.10
+      '@intlify/shared': 9.3.0-beta.11
       '@rollup/pluginutils': 4.2.1
       '@vue/compiler-sfc': 3.2.45
       debug: 4.3.4
@@ -4283,6 +4282,14 @@ packages:
     dependencies:
       '@types/markdown-it': 12.2.3
       markdown-it: 13.0.1
+    dev: false
+
+  /@mdit-vue/plugin-component/0.11.2:
+    resolution: {integrity: sha512-ucFiEULCkLcCG1Tf1MfG5u5PS4BIXWIeKGHRGsXxz1ix2GbZWKFVgWEdNEckBu8s75Fv1WJLIOiAYZyri2f1nw==}
+    dependencies:
+      '@types/markdown-it': 12.2.3
+      markdown-it: 13.0.1
+    dev: true
 
   /@mdit-vue/plugin-frontmatter/0.11.1:
     resolution: {integrity: sha512-AdZJInjD1pTJXlfhuoBS5ycuIQ3ewBfY0R/XHM3TRDEaDHQJHxouUCpCyijZmpdljTU45lFetIowaKtAi7GBog==}
@@ -4683,7 +4690,7 @@ packages:
     dependencies:
       '@types/node': 18.11.17
       playwright-core: 1.29.1
-    dev: true
+    dev: false
 
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
@@ -13174,7 +13181,7 @@ packages:
     resolution: {integrity: sha512-20Ai3d+lMkWpI9YZYlxk8gxatfgax5STW8GaMozAHwigLiyiKQrdkt7gaoT9UQR8FIVDg6qVXs9IoZUQrDjIIg==}
     engines: {node: '>=14'}
     hasBin: true
-    dev: true
+    dev: false
 
   /plivo/4.36.0:
     resolution: {integrity: sha512-jhd61SkiMXkWDZc+NFNqD5yheyQSl2dpdcLzpOx2u/ddUV1PX+nGwZ+gEp1wZ2B4V/l/qwVk8QHcXRN+VtT+Gg==}
