@@ -1,2 +1,2 @@
-export * from 'vitest'
-export * from 'playwright'
+export * as unit from 'vitest'
+export * as feature from '@playwright/test'

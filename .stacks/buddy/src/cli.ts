@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { runAction } from '@stacksjs/actions'
 import { command, log } from '@stacksjs/cli'
-import { isProjectCreated } from '@stacksjs/utils'
+import { env, isProjectCreated } from '@stacksjs/utils'
 import { Action } from '@stacksjs/types'
 import { version } from '../package.json'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
@@ -13,12 +13,18 @@ process.on('uncaughtException', errorHandler)
 process.on('unhandledRejection', errorHandler)
 
 async function main() {
-  // before running any commands, check if the project is already initialized
+  // the following commands are not dependent on the project being initialized
   await setup(cli)
   await key(cli)
 
+  // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
-    runAction(Action.KeyGenerate)
+    console.log('here?')
+    if (env('APP_ENV') !== 'production') {
+      console.log('here2?')
+      await runAction(Action.KeyGenerate, { cwd: projectPath(), debug: true })
+    }
+    else { log.info('Please run `buddy key:generate` to generate an application key.') }
 
     await create(cli)
   }

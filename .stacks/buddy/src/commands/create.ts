@@ -3,8 +3,8 @@ import { bold, cyan, green, intro, link, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
-import { ExitCode } from '@stacksjs/types'
-import { generate as generateAppKey } from '@stacksjs/actions/key'
+import { Action, ExitCode } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
 
 async function create(buddy: CLI) {
   const descriptions = {
@@ -100,26 +100,26 @@ async function ensureEnv(path: string, options: CreateOptions) {
 
 async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
-  const res1 = await runCommand('pnpm install', { ...options, cwd: path })
+  let result = await runCommand('pnpm install', { ...options, cwd: path })
 
-  if (res1.isErr()) {
-    log.error(res1.error)
+  if (result.isErr()) {
+    log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 
-  const res2 = await runCommand('cp .env.example .env', { ...options, cwd: path })
+  result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
-  if (res2.isErr()) {
-    log.error(res2.error)
+  if (result.isErr()) {
+    log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 
-  await generateAppKey(options)
+  await runAction(Action.KeyGenerate, { ...options, cwd: path })
 
-  const res3 = await runCommand('git init', { ...options, cwd: path })
+  result = await runCommand('git init', { ...options, cwd: path })
 
-  if (res3.isErr()) {
-    log.error(res3.error)
+  if (result.isErr()) {
+    log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 

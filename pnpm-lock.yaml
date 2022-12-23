@@ -97,6 +97,7 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/logging': workspace:*
       '@stacksjs/path': workspace:*
+      '@stacksjs/security': workspace:*
       '@stacksjs/storage': workspace:*
       '@stacksjs/strings': workspace:*
       '@stacksjs/testing': workspace:*
@@ -112,6 +113,7 @@ importers:
       '@stacksjs/config': link:../config
       '@stacksjs/logging': link:../logging
       '@stacksjs/path': link:../path
+      '@stacksjs/security': link:../security
       '@stacksjs/storage': link:../storage
       '@stacksjs/strings': link:../strings
       '@stacksjs/types': link:../types

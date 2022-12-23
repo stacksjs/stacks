@@ -1,5 +1,7 @@
 import type { CLI, KeyOptions } from '@stacksjs/types'
-import { generate as generateAppKey } from '@stacksjs/actions/key'
+import { intro, log, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
 
 async function key(buddy: CLI) {
   const descriptions = {
@@ -11,7 +13,15 @@ async function key(buddy: CLI) {
     .command('key:generate', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: KeyOptions) => {
-      await generateAppKey(options)
+      const startTime = intro('buddy key:generate')
+      const result = await runAction(Action.KeyGenerate, options)
+
+      if (result.isErr()) {
+        log.error('Failed to set random application key.', result.error)
+        process.exit()
+      }
+
+      outro('Set random application key.', { startTime })
     })
 }
 
