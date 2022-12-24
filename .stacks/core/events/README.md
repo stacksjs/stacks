@@ -1,32 +1,24 @@
-# Stacks Strings
+# Stacks Events
 
-Easily manipulate & work with strings.
+Functional event emitting.
 
 ## ☘️ Features
 
-- Easily manipulate strings
-- Powerful & fast API
+- Functional event emitting
 
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/strings
+pnpm i -D @stacksjs/events
 ```
 
 Now, you can use it in your project:
 
 ```js
-import {
-  addIrregularRule, addPluralRule, addSingularRule, addUncountableRule, camelCase, capitalCase, constantCase, dotCase,
-  headerCase, isPlural, isSingular, kebabCase, noCase, paramCase, pascalCase,
-  pathCase, plural, sentenceCase, singular, snakeCase
-} from '@stacksjs/strings'
-
-console.log(camelCase('hello world')) // helloWorld
-console.log(plural('dog')) // dogs
+import { } from '@stacksjs/events'
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/strings](https://stacksjs.dev/strings).
+To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
 
 ## 🧪 Testing
 
