@@ -1,0 +1,56 @@
+{
+  "name": "@stacksjs/events",
+  "type": "module",
+  "version": "0.46.4",
+  "packageManager": "pnpm@7.19.0",
+  "description": "Functional event emitting.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/events#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/events"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "events",
+    "functional",
+    "functions",
+    "mitt",
+    "stacks"
+  ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.12.1",
+    "pnpm": ">=7.19.0"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/alias": "workspace:*",
+    "mitt": "^3.0.0"
+  },
+  "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
+    "mkdist": "^1.0.0",
+    "typescript": "^4.9.4",
+    "unbuild": "^1.0.2"
+  }
+}
