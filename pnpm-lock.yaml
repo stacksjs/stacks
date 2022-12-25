@@ -17,23 +17,33 @@ importers:
   .stacks/buddy:
     specifiers:
       '@stacksjs/actions': workspace:*
+      '@stacksjs/ai': workspace:*
       '@stacksjs/alias': workspace:*
       '@stacksjs/arrays': workspace:*
+      '@stacksjs/auth': workspace:*
       '@stacksjs/build': workspace:*
+      '@stacksjs/cache': workspace:*
       '@stacksjs/cli': workspace:*
       '@stacksjs/cloud': workspace:*
       '@stacksjs/collections': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/docs': workspace:*
       '@stacksjs/domains': workspace:*
+      '@stacksjs/email': workspace:*
       '@stacksjs/error-handling': workspace:*
+      '@stacksjs/events': workspace:*
       '@stacksjs/git': workspace:*
+      '@stacksjs/health': workspace:*
       '@stacksjs/lint': workspace:*
       '@stacksjs/logging': workspace:*
       '@stacksjs/modules': workspace:*
+      '@stacksjs/notifications': workspace:*
       '@stacksjs/objects': workspace:*
       '@stacksjs/path': workspace:*
+      '@stacksjs/payments': workspace:*
+      '@stacksjs/realtime': workspace:*
       '@stacksjs/router': workspace:*
+      '@stacksjs/search-engine': workspace:*
       '@stacksjs/security': workspace:*
       '@stacksjs/server': workspace:*
       '@stacksjs/storage': workspace:*
@@ -48,23 +58,33 @@ importers:
       unbuild: ^1.0.2
     dependencies:
       '@stacksjs/actions': link:../core/actions
+      '@stacksjs/ai': link:../core/ai
       '@stacksjs/alias': link:../core/alias
       '@stacksjs/arrays': link:../core/arrays
+      '@stacksjs/auth': link:../core/auth
       '@stacksjs/build': link:../core/build
+      '@stacksjs/cache': link:../core/cache
       '@stacksjs/cli': link:../core/cli
       '@stacksjs/cloud': link:../core/cloud
       '@stacksjs/collections': link:../core/collections
       '@stacksjs/config': link:../core/config
       '@stacksjs/docs': link:../core/docs
       '@stacksjs/domains': link:../core/domains
+      '@stacksjs/email': link:../core/email
       '@stacksjs/error-handling': link:../core/error-handling
+      '@stacksjs/events': link:../core/events
       '@stacksjs/git': link:../core/git
+      '@stacksjs/health': link:../core/health
       '@stacksjs/lint': link:../core/lint
       '@stacksjs/logging': link:../core/logging
       '@stacksjs/modules': link:../core/modules
+      '@stacksjs/notifications': link:../core/notifications
       '@stacksjs/objects': link:../core/objects
       '@stacksjs/path': link:../core/path
+      '@stacksjs/payments': link:../core/payments
+      '@stacksjs/realtime': link:../core/realtime
       '@stacksjs/router': link:../core/router
+      '@stacksjs/search-engine': link:../core/search-engine
       '@stacksjs/security': link:../core/security
       '@stacksjs/server': link:../core/server
       '@stacksjs/storage': link:../core/storage
@@ -4009,8 +4029,8 @@ packages:
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
     dev: false
 
-  /@iconify/utils/2.0.4:
-    resolution: {integrity: sha512-/ZYdSK+vao8XPoRPkdQeetGBtuCcPcVTtuXUz2Y+281EpcmM/5G1SCbtgty28r/Y9HkR9ePbKst7eWUOK7/jNQ==}
+  /@iconify/utils/2.0.5:
+    resolution: {integrity: sha512-UMT1WhBkr7oYggc69dFl/1RHE9XDisCrWaKXXQLpIccLCytHWZEX3247b/wR+sexYIKBSWs8YIKmMBe3g4oGCw==}
     dependencies:
       '@antfu/install-pkg': 0.1.1
       '@antfu/utils': 0.5.2
@@ -4599,7 +4619,7 @@ packages:
       eslint-plugin-ow3: 0.35.0_lzzuuodtsqwxnvqeq4g4likcqa
       eslint-plugin-promise: 6.1.1_eslint@8.30.0
       eslint-plugin-unicorn: 45.0.2_eslint@8.30.0
-      eslint-plugin-yml: 1.3.0_eslint@8.30.0
+      eslint-plugin-yml: 1.4.0_eslint@8.30.0
       jsonc-eslint-parser: 2.1.0
       yaml-eslint-parser: 1.1.0
     transitivePeerDependencies:
@@ -4666,7 +4686,7 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.30.0
       eslint-plugin-unicorn: 45.0.2_eslint@8.30.0
       eslint-plugin-vue: 9.8.0_eslint@8.30.0
-      eslint-plugin-yml: 1.3.0_eslint@8.30.0
+      eslint-plugin-yml: 1.4.0_eslint@8.30.0
       jsonc-eslint-parser: 2.1.0
       yaml-eslint-parser: 1.1.0
     transitivePeerDependencies:
@@ -5682,7 +5702,7 @@ packages:
   /@unocss/preset-icons/0.48.0:
     resolution: {integrity: sha512-3vro36gTkjEic5rO9BcUudby8tQ9ZRCduKZ1+4CKP0hKoB58nDm1QZM+kvWQ8RVN2xoSU9vWkHhx1RLl8miE0g==}
     dependencies:
-      '@iconify/utils': 2.0.4
+      '@iconify/utils': 2.0.5
       '@unocss/core': 0.48.0
       ohmyfetch: 0.4.21
     transitivePeerDependencies:
@@ -8923,8 +8943,8 @@ packages:
       - supports-color
     dev: false
 
-  /eslint-plugin-yml/1.3.0_eslint@8.30.0:
-    resolution: {integrity: sha512-TEkIaxutVPRZMRc0zOVptP/vmrf1td/9woUAiKII4kRLJLWWUCz1CYM98NsAfeOrVejFBFhHCSwOp+C1TqmtRg==}
+  /eslint-plugin-yml/1.4.0_eslint@8.30.0:
+    resolution: {integrity: sha512-vzggXNfPKa+arIaNUGoC3DPRZCxNty+xD/v9xOcE5D3Bj9SbgIrEobqVB35I8QxHd2YjL/dOS0xIIFmjAalwbw==}
     engines: {node: ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: '>=6.0.0'
