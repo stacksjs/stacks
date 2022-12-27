@@ -8,17 +8,15 @@ import { env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export const cache = {
-  default: env('CACHE_DRIVER', 'redis'),
+  driver: env('CACHE_DRIVER', 'redis'),
 
   redis: {
-    driver: 'redis',
     connection: 'cache',
     host: env('REDIS_HOST', '127.0.0.1'),
     port: env('REDIS_PORT', '6379'),
   },
 
   memcached: {
-    driver: 'memcached',
     persistent_id: env('MEMCACHED_PERSISTENT_ID', ''),
     sasl: [
       env('MEMCACHED_USERNAME', ''),
@@ -35,7 +33,6 @@ export const cache = {
   },
 
   dynamodb: {
-    driver: 'dynamodb',
     key: env('AWS_ACCESS_KEY_ID', ''),
     secret: env('AWS_SECRET_ACCESS_KEY', ''),
     region: env('AWS_DEFAULT_REGION', 'us-east-1'),

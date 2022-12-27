@@ -8,5 +8,5 @@ import type { DeployOptions as Options } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export const deploy: Options = {
-  host: 'netlify',
+  driver: 'netlify',
 }

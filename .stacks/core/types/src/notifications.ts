@@ -3,11 +3,9 @@ import type { IChatOptions, IEmailOptions, ISendMessageSuccessResponse, ISmsOpti
 export interface NotificationOptions {
   driver?: string
 
-  novu: {
-    key: string
-  }
-
   email: {
+    purgeCSS: boolean
+
     sendgrid: {
       key: string
       from: string

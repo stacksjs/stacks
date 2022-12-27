@@ -128,13 +128,4 @@ export interface AppOptions {
   cipher: string
 
   // inspect: <InspectOptions>{},
-
-  /**
-   * **Font**
-   *
-   * Description WIP.
-   *
-   * @default object
-   */
-  font: object
 }

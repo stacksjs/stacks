@@ -1,4 +1,5 @@
 // import type { ServicesOptions as Options } from '@stacksjs/types'
+import { env } from '@stacksjs/utils'
 
 /**
  * **Services**
@@ -38,5 +39,9 @@ export const services = {
   aws: {
     appId: '',
     apiKey: '',
+  },
+
+  novu: {
+    key: env('NOVU_API_KEY', 'test-key'),
   },
 }

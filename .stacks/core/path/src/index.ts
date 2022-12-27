@@ -7,6 +7,7 @@ import { basename, delimiter, dirname, extname, format, isAbsolute, join, normal
  *
  * @param path - relative path to the file or directory
  * @returns string - absolute path to the file or directory
+ *
  * @example
  * ```ts
  * import { aiPath } from '@stacks/paths'

@@ -1,5 +1,5 @@
 export interface DebugOptions {
-  driver: string
+  driver?: string
   enabled: boolean
   host: string
   port: number

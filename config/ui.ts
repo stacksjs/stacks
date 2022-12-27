@@ -16,10 +16,29 @@ export const ui: Options = {
   classPrefix: 'stx-',
   reset: 'tailwind',
   icons: ['heroicon-outline', 'heroicon-solid'],
+
   fonts: {
-    title: 'Mona',
-    text: 'Hubot',
+    email: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    desktop: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    mobile: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    web: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
   },
+
   // webFonts: {
   //   sans: 'Inter',
   //   mono: 'Inter',

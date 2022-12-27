@@ -7,5 +7,5 @@ export interface DeployOptions {
    * @default string 'netlify'
    * @see https://stacksjs.dev/docs/components
    */
-  host: 'netlify' | 'vercel'
+  driver: 'netlify' | 'vercel'
 }

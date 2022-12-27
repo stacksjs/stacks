@@ -21,23 +21,4 @@ export const app: Options = {
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
   editor: 'vscode',
-
-  font: {
-    email: {
-      body: 'Inter',
-      title: 'Roboto',
-    },
-    desktop: {
-      body: 'Inter',
-      title: 'Roboto',
-    },
-    mobile: {
-      body: 'Inter',
-      title: 'Roboto',
-    },
-    web: {
-      body: 'Inter',
-      title: 'Roboto',
-    },
-  },
 }
