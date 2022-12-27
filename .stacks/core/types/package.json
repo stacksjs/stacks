@@ -2,7 +2,7 @@
   "name": "@stacksjs/types",
   "type": "module",
   "version": "0.46.4",
-  "packageManager": "pnpm@7.19.0",
+  "packageManager": "pnpm@7.20.0",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.19.0"
+    "pnpm": ">=7.20.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -53,7 +53,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.11.17",
+    "@types/node": "^18.11.18",
     "@types/nprogress": "^0.2.0",
     "@types/pluralize": "^0.0.29",
     "@types/prompts": "^2.4.2",

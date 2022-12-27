@@ -2,7 +2,7 @@
   "name": "@stacksjs/search-engine",
   "type": "module",
   "version": "0.46.4",
-  "packageManager": "pnpm@7.19.0",
+  "packageManager": "pnpm@7.20.0",
   "description": "The Stacks search engine integrations.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -41,7 +41,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.19.0"
+    "pnpm": ">=7.20.0"
   },
   "scripts": {
     "build": "mkdist -d",
