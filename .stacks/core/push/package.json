@@ -1,23 +1,23 @@
 {
-  "name": "@stacksjs/email",
+  "name": "@stacksjs/push",
   "type": "module",
   "version": "0.46.4",
   "packageManager": "pnpm@7.19.0",
-  "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
+  "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/email#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/push#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/email"
+    "directory": "./.stacks/core/push"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "email",
+    "push",
     "ses",
     "aws",
     "maizzle",
@@ -45,16 +45,7 @@
   },
   "peerDependencies": {
     "@maizzle/framework": "latest",
-    "@novu/emailjs": "^0.9.0",
-    "@novu/mailgun": "^0.9.0",
-    "@novu/mailjet": "^0.9.0",
-    "@novu/mandrill": "^0.9.0",
-    "@novu/netcore": "^0.9.0",
     "@novu/node": "^0.9.0",
-    "@novu/nodemailer": "^0.9.0",
-    "@novu/postmark": "^0.9.0",
-    "@novu/sendgrid": "^0.9.0",
-    "@novu/ses": "^0.9.0",
     "@novu/stateless": "^0.9.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
