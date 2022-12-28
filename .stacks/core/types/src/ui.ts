@@ -4,11 +4,11 @@ export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicon-outline' | 'heroicon-solid'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare' | 'none'
 
-interface FontInfo {
+export interface FontInfo {
   title: string
   text: string
 }
-type FontFor = 'email' | 'desktop' | 'mobile' | 'web'
+export type FontFor = 'email' | 'desktop' | 'mobile' | 'web'
 
 export interface WebFontMeta {
   name: string
@@ -128,11 +128,18 @@ export interface UiOptions {
   /**
    * **Fonts**
    *
-   * Define the local fonts you want to use. By default, Stacks provides
-   * support for several local font providers. You may set this value
-   * to `null` if you prefer not utilize any local fonts.
+   * Define the fonts you want to use. By default, Stacks provides support
+   * for several local font providers. You may set this value to
+   * `null` if you prefer not utilize any local fonts.
    *
    * @see https://stacks.ow3.org/fonts
+   * @example applies the same font for all platforms _(web, email, desktop, and mobile)_
+   * ```ts
+   * fonts: {
+   *   title: 'Mona',
+   *   text: 'Hubot'
+   * }
+   * ```
    * @example
    * ```ts
    * fonts: {
@@ -140,25 +147,16 @@ export interface UiOptions {
    *     title: 'Inter',
    *     text: 'Mona'
    *   },
+   *   desktop: {
+   *     title: 'Mona',
+   *     text: 'Inter'
+   *   },
    * }
    * ```
    */
-  fonts?: Record<FontFor, FontInfo>
+  fonts?: Record<FontFor, FontInfo> | { [key in FontFor]: FontInfo }
 
-  /**
-   * **Web Fonts**
-   *
-   * Define the web fonts you want to use. By default, Stacks provides
-   * support for several web font providers. You may set this value
-   * to `null` if you prefer not utilize any web fonts.
-   *
-   * @see https://stacks.ow3.org/fonts
-   * @example
-   * ```ts
-   * webFonts: 'inter'
-   * ```
-   */
-  webFonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
+  useWebFonts?: boolean
 
   /**
    * **Icon Sets**

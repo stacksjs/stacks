@@ -15,6 +15,7 @@ export const ui: Options = {
   trigger: ':stx:',
   classPrefix: 'stx-',
   reset: 'tailwind',
+
   icons: ['heroicon-outline', 'heroicon-solid'],
 
   fonts: {
