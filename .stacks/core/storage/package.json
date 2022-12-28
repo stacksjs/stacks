@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/storage",
   "type": "module",
-  "version": "0.47.0",
+  "version": "0.47.1",
   "packageManager": "pnpm@7.21.0",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",

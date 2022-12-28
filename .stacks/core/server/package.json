@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/server",
   "type": "module",
-  "version": "0.47.0",
+  "version": "0.47.1",
   "packageManager": "pnpm@7.21.0",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
