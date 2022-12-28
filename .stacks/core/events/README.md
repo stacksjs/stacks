@@ -15,13 +15,13 @@ pnpm i -D @stacksjs/events
 Now, you can use it in your project:
 
 ```js
-import { dispatch, listen, all, off } from '@stacksjs/events'
+import { all, dispatch, listen, off } from '@stacksjs/events'
 
 // listen to an event
-listen('foo', e => console.log('foo', e) )
+listen('foo', e => console.log('foo', e))
 
 // listen to all events
-listen('*', (type, e) => console.log(type, e) )
+listen('*', (type, e) => console.log(type, e))
 
 // fire an event
 dispatch('foo', { a: 'b' })

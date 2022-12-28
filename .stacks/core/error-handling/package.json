@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.46.4",
+  "version": "0.47.0",
   "packageManager": "pnpm@7.20.0",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
