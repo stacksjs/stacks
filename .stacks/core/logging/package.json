@@ -2,7 +2,7 @@
   "name": "@stacksjs/logging",
   "type": "module",
   "version": "0.47.0",
-  "packageManager": "pnpm@7.20.0",
+  "packageManager": "pnpm@7.21.0",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.20.0"
+    "pnpm": ">=7.21.0"
   },
   "scripts": {
     "build": "mkdist -d",

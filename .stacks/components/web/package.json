@@ -2,7 +2,7 @@
   "name": "hello-world-elements",
   "type": "module",
   "version": "",
-  "packageManager": "pnpm@7.20.0",
+  "packageManager": "pnpm@7.21.0",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "license": "MIT",
