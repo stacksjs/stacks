@@ -1,3 +1,6 @@
+import mitt from 'mitt'
+import type { Events } from '@stacksjs/types'
+
 /**
  * This module provides a simple, yet powerful, event bus for the application.
  *
@@ -13,8 +16,6 @@
  * listen('user:registered', (user) => console.log(user))
  * ```
  */
-import mitt from 'mitt'
-import type { Events } from '@stacksjs/types'
 
 const events = mitt
 
@@ -26,4 +27,4 @@ const listen = emitter.on
 const off = emitter.off
 const all = emitter.all
 
-export { useEvent, dispatch, listen, all, off, events, mitt }
+export { useEvent, dispatch, listen, all, off, events, mitt, Events }

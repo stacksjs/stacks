@@ -541,7 +541,6 @@ importers:
       mitt: ^3.0.0
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      unbuild: ^1.0.2
     dependencies:
       '@stacksjs/alias': link:../alias
       mitt: 3.0.0
@@ -549,7 +548,6 @@ importers:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
-      unbuild: 1.0.2
 
   .stacks/core/git:
     specifiers:

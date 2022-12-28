@@ -15,10 +15,27 @@ pnpm i -D @stacksjs/events
 Now, you can use it in your project:
 
 ```js
-import { } from '@stacksjs/events'
+import { dispatch, listen, all, off } from '@stacksjs/events'
+
+// listen to an event
+listen('foo', e => console.log('foo', e) )
+
+// listen to all events
+listen('*', (type, e) => console.log(type, e) )
+
+// fire an event
+dispatch('foo', { a: 'b' })
+
+// clearing all events
+all.clear()
+
+// working with handler references:
+function onFoo() {}
+listen('foo', onFoo) // listen
+off('foo', onFoo) // unlisten
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
+For improved type inference, ensure to configure `./config/events.ts`. To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
 
 ## 🧪 Testing
 
@@ -48,8 +65,7 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [change-case](https://www.npmjs.com/package/change-case)
-- [pluralize](https://www.npmjs.com/package/pluralize)
+- [mitt](https://github.com/developit/mitt)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 
