@@ -21,7 +21,15 @@
     "ses",
     "aws",
     "maizzle",
-    "stacks"
+    "stacks",
+    "emailjs",
+    "mailgun",
+    "mailjet",
+    "mandrill",
+    "netcore",
+    "nodemailer",
+    "postmark",
+    "sendgrid"
   ],
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",

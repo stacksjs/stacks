@@ -18,10 +18,9 @@
   },
   "keywords": [
     "chat",
-    "ses",
-    "aws",
-    "maizzle",
-    "stacks"
+    "stacks",
+    "discord",
+    "slack"
   ],
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",

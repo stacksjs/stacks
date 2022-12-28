@@ -19,9 +19,15 @@
   "keywords": [
     "sms",
     "ses",
-    "aws",
-    "maizzle",
-    "stacks"
+    "stacks",
+    "gupshup",
+    "nexmo",
+    "plivo",
+    "sms77",
+    "sns",
+    "telnyx",
+    "termii",
+    "twilio"
   ],
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
