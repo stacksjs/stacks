@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { ResultAsync } from '@stacksjs/error-handling'
 import * as Maizzle from '@maizzle/framework'
 import * as maizzleConfig from '../../../utils/config'
-import { config } from '../tailwind.config'
+import { config } from '../../../tailwind.config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string) {
   const template = `

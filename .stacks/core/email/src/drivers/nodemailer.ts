@@ -1,7 +1,7 @@
 import { NodemailerProvider } from '@novu/nodemailer'
 import type { EmailOptions } from '@stacksjs/types'
 import { notification } from '@stacksjs/config'
-import { send as sendEmail } from './actions/send'
+import { send as sendEmail } from '../actions/send'
 
 const env = notification.email.nodemailer
 
