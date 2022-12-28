@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.47.1",
+  "version": "0.47.2",
   "packageManager": "pnpm@7.21.0",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
