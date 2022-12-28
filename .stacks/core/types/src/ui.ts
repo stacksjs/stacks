@@ -2,7 +2,7 @@ import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicon-outline' | 'heroicon-solid'
-export type WebFontsProviders = 'google' | 'bunny' | 'fontshare' | 'none'
+export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
 
 export interface FontInfo {
   title: string
@@ -156,7 +156,7 @@ export interface UiOptions {
    */
   fonts?: Record<FontFor, FontInfo> | { [key in FontFor]: FontInfo }
 
-  useWebFonts?: boolean
+  useWebFonts?: boolean | WebFontsProviders
 
   /**
    * **Icon Sets**
