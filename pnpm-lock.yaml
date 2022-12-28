@@ -53,7 +53,7 @@ importers:
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
       only-allow: ^1.1.1
-      pnpm: '>=7.19.0'
+      pnpm: '>=7.20.0'
       typescript: ^4.9.4
       unbuild: ^1.0.2
     dependencies:
@@ -95,7 +95,7 @@ importers:
       '@stacksjs/utils': link:../core/utils
     devDependencies:
       only-allow: 1.1.1
-      pnpm: 7.19.0
+      pnpm: 7.20.0
       typescript: 4.9.4
       unbuild: 1.0.2
 
@@ -127,7 +127,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vue-component-meta: ^1.0.16
+      vue-component-meta: ^1.0.18
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -140,7 +140,7 @@ importers:
       '@stacksjs/utils': link:../utils
       esno: 0.16.3
       markdown-it: 13.0.1
-      vue-component-meta: 1.0.16_typescript@4.9.4
+      vue-component-meta: 1.0.18_typescript@4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -272,6 +272,35 @@ importers:
       memcached: 2.2.2
       memjs: 1.3.0
       redis: 4.5.1
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.4
+      typescript: 4.9.4
+
+  .stacks/core/chat:
+    specifiers:
+      '@maizzle/framework': latest
+      '@novu/discord': ^0.10.0
+      '@novu/node': ^0.10.0
+      '@novu/slack': ^0.10.0
+      '@novu/stateless': ^0.10.0
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/error-handling': workspace:*
+      '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
+      mkdist: ^1.0.0
+      typescript: ^4.9.4
+    dependencies:
+      '@maizzle/framework': 4.3.1_glob@7.2.3
+      '@novu/discord': 0.10.0
+      '@novu/node': 0.10.0
+      '@novu/slack': 0.10.0
+      '@novu/stateless': 0.10.0
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
+      '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -451,6 +480,18 @@ importers:
 
   .stacks/core/email:
     specifiers:
+      '@maizzle/framework': latest
+      '@novu/emailjs': ^0.10.0
+      '@novu/mailgun': ^0.10.0
+      '@novu/mailjet': ^0.10.0
+      '@novu/mandrill': ^0.10.0
+      '@novu/netcore': ^0.10.0
+      '@novu/node': ^0.10.0
+      '@novu/nodemailer': ^0.10.0
+      '@novu/postmark': ^0.10.0
+      '@novu/sendgrid': ^0.10.0
+      '@novu/ses': ^0.10.0
+      '@novu/stateless': ^0.10.0
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/error-handling': workspace:*
@@ -459,6 +500,18 @@ importers:
       mkdist: ^1.0.0
       typescript: ^4.9.4
     dependencies:
+      '@maizzle/framework': 4.3.1_glob@7.2.3
+      '@novu/emailjs': 0.10.0_typescript@4.9.4
+      '@novu/mailgun': 0.10.0
+      '@novu/mailjet': 0.10.0
+      '@novu/mandrill': 0.10.0
+      '@novu/netcore': 0.10.0
+      '@novu/node': 0.10.0
+      '@novu/nodemailer': 0.10.0
+      '@novu/postmark': 0.10.0
+      '@novu/sendgrid': 0.10.0
+      '@novu/ses': 0.10.0
+      '@novu/stateless': 0.10.0
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
       '@stacksjs/error-handling': link:../error-handling
@@ -592,27 +645,27 @@ importers:
   .stacks/core/notifications:
     specifiers:
       '@maizzle/framework': latest
-      '@novu/discord': ^0.9.0
-      '@novu/emailjs': ^0.9.0
-      '@novu/gupshup': ^0.9.0
-      '@novu/mailgun': ^0.9.0
-      '@novu/mailjet': ^0.9.0
-      '@novu/mandrill': ^0.9.0
-      '@novu/netcore': ^0.9.0
-      '@novu/nexmo': ^0.9.0
-      '@novu/node': ^0.9.0
-      '@novu/nodemailer': ^0.9.0
-      '@novu/plivo': ^0.9.0
-      '@novu/postmark': ^0.9.0
-      '@novu/sendgrid': ^0.9.0
-      '@novu/ses': ^0.9.0
-      '@novu/slack': ^0.9.0
-      '@novu/sms77': ^0.9.0
-      '@novu/sns': ^0.9.0
-      '@novu/stateless': ^0.9.0
-      '@novu/telnyx': ^0.9.0
-      '@novu/termii': ^0.9.0
-      '@novu/twilio': ^0.9.0
+      '@novu/discord': ^0.10.0
+      '@novu/emailjs': ^0.10.0
+      '@novu/gupshup': ^0.10.0
+      '@novu/mailgun': ^0.10.0
+      '@novu/mailjet': ^0.10.0
+      '@novu/mandrill': ^0.10.0
+      '@novu/netcore': ^0.10.0
+      '@novu/nexmo': ^0.10.0
+      '@novu/node': ^0.10.0
+      '@novu/nodemailer': ^0.10.0
+      '@novu/plivo': ^0.10.0
+      '@novu/postmark': ^0.10.0
+      '@novu/sendgrid': ^0.10.0
+      '@novu/ses': ^0.10.0
+      '@novu/slack': ^0.10.0
+      '@novu/sms77': ^0.10.0
+      '@novu/sns': ^0.10.0
+      '@novu/stateless': ^0.10.0
+      '@novu/telnyx': ^0.10.0
+      '@novu/termii': ^0.10.0
+      '@novu/twilio': ^0.10.0
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/error-handling': workspace:*
@@ -623,27 +676,27 @@ importers:
       unbuild: ^1.0.2
     dependencies:
       '@maizzle/framework': 4.3.1_glob@7.2.3
-      '@novu/discord': 0.9.0
-      '@novu/emailjs': 0.9.0_typescript@4.9.4
-      '@novu/gupshup': 0.9.0
-      '@novu/mailgun': 0.9.0
-      '@novu/mailjet': 0.9.0
-      '@novu/mandrill': 0.9.0
-      '@novu/netcore': 0.9.0
-      '@novu/nexmo': 0.9.0
-      '@novu/node': 0.9.0
-      '@novu/nodemailer': 0.9.0
-      '@novu/plivo': 0.9.0
-      '@novu/postmark': 0.9.0
-      '@novu/sendgrid': 0.9.0
-      '@novu/ses': 0.9.0
-      '@novu/slack': 0.9.0
-      '@novu/sms77': 0.9.0
-      '@novu/sns': 0.9.0
-      '@novu/stateless': 0.9.0
-      '@novu/telnyx': 0.9.0
-      '@novu/termii': 0.9.0
-      '@novu/twilio': 0.9.0
+      '@novu/discord': 0.10.0
+      '@novu/emailjs': 0.10.0_typescript@4.9.4
+      '@novu/gupshup': 0.10.0
+      '@novu/mailgun': 0.10.0
+      '@novu/mailjet': 0.10.0
+      '@novu/mandrill': 0.10.0
+      '@novu/netcore': 0.10.0
+      '@novu/nexmo': 0.10.0
+      '@novu/node': 0.10.0
+      '@novu/nodemailer': 0.10.0
+      '@novu/plivo': 0.10.0
+      '@novu/postmark': 0.10.0
+      '@novu/sendgrid': 0.10.0
+      '@novu/ses': 0.10.0
+      '@novu/slack': 0.10.0
+      '@novu/sms77': 0.10.0
+      '@novu/sns': 0.10.0
+      '@novu/stateless': 0.10.0
+      '@novu/telnyx': 0.10.0
+      '@novu/termii': 0.10.0
+      '@novu/twilio': 0.10.0
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
       '@stacksjs/error-handling': link:../error-handling
@@ -685,6 +738,31 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       typescript: ^4.9.4
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.4
+      typescript: 4.9.4
+
+  .stacks/core/push:
+    specifiers:
+      '@maizzle/framework': latest
+      '@novu/node': ^0.10.0
+      '@novu/stateless': ^0.10.0
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/error-handling': workspace:*
+      '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
+      mkdist: ^1.0.0
+      typescript: ^4.9.4
+    dependencies:
+      '@maizzle/framework': 4.3.1_glob@7.2.3
+      '@novu/node': 0.10.0
+      '@novu/stateless': 0.10.0
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
+      '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -774,6 +852,47 @@ importers:
       mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
 
+  .stacks/core/sms:
+    specifiers:
+      '@maizzle/framework': latest
+      '@novu/gupshup': ^0.10.0
+      '@novu/nexmo': ^0.10.0
+      '@novu/node': ^0.10.0
+      '@novu/plivo': ^0.10.0
+      '@novu/sms77': ^0.10.0
+      '@novu/sns': ^0.10.0
+      '@novu/stateless': ^0.10.0
+      '@novu/telnyx': ^0.10.0
+      '@novu/termii': ^0.10.0
+      '@novu/twilio': ^0.10.0
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/error-handling': workspace:*
+      '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
+      mkdist: ^1.0.0
+      typescript: ^4.9.4
+    dependencies:
+      '@maizzle/framework': 4.3.1_glob@7.2.3
+      '@novu/gupshup': 0.10.0
+      '@novu/nexmo': 0.10.0
+      '@novu/node': 0.10.0
+      '@novu/plivo': 0.10.0
+      '@novu/sms77': 0.10.0
+      '@novu/sns': 0.10.0
+      '@novu/stateless': 0.10.0
+      '@novu/telnyx': 0.10.0
+      '@novu/termii': 0.10.0
+      '@novu/twilio': 0.10.0
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
+      '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/types': link:../types
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.0.0_typescript@4.9.4
+      typescript: 4.9.4
+
   .stacks/core/storage:
     specifiers:
       '@stacksjs/arrays': workspace:*
@@ -847,7 +966,7 @@ importers:
       '@types/fs-extra': ^9.0.13
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
-      '@types/node': ^18.11.17
+      '@types/node': ^18.11.18
       '@types/nprogress': ^0.2.0
       '@types/pluralize': ^0.0.29
       '@types/prompts': ^2.4.2
@@ -872,7 +991,7 @@ importers:
       '@types/fs-extra': 9.0.13
       '@types/markdown-it-link-attributes': 3.0.1
       '@types/minimatch': 5.1.2
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       '@types/nprogress': 0.2.0
       '@types/pluralize': 0.0.29
       '@types/prompts': 2.4.2
@@ -885,7 +1004,7 @@ importers:
       vite-plugin-inspect: 0.7.11_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_3nkpb5yzbuphqhegz2uv6y4s3u
       vite-ssg: 0.22.1_wg5sslydmzl6un74innclax7im
-      vitepress: 1.0.0-alpha.33_o4l5fnurgl7shvybs3txghyb5a
+      vitepress: 1.0.0-alpha.33_j73j5xdbzpkigstapj6vkce2xy
 
   .stacks/core/ui:
     specifiers:
@@ -901,7 +1020,7 @@ importers:
       typescript: ^4.9.4
       unocss: ^0.48.0
       vue: ^3.2.45
-      vue-tsc: ^1.0.16
+      vue-tsc: ^1.0.18
     dependencies:
       '@iconify-json/heroicons-outline': 1.1.5
       '@iconify-json/heroicons-solid': 1.1.6
@@ -912,7 +1031,7 @@ importers:
       pinia: 2.0.28_prq2uz4lho2pwp6irk4cfkrxwu
       unocss: 0.48.0_vite@4.0.3
       vue: 3.2.45
-      vue-tsc: 1.0.16_typescript@4.9.4
+      vue-tsc: 1.0.18_typescript@4.9.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -4361,42 +4480,42 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.14.0
 
-  /@novu/discord/0.9.0:
-    resolution: {integrity: sha512-VgPdSIK63BsSXouR95wSJ/wBwkP3V4Jfp/jQBjrC0evc11mVmTgodmKVwGgpTYqEveFcbqTLNPg2TpBGqHqrBg==}
+  /@novu/discord/0.10.0:
+    resolution: {integrity: sha512-HOtCyO9i9EsnIAoyVa+vzJ4qfoEie6S47jtyloBD1t1ugkY5gzoyHpbhX8D1ZRxAvB4ICn6rW+Ds0xcSMd6mhg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       axios: 0.27.2
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/emailjs/0.9.0_typescript@4.9.4:
-    resolution: {integrity: sha512-hwIoAuu8ohOgzMcre0LXYtbUliODvfT9zACbCb3BrIxb7cm/KAL1m9OPdEl1xi4ZjL518kozM+nFebi5dz1ZXQ==}
+  /@novu/emailjs/0.10.0_typescript@4.9.4:
+    resolution: {integrity: sha512-jr6RQrQ0bsXjGc7+bvA3YqVK4mfkF3IyW8NllhU2qiyWIDNtBKsURPmZ8dgWHs9dmVKsV61ynpXlFqWt1wcSCw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       emailjs: 3.8.1_typescript@4.9.4
     transitivePeerDependencies:
       - debug
       - typescript
     dev: false
 
-  /@novu/gupshup/0.9.0:
-    resolution: {integrity: sha512-kJ2Uxuex1RxaO5PJSwxfwvc8WUIm5gGviOs3VOMa6iKHmhFCT6WBJvXASUcipB0zlDZD0lT0/jggYCQsWrw2TQ==}
+  /@novu/gupshup/0.10.0:
+    resolution: {integrity: sha512-j2rqouDqBVk5QhCFo42UkoucLTPEdw7UlWkZdBVBwoCLCXei73alb9R78tbMm8NpXbhWMq+Ul2ykd4QL8irQHw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       node-fetch: 3.3.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/mailgun/0.9.0:
-    resolution: {integrity: sha512-o0dn1IT/MpQ9kgnLKA4gZvRYTpxwqi5/pAsgwLwQEsxPah7cOE6OPTdq+UOkvxylF6Ppk3+a36fIjBOzo5VwPg==}
+  /@novu/mailgun/0.10.0:
+    resolution: {integrity: sha512-3yUZu5+VSgBFvphUdQHm4PFtR1NBybuqyH5j/BxaS+I5A+PmD+mP4EO3zp3xn5UoFskzuJSKDX3UYLOLCAmQJA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       form-data: 4.0.0
       mailgun.js: 8.0.6
       nock: 13.2.9
@@ -4405,52 +4524,52 @@ packages:
       - supports-color
     dev: false
 
-  /@novu/mailjet/0.9.0:
-    resolution: {integrity: sha512-h5V2EzN/O9lUlDvXHv8SFKf9tu4UL3MblhQtH5DALPTA26rih2YazHxBtzb/szOQ7MmB6mPdpaPWPOavnlWhIg==}
+  /@novu/mailjet/0.10.0:
+    resolution: {integrity: sha512-wZy5bsY284cW5yPSvluIqTipVXl+hm2AUnafV9Sm0oGmNrxGbJe4LemeHVHP++TWHD+HtFWe4NzhNjLO4t8mrg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       node-mailjet: 3.4.1
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@novu/mandrill/0.9.0:
-    resolution: {integrity: sha512-Y8Txx2ZIlpK1TkhKqvKmbqCd/jIloxyeQNNvBALc+g5dCZu4Z5jneFEHbG7WSGzY1DCAO5/l5RBGNqz9N9Hjaw==}
+  /@novu/mandrill/0.10.0:
+    resolution: {integrity: sha512-cDoXnaKXhEu1hGEKOq3muj0EmLHAg4YYARpI7C79xyUP4GUcswWGpw95YB4W2T6AGIGQQ9S7XKHowZv1PkaNtg==}
     engines: {node: '>=10'}
     dependencies:
       '@mailchimp/mailchimp_transactional': 1.0.50
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/netcore/0.9.0:
-    resolution: {integrity: sha512-k+5bQK0tLNfW9LQA38t3AwGlBmwotuZTFHkdDEcKxgkXglYSv8pAguS6FMdKC0EylRMuwmEse4anaQAMM2yzcg==}
+  /@novu/netcore/0.10.0:
+    resolution: {integrity: sha512-CwKm9wOqNftKVBSk6Y0zEtNCTA/DEsCpz1jj7deS/w5T4azFHKLm/ssCz2/cpDInN/0VxPsA3pJW3K0AJOXdvg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       pepipost: 5.0.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/nexmo/0.9.0:
-    resolution: {integrity: sha512-AEd71tOyJBmRHoi6Ug6m2w6HMl9xNFH52kLe/P/Yx2OI+YPYmR6WRwjRe2IOaizeIArgdJyWSMLcccyBCE6GBw==}
+  /@novu/nexmo/0.10.0:
+    resolution: {integrity: sha512-Eu+7hDSbJ71tVbfUGG6rw2VN8LsWJzCjuu7bQgsZSZEtHZwJobbp43OervLDpagcL4qtF4R+7dndLRasXWFe3g==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       '@vonage/server-sdk': 2.11.2
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/node/0.9.0:
-    resolution: {integrity: sha512-GqHFc8wNOBWXmiiWjLrymmbtYCr25hNwws/tjBIbOdEhyCnnsWObqlnwnOZelDD5WPuwos+tZ96wMtUX63uM+Q==}
+  /@novu/node/0.10.0:
+    resolution: {integrity: sha512-IByZ62x7uWY5q/8jNtYqKtlyaJ13Zqjsg8/kIJJdFsgl6XVYBLBrtzdvuZbSG7VGMyfXOE4VvPMSmVUi7hzoZQ==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/shared': 0.9.0
+      '@novu/shared': 0.10.0
       axios: 0.26.1
       handlebars: 4.7.7
       lodash.get: 4.4.2
@@ -4460,88 +4579,87 @@ packages:
       - supports-color
     dev: false
 
-  /@novu/nodemailer/0.9.0:
-    resolution: {integrity: sha512-r0xPEU5kVKrRfwcnlxHbeBUWOYL3+9TZlOsHCrGWuVbuhBYdytYJ2ejiUyEWnz+ZyyQkakh21vfUThBlPQGCOw==}
+  /@novu/nodemailer/0.10.0:
+    resolution: {integrity: sha512-Ig/jrgb8daJzvdar1t22D/XEEQ+2Mei7pB0tTvcZ7JtgaCJblMOI+Tptu3HWay+0UrJ3/XHP7g/1WNEyGNJUHw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       nodemailer: 6.8.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/plivo/0.9.0:
-    resolution: {integrity: sha512-sU6N744G4I+vd+RJAHZ2ohkQti1aHQ1uHCKWzIizvk+gZPjCJRVC9MsdiWdHoBgBQ9gvuyoznEQximDB+sAPdA==}
+  /@novu/plivo/0.10.0:
+    resolution: {integrity: sha512-x0zeWq5XiYkZ/LLAZeH5C76gVXuxDNOL4XuajgSoM6W5mjM78/NTqxjku6iBA/cW6f99M+R6CST9e2QGPmyNHg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       plivo: 4.36.0
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@novu/postmark/0.9.0:
-    resolution: {integrity: sha512-Z2MWXSnFquGr1rY4sY/+Nu0G8IXMdWw1M7eXiWxjlx9Y5DNCD0TgPHyhrRemk4+GUgfgzvtHq2K25aFu1rBEyw==}
+  /@novu/postmark/0.10.0:
+    resolution: {integrity: sha512-ubb4Rtb8mlpZ2cWfO0bIYbb/OEIDOI2HDL23cXlSKpzVIlFR4777lgGd/9x0PCDTjWkuowEC44JCH5Wh9gCahA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       postmark: 2.9.5
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/sendgrid/0.9.0:
-    resolution: {integrity: sha512-kDz7w/lDIxw+Z25CLutlRorUN+FE5DJm/gA9qhZRDqIIldH1LwvK6+SnxWCctE5UPdyoQS8y4tNmd1PIiJjBYA==}
+  /@novu/sendgrid/0.10.0:
+    resolution: {integrity: sha512-40LG6zPFcr89bCmtL2/1ft9mUIbED7gQQC6SPIBovVaaEZ0NOM7Tt2gm7zBYQ++dZazkPjeLwhQlfGpWiHrL1Q==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       '@sendgrid/mail': 7.7.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/ses/0.9.0:
-    resolution: {integrity: sha512-mYOCUGdjkovUl4+UBxNbnm89bJasfrxDb4aqFBJ0aR3xo2kgCLvMBRC8Q9wVc2opHJBatPEATsWYe3aLo4uObQ==}
+  /@novu/ses/0.10.0:
+    resolution: {integrity: sha512-5WwVwFqT6bK1tRT3Bngc/K6Bi6ld5oNLB4HztpVIf5rQ5+/FuNd3TmDg1fa/JxcTls26OAkgsK8LZBHCg8jtQA==}
     engines: {node: '>=10'}
     dependencies:
       '@aws-sdk/client-ses': 3.48.0
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       nodemailer: 6.8.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/shared/0.9.0:
-    resolution: {integrity: sha512-ohx3mUaKapFCW2QfqrVQDT0ZAJHOT06jtWwIcGydx6JerY2lnu/OFwjTJrWBAw6z6HJi10pkd7Gxf9R3RRhF/g==}
+  /@novu/shared/0.10.0:
+    resolution: {integrity: sha512-cRPY1yIRSTP3W/oH0e5DQqQbdtEd2Jpk8BLp2+LIN9km8FQt80Jrgyju6ZiEjryODiW/lc2ZFw7c6hojgsYk8Q==}
     dependencies:
       axios: 0.26.1
       class-transformer: 0.5.1
       class-validator: 0.13.2
       mixpanel: 0.13.0
-      rimraf: 3.0.2
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@novu/slack/0.9.0:
-    resolution: {integrity: sha512-rgDdrRitj5aAcZ6JjbNP5Qmtg/8Uc0nCbnbvM2PwIJhl4FbriFxhjW5PcadWGJ9r96FeYbosUpPXWI+nsziDYQ==}
+  /@novu/slack/0.10.0:
+    resolution: {integrity: sha512-fThAyV72YWkE3lxVbOngk9WEYx8Az6H8due9Tgk0XbUWpNdaBbzL1LRwAQnBIJU2tObhm8z5148DzCcWm0Qdcw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/node': 0.9.0
-      '@novu/stateless': 0.9.0
+      '@novu/node': 0.10.0
+      '@novu/stateless': 0.10.0
       axios: 0.27.2
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@novu/sms77/0.9.0:
-    resolution: {integrity: sha512-ZS0APHajBw6xRK+0mkLAXWKmPfUGAdBnfZmqQRu1QRtoguEvq1xKstKe67mX2+GB0p0vKMuNe1ql8nqUXtgh6A==}
+  /@novu/sms77/0.10.0:
+    resolution: {integrity: sha512-1LGdkcFF0j1vz+NQN+koV99hSzRmqtO29fDQixJUMeZFj00i2y1vXKpao8WKVSdAs22TAYjRjH53m3OD0dBQTw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       node-fetch: 2.6.7
       sms77-client: 2.24.0_node-fetch@2.6.7
     transitivePeerDependencies:
@@ -4549,19 +4667,19 @@ packages:
       - encoding
     dev: false
 
-  /@novu/sns/0.9.0:
-    resolution: {integrity: sha512-d8scu3P9+/Fj32DUwTiX1sbFX7cbghXMNR9d+JFQuqevk5OA62h+tRc85ea/7amnEKTMPHR/hkbEyqp4c56qEA==}
+  /@novu/sns/0.10.0:
+    resolution: {integrity: sha512-GY1Q/560G84cOQPldLXayVMJoKsg7xuilkUrCodi7+Epyjpb0z56k8yh7hxR3sCIga/2efPZJXxEFAmVY8Qvtw==}
     engines: {node: '>=10'}
     dependencies:
       '@aws-sdk/client-sns': 3.238.0
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
     transitivePeerDependencies:
       - aws-crt
       - debug
     dev: false
 
-  /@novu/stateless/0.9.0:
-    resolution: {integrity: sha512-rKg5e7GAxOToe20Vux659290cwKFVYM3GkfxjSQAJvW1xjqIacxYhqD7jm680Smon1wThQzRx1yxzUWwzjOZtQ==}
+  /@novu/stateless/0.10.0:
+    resolution: {integrity: sha512-EYM3jsBBNbqQ/zt6yGiGnOvVsRssH9Zqk/VrgN5xcrrQbMDJaRzVwsh3Cn5Je6ufSom2t0cKRLj6MwcY6ftk2g==}
     engines: {node: '>=10'}
     dependencies:
       axios: 0.26.1
@@ -4572,31 +4690,31 @@ packages:
       - debug
     dev: false
 
-  /@novu/telnyx/0.9.0:
-    resolution: {integrity: sha512-bbtThv7B1GKR/VDsfEn85Vxz9PsI6F99Q8MC1NiZ6Suvk6aPQHU1NsyJfBXVuwFN94mYiPsEcFTZZDCTQT2C6w==}
+  /@novu/telnyx/0.10.0:
+    resolution: {integrity: sha512-x+8zjfO/iShS7Ial8ifEWxHyOhqr+YKJObeH5WFmL3X+VY4gt1TyJPiVYzKUtTth2GpKs8sdAFCdg0/M9H3P3g==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       telnyx: 1.23.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/termii/0.9.0:
-    resolution: {integrity: sha512-LVlD3UR81rZxm0Mja4FqKkbOS1PEUfFSBNMShGa7UgVc07dSOfbeWbxUdAV9kgdCcnghFdtSK2WI+NcTD7X/qQ==}
+  /@novu/termii/0.10.0:
+    resolution: {integrity: sha512-nlheUTBSl2+cPwiScQ3GOi8foaNs5G9PURKYTgyfdc55IgksU8WbWY4M0vJjLdtO5xQ2RJW22MspoBgBUkb7WQ==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       node-fetch: 3.3.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/twilio/0.9.0:
-    resolution: {integrity: sha512-mr/NLk/jpH4a2T3KrG4kSBzVTyGuDZ9A1qgtncz6F9Y9C/JfpS7PBMkzCWqBGwUp6/u0yTeSAATvu6imcS272w==}
+  /@novu/twilio/0.10.0:
+    resolution: {integrity: sha512-eSp1hkDr6cXhZfyKz+tEsBh5xJgtETK8528z+uQadcNzdPG9ntlp3l5s1ZrnsPFIgXOHtuBPP7zp5Oy2gZW/Ig==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.9.0
+      '@novu/stateless': 0.10.0
       twilio: 3.84.0
     transitivePeerDependencies:
       - debug
@@ -5300,7 +5418,7 @@ packages:
     dependencies:
       '@types/http-cache-semantics': 4.0.1
       '@types/keyv': 3.1.4
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       '@types/responselike': 1.0.0
     dev: false
 
@@ -5321,7 +5439,7 @@ packages:
   /@types/cors/2.8.13:
     resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: false
 
   /@types/crypto-js/4.1.1:
@@ -5357,14 +5475,14 @@ packages:
   /@types/fs-extra/9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: true
 
   /@types/glob/7.2.0:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: false
 
   /@types/http-cache-semantics/4.0.1:
@@ -5381,7 +5499,7 @@ packages:
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: false
 
   /@types/linkify-it/3.0.2:
@@ -5431,6 +5549,10 @@ packages:
 
   /@types/node/18.11.17:
     resolution: {integrity: sha512-HJSUJmni4BeDHhfzn6nF0sVmd1SMezP7/4F0Lq+aXzmp2xm9O7WXrUtHW/CHlYVtZUbByEvWidHqRtcJXGF2Ng==}
+    dev: false
+
+  /@types/node/18.11.18:
+    resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -5449,14 +5571,14 @@ packages:
   /@types/prompts/2.4.2:
     resolution: {integrity: sha512-TwNx7qsjvRIUv/BCx583tqF5IINEVjCNqg9ofKHRlSoUHE62WBHrem4B1HGXcIrG511v29d1kJ9a/t2Esz7MIg==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       kleur: 3.0.3
     dev: true
 
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: false
 
   /@types/resolve/1.20.2:
@@ -5465,7 +5587,7 @@ packages:
   /@types/responselike/1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
     dev: false
 
   /@types/semver/7.3.13:
@@ -5865,31 +5987,31 @@ packages:
       sirv: 2.0.2
     dev: false
 
-  /@volar/language-core/1.0.16:
-    resolution: {integrity: sha512-IGnOxWTs4DZ81TDcmxBAkCBxs97hUblwcjpBsTx/pOGGaSSDQRJPn0wL8NYTybEObU0i7lhEpKZ+0vJfdIy1Kg==}
+  /@volar/language-core/1.0.18:
+    resolution: {integrity: sha512-PFrqAksKhiuAqNV4fefoMilX+JutVq0Z3iM14xjLvWPv68fs2dLedwU84GiHfSPTMmRiPCJ2HhH2rz4qNY42lA==}
     dependencies:
-      '@volar/source-map': 1.0.16
+      '@volar/source-map': 1.0.18
       '@vue/reactivity': 3.2.45
       muggle-string: 0.1.0
     dev: false
 
-  /@volar/source-map/1.0.16:
-    resolution: {integrity: sha512-PKjzmQcg8QOGC/1V9tmGh2jcy6bKLhkW5bGidElSr83iDbCzLvldt2/La/QlDxaRCHYLT0MeyuGJBZIChB1dYQ==}
+  /@volar/source-map/1.0.18:
+    resolution: {integrity: sha512-D8AcjrT2ukG5XiZhtSQBhcvL1TTlWOebCqS//Z/hGLGQZjpZHWaKD4OyDzKDzM0U9EtOuDh9rttnabCHDPvY2Q==}
     dependencies:
       muggle-string: 0.1.0
     dev: false
 
-  /@volar/typescript/1.0.16:
-    resolution: {integrity: sha512-Yov+n4oO3iYnuMt9QJAFpJabfTRCzc7KvjlAwBaSuZy+Gc/f9611MgtqAh5/SIGmltFN8dXn1Ijno8ro8I4lyw==}
+  /@volar/typescript/1.0.18:
+    resolution: {integrity: sha512-xpH1Ij+PKtbIKEEYU2bF0llBRmu+ojjm/UA1WHNpi/dvsFWTIZcPniuqYEpPc32Zq/f8OPk98HbM2Oj5eue+vA==}
     dependencies:
-      '@volar/language-core': 1.0.16
+      '@volar/language-core': 1.0.18
     dev: false
 
-  /@volar/vue-language-core/1.0.16:
-    resolution: {integrity: sha512-sQ/aW1Vuiyy4OQuh2lthyYicruM3qh9VSk/aDh8/bFvM8GoohHZqVpMN3LYldEJ9eT/rN6u4xmYP54vc/EjX4Q==}
+  /@volar/vue-language-core/1.0.18:
+    resolution: {integrity: sha512-1yJcXYz9SdQUYoKWPbnr1SgMsBGXH29hS8W47p46P8Mm+5mmDdR/GFQw2+Zo5kAIS8vtLstlowI1Okoy7HFzIQ==}
     dependencies:
-      '@volar/language-core': 1.0.16
-      '@volar/source-map': 1.0.16
+      '@volar/language-core': 1.0.18
+      '@volar/source-map': 1.0.18
       '@vue/compiler-dom': 3.2.45
       '@vue/compiler-sfc': 3.2.45
       '@vue/reactivity': 3.2.45
@@ -5898,11 +6020,11 @@ packages:
       vue-template-compiler: 2.7.14
     dev: false
 
-  /@volar/vue-typescript/1.0.16:
-    resolution: {integrity: sha512-M018Ulg/o2FVktAdlr5b/z4K69bYzekxNUA1o39y5Ur6CObc/o+5eDCCS7gIYijWnx9iNKkSQpWWWblJFv7kHQ==}
+  /@volar/vue-typescript/1.0.18:
+    resolution: {integrity: sha512-pfi2/vTLgAPeRNgWzPFFv14YoLc3MnPMVKxl17ZLHStFgROUWQetTN+44FUWVYIl820MesMsyRv4kAIak0XGIQ==}
     dependencies:
-      '@volar/typescript': 1.0.16
-      '@volar/vue-language-core': 1.0.16
+      '@volar/typescript': 1.0.18
+      '@volar/vue-language-core': 1.0.18
     dev: false
 
   /@vonage/server-sdk/2.11.2:
@@ -8327,7 +8449,7 @@ packages:
     dependencies:
       '@types/cookie': 0.4.1
       '@types/cors': 2.8.13
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.4.2
@@ -10989,7 +11111,7 @@ packages:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: false
@@ -13234,8 +13356,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pnpm/7.19.0:
-    resolution: {integrity: sha512-0ZPqlBY9M5fqKI9Ya0kEB7PQj7Pg7bYEjXbRbg4pNnJIObzXeO+PaK/8FBd8KMgJe5QpLb6rn2nVFHNSNoz+kw==}
+  /pnpm/7.20.0:
+    resolution: {integrity: sha512-klGp+P0sxw1f6OYwJtl0PcoYiIHVhMZdh9e2B8maUmzOGmAj0NL9jKaKPfIX4kKfyQcWeADm46Z+4CKtabZqSw==}
     engines: {node: '>=14.6'}
     hasBin: true
     dev: true
@@ -16322,7 +16444,7 @@ packages:
       kolorist: 1.6.0
       sirv: 2.0.2
       ufo: 1.0.1
-      vite: 3.2.5_@types+node@18.11.17
+      vite: 3.2.5_@types+node@18.11.18
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -16380,7 +16502,7 @@ packages:
       '@vue/compiler-sfc': 3.2.45
       debug: 4.3.4
       fast-glob: 3.2.12
-      vite: 3.2.5_@types+node@18.11.17
+      vite: 3.2.5_@types+node@18.11.18
       vue: 3.2.45
       vue-router: 4.1.6_vue@3.2.45
     transitivePeerDependencies:
@@ -16482,7 +16604,7 @@ packages:
       jsdom: 20.0.3
       kolorist: 1.6.0
       prettier: 2.8.1
-      vite: 3.2.5_@types+node@18.11.17
+      vite: 3.2.5_@types+node@18.11.18
       vue: 3.2.45
       vue-router: 4.1.6_vue@3.2.45
       yargs: 17.6.2
@@ -16493,7 +16615,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /vite/3.2.5_@types+node@18.11.17:
+  /vite/3.2.5_@types+node@18.11.18:
     resolution: {integrity: sha512-4mVEpXpSOgrssFZAOmGIr85wPHKvaDAcXqxVxVRZhljkJOMZi1ibLibzjLHzJvcok8BMguLc7g1W6W/GqZbLdQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -16518,7 +16640,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.11.17
+      '@types/node': 18.11.18
       esbuild: 0.15.18
       postcss: 8.4.20
       resolve: 1.22.1
@@ -16591,6 +16713,41 @@ packages:
       rollup: 3.8.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
+
+  /vite/4.0.3_@types+node@18.11.18:
+    resolution: {integrity: sha512-HvuNv1RdE7deIfQb8mPk51UKjqptO/4RXZ5yXSAvurd5xOckwS/gg8h9Tky3uSbnjYTgUm0hVCet1cyhKd73ZA==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.11.18
+      esbuild: 0.16.10
+      postcss: 8.4.20
+      resolve: 1.22.1
+      rollup: 3.8.1
+    optionalDependencies:
+      fsevents: 2.3.2
+    dev: true
 
   /vitepress/1.0.0-alpha.33_2r467mdhb7mblpaox4bg7fatdi:
     resolution: {integrity: sha512-EhMDqWLllYr5mXqAz4GCQ1o/bu5umQ6C2d8voiSaTHMkYCxsGc31ETykflM6NOhGx6yccwXygrYIIeN1l6BUEA==}
@@ -16619,7 +16776,7 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.33_o4l5fnurgl7shvybs3txghyb5a:
+  /vitepress/1.0.0-alpha.33_j73j5xdbzpkigstapj6vkce2xy:
     resolution: {integrity: sha512-EhMDqWLllYr5mXqAz4GCQ1o/bu5umQ6C2d8voiSaTHMkYCxsGc31ETykflM6NOhGx6yccwXygrYIIeN1l6BUEA==}
     hasBin: true
     dependencies:
@@ -16630,7 +16787,7 @@ packages:
       '@vueuse/core': 9.9.0_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.12.1
-      vite: 4.0.3_@types+node@18.11.17
+      vite: 4.0.3_@types+node@18.11.18
       vue: 3.2.45
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -16717,13 +16874,13 @@ packages:
   /vscode-textmate/8.0.0:
     resolution: {integrity: sha512-AFbieoL7a5LMqcnOF04ji+rpXadgOXnZsxQr//r83kLPr7biP7am3g9zbaZIaBGwBRWeSvoMD4mgPdX3e4NWBg==}
 
-  /vue-component-meta/1.0.16_typescript@4.9.4:
-    resolution: {integrity: sha512-MQElonN8HoJ4AwAFpKNu4FRDOjO/VqNSPz8wquAZoyE3CbUtVIWSc1z5FShwDA4x8VEp4CbUkf6A7KU6b65kUQ==}
+  /vue-component-meta/1.0.18_typescript@4.9.4:
+    resolution: {integrity: sha512-miMmzSMcJ7XnPC7P5n4tPutoAIJRZaVeOLyKfhIXWVF86uJCjE2bQHoDQ1LljrJqy7wjVLrqLq9YywQ+A5O5/g==}
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@volar/language-core': 1.0.16
-      '@volar/vue-language-core': 1.0.16
+      '@volar/language-core': 1.0.18
+      '@volar/vue-language-core': 1.0.18
       typesafe-path: 0.2.2
       typescript: 4.9.4
     dev: false
@@ -16836,14 +16993,14 @@ packages:
       he: 1.2.0
     dev: false
 
-  /vue-tsc/1.0.16_typescript@4.9.4:
-    resolution: {integrity: sha512-yZaiJBbcKR1rSLhiF9KryAFH7R63po+N/invr2EAHGXxMzZksE5j1zyQKvrYiqK47ZHLAlCR+re/PHqWp/UzTg==}
+  /vue-tsc/1.0.18_typescript@4.9.4:
+    resolution: {integrity: sha512-JFLAz3Xh/iyTnMGdlfG3TuvcaJyFcqyELpLv50jyvOYLAS2+WHzac0IB73FQ37HmGm/4IWMkQZS5r/9FKSejQQ==}
     hasBin: true
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@volar/vue-language-core': 1.0.16
-      '@volar/vue-typescript': 1.0.16
+      '@volar/vue-language-core': 1.0.18
+      '@volar/vue-typescript': 1.0.18
       typescript: 4.9.4
     dev: false
 
