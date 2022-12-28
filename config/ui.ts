@@ -38,9 +38,4 @@ export const ui: Options = {
       text: 'Hubot',
     },
   },
-
-  // webFonts: {
-  //   sans: 'Inter',
-  //   mono: 'Inter',
-  // },
 }

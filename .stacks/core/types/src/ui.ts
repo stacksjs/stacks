@@ -4,6 +4,12 @@ export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicon-outline' | 'heroicon-solid'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare' | 'none'
 
+interface FontInfo {
+  title: string
+  text: string
+}
+type FontFor = 'email' | 'desktop' | 'mobile' | 'web'
+
 export interface WebFontMeta {
   name: string
   weights?: (string | number)[]
@@ -129,10 +135,15 @@ export interface UiOptions {
    * @see https://stacks.ow3.org/fonts
    * @example
    * ```ts
-   * fonts: 'mona-lisa'
+   * fonts: {
+   *   web: {
+   *     title: 'Inter',
+   *     text: 'Mona'
+   *   },
+   * }
    * ```
    */
-  fonts?: Record<string, WebFontMeta | string | (WebFontMeta | string)[]>
+  fonts?: Record<FontFor, FontInfo>
 
   /**
    * **Web Fonts**
