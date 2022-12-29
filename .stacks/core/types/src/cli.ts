@@ -150,8 +150,10 @@ export type ExamplesOptions = {
 } & {
   [key in ExamplesBoolean]: boolean;
 } & CliOptions
+export type TestOptions = CliOptions & {
+  showReport?: boolean
+}
 
-export interface TestOptions extends CliOptions {}
 export interface CleanOptions extends CliOptions {}
 export interface CommitOptions extends CliOptions {}
 export interface KeyOptions extends CliOptions {}
@@ -190,6 +192,8 @@ export const enum NpmScript {
   LintFix = 'eslint . --fix',
   MakeStack = 'make:stack',
   Test = 'vitest --config vitest.config.ts',
+  TestUnit = 'vitest --config vitest.config.ts',
+  TestFeature = 'playwright test --config playwright.config.ts',
   TestUi = 'vitest --config vitest.config.ts --ui',
   TestCoverage = 'vitest --config vitest.config.ts --coverage',
   TestTypes = 'vue-tsc --noEmit',
@@ -233,7 +237,10 @@ export const enum Action {
   LintFix = 'lint-fix', // ✅
   Test = 'test', // ✅
   TestUi = 'test-ui', // ✅
+  TestUnit = 'test-unit', // ✅
+  TestFeature = 'test-feature', // wip
   TestCoverage = 'test-coverage', // ✅
+  ShowFeatureTestReport = 'show-feature-test-report', // wip
   Typecheck = 'typecheck', // wip
   KeyGenerate = 'key-generate', // wip
 }
