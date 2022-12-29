@@ -126,6 +126,10 @@ export function customElementsDataPath() {
   return frameworkPath('custom-elements.json')
 }
 
+export function emailPath(path?: string) {
+  return corePath(`email/${path || ''}`)
+}
+
 export function errorHandlingPath(path?: string) {
   return corePath(`error-handling/${path || ''}`)
 }
@@ -299,6 +303,7 @@ export const path = {
   docsPath,
   domainsPath,
   driversPath,
+  emailPath,
   errorHandlingPath,
   examplesPath,
   frameworkPath,

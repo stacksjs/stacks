@@ -1,5 +1,5 @@
-import { email } from '@stacksjs/config'
+import { notification } from '@stacksjs/config'
 
 export default {
-  email,
+  purgeCSS: notification.email.purgeCSS,
 }
