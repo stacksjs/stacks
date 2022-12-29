@@ -664,6 +664,7 @@ importers:
       '@novu/twilio': ^0.10.0
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
+      '@stacksjs/email': workspace:*
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
@@ -695,6 +696,7 @@ importers:
       '@novu/twilio': 0.10.0
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
+      '@stacksjs/email': link:../email
       '@stacksjs/error-handling': link:../error-handling
       '@stacksjs/types': link:../types
     devDependencies:
