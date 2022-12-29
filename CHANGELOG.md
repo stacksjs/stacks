@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+## v0.47.2...v0.47.2-7-gf144a2b7
+
+
+### 🏡 Chore
+
+  - Wip (ed62f347)
+  - Wip (bcb76892)
+  - Wip (017c5d0a)
+  - Wip (6830ca7c)
+  - Wip (d28e5c2f)
+  - Wip (2f4849f5)
+  - Wip (f144a2b7)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Brianzzzasd <repuestobrian2@gmail.com>
+
 ## v0.47.1...v0.47.1-1-g3aca84eb
 
 
