@@ -1,3 +1,4 @@
+import { err } from '@stacksjs/error-handling'
 import { email } from './drivers/email'
 import { chat } from './drivers/chat'
 import { sms } from './drivers/sms'
@@ -14,8 +15,8 @@ const useSMS = (driver = 'twilio') => {
   return sms[driver as keyof typeof sms]
 }
 
-const useNotification = (driver = 'email') => {
-  switch (driver) {
+const useNotification = (type = 'email') => {
+  switch (type) {
     case 'email':
       return useEmail()
     case 'chat':
@@ -23,7 +24,7 @@ const useNotification = (driver = 'email') => {
     case 'sms':
       return useSMS()
     default:
-      throw new Error(`Driver ${driver} not supported`)
+      return err(`Type ${type} not supported`)
   }
 }
 
