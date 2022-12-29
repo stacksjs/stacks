@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chat } from '@stacksjs/notifications'
+import { chat, useChat } from '@stacksjs/notifications'
 
 describe('Slack Test', () => {
   it('should send chat', async () => {
@@ -12,8 +12,8 @@ describe('Slack Test', () => {
     expect(test).toBeDefined()
   })
 
-  it('should send chat using useNotification', async () => {
-    const notification = useNotification('chat').slack
+  it('should send chat using useChat', async () => {
+    const notification = useChat('slack')
     const test = await notification.send({
       content: 'Test Slack Message!',
       webhookUrl: 'https://hooks.slack.com/services/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',

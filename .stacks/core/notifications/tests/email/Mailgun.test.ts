@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { email } from '@stacksjs/notifications'
+import { email, useEmail } from '@stacksjs/notifications'
+import { notification as env } from '@stacksjs/config'
 
 describe('Mailgun Test', () => {
   it('should not send email', async () => {
@@ -14,8 +15,8 @@ describe('Mailgun Test', () => {
     expect(test).toBeDefined()
   })
 
-  it('should send email using useNotification', async () => {
-    const notification = useNotification().mailgun
+  it('should send email using useEmail', async () => {
+    const notification = useEmail('mailgun')
     const test = await notification.send({
       from: 'repuestobrian2@gmail.com',
       to: 'repuestobrian@gmail',

@@ -1,20 +1,24 @@
-import * as email from './drivers/email'
-import * as chat from './drivers/chat'
-import * as sms from './drivers/sms'
+import { email } from './drivers/email'
+import { chat } from './drivers/chat'
+import { sms } from './drivers/sms'
 
-const driverMap = {
-  email,
-  chat,
-  sms,
+const useChat = (driver = 'slack') => {
+  return chat[driver as keyof typeof chat]
 }
 
-const useNotification = (driver = 'email') => {
-  return driverMap?.[driver as keyof typeof driverMap]
+const useEmail = (driver = 'sendgrid') => {
+  return email[driver as keyof typeof email]
+}
+
+const useSMS = (driver = 'twilio') => {
+  return sms[driver as keyof typeof sms]
 }
 
 export {
   email,
   chat,
   sms,
-  useNotification,
+  useEmail,
+  useChat,
+  useSMS,
 }

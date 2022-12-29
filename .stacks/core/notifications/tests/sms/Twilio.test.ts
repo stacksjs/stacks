@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sms } from '@stacksjs/notifications'
+import { sms, useSMS } from '@stacksjs/notifications'
 import { notification } from '@stacksjs/config'
 
 describe('Twilio Test', () => {
@@ -14,8 +14,8 @@ describe('Twilio Test', () => {
     expect(test).toBeDefined()
   })
 
-  it('should send sms using useNotification', async () => {
-    const notification = useNotification('sms').twilio
+  it('should send sms using useSMS', async () => {
+    const notif = useSMS('twilio')
     const test = await notif.send({
       content: 'Test SMS from Stacks',
       to: notification.sms.twilio.to,

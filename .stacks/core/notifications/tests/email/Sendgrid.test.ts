@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { email, useNotification } from '@stacksjs/notifications'
+import { email, useEmail } from '@stacksjs/notifications'
 import { notification as env } from '@stacksjs/config'
 
 describe('Sendgrid Test', () => {
@@ -15,8 +15,8 @@ describe('Sendgrid Test', () => {
     expect(test).toBeDefined()
   })
 
-  it('should send email using useNotification', async () => {
-    const notification = useNotification().sendgrid
+  it('should send email using useEmail', async () => {
+    const notification = useEmail('sendgrid')
     const test = await notification.send({
       from: env.email.sendgrid.from,
       to: 'repuestobrian2@gmail.com',
