@@ -662,10 +662,13 @@ importers:
       '@novu/telnyx': ^0.10.0
       '@novu/termii': ^0.10.0
       '@novu/twilio': ^0.10.0
+      '@stacksjs/chat': workspace:*
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/email': workspace:*
       '@stacksjs/error-handling': workspace:*
+      '@stacksjs/push': workspace:*
+      '@stacksjs/sms': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.0.0
@@ -694,10 +697,13 @@ importers:
       '@novu/telnyx': 0.10.0
       '@novu/termii': 0.10.0
       '@novu/twilio': 0.10.0
+      '@stacksjs/chat': link:../chat
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
       '@stacksjs/email': link:../email
       '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/push': link:../push
+      '@stacksjs/sms': link:../sms
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -6659,8 +6665,8 @@ packages:
       - debug
     dev: false
 
-  /axios/1.2.1:
-    resolution: {integrity: sha512-I88cFiGu9ryt/tfVEi4kX2SITsvDddTajXTOFmt2uK1ZVA8LytjtdeyefdQWEf5PU8w+4SSJDoYnggflB5tW4A==}
+  /axios/1.2.2:
+    resolution: {integrity: sha512-bz/J4gS2S3I7mpN/YZfGFTqhXTYzRho8Ay38w2otuuDR322KzFIWm/4W2K6gIwvWaws5n+mnb7D1lN9uD+QH6Q==}
     dependencies:
       follow-redirects: 1.15.2
       form-data: 4.0.0
@@ -12522,7 +12528,7 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       '@permafrost-dev/pretty-format': 1.1.4
-      axios: 1.2.1
+      axios: 1.2.2
       dayjs: 1.11.7
       find-up: 5.0.0
       md5: 2.3.0
