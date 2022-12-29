@@ -82,6 +82,10 @@ export function cachePath(path?: string) {
   return corePath(`cache/${path || ''}`)
 }
 
+export function chatPath(path?: string) {
+  return corePath(`chat/${path || ''}`)
+}
+
 export function cliPath(path?: string) {
   return corePath(`cli/${path || ''}`)
 }
@@ -226,12 +230,20 @@ export function projectPath(filePath = '') {
   return resolve(path, filePath)
 }
 
+export function pushPath(path?: string) {
+  return corePath(`push/${path || ''}`)
+}
+
 export function routerPath(path?: string) {
   return corePath(`router/${path || ''}`)
 }
 
 export function searchEnginePath(path?: string) {
   return corePath(`search-engine/${path || ''}`)
+}
+
+export function smsPath(path?: string) {
+  return corePath(`sms/${path || ''}`)
 }
 
 export function routesPath(path?: string) {
@@ -292,6 +304,7 @@ export const path = {
   buildEntriesPath,
   buildPath,
   cachePath,
+  chatPath,
   cliPath,
   collectionsPath,
   componentsPath,
@@ -322,8 +335,10 @@ export const path = {
   pagesPath,
   pathPath,
   projectPath,
+  pushPath,
   routerPath,
   searchEnginePath,
+  smsPath,
   routesPath,
   scriptsPath,
   securityPath,

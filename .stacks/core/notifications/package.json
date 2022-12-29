@@ -74,10 +74,13 @@
     "@novu/telnyx": "^0.10.0",
     "@novu/termii": "^0.10.0",
     "@novu/twilio": "^0.10.0",
+    "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/push": "workspace:*",
+    "@stacksjs/sms": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
