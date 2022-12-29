@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/build",
   "type": "module",
-  "version": "0.47.3",
+  "version": "0.47.4",
   "packageManager": "pnpm@7.21.0",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
