@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { chat, useChat } from '@stacksjs/notifications'
+import { Err } from '@stacksjs/types'
 
 describe('Slack Test', () => {
   it('should send chat', async () => {
@@ -29,6 +30,6 @@ describe('Slack Test', () => {
       webhookUrl: '',
     })
 
-    expect(test.error).toThrowError()
+    expect(test).toBeInstanceOf(Err)
   })
 })
