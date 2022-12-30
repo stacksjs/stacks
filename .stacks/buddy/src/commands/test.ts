@@ -104,7 +104,7 @@ async function test(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       const perf = intro('buddy test:coverage')
-      const result = await runAction(Action.TestCoverage, options)
+      const result = await runAction(Action.TestCoverage, { ...options, cwd: projectPath() })
 
       if (result.isErr()) {
         outro('While running `buddy test:coverage`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

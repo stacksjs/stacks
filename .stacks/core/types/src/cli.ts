@@ -243,6 +243,7 @@ export const enum Action {
   ShowFeatureTestReport = 'show-feature-test-report', // wip
   Typecheck = 'typecheck', // wip
   KeyGenerate = 'key-generate', // wip
+  MakeNotification = 'make-notification', // wip
 }
 
 export type { CAC as CLI } from 'cac'

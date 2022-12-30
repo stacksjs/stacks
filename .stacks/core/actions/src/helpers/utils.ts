@@ -5,6 +5,21 @@ import type { CliOptions, CommandResult } from '@stacksjs/types'
 import type { Err, Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 
+const parseOptions = (options?: CliOptions) => {
+  if (!options)
+    return ''
+
+  const parsedOptions = Object.entries(options).map(([key, value]) => {
+    if (typeof value === 'boolean')
+      return `--${key}`
+    else
+      return `--${key}=${value}`
+  })
+
+  // ----= only happens when no flags are passed
+  return parsedOptions.join(' ').replace('----=', '')
+}
+
 /**
  * Run an Action the Stacks way.
  *
@@ -16,7 +31,12 @@ export async function runAction(action: string, options?: CliOptions): Promise<R
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist.`)
 
-  const cmd = `npx esno ${actionsPath(`${action}.ts`)}`
+  // we need to parse options here because we need to pass them to the action command
+  const opts = parseOptions(options)
+  const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
+
+  // eslint-disable-next-line no-console
+  console.log('Running command:', cmd, options)
 
   return options?.shouldShowSpinner
     ? await runCommands([cmd], options)

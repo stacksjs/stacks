@@ -1,6 +1,7 @@
-import { ExitCode } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
-import { log, prompts } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
+import { runAction } from '@stacksjs/actions'
 import {
   invoke,
   component as makeComponent,
@@ -9,7 +10,6 @@ import {
   fx as makeFunction,
   language as makeLanguage,
   migration as makeMigration,
-  notification as makeNotification,
   page as makePage,
   stack as makeStack,
 } from '@stacksjs/actions/make'
@@ -77,7 +77,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:component', descriptions.component)
-    .option('--n, -name', 'The name of the component')
+    .option('-n, --name', 'The name of the component')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -93,7 +93,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:database', descriptions.database)
-    .option('--n, -name', 'The name of the database')
+    .option('-n, --name', 'The name of the database')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -109,7 +109,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:migration', descriptions.migration)
-    .option('--n, -name', 'The name of the migration')
+    .option('-n, --name', 'The name of the migration')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -125,7 +125,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:factory', descriptions.factory)
-    .option('--n, -name', 'The name of the factory')
+    .option('-n, --name', 'The name of the factory')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -141,7 +141,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:page', descriptions.page)
-    .option('--n, -name', 'The name of the page')
+    .option('-n, --name', 'The name of the page')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -157,7 +157,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:function', descriptions.function)
-    .option('--n, -name', 'The name of the function')
+    .option('-n, --name', 'The name of the function')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFunction(options)
@@ -165,7 +165,7 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:lang', descriptions.language)
-    .option('--n, -name', 'The name of the language')
+    .option('-n, --name', 'The name of the language')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
@@ -181,9 +181,14 @@ async function make(buddy: CLI) {
 
   buddy
     .command('make:notification', descriptions.notification)
-    .option('--n, -name', 'The name of the notification')
+    .option('-n, --name', 'The name of the notification')
+    .option('-e, --email', 'Is it an email notification?', { default: true })
+    // .option('-c, --chat', 'Is it a chat notification?', { default: false })
+    // .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
+      const perf = intro('buddy make:notification')
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -192,12 +197,20 @@ async function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeNotification(options)
+      const result = await runAction(Action.MakeNotification, options)
+
+      if (result.isErr()) {
+        outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        process.exit()
+      }
+
+      outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 
   buddy
     .command('make:stack', descriptions.stack)
-    .option('--n, -name', 'The name of the stack')
+    .option('-n, --name', 'The name of the stack')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
