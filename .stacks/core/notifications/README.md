@@ -11,8 +11,6 @@ Stacks Notifications is a unified driver system for sending messages/notificatio
 
 ## TODO
 
-- [ ] Driver: FCM
-- [ ] Driver: Expo
 - [ ] Driver: SNS (Push)
 - [ ] Driver: Pushwoosh
 

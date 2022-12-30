@@ -1,60 +1,97 @@
-# Stacks Notifications
+# Stacks SMS
 
-wip
+Stacks SMS is driver system for sending SMS messages.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- 📦 Send SMS
 
 ## 🤖 Usage
 
-wip
+```bash
+pnpm i -D @stacksjs/sms
+```
+
+You may now use it in your project:
+
+```ts
+import * as sms from '@stacksjs/sms'
+
+sms.send(SMSOptions)
+
+interface SMSOptions {
+  to: string
+  content: string
+  from?: string
+  attachments?: AttachmentOptions[]
+  id?: string
+}
+```
+
+### Drivers
+
+Drivers are configured with the following environment variables:
+
+#### Twilio
 
 ```bash
-pnpm i -D @stacksjs/notifications
+TWILIO_ACCOUNT_SID=ACtest
+TWILIO_AUTH_TOKEN=testtoken
+TWILIO_FROM_NUMBER=+112345
+TWILIO_TO_NUMBER=+145678
 ```
 
-Now, you can use it in your project:
+#### Nexmo
 
-```js
-import notifications from '@stacksjs/notifications'
-
-// wip
+```bash
+VONAGE_API_KEY=VN123
+VONAGE_API_SECRET=testkey
+VONAGE_FROM_NUMBER=+112345
 ```
 
-## 🤖 Drivers
+#### Gupshup
 
-### Email
+```bash
+GUPSHUP_USER_ID=GU123
+GUPSHUP_PASSWORD=password
+```
 
-- Sendgrid
-- Mailgun
-- Mailjet
-- Netcore
-- Nodemailer
-- Post Mark
-- Ses
-- Mandrill
-- EmailJS
+#### Plivo
 
-### SMS
+```bash
+PLIVO_ACCOUNT_ID=PA123
+PLIVO_AUTH_TOKEN=testtoken
+PLIVO_FROM_NUMBER=+112345
+```
 
-- Twilio
-- Nexmo
-- Gupshup
-- Plivo
-- SMS77
-- SNS
-- Telnyx
-- Termii
+#### SMS77
 
-### Chat
+```bash
+SMS77_API_KEY=SA123
+SMS77_FROM=from@example.com
+```
 
-- Discord
-- Slack
+#### SNS
+
+```bash
+SMS77_API_KEY=SA123
+SMS77_FROM=from@example.com
+```
+
+#### Telnyx
+
+```bash
+TELNYX_API_KEY=TA123
+TELNYX_MESSAGE_PROFILE_ID=testprofileid
+TELNYX_FROM=from@example.com
+```
+
+#### Termii
+
+```bash
+TERMII_API_KEY=TermA123
+TERMII_SENDER=from@example.com
+```
 
 Learn more in the docs.
 
@@ -81,6 +118,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [Novu](https://novu.co/)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
