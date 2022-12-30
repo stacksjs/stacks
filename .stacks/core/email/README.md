@@ -1,60 +1,115 @@
-# Stacks Notifications
+# Stacks SMS
 
-wip
+Stacks Email is driver system for sending Emails.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- 📦 Send Email
 
 ## 🤖 Usage
 
-wip
+```bash
+pnpm i -D @stacksjs/email
+```
+
+You may now use it in your project:
+
+```ts
+import * as email from '@stacksjs/email'
+
+email.send(EmailOptions)
+
+interface EmailOptions {
+  to: string | string[]
+  subject: string
+  html: string
+  from?: string
+  text?: string
+  attachments?: AttachmentOptions[]
+  id?: string
+}
+```
+
+### Drivers
+
+Drivers are configured with the following environment variables:
+
+#### Sendgrid
 
 ```bash
-pnpm i -D @stacksjs/notifications
+SENDGRID_API_KEY=SG123
+SENDGRID_FROM=from@example.com
+SENDGRID_SENDER_NAME=Sender
 ```
 
-Now, you can use it in your project:
+#### Mailgun
 
-```js
-import notifications from '@stacksjs/notifications'
-
-// wip
+```bash
+MAILGUN_API_KEY=MG123
+MAILGUN_DOMAIN=example.com
+MAILGUN_USERNAME=username
+MAILGUN_FROM=from@example.com
 ```
 
-## 🤖 Drivers
+#### Mailjet
 
-### Email
+```bash
+MAILJET_API_KEY=MJ123
+MAILJET_API_SECRET=MJTESTSECRET
+MAILJET_FROM_EMAIL=from@example.com
+```
 
-- Sendgrid
-- Mailgun
-- Mailjet
-- Netcore
-- Nodemailer
-- Post Mark
-- Ses
-- Mandrill
-- EmailJS
+#### Netcore
 
-### SMS
+```bash
+NETCORE_API_KEY=NC123
+NETCORE_FROM=from@example.com
+```
 
-- Twilio
-- Nexmo
-- Gupshup
-- Plivo
-- SMS77
-- SNS
-- Telnyx
-- Termii
+#### Nodemailer
 
-### Chat
+```bash
+NODEMAILER_FROM_EMAIL=from@example.com
+NODEMAILER_HOST=example.com
+NODEMAILER_USERNAME=username
+NODEMAILER_PASSWORD=password
+NODEMAILER_PORT=25
+NODEMAILER_SECURE=true
+```
 
-- Discord
-- Slack
+#### Postmark
+
+```bash
+POSTMARK_API_KEY=PM123
+POSTMARK_FROM=from@example.com
+```
+
+#### AWS SES
+
+```bash
+SES_REGION=US
+SES_ACCESS_KEY_ID=testkey123
+SES_SECRET_ACCESS_KEY=testaccesskey123
+SES_FROM=from@example.com
+```
+
+#### Mandrill
+
+```bash
+MANDRILL_API_KEY=Ma123
+MANDRILL_EMAIL=from@example.com
+```
+
+#### EmailJS
+
+```bash
+EMAILJS_FROM_EMAIL=from@example.com
+EMAILJS_HOST=example.com
+EMAILJS_USERNAME=username
+EMAILJS_PASSWORD=password
+EMAILJS_PORT=25
+EMAILJS_SECURE=true
+```
 
 Learn more in the docs.
 
@@ -81,6 +136,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [Novu](https://novu.co/)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
