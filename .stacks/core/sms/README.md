@@ -16,8 +16,10 @@ You may now use it in your project:
 
 ```ts
 import * as sms from '@stacksjs/sms'
+/* Then choose a driver. E.g for twilio */
+const notification = sms.twilio
 
-sms.send(SMSOptions)
+notification.send(SMSOptions)
 
 interface SMSOptions {
   to: string

@@ -16,8 +16,10 @@ You may now use it in your project:
 
 ```ts
 import * as chat from '@stacksjs/chat'
+/* Then choose a driver. E.g for Slack */
+const notification = chat.slack
 
-chat.send(ChatOptions)
+notification.send(ChatOptions)
 
 interface ChatOptions {
   webhookUrl: string
