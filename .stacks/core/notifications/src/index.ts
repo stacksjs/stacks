@@ -1,5 +1,5 @@
 import { err } from '@stacksjs/error-handling'
-import { notification as env } from '@stacksjs/config'
+import { notification as config } from '@stacksjs/config'
 import { email } from './drivers/email'
 import { chat } from './drivers/chat'
 import { sms } from './drivers/sms'
@@ -16,16 +16,19 @@ const useSMS = (driver = 'twilio') => {
   return sms[driver as keyof typeof sms]
 }
 
-const useNotification = () => {
-  switch (env.type) {
+const useNotification = (typeParam = null, driverParam = null) => {
+  const type = typeParam || config.type
+  const driver = driverParam || config.driver
+
+  switch (type) {
     case 'email':
-      return useEmail(env.driver)
+      return useEmail(driver)
     case 'chat':
-      return useChat(env.driver)
+      return useChat(driver)
     case 'sms':
-      return useSMS(env.driver)
+      return useSMS(driver)
     default:
-      return err(`Type ${env.type} not supported`)
+      return err(`Type ${type} not supported`)
   }
 }
 
