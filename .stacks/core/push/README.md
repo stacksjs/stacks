@@ -1,62 +1,39 @@
-# Stacks Notifications
+# Stacks Chat
 
-wip
+Stacks Push is driver system for Pushing messages through apps.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- 📦 Push Messages
 
 ## 🤖 Usage
 
+```bash
+pnpm i -D @stacksjs/push
+```
+
+You may now use it in your project:
+
 wip
 
+```ts
+``
+
+### Drivers
+
+Drivers are configured with the following environment variables:
+
+#### Discord
+
+- None
+
+#### Slack
+
 ```bash
-pnpm i -D @stacksjs/notifications
+SLACK_APPLICATION_ID=SAID123
+SLACK_CLIENT_ID=SCID123
+SLACK_SECRET_KEY=SSK123
 ```
-
-Now, you can use it in your project:
-
-```js
-import notifications from '@stacksjs/notifications'
-
-// wip
-```
-
-## 🤖 Drivers
-
-### Email
-
-- Sendgrid
-- Mailgun
-- Mailjet
-- Netcore
-- Nodemailer
-- Post Mark
-- Ses
-- Mandrill
-- EmailJS
-
-### SMS
-
-- Twilio
-- Nexmo
-- Gupshup
-- Plivo
-- SMS77
-- SNS
-- Telnyx
-- Termii
-
-### Chat
-
-- Discord
-- Slack
-
-Learn more in the docs.
 
 ## 🧪 Testing
 
@@ -81,6 +58,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [Novu](https://novu.co/)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
