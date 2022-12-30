@@ -17,7 +17,10 @@ You may now use it in your project:
 ```ts
 import * as email from '@stacksjs/email'
 
-email.send(EmailOptions)
+/* Then choose a driver. E.g for sendgrid */
+const notification = email.sendgrid
+
+notification.send(EmailOptions)
 
 interface EmailOptions {
   to: string | string[]
