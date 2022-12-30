@@ -1,57 +1,31 @@
-# Stacks Notifications
+# Stacks Chat
 
-wip
+Stacks Chat is driver system for sending messages through chat apps.
 
 ## ☘️ Features
 
-wip
-
-- ⚡️
-
-wip
+- 📦 Send Chats
 
 ## 🤖 Usage
 
-wip
-
 ```bash
-pnpm i -D @stacksjs/notifications
+pnpm i -D @stacksjs/chat
 ```
 
-Now, you can use it in your project:
+You may now use it in your project:
 
-```js
-import notifications from '@stacksjs/notifications'
+```ts
+import * as chat from '@stacksjs/chat'
 
-// wip
+chat.send(ChatOptions)
+
+interface ChatOptions {
+  webhookUrl: string
+  content: string
+}
 ```
 
 ## 🤖 Drivers
-
-### Email
-
-- Sendgrid
-- Mailgun
-- Mailjet
-- Netcore
-- Nodemailer
-- Post Mark
-- Ses
-- Mandrill
-- EmailJS
-
-### SMS
-
-- Twilio
-- Nexmo
-- Gupshup
-- Plivo
-- SMS77
-- SNS
-- Telnyx
-- Termii
-
-### Chat
 
 - Discord
 - Slack
@@ -81,6 +55,14 @@ For help, discussion about best practices, or any other conversation that would 
 For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.ow3.org)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [Novu](https://novu.co/)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
