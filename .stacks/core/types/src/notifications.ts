@@ -1,6 +1,7 @@
 import type { IChatOptions, IEmailOptions, ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
 
 export interface NotificationOptions {
+  type?: string
   driver?: string
 
   email: {

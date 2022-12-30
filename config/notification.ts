@@ -9,6 +9,7 @@ import { env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export const notification: Options = {
+  type: env('NOTIFICATION_TYPE', 'email'),
   driver: env('NOTIFICATION_DRIVER', 'sendgrid'),
 
   email: {

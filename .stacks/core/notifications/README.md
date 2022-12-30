@@ -20,6 +20,13 @@ Stacks Notifications is a unified driver system for sending messages/notificatio
 pnpm i -D @stacksjs/notifications
 ```
 
+Set these variables in your env:
+
+```bash
+NOTIFICATION_TYPE=email
+NOTIFICATION_DRIVER=sendgrid
+```
+
 You may now use it in your project:
 
 ```ts
