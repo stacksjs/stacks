@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import { projectPath } from './core/path'
 import { alias } from './core/alias'
 
 export default defineConfig({
@@ -16,6 +17,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'istanbul',
+      reportsDirectory: projectPath('./tests/unit/coverage'),
     },
   },
 })
