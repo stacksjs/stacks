@@ -16,9 +16,6 @@ You may now use it in your project:
 
 wip
 
-```ts
-``
-
 ### Drivers
 
 Drivers are configured with the following environment variables:

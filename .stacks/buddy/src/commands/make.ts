@@ -1,4 +1,4 @@
-import { Action, ExitCode } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
