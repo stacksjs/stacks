@@ -251,18 +251,17 @@ export async function createNotification(options: MakeOptions) {
 
     await writeTextFile({
       path: `./notifications/${name}.ts`,
-      data: `
-    import type { EmailOptions } from '@stacksjs/types'
+      data: `import type { EmailOptions } from '@stacksjs/types'
 
-    function content(): string {
-      return 'example'
-    }
+function content(): string {
+  return 'example'
+}
 
-    function send(): EmailOptions {
-      return {
-        content: content(),
-      }
-    }
+function send(): EmailOptions {
+  return {
+    content: content(),
+  }
+}
       `,
     })
 
