@@ -246,23 +246,30 @@ export async function stack(options: MakeOptions) {
 export async function createNotification(options: MakeOptions) {
   const name = options.name
   try {
+    let importOption = 'EmailOptions'
+
     if (!doesFolderExist('notifications'))
       await createFolder('./notifications')
 
+    if (options.chat)
+      importOption = 'ChatOptions'
+
+    if (options.sms)
+      importOption = 'SMSOptions'
+
     await writeTextFile({
       path: `./notifications/${name}.ts`,
-      data: `import type { EmailOptions } from '@stacksjs/types'
+      data: `import type { ${importOption} } from \'@stacksjs/types\'
 
 function content(): string {
   return 'example'
 }
 
-function send(): EmailOptions {
+function send(): ${importOption} {
   return {
     content: content(),
   }
-}
-      `,
+}`,
     })
 
     return true

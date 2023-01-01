@@ -126,7 +126,7 @@ export type LintOptions = {
   [key in LintOption]: boolean;
 } & CliOptions
 
-export type MakeStringOption = 'name'
+export type MakeStringOption = 'name' | 'chat' | 'sms'
 export type MakeBooleanOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'factory' | 'notification' | 'stack'
 export type MakeOptions = {
   [key in MakeBooleanOption]: boolean

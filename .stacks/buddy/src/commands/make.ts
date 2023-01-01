@@ -1,7 +1,7 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
+
 import {
   createNotification,
   invoke,
@@ -185,8 +185,8 @@ async function make(buddy: CLI) {
     .command('make:notification', descriptions.notification)
     .option('-n, --name', 'The name of the notification')
     .option('-e, --email', 'Is it an email notification?', { default: true })
-    // .option('-c, --chat', 'Is it a chat notification?', { default: false })
-    // .option('-s, --sms', 'Is it a SMS notification?', { default: false })
+    .option('-c, --chat', 'Is it a chat notification?', { default: false })
+    .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const perf = intro('buddy make:notification')
