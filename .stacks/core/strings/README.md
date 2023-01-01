@@ -17,9 +17,16 @@ Now, you can use it in your project:
 
 ```js
 import {
-  addIrregularRule, addPluralRule, addSingularRule, addUncountableRule, camelCase, capitalCase, constantCase, dotCase,
+  // pluralize
+  addIrregularRule, addPluralRule, addSingularRule, addUncountableRule,
+
+  // case
+  camelCase, capitalCase, constantCase, dotCase,
   headerCase, isPlural, isSingular, kebabCase, noCase, paramCase, pascalCase,
-  pathCase, plural, sentenceCase, singular, snakeCase
+  pathCase, plural, sentenceCase, singular, snakeCase,
+
+  // validation
+  isEmail, isStrongPassword, isAlphanumeric, validateUsername, isURL, isMobilePhone, isAlpha, isPostalCode, isDate, isNumeric, isBoolean, isHexColor, isHexadecimal, isBase64, isUUID, isJSON, isCreditCard, isISBN, isIP, isIPRange, isMACAddress, isLatLong, isLatitude, isLongitude, isCurrency, isDataURI, isMimeType, isJWT, isMongoId, isAscii, isBase32, isByteLength, isFQDN, isFullWidth, isHalfWidth, isHash, isHSL, isIBAN, isIdentityCard, isISIN, isISO8601, isISRC, isISSN, isISO31661Alpha2, isISO31661Alpha3
 } from '@stacksjs/strings'
 
 console.log(camelCase('hello world')) // helloWorld
@@ -58,6 +65,7 @@ Many thanks to the following core technologies & people who have contributed to 
 
 - [change-case](https://www.npmjs.com/package/change-case)
 - [pluralize](https://www.npmjs.com/package/pluralize)
+- [validation](https://www.npmjs.com/package/validation)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 
