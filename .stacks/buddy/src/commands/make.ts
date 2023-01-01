@@ -3,6 +3,7 @@ import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 import {
+  createNotifications,
   invoke,
   component as makeComponent,
   database as makeDatabase,
@@ -12,6 +13,7 @@ import {
   migration as makeMigration,
   page as makePage,
   stack as makeStack,
+
 } from '@stacksjs/actions/make'
 
 async function make(buddy: CLI) {
@@ -197,12 +199,12 @@ async function make(buddy: CLI) {
         process.exit()
       }
 
-      const result = await runAction(Action.MakeNotification, options)
+      const result = await createNotifications(options)
 
-      if (result.isErr()) {
-        outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

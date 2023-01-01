@@ -247,3 +247,12 @@ export async function stack(options: MakeOptions) {
     process.exit()
   }
 }
+
+export async function createNotifications(options: MakeOptions) {
+  const name = options.name
+  await writeTextFile({
+    path: `./notifications/${name}.ts`,
+    data: `test
+`,
+  })
+}
