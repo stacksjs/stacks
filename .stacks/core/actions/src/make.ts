@@ -245,23 +245,30 @@ export async function stack(options: MakeOptions) {
 
 export async function createNotification(options: MakeOptions) {
   const name = options.name
-  if (!doesFolderExist('notifications'))
-    await createFolder('./notifications')
+  try {
+    if (!doesFolderExist('notifications'))
+      await createFolder('./notifications')
 
-  await writeTextFile({
-    path: `./notifications/${name}.ts`,
-    data: `
-  import type { EmailOptions } from '@stacksjs/types'
+    await writeTextFile({
+      path: `./notifications/${name}.ts`,
+      data: `
+    import type { EmailOptions } from '@stacksjs/types'
 
-  function content(): string {
-    return 'example'
-  }
-
-  function send(): EmailOptions {
-    return {
-      content: content(),
+    function content(): string {
+      return 'example'
     }
+
+    function send(): EmailOptions {
+      return {
+        content: content(),
+      }
+    }
+      `,
+    })
+
+    return true
   }
-    `,
-  })
+  catch (error) {
+    return false
+  }
 }
