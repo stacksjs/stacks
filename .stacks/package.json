@@ -123,6 +123,7 @@
     "make:function": "pnpm buddy make:function",
     "make:database": "pnpm buddy make:migration",
     "make:migration": "pnpm buddy make:migration",
+    "make:notification": "pnpm buddy make:notification",
     "make:factory": "pnpm buddy make:factory",
     "make:lang": "pnpm buddy make:lang",
     "make:stack": "pnpm buddy make:stack",

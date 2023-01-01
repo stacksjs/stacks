@@ -87,6 +87,7 @@ export function isFolder(path: string): boolean {
   }
 }
 
+
 /**
  * Determine whether a path is a file.
  */
@@ -167,6 +168,18 @@ export function deleteEmptyFolders(dir: string) {
 
 export function doesFolderExist(path: string) {
   return fs.existsSync(path)
+}
+
+export function createFolder(dir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.mkdirs(dir, (err: any) => {
+      if (err)
+        reject(err)
+
+      else
+        resolve()
+    })
+  })
 }
 
 export const filesystem = {

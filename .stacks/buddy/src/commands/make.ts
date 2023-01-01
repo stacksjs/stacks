@@ -3,7 +3,7 @@ import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 import {
-  createNotifications,
+  createNotification,
   invoke,
   component as makeComponent,
   database as makeDatabase,
@@ -199,7 +199,7 @@ async function make(buddy: CLI) {
         process.exit()
       }
 
-      const result = await createNotifications(options)
+      const result = await createNotification(options)
 
       // if (result.isErr()) {
       //   outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

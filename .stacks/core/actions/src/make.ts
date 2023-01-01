@@ -1,5 +1,5 @@
 import { italic, log, spawn } from '@stacksjs/cli'
-import { writeTextFile } from '@stacksjs/storage'
+import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
 
@@ -139,11 +139,6 @@ export async function notification(options: MakeOptions) {
   }
 }
 
-export async function createNotification(options: MakeOptions) {
-  // eslint-disable-next-line no-console
-  console.log('options', options) // wip
-}
-
 export async function page(options: MakeOptions) {
   try {
     const name = options.name
@@ -248,11 +243,21 @@ export async function stack(options: MakeOptions) {
   }
 }
 
-export async function createNotifications(options: MakeOptions) {
+export async function createNotification(options: MakeOptions) {
   const name = options.name
+  if (!doesFolderExist('notifications'))
+    await createFolder('./notifications')
+
   await writeTextFile({
     path: `./notifications/${name}.ts`,
-    data: `test
-`,
+    data: `
+    function content(): string {
+      return 'example'
+    }
+
+    function send(): EmailOptions {
+
+    }
+    `,
   })
 }
