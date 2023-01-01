@@ -925,16 +925,20 @@ importers:
       '@stacksjs/alias': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/pluralize': ^0.0.29
+      '@types/validator': ^13.7.10
       change-case: ^4.1.2
       mkdist: ^1.0.0
       pluralize: ^8.0.0
       typescript: ^4.9.4
       unbuild: ^1.0.2
+      validator: ^13.7.0
     dependencies:
       '@stacksjs/alias': link:../alias
       '@types/pluralize': 0.0.29
+      '@types/validator': 13.7.10
       change-case: 4.1.2
       pluralize: 8.0.0
+      validator: 13.7.0
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -5609,6 +5613,10 @@ packages:
 
   /@types/unist/2.0.6:
     resolution: {integrity: sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==}
+    dev: false
+
+  /@types/validator/13.7.10:
+    resolution: {integrity: sha512-t1yxFAR2n0+VO6hd/FJ9F2uezAZVWHLmpmlJzm1eX03+H7+HsuTAp7L8QJs+2pQCfWkP1+EXsGK9Z9v7o/qPVQ==}
     dev: false
 
   /@types/web-bluetooth/0.0.16:
