@@ -443,9 +443,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vitepress: 1.0.0-alpha.33
+      vitepress: 1.0.0-alpha.34
     dependencies:
-      vitepress: 1.0.0-alpha.33_2r467mdhb7mblpaox4bg7fatdi
+      vitepress: 1.0.0-alpha.34_2r467mdhb7mblpaox4bg7fatdi
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -944,16 +944,16 @@ importers:
   .stacks/core/testing:
     specifiers:
       '@playwright/test': ^1.29.1
-      '@vitest/coverage-istanbul': ^0.26.2
-      '@vitest/ui': ^0.26.2
+      '@vitest/coverage-istanbul': ^0.26.3
+      '@vitest/ui': ^0.26.3
       mkdist: ^1.0.0
       typescript: ^4.9.4
-      vitest: ^0.26.2
+      vitest: ^0.26.3
     dependencies:
       '@playwright/test': 1.29.1
-      '@vitest/coverage-istanbul': 0.26.2_@vitest+ui@0.26.2
-      '@vitest/ui': 0.26.2
-      vitest: 0.26.2_@vitest+ui@0.26.2
+      '@vitest/coverage-istanbul': 0.26.3_@vitest+ui@0.26.3
+      '@vitest/ui': 0.26.3
+      vitest: 0.26.3_@vitest+ui@0.26.3
     devDependencies:
       mkdist: 1.0.0_typescript@4.9.4
       typescript: 4.9.4
@@ -983,7 +983,7 @@ importers:
       vite-plugin-inspect: ^0.7.11
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.22.1
-      vitepress: 1.0.0-alpha.33
+      vitepress: 1.0.0-alpha.34
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.2
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -1008,7 +1008,7 @@ importers:
       vite-plugin-inspect: 0.7.11_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_3nkpb5yzbuphqhegz2uv6y4s3u
       vite-ssg: 0.22.1_wg5sslydmzl6un74innclax7im
-      vitepress: 1.0.0-alpha.33_j73j5xdbzpkigstapj6vkce2xy
+      vitepress: 1.0.0-alpha.34_j73j5xdbzpkigstapj6vkce2xy
 
   .stacks/core/ui:
     specifiers:
@@ -5960,8 +5960,8 @@ packages:
       vite: 4.0.3
       vue: 3.2.45
 
-  /@vitest/coverage-istanbul/0.26.2_@vitest+ui@0.26.2:
-    resolution: {integrity: sha512-3tU7vrgnPiGdIoX9VpIqR2geBuk5er4+2m0flO563R+1lV4guqO2bKbCNqEGpnIRcmnWJKQI1LeXndPexqIHtA==}
+  /@vitest/coverage-istanbul/0.26.3_@vitest+ui@0.26.3:
+    resolution: {integrity: sha512-pJRxb+mGy11WdYiam6iW6N4CyhaBbpne+CGPqYGid74SplcR8N07JT3ETDoHKqh5vJCX5UnEIYIreanvFjgLHg==}
     dependencies:
       istanbul-lib-coverage: 3.2.0
       istanbul-lib-instrument: 5.2.1
@@ -5969,7 +5969,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       test-exclude: 6.0.0
-      vitest: 0.26.2_@vitest+ui@0.26.2
+      vitest: 0.26.3_@vitest+ui@0.26.3
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@vitest/browser'
@@ -5984,8 +5984,8 @@ packages:
       - terser
     dev: false
 
-  /@vitest/ui/0.26.2:
-    resolution: {integrity: sha512-DMQhooGJVWjkiKIWJqbprDynDbw/anG2An5PxyDqLuzpGX0MWnDLNxON8wneDtDIX3kCptzRWTVMAxaV/S8EoQ==}
+  /@vitest/ui/0.26.3:
+    resolution: {integrity: sha512-GekIZekLQVL765LmQObHai7Q3U+BWD0nxJVK1yV8VPcs6H/6EAnNuEZ8tFq87jCxyHEZ3zmOrX6uPmG65gBVrA==}
     dependencies:
       fast-glob: 3.2.12
       flatted: 3.2.7
@@ -16392,8 +16392,8 @@ packages:
       extsprintf: 1.3.0
     dev: false
 
-  /vite-node/0.26.2_@types+node@18.11.18:
-    resolution: {integrity: sha512-4M/zlatItZAyvrQG+82zQBhgDjRZRhVJYFW4T9wcAKh7eMmSiPOVSeI5zsV9UzHXgCcIDKX0o0r3s4OxExTHqg==}
+  /vite-node/0.26.3_@types+node@18.11.18:
+    resolution: {integrity: sha512-Te2bq0Bfvq6XiO718I+1EinMjpNYKws6SNHKOmVbILAQimKoZKDd+IZLlkaYcBXPpK3HFe2U80k8Zw+m3w/a2w==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     dependencies:
@@ -16715,8 +16715,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.33_2r467mdhb7mblpaox4bg7fatdi:
-    resolution: {integrity: sha512-EhMDqWLllYr5mXqAz4GCQ1o/bu5umQ6C2d8voiSaTHMkYCxsGc31ETykflM6NOhGx6yccwXygrYIIeN1l6BUEA==}
+  /vitepress/1.0.0-alpha.34_2r467mdhb7mblpaox4bg7fatdi:
+    resolution: {integrity: sha512-ALJLEZYM0rgXDBV8n6P6VXdR8fMjJJIZpm7QqU6CqJwB6JKHW7RBmokx9RcEtPRg/JshYTXO8f6AKPI9BByxkw==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.1
@@ -16742,8 +16742,8 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.33_j73j5xdbzpkigstapj6vkce2xy:
-    resolution: {integrity: sha512-EhMDqWLllYr5mXqAz4GCQ1o/bu5umQ6C2d8voiSaTHMkYCxsGc31ETykflM6NOhGx6yccwXygrYIIeN1l6BUEA==}
+  /vitepress/1.0.0-alpha.34_j73j5xdbzpkigstapj6vkce2xy:
+    resolution: {integrity: sha512-ALJLEZYM0rgXDBV8n6P6VXdR8fMjJJIZpm7QqU6CqJwB6JKHW7RBmokx9RcEtPRg/JshYTXO8f6AKPI9BByxkw==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.1
@@ -16769,8 +16769,8 @@ packages:
       - terser
     dev: true
 
-  /vitest/0.26.2_@vitest+ui@0.26.2:
-    resolution: {integrity: sha512-Jvqxh6SDy9SsuslkDjts0iDewDIdq4rveEt69YgDuAb1tVDGV0lDepVaeAFraoySWqneJmOt4TngFFNhlw7GfA==}
+  /vitest/0.26.3_@vitest+ui@0.26.3:
+    resolution: {integrity: sha512-FmHxU9aUCxTi23keF3vxb/Qp0lYXaaJ+jRLGOUmMS3qVTOJvgGE+f1VArupA6pEhaG2Ans4X+zV9dqM5WISMbg==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
@@ -16794,7 +16794,7 @@ packages:
       '@types/chai': 4.3.4
       '@types/chai-subset': 1.3.3
       '@types/node': 18.11.18
-      '@vitest/ui': 0.26.2
+      '@vitest/ui': 0.26.3
       acorn: 8.8.1
       acorn-walk: 8.2.0
       chai: 4.3.7
@@ -16806,7 +16806,7 @@ packages:
       tinypool: 0.3.0
       tinyspy: 1.0.2
       vite: 4.0.3_@types+node@18.11.18
-      vite-node: 0.26.2_@types+node@18.11.18
+      vite-node: 0.26.3_@types+node@18.11.18
     transitivePeerDependencies:
       - less
       - sass
