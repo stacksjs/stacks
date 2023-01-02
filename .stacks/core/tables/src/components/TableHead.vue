@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTable } from '~/composables/table'
+import { useTable } from '../table'
 
 const { table, isColumnSortable, isColumnUsedAsSort, toggleSort, indeterminate, hits, lastColumn, readableLastColumn } = await useTable()
 </script>

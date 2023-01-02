@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTable } from '~/composables/table'
+import { useTable } from '../functions/table'
 
 const { actions } = await useTable()
 </script>

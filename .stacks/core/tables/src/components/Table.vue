@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { isString } from '@vueuse/core'
-import type { Hits, SearchResponse } from 'meilisearch'
-import { useTable } from '~/composables/table'
+import { isString } from '@stacksjs/strings'
+import type { Hits, SearchResponse } from '@stacksjs/types'
+import { useTable } from '../table'
 
 interface Props {
   type: string // the Meilisearch index you would like to use for this table

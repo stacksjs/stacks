@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Hit } from 'meilisearch'
+import type { Hit } from '@stacksjs/types'
 
 const { hit, index } = defineProps<{ hit: Hit; index: number }>()
 
