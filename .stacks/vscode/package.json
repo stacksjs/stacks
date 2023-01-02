@@ -37,6 +37,7 @@
     "theme": "light"
   },
   "extensionPack": [
+    "vue.volar",
     "vue.vscode-typescript-vue-plugin",
     "voorjaar.windicss-intellisense",
     "dbaeumer.vscode-eslint",
