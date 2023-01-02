@@ -1,5 +1,6 @@
 {
-  "name": "your-app",
+  "name": "stacks",
+  "private": true,
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@7.21.0",
