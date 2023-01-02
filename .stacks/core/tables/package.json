@@ -1,0 +1,94 @@
+{
+  "name": "@stacksjs/tables",
+  "version": "0.0.11",
+  "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, ...",
+  "author": "Open Web Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stacksjs/table.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/table/issues"
+  },
+  "keywords": [
+    "tables",
+    "filters",
+    "pagination",
+    "sorting",
+    "search",
+    "component",
+    "library",
+    "vue",
+    "typescript",
+    "javascript"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "engines": {
+    "node": ">=v18.12.1",
+    "pnpm": ">=7.17.0"
+  },
+  "scripts": {
+    "dev": "pnpm buddy dev",
+    "dev:components": "pnpm buddy dev:components",
+    "dev:docs": "pnpm buddy dev:docs",
+    "dev:functions": "pnpm buddy dev:functions // todo: opens the auto-generated web server of functions",
+    "development": "pnpm buddy dev",
+    "build": "pnpm buddy build",
+    "build:components": "pnpm buddy build:components",
+    "build:vue-components": "pnpm buddy build:web-components",
+    "build:web-components": "pnpm buddy build:web-components",
+    "build:functions": "pnpm buddy build:functions // needs to have option to ",
+    "build:docs": "pnpm buddy build:docs",
+    "prod": "pnpm buddy build",
+    "prod:components": "pnpm buddy build:components",
+    "prod:vue-components": "pnpm buddy build:web-components",
+    "prod:web-components": "pnpm buddy build:web-components",
+    "prod:functions": "pnpm buddy build:functions // needs to have option to ",
+    "prod:docs": "pnpm buddy build:docs",
+    "production": "pnpm buddy build",
+    "deploy": "pnpm buddy deploy",
+    "deploy:functions": "pnpm buddy deploy:functions",
+    "deploy:pages": "pnpm buddy deploy:functions",
+    "deploy:docs": "pnpm buddy deploy:docs",
+    "deploy:all": "pnpm buddy deploy:all",
+    "lint": "pnpm buddy lint",
+    "lint:fix": "pnpm buddy lint:fix",
+    "serve": "pnpm buddy dev",
+    "serve:pages": "pnpm buddy dev:pages",
+    "serve:functions": "pnpm buddy dev:functions",
+    "make": "pnpm buddy make",
+    "make:table": "pnpm buddy make:table",
+    "commit": "pnpm buddy commit",
+    "release": "pnpm buddy release",
+    "changelog": "pnpm buddy changelog",
+    "generate": "pnpm buddy generate",
+    "generate:entries": "pnpm buddy generate:entries",
+    "generate:vue-compat": "pnpm buddy generate:vue-compat",
+    "generate:vscode-custom-data": "pnpm buddy generate:vscode-custom-data",
+    "generate:web-types": "pnpm buddy generate:web-types",
+    "generate:component-meta": "pnpm buddy generate:component-meta",
+    "test": "pnpm buddy test",
+    "test:coverage": "pnpm buddy test:coverage",
+    "test:types": "pnpm buddy test:types"
+  },
+  "dependencies": {
+    "@vueform/multiselect": "^2.4.2",
+    "install": "^0.13.0",
+    "meilisearch": "^0.25.1",
+    "vue-demi": "^0.13.1"
+  },
+  "devDependencies": {
+    "stacks": "workspace:*"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
+  },
+  "config": {
+    "commitizen": {
+      "path": ".stacks/node_modules/cz-git"
+    }
+  }
+}
