@@ -77,8 +77,8 @@
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@vueform/multiselect": "^2.4.2",
-    "meilisearch": "^0.25.1"
+    "@vueform/multiselect": "^2.5.8",
+    "meilisearch": "^0.30.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
