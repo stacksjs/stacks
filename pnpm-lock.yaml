@@ -950,8 +950,8 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
-      '@vueform/multiselect': ^2.4.2
-      meilisearch: ^0.25.1
+      '@vueform/multiselect': ^2.5.8
+      meilisearch: ^0.30.0
       mkdist: ^1.0.0
       typescript: ^4.9.4
       unbuild: ^1.0.2
@@ -959,7 +959,7 @@ importers:
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       '@vueform/multiselect': 2.5.8
-      meilisearch: 0.25.1
+      meilisearch: 0.30.0
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
@@ -12003,14 +12003,6 @@ packages:
 
   /mdurl/1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
-
-  /meilisearch/0.25.1:
-    resolution: {integrity: sha512-20jO0pK9BhghxHSkOLbdoYn58h/Z0PNL3JQcRq7ipNIeqrxkAetCZZ6ttJC3uxcz0jVglmiFoSXu3Z/lEOLOLQ==}
-    dependencies:
-      cross-fetch: 3.1.5
-    transitivePeerDependencies:
-      - encoding
-    dev: false
 
   /meilisearch/0.30.0:
     resolution: {integrity: sha512-3y1hALOwTDpquYar+gDREqRasFPWKxkWAhk6h+RF+nKObPVf9N77wcTNvukGwOKbxRyJnKge0OPgAB1BkB9VVw==}
