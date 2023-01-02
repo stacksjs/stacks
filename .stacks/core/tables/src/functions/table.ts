@@ -1,8 +1,7 @@
 import { calculatePagination, currentPage, filterName, filters, goToNextPage, goToPage, goToPrevPage, hits, index, lastPageNumber, perPage, query, results, search, searchFilters, searchParams, setTotalHits, sort, sorts, totalPages } from '@stacksjs/search-engine'
-import { isObject, isString, useStorage } from '@vueuse/core'
-import type { Ref } from 'vue'
+import { isObject, isString, useStorage } from '@stacksjs/utils'
+import type { Ref, TableStore } from '@stacksjs/types'
 import { computed } from 'vue-demi'
-import type { TableStore } from './types'
 
 const table = (useStorage('table', determineState()).value as TableStore)
 
