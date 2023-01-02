@@ -988,6 +988,7 @@ importers:
       '@mdit-vue/plugin-component': ^0.11.2
       '@mdit-vue/plugin-frontmatter': ^0.11.1
       '@mdit-vue/types': ^0.11.0
+      '@prisma/client': ^4.8.0
       '@rollup/pluginutils': ^5.0.2
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
@@ -1013,6 +1014,7 @@ importers:
       '@mdit-vue/plugin-component': 0.11.2
       '@mdit-vue/plugin-frontmatter': 0.11.1
       '@mdit-vue/types': 0.11.0
+      '@prisma/client': 4.8.0
       '@rollup/pluginutils': 5.0.2
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
@@ -4892,11 +4894,9 @@ packages:
         optional: true
     dependencies:
       '@prisma/engines-version': 4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe
-    dev: false
 
   /@prisma/engines-version/4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe:
     resolution: {integrity: sha512-MHSOSexomRMom8QN4t7bu87wPPD+pa+hW9+71JnVcF3DqyyO/ycCLhRL1we3EojRpZxKvuyGho2REQsMCvxcJw==}
-    dev: false
 
   /@redis/bloom/1.1.0_@redis+client@1.4.2:
     resolution: {integrity: sha512-9QovlxmpRtvxVbN0UBcv8WfdSMudNZZTFqCsnBszcQXqaZb/TVe30ScgGEO7u1EAIacTPAo7/oCYjYAxiHLanQ==}
