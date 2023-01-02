@@ -75,7 +75,8 @@
     "test:types": "pnpm buddy test:types"
   },
   "peerDependencies": {
-    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@vueform/multiselect": "^2.4.2",
     "meilisearch": "^0.25.1"
   },
