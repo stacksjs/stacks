@@ -1,5 +1,5 @@
 import storage from '@stacksjs/storage'
-import { runCommand, runCommands } from '@stacksjs/cli'
+import { log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { CliOptions, CommandResult } from '@stacksjs/types'
 import type { Err, Result } from '@stacksjs/error-handling'
@@ -20,6 +20,12 @@ const parseOptions = (options?: CliOptions) => {
   return parsedOptions.join(' ').replace('----=', '')
 }
 
+export type ActionResult = Promise<
+  Result<CommandResult<string>, Error>
+  | Result<CommandResult<string>, Error>[]
+  | Err<CommandResult<string>, string>
+>
+
 /**
  * Run an Action the Stacks way.
  *
@@ -27,7 +33,7 @@ const parseOptions = (options?: CliOptions) => {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: CliOptions): Promise<Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
+export async function runAction(action: string, options?: CliOptions): ActionResult {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist.`)
 
@@ -35,8 +41,8 @@ export async function runAction(action: string, options?: CliOptions): Promise<R
   const opts = parseOptions(options)
   const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
 
-  // eslint-disable-next-line no-console
-  console.log('Running command:', cmd, options)
+  if (options?.debug)
+    log.info('Running command:', cmd, options)
 
   return options?.shouldShowSpinner
     ? await runCommands([cmd], options)
