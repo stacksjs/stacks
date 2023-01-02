@@ -1,8 +1,8 @@
 {
   "name": "stacks",
-  "private": true,
   "type": "module",
   "version": "0.0.0",
+  "private": true,
   "packageManager": "pnpm@7.21.0",
   "description": "Develop your modern framework-agnostic web app or library, faster.",
   "author": "Chris Breuer",

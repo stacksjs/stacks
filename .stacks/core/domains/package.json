@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/domains",
   "type": "module",
-  "version": "0.47.4",
+  "version": "0.48.0",
   "packageManager": "pnpm@7.21.0",
   "description": "Easily manage your domains.",
   "author": "Chris Breuer",

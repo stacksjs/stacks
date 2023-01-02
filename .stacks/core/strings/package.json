@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.47.4",
+  "version": "0.48.0",
   "packageManager": "pnpm@7.21.0",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
@@ -56,8 +56,8 @@
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
-    "@types/validator": "^13.7.10",
     "@types/pluralize": "^0.0.29",
+    "@types/validator": "^13.7.10",
     "change-case": "^4.1.2",
     "pluralize": "^8.0.0",
     "validator": "^13.7.0"
