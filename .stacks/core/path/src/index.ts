@@ -274,6 +274,10 @@ export function testingPath(path?: string) {
   return corePath(`testing/${path || ''}`)
 }
 
+export function testsPath(path?: string) {
+  return frameworkPath(`tests/${path || ''}`)
+}
+
 export function typesPath(path?: string) {
   return corePath(`types/${path || ''}`)
 }
@@ -348,6 +352,7 @@ export const path = {
   stringsPath,
   tablesPath,
   testingPath,
+  testsPath,
   typesPath,
   uiPath,
   utilsPath,
