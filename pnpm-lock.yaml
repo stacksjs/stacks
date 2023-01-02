@@ -521,7 +521,7 @@ importers:
 
   .stacks/core/error-handling:
     specifiers:
-      '@ow3/eslint-config': ^0.35.1
+      '@ow3/eslint-config': ^0.35.2
       '@stacksjs/testing': workspace:*
       mkdist: ^1.0.0
       neverthrow: ^6.0.0
@@ -587,7 +587,7 @@ importers:
 
   .stacks/core/lint:
     specifiers:
-      '@ow3/eslint-config': ^0.35.1
+      '@ow3/eslint-config': ^0.35.2
       '@stacksjs/testing': workspace:*
       '@types/eslint': ^8.4.10
       eslint: ^8.31.0
