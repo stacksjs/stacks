@@ -924,6 +924,7 @@ importers:
     specifiers:
       '@stacksjs/alias': workspace:*
       '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
       '@types/pluralize': ^0.0.29
       '@types/validator': ^13.7.10
       change-case: ^4.1.2
@@ -934,6 +935,7 @@ importers:
       validator: ^13.7.0
     dependencies:
       '@stacksjs/alias': link:../alias
+      '@stacksjs/types': link:../types
       '@types/pluralize': 0.0.29
       '@types/validator': 13.7.10
       change-case: 4.1.2

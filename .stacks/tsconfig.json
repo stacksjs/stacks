@@ -61,6 +61,8 @@
       "@stacksjs/drivers/*": ["./core/drivers/src/*"],
       "@stacksjs/email": ["./core/email/src/index.ts"],
       "@stacksjs/email/*": ["./core/email/src/*"],
+      "@stacksjs/events": ["./core/events/src/index.ts"],
+      "@stacksjs/events/*": ["./core/events/src/*"],
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],
       "@stacksjs/logging": ["./core/logging/src/index.ts"],
       "@stacksjs/logging/*": ["./core/logging/src/*"],

@@ -27,4 +27,4 @@ const listen = emitter.on
 const off = emitter.off
 const all = emitter.all
 
-export { useEvent, dispatch, listen, all, off, events, mitt, Events }
+export { useEvent, dispatch, listen, all, off, events, mitt }
