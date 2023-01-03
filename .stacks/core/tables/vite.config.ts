@@ -1,15 +1,6 @@
 import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue-jsx'
 
-export default defineConfig(({ command, mode, ssrBuild }) => {
-  if (command === 'serve') {
-    return {
-      // dev specific config
-    }
-  }
-  else {
-    // command === 'build'
-    return {
-      // build specific config
-    }
-  }
+export default defineConfig({
+  plugins: [vue()],
 })

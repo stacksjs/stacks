@@ -35,6 +35,7 @@
     "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
+    "@vitejs/plugin-vue-jsx": "^3.0.0",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@vueform/multiselect": "^2.5.8",
