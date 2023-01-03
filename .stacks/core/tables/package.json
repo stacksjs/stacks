@@ -31,7 +31,8 @@
     "pnpm": ">=7.21.0"
   },
   "scripts": {
-    "dev": "pnpm buddy dev"
+    "dev": "vite",
+    "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
