@@ -33,7 +33,11 @@ export type ActionResult = Promise<
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: CliOptions): ActionResult {
+export async function runAction(action: string, options?: CliOptions): Promise<
+  Result<CommandResult<string>, Error>
+  // | Result<CommandResult<string>, Error>[]
+  | Err<CommandResult<string>, string>
+> {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist.`)
 

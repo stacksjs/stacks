@@ -82,7 +82,7 @@ export interface Options {
   /**
    * Remove custom SFC block
    *
-   * @default ['route', 'i18n']
+   * @default ['route']
    */
   customSfcBlocks?: string[]
 

@@ -44,7 +44,6 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@intlify/unplugin-vue-i18n": "^0.8.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -65,8 +64,7 @@
     "vite-plugin-vue-markdown": "^0.22.2",
     "vite-ssg": "^0.22.1",
     "vite-ssg-sitemap": "^0.4.3",
-    "vue-docgen-web-types": "^0.1.8",
-    "vue-i18n": "^9.2.2"
+    "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

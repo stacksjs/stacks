@@ -5,7 +5,7 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import { autoImports, components, cssEngine, inspect, preview, uiEngine } from '.'
+import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
 export const vueComponentsConfig: ViteConfig = {
   root: componentsPath(),
@@ -24,7 +24,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   plugins: [
-    preview(),
+    // preview(),
     uiEngine(),
     cssEngine(),
     autoImports(),
@@ -66,6 +66,8 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command }) => {
+  // eslint-disable-next-line no-console
+  console.log('command', command)
   if (command === 'serve')
     return vueComponentsConfig
 

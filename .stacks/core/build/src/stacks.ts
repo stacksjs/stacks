@@ -5,15 +5,14 @@ import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
-import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import type { PluginOption } from 'vite'
 import Markdown from 'vite-plugin-vue-markdown'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions, i18nOptions } from '@stacksjs/types'
-import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, langPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from '@stacksjs/types'
+import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -149,17 +148,17 @@ function pwa() {
   })
 }
 
-function i18n(options?: i18nOptions) {
-  const defaultOptions: i18nOptions = {
-    runtimeOnly: true,
-    compositionOnly: true,
-    include: [langPath('./**')],
-  }
+// function i18n(options?: i18nOptions) {
+//   const defaultOptions: i18nOptions = {
+//     runtimeOnly: true,
+//     compositionOnly: true,
+//     include: [langPath('./**')],
+//   }
 
-  const newOptions = defu(options, defaultOptions)
+//   const newOptions = defu(options, defaultOptions)
 
-  return VueI18n(newOptions)
-}
+//   return VueI18n(newOptions)
+// }
 
 function uiEngine(isWebComponent = false) {
   if (isWebComponent) {
@@ -195,4 +194,4 @@ const componentPreset = (isWebComponent = false) => <PluginOption>[
 //   //
 // ]
 
-export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, layouts, i18n }
+export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, layouts }

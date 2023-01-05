@@ -1,6 +1,7 @@
-import { ExitCode } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
-import { prompts } from '@stacksjs/cli'
+import { intro, outro, prompts } from '@stacksjs/cli'
 import { components, desktop, docs, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 async function dev(buddy: CLI) {
@@ -55,9 +56,17 @@ async function dev(buddy: CLI) {
 
   buddy
     .command('dev:components', descriptions.components)
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
-      await startDevelopmentServer(options)
+      const perf = intro('buddy dev:components')
+      const result = await runAction(Action.DevComponents, { ...options, debug: true })
+
+      if (result.isErr()) {
+        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        process.exit()
+      }
+
+      outro('Finished running dev:components.', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 
   buddy

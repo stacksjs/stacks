@@ -4,7 +4,7 @@ import { command, log } from '@stacksjs/cli'
 import { env, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
-import { version } from '../package.json'
+import { version } from '../package.json' assert { type: 'json' }
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, preinstall, prepublish, release, setup, test, update } from './commands'
 
 const cli = command('stacks')

@@ -1,5 +1,5 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
-import { version } from '../package.json'
+import { version } from '../package.json' assert { type: 'json' }
 import { log } from './console'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
