@@ -2,7 +2,7 @@
   "name": "@stacksjs/ui",
   "type": "module",
   "version": "0.48.3",
-  "packageManager": "pnpm@7.21.0",
+  "packageManager": "pnpm@7.22.0",
   "description": "The Stacks atomic UI engine, powered by UnoCSS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -38,7 +38,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.21.0"
+    "pnpm": ">=7.22.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -56,7 +56,7 @@
     "pinia": "^2.0.28",
     "unocss": "^0.48.0",
     "vue": "^3.2.45",
-    "vue-tsc": "^1.0.19"
+    "vue-tsc": "^1.0.22"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

@@ -2,7 +2,7 @@
   "name": "@stacksjs/chat",
   "type": "module",
   "version": "0.48.3",
-  "packageManager": "pnpm@7.21.0",
+  "packageManager": "pnpm@7.22.0",
   "description": "The Stacks Chat Integration. Easy sending of messages for chat services",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "engines": {
     "node": ">=v18.12.1",
-    "pnpm": ">=7.21.0"
+    "pnpm": ">=7.22.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -44,10 +44,10 @@
   },
   "peerDependencies": {
     "@maizzle/framework": "latest",
-    "@novu/discord": "^0.10.0",
-    "@novu/node": "^0.10.0",
-    "@novu/slack": "^0.10.0",
-    "@novu/stateless": "^0.10.0",
+    "@novu/discord": "^0.10.1",
+    "@novu/node": "^0.10.1",
+    "@novu/slack": "^0.10.1",
+    "@novu/stateless": "^0.10.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
