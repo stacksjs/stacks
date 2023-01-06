@@ -33,7 +33,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.12.1",
+    "node": ">=v18.13.0",
     "pnpm": ">=7.22.0"
   },
   "scripts": {
@@ -46,7 +46,7 @@
     "@mdit-vue/plugin-component": "^0.11.2",
     "@mdit-vue/plugin-frontmatter": "^0.11.1",
     "@mdit-vue/types": "^0.11.0",
-    "@prisma/client": "^4.8.0",
+    "@prisma/client": "^4.8.1",
     "@rollup/pluginutils": "^5.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",

@@ -35,7 +35,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.12.1",
+    "node": ">=v18.13.0",
     "pnpm": ">=7.22.0"
   },
   "scripts": {
@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.241.0",
+    "@aws-sdk/client-dynamodb": "^3.245.0",
     "@stacksjs/config": "workspace:*",
     "@types/memjs": "^1.2.5",
     "memcached": "^2.2.2",
