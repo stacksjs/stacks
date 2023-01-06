@@ -966,14 +966,14 @@ importers:
 
   .stacks/core/testing:
     specifiers:
-      '@playwright/test': ^1.29.1
+      '@playwright/test': ^1.29.2
       '@vitest/coverage-istanbul': ^0.26.3
       '@vitest/ui': ^0.26.3
       mkdist: ^1.0.0
       typescript: ^4.9.4
       vitest: ^0.26.3
     dependencies:
-      '@playwright/test': 1.29.1
+      '@playwright/test': 1.29.2
       '@vitest/coverage-istanbul': 0.26.3_@vitest+ui@0.26.3
       '@vitest/ui': 0.26.3
       vitest: 0.26.3_@vitest+ui@0.26.3
@@ -4997,13 +4997,13 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@playwright/test/1.29.1:
-    resolution: {integrity: sha512-iQxk2DX5U9wOGV3+/Jh9OHPsw5H3mleUL2S4BgQuwtlAfK3PnKvn38m4Rg9zIViGHVW24opSm99HQm/UFLEy6w==}
+  /@playwright/test/1.29.2:
+    resolution: {integrity: sha512-+3/GPwOgcoF0xLz/opTnahel1/y42PdcgZ4hs+BZGIUjtmEFSXGg+nFoaH3NSmuc7a6GSFwXDJ5L7VXpqzigNg==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
       '@types/node': 18.11.18
-      playwright-core: 1.29.1
+      playwright-core: 1.29.2
     dev: false
 
   /@polka/url/1.0.0-next.21:
@@ -13506,8 +13506,8 @@ packages:
       mlly: 1.0.0
       pathe: 1.0.0
 
-  /playwright-core/1.29.1:
-    resolution: {integrity: sha512-20Ai3d+lMkWpI9YZYlxk8gxatfgax5STW8GaMozAHwigLiyiKQrdkt7gaoT9UQR8FIVDg6qVXs9IoZUQrDjIIg==}
+  /playwright-core/1.29.2:
+    resolution: {integrity: sha512-94QXm4PMgFoHAhlCuoWyaBYKb92yOcGVHdQLoxQ7Wjlc7Flg4aC/jbFW7xMR52OfXMVkWicue4WXE7QEegbIRA==}
     engines: {node: '>=14'}
     hasBin: true
     dev: false
