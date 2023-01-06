@@ -38,7 +38,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.12.1",
+    "node": ">=v18.13.0",
     "pnpm": ">=7.22.0"
   },
   "scripts": {
@@ -48,7 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@prisma/client": "^4.8.0",
+    "@prisma/client": "^4.8.1",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {

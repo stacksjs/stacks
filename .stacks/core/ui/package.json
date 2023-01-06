@@ -37,7 +37,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.12.1",
+    "node": ">=v18.13.0",
     "pnpm": ">=7.22.0"
   },
   "scripts": {
@@ -52,9 +52,9 @@
     "@julr/unocss-preset-forms": "^0.0.2",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.48.0",
+    "@unocss/transformer-compile-class": "^0.48.2",
     "pinia": "^2.0.28",
-    "unocss": "^0.48.0",
+    "unocss": "^0.48.2",
     "vue": "^3.2.45",
     "vue-tsc": "^1.0.22"
   },
