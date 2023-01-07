@@ -13,7 +13,7 @@ async function changelog(buddy: CLI) {
     .command('changelog', descriptions.changelog)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
-      const perf = intro('buddy changelog')
+      const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)
 
       if (result.isErr()) {

@@ -12,7 +12,8 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from '@stacksjs/types'
-import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
+import { componentsPath, frameworkPath, functionsPath, pagesPath, resolve, uiPath } from '@stacksjs/path'
+// import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -81,22 +82,25 @@ function markdown(options?: MarkdownOptions) {
 }
 
 function autoImports(options?: AutoImportsOptions) {
+  // eslint-disable-next-line no-console
+  console.log('autoImports here?')
+
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
-      { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+      // { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
     ],
     dirs: [
       functionsPath(),
       componentsPath(),
-      projectPath('config'),
+      // projectPath('config'),
       // auto imported utilities start here
-      arraysPath('src'),
-      stringsPath('src'),
-      collectionsPath('src'),
-      fsPath('src'),
-      pathPath('src'),
-      securityPath('src'),
+      // arraysPath('src'),
+      // stringsPath('src'),
+      // collectionsPath('src'),
+      // fsPath('src'),
+      // pathPath('src'),
+      // securityPath('src'),
     ],
     dts: frameworkPath('auto-imports.d.ts'),
     vueTemplate: true,
@@ -161,6 +165,8 @@ function pwa() {
 // }
 
 function uiEngine(isWebComponent = false) {
+  // eslint-disable-next-line no-console
+  console.log('here', isWebComponent, process.cwd(), __dirname, __filename)
   if (isWebComponent) {
     return Vue({
       include: [/\.vue$/, /\.md$/],

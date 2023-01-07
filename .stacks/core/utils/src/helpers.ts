@@ -1,5 +1,5 @@
 import { log, runCommand, spawn } from '@stacksjs/cli'
-import { type CliOptions, type Manifest, type NpmScript } from '@stacksjs/types'
+import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { ui } from '@stacksjs/config'
@@ -15,7 +15,7 @@ export async function isProjectCreated() {
   return await isAppKeySet()
 }
 
-export async function readVersion() {
+export async function frameworkVersion(): Promise<string> {
   const packageJson = await storage.fs.readJson(frameworkPath('package.json'))
   return packageJson.version
 }

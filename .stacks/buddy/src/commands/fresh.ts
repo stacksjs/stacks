@@ -13,7 +13,7 @@ async function fresh(buddy: CLI) {
     .command('fresh', descriptions.fresh)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
-      const perf = intro('buddy fresh')
+      const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, { ...options, shouldShowSpinner: true, spinnerText: 'Reinstalling dependencies...' })
 
       if (result.isErr()) {

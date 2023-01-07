@@ -33,7 +33,7 @@ async function create(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
-      const startTime = intro('stacks new')
+      const startTime = await intro('stacks new')
       const name = options.name
       const path = resolve(process.cwd(), name)
 

@@ -21,7 +21,7 @@ async function test(buddy: CLI) {
     .option('--ui', descriptions.ui, { default: false })
     .option('--debug', descriptions.debug, { default: true })
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test')
+      const perf = await intro('buddy test')
       const result = await runAction(Action.Test, { ...options, cwd: projectPath() })
 
       if (result.isErr()) {
@@ -36,7 +36,7 @@ async function test(buddy: CLI) {
     .command('test:unit', descriptions.unit)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test:unit')
+      const perf = await intro('buddy test:unit')
       const result = await runAction(Action.TestUnit, { ...options, debug: true, cwd: projectPath() })
 
       if (result.isErr()) {
@@ -52,7 +52,7 @@ async function test(buddy: CLI) {
     .option('--show-report', descriptions.showReport, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test:feature')
+      const perf = await intro('buddy test:feature')
       let result
 
       if (options.showReport)
@@ -72,7 +72,7 @@ async function test(buddy: CLI) {
     .command('test:ui', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test:ui')
+      const perf = await intro('buddy test:ui')
       const result = await runAction(Action.TestUi, { ...options, debug: true, cwd: projectPath() })
 
       if (result.isErr()) {
@@ -88,7 +88,7 @@ async function test(buddy: CLI) {
     .alias('typecheck')
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test:types')
+      const perf = await intro('buddy test:types')
       const result = await runAction(Action.Typecheck, { ...options, debug: true, cwd: projectPath() })
 
       if (result.isErr()) {
@@ -102,7 +102,7 @@ async function test(buddy: CLI) {
   buddy
     .command('test:coverage', descriptions.coverage)
     .action(async (options: TestOptions) => {
-      const perf = intro('buddy test:coverage')
+      const perf = await intro('buddy test:coverage')
       const result = await runAction(Action.TestCoverage, { ...options, cwd: projectPath(), debug: true })
 
       if (result.isErr()) {

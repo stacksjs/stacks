@@ -1,5 +1,5 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
-import { version } from '../package.json' assert { type: 'json' }
+import { frameworkVersion } from '@stacksjs/utils'
 import { log } from './console'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
@@ -7,7 +7,8 @@ import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 /**
  * Prints the intro message.
  */
-export function intro(command: string, options?: IntroOptions) {
+export async function intro(command: string, options?: IntroOptions) {
+  const version = await frameworkVersion()
   console.log()
   console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
   console.log()

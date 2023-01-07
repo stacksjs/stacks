@@ -6,12 +6,7 @@ export default defineConfig({
   clearScreen: false,
 
   server,
-  // server: {
-  //   port: 4000,
-  //   strictPort: true,
-  // },
 
-  // envPrefix: ['VITE_', 'TAURI_'],
   envPrefix: 'APP_',
 
   plugins: [

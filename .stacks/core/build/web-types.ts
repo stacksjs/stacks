@@ -1,7 +1,7 @@
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { componentsPath, frameworkPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
-import { version } from './package.json' assert { type: 'json' }
+import { frameworkVersion } from '@stacksjs/utils'
 
 export default <WebTypesBuilderConfig> {
   cwd: process.cwd(),
@@ -9,6 +9,6 @@ export default <WebTypesBuilderConfig> {
   components: '**\/[a-zA-Z]*.vue',
   outFile: frameworkPath('web-types.json'),
   packageName: library.name,
-  packageVersion: version,
+  packageVersion: await frameworkVersion(),
   watch: false,
 }

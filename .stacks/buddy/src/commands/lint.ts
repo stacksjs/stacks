@@ -15,7 +15,7 @@ async function lint(buddy: CLI) {
     .option('-f, --fix', descriptions.lintFix, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: LintOptions) => {
-      const perf = intro('buddy lint')
+      const perf = await intro('buddy lint')
       const result = await runAction(Action.Lint, { ...options, shouldShowSpinner: true, spinnerText: 'Linting...' })
 
       if (result.isErr()) {

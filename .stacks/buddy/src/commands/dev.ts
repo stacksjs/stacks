@@ -57,7 +57,7 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:components', descriptions.components)
     .action(async (options: DevOptions) => {
-      const perf = intro('buddy dev:components')
+      const perf = await intro('buddy dev:components')
       const result = await runAction(Action.DevComponents, { ...options, debug: true })
 
       if (result.isErr()) {

@@ -69,7 +69,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
 }
 
 export async function updateFramework(options: UpdateOptions) {
-  const perf = intro('buddy update:framework')
+  const perf = await intro('buddy update:framework')
 
   await checkForUncommittedChanges('./.stacks', options)
   await downloadFrameworkUpdate(options)
@@ -109,7 +109,7 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
 }
 
 export async function updateDependencies(options: UpdateOptions) {
-  const perf = intro('buddy update:dependencies')
+  const perf = await intro('buddy update:dependencies')
   const result = await runCommand(NpmScript.UpdateDependencies, options)
 
   if (result.isErr()) {
@@ -122,7 +122,7 @@ export async function updateDependencies(options: UpdateOptions) {
 }
 
 export async function updatePackageManager(options: UpdateOptions) {
-  const perf = intro('buddy update:package-manager')
+  const perf = await intro('buddy update:package-manager')
   const version = options?.version || 'latest'
   const result = await runCommand(`corepack prepare pnpm@${version} --activate`, options)
 
@@ -136,7 +136,7 @@ export async function updatePackageManager(options: UpdateOptions) {
 }
 
 export async function updateNode(options: UpdateOptions) {
-  const perf = intro('buddy update:node')
+  const perf = await intro('buddy update:node')
   const result = await runCommand(NpmScript.UpdateNode, options)
 
   if (result.isErr()) {

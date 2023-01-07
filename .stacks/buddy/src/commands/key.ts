@@ -13,7 +13,7 @@ async function key(buddy: CLI) {
     .command('key:generate', descriptions.command)
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: KeyOptions) => {
-      const startTime = intro('buddy key:generate')
+      const startTime = await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 
       if (result.isErr()) {

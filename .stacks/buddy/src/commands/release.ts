@@ -13,7 +13,7 @@ async function release(buddy: CLI) {
     .command('release', descriptions.release)
     .option('--debug', descriptions.debug, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
-      const startTime = intro('buddy release')
+      const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, options)
 
       if (result.isErr()) {

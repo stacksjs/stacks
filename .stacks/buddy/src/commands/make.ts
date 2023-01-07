@@ -189,7 +189,7 @@ async function make(buddy: CLI) {
     .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
-      const perf = intro('buddy make:notification')
+      const perf = await intro('buddy make:notification')
 
       const name = buddy.args[0] || options.name
       options.name = name

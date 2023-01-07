@@ -107,7 +107,7 @@ async function build(buddy: CLI) {
     .command('build:core', 'Automagically build the Stacks core.')
     .option('--debug', descriptions.debug, { default: true })
     .action(async (options: BuildOptions) => {
-      const startTime = intro('buddy build:core')
+      const startTime = await intro('buddy build:core')
       const result = await runAction(Action.BuildCore, options)
 
       if (result.isErr()) {
@@ -123,7 +123,7 @@ async function build(buddy: CLI) {
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
-      const startTime = intro('buddy build:stacks')
+      const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
 
       if (result.isErr()) {
