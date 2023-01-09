@@ -2,7 +2,7 @@
   "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.48.3",
-  "packageManager": "pnpm@7.22.0",
+  "packageManager": "pnpm@7.23.0",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,7 +36,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.22.0"
+    "pnpm": ">=7.23.0"
   },
   "scripts": {
     "build": "mkdist -d",
