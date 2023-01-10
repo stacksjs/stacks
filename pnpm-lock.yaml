@@ -956,12 +956,14 @@ importers:
       mkdist: ^1.0.0
       typescript: ^4.9.4
       unbuild: ^1.0.2
+      vite: ^4.0.4
     dependencies:
       '@stacksjs/search-engine': link:../search-engine
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       '@vueform/multiselect': 2.5.8
       meilisearch: 0.30.0
+      vite: 4.0.4
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.0.0_typescript@4.9.4
