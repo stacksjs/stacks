@@ -32,9 +32,12 @@
   },
   "scripts": {
     "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
+    "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@vueform/multiselect": "^2.5.8",
