@@ -8,8 +8,26 @@ const totalHits = table.results?.estimatedTotalHits ?? 1
 
 // state
 const pages: Ref<number[]> = ref([])
-const totalPages = ref(0)
-const currentPage = computed(() => table.currentPage)
+export const totalPages = ref(0)
+export const currentPage = computed(() => table.currentPage)
+export const filterName = computed(() => table.filterName)
+
+export const filters = computed(() => table.filters)
+export const goToNextPage = computed(() => table.goToNextPage)
+export const goToPage = computed(() => table.goToPage)
+export const goToPrevPage = computed(() => table.goToPrevPage)
+export const hits = computed(() => table.hits)
+export const index = computed(() => table.index)
+export const lastPageNumber = computed(() => table.lastPageNumber)
+export const perPage = computed(() => table.perPage)
+export const query = computed(() => table.query)
+export const results = computed(() => table.results)
+export const search = computed(() => table.search)
+export const searchFilters = computed(() => table.searchFilters)
+export const searchParams = computed(() => table.searchParams)
+export const setTotalHits = computed(() => table.setTotalHits)
+export const sort = computed(() => table.sort)
+export const sorts = computed(() => table.sorts)
 
 export function client() {
   if (searchEngine.driver === 'meilisearch')
@@ -53,4 +71,17 @@ export default {
   search,
   calculatePagination,
   currentPage,
+  totalPages,
+  filterName,
+  filters,
+  goToNextPage,
+  goToPage,
+  goToPrevPage,
+  hits,
+  index,
+  searchFilters,
+  searchParams,
+  setTotalHits,
+  sort,
+  sorts,
 }

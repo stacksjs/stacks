@@ -47,6 +47,66 @@ export interface SearchEngineStore {
    */
   hits?: Hits<Record<string, any>>
 
+  /**
+   * The search Filter Name
+   */
+  filterName?: string
+
+  /**
+   * The search filters
+   */
+  filters?: object
+
+  /**
+   * The next page value
+   */
+  goToNextPage?: number
+
+  /**
+   * Set to go to a specific page
+   */
+  goToPage?: number
+
+  /**
+   * Set to go to the previous page
+   */
+  goToPrevPage?: number
+
+  /**
+   * The last page number value
+   */
+  lastPageNumber?: number
+
+  /**
+   * The searched term to use for the search
+   */
+  search?: string
+
+  /**
+   * The search params filters to use for the search
+   */
+  searchFilters?: object
+
+  /**
+   * The search params to use for the search
+   */
+  searchParams?: object
+
+  /**
+   * Total hits value to use for the search
+   */
+  setTotalHits?: number
+
+  /**
+   * The sort value to use for the search
+   */
+  sort?: string
+
+  /**
+   * The sorts value to use for the search
+   */
+  sorts?: object
+
   // table related config
   // actionable?: string | boolean // optional: determines whether the table displays any "action items" (defaults: true)
   // actions?: string | string[] // optional: the specific type of actions to be displayed/utilized in the table (defaults: 'Edit, Delete')
