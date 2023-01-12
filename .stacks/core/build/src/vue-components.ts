@@ -7,8 +7,11 @@ import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
+// eslint-disable-next-line no-console
+console.log('componentsPath()', componentsPath())
+
 export const vueComponentsConfig: ViteConfig = {
-  root: componentsPath(),
+  root: frameworkPath('components/vue'),
   envDir: projectPath(),
   envPrefix: 'APP_',
 
@@ -25,8 +28,8 @@ export const vueComponentsConfig: ViteConfig = {
 
   plugins: [
     // preview(),
-    uiEngine(false),
-    cssEngine(false),
+    uiEngine(),
+    cssEngine(),
     autoImports(),
     components(),
     inspect(),
