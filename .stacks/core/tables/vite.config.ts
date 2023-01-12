@@ -8,4 +8,19 @@ export default defineConfig({
       overlay: false,
     },
   },
+  build: {
+    rollupOptions: {
+      external: ['vue', 'vue-demi'],
+      output: {
+        // exports: 'named',
+        globals: {
+          'vue': 'Vue',
+          'vue-demi': 'vue-demi',
+        },
+      },
+    },
+
+    sourcemap: true,
+    minify: true,
+  },
 })

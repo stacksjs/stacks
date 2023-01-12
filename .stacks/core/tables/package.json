@@ -37,6 +37,7 @@
     "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
+    "@stacksjs/server": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
