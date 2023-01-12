@@ -82,7 +82,7 @@ function determineState(): TableStore {
     currentPage: 1,
     query: '',
     goToNextPage: 2,
-
+    goToPage: 1,
   }
 
   return table
