@@ -81,6 +81,8 @@ function determineState(): TableStore {
     perPage: 20,
     currentPage: 1,
     query: '',
+    goToNextPage: 2,
+
   }
 
   return table
