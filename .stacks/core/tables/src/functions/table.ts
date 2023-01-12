@@ -83,6 +83,14 @@ function determineState(): TableStore {
     query: '',
     goToNextPage: 2,
     goToPage: 1,
+    goToPrevPage: 1,
+    hits: [],
+    lastPageNumber: 1,
+    results: {},
+    search: () => {},
+    searchFilters: {},
+    searchParams: {},
+    setTotalHits: () => {},
   }
 
   return table

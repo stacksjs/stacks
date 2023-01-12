@@ -41,9 +41,10 @@ export interface TableStore {
   goToPage: number;
   goToPrevPage: number;
   lastPageNumber: number;
-  searchFilters?: string;
-  searchParams?: string;
+  searchFilters?: object;
+  searchParams?: object;
   setTotalHits: number;
+
   /**
    *
    * The current page number
