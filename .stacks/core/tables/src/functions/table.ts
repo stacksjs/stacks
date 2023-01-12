@@ -1,4 +1,4 @@
-import { calculatePagination, currentPage, filterName, filters, goToNextPage, goToPage, goToPrevPage, hits, index, lastPageNumber, perPage, query, results, search, searchFilters, searchParams, setTotalHits, sort, sorts, totalPages } from '@stacksjs/search-engine'
+import { calculatePagination, currentPage, filterName, totalPages } from '@stacksjs/search-engine'
 import { isObject, isString, useStorage } from '@stacksjs/utils'
 import type { Ref, TableStore } from '@stacksjs/types'
 import { computed } from 'vue-demi'
@@ -6,6 +6,23 @@ import { computed } from 'vue-demi'
 const table = (useStorage('table', determineState()).value as TableStore)
 
 // table related
+export const filters = computed(() => table.filters)
+export const goToNextPage = computed(() => table.goToNextPage)
+export const goToPage = computed(() => table.goToPage)
+export const goToPrevPage = computed(() => table.goToPrevPage)
+export const hits = computed(() => table.hits)
+export const index = computed(() => table.index)
+export const lastPageNumber = computed(() => table.lastPageNumber)
+export const perPage = computed(() => table.perPage)
+export const query = computed(() => table.query)
+export const results = computed(() => table.results)
+export const search = computed(() => table.search)
+export const searchFilters = computed(() => table.searchFilters)
+export const searchParams = computed(() => table.searchParams)
+export const setTotalHits = computed(() => table.setTotalHits)
+export const sort = computed(() => table.sort)
+export const sorts = computed(() => table.sorts)
+
 const columns = computed(() => table.columns)
 const actions = computed(() => table.actions)
 const actionable = computed(() => table.actionable)
