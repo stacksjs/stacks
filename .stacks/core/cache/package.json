@@ -2,7 +2,7 @@
   "name": "@stacksjs/cache",
   "type": "module",
   "version": "0.48.3",
-  "packageManager": "pnpm@7.23.0",
+  "packageManager": "pnpm@7.24.3",
   "description": "The Stacks way to test.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,7 +36,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.23.0"
+    "pnpm": ">=7.24.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.0.0",
+    "mkdist": "^1.1.0",
     "typescript": "^4.9.4"
   }
 }

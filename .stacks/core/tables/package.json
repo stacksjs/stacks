@@ -28,7 +28,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.23.0"
+    "pnpm": ">=7.24.3"
   },
   "scripts": {
     "dev": "vite",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.0.0",
+    "mkdist": "^1.1.0",
     "typescript": "^4.9.4",
     "unbuild": "^1.0.2"
   },
