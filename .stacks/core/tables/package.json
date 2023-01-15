@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/tables",
-  "version": "0.48.3",
+  "version": "0.49.0",
   "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, ...",
   "author": "Open Web Labs",
   "license": "MIT",
@@ -37,12 +37,15 @@
     "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
-    "@stacksjs/server": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@vueform/multiselect": "^2.5.8",
     "meilisearch": "^0.30.0"
+  },
+  "dependencies": {
+    "vite": "^4.0.4"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
@@ -57,8 +60,5 @@
     "commitizen": {
       "path": ".stacks/node_modules/cz-git"
     }
-  },
-  "dependencies": {
-    "vite": "^4.0.4"
   }
 }

@@ -37,13 +37,13 @@ export interface TableStore {
   selectedAll?: boolean // optional: determines whether all the rows are selected (defaults: false)
   // stickyHeader?: string | boolean // optional: determines whether the table displays the sticky header (defaults: false)
   // stickyFooter?: string | boolean // optional: determines whether the table displays the sticky footer (defaults: false)
-  goToNextPage: number;
-  goToPage: number;
-  goToPrevPage: number;
-  lastPageNumber: number;
-  searchFilters?: object;
-  searchParams?: object;
-  setTotalHits: number;
+  goToNextPage: number
+  goToPage: number
+  goToPrevPage: number
+  lastPageNumber: number
+  searchFilters?: object
+  searchParams?: object
+  setTotalHits: number
 
   /**
    *
