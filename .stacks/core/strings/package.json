@@ -2,7 +2,7 @@
   "name": "@stacksjs/strings",
   "type": "module",
   "version": "0.48.3",
-  "packageManager": "pnpm@7.24.3",
+  "packageManager": "pnpm@7.25.0",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -46,7 +46,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.24.3"
+    "pnpm": ">=7.25.0"
   },
   "scripts": {
     "build": "unbuild",
@@ -67,6 +67,6 @@
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.1.0",
     "typescript": "^4.9.4",
-    "unbuild": "^1.0.2"
+    "unbuild": "^1.1.1"
   }
 }
