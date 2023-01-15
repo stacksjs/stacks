@@ -33,8 +33,8 @@ The Stacks framework is a harmony of several “engines” to build any web and/
 
 _Develop dynamic UIs with helpers for atomic design, and much more._
 
-- 🧩 **Components** _a Stacks primitive to develop user interfaces_
-- 🤖 **Functions** _grant your UI superpowers_
+- 🧩 **Components** _a primitive to develop user interfaces_
+- 🤖 **Functions** _a primitive to develop business logic (and grant your UI superpowers)_
 - 🌐 **Web** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
 - 🖥️ **Desktop** _components as desktop elements_
 - 📚 **Library** _auto-builds component & function libraries_
