@@ -51,7 +51,8 @@
     "IBM.output-colorizer",
     "ZixuanChen.vitest-explorer",
     "cossssmin.posthtml",
-    "prisma.prisma"
+    "prisma.prisma",
+    "mattpocock.ts-error-translator"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.16.0"
