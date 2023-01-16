@@ -19,6 +19,7 @@
   "keywords": [
     "cache",
     "redis",
+    "upstash",
     "dynamodb",
     "utilities",
     "functions",

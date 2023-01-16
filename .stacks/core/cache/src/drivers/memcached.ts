@@ -10,7 +10,7 @@ async function set(key: string, value: any, duration: number): Promise<void> {
 async function get(key: string): Promise<any> {
   const value = await client.get(key)
 
-  return value.value.toString()
+  return value.toString()
 }
 
 async function del(key: string): Promise<void> {
