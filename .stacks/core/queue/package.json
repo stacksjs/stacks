@@ -1,0 +1,54 @@
+{
+  "name": "@stacksjs/queue",
+  "type": "module",
+  "version": "0.49.2",
+  "packageManager": "pnpm@7.25.0",
+  "description": "The Stacks Queue system.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/queue#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/queue"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "queue",
+    "bee-queue",
+    "redis",
+    "upstash",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
+  ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.13.0",
+    "pnpm": ">=7.25.0"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
+    "mkdist": "^1.1.0",
+    "typescript": "^4.9.4"
+  }
+}
