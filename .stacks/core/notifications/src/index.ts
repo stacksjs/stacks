@@ -16,7 +16,7 @@ const useSMS = (driver = 'twilio') => {
   return sms[driver as keyof typeof sms]
 }
 
-const useNotification = (typeParam = null, driverParam = null) => {
+function useNotification(typeParam = 'email', driverParam = 'sendgrid'): any {
   const type = typeParam || config.type
   const driver = driverParam || config.driver
 
@@ -32,7 +32,7 @@ const useNotification = (typeParam = null, driverParam = null) => {
   }
 }
 
-const notification = () => {
+function notification(): any {
   return useNotification()
 }
 
