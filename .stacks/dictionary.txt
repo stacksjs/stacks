@@ -1,4 +1,5 @@
 alefragnani
+amazonwebservices
 antfu
 applypatch
 appsettings
@@ -105,6 +106,7 @@ mailgun
 mailjet
 maizzle
 marvinpinto
+mattpocock
 mdit
 mdsvex
 meema

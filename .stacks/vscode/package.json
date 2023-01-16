@@ -52,7 +52,8 @@
     "ZixuanChen.vitest-explorer",
     "cossssmin.posthtml",
     "prisma.prisma",
-    "mattpocock.ts-error-translator"
+    "mattpocock.ts-error-translator",
+    "amazonwebservices.aws-toolkit-vscode"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.16.0"

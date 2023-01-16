@@ -46,7 +46,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 - 🪄 **AI** _deep OpenAI integration_
 - 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** _Redis, DynamoDB, SingleStore, and more_
+- 🏎️ **Cache** _Redis, DynamoDB, Upstash, SingleStore, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
 - 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
 - 👾 **Errors** _native type-safe error handling_
