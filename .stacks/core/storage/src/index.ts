@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import detectIndent from 'detect-indent'
-import { detectNewline } from 'detect-newline'
+import { detectIndent, detectNewline } from '@stacksjs/utils'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
@@ -200,7 +199,6 @@ export const filesystem = {
   doesFolderExist,
   fs, // potentially refactor to `...fs` but, currently, there is an issues when building @stacksjs/config
   // the problem is relating to https://github.com/microsoft/TypeScript/issues/5711#issuecomment-157793294
-  fileURLToPath,
 }
 
 export default filesystem

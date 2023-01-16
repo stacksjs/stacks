@@ -3,6 +3,7 @@ import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import storage from '@stacksjs/storage'
 import { ui } from '@stacksjs/config'
+import detectIndent from 'detect-indent'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -130,5 +131,5 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
 
 export * from '@dinero.js/currencies'
 export * from 'dinero.js'
-export * as detectIndent from 'detect-indent'
+export { detectIndent }
 export { detectNewline } from 'detect-newline'
