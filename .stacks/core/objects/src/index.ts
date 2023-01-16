@@ -108,11 +108,27 @@ function isMergeableObject(item: any): item is Object {
 }
 
 /**
- * Clear undefined fields from an object. It mutates the object
+ * Create a new subset object by providing keys.
+ *
+ * @category Object
+ */
+export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false) {
+  return keys.reduce((n, k) => {
+    if (k in obj) {
+      if (!omitUndefined || obj[k] !== undefined)
+        n[k] = obj[k]
+    }
+    return n
+  }, {} as Pick<O, T>)
+}
+
+/**
+ * Clear undefined fields from an object. It mutates the object.
  *
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
+  // @ts-expect-error some description
   Object.keys(obj).forEach((key: string) => (obj[key] === undefined ? delete obj[key] : {}))
   return obj
 }

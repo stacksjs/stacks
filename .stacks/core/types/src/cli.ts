@@ -32,9 +32,9 @@ export interface CliOptions {
   /**
    * **CLI Debug Level**
    *
-   * When your application is in debug mode, a different level of information,
-   * like stack traces, will be shown on every error that occurs within the
-   * application. When disabled, it defaults to the "normal experience."
+   * When your application is in debug mode, a different level
+   * of information, like stack traces, will be shown. When
+   * disabled, it defaults to the "normal experience."
    *
    * @default false
    */
@@ -177,7 +177,7 @@ export const enum NpmScript {
   BuildStacks = 'build:stacks',
   Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules',
   Dev = 'dev',
-  DevComponents = 'vite --config ./.stacks/core/build/src/vue-components.ts',
+  DevComponents = 'vite --config ./core/build/src/vue-components.ts',
   DevDocs = 'dev:docs',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',

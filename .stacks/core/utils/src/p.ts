@@ -81,10 +81,11 @@ class PInstance<T = any> extends Promise<Awaited<T>[]> {
 
   then(fn?: () => PromiseLike<any>) {
     const p = this.promise
+
     if (fn)
       return p.then(fn)
-    else
-      return p
+
+    return p
   }
 
   catch(fn?: (err: unknown) => PromiseLike<any>) {
@@ -103,7 +104,7 @@ class PInstance<T = any> extends Promise<Awaited<T>[]> {
  * @category Promise
  * @example
  * ```
- * import { p } from '@antfu/utils'
+ * import { p } from '@stacksjs/utils'
  *
  * const items = [1, 2, 3, 4, 5]
  *

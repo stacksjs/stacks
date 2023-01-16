@@ -1,7 +1,7 @@
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
-import { intro, outro, prompts } from '@stacksjs/cli'
+import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { components, desktop, docs, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 async function dev(buddy: CLI) {
@@ -60,7 +60,20 @@ async function dev(buddy: CLI) {
       const perf = await intro('buddy dev:components')
       const result = await runAction(Action.DevComponents, { ...options, debug: true })
 
-      if (result.isErr()) {
+      if (options.debug)
+        log.info('result is', result)
+
+      // check if result is an array
+      if (Array.isArray(result)) {
+        // check if any of the items in the array is an error
+        if (result.some(item => item.isErr())) {
+          outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+          process.exit()
+        }
+      }
+
+      // check if result is an error
+      else if (result.isErr()) {
         outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }

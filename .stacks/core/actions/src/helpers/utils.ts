@@ -35,7 +35,7 @@ export type ActionResult = Promise<
  */
 export async function runAction(action: string, options?: CliOptions): Promise<
   Result<CommandResult<string>, Error>
-  // | Result<CommandResult<string>, Error>[]
+  | Result<CommandResult<string>, Error>[]
   | Err<CommandResult<string>, string>
 > {
   if (!hasAction(action))

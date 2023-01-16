@@ -1,22 +1,48 @@
 import { remove } from '@stacksjs/arrays'
 import type { Fn } from '@stacksjs/types'
 
-/**
- * Promised `setTimeout`
- *
- * @category Promise
- */
-export function sleep(ms: number, callback?: Fn<any>) {
-  return new Promise<void>(resolve =>
-    setTimeout(async () => {
-      await callback?.()
-      resolve()
-    }, ms),
-  )
+export interface SingletonPromiseReturn<T> {
+  (): Promise<T>
+  /**
+   * Reset current staled promise.
+   * Await it to have proper shutdown.
+   */
+  reset: () => Promise<void>
 }
 
 /**
- * Create a promise lock
+ * Promise with `resolve` and `reject` methods of itself
+ */
+export interface ControlledPromise<T = void> extends Promise<T> {
+  resolve(value: T | PromiseLike<T>): void
+  reject(reason?: any): void
+}
+
+/**
+ * Create singleton promise function.
+ *
+ * @category Promise
+ */
+export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromiseReturn<T> {
+  let _promise: Promise<T> | undefined
+
+  function wrapper() {
+    if (!_promise)
+      _promise = fn()
+    return _promise
+  }
+  wrapper.reset = async () => {
+    const _prev = _promise
+    _promise = undefined
+    if (_prev)
+      await _prev
+  }
+
+  return wrapper
+}
+
+/**
+ * Create a promise lock.
  *
  * @category Promise
  * @example
@@ -58,14 +84,6 @@ export function createPromiseLock() {
 }
 
 /**
- * Promise with `resolve` and `reject` methods of itself
- */
-export interface ControlledPromise<T = void> extends Promise<T> {
-  resolve(value: T | PromiseLike<T>): void
-  reject(reason?: any): void
-}
-
-/**
  * Return a Promise with `resolve` and `reject` methods
  *
  * @category Promise
@@ -88,4 +106,19 @@ export function createControlledPromise<T>(): ControlledPromise<T> {
   promise.resolve = resolve
   promise.reject = reject
   return promise
+}
+
+/**
+ * Promised `setTimeout`.
+ *
+ * @category Promise
+ */
+export function sleep(ms: number, callback?: Fn<any>) {
+  return new Promise<void>(resolve =>
+
+    setTimeout(async () => {
+      await callback?.()
+      resolve()
+    }, ms),
+  )
 }

@@ -33,8 +33,6 @@ export async function dev(options: DevOptions) {
 }
 
 export async function components(options: DevOptions) {
-  // eslint-disable-next-line no-console
-  console.log('here?')
   log.info('Starting your components dev server...')
   await runNpmScript(NpmScript.DevComponents, options)
 }
