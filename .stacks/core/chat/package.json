@@ -43,7 +43,6 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maizzle/framework": "latest",
     "@novu/discord": "^0.10.2",
     "@novu/node": "^0.10.2",
     "@novu/slack": "^0.10.2",

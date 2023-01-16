@@ -50,7 +50,6 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maizzle/framework": "latest",
     "@novu/gupshup": "^0.10.2",
     "@novu/nexmo": "^0.10.2",
     "@novu/node": "^0.10.2",
