@@ -52,7 +52,7 @@
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@vueuse/core": "^9.10.0",
+    "@vueuse/core": "^9.11.0",
     "meilisearch": "^0.30.0",
     "vue": "^3.2.45"
   },
