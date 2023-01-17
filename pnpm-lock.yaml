@@ -5999,7 +5999,7 @@ packages:
       '@vue/compiler-sfc': 3.2.45
       '@vue/reactivity': 3.2.45
       '@vue/shared': 3.2.45
-      minimatch: 5.1.4
+      minimatch: 5.1.5
       vue-template-compiler: 2.7.14
     dev: false
 
@@ -9458,7 +9458,7 @@ packages:
   /filelist/1.0.4:
     resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
     dependencies:
-      minimatch: 5.1.4
+      minimatch: 5.1.5
     dev: false
 
   /fill-range/7.0.1:
@@ -9891,7 +9891,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 5.1.4
+      minimatch: 5.1.5
       once: 1.4.0
 
   /global-dirs/0.1.1:
@@ -12178,8 +12178,8 @@ packages:
     dependencies:
       brace-expansion: 1.1.11
 
-  /minimatch/5.1.4:
-    resolution: {integrity: sha512-U0iNYXt9wALljzfnGkhFSy5sAC6/SCR3JrHrlsdJz4kF8MvhTRQNiC59iUi1iqsitV7abrNAJWElVL9pdnoUgw==}
+  /minimatch/5.1.5:
+    resolution: {integrity: sha512-CI8wwdrll4ehjPAqs8TL8lBPyNnpZlQI02Wn8C1weNz/QbUbjh3OMxgMKSnvqfKFdLlks3EzHB9tO0BqGc3phQ==}
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
@@ -14185,7 +14185,7 @@ packages:
   /readdir-glob/1.1.2:
     resolution: {integrity: sha512-6RLVvwJtVwEDfPdn6X6Ille4/lxGl0ATOY4FN/B9nxQcgOazvvI0nodiD19ScKq0PvA/29VpaOQML36o5IzZWA==}
     dependencies:
-      minimatch: 5.1.4
+      minimatch: 5.1.5
     dev: false
 
   /readdirp/3.6.0:
@@ -16261,7 +16261,7 @@ packages:
       fast-glob: 3.2.12
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      minimatch: 5.1.4
+      minimatch: 5.1.5
       resolve: 1.22.1
       unplugin: 1.0.1
       vue: 3.2.45
@@ -16287,7 +16287,7 @@ packages:
       fast-glob: 3.2.12
       local-pkg: 0.4.2
       magic-string: 0.27.0
-      minimatch: 5.1.4
+      minimatch: 5.1.5
       resolve: 1.22.1
       unplugin: 1.0.1
       vue: 3.2.45
