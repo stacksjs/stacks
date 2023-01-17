@@ -5722,28 +5722,28 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: false
 
-  /@unhead/dom/1.0.15:
-    resolution: {integrity: sha512-W3P9eGazfQPMZTG4ryb5oOA02Z4o16Jxo8DAihF/7Xmg/FVYY5Up9p9et7Nbb6AKNgt1PEz3Sp0xBaw+F6Uyjw==}
+  /@unhead/dom/1.0.16:
+    resolution: {integrity: sha512-0T8FYrrYwcOGRptWpkXpITaYT554fy5vgU/Yf9K67hB6X4v24sLFHR1yhLYvAj3hfBF5CbJQicuKFf1z63bZ5g==}
     dependencies:
-      '@unhead/schema': 1.0.15
+      '@unhead/schema': 1.0.16
 
-  /@unhead/schema/1.0.15:
-    resolution: {integrity: sha512-aWgHDHcemcx20zZun2hCFvZC6Ob4h14D4puhknuQoMkMOZcxh2ffYoJHb6mS3TeQRwAXCOsSFIHAgwIbayjk0w==}
+  /@unhead/schema/1.0.16:
+    resolution: {integrity: sha512-dBi/etixNyy2RBhQHYZE41efytHyv4RyVSyVXQTH4FYmBupvRUGZmGeuJMCp066V3CMTpfkV6V0oWPxqjdZ4MA==}
     dependencies:
       '@zhead/schema': 1.0.9
       hookable: 5.4.2
 
-  /@unhead/ssr/1.0.15:
-    resolution: {integrity: sha512-WNFljr+HaWdrBVYyKcgLXIk5EldPSKEVJlFbo2ixmSVGnFlqMHMCui/ZrfMLG1QvvFw0ZkXonapkEc/S6loSCQ==}
+  /@unhead/ssr/1.0.16:
+    resolution: {integrity: sha512-/6ZxOVq6HcclUi9adXKVDeqhoYijNyr70UX2S53PmsF/JATOe9JLBal/Cv669VNBA6yDMNiRn5VS25WJDEfSCA==}
     dependencies:
-      '@unhead/schema': 1.0.15
+      '@unhead/schema': 1.0.16
 
-  /@unhead/vue/1.0.15_vue@3.2.45:
-    resolution: {integrity: sha512-D2NQH8fBKdYgTdIDrarx24qDEblgLIwzPDeAY36PyP6ib8oG6oaI+5lrpMG+NtQ7k9LBqL5d6mQgYn/02kdjZg==}
+  /@unhead/vue/1.0.16_vue@3.2.45:
+    resolution: {integrity: sha512-nmZwpvsIFhRVy9aFshWc0lNEMkFMYmpW0VBYeH/rfNqEYhe6PvbjZ9fQVED7NSPpsyTHLy10GlLX4U3jA5VJTQ==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.0.15
+      '@unhead/schema': 1.0.16
       hookable: 5.4.2
       vue: 3.2.45
 
@@ -6127,18 +6127,6 @@ packages:
     resolution: {integrity: sha512-etUJCCDlo3LDsbDLoJdDHFpvgHyl2rzcOG9VQvLJ3caNIHDYm0g+HMIbAydswWr1iWKstqRi9YkkBR75gQ9TBw==}
     dev: false
 
-  /@vueuse/core/9.10.0_vue@3.2.45:
-    resolution: {integrity: sha512-CxMewME07qeuzuT/AOIQGv0EhhDoojniqU6pC3F8m5VC76L47UT18DcX88kWlP3I7d3qMJ4u/PD8iSRsy3bmNA==}
-    dependencies:
-      '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.10.0
-      '@vueuse/shared': 9.10.0_vue@3.2.45
-      vue-demi: 0.13.11_vue@3.2.45
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
-
   /@vueuse/core/9.11.0_vue@3.2.45:
     resolution: {integrity: sha512-7yZJ8LNOssA8ZmeSjd4F+wbFBA4csiP4TiaXgruqg1H4PAtzSkv93PPwFLvQkSnfo3Bar+e+6QoRvWjhz7l2Xg==}
     dependencies:
@@ -6155,10 +6143,10 @@ packages:
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/dom': 1.0.15
-      '@unhead/schema': 1.0.15
-      '@unhead/ssr': 1.0.15
-      '@unhead/vue': 1.0.15_vue@3.2.45
+      '@unhead/dom': 1.0.16
+      '@unhead/schema': 1.0.16
+      '@unhead/ssr': 1.0.16
+      '@unhead/vue': 1.0.16_vue@3.2.45
       vue: 3.2.45
 
   /@vueuse/math/9.11.0_vue@3.2.45:
@@ -6171,21 +6159,8 @@ packages:
       - vue
     dev: false
 
-  /@vueuse/metadata/9.10.0:
-    resolution: {integrity: sha512-G5VZhgTCapzU9rv0Iq2HBrVOSGzOKb+OE668NxhXNcTjUjwYxULkEhAw70FtRLMZc+hxcFAzDZlKYA0xcwNMuw==}
-    dev: false
-
   /@vueuse/metadata/9.11.0:
     resolution: {integrity: sha512-HhtG2SWkcfZBLbamHdvLn7jKOCFpw/ifXjVTd5ilFkj98WVUk/3UTQ03wF1XIkuhSO4+b45hD2lfG9/GdKCF7w==}
-
-  /@vueuse/shared/9.10.0_vue@3.2.45:
-    resolution: {integrity: sha512-vakHJ2ZRklAzqmcVBL38RS7BxdBA4+5poG9NsSyqJxrt9kz0zX3P5CXMy0Hm6LFbZXUgvKdqAS3pUH1zX/5qTQ==}
-    dependencies:
-      vue-demi: 0.13.11_vue@3.2.45
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
 
   /@vueuse/shared/9.11.0_vue@3.2.45:
     resolution: {integrity: sha512-8lO7wD5abYxupKy2KynH1pSgP715ky6iCrWYb8aX2AuAVi9uHXj7qE1dw6BnmArSaLHci4x9iuzWPCpAzUkC/A==}
@@ -16694,7 +16669,7 @@ packages:
       vue-router:
         optional: true
     dependencies:
-      '@unhead/dom': 1.0.15
+      '@unhead/dom': 1.0.16
       '@vueuse/head': 1.0.22_vue@3.2.45
       fs-extra: 11.1.0
       html-minifier: 4.0.0
@@ -16729,7 +16704,7 @@ packages:
       vue-router:
         optional: true
     dependencies:
-      '@unhead/dom': 1.0.15
+      '@unhead/dom': 1.0.16
       '@vueuse/head': 1.0.22_vue@3.2.45
       fs-extra: 11.1.0
       html-minifier: 4.0.0
@@ -16855,7 +16830,7 @@ packages:
       '@docsearch/js': 3.3.2_2r467mdhb7mblpaox4bg7fatdi
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.4+vue@3.2.45
       '@vue/devtools-api': 6.4.5
-      '@vueuse/core': 9.10.0_vue@3.2.45
+      '@vueuse/core': 9.11.0_vue@3.2.45
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.12.1
       vite: 4.0.4
