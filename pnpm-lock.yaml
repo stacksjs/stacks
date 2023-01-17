@@ -768,6 +768,16 @@ importers:
       mkdist: 1.1.0_typescript@4.9.4
       typescript: 4.9.4
 
+  .stacks/core/queue:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.0
+      typescript: ^4.9.4
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.0_typescript@4.9.4
+      typescript: 4.9.4
+
   .stacks/core/realtime:
     specifiers:
       '@stacksjs/testing': workspace:*
@@ -1117,7 +1127,7 @@ importers:
       fast-glob: 3.2.12
       kolorist: 1.6.0
       p-limit: 4.0.0
-      rimraf: 4.0.7
+      rimraf: 4.1.0
       throttle-debounce: 5.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -4698,7 +4708,7 @@ packages:
       eslint: 8.32.0
       eslint-plugin-eslint-comments: 3.2.0_eslint@8.32.0
       eslint-plugin-html: 6.2.0
-      eslint-plugin-import: 2.27.4_2l6piu6guil2f63lj3qmhzbnn4
+      eslint-plugin-import: 2.27.5_2l6piu6guil2f63lj3qmhzbnn4
       eslint-plugin-jsonc: 2.6.0_eslint@8.32.0
       eslint-plugin-markdown: 3.0.0_eslint@8.32.0
       eslint-plugin-n: 15.6.1_eslint@8.32.0
@@ -4767,7 +4777,7 @@ packages:
       eslint: 8.32.0
       eslint-plugin-eslint-comments: 3.2.0_eslint@8.32.0
       eslint-plugin-html: 6.2.0
-      eslint-plugin-import: 2.27.4_2l6piu6guil2f63lj3qmhzbnn4
+      eslint-plugin-import: 2.27.5_2l6piu6guil2f63lj3qmhzbnn4
       eslint-plugin-jsonc: 2.6.0_eslint@8.32.0
       eslint-plugin-n: 15.6.1_eslint@8.32.0
       eslint-plugin-promise: 6.1.1_eslint@8.32.0
@@ -8913,8 +8923,8 @@ packages:
       htmlparser2: 7.2.0
     dev: false
 
-  /eslint-plugin-import/2.27.4_2l6piu6guil2f63lj3qmhzbnn4:
-    resolution: {integrity: sha512-Z1jVt1EGKia1X9CnBCkpAOhWy8FgQ7OmJ/IblEkT82yrFU/xJaxwujaTzLWqigewwynRQ9mmHfX9MtAfhxm0sA==}
+  /eslint-plugin-import/2.27.5_2l6piu6guil2f63lj3qmhzbnn4:
+    resolution: {integrity: sha512-LmEt3GVofgiGuiE+ORpnvP+kAm3h6MLZJ4Q5HCyHADofsb4VzXFsRiWj3c0OFiV+3DWFh0qg3v9gcPlfc3zRow==}
     engines: {node: '>=4'}
     peerDependencies:
       '@typescript-eslint/parser': '*'
@@ -11473,8 +11483,8 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /klona/2.0.5:
-    resolution: {integrity: sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==}
+  /klona/2.0.6:
+    resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
     dev: false
 
@@ -12442,7 +12452,7 @@ packages:
       http-proxy: 1.18.1
       is-primitive: 3.0.1
       jiti: 1.16.2
-      klona: 2.0.5
+      klona: 2.0.6
       knitwork: 1.0.0
       listhen: 1.0.1
       mime: 3.0.0
@@ -14461,8 +14471,8 @@ packages:
     dependencies:
       glob: 7.2.3
 
-  /rimraf/4.0.7:
-    resolution: {integrity: sha512-CUEDDrZvc0swDgVdXGiv3FcYYQMpJxjvSGt85Amj6yU+MCVWurrLCeLiJDdJPHCzNJnwuebBEdcO//eP11Xa7w==}
+  /rimraf/4.1.0:
+    resolution: {integrity: sha512-ZJdkUR5/dRrRJHdcSKJLrpRn6tVjl9ALxd4yrTCxFsMpjQNzwHF6GLqMsuEzEYIXxHlFPDSk21Vr8VPuFBEz0g==}
     engines: {node: '>=14'}
     hasBin: true
     dev: false
