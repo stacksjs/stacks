@@ -53,7 +53,8 @@
     "cossssmin.posthtml",
     "prisma.prisma",
     "mattpocock.ts-error-translator",
-    "amazonwebservices.aws-toolkit-vscode"
+    "amazonwebservices.aws-toolkit-vscode",
+    "rangav.vscode-thunder-client"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.16.0"
