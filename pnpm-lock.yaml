@@ -381,13 +381,13 @@ importers:
 
   .stacks/core/database:
     specifiers:
-      '@prisma/client': ^4.8.1
+      '@prisma/client': ^4.9.0
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.0
       typescript: ^4.9.4
     dependencies:
-      '@prisma/client': 4.8.1
+      '@prisma/client': 4.9.0
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -439,9 +439,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       typescript: ^4.9.4
-      vitepress: 1.0.0-alpha.36
+      vitepress: 1.0.0-alpha.38
     dependencies:
-      vitepress: 1.0.0-alpha.36_2r467mdhb7mblpaox4bg7fatdi
+      vitepress: 1.0.0-alpha.38_2r467mdhb7mblpaox4bg7fatdi
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.4
@@ -1000,7 +1000,7 @@ importers:
       '@mdit-vue/plugin-component': ^0.11.2
       '@mdit-vue/plugin-frontmatter': ^0.11.1
       '@mdit-vue/types': ^0.11.0
-      '@prisma/client': ^4.8.1
+      '@prisma/client': ^4.9.0
       '@rollup/pluginutils': ^5.0.2
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
@@ -1021,12 +1021,12 @@ importers:
       vite-plugin-inspect: ^0.7.14
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.22.1
-      vitepress: 1.0.0-alpha.36
+      vitepress: 1.0.0-alpha.38
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.2
       '@mdit-vue/plugin-frontmatter': 0.11.1
       '@mdit-vue/types': 0.11.0
-      '@prisma/client': 4.8.1
+      '@prisma/client': 4.9.0
       '@rollup/pluginutils': 5.0.2
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
@@ -1047,7 +1047,7 @@ importers:
       vite-plugin-inspect: 0.7.14_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_3nkpb5yzbuphqhegz2uv6y4s3u
       vite-ssg: 0.22.1_wg5sslydmzl6un74innclax7im
-      vitepress: 1.0.0-alpha.36_j73j5xdbzpkigstapj6vkce2xy
+      vitepress: 1.0.0-alpha.38_j73j5xdbzpkigstapj6vkce2xy
 
   .stacks/core/ui:
     specifiers:
@@ -4826,8 +4826,8 @@ packages:
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
-  /@prisma/client/4.8.1:
-    resolution: {integrity: sha512-d4xhZhETmeXK/yZ7K0KcVOzEfI5YKGGEr4F5SBV04/MU4ncN/HcE28sy3e4Yt8UFW0ZuImKFQJE+9rWt9WbGSQ==}
+  /@prisma/client/4.9.0:
+    resolution: {integrity: sha512-bz6QARw54sWcbyR1lLnF2QHvRW5R/Jxnbbmwh3u+969vUKXtBkXgSgjDA85nji31ZBlf7+FrHDy5x+5ydGyQDg==}
     engines: {node: '>=14.17'}
     requiresBuild: true
     peerDependencies:
@@ -4836,10 +4836,10 @@ packages:
       prisma:
         optional: true
     dependencies:
-      '@prisma/engines-version': 4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe
+      '@prisma/engines-version': 4.9.0-42.ceb5c99003b99c9ee2c1d2e618e359c14aef2ea5
 
-  /@prisma/engines-version/4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe:
-    resolution: {integrity: sha512-MHSOSexomRMom8QN4t7bu87wPPD+pa+hW9+71JnVcF3DqyyO/ycCLhRL1we3EojRpZxKvuyGho2REQsMCvxcJw==}
+  /@prisma/engines-version/4.9.0-42.ceb5c99003b99c9ee2c1d2e618e359c14aef2ea5:
+    resolution: {integrity: sha512-M16aibbxi/FhW7z1sJCX8u+0DriyQYY5AyeTH7plQm9MLnURoiyn3CZBqAyIoQ+Z1pS77usCIibYJWSgleBMBA==}
 
   /@redis/bloom/1.1.0_@redis+client@1.4.2:
     resolution: {integrity: sha512-9QovlxmpRtvxVbN0UBcv8WfdSMudNZZTFqCsnBszcQXqaZb/TVe30ScgGEO7u1EAIacTPAo7/oCYjYAxiHLanQ==}
@@ -16822,8 +16822,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.36_2r467mdhb7mblpaox4bg7fatdi:
-    resolution: {integrity: sha512-JH9NlBQpQrcIudF1HM8Sq3K6FbOiOTrD33PI0n+pmJQ7dOu4WAm3YnwevMInW8leNiEEWCAH+coIkOYcf3fhpQ==}
+  /vitepress/1.0.0-alpha.38_2r467mdhb7mblpaox4bg7fatdi:
+    resolution: {integrity: sha512-p3Kb2KM2dw6gnnnKFeBH01seqXWB6fY6uE+RY9sH8dBY7asP4OulB7cmhnVDVTX94gaPnKFbVsbc3KPe3l2Slw==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.2
@@ -16849,8 +16849,8 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.36_j73j5xdbzpkigstapj6vkce2xy:
-    resolution: {integrity: sha512-JH9NlBQpQrcIudF1HM8Sq3K6FbOiOTrD33PI0n+pmJQ7dOu4WAm3YnwevMInW8leNiEEWCAH+coIkOYcf3fhpQ==}
+  /vitepress/1.0.0-alpha.38_j73j5xdbzpkigstapj6vkce2xy:
+    resolution: {integrity: sha512-p3Kb2KM2dw6gnnnKFeBH01seqXWB6fY6uE+RY9sH8dBY7asP4OulB7cmhnVDVTX94gaPnKFbVsbc3KPe3l2Slw==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.2
