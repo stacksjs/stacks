@@ -46,6 +46,7 @@ interface ChatOptions {
 }
 
 interface EmailOptions {
+  providerName?: string
   to: string | string[]
   subject: string
   html: string
