@@ -44,7 +44,6 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.3.1",
     "@novu/node": "^0.10.2",
     "@novu/stateless": "^0.10.2",
     "@stacksjs/cli": "workspace:*",
