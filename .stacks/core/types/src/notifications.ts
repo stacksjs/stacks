@@ -2,7 +2,7 @@ import type { IChatOptions, IEmailOptions, ISendMessageSuccessResponse, ISmsOpti
 
 export interface NotificationOptions {
   type?: string
-  driver?: string
+  driver?: 'email' | 'sms' | 'chat' | 'push'
 
   email: {
     purgeCSS: boolean
