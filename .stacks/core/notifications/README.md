@@ -41,6 +41,7 @@ There are different option types for Chat, Email, and SMS drivers. To use any dr
 
 ```ts
 interface ChatOptions {
+  providerName?: 'discord' | 'slack'
   webhookUrl: string
   content: string
 }
@@ -57,6 +58,7 @@ interface EmailOptions {
 }
 
 interface SMSOptions {
+  providerName?: 'gupshup' | 'nexmo' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | 'twilio'
   to: string
   content: string
   from?: string
