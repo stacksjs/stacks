@@ -46,7 +46,7 @@ interface ChatOptions {
 }
 
 interface EmailOptions {
-  providerName?: string
+  providerName?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses'
   to: string | string[]
   subject: string
   html: string
