@@ -1,8 +1,8 @@
 import type { IChatOptions, IEmailOptions, ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
 
 export interface NotificationOptions {
-  type?: string
-  driver?: 'email' | 'sms' | 'chat' | 'push'
+  type?: 'email' | 'sms' | 'chat' | 'push'
+  driver?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses' | 'mailgun' | 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns'
 
   email: {
     purgeCSS: boolean
