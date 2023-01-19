@@ -2,7 +2,7 @@
   "name": "@stacksjs/queue",
   "type": "module",
   "version": "0.49.2",
-  "packageManager": "pnpm@7.25.0",
+  "packageManager": "pnpm@7.25.1",
   "description": "The Stacks Queue system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -38,7 +38,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.25.0"
+    "pnpm": ">=7.25.1"
   },
   "scripts": {
     "build": "mkdist -d",
