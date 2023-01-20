@@ -28,7 +28,6 @@
     "discord",
     "webhooks",
     "stacks",
-    "Maizzle",
     "maizzle"
   ],
   "main": "dist/index.mjs",

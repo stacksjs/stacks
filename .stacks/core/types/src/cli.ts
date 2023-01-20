@@ -58,7 +58,7 @@ export interface CliOptions {
    *
    * @default true
    */
-  shouldShowSpinner?: boolean | SpinnerOptions
+  showSpinner?: boolean | SpinnerOptions
 
   /**
    * **Spinner Text**

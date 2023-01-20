@@ -16,7 +16,7 @@ async function lint(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: LintOptions) => {
       const perf = await intro('buddy lint')
-      const result = await runAction(Action.Lint, { ...options, shouldShowSpinner: true, spinnerText: 'Linting...' })
+      const result = await runAction(Action.Lint, { ...options, showSpinner: true, spinnerText: 'Linting...' })
 
       if (result.isErr()) {
         outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -31,7 +31,7 @@ async function lint(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: LintOptions) => {
       log.info('Fixing lint errors...')
-      const result = await runAction(Action.LintFix, { ...options, shouldShowSpinner: true, spinnerText: 'Linting...' })
+      const result = await runAction(Action.LintFix, { ...options, showSpinner: true, spinnerText: 'Linting...' })
 
       if (result.isErr()) {
         log.error('There was an error lint fixing your code.', result.error)

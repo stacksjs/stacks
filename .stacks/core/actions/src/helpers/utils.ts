@@ -48,7 +48,7 @@ export async function runAction(action: string, options?: CliOptions): Promise<
   if (options?.debug)
     log.info('Running command:', cmd, options)
 
-  return options?.shouldShowSpinner
+  return options?.showSpinner
     ? await runCommands([cmd], options)
     : await runCommand(cmd, options)
 }
