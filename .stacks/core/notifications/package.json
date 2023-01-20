@@ -50,8 +50,10 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@maizzle/framework": "^4.3.1"
+  },
   "peerDependencies": {
-    "@maizzle/framework": "^4.3.1",
     "@novu/discord": "^0.10.2",
     "@novu/emailjs": "^0.10.2",
     "@novu/gupshup": "^0.10.2",
