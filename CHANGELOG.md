@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+## v0.49.2...v0.49.2-18-g5da2aa8e
+
+
+### 🚀 Enhancements
+
+  - **dx:** Add `vscode-thunder-client` (e769121d)
+
+### 🏡 Chore
+
+  - Wip (58171510)
+  - Wip (84dfd0b5)
+  - Wip (089a5fd2)
+  - Wip (3928e52e)
+  - Wip (a5c5f37b)
+  - Wip (632e219d)
+  - Wip (a3435b03)
+  - Wip (223fddf6)
+  - Wip (ffa5e1b3)
+  - Wip (4cc38fe2)
+  - Wip (a29e2a33)
+  - Wip (8abc1313)
+  - Wip (5da2aa8e)
+
+### ❤️  Contributors
+
+- Brianzzzasd <repuestobrian2@gmail.com>
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.49.1...v0.49.1-12-g4f890521
 
 
