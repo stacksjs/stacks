@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "pathe": "^1.0.0"
+    "pathe": "^1.1.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
