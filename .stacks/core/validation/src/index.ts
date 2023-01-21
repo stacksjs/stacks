@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
-const validate = z
+import { z as validate, z } from 'zod'
 
 export { validate, z }
