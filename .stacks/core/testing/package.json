@@ -50,9 +50,9 @@
   },
   "peerDependencies": {
     "@playwright/test": "^1.29.2",
-    "@vitest/coverage-istanbul": "^0.27.2",
-    "@vitest/ui": "^0.27.2",
-    "vitest": "^0.27.2"
+    "@vitest/coverage-istanbul": "^0.27.3",
+    "@vitest/ui": "^0.27.3",
+    "vitest": "^0.27.3"
   },
   "devDependencies": {
     "mkdist": "^1.1.0",
