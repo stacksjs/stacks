@@ -62,8 +62,10 @@ export function determineResetPreset(preset?: string) {
 
 export function env(key?: string, fallback?: any) {
   // console.log('isClient', isClient)
-  // if (key && import.meta?.env)
-  //   return import.meta.env[key]
+  if (key && import.meta?.env) {
+    console.log('key', key, 'fallback', import.meta?.env[key])
+    return import.meta.env[key]
+  }
 
   return fallback
 }

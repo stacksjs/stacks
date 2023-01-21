@@ -4,6 +4,8 @@ import { notification as env } from '@stacksjs/config'
 
 describe('Sendgrid Test', () => {
   it('should send email', async () => {
+    console.log(env)
+    console.log('test1')
     const notification = email.sendgrid
     const test = await notification.send({
       from: env.email.sendgrid.from,
