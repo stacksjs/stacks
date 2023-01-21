@@ -1,0 +1,55 @@
+{
+  "name": "@stacksjs/validation",
+  "type": "module",
+  "version": "0.49.3",
+  "packageManager": "pnpm@7.25.1",
+  "description": "The Stacks Validation methods.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/validation#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/validation"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "validation",
+    "yup",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.13.0",
+    "pnpm": ">=7.25.1"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
+    "mkdist": "^1.1.0",
+    "typescript": "^4.9.4"
+  }
+}

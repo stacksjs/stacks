@@ -986,9 +986,9 @@ importers:
       vitest: ^0.27.2
     dependencies:
       '@playwright/test': 1.29.2
-      '@vitest/coverage-istanbul': 0.27.2_@vitest+ui@0.27.2
-      '@vitest/ui': 0.27.2
-      vitest: 0.27.2_@vitest+ui@0.27.2
+      '@vitest/coverage-istanbul': 0.27.3_@vitest+ui@0.27.3
+      '@vitest/ui': 0.27.3
+      vitest: 0.27.3_@vitest+ui@0.27.3
     devDependencies:
       mkdist: 1.1.0_typescript@4.9.4
       typescript: 4.9.4
@@ -1130,6 +1130,21 @@ importers:
     devDependencies:
       '@stacksjs/testing': link:../testing
       '@types/throttle-debounce': 5.0.0
+      mkdist: 1.1.0_typescript@4.9.4
+      typescript: 4.9.4
+
+  .stacks/core/validation:
+    specifiers:
+      '@stacksjs/path': workspace:*
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.0
+      typescript: ^4.9.4
+      zod: ^3.20.2
+    dependencies:
+      zod: 3.20.2
+    devDependencies:
+      '@stacksjs/path': link:../path
+      '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.4
       typescript: 4.9.4
 
@@ -5988,8 +6003,8 @@ packages:
       vite: 4.0.4
       vue: 3.2.45
 
-  /@vitest/coverage-istanbul/0.27.2_@vitest+ui@0.27.2:
-    resolution: {integrity: sha512-X6biX3Hc8RaBxG07ucfo0s8AFYUmIwPAX4l1Y9mSQ2aXtcwqv/zibzxMh0NGII8CsheO+5OMssULufY/dez18w==}
+  /@vitest/coverage-istanbul/0.27.3_@vitest+ui@0.27.3:
+    resolution: {integrity: sha512-paMg/Bq+W8hx31TKC1tj54qCGA0FwdZHZi/2mMnskae28NTxU4WtNBrmvGyVOLCM+/Ld8yN9uCavNl4H6TabKw==}
     dependencies:
       istanbul-lib-coverage: 3.2.0
       istanbul-lib-instrument: 5.2.1
@@ -5997,7 +6012,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       test-exclude: 6.0.0
-      vitest: 0.27.2_@vitest+ui@0.27.2
+      vitest: 0.27.3_@vitest+ui@0.27.3
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@vitest/browser'
@@ -6012,8 +6027,8 @@ packages:
       - terser
     dev: false
 
-  /@vitest/ui/0.27.2:
-    resolution: {integrity: sha512-IlzkmBQfFCddESiN5TqdZAVdWfbQWARkD8esyfSBu3q8uVelYWKQXo9BBLxUhlhj85wGq1/oxHHCI4aY7R8qzg==}
+  /@vitest/ui/0.27.3:
+    resolution: {integrity: sha512-paqgFZHZ6zjrH4WUv4cjnscU6AHj9GC/Rj7ZD1mfV2Ihd6S04UZI11TMGYGK4sz1hqxlRgmQiONJfAM7tQiF/w==}
     dependencies:
       fast-glob: 3.2.12
       flatted: 3.2.7
@@ -16433,8 +16448,8 @@ packages:
       extsprintf: 1.3.0
     dev: false
 
-  /vite-node/0.27.2_@types+node@18.11.18:
-    resolution: {integrity: sha512-IDwuVhslF10qCnWOGJui7/2KksAOBHi+UbVo6Pqt4f5lgn+kS2sVvYDsETRG5PSuslisGB5CFGvb9I6FQgymBQ==}
+  /vite-node/0.27.3_@types+node@18.11.18:
+    resolution: {integrity: sha512-eyJYOO64o5HIp8poc4bJX+ZNBwMZeI3f6/JdiUmJgW02Mt7LnoCtDMRVmLaY9S05SIsjGe339ZK4uo2wQ+bF9g==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     dependencies:
@@ -16814,8 +16829,8 @@ packages:
       - terser
     dev: true
 
-  /vitest/0.27.2_@vitest+ui@0.27.2:
-    resolution: {integrity: sha512-y7tdsL2uaQy+KF18AlmNHZe29ukyFytlxrpSTwwmgLE2XHR/aPucJP9FLjWoqjgqFlXzRAjHlFJLU+HDyI/OsA==}
+  /vitest/0.27.3_@vitest+ui@0.27.3:
+    resolution: {integrity: sha512-Ld3UVgRVhJUtqvQ3dW89GxiApFAgBsWJZBCWzK+gA3w2yG68csXlGZZ4WDJURf+8ecNfgrScga6xY+8YSOpiMg==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
@@ -16839,7 +16854,7 @@ packages:
       '@types/chai': 4.3.4
       '@types/chai-subset': 1.3.3
       '@types/node': 18.11.18
-      '@vitest/ui': 0.27.2
+      '@vitest/ui': 0.27.3
       acorn: 8.8.1
       acorn-walk: 8.2.0
       cac: 6.7.14
@@ -16848,12 +16863,13 @@ packages:
       local-pkg: 0.4.3
       picocolors: 1.0.0
       source-map: 0.6.1
+      std-env: 3.3.1
       strip-literal: 1.0.0
       tinybench: 2.3.1
       tinypool: 0.3.0
       tinyspy: 1.0.2
       vite: 4.0.4_@types+node@18.11.18
-      vite-node: 0.27.2_@types+node@18.11.18
+      vite-node: 0.27.3_@types+node@18.11.18
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
@@ -17586,4 +17602,8 @@ packages:
       archiver-utils: 2.1.0
       compress-commons: 4.1.1
       readable-stream: 3.6.0
+    dev: false
+
+  /zod/3.20.2:
+    resolution: {integrity: sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==}
     dev: false
