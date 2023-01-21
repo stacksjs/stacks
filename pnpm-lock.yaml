@@ -250,7 +250,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.252.0
+      '@aws-sdk/client-dynamodb': ^3.254.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.5
@@ -439,9 +439,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       typescript: ^4.9.4
-      vitepress: 1.0.0-alpha.38
+      vitepress: 1.0.0-alpha.40
     dependencies:
-      vitepress: 1.0.0-alpha.38_2r467mdhb7mblpaox4bg7fatdi
+      vitepress: 1.0.0-alpha.40_2r467mdhb7mblpaox4bg7fatdi
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.4
@@ -549,8 +549,8 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       bumpp: ^8.2.1
-      changelogen: ^0.4.0
-      commitizen: ^4.2.6
+      changelogen: ^0.4.1
+      commitizen: ^4.3.0
       cz-git: ^1.4.1
       giget: ^1.0.0
       mkdist: ^1.1.0
@@ -724,7 +724,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       typescript: ^4.9.4
     dependencies:
       pathe: 1.1.0
@@ -804,7 +804,7 @@ importers:
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
-      '@vueuse/core': ^9.11.0
+      '@vueuse/core': ^9.11.1
       meilisearch: ^0.30.0
       mkdist: ^1.1.0
       typescript: ^4.9.4
@@ -1019,7 +1019,7 @@ importers:
       vite-plugin-inspect: ^0.7.14
       vite-plugin-vue-layouts: ^0.7.0
       vite-ssg: ^0.22.1
-      vitepress: 1.0.0-alpha.38
+      vitepress: 1.0.0-alpha.40
     devDependencies:
       '@mdit-vue/plugin-component': 0.11.2
       '@mdit-vue/plugin-frontmatter': 0.11.1
@@ -1045,7 +1045,7 @@ importers:
       vite-plugin-inspect: 0.7.14_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_3nkpb5yzbuphqhegz2uv6y4s3u
       vite-ssg: 0.22.1_wg5sslydmzl6un74innclax7im
-      vitepress: 1.0.0-alpha.38_j73j5xdbzpkigstapj6vkce2xy
+      vitepress: 1.0.0-alpha.40_j73j5xdbzpkigstapj6vkce2xy
 
   .stacks/core/ui:
     specifiers:
@@ -1089,10 +1089,10 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@types/throttle-debounce': ^5.0.0
-      '@vueuse/core': ^9.11.0
+      '@vueuse/core': ^9.11.1
       '@vueuse/head': ^1.0.22
-      '@vueuse/math': ^9.11.0
-      '@vueuse/shared': ^9.11.0
+      '@vueuse/math': ^9.11.1
+      '@vueuse/shared': ^9.11.1
       defu: ^6.1.1
       detect-indent: ^7.0.1
       detect-newline: ^4.0.0
@@ -1329,9 +1329,9 @@ packages:
       '@aws-crypto/sha256-js': 2.0.0
       '@aws-crypto/supports-web-crypto': 2.0.2
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.254.0
       '@aws-sdk/util-locate-window': 3.208.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.188.0
       tslib: 1.14.1
     dev: false
 
@@ -1352,7 +1352,7 @@ packages:
     resolution: {integrity: sha512-VZY+mCY4Nmrs5WGfitmNqXzaE873fcIZDu54cbaDaaamsaTOP1DBImV9F4pICc3EHjQXujyE8jig+PFCaew9ig==}
     dependencies:
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.254.0
       tslib: 1.14.1
     dev: false
 
@@ -1380,7 +1380,7 @@ packages:
     resolution: {integrity: sha512-Lgu5v/0e/BcrZ5m/IWqzPUf3UYFTy/PpeED+uc9SWUR1iZQL8XXbGQg10UfllwwBryO3hFF5dizK+78aoXC1eA==}
     dependencies:
       '@aws-sdk/types': 3.254.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.188.0
       tslib: 1.14.1
     dev: false
 
@@ -16760,8 +16760,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress/1.0.0-alpha.38_2r467mdhb7mblpaox4bg7fatdi:
-    resolution: {integrity: sha512-p3Kb2KM2dw6gnnnKFeBH01seqXWB6fY6uE+RY9sH8dBY7asP4OulB7cmhnVDVTX94gaPnKFbVsbc3KPe3l2Slw==}
+  /vitepress/1.0.0-alpha.40_2r467mdhb7mblpaox4bg7fatdi:
+    resolution: {integrity: sha512-axhLI/wq/V9RjzFQZ00Ur0WhvoZXG7E1H88NxnglZm6wU/FAePP4bGaWPzU2WZwy3Nzpb9cbf1oXC+1DNgv9cQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.2
@@ -16787,8 +16787,8 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.38_j73j5xdbzpkigstapj6vkce2xy:
-    resolution: {integrity: sha512-p3Kb2KM2dw6gnnnKFeBH01seqXWB6fY6uE+RY9sH8dBY7asP4OulB7cmhnVDVTX94gaPnKFbVsbc3KPe3l2Slw==}
+  /vitepress/1.0.0-alpha.40_j73j5xdbzpkigstapj6vkce2xy:
+    resolution: {integrity: sha512-axhLI/wq/V9RjzFQZ00Ur0WhvoZXG7E1H88NxnglZm6wU/FAePP4bGaWPzU2WZwy3Nzpb9cbf1oXC+1DNgv9cQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.2
