@@ -1,1 +1,5 @@
-export { z as validate } from 'zod'
+import { z } from 'zod'
+
+const validate = z
+
+export { validate, z }
