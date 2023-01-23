@@ -181,25 +181,21 @@ export function createFolder(dir: string): Promise<void> {
   })
 }
 
-export function updateConfigFile(path: string, data: Array<string>): Promise<void> {
-  let content = ''
-
-  data.forEach((value: string, key:string) => {
-    content += `${key}=${value}
-`
-  })
-
+export function updateConfigFile(configPath: string, key: string, value: any): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.writeFile(
-      path,
-      content,
-      (err: any) => {
-        if (err)
-          reject(err)
+    const config = JSON.parse(fs.readFileSync(configPath));
 
-        else
-          resolve()
-    })
+    // Update the value for the specified key
+    config[key] = value;
+
+    // Write the updated config back to the file
+    fs.writeFileSync(configPath, JSON.stringify(config), (err: any) => {
+      if (err)
+        reject(err)
+
+      else
+        resolve()
+    });
   })
 }
 
