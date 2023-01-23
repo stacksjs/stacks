@@ -181,6 +181,28 @@ export function createFolder(dir: string): Promise<void> {
   })
 }
 
+export function updateConfigFile(path: string, data: Array<string>): Promise<void> {
+  let content = ''
+
+  data.forEach((value: string, key:string) => {
+    content += `${key}=${value}
+`
+  })
+
+  return new Promise((resolve, reject) => {
+    fs.writeFile(
+      path,
+      content,
+      (err: any) => {
+        if (err)
+          reject(err)
+
+        else
+          resolve()
+    })
+  })
+}
+
 export const filesystem = {
   _dirname,
   readJsonFile,
