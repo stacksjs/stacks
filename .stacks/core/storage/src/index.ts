@@ -4,7 +4,7 @@ import { detectIndent, detectNewline } from '@stacksjs/utils'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
-import { WriteFileOptions } from 'fs';
+import type { WriteFileOptions } from 'fs';
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : dirname(fileURLToPath(import.meta.url))
@@ -189,13 +189,9 @@ export function updateConfigFile(filePath: string, newConfig: Array<string>): Pr
         config[key] = newConfig[key];
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(config, null, 2), (err: any): WriteFileOptions | undefined => {
-      if (err)
-        return undefined
+    fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
 
-      else
-        resolve()
-    });
+    return config
   })
 }
 
