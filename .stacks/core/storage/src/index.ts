@@ -4,7 +4,7 @@ import { detectIndent, detectNewline } from '@stacksjs/utils'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
-
+import { WriteFileOptions } from 'fs';
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : dirname(fileURLToPath(import.meta.url))
@@ -181,7 +181,7 @@ export function createFolder(dir: string): Promise<void> {
   })
 }
 
-export function updateConfigFile(filePath: string, newConfig: object): Promise<void> {
+export function updateConfigFile(filePath: string, newConfig: Array<string>): Promise<void> {
   return new Promise((resolve, reject) => {
     let config = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
@@ -189,9 +189,9 @@ export function updateConfigFile(filePath: string, newConfig: object): Promise<v
         config[key] = newConfig[key];
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(config, null, 2), (err: any) => {
+    fs.writeFileSync(filePath, JSON.stringify(config, null, 2), (err: any): WriteFileOptions | undefined => {
       if (err)
-        reject(err)
+        return undefined
 
       else
         resolve()
@@ -215,6 +215,7 @@ export const filesystem = {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
+  updateConfigFile
   fs, // potentially refactor to `...fs` but, currently, there is an issues when building @stacksjs/config
   // the problem is relating to https://github.com/microsoft/TypeScript/issues/5711#issuecomment-157793294
 }
