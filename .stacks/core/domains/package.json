@@ -2,7 +2,7 @@
   "name": "@stacksjs/domains",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.25.1",
+  "packageManager": "pnpm@7.26.0",
   "description": "Easily manage your domains.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.25.1"
+    "pnpm": ">=7.26.0"
   },
   "scripts": {
     "build": "mkdist -d",
