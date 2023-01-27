@@ -2,7 +2,7 @@
   "name": "@stacksjs/events",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.26.0",
+  "packageManager": "pnpm@7.26.1",
   "description": "Functional event emitting.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.13.0",
-    "pnpm": ">=7.26.0"
+    "pnpm": ">=7.26.1"
   },
   "scripts": {
     "build": "mkdist -d",
