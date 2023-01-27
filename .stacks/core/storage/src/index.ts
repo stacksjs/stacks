@@ -4,7 +4,7 @@ import { detectIndent, detectNewline } from '@stacksjs/utils'
 import type { JsonFile, TextFile } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
-import type { WriteFileOptions } from 'fs';
+
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : dirname(fileURLToPath(import.meta.url))
@@ -211,7 +211,7 @@ export const filesystem = {
   deleteFiles,
   deleteEmptyFolders,
   doesFolderExist,
-  updateConfigFile
+  updateConfigFile,
   fs, // potentially refactor to `...fs` but, currently, there is an issues when building @stacksjs/config
   // the problem is relating to https://github.com/microsoft/TypeScript/issues/5711#issuecomment-157793294
 }

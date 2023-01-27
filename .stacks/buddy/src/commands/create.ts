@@ -17,7 +17,7 @@ async function create(buddy: CLI) {
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
@@ -30,7 +30,7 @@ async function create(buddy: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
       const startTime = await intro('stacks new')

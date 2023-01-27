@@ -11,7 +11,7 @@ async function dev(buddy: CLI) {
     functions: 'Start the Functions development server',
     docs: 'Start the Documentation development server',
     pages: 'Start the Pages development server',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
@@ -20,7 +20,7 @@ async function dev(buddy: CLI) {
     .option('-f, --functions', descriptions.functions)
     .option('-d, --docs', descriptions.docs)
     .option('-p, --pages', descriptions.pages)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       if (hasNoOptions(options)) {
         const answer: DevOption | void = await prompts.select({
@@ -84,28 +84,28 @@ async function dev(buddy: CLI) {
 
   buddy
     .command('dev:docs', descriptions.docs)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await docs(options)
     })
 
   buddy
     .command('dev:desktop', descriptions.desktop)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await desktop(options)
     })
 
   buddy
     .command('dev:functions', descriptions.functions)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await functions(options)
     })
 
   buddy
     .command('dev:pages', descriptions.pages)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await pages(options)
     })

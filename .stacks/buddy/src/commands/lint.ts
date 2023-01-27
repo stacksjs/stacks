@@ -7,13 +7,13 @@ async function lint(buddy: CLI) {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('lint', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       const perf = await intro('buddy lint')
       const result = await runAction(Action.Lint, { ...options, showSpinner: true, spinnerText: 'Linting...' })
@@ -28,7 +28,7 @@ async function lint(buddy: CLI) {
 
   buddy
     .command('lint:fix', descriptions.lintFix)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       log.info('Fixing lint errors...')
       const result = await runAction(Action.LintFix, { ...options, showSpinner: true, spinnerText: 'Linting...' })

@@ -5,13 +5,13 @@ import { Action } from '@stacksjs/types'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
-  debug: 'Enable debug mode',
+  verbose: 'Enable verbose output',
 }
 
 async function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
-    .option('--debug', descriptions.debug, { default: true }) // it's on by default because it requires manual input
+    .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, options)

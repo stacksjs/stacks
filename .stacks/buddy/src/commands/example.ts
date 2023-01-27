@@ -9,7 +9,7 @@ async function example(buddy: CLI) {
     components: 'Test your libraries against your built bundle',
     vue: 'Test your Vue component library',
     webComponents: 'Test your web component library',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
@@ -17,7 +17,7 @@ async function example(buddy: CLI) {
     .option('-c, --components', descriptions.components)
     .option('-v, --vue', descriptions.vue)
     .option('-w, --web-components', descriptions.webComponents)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
       const answer: ExamplesOption = await prompts.select({
         type: 'select',
@@ -46,8 +46,8 @@ async function example(buddy: CLI) {
 
   buddy
     .command('example:vue', descriptions.vue)
-    .option('-v, --vue', descriptions.debug, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('-v, --vue', descriptions.verbose, { default: true })
+    .option('--verbose', descriptions.verbose, { default: false })
     .alias('example:components')
     .action(async (options: ExamplesOptions) => {
       await runExample(options)
@@ -55,8 +55,8 @@ async function example(buddy: CLI) {
 
   buddy
     .command('example:web-components', 'Test your Web Component library.')
-    .option('-w, --web-components', descriptions.debug, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('-w, --web-components', descriptions.verbose, { default: true })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
       await runExample(options)
     })

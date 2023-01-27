@@ -6,12 +6,12 @@ import { Action, ExitCode } from '@stacksjs/types'
 async function fresh(buddy: CLI) {
   const descriptions = {
     fresh: 'Reinstalls your npm dependencies',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('fresh', descriptions.fresh)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })

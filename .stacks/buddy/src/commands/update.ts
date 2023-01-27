@@ -12,7 +12,7 @@ async function update(buddy: CLI) {
     node: 'Update Node to the version defined in ./node-version',
     all: 'Update Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
     select: 'What are you trying to update?',
   }
 
@@ -24,8 +24,8 @@ async function update(buddy: CLI) {
     .option('-n, --node', descriptions.node, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
-    .example('buddy update -a --debug')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy update -a --verbose')
     .action(async (options: UpdateOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -50,8 +50,8 @@ async function update(buddy: CLI) {
   buddy
     .command('update:framework', descriptions.framework)
     .option('-f, --framework', descriptions.framework, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
-    .example('buddy update:framework --debug')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy update:framework --verbose')
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -59,9 +59,9 @@ async function update(buddy: CLI) {
   buddy
     .command('update:dependencies', descriptions.dependencies)
     .option('-d, --dependencies', descriptions.dependencies, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .alias('update:deps')
-    .example('buddy update:dependencies --debug')
+    .example('buddy update:dependencies --verbose')
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -69,9 +69,9 @@ async function update(buddy: CLI) {
   buddy
     .command('update:package-manager', descriptions.packageManager)
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .alias('update:pm')
-    .example('buddy update:package-manager 7.16.1 --debug')
+    .example('buddy update:package-manager 7.16.1 --verbose')
     .example('buddy update:package-manager latest')
     .action(async (options: UpdateOptions) => {
       options.version = 'latest'
@@ -87,7 +87,7 @@ async function update(buddy: CLI) {
   buddy
     .command('update:node', descriptions.node)
     .option('-n, --node', descriptions.node, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -95,7 +95,7 @@ async function update(buddy: CLI) {
   buddy
     .command('update:all', descriptions.all)
     .option('-a, --all', descriptions.all, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })

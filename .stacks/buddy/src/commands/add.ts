@@ -9,7 +9,7 @@ async function add(buddy: CLI) {
     table: 'Add the Table Stack to your project',
     calendar: 'Add the Calendar Stack to your project',
     all: 'Add all stacks',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
@@ -17,7 +17,7 @@ async function add(buddy: CLI) {
     .option('-t, --table', descriptions.table, { default: false })
     .option('-c, --calendar', descriptions.calendar, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -42,7 +42,7 @@ async function add(buddy: CLI) {
   buddy
     .command('add:table', descriptions.table)
     .option('-t, --table', descriptions.table, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })
@@ -50,7 +50,7 @@ async function add(buddy: CLI) {
   buddy
     .command('add:calendar', descriptions.calendar)
     .option('-t, --calendar', descriptions.calendar, { default: true })
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })

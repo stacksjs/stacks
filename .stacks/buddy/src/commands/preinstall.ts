@@ -4,12 +4,12 @@ import { invoke } from '@stacksjs/actions/preinstall'
 async function preinstall(buddy: CLI) {
   const descriptions = {
     command: 'Run your preinstall script',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('preinstall', descriptions.command)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PreinstallOptions) => {
       await invoke(options)
     })

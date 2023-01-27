@@ -5,12 +5,12 @@ import { runAction } from '@stacksjs/actions'
 async function prepublish(buddy: CLI) {
   const descriptions = {
     command: 'Run your prepublish script',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('prepublish', descriptions.command)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PrepublishOptions) => {
       await runAction(Action.Prepublish, options)
     })

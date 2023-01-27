@@ -6,12 +6,12 @@ import { Action, ExitCode } from '@stacksjs/types'
 async function changelog(buddy: CLI) {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('changelog', descriptions.changelog)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)

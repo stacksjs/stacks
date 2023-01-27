@@ -6,12 +6,12 @@ import { runAction } from '@stacksjs/actions'
 async function key(buddy: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('key:generate', descriptions.command)
-    .option('--debug', descriptions.debug, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
       const startTime = await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
