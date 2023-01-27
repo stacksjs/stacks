@@ -45,7 +45,7 @@ export async function runAction(action: string, options?: CliOptions): Promise<
   const opts = parseOptions(options)
   const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
 
-  if (options?.debug)
+  if (options?.verbose)
     log.info('Running command:', cmd, options)
 
   return options?.showSpinner

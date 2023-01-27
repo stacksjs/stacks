@@ -21,7 +21,7 @@ async function main() {
   if (!await isProjectCreated()) {
     if (env('APP_ENV') !== 'production') {
       log.info('Project not initialized, generating application key...')
-      const result = await runAction(Action.KeyGenerate, { cwd: projectPath(), debug: true })
+      const result = await runAction(Action.KeyGenerate, { cwd: projectPath(), verbose: true })
       if (result.isErr()) {
         log.error(result.error)
         process.exit()

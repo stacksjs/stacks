@@ -38,7 +38,7 @@ export interface CliOptions {
    *
    * @default false
    */
-  debug?: boolean
+  verbose?: boolean
 
   /**
    * **Current Work Directory**

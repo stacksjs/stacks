@@ -37,7 +37,7 @@ async function test(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:unit')
-      const result = await runAction(Action.TestUnit, { ...options, debug: true, cwd: projectPath() })
+      const result = await runAction(Action.TestUnit, { ...options, verbose: true, cwd: projectPath() })
 
       if (result.isErr()) {
         outro('While running `buddy test:unit`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -56,9 +56,9 @@ async function test(buddy: CLI) {
       let result
 
       if (options.showReport)
-        result = await runAction(Action.ShowFeatureTestReport, { ...options, debug: true, cwd: projectPath() })
+        result = await runAction(Action.ShowFeatureTestReport, { ...options, verbose: true, cwd: projectPath() })
       else
-        result = await runAction(Action.TestFeature, { ...options, debug: true, cwd: projectPath() })
+        result = await runAction(Action.TestFeature, { ...options, verbose: true, cwd: projectPath() })
 
       if (result.isErr()) {
         outro('While running `buddy test:feature`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -73,7 +73,7 @@ async function test(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:ui')
-      const result = await runAction(Action.TestUi, { ...options, debug: true, cwd: projectPath() })
+      const result = await runAction(Action.TestUi, { ...options, verbose: true, cwd: projectPath() })
 
       if (result.isErr()) {
         outro('While running `buddy test:ui`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -89,7 +89,7 @@ async function test(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:types')
-      const result = await runAction(Action.Typecheck, { ...options, debug: true, cwd: projectPath() })
+      const result = await runAction(Action.Typecheck, { ...options, verbose: true, cwd: projectPath() })
 
       if (result.isErr()) {
         outro('While running `buddy test:types`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
@@ -103,7 +103,7 @@ async function test(buddy: CLI) {
     .command('test:coverage', descriptions.coverage)
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:coverage')
-      const result = await runAction(Action.TestCoverage, { ...options, cwd: projectPath(), debug: true })
+      const result = await runAction(Action.TestCoverage, { ...options, cwd: projectPath(), verbose: true })
 
       if (result.isErr()) {
         outro('While running `buddy test:coverage`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

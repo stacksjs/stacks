@@ -9,6 +9,6 @@ await runActions([
   Action.LintFix, // ensure there are no lint errors
   // Action.Test, // run the tests
   Action.Bump, // bump the versions, create the git (version) tag, generate the changelog, commit & push the changes
-], { debug: true, cwd: frameworkPath() }) // debug mode needs to be enabled to see the output due to the interactive prompts
+], { verbose: true, cwd: frameworkPath() }) // debug mode needs to be enabled to see the output due to the interactive prompts
 
 // log.success('Successfully released the Stacks framework')

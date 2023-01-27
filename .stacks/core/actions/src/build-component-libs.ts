@@ -5,7 +5,7 @@ import { runCommand } from '@stacksjs/cli'
 log.info('Building Component Libraries...')
 
 // run the `npx mkdist -d` command to build the dist folder
-const result = await runCommand('npx mkdist -d', { debug: true, cwd: frameworkPath() })
+const result = await runCommand('npx mkdist -d', { verbose: true, cwd: frameworkPath() })
 
 if (result.isErr()) {
   log.error('There was an error running `npx mkdist -d`.', result.error)

@@ -6,4 +6,4 @@ await runCommands([
   'pnpm build:cli', // command to build the Buddy CLI
   'pnpm build:core', // command to build the Stacks Core
   'cp -a ./core/. ./', // copy the core stacks to the famework's root
-], { debug: true, cwd: frameworkPath() })
+], { verbose: true, cwd: frameworkPath() })

@@ -20,7 +20,7 @@ export function env(key: string, fallback: any) {
  * @param options
  */
 export function determineDebugMode(options?: CliOptions) {
-  if (options?.debug === true)
+  if (options?.verbose === true)
     return true
 
   if (c.app.debug === true)

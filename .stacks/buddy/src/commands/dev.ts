@@ -58,9 +58,9 @@ async function dev(buddy: CLI) {
     .command('dev:components', descriptions.components)
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runAction(Action.DevComponents, { ...options, debug: true })
+      const result = await runAction(Action.DevComponents, { ...options, verbose: true })
 
-      if (options.debug)
+      if (options.verbose)
         log.info('result is', result)
 
       // check if result is an array

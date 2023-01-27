@@ -39,7 +39,7 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  const result = await runCommand('esno .stacks/core/actions/src/generate-package-json.ts', { ...options, debug: true, cwd: projectPath() })
+  const result = await runCommand('esno .stacks/core/actions/src/generate-package-json.ts', { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
     log.error('There was an error generating your library entry points.', result.error)
@@ -79,7 +79,7 @@ export async function vsCodeCustomData(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated the custom-elements.json file')
 }
 
@@ -91,7 +91,7 @@ export async function ideHelpers(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated IDE helpers')
 }
 
@@ -103,7 +103,7 @@ export async function componentMeta(options?: GeneratorOptions) {
     process.exit()
   }
 
-  await runAction(Action.LintFix, { debug: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated component meta information')
 }
 

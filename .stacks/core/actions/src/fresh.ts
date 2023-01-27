@@ -4,4 +4,4 @@ import { frameworkPath } from '@stacksjs/path'
 await runCommands([
   'pnpm run clean',
   'pnpm install',
-], { cwd: frameworkPath(), debug: true })
+], { cwd: frameworkPath(), verbose: true })
