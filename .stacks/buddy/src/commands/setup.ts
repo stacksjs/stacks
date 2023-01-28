@@ -6,11 +6,13 @@ async function setup(buddy: CLI) {
     ensure: 'This command checks whether Node is installed. pnpm is checked via `only-allow` preinstall hook',
     setup: 'This command installs Node & pnpm',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
     .command('ensure', descriptions.ensure)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CliOptions) => {
       await runCommand('pnpm install', options)
     })
@@ -18,6 +20,7 @@ async function setup(buddy: CLI) {
   buddy
     .command('setup', descriptions.setup)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CliOptions) => {
       await runCommand('pnpm env use', options)
     })

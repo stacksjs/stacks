@@ -14,6 +14,7 @@ async function generate(buddy: CLI) {
     vueCompat: 'Generate Vue 2 & 3 compatibility',
     componentMeta: 'Generate component meta information',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -26,6 +27,7 @@ async function generate(buddy: CLI) {
     .option('-v, --vue-compatibility', descriptions.vueCompat)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -55,6 +57,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:types', descriptions.types)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
       await types(options)
@@ -63,6 +66,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:entries', descriptions.entries)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await libEntries(options)
     })
@@ -70,6 +74,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:vue-compatibility', descriptions.vueCompat)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await vueCompat(options)
     })
@@ -77,6 +82,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:web-types', descriptions.webTypes)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await webTypes(options)
     })
@@ -84,6 +90,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:vscode-custom-data', descriptions.customData)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await vsCodeCustomData(options)
     })
@@ -91,6 +98,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await ideHelpers(options)
     })
@@ -98,6 +106,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:component-meta', descriptions.componentMeta)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       await componentMeta(options)
     })

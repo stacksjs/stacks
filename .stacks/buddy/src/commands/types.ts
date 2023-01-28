@@ -6,11 +6,13 @@ async function types(buddy: CLI) {
     generate: 'Generate the types of & for your library/libraries',
     fix: 'wip',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
     .command('types:generate', descriptions.generate)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async () => {
       await generateTypes()
     })
@@ -18,6 +20,7 @@ async function types(buddy: CLI) {
   buddy
     .command('types:fix', descriptions.fix)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async () => {
       // await fixTypes()
     })

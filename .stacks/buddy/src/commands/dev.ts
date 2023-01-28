@@ -12,6 +12,7 @@ async function dev(buddy: CLI) {
     docs: 'Start the Documentation development server',
     pages: 'Start the Pages development server',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -21,6 +22,7 @@ async function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-p, --pages', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       if (hasNoOptions(options)) {
         const answer: DevOption | void = await prompts.select({
@@ -61,7 +63,7 @@ async function dev(buddy: CLI) {
       const result = await runAction(Action.DevComponents, { ...options, verbose: true })
 
       if (options.verbose)
-        log.info('result is', result)
+        log.info('The result object is', result)
 
       // check if result is an array
       if (Array.isArray(result)) {
@@ -85,6 +87,7 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:docs', descriptions.docs)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await docs(options)
     })
@@ -92,6 +95,7 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await desktop(options)
     })
@@ -99,6 +103,7 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:functions', descriptions.functions)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await functions(options)
     })
@@ -106,6 +111,7 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:pages', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await pages(options)
     })

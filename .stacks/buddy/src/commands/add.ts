@@ -10,6 +10,7 @@ async function add(buddy: CLI) {
     calendar: 'Add the Calendar Stack to your project',
     all: 'Add all stacks',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -18,6 +19,7 @@ async function add(buddy: CLI) {
     .option('-c, --calendar', descriptions.calendar, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -43,6 +45,7 @@ async function add(buddy: CLI) {
     .command('add:table', descriptions.table)
     .option('-t, --table', descriptions.table, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })
@@ -51,6 +54,7 @@ async function add(buddy: CLI) {
     .command('add:calendar', descriptions.calendar)
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })

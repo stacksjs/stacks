@@ -14,6 +14,7 @@ async function build(buddy: CLI) {
     docs: 'Build your documentation site',
     stacks: 'Build Stacks framework',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -27,6 +28,8 @@ async function build(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-s, --stacks', descriptions.stacks, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
@@ -56,6 +59,8 @@ async function build(buddy: CLI) {
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .option('-c, --components', descriptions.components, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildComponentLibs, options)
     })
@@ -64,6 +69,8 @@ async function build(buddy: CLI) {
     .command('build:cli', 'Automagically build the CLI')
     .option('-c, --components', descriptions.components, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildCli, options)
     })
@@ -72,6 +79,8 @@ async function build(buddy: CLI) {
     .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildFunctionLib, options)
     })
@@ -80,6 +89,7 @@ async function build(buddy: CLI) {
     .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
     .option('-v, --vue-components', descriptions.vueComponents, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildVueComponentLib, options)
@@ -89,6 +99,7 @@ async function build(buddy: CLI) {
     .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
     .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('build:elements')
     .alias('build:wc')
     .action(async (options: BuildOptions) => {
@@ -99,6 +110,7 @@ async function build(buddy: CLI) {
     .command('build:docs', 'Automagically build your documentation site.')
     .option('-d, --docs', descriptions.docs, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildDocs, options)
     })
@@ -122,6 +134,7 @@ async function build(buddy: CLI) {
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)

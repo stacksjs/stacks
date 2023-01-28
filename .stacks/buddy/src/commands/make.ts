@@ -28,6 +28,7 @@ async function make(buddy: CLI) {
     notification: 'Create a new notification',
     stack: 'Create a new new stack',
     verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -42,6 +43,7 @@ async function make(buddy: CLI) {
     .option('-n, --notification', descriptions.notification, { default: false })
     .option('-s, --stack', descriptions.stack, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0]
 
@@ -81,6 +83,7 @@ async function make(buddy: CLI) {
     .command('make:component', descriptions.component)
     .option('-n, --name', 'The name of the component')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -97,6 +100,7 @@ async function make(buddy: CLI) {
     .command('make:database', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -113,6 +117,7 @@ async function make(buddy: CLI) {
     .command('make:migration', descriptions.migration)
     .option('-n, --name', 'The name of the migration')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -129,6 +134,7 @@ async function make(buddy: CLI) {
     .command('make:factory', descriptions.factory)
     .option('-n, --name', 'The name of the factory')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -145,6 +151,7 @@ async function make(buddy: CLI) {
     .command('make:page', descriptions.page)
     .option('-n, --name', 'The name of the page')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -161,6 +168,7 @@ async function make(buddy: CLI) {
     .command('make:function', descriptions.function)
     .option('-n, --name', 'The name of the function')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFunction(options)
     })
@@ -169,6 +177,7 @@ async function make(buddy: CLI) {
     .command('make:lang', descriptions.language)
     .option('-n, --name', 'The name of the language')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -188,6 +197,7 @@ async function make(buddy: CLI) {
     .option('-c, --chat', 'Is it a chat notification?', { default: false })
     .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const perf = await intro('buddy make:notification')
 
@@ -214,6 +224,7 @@ async function make(buddy: CLI) {
     .command('make:stack', descriptions.stack)
     .option('-n, --name', 'The name of the stack')
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name

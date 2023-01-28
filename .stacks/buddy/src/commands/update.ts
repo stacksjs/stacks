@@ -12,8 +12,9 @@ async function update(buddy: CLI) {
     node: 'Update Node to the version defined in ./node-version',
     all: 'Update Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
-    verbose: 'Enable verbose output',
     select: 'What are you trying to update?',
+    verbose: 'Enable verbose output',
+    debug: 'Enable debug mode',
   }
 
   buddy
@@ -25,6 +26,7 @@ async function update(buddy: CLI) {
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .example('buddy update -a --verbose')
     .action(async (options: UpdateOptions) => {
       if (hasNoOptions(options)) {
@@ -51,6 +53,7 @@ async function update(buddy: CLI) {
     .command('update:framework', descriptions.framework)
     .option('-f, --framework', descriptions.framework, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .example('buddy update:framework --verbose')
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
@@ -60,6 +63,7 @@ async function update(buddy: CLI) {
     .command('update:dependencies', descriptions.dependencies)
     .option('-d, --dependencies', descriptions.dependencies, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('update:deps')
     .example('buddy update:dependencies --verbose')
     .action(async (options: UpdateOptions) => {
@@ -70,6 +74,7 @@ async function update(buddy: CLI) {
     .command('update:package-manager', descriptions.packageManager)
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .alias('update:pm')
     .example('buddy update:package-manager 7.16.1 --verbose')
     .example('buddy update:package-manager latest')
@@ -88,6 +93,7 @@ async function update(buddy: CLI) {
     .command('update:node', descriptions.node)
     .option('-n, --node', descriptions.node, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
@@ -96,6 +102,7 @@ async function update(buddy: CLI) {
     .command('update:all', descriptions.all)
     .option('-a, --all', descriptions.all, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpdateOptions) => {
       await updateStacks(options)
     })
