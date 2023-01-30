@@ -3,9 +3,9 @@ import { determineDebugMode } from '@stacksjs/config'
 import type { Err } from '@stacksjs/error-handling'
 import { ResultAsync, err } from '@stacksjs/error-handling'
 import { projectPath } from '@stacksjs/path'
-import { italic } from '..'
-import { spawn } from '../command'
-import { startSpinner } from '../helpers'
+import { spawn } from './command'
+import { startSpinner } from './helpers'
+import { italic } from '.'
 
 /**
  * Execute a command.
