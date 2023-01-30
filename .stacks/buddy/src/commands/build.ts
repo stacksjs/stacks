@@ -29,7 +29,6 @@ async function build(buddy: CLI) {
     .option('-s, --stacks', descriptions.stacks, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         const answers = await prompts.multiselect({
