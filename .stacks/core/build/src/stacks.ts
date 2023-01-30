@@ -12,8 +12,7 @@ import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from '@stacksjs/types'
-import { componentsPath, frameworkPath, functionsPath, pagesPath, resolve, uiPath } from '@stacksjs/path'
-// import { arraysPath, collectionsPath, componentsPath, frameworkPath, fsPath, functionsPath, pagesPath, pathPath, projectPath, resolve, securityPath, stringsPath, uiPath } from '@stacksjs/path'
+import p, { resolve } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -32,10 +31,10 @@ function components(options?: ComponentOptions): PluginOption {
     extensions: ['vue', 'md'],
     include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
-      componentsPath(),
+      p.componentsPath(),
       // pagesPath(),
     ],
-    dts: frameworkPath('components.d.ts'),
+    dts: p.frameworkPath('components.d.ts'),
   }
 
   const newOptions = defu(options, defaultOptions)
@@ -48,7 +47,7 @@ function pages(options?: PagesOptions) {
   const defaultOptions: PagesOptions = {
     extensions: ['vue', 'md'],
     dirs: [
-      pagesPath(),
+      p.pagesPath(),
     ],
   }
 
@@ -82,27 +81,53 @@ function markdown(options?: MarkdownOptions) {
 }
 
 function autoImports(options?: AutoImportsOptions) {
-  // eslint-disable-next-line no-console
-  console.log('autoImports here?')
-
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
-      // { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+      { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
     ],
     dirs: [
-      functionsPath(),
-      componentsPath(),
-      // projectPath('config'),
+      p.functionsPath(),
+      p.componentsPath(),
+      p.projectPath('config'),
+
       // auto imported utilities start here
-      // arraysPath('src'),
-      // stringsPath('src'),
-      // collectionsPath('src'),
-      // fsPath('src'),
-      // pathPath('src'),
-      // securityPath('src'),
+      p.aiPath('src'),
+      p.arraysPath('src'),
+      p.authPath('src'),
+      p.authPath('src'),
+      p.cachePath('src'),
+      p.chatPath('src'),
+      p.collectionsPath('src'),
+      p.databasePath('src'),
+      p.desktopPath('src'),
+      p.emailPath('src'),
+      p.errorHandlingPath('src'),
+      p.eventsPath('src'),
+      p.healthPath('src'),
+      p.lintPath('src'),
+      p.loggingPath('src'),
+      p.notificationsPath('src'),
+      p.objectsPath('src'),
+      p.pathPath('src'),
+      p.paymentsPath('src'),
+      p.pushPath('src'),
+      p.queuePath('src'),
+      p.realtimePath('src'),
+      p.routerPath('src'),
+      p.searchEnginePath('src'),
+      p.securityPath('src'),
+      p.smsPath('src'),
+      p.storagePath('src'),
+      p.stringsPath('src'),
+      p.tablesPath('src'),
+      p.stringsPath('src'),
+      p.testingPath('src'),
+      p.uiPath('src'),
+      p.utilsPath('src'),
+      p.validationPath('src'),
     ],
-    dts: frameworkPath('auto-imports.d.ts'),
+    dts: p.frameworkPath('auto-imports.d.ts'),
     vueTemplate: true,
     eslintrc: {
       enabled: false,
@@ -117,7 +142,7 @@ function autoImports(options?: AutoImportsOptions) {
 
 function cssEngine(isWebComponent = false) {
   return Unocss({
-    configFile: uiPath('src/unocss.ts'),
+    configFile: p.uiPath('src/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
@@ -165,8 +190,6 @@ function pwa() {
 // }
 
 function uiEngine(isWebComponent = false) {
-  // eslint-disable-next-line no-console
-  console.log('here', isWebComponent, process.cwd(), __dirname, __filename)
   if (isWebComponent) {
     return Vue({
       include: [/\.vue$/, /\.md$/],

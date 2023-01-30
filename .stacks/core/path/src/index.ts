@@ -106,6 +106,10 @@ export function corePath(path?: string) {
   return frameworkPath(`core/${path || ''}`)
 }
 
+export function databasePath(path?: string) {
+  return corePath(`database/${path || ''}`)
+}
+
 export function dashboardPath(path?: string) {
   return corePath(`dashboard/${path || ''}`)
 }
@@ -138,6 +142,14 @@ export function errorHandlingPath(path?: string) {
   return corePath(`error-handling/${path || ''}`)
 }
 
+export function eventsPath(path?: string) {
+  return corePath(`events/${path || ''}`)
+}
+
+export function healthPath(path?: string) {
+  return corePath(`health/${path || ''}`)
+}
+
 export function examplesPath(type: 'vue-components' | 'web-components') {
   return frameworkPath(`examples/${type || ''}`)
 }
@@ -146,7 +158,7 @@ export function frameworkPath(path?: string) {
   return projectPath(`.stacks/${path || ''}`)
 }
 
-export function fsPath(path?: string) {
+export function storagePath(path?: string) {
   return corePath(`storage/${path || ''}`)
 }
 
@@ -211,6 +223,10 @@ export function pathPath(path?: string) {
   return corePath(`path/${path || ''}`)
 }
 
+export function paymentsPath(path?: string) {
+  return corePath(`payments/${path || ''}`)
+}
+
 export function projectPath(filePath = '') {
   let path = process.cwd()
 
@@ -232,6 +248,14 @@ export function projectPath(filePath = '') {
 
 export function pushPath(path?: string) {
   return corePath(`push/${path || ''}`)
+}
+
+export function queuePath(path?: string) {
+  return corePath(`queue/${path || ''}`)
+}
+
+export function realtimePath(path?: string) {
+  return corePath(`realtime/${path || ''}`)
 }
 
 export function routerPath(path?: string) {
@@ -298,6 +322,10 @@ export function utilsPath(path?: string) {
   return corePath(`utils/${path || ''}`)
 }
 
+export function validationPath(path?: string) {
+  return corePath(`validation/${path || ''}`)
+}
+
 export const path = {
   aiPath,
   actionsPath,
@@ -315,6 +343,7 @@ export const path = {
   configPath,
   corePath,
   customElementsDataPath,
+  databasePath,
   dashboardPath,
   desktopPath,
   docsPath,
@@ -322,9 +351,11 @@ export const path = {
   driversPath,
   emailPath,
   errorHandlingPath,
+  eventsPath,
+  healthPath,
   examplesPath,
   frameworkPath,
-  fsPath,
+  storagePath,
   functionsPath,
   gitPath,
   langPath,
@@ -338,12 +369,15 @@ export const path = {
   packageJsonPath,
   pagesPath,
   pathPath,
+  paymentsPath,
   projectPath,
   pushPath,
+  queuePath,
+  realtimePath,
   routerPath,
+  routesPath,
   searchEnginePath,
   smsPath,
-  routesPath,
   scriptsPath,
   securityPath,
   serverPath,
@@ -356,6 +390,7 @@ export const path = {
   typesPath,
   uiPath,
   utilsPath,
+  validationPath,
 
   // path utils
   basename,
