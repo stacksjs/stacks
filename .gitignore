@@ -9,5 +9,4 @@ node_modules
 .env.production
 updates
 tests/unit/coverage
-index-*
-dist/*
+dist*

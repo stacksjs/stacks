@@ -1,14 +1,11 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { buildEntriesPath, componentsPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { buildEntriesPath, frameworkPath, projectPath } from '@stacksjs/path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-// import { library } from '@stacksjs/config'
+import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
-
-// eslint-disable-next-line no-console
-console.log('componentsPath()', componentsPath())
+import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('components/vue'),
@@ -44,8 +41,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: buildEntriesPath('vue-components.ts'),
-      // name: library.vueComponents.name,
-      name: 'test',
+      name: library.vueComponents.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
@@ -70,8 +66,6 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command }) => {
-  // eslint-disable-next-line no-console
-  console.log('command', command)
   if (command === 'serve')
     return vueComponentsConfig
 
