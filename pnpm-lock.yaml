@@ -53,7 +53,7 @@ importers:
       '@stacksjs/ui': workspace:*
       '@stacksjs/utils': workspace:*
       only-allow: ^1.1.1
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
     dependencies:
       '@stacksjs/actions': link:../core/actions
@@ -78,7 +78,7 @@ importers:
       '@stacksjs/logging': link:../core/logging
       '@stacksjs/modules': link:../core/modules
       '@stacksjs/notifications': link:../core/notifications
-      '@stacksjs/objects': link:../core/objects
+      '@stacksjs/objects': link:../core/pages
       '@stacksjs/path': link:../core/path
       '@stacksjs/payments': link:../core/payments
       '@stacksjs/realtime': link:../core/realtime
@@ -124,7 +124,7 @@ importers:
       esno: ^0.16.3
       markdown-it: ^13.0.1
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue-component-meta: ^1.0.24
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -150,7 +150,7 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
@@ -164,7 +164,7 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/path': link:../path
     devDependencies:
@@ -177,7 +177,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -189,7 +189,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -208,7 +208,7 @@ importers:
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.7.2
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
       unplugin-auto-import: ^0.13.0
       unplugin-vue-components: ^0.23.0
@@ -250,15 +250,15 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.259.0
+      '@aws-sdk/client-dynamodb': ^3.261.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.2.5
       memcached: ^2.2.2
       memjs: ^1.3.0
       mkdist: ^1.1.0
-      redis: ^4.6.3
-      typescript: ^4.9.4
+      redis: ^4.6.4
+      typescript: ^4.9.5
     dependencies:
       '@aws-sdk/client-dynamodb': 3.261.0
       '@stacksjs/config': link:../config
@@ -283,7 +283,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@novu/discord': 0.10.2
       '@novu/node': 0.10.2
@@ -335,7 +335,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -346,7 +346,7 @@ importers:
       '@stacksjs/testing': workspace:*
       collect.js: ^4.34.3
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       collect.js: 4.34.3
     devDependencies:
@@ -360,7 +360,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
     dependencies:
       '@stacksjs/path': link:../path
@@ -385,7 +385,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@prisma/client': 4.9.0
       '@stacksjs/utils': link:../utils
@@ -399,7 +399,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
@@ -415,7 +415,7 @@ importers:
       '@tauri-apps/api': 1.2.0
       '@tauri-apps/cli': 1.2.3
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unified-network: 0.6.4
       unstorage: ^1.0.1
       vue: 3.2.45
@@ -438,7 +438,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vitepress: 1.0.0-alpha.43
     dependencies:
       vitepress: 1.0.0-alpha.43_2r467mdhb7mblpaox4bg7fatdi
@@ -451,7 +451,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -463,7 +463,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -492,7 +492,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@maizzle/framework': 4.3.1_glob@7.2.3
       '@novu/emailjs': 0.10.2_typescript@4.9.5
@@ -521,7 +521,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       neverthrow: ^6.0.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@ow3/eslint-config': 0.35.2_4vsywjlpuriuw3tl5oq6zy5a64
       neverthrow: 6.0.0
@@ -536,7 +536,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mitt: ^3.0.0
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/alias': link:../alias
       mitt: 3.0.0
@@ -555,7 +555,7 @@ importers:
       giget: ^1.0.0
       mkdist: ^1.1.0
       simple-git-hooks: ^2.8.1
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       bumpp: 8.2.1
       changelogen: 0.4.1
@@ -573,7 +573,7 @@ importers:
       '@stacksjs/notifications': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/notifications': link:../notifications
     devDependencies:
@@ -589,7 +589,7 @@ importers:
       eslint: ^8.33.0
       lint-staged: ^13.1.0
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@ow3/eslint-config': 0.35.2_4vsywjlpuriuw3tl5oq6zy5a64
       '@types/eslint': 8.4.10
@@ -605,7 +605,7 @@ importers:
       '@stacksjs/testing': workspace:*
       consola: ^2.15.3
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue-ray: ^1.17.3
     dependencies:
       consola: 2.15.3
@@ -622,7 +622,7 @@ importers:
       '@types/nprogress': ^0.2.0
       mkdist: ^1.1.0
       nprogress: ^0.2.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -668,7 +668,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
     dependencies:
       '@maizzle/framework': 4.3.1_glob@7.2.3
@@ -712,7 +712,20 @@ importers:
       '@stacksjs/collections': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
+    dependencies:
+      '@stacksjs/collections': link:../collections
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.0_typescript@4.9.5
+      typescript: 4.9.5
+
+  .stacks/core/pages:
+    specifiers:
+      '@stacksjs/collections': workspace:*
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.0
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
@@ -725,7 +738,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       pathe: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       pathe: 1.1.0
     devDependencies:
@@ -737,7 +750,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -753,7 +766,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@novu/node': 0.10.2
       '@novu/stateless': 0.10.2
@@ -770,7 +783,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -780,7 +793,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.0_typescript@4.9.5
@@ -790,7 +803,7 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.45
@@ -807,7 +820,7 @@ importers:
       '@vueuse/core': ^9.12.0
       meilisearch: ^0.30.0
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue: ^3.2.45
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -829,7 +842,7 @@ importers:
       crypto-js: ^4.1.1
       js-base64: ^3.7.4
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -848,7 +861,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       nitropack: ^2.1.1
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vite: ^4.0.4
     dependencies:
       '@stacksjs/config': link:../config
@@ -878,7 +891,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@novu/gupshup': 0.10.2
       '@novu/nexmo': 0.10.2
@@ -908,7 +921,7 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.0
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unstorage: ^1.0.1
     dependencies:
       '@stacksjs/arrays': link:../arrays
@@ -932,7 +945,7 @@ importers:
       change-case: ^4.1.2
       mkdist: ^1.1.0
       pluralize: ^8.0.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
       validator: ^13.7.0
     dependencies:
@@ -959,7 +972,7 @@ importers:
       '@vueform/multiselect': ^2.5.8
       meilisearch: ^0.30.0
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unbuild: ^1.1.1
       vite: ^4.0.4
     dependencies:
@@ -982,7 +995,7 @@ importers:
       '@vitest/coverage-istanbul': ^0.28.3
       '@vitest/ui': ^0.28.3
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vitest: ^0.28.3
     dependencies:
       '@playwright/test': 1.30.0
@@ -1013,7 +1026,7 @@ importers:
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unplugin-auto-import: ^0.13.0
       unplugin-vue-components: ^0.23.0
       vite-plugin-inspect: ^0.7.15
@@ -1058,7 +1071,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.49.1
       mkdist: ^1.1.0
       pinia: ^2.0.29
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       unocss: ^0.49.1
       vue: ^3.2.45
       vue-tsc: ^1.0.24
@@ -1104,7 +1117,7 @@ importers:
       p-limit: ^4.0.0
       rimraf: ^4.1.2
       throttle-debounce: ^5.0.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/cli': link:../cli
@@ -1138,7 +1151,7 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       zod: ^3.20.2
     dependencies:
       zod: 3.20.2
@@ -1155,7 +1168,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.0
       node-ray: ^1.19.4
-      typescript: ^4.9.4
+      typescript: ^4.9.5
       vue3-highlightjs: ^1.0.5
     dependencies:
       '@stacksjs/desktop': link:../desktop
@@ -1344,9 +1357,9 @@ packages:
       '@aws-crypto/sha256-js': 2.0.0
       '@aws-crypto/supports-web-crypto': 2.0.2
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.257.0
       '@aws-sdk/util-locate-window': 3.208.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
     dev: false
 
@@ -1367,7 +1380,7 @@ packages:
     resolution: {integrity: sha512-VZY+mCY4Nmrs5WGfitmNqXzaE873fcIZDu54cbaDaaamsaTOP1DBImV9F4pICc3EHjQXujyE8jig+PFCaew9ig==}
     dependencies:
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.257.0
       tslib: 1.14.1
     dev: false
 
@@ -1395,7 +1408,7 @@ packages:
     resolution: {integrity: sha512-Lgu5v/0e/BcrZ5m/IWqzPUf3UYFTy/PpeED+uc9SWUR1iZQL8XXbGQg10UfllwwBryO3hFF5dizK+78aoXC1eA==}
     dependencies:
       '@aws-sdk/types': 3.257.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
     dev: false
 
