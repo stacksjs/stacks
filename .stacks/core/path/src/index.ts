@@ -202,6 +202,10 @@ export function objectsPath(path?: string) {
   return corePath(`objects/${path || ''}`)
 }
 
+export function onboardingPath(path?: string) {
+  return projectPath('pages/dashboard/onboarding')
+}
+
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
   if (type === 'vue-components')
     return frameworkPath('components/vue/package.json')
@@ -264,6 +268,10 @@ export function routerPath(path?: string) {
 
 export function searchEnginePath(path?: string) {
   return corePath(`search-engine/${path || ''}`)
+}
+
+export function settingsPath(path?: string) {
+  return projectPath('pages/dashboard/settings')
 }
 
 export function smsPath(path?: string) {
@@ -365,6 +373,7 @@ export const path = {
   xRayPath,
   modulesPath,
   objectsPath,
+  onboardingPath,
   notificationsPath,
   packageJsonPath,
   pagesPath,
@@ -377,6 +386,7 @@ export const path = {
   routerPath,
   routesPath,
   searchEnginePath,
+  settingsPath,
   smsPath,
   scriptsPath,
   securityPath,

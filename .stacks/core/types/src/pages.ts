@@ -1,8 +1,10 @@
-import type { UserOptions } from 'vite-plugin-pages'
-
-/**
- * **Pages Options**
- *
- * The pages options.
- */
-export type PagesOptions = UserOptions
+export interface PagesOption {
+  onboarding: {
+    path: string;
+    pages: string[];
+  },
+  settings: {
+    path: string;
+    pages: string[];
+  },
+}
