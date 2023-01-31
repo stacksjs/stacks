@@ -8,7 +8,7 @@ import { env } from '@stacksjs/utils'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export const app: Options = {
+export const config: Options = {
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),

@@ -7,7 +7,7 @@ import { env } from '@stacksjs/utils'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export const cache = {
+export const config = {
   driver: env('CACHE_DRIVER', 'redis'),
 
   redis: {

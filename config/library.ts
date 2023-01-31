@@ -7,7 +7,7 @@ import type { LibraryOptions as Options } from '@stacksjs/types'
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export const library: Options = {
+export const config: Options = {
   name: 'hello-world',
   parentName: '@stacksjs',
   repository: 'stacksjs/stacks',

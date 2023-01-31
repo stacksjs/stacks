@@ -2,7 +2,7 @@ const { readdirSync } = require('fs')
 const { resolve } = require('path')
 const { paramCase } = require('change-case')
 const jiti = require('jiti')(__filename)
-const config = jiti('./config/git.ts')
+const git = jiti('./config/git.ts')
 
 const toDelete = ['readme-md']
 
@@ -14,7 +14,7 @@ const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
   .filter(item => !toDelete.includes(item))
 
-const scopes = [...config.git.scopes, ...components, ...functions]
+const scopes = [...git.config.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
 /** @type {import('cz-git').UserConfig} */
@@ -27,8 +27,8 @@ module.exports = {
     ],
   },
   prompt: {
-    messages: config.git.messages,
-    types: config.git.types,
+    messages: git.config.messages,
+    types: git.config.types,
     useEmoji: false,
     themeColorCode: '',
     scopes: uniqueScopes,

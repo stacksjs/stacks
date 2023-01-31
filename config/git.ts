@@ -7,7 +7,7 @@ import type { GitOptions as Options } from '@stacksjs/types'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export const git: Options = {
+export const config: Options = {
   hooks: {
     'pre-commit': 'lint-staged',
   },
