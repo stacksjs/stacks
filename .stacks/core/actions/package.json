@@ -49,6 +49,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",

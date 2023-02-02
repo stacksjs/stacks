@@ -244,6 +244,8 @@ export const enum Action {
   Changelog = 'changelog', // wip
   Fresh = 'fresh', // ✅
   GeneratePackageJsons = 'generate-package-jsons', // ✅
+  GenerateSettings = 'generate-settings',
+  GenerateOnboarding = 'generate-onboarding',
   Lint = 'lint', // ✅
   LintFix = 'lint-fix', // ✅
   Test = 'test', // ✅
