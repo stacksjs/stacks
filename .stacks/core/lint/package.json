@@ -2,7 +2,7 @@
   "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.26.2",
+  "packageManager": "pnpm@7.26.3",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,8 +35,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.13.0",
-    "pnpm": ">=7.26.2"
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.26.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.35.2",
-    "@types/eslint": "^8.4.10",
+    "@types/eslint": "^8.21.0",
     "eslint": "^8.33.0",
     "lint-staged": "^13.1.0"
   },

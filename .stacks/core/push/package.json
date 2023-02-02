@@ -2,7 +2,7 @@
   "name": "@stacksjs/push",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.26.2",
+  "packageManager": "pnpm@7.26.3",
   "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,8 +34,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.13.0",
-    "pnpm": ">=7.26.2"
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.26.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -44,8 +44,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@novu/node": "^0.10.2",
-    "@novu/stateless": "^0.10.2",
+    "@novu/node": "^0.11.0",
+    "@novu/stateless": "^0.11.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

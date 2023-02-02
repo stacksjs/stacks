@@ -27,8 +27,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v18.13.0",
-    "pnpm": ">=7.26.2"
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.26.3"
   },
   "scripts": {
     "dev": "vite",
@@ -45,7 +45,7 @@
     "meilisearch": "^0.30.0"
   },
   "dependencies": {
-    "vite": "^4.0.4"
+    "vite": "^4.1.1"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
