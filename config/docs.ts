@@ -1,6 +1,6 @@
 import { type DocsConfig } from '@stacksjs/types'
 import { frameworkPath } from '@stacksjs/path'
-import * as services from './services'
+import services from './services'
 
 /**
  * **Documentation Options**
