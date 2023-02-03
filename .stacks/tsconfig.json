@@ -72,6 +72,8 @@
       "@stacksjs/notifications/*": ["./core/notifications/src/*"],
       "@stacksjs/objects": ["./core/objects/src/index.ts"],
       "@stacksjs/objects/*": ["./core/objects/src/*"],
+      "@stacksjs/pages": ["./core/pages/src/index.ts"],
+      "@stacksjs/pages/*": ["./core/pages/src/*"],
       "@stacksjs/path": ["./core/path/src/index.ts"],
       "@stacksjs/path/*": ["./core/path/src/*"],
       "@stacksjs/push": ["./core/push/src/index.ts"],
