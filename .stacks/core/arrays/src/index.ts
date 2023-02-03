@@ -21,6 +21,10 @@ export function containsOnly(needles: string[], haystack: string[]) {
   return containsAll(haystack, needles)
 }
 
+export function doesNotContain(needle: string, haystack: string[]) {
+  return !contains(needle, haystack)
+}
+
 /**
  * Convert `Arrayable<T>` to `Array<T>`
  *
