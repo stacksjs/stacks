@@ -2,7 +2,7 @@
   "name": "@stacksjs/email",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.26.2",
+  "packageManager": "pnpm@7.26.3",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -42,8 +42,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.13.0",
-    "pnpm": ">=7.26.2"
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.26.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -53,17 +53,17 @@
   },
   "peerDependencies": {
     "@maizzle/framework": "^4.3.1",
-    "@novu/emailjs": "^0.10.2",
-    "@novu/mailgun": "^0.10.2",
-    "@novu/mailjet": "^0.10.2",
-    "@novu/mandrill": "^0.10.2",
-    "@novu/netcore": "^0.10.2",
-    "@novu/node": "^0.10.2",
-    "@novu/nodemailer": "^0.10.2",
-    "@novu/postmark": "^0.10.2",
-    "@novu/sendgrid": "^0.10.2",
-    "@novu/ses": "^0.10.2",
-    "@novu/stateless": "^0.10.2",
+    "@novu/emailjs": "^0.11.0",
+    "@novu/mailgun": "^0.11.0",
+    "@novu/mailjet": "^0.11.0",
+    "@novu/mandrill": "^0.11.0",
+    "@novu/netcore": "^0.11.0",
+    "@novu/node": "^0.11.0",
+    "@novu/nodemailer": "^0.11.0",
+    "@novu/postmark": "^0.11.0",
+    "@novu/sendgrid": "^0.11.0",
+    "@novu/ses": "^0.11.0",
+    "@novu/stateless": "^0.11.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

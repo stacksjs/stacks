@@ -2,7 +2,7 @@
   "name": "@stacksjs/x-ray",
   "type": "module",
   "version": "0.50.0",
-  "packageManager": "pnpm@7.26.2",
+  "packageManager": "pnpm@7.26.3",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -38,8 +38,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.13.0",
-    "pnpm": ">=7.26.2"
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.26.3"
   },
   "scripts": {
     "build": "echo 'wip'",
