@@ -15,5 +15,5 @@ function generateOnboarding() {
 
 export {
   generateSettings,
-  generateOnboarding
+  generateOnboarding,
 }

@@ -46,9 +46,9 @@
     "@stacksjs/collections": "workspace:*"
   },
   "devDependencies": {
-    "fs-extra": "^11.1.0",
-    "@stacksjs/utils": "workspace:*",
     "@stacksjs/testing": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "fs-extra": "^11.1.0",
     "mkdist": "^1.1.0",
     "typescript": "^4.9.5"
   }

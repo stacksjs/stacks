@@ -54,7 +54,8 @@
     "prisma.prisma",
     "mattpocock.ts-error-translator",
     "amazonwebservices.aws-toolkit-vscode",
-    "rangav.vscode-thunder-client"
+    "rangav.vscode-thunder-client",
+    "antfu.goto-alias"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.17.0"
