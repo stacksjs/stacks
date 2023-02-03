@@ -33,7 +33,6 @@
     "javascript",
     "starter kit"
   ],
-  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -71,7 +70,7 @@
     "dev:components": "npx vite serve ./components/vue -c ./core/build/src/vue-components.ts",
     "dev:core": "pnpm --filter '../core/**' --filter '!../buddy/' dev",
     "dev:desktop": "wip",
-    "dev:docs": "vitepress dev ../apps/docs",
+    "dev:docs": "buddy dev:docs",
     "dev:pages": "nitro dev",
     "dev:functions": "pnpm buddy dev:functions",
     "development": "pnpm run dev",
@@ -154,6 +153,7 @@
     "@stacksjs/cloud": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/domains": "workspace:*",
     "@stacksjs/email": "workspace:*",
@@ -166,6 +166,7 @@
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/notifications": "workspace:*",
     "@stacksjs/objects": "workspace:*",
+    "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
