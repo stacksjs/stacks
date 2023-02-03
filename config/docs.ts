@@ -24,14 +24,14 @@ export default <DocsConfig> {
     },
 
     editLink: {
-      pattern: 'https://github.com/stacksjs/stacks/edit/main/apps/docs/docs/:path',
+      pattern: 'https://github.com/stacksjs/stacks/edit/main/docs/docs/:path',
       text: 'Edit this page on GitHub',
     },
 
     socialLinks: [
       { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
       { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      { icon: 'discord', link: 'https://twitter.com/stacksjs' },
+      { icon: 'discord', link: 'https://discord.com/' },
     ],
 
     footer: {
