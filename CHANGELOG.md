@@ -1,5 +1,48 @@
 # Stacks Changelog
 
+## v0.50.0...v0.50.0-44-g54afb753
+
+
+### 🏡 Chore
+
+  - Wip (6da6601b)
+  - Wip (c5bf976c)
+  - Wip (9b172293)
+  - Wip (393e4dc4)
+  - Wip (c6ba9a8d)
+  - Wip (7098a0ac)
+  - Wip (488e1554)
+  - Wip (0c5b9f42)
+  - Wip (d0ed55fc)
+  - Wip (1ff1920b)
+  - Wip (7e9f3409)
+  - Wip (25678a1a)
+  - Wip (c657751e)
+  - Wip (fcfaea66)
+  - Wip (820430f6)
+  - Wip (27923094)
+  - Wip (da47da21)
+  - Wip (9d679477)
+  - Wip (410a42b6)
+  - Wip (e6427245)
+  - Wip (b1cfd5a0)
+  - Wip (917c799d)
+  - Wip (7c476f51)
+  - Wip (6e36dfc5)
+  - Wip (e2f40549)
+  - Wip (7753f868)
+  - Wip (56dcdeb3)
+  - Wip (8e8ee362)
+  - Wip (35abd817)
+  - Wip (6351e758)
+  - Wip (ea3e59f8)
+  - Wip (54afb753)
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Brianzzzasd <repuestobrian2@gmail.com>
+
 ## v0.49.3...v0.49.3-8-g39181398
 
 
