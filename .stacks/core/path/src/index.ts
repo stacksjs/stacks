@@ -203,7 +203,7 @@ export function objectsPath(path?: string) {
 }
 
 export function onboardingPath(path?: string) {
-  return projectPath('pages/dashboard/onboarding')
+  return projectPath(`${path || 'pages/dashboard/onboarding'}`)
 }
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
@@ -271,7 +271,7 @@ export function searchEnginePath(path?: string) {
 }
 
 export function settingsPath(path?: string) {
-  return projectPath('pages/dashboard/settings')
+  return projectPath(`${path || 'pages/dashboard/settings'}`)
 }
 
 export function smsPath(path?: string) {
