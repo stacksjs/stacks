@@ -7,6 +7,6 @@ import { type Events } from '@stacksjs/types'
  * first, pick an event name and then define it with its return type. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export const config: Events = {
+export default <Events> {
   // 'user:registered': User,
 }

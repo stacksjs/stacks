@@ -14,7 +14,7 @@ const functions = readdirSync(resolve(__dirname, './functions'))
   .map(item => paramCase(item.replace(/.ts/g, '')))
   .filter(item => !toDelete.includes(item))
 
-const scopes = [...git.config.scopes, ...components, ...functions]
+const scopes = [...git.default.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
 /** @type {import('cz-git').UserConfig} */
@@ -27,8 +27,8 @@ module.exports = {
     ],
   },
   prompt: {
-    messages: git.config.messages,
-    types: git.config.types,
+    messages: git.default.messages,
+    types: git.default.types,
     useEmoji: false,
     themeColorCode: '',
     scopes: uniqueScopes,

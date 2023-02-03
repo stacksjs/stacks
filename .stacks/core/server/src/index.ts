@@ -1,4 +1,4 @@
-import { config as server } from './config'
+import * as server from './config'
 
 export { server }
 

@@ -1,11 +1,11 @@
 import { type DocsConfig } from '@stacksjs/types'
 import { frameworkPath } from '@stacksjs/path'
-import { config as services } from './services'
+import * as services from './services'
 
 /**
  * **Documentation Options**
  *
- * This configuration defines all of your documentation options. Because Stacks is full-typed,
+ * This configuration defines all of your documentation options. Because Stacks is fully-typed,
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
