@@ -63,7 +63,7 @@
     "dinero.js": "2.0.0-alpha.13",
     "esno": "^0.16.3",
     "fast-glob": "^3.2.12",
-    "kolorist": "1.6.0",
+    "kolorist": "1.7.0",
     "p-limit": "^4.0.0",
     "rimraf": "^4.1.2",
     "throttle-debounce": "^5.0.0"
