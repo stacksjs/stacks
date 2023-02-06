@@ -128,7 +128,7 @@ importers:
       '@stacksjs/utils': workspace:*
       esno: ^0.16.3
       markdown-it: ^13.0.1
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vue-component-meta: ^1.0.24
     dependencies:
@@ -147,7 +147,7 @@ importers:
       vue-component-meta: 1.0.24_typescript@4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/ai:
@@ -155,50 +155,50 @@ importers:
       '@stacksjs/cli': workspace:*
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/alias:
     specifiers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/path': link:../path
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/arrays:
     specifiers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/auth:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/build:
@@ -213,7 +213,7 @@ importers:
       '@vitejs/plugin-vue': ^4.0.0
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.7.2
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unbuild: ^1.1.1
       unplugin-auto-import: ^0.13.0
@@ -251,7 +251,7 @@ importers:
       vue-docgen-web-types: 0.1.8_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/cache:
@@ -262,7 +262,7 @@ importers:
       '@types/memjs': ^1.3.0
       memcached: ^2.2.2
       memjs: ^1.3.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       redis: ^4.6.4
       typescript: ^4.9.5
     dependencies:
@@ -274,7 +274,7 @@ importers:
       redis: 4.6.4
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/chat:
@@ -288,7 +288,7 @@ importers:
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@novu/discord': 0.11.0
@@ -301,7 +301,7 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/cli:
@@ -317,7 +317,7 @@ importers:
       cac: ^6.7.14
       esno: ^0.16.3
       execa: ^6.1.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       ora: ^6.1.2
       prompts: ^2.4.2
     dependencies:
@@ -335,29 +335,29 @@ importers:
     devDependencies:
       '@stacksjs/testing': link:../testing
       esno: 0.16.3
-      mkdist: 1.1.0
+      mkdist: 1.1.1
 
   .stacks/core/cloud:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/collections:
     specifiers:
       '@stacksjs/testing': workspace:*
       collect.js: ^4.34.3
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       collect.js: 4.34.3
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/config:
@@ -365,7 +365,7 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unbuild: ^1.1.1
     dependencies:
@@ -373,44 +373,44 @@ importers:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
       unbuild: 1.1.1
 
   .stacks/core/dashboard:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0
+      mkdist: 1.1.1
 
   .stacks/core/database:
     specifiers:
       '@prisma/client': ^4.9.0
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@prisma/client': 4.9.0
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/datetime:
     specifiers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/desktop:
@@ -420,10 +420,10 @@ importers:
       '@stacksjs/testing': workspace:*
       '@tauri-apps/api': 1.2.0
       '@tauri-apps/cli': 1.2.3
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unified-network: 0.6.4
-      unstorage: ^1.0.1
+      unstorage: ^1.1.3
       vue: 3.2.47
       vue3-highlightjs: ^1.0.5
     dependencies:
@@ -432,35 +432,35 @@ importers:
       '@tauri-apps/api': 1.2.0
       '@tauri-apps/cli': 1.2.3
       unified-network: 0.6.4
-      unstorage: 1.0.1
+      unstorage: 1.1.3
       vue: 3.2.47
       vue3-highlightjs: 1.0.5_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/docs:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vitepress: 1.0.0-alpha.45
     dependencies:
       vitepress: 1.0.0-alpha.45_2r467mdhb7mblpaox4bg7fatdi
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/domains:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/drivers:
@@ -468,14 +468,14 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/email:
@@ -497,7 +497,7 @@ importers:
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@maizzle/framework': 4.3.1_glob@7.2.3
@@ -518,14 +518,14 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/error-handling:
     specifiers:
       '@ow3/eslint-config': ^0.35.2
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       neverthrow: ^6.0.0
       typescript: ^4.9.5
     dependencies:
@@ -533,7 +533,7 @@ importers:
       neverthrow: 6.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/events:
@@ -541,14 +541,14 @@ importers:
       '@stacksjs/alias': workspace:*
       '@stacksjs/testing': workspace:*
       mitt: ^3.0.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/alias': link:../alias
       mitt: 3.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/git:
@@ -559,7 +559,7 @@ importers:
       commitizen: ^4.3.0
       cz-git: ^1.4.1
       giget: ^1.0.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       simple-git-hooks: ^2.8.1
       typescript: ^4.9.5
     dependencies:
@@ -571,20 +571,20 @@ importers:
       simple-git-hooks: 2.8.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/health:
     specifiers:
       '@stacksjs/notifications': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/notifications': link:../notifications
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/lint:
@@ -594,7 +594,7 @@ importers:
       '@types/eslint': ^8.21.0
       eslint: ^8.33.0
       lint-staged: ^13.1.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       publint: ^0.1.9
       typescript: ^4.9.5
     dependencies:
@@ -605,14 +605,14 @@ importers:
       publint: 0.1.9
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/logging:
     specifiers:
       '@stacksjs/testing': workspace:*
       consola: ^2.15.3
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vue-ray: ^1.17.3
     dependencies:
@@ -620,7 +620,7 @@ importers:
       vue-ray: 1.17.3
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/modules:
@@ -628,7 +628,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       '@types/nprogress': ^0.2.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       nprogress: ^0.2.0
       typescript: ^4.9.5
       vue-i18n: ^9.2.2
@@ -639,7 +639,7 @@ importers:
       vue-i18n: 9.2.2_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/notifications:
@@ -675,7 +675,7 @@ importers:
       '@stacksjs/sms': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unbuild: ^1.1.1
     dependencies:
@@ -711,7 +711,7 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
       unbuild: 1.1.1
 
@@ -719,13 +719,13 @@ importers:
     specifiers:
       '@stacksjs/collections': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/pages:
@@ -734,7 +734,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/collections': link:../collections
@@ -742,30 +742,30 @@ importers:
       '@stacksjs/testing': link:../testing
       '@stacksjs/utils': link:../utils
       fs-extra: 11.1.0
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/path:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       pathe: ^1.1.0
       typescript: ^4.9.5
     dependencies:
       pathe: 1.1.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/payments:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/push:
@@ -777,7 +777,7 @@ importers:
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@novu/node': 0.11.0
@@ -788,40 +788,40 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/queue:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/realtime:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/router:
     specifiers:
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/search-engine:
@@ -831,7 +831,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@vueuse/core': ^9.12.0
       meilisearch: ^0.31.1
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vue: ^3.2.47
     dependencies:
@@ -842,7 +842,7 @@ importers:
       vue: 3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/security:
@@ -853,7 +853,7 @@ importers:
       bcryptjs: ^2.4.3
       crypto-js: ^4.1.1
       js-base64: ^3.7.4
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@stacksjs/config': link:../config
@@ -863,7 +863,7 @@ importers:
       js-base64: 3.7.4
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/server:
@@ -871,7 +871,7 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       nitropack: ^2.1.1
       typescript: ^4.9.5
       vite: ^4.1.1
@@ -882,7 +882,7 @@ importers:
       vite: 4.1.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/sms:
@@ -902,7 +902,7 @@ importers:
       '@stacksjs/error-handling': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
     dependencies:
       '@novu/gupshup': 0.11.0
@@ -921,7 +921,7 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/storage:
@@ -932,19 +932,19 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
-      unstorage: ^1.0.1
+      unstorage: ^1.1.3
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/types': link:../types
       '@stacksjs/utils': link:../utils
       fs-extra: 11.1.0
-      unstorage: 1.0.1
+      unstorage: 1.1.3
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/strings:
@@ -955,7 +955,7 @@ importers:
       '@types/pluralize': ^0.0.29
       '@types/validator': ^13.7.12
       change-case: ^4.1.2
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       pluralize: ^8.0.0
       typescript: ^4.9.5
       unbuild: ^1.1.1
@@ -970,7 +970,7 @@ importers:
       validator: 13.9.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
       unbuild: 1.1.1
 
@@ -983,7 +983,7 @@ importers:
       '@stacksjs/utils': workspace:*
       '@vueform/multiselect': ^2.5.8
       meilisearch: ^0.31.1
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unbuild: ^1.1.1
       vite: ^4.1.1
@@ -997,7 +997,7 @@ importers:
       vite: 4.1.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
       unbuild: 1.1.1
 
@@ -1006,7 +1006,7 @@ importers:
       '@playwright/test': ^1.30.0
       '@vitest/coverage-istanbul': ^0.28.4
       '@vitest/ui': ^0.28.4
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       vitest: ^0.28.4
     dependencies:
@@ -1015,7 +1015,7 @@ importers:
       '@vitest/ui': 0.28.4
       vitest: 0.28.4_@vitest+ui@0.28.4
     devDependencies:
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/types:
@@ -1037,7 +1037,7 @@ importers:
       '@types/prompts': ^2.4.2
       cac: ^6.7.14
       markdown-it: ^13.0.1
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       unplugin-auto-import: ^0.13.0
       unplugin-vue-components: ^0.23.0
@@ -1063,7 +1063,7 @@ importers:
       '@types/prompts': 2.4.2
       cac: 6.7.14
       markdown-it: 13.0.1
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
       unplugin-auto-import: 0.13.0
       unplugin-vue-components: 0.23.0_vue@3.2.47
@@ -1081,7 +1081,7 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@unocss/transformer-compile-class': ^0.49.4
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       pinia: ^2.0.30
       typescript: ^4.9.5
       unocss: ^0.49.4
@@ -1100,7 +1100,7 @@ importers:
       vue-tsc: 1.0.24_typescript@4.9.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/utils:
@@ -1125,7 +1125,7 @@ importers:
       esno: ^0.16.3
       fast-glob: ^3.2.12
       kolorist: 1.7.0
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       p-limit: ^4.0.0
       rimraf: ^4.1.2
       throttle-debounce: ^5.0.0
@@ -1155,14 +1155,14 @@ importers:
     devDependencies:
       '@stacksjs/testing': link:../testing
       '@types/throttle-debounce': 5.0.0
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/validation:
     specifiers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       typescript: ^4.9.5
       zod: ^3.20.2
     dependencies:
@@ -1170,7 +1170,7 @@ importers:
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/core/x-ray:
@@ -1178,7 +1178,7 @@ importers:
       '@stacksjs/desktop': workspace:*
       '@stacksjs/logging': workspace:*
       '@stacksjs/testing': workspace:*
-      mkdist: ^1.1.0
+      mkdist: ^1.1.1
       node-ray: ^1.19.4
       typescript: ^4.9.5
       vue3-highlightjs: ^1.0.5
@@ -1189,7 +1189,7 @@ importers:
       vue3-highlightjs: 1.0.5_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.0_typescript@4.9.5
+      mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
   .stacks/desktop:
@@ -4035,7 +4035,6 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-arm64/0.16.17:
@@ -4052,7 +4051,6 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-x64/0.16.17:
@@ -4069,7 +4067,6 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-arm64/0.16.17:
@@ -4086,7 +4083,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-x64/0.16.17:
@@ -4103,7 +4099,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-arm64/0.16.17:
@@ -4120,7 +4115,6 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-x64/0.16.17:
@@ -4137,7 +4131,6 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm/0.16.17:
@@ -4154,7 +4147,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm64/0.16.17:
@@ -4171,7 +4163,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ia32/0.16.17:
@@ -4188,7 +4179,6 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-loong64/0.15.18:
@@ -4213,7 +4203,6 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-mips64el/0.16.17:
@@ -4230,7 +4219,6 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ppc64/0.16.17:
@@ -4247,7 +4235,6 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-riscv64/0.16.17:
@@ -4264,7 +4251,6 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-s390x/0.16.17:
@@ -4281,7 +4267,6 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-x64/0.16.17:
@@ -4298,7 +4283,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/netbsd-x64/0.16.17:
@@ -4315,7 +4299,6 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/openbsd-x64/0.16.17:
@@ -4332,7 +4315,6 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/sunos-x64/0.16.17:
@@ -4349,7 +4331,6 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-arm64/0.16.17:
@@ -4366,7 +4347,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-ia32/0.16.17:
@@ -4383,7 +4363,6 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-x64/0.16.17:
@@ -4400,7 +4379,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@eslint-community/eslint-utils/4.1.2_eslint@8.33.0:
@@ -5185,6 +5163,13 @@ packages:
       tiny-glob: 0.2.9
       tslib: 2.5.0
     dev: false
+
+  /@planetscale/database/1.5.0:
+    resolution: {integrity: sha512-Qwh7Or1W5dB5mZ9EQqDkgvkDKhBBmQe58KIVUy0SGocNtr5fP4JAWtvZ6EdLAV6C6hVpzNlCA2xIg9lKTswm1Q==}
+    engines: {node: '>=16'}
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@playwright/test/1.30.0:
     resolution: {integrity: sha512-SVxkQw1xvn/Wk/EvBnqWIq6NLo1AppwbYOjNLmyU0R1RoQ3rLEBtmjTnElcnz8VEtn11fptj1ECxK0tgURhajw==}
@@ -9184,7 +9169,6 @@ packages:
       '@esbuild/win32-arm64': 0.17.5
       '@esbuild/win32-ia32': 0.17.5
       '@esbuild/win32-x64': 0.17.5
-    dev: false
 
   /escalade/3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
@@ -12277,6 +12261,11 @@ packages:
     dependencies:
       yallist: 4.0.0
 
+  /lru-cache/7.14.1:
+    resolution: {integrity: sha512-ysxwsnTKdAx96aTRdhDOCQfDgbHnt8SK0KY8SEjO0wHinhWOFTESbjVCMPbU1uGXg/ch4lifqx0wfjOawU2+WA==}
+    engines: {node: '>=12'}
+    dev: false
+
   /magic-string/0.25.9:
     resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
     dependencies:
@@ -12637,27 +12626,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /mkdist/1.1.0:
-    resolution: {integrity: sha512-eTw467KIfd/ilsY/yS6N/fjCe/glP99bTU+ydVJFRUZYaZ3UnL09Q5SGVhMrHLr4Q5qL1pDVDgitQTmLLpUa2A==}
-    hasBin: true
-    peerDependencies:
-      sass: ^1.57.1
-      typescript: '>=4.9.4'
-    peerDependenciesMeta:
-      sass:
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      defu: 6.1.2
-      esbuild: 0.16.17
-      fs-extra: 11.1.0
-      globby: 13.1.3
-      jiti: 1.16.2
-      mri: 1.2.0
-      pathe: 1.1.0
-    dev: true
-
   /mkdist/1.1.0_typescript@4.9.5:
     resolution: {integrity: sha512-eTw467KIfd/ilsY/yS6N/fjCe/glP99bTU+ydVJFRUZYaZ3UnL09Q5SGVhMrHLr4Q5qL1pDVDgitQTmLLpUa2A==}
     hasBin: true
@@ -12678,6 +12646,49 @@ packages:
       mri: 1.2.0
       pathe: 1.1.0
       typescript: 4.9.5
+
+  /mkdist/1.1.1:
+    resolution: {integrity: sha512-9cEzCsBD0qpybR/lJMB0vRIDZiHP7hJHTN2mQtFU2qt0vr7lFnghxersOJbKLshaDsl4GlnY2OBzmRRUTfuaDg==}
+    hasBin: true
+    peerDependencies:
+      sass: ^1.58.0
+      typescript: '>=4.9.5'
+    peerDependenciesMeta:
+      sass:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      defu: 6.1.2
+      esbuild: 0.17.5
+      fs-extra: 11.1.0
+      globby: 13.1.3
+      jiti: 1.16.2
+      mri: 1.2.0
+      pathe: 1.1.0
+    dev: true
+
+  /mkdist/1.1.1_typescript@4.9.5:
+    resolution: {integrity: sha512-9cEzCsBD0qpybR/lJMB0vRIDZiHP7hJHTN2mQtFU2qt0vr7lFnghxersOJbKLshaDsl4GlnY2OBzmRRUTfuaDg==}
+    hasBin: true
+    peerDependencies:
+      sass: ^1.58.0
+      typescript: '>=4.9.5'
+    peerDependenciesMeta:
+      sass:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      defu: 6.1.2
+      esbuild: 0.17.5
+      fs-extra: 11.1.0
+      globby: 13.1.3
+      jiti: 1.16.2
+      mri: 1.2.0
+      pathe: 1.1.0
+      typescript: 4.9.5
+    dev: true
 
   /mlly/1.1.0:
     resolution: {integrity: sha512-cwzBrBfwGC1gYJyfcy8TcZU1f+dbH/T+TuOhtYP2wLv/Fb51/uV7HJQfBPtEupZ2ORLRU1EKFS/QfS3eo9+kBQ==}
@@ -12832,7 +12843,7 @@ packages:
       ufo: 1.0.1
       unenv: 1.0.3
       unimport: 2.1.0_rollup@3.12.1
-      unstorage: 1.0.1
+      unstorage: 1.1.3
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -16708,8 +16719,8 @@ packages:
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.5.0
 
-  /unstorage/1.0.1:
-    resolution: {integrity: sha512-J1c4b8K2KeihHrQtdgl/ybIapArUbPaPb+TyJy/nGSauDwDYqciZsEKdkee568P3c8SSH4TIgnGRHDWMPGw+Lg==}
+  /unstorage/1.1.3:
+    resolution: {integrity: sha512-39GhA+Q/S53zEEnCdnAP6BpNFX5emGe65cK2LzOl84OVJKjlvtBGCZzRUSYZ1dZj2/01V4PKY5NCjDtZ3CG8dw==}
     dependencies:
       anymatch: 3.1.3
       chokidar: 3.5.3
@@ -16717,11 +16728,15 @@ packages:
       h3: 1.1.0
       ioredis: 5.3.0
       listhen: 1.0.2
+      lru-cache: 7.14.1
       mkdir: 0.0.2
       mri: 1.2.0
+      node-fetch-native: 1.0.1
       ofetch: 1.0.0
       ufo: 1.0.1
       ws: 8.12.0
+    optionalDependencies:
+      '@planetscale/database': 1.5.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
