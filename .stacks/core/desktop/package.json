@@ -56,13 +56,13 @@
     "@tauri-apps/api": "1.2.0",
     "@tauri-apps/cli": "1.2.3",
     "unified-network": "0.6.4",
-    "unstorage": "^1.0.1",
+    "unstorage": "^1.1.3",
     "vue": "3.2.47",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.0",
+    "mkdist": "^1.1.1",
     "typescript": "^4.9.5"
   }
 }
