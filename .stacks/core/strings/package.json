@@ -57,7 +57,7 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/pluralize": "^0.0.29",
-    "@types/validator": "^13.7.11",
+    "@types/validator": "^13.7.12",
     "change-case": "^4.1.2",
     "pluralize": "^8.0.0",
     "validator": "^13.9.0"
