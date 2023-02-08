@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
-import { generateLibEntry } from './helpers/lib-entries'
+import { generateLibEntry } from '../helpers/lib-entries'
 
 if (hasComponents()) {
   await generateLibEntry('vue-components')
