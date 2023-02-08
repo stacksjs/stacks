@@ -8,7 +8,7 @@ import { env } from '@stacksjs/utils'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default <AppOptions> {
+const config = {
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),
@@ -21,4 +21,6 @@ export default <AppOptions> {
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
   editor: 'vscode',
-}
+} satisfies AppOptions
+
+export { config as app }
