@@ -28,7 +28,7 @@
   ],
   "engines": {
     "node": ">=v18.14.0",
-    "pnpm": ">=7.26.3"
+    "pnpm": ">=7.27.0"
   },
   "scripts": {
     "dev": "vite",
