@@ -24,3 +24,5 @@ const config = {
 } satisfies AppOptions
 
 export { config as app }
+
+export default config

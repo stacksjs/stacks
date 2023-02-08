@@ -1,0 +1,47 @@
+{
+  "name": "stacks-docs",
+  "type": "module",
+  "version": "0.51.0",
+  "packageManager": "pnpm@7.27.0",
+  "description": "The Stacks documentation.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/docs"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "documentation",
+    "vite",
+    "composables",
+    "headless",
+    "api",
+    "ssg",
+    "pwa",
+    "modern",
+    "typescript"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "engines": {
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.27.0"
+  },
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "prod": "vitepress build",
+    "deploy": ""
+  },
+  "dependencies": {
+    "vitepress": "^1.0.0-alpha.45",
+    "@stacksjs/path": "workspace:*"
+  }
+}

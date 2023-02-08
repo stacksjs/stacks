@@ -189,7 +189,7 @@ export const enum NpmScript {
   Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules',
   Dev = 'dev',
   DevComponents = 'vite --config ./core/build/src/vue-components.ts',
-  DevDocs = 'dev:docs',
+  DevDocs = 'npx vitepress dev ../docs',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',
   DevFunctions = 'dev:functions',
@@ -257,7 +257,8 @@ export const enum Action {
   Typecheck = 'typecheck', // wip
   KeyGenerate = 'key-generate', // wip
   MakeNotification = 'make-notification', // wip
-  DevComponents = 'dev-components', // wip
+  DevComponents = 'dev/components', // wip
+  DevDocs = 'dev/docs', // wip
 }
 
 export type { CAC as CLI } from 'cac'

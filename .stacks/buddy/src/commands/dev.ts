@@ -2,7 +2,8 @@ import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, prompts } from '@stacksjs/cli'
-import { components, desktop, docs, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
+import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
+// import { components, desktop, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 async function dev(buddy: CLI) {
   const descriptions = {
@@ -46,13 +47,13 @@ async function dev(buddy: CLI) {
           await functions(options)
         else if (answer === 'pages')
           await pages(options)
-        else if (answer === 'docs')
-          await docs(options)
+        // else if (answer === 'docs')
+          // await docs(options)
 
         else process.exit(ExitCode.InvalidArgument)
       }
 
-      await startDevelopmentServer(options)
+      // await startDevelopmentServer(options)
       process.exit(ExitCode.Success)
     })
 
@@ -69,7 +70,7 @@ async function dev(buddy: CLI) {
       if (Array.isArray(result)) {
         // check if any of the items in the array is an error
         if (result.some(item => item.isErr())) {
-          outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+          outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
           process.exit()
         }
       }
@@ -89,7 +90,26 @@ async function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
-      await docs(options)
+      const perf = await intro('buddy dev:docs')
+      const result = await runAction(Action.DevDocs, { ...options, verbose: true })
+
+      // check if result is an array
+      if (Array.isArray(result)) {
+        // check if any of the items in the array is an error
+        if (result.some(item => item.isErr())) {
+          outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+          process.exit()
+        }
+      }
+
+      // check if result is an error
+      else if (result.isErr()) {
+        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        process.exit()
+      }
+
+      outro('Finished running dev:docs.', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 
   buddy

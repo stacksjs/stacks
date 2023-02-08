@@ -2,6 +2,7 @@ packages:
   - ./.stacks/buddy
   - ./.stacks/core/*
   - ./.stacks/components/*
+  - ./.stacks/docs
   - ./.stacks/fonts/*
   - ./.stacks/functions
   - ./.stacks/desktop

@@ -10,6 +10,9 @@ import services from './services'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default <DocsConfig> {
+  vite: {
+    root: frameworkPath('docs'),
+  },
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',
   title: 'Stacks',
