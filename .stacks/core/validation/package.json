@@ -2,7 +2,7 @@
   "name": "@stacksjs/validation",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.26.3",
+  "packageManager": "pnpm@7.27.0",
   "description": "The Stacks Validation methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "engines": {
     "node": ">=v18.14.0",
-    "pnpm": ">=7.26.3"
+    "pnpm": ">=7.27.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "zod": "^3.20.2"
+    "zod": "^3.20.3"
   },
   "devDependencies": {
     "@stacksjs/path": "workspace:*",

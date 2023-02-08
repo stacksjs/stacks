@@ -2,7 +2,7 @@
   "name": "@stacksjs/security",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.26.3",
+  "packageManager": "pnpm@7.27.0",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v18.14.0",
-    "pnpm": ">=7.26.3"
+    "pnpm": ">=7.27.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -46,7 +46,7 @@
     "@stacksjs/types": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
-    "js-base64": "^3.7.4"
+    "js-base64": "^3.7.5"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
