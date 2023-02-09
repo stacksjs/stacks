@@ -216,12 +216,12 @@ importers:
       mkdist: ^1.1.1
       typescript: ^4.9.5
       unbuild: ^1.1.1
-      unplugin-auto-import: ^0.13.0
+      unplugin-auto-import: ^0.14.2
       unplugin-vue-components: ^0.23.0
       vite: ^4.1.1
       vite-plugin-inspect: ^0.7.15
       vite-plugin-pages: ^0.28.0
-      vite-plugin-pwa: ^0.14.2
+      vite-plugin-pwa: ^0.14.3
       vite-plugin-vue-layouts: ^0.7.0
       vite-plugin-vue-markdown: ^0.22.4
       vite-ssg: ^0.22.1
@@ -238,7 +238,7 @@ importers:
       markdown-it-link-attributes: 4.0.1
       markdown-it-shiki: 0.7.2
       unbuild: 1.1.1
-      unplugin-auto-import: 0.13.0_rollup@2.79.1
+      unplugin-auto-import: 0.14.2_rollup@2.79.1
       unplugin-vue-components: 0.23.0_rollup@2.79.1+vue@3.2.47
       vite: 4.1.1
       vite-plugin-inspect: 0.7.15_rollup@2.79.1+vite@4.1.1
@@ -256,7 +256,7 @@ importers:
 
   .stacks/core/cache:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.266.1
+      '@aws-sdk/client-dynamodb': ^3.267.0
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       '@types/memjs': ^1.3.0
@@ -872,13 +872,13 @@ importers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.1
-      nitropack: ^2.1.2
+      nitropack: ^2.2.1
       typescript: ^4.9.5
       vite: ^4.1.1
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/path': link:../path
-      nitropack: 2.2.0
+      nitropack: 2.2.1
       vite: 4.1.1
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -1039,7 +1039,7 @@ importers:
       markdown-it: ^13.0.1
       mkdist: ^1.1.1
       typescript: ^4.9.5
-      unplugin-auto-import: ^0.13.0
+      unplugin-auto-import: ^0.14.2
       unplugin-vue-components: ^0.23.0
       vite-plugin-inspect: ^0.7.15
       vite-plugin-vue-layouts: ^0.7.0
@@ -1065,7 +1065,7 @@ importers:
       markdown-it: 13.0.1
       mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
-      unplugin-auto-import: 0.13.0
+      unplugin-auto-import: 0.14.2
       unplugin-vue-components: 0.23.0_vue@3.2.47
       vite-plugin-inspect: 0.7.15_vite@3.2.5
       vite-plugin-vue-layouts: 0.7.0_rip2p6kwwd7m5kuchehllw2hzm
@@ -1164,9 +1164,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.1
       typescript: ^4.9.5
-      zod: ^3.20.3
+      zod: ^3.20.6
     dependencies:
-      zod: 3.20.5
+      zod: 3.20.6
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
@@ -1377,9 +1377,9 @@ packages:
       '@aws-crypto/sha256-js': 2.0.0
       '@aws-crypto/supports-web-crypto': 2.0.2
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.267.0
       '@aws-sdk/util-locate-window': 3.208.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
     dev: false
 
@@ -1400,7 +1400,7 @@ packages:
     resolution: {integrity: sha512-VZY+mCY4Nmrs5WGfitmNqXzaE873fcIZDu54cbaDaaamsaTOP1DBImV9F4pICc3EHjQXujyE8jig+PFCaew9ig==}
     dependencies:
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.47.1
+      '@aws-sdk/types': 3.267.0
       tslib: 1.14.1
     dev: false
 
@@ -1428,7 +1428,7 @@ packages:
     resolution: {integrity: sha512-Lgu5v/0e/BcrZ5m/IWqzPUf3UYFTy/PpeED+uc9SWUR1iZQL8XXbGQg10UfllwwBryO3hFF5dizK+78aoXC1eA==}
     dependencies:
       '@aws-sdk/types': 3.267.0
-      '@aws-sdk/util-utf8-browser': 3.47.1
+      '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
     dev: false
 
@@ -12769,8 +12769,8 @@ packages:
       type-fest: 0.4.1
     dev: false
 
-  /nitropack/2.2.0:
-    resolution: {integrity: sha512-aNJdupXKA3OiYHDvlCnrcJMKrVGoW7RGnRjm8sCUrgICRC9bbVdsZU/EQh3pLIc7DQW/rej3eRxceqfnlKsOkg==}
+  /nitropack/2.2.1:
+    resolution: {integrity: sha512-V7sYOqyNZFQ+Yp3S2Ks9VUiLDp7Fz3vdc4ULTAK+E0R5nMSq5MuoQZqH4BT0x8UHC30lo+fd3gXk2fCYzUft1g==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
@@ -16612,8 +16612,8 @@ packages:
     engines: {node: '>= 0.8'}
     dev: false
 
-  /unplugin-auto-import/0.13.0:
-    resolution: {integrity: sha512-nKMxDbkjM4FRPInFfm7sWrJOKgxfKKwb5yLPP+DEGl/SG0/FtBoW1LnZL4PQfx0FXjertoHO1P/5nDf+RSip2Q==}
+  /unplugin-auto-import/0.14.2:
+    resolution: {integrity: sha512-6DptcCD+bKlxwK0yS4ehleZTvtG4Xl9k/XxhKWxc9ii2uE28HvcA3KbYpoHAzTlHDXRBrtcCAohR8vtIRB5bfg==}
     engines: {node: '>=14'}
     peerDependencies:
       '@vueuse/core': '*'
@@ -16622,6 +16622,7 @@ packages:
         optional: true
     dependencies:
       '@antfu/utils': 0.7.2
+      '@nuxt/kit': 3.1.2
       '@rollup/pluginutils': 5.0.2
       local-pkg: 0.4.3
       magic-string: 0.27.0
@@ -16629,10 +16630,11 @@ packages:
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
+      - supports-color
     dev: true
 
-  /unplugin-auto-import/0.13.0_rollup@2.79.1:
-    resolution: {integrity: sha512-nKMxDbkjM4FRPInFfm7sWrJOKgxfKKwb5yLPP+DEGl/SG0/FtBoW1LnZL4PQfx0FXjertoHO1P/5nDf+RSip2Q==}
+  /unplugin-auto-import/0.14.2_rollup@2.79.1:
+    resolution: {integrity: sha512-6DptcCD+bKlxwK0yS4ehleZTvtG4Xl9k/XxhKWxc9ii2uE28HvcA3KbYpoHAzTlHDXRBrtcCAohR8vtIRB5bfg==}
     engines: {node: '>=14'}
     peerDependencies:
       '@vueuse/core': '*'
@@ -16641,6 +16643,7 @@ packages:
         optional: true
     dependencies:
       '@antfu/utils': 0.7.2
+      '@nuxt/kit': 3.1.2_rollup@2.79.1
       '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       local-pkg: 0.4.3
       magic-string: 0.27.0
@@ -16648,6 +16651,7 @@ packages:
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
+      - supports-color
     dev: false
 
   /unplugin-vue-components/0.23.0_rollup@2.79.1+vue@3.2.47:
@@ -18068,6 +18072,6 @@ packages:
       readable-stream: 3.6.0
     dev: false
 
-  /zod/3.20.5:
-    resolution: {integrity: sha512-BTAAliwfoB9dWf2hC+TXlyWKk/YTqRGZjHQR0WLC2A2pzierWo7KuQ1ebjS4SNaFaxg/lDItzl9/QTgLjcHbgw==}
+  /zod/3.20.6:
+    resolution: {integrity: sha512-oyu0m54SGCtzh6EClBVqDDlAYRz4jrVtKwQ7ZnsEmMI9HnzuZFj8QFwAY1M5uniIYACdGvv0PBWPF2kO0aNofA==}
     dev: false
