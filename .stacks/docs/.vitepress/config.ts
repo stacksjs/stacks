@@ -4,6 +4,6 @@
  * path for the VitePress config.
  */
 
-import docs from '../../../../config/docs'
+import docs from '../../../config/docs'
 
 export default docs
