@@ -1,5 +1,6 @@
 import { type DocsConfig } from '@stacksjs/types'
 import { frameworkPath } from '@stacksjs/path'
+import { alias } from '@stacksjs/alias'
 import services from './services'
 
 /**
@@ -12,6 +13,10 @@ import services from './services'
 export default <DocsConfig> {
   vite: {
     root: frameworkPath('docs'),
+    resolve: {
+      alias,
+    },
+
   },
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',

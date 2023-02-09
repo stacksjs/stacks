@@ -10,3 +10,4 @@ node_modules
 updates
 tests/unit/coverage
 dist*
+.stacks/docs/src
