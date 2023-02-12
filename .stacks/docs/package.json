@@ -35,9 +35,11 @@
     "pnpm": ">=7.27.0"
   },
   "scripts": {
-    "dev": "rimraf ./src/* && cp -R ../../docs/* ./src && vitepress dev src",
-    "build": "vitepress build",
-    "deploy": ""
+    "dev": "pnpm run copy-src && vitepress dev src",
+    "build": "pnpm run copy-src && vitepress build",
+    "preview": "pnpm run copy-src && vitepress preview",
+    "deploy": "pnpm run copy-src && wip",
+    "copy-src": "rimraf ./src/* && cp -R ../../docs/* ./src"
   },
   "dependencies": {
     "@stacksjs/docs": "workspace:*",

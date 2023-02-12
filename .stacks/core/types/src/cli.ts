@@ -189,7 +189,7 @@ export const enum NpmScript {
   Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules',
   Dev = 'dev',
   DevComponents = 'vite --config ./core/build/src/vue-components.ts',
-  DevDocs = 'npx vitepress dev ../docs',
+  DevDocs = 'npx vitepress dev ./docs/src',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',
   DevFunctions = 'dev:functions',

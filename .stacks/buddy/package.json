@@ -80,7 +80,7 @@
     "build:vue-components": "npx vite build -c ./core/build/src/vue-components.ts",
     "build:web-components": "npx vite build -c ./core/build/src/web-components.ts",
     "build:functions": "npx vite build -c ./core/build/src/functions.ts",
-    "build:docs": "npx vitepress build ../apps/docs",
+    "build:docs": "pnpm buddy build:docs",
     "build:pages": "npx vite-ssg build ./pages -c ./core/build/src/pages.ts",
     "build:core": "pnpm buddy build:core",
     "build:buddy": "npx unbuild",
