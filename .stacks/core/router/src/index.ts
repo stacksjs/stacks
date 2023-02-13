@@ -4,11 +4,12 @@
 // -> to generate our Laravel source into their API
 // -> todo: alias `useHead` to `metaTags` or something more readable
 
-export function router() {
-  return ''
+import type { NitroEventHandler } from '@stacksjs/types'
+
+export function router(options: NitroEventHandler) {
+
 }
 
 // those would be the serve commands because
 // "you serve functions (apis), you develop components (and pages), you build libraries and/or apps & apis
 
-export {}
