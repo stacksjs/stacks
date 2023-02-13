@@ -46,9 +46,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@iconify-json/heroicons-outline": "^1.1.5",
-    "@iconify-json/heroicons-solid": "^1.1.6",
-    "@julr/unocss-preset-forms": "^0.0.2",
+    "@iconify-json/heroicons-outline": "^1.1.6",
+    "@iconify-json/heroicons-solid": "^1.1.7",
+    "@julr/unocss-preset-forms": "^0.0.3",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.49.4",
