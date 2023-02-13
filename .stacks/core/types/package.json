@@ -42,10 +42,10 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@mdit-vue/plugin-component": "^0.11.2",
-    "@mdit-vue/plugin-frontmatter": "^0.11.1",
-    "@mdit-vue/types": "^0.11.0",
-    "@prisma/client": "^4.10.0",
+    "@mdit-vue/plugin-component": "^0.12.0",
+    "@mdit-vue/plugin-frontmatter": "^0.12.0",
+    "@mdit-vue/types": "^0.12.0",
+    "@prisma/client": "^4.10.1",
     "@rollup/pluginutils": "^5.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
@@ -66,6 +66,6 @@
     "vite-plugin-inspect": "^0.7.15",
     "vite-plugin-vue-layouts": "^0.7.0",
     "vite-ssg": "^0.22.1",
-    "vitepress": "1.0.0-alpha.45"
+    "vitepress": "1.0.0-alpha.46"
   }
 }
