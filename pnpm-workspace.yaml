@@ -1,4 +1,5 @@
 packages:
+  - ./.stacks/api
   - ./.stacks/buddy
   - ./.stacks/core/*
   - ./.stacks/components/*

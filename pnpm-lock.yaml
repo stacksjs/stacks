@@ -14,6 +14,18 @@ importers:
     dependencies:
       '@stacksjs/buddy': link:buddy
 
+  .stacks/api:
+    specifiers:
+      '@stacksjs/alias': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/path': workspace:*
+      '@stacksjs/server': workspace:*
+    dependencies:
+      '@stacksjs/alias': link:../core/alias
+      '@stacksjs/config': link:../core/config
+      '@stacksjs/path': link:../core/path
+      '@stacksjs/server': link:../core/server
+
   .stacks/buddy:
     specifiers:
       '@stacksjs/actions': workspace:*

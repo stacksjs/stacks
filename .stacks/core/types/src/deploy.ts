@@ -4,8 +4,8 @@ export interface DeployOptions {
    *
    * The host to deploy to.
    *
-   * @default string 'netlify'
+   * @default string 'aws'
    * @see https://stacksjs.dev/docs/components
    */
-  driver: 'netlify' | 'vercel'
+  driver: 'netlify' | 'vercel' | 'aws' | 'cloudflare' | 'azure' | 'digital-ocean'
 }

@@ -3,4 +3,4 @@ import { defineEventHandler } from 'h3'
 
 // console.log('HelloWorld', HelloWorld)
 
-export default defineEventHandler(() => '<h1>stacks loves nitro!</h1>')
+export default defineEventHandler(() => '<h1>I love Stacks!</h1>')

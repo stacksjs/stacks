@@ -1,6 +1,28 @@
 import { type DocsConfig } from '@stacksjs/types'
 import { frameworkPath } from '@stacksjs/path'
+import type { PluginOption } from 'vite'
 import services from './services'
+
+function CustomHmr(): PluginOption {
+  return {
+    name: 'custom-hmr',
+    enforce: 'post',
+    // HMR
+    handleHotUpdate({ file, server }) {
+      // eslint-disable-next-line no-console
+      console.log('file', file)
+      // eslint-disable-next-line no-console
+      console.log('server', server)
+
+      // console.log('reloading json file...')
+
+      server.ws.send({
+        type: 'full-reload',
+        path: '*',
+      })
+    },
+  }
+}
 
 /**
  * **Documentation Options**
@@ -11,7 +33,13 @@ import services from './services'
  */
 export default <DocsConfig> {
   vite: {
+    server: {
+      port: 3335,
+    },
     root: frameworkPath('docs'),
+    plugins: [
+      CustomHmr(),
+    ],
   },
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',

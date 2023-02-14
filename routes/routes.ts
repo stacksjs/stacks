@@ -1,5 +1,5 @@
-route.view('hello-world')
+// route.view('hello-world')
 
-route.get('users', () => {
-  return view('users')
-})
+// route.get('users', () => {
+//   return view('users')
+// })
