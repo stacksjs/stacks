@@ -603,7 +603,7 @@ importers:
     specifiers:
       '@ow3/eslint-config': ^0.35.2
       '@stacksjs/testing': workspace:*
-      '@types/eslint': ^8.21.0
+      '@types/eslint': ^8.21.1
       eslint: ^8.34.0
       lint-staged: ^13.1.2
       mkdist: ^1.1.1
@@ -611,7 +611,7 @@ importers:
       typescript: ^4.9.5
     dependencies:
       '@ow3/eslint-config': 0.35.2_7kw3g6rralp5ps6mg3uyzz6azm
-      '@types/eslint': 8.21.0
+      '@types/eslint': 8.21.1
       eslint: 8.34.0
       lint-staged: 13.1.2
       publint: 0.1.9
@@ -1039,7 +1039,7 @@ importers:
       '@rollup/pluginutils': ^5.0.2
       '@types/bcryptjs': ^2.4.2
       '@types/crypto-js': ^4.1.1
-      '@types/eslint': ^8.21.0
+      '@types/eslint': ^8.21.1
       '@types/fs-extra': ^11.0.1
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
@@ -1065,7 +1065,7 @@ importers:
       '@rollup/pluginutils': 5.0.2
       '@types/bcryptjs': 2.4.2
       '@types/crypto-js': 4.1.1
-      '@types/eslint': 8.21.0
+      '@types/eslint': 8.21.1
       '@types/fs-extra': 11.0.1
       '@types/markdown-it-link-attributes': 3.0.1
       '@types/minimatch': 5.1.2
@@ -5781,12 +5781,12 @@ packages:
   /@types/eslint-utils/3.0.2:
     resolution: {integrity: sha512-NgxYBOYjO5+s+vAKTWgWyBMITF3sxNOmfbRtr3yXA4CZpmfwnOBbqxYO4TGITdhOOf4fSEETEmGpqcoGxdZzjg==}
     dependencies:
-      '@types/eslint': 8.21.0
+      '@types/eslint': 8.21.1
       '@types/estree': 1.0.0
     dev: false
 
-  /@types/eslint/8.21.0:
-    resolution: {integrity: sha512-35EhHNOXgxnUgh4XCJsGhE7zdlDhYDN/aMG6UbkByCFFNgQ7b3U+uVoqBpicFydR8JEfgdjCF7SJ7MiJfzuiTA==}
+  /@types/eslint/8.21.1:
+    resolution: {integrity: sha512-rc9K8ZpVjNcLs8Fp0dkozd5Pt2Apk1glO4Vgz8ix1u6yFByxfqo5Yavpy65o+93TAe24jr7v+eSBtFLvOQtCRQ==}
     dependencies:
       '@types/estree': 1.0.0
       '@types/json-schema': 7.0.11
