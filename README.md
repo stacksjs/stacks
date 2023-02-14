@@ -67,8 +67,8 @@ _Create your personal or professional Vercel-like cloud._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks_
-- 🤌🏼 **Brotli & gzip** _optimized request compressions to speed up page load times_
+- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
+- 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS)_
 - 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
@@ -115,7 +115,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.26 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 7 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
