@@ -43,12 +43,12 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@stripe/stripe-js": "^1.46.0"
+  },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.1.1",
     "typescript": "^4.9.5"
-  },
-  "dependencies": {
-    "@stripe/stripe-js": "^1.46.0"
   }
 }

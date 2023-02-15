@@ -12,4 +12,3 @@ export function router(options: NitroEventHandler) {
 
 // those would be the serve commands because
 // "you serve functions (apis), you develop components (and pages), you build libraries and/or apps & apis
-
