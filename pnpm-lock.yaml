@@ -773,8 +773,11 @@ importers:
   .stacks/core/payments:
     specifiers:
       '@stacksjs/testing': workspace:*
+      '@stripe/stripe-js': ^1.46.0
       mkdist: ^1.1.1
       typescript: ^4.9.5
+    dependencies:
+      '@stripe/stripe-js': 1.46.0
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
@@ -5579,6 +5582,10 @@ packages:
 
   /@socket.io/component-emitter/3.1.0:
     resolution: {integrity: sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==}
+    dev: false
+
+  /@stripe/stripe-js/1.46.0:
+    resolution: {integrity: sha512-dkm0zCEoRLu5rTnsIgwDf/QG2DKcalOT2dk1IVgMySOHWTChLyOvQwMYhEduGgLvyYWTwNhAUV4WOLPQvjwLwA==}
     dev: false
 
   /@surma/rollup-plugin-off-main-thread/2.2.3:
