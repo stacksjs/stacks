@@ -1,13 +1,16 @@
 import { defineNitroConfig } from 'nitropack'
-// import { deploy } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
-// import { resolve } from '@stacksjs/path'
-
-// eslint-disable-next-line no-console
-console.log('here', alias)
+import { resolve } from '@stacksjs/path'
+// import { deploy } from '@stacksjs/config'
 
 export default defineNitroConfig({
-  // alias,
+  alias,
+  output: {
+    dir: '.output',
+    serverDir: '.output/server',
+    publicDir: '.output/public',
+  },
   preset: 'aws-lambda',
-  srcDir: './',
+  rootDir: resolve(__dirname, '.'),
+  srcDir: resolve(__dirname, '.'),
 })

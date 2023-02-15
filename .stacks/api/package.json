@@ -32,7 +32,7 @@
     "pnpm": ">=7.27.0"
   },
   "scripts": {
-    "dev": "npx nitropack dev",
+    "dev": "nitropack dev",
     "build": "npx nitropack build",
     "preview": "",
     "deploy": ""
@@ -41,6 +41,7 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/server": "workspace:*"
+    "@stacksjs/server": "workspace:*",
+    "nitropack": "^2.2.1"
   }
 }

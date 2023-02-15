@@ -125,5 +125,6 @@
     "../**/README.md",
     "../**/dist/**",
     "../**/node_modules/**"
-  ]
+  ],
+  "extends": "./api/.nitro/types/tsconfig.json"
 }

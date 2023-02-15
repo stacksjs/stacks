@@ -1,0 +1,59 @@
+{
+  "name": "@stacksjs/serverless",
+  "type": "module",
+  "version": "0.51.0",
+  "packageManager": "pnpm@7.27.0",
+  "description": "Local development and production-ready.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/serverless#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/serverless"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "serverless",
+    "automation",
+    "aws",
+    "lambda",
+    "stacks"
+  ],
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=v18.14.0",
+    "pnpm": ">=7.27.0"
+  },
+  "scripts": {
+    "build": "mkdist -d",
+    "dev": "mkdist -d",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "nitropack": "^2.2.1",
+    "vite": "^4.1.1"
+  },
+  "devDependencies": {
+    "@stacksjs/testing": "workspace:*",
+    "mkdist": "^1.1.1",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "serverless": "^3.27.0"
+  }
+}
