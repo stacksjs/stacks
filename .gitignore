@@ -11,3 +11,4 @@ updates
 tests/unit/coverage
 dist*
 .stacks/docs/src
+.serverless*

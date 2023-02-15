@@ -20,13 +20,11 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/server': workspace:*
-      nitropack: ^2.2.1
     dependencies:
       '@stacksjs/alias': link:../core/alias
       '@stacksjs/config': link:../core/config
       '@stacksjs/path': link:../core/path
       '@stacksjs/server': link:../core/server
-      nitropack: 2.2.1
 
   .stacks/buddy:
     specifiers:
@@ -904,12 +902,20 @@ importers:
 
   .stacks/core/serverless:
     specifiers:
+      '@stacksjs/config': workspace:*
+      '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.1
+      nitropack: ^2.2.1
       serverless: ^3.27.0
       typescript: ^4.9.5
+      vite: ^4.1.1
     dependencies:
+      '@stacksjs/config': link:../config
+      '@stacksjs/path': link:../path
+      nitropack: 2.2.1
       serverless: 3.27.0
+      vite: 4.1.1
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
