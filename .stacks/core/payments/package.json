@@ -44,7 +44,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^1.46.0"
+    "@stripe/stripe-js": "^1.46.0",
+    "stripe": "^11.11.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

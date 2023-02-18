@@ -775,9 +775,11 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stripe/stripe-js': ^1.46.0
       mkdist: ^1.1.1
+      stripe: ^11.11.0
       typescript: ^4.9.5
     dependencies:
       '@stripe/stripe-js': 1.46.0
+      stripe: 11.11.0
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
@@ -17435,6 +17437,14 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       escape-string-regexp: 1.0.5
+    dev: false
+
+  /stripe/11.11.0:
+    resolution: {integrity: sha512-CT8TZJ+bUaMmqCOljHdKwHTWym0bscrCHrKmvK2KoTaz/9gDIzG+lXTJOFUOb3K7Jwaoaori4yEVzOgA7U46+g==}
+    engines: {node: '>=12.*'}
+    dependencies:
+      '@types/node': 18.13.0
+      qs: 6.11.0
     dev: false
 
   /strnum/1.0.5:

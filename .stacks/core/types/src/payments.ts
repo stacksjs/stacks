@@ -1,7 +1,13 @@
 export interface PaymentOptions {
   drivers: {
     stripe: {
-      key: env('STRIPE_API_KEY', 'pk_test')
+      key: string;
     }
   }
+}
+
+export interface ChargeOptions {
+  currency?: string,
+  source?: string,
+  description?: string
 }
