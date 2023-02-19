@@ -1,5 +1,5 @@
 import { payment as config } from '@stacksjs/config'
-import type { ChargeOptions, CustomerOptions } from '@stacksjs/types'
+import type { ChargeOptions, CustomerOptions, DisputeOptions } from '@stacksjs/types'
 
 const stripe = require('stripe')(config.drivers.stripe.key);
 
@@ -24,10 +24,22 @@ const balanceTransactions = async (txn: string, limit: number) => {
   }
 }
 
-const dispute = async (txn: string) => {
+const dispute = async (options: DisputeOptions) => {
   return {
     retrieve: async () => {
-      await stripe.disputes.retrieve(txn)
+      await stripe.disputes.retrieve(options.dp_id)
+    },
+    update: async () => {
+      await stripe.disputes.update(
+        options.dp_id,
+        { ...options.metadata}
+      )
+    },
+    close: async () => {
+      await stripe.disputes.close(options.dp_id)
+    },
+    list: async () => {
+      await stripe.disputes.list(options.listOptions)
     }
   }
 }
@@ -78,6 +90,15 @@ const customer = async (options: CustomerOptions) => {
         options.address,
         { ...options.metadata }
       )
+    },
+    delete: async () => {
+      await stripe.customers.del(options.address)
+    },
+    list: async () => {
+      await stripe.customers.list(options.listOptions)
+    },
+    search: async () => {
+      await stripe.customers.search(options.searchOptions)
     }
   }
 }
@@ -90,5 +111,6 @@ export {
   balanceTransactions,
   events,
   charge,
+  customer,
   dispute
 }

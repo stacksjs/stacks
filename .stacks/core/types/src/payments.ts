@@ -29,4 +29,29 @@ export interface CustomerOptions {
   name?: string;
   payment_method?: string;
   shipping: string;
+  listOptions?: {
+    created?: object;
+    ending_before?: string;
+    limit?: number;
+    starting_after?: string;
+    test_clock?: string;
+  },
+  searchOptions?: {
+    query?: string;
+    limit?: number;
+    page?: number;
+  }
+}
+
+export interface DisputeOptions {
+  dp_id?: string;
+  metadata?: object;
+  listOptions?: {
+    charge?: string;
+    payment_intent?: string;
+    created?: string;
+    ending_before?: string;
+    limit?: number;
+    starting_after?: string;
+  }
 }
