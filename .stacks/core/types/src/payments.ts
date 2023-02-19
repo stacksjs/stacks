@@ -55,3 +55,15 @@ export interface DisputeOptions {
     starting_after?: string;
   }
 }
+
+export interface EventOptions {
+  event_id?: string;
+  listOptions?: {
+    created?: object,
+    delivery_success?: boolean;
+    ending_before?: string;
+    limit?: number;
+    starting_after?: string;
+    type?: string
+  }
+}
