@@ -1,8 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 import { ResultAsync } from '@stacksjs/error-handling'
 import type { FactoryOptions } from '@stacksjs/types'
+import { database } from '@stacksjs/config'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: database.url
+    }
+  }
+});
 
 const factory = (options: FactoryOptions) => {
   return {
