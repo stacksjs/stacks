@@ -11,7 +11,12 @@ export interface ChargeOptions {
   source?: string;
   description?: string;
   chargeId?: string;
+  limit?: number;
   metadata?: {
     order_id?: string
+  },
+  searchOptions: {
+    query?: string;
+    limit?: number;
   }
 }

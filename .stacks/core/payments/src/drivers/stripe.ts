@@ -51,6 +51,16 @@ const charge = async (amount: number, options?: ChargeOptions) => {
     },
     capture: async () => {
       await stripe.charges.capture(options?.chargeId)
+    },
+    list: async () => {
+      await stripe.charges.list({
+        limit: options?.limit,
+      });
+    },
+    search: async () => {
+      await stripe.charges.search({
+        ...options?.searchOptions
+      });
     }
   }
 }
