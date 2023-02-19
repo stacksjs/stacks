@@ -1,3 +1,5 @@
+import { EmailOptions } from "stacks";
+
 export interface PaymentOptions {
   drivers: {
     stripe: {
@@ -12,11 +14,19 @@ export interface ChargeOptions {
   description?: string;
   chargeId?: string;
   limit?: number;
-  metadata?: {
-    order_id?: string
-  },
+  metadata?: object;
   searchOptions: {
     query?: string;
     limit?: number;
   }
+}
+
+export interface CustomerOptions {
+  description?: string;
+  address?: string;
+  email?: string;
+  metadata?: object;
+  name?: string;
+  payment_method?: string;
+  shipping: string;
 }

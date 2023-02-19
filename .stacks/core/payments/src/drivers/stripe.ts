@@ -1,5 +1,5 @@
 import { payment as config } from '@stacksjs/config'
-import { type ChargeOptions } from '@stacksjs/types'
+import type { ChargeOptions, CustomerOptions } from '@stacksjs/types'
 
 const stripe = require('stripe')(config.drivers.stripe.key);
 
@@ -65,6 +65,22 @@ const charge = async (amount: number, options?: ChargeOptions) => {
   }
 }
 
+const customer = async (options: CustomerOptions) => {
+  return {
+    create: async () => {
+      await stripe.customers.create(options)
+    },
+    retrieve: async () => {
+      await stripe.customers.retrieve(options.address)
+    },
+    update: async () => {
+      await stripe.customers.update(
+        options.address,
+        { ...options.metadata }
+      )
+    }
+  }
+}
 const events = async (event_key: string) => {
   return await stripe.events.retrieve(event_key);
 }
