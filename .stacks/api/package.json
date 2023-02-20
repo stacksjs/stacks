@@ -2,7 +2,7 @@
   "name": "api",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.27.0",
+  "packageManager": "pnpm@7.27.1",
   "description": "The Stacks generated API server.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -28,8 +28,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v18.14.0",
-    "pnpm": ">=7.27.0"
+    "node": ">=v18.14.1",
+    "pnpm": ">=7.27.1"
   },
   "scripts": {
     "dev": "npx nitro dev",

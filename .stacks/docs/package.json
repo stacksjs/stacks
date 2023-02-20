@@ -2,7 +2,7 @@
   "name": "stacks-docs",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.27.0",
+  "packageManager": "pnpm@7.27.1",
   "description": "The Stacks documentation.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -31,8 +31,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v18.14.0",
-    "pnpm": ">=7.27.0"
+    "node": ">=v18.14.1",
+    "pnpm": ">=7.27.1"
   },
   "scripts": {
     "dev": "pnpm run copy-src && vitepress dev src",
@@ -45,6 +45,6 @@
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "rimraf": "^4.1.2",
-    "vitepress": "^1.0.0-alpha.46"
+    "vitepress": "^1.0.0-alpha.47"
   }
 }
