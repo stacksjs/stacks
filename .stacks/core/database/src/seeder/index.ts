@@ -1,10 +1,22 @@
-// import { PrismaClient } from '@prisma/client'
-import { Factory } from '../factory'
+import { PrismaClient } from '@prisma/client';
 
-// const database = new PrismaClient()
-
-function seeder(factoryName: any, count = 5) {
-  return new Factory(factoryName).make(count)
+interface SeedData {
+  [key: string]: any;
 }
 
-export { seeder }
+async function seed(modelName: string, data: SeedData[]): Promise<void> {
+  const prisma = new PrismaClient();
+
+  try {
+    const model = prisma[modelName];
+    const seedPromises = data.map((item) => model.create({ data: item }));
+    await Promise.all(seedPromises);
+    console.log(`Seeding successful for model "${modelName}"`);
+  } catch (error) {
+    console.error(`Error seeding model "${modelName}": ${error.message}`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export { seed }
