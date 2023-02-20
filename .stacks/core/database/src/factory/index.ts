@@ -14,8 +14,6 @@ const prisma = new PrismaClient({
 const factory = (options: FactoryOptions) => {
   return {
     make: async () => {
-      if (options.count)
-
       return ResultAsync.fromPromise(
         await prisma[options.name].createMany({
           data: options.items,
@@ -26,8 +24,6 @@ const factory = (options: FactoryOptions) => {
     },
 
     create: async () => {
-      if (options.count)
-
       return ResultAsync.fromPromise(
         await prisma[options.name].createMany({
           data: options.items,
