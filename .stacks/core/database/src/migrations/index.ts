@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from '@stacksjs/storage'
 
 interface Column {
   name: string
