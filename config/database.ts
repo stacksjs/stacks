@@ -8,5 +8,5 @@
 // export default <DatabaseOptions> {
 export default {
   driver: 'planetscale',
-  url: env('DATABASE_URL', '')
+  url: env('DATABASE_URL', ''),
 }

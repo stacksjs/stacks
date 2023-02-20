@@ -48,12 +48,12 @@
     "nitropack": "^2.2.1",
     "vite": "^4.1.1"
   },
+  "dependencies": {
+    "serverless": "^3.27.0"
+  },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.1.1",
     "typescript": "^4.9.5"
-  },
-  "dependencies": {
-    "serverless": "^3.27.0"
   }
 }

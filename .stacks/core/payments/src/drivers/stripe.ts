@@ -1,7 +1,7 @@
 import { payment as config } from '@stacksjs/config'
 import type { ChargeOptions, CustomerOptions, DisputeOptions, EventOptions } from '@stacksjs/types'
 
-const stripe = require('stripe')(config.drivers.stripe.key);
+const stripe = require('stripe')(config.drivers.stripe.key)
 
 const balance = async () => {
   return {
@@ -18,7 +18,7 @@ const balanceTransactions = async (txn: string, limit: number) => {
     },
     list: async () => {
       await stripe.balanceTransactions.list({
-        limit: limit,
+        limit,
       })
     },
   }
@@ -32,7 +32,7 @@ const dispute = async (options: DisputeOptions) => {
     update: async () => {
       await stripe.disputes.update(
         options.dp_id,
-        { ...options.metadata}
+        { ...options.metadata },
       )
     },
     close: async () => {
@@ -40,7 +40,7 @@ const dispute = async (options: DisputeOptions) => {
     },
     list: async () => {
       await stripe.disputes.list(options.listOptions)
-    }
+    },
   }
 }
 
@@ -48,8 +48,8 @@ const charge = async (amount: number, options?: ChargeOptions) => {
   return {
     create: async () => {
       await stripe.charges.create({
-        amount: amount,
-        ...options
+        amount,
+        ...options,
       })
     },
     retrieve: async () => {
@@ -58,7 +58,7 @@ const charge = async (amount: number, options?: ChargeOptions) => {
     update: async () => {
       await stripe.charges.update(
         options?.chargeId,
-        { metadata: options?.metadata }
+        { metadata: options?.metadata },
       )
     },
     capture: async () => {
@@ -67,13 +67,13 @@ const charge = async (amount: number, options?: ChargeOptions) => {
     list: async () => {
       await stripe.charges.list({
         limit: options?.limit,
-      });
+      })
     },
     search: async () => {
       await stripe.charges.search({
-        ...options?.searchOptions
-      });
-    }
+        ...options?.searchOptions,
+      })
+    },
   }
 }
 
@@ -88,7 +88,7 @@ const customer = async (options: CustomerOptions) => {
     update: async () => {
       await stripe.customers.update(
         options.address,
-        { ...options.metadata }
+        { ...options.metadata },
       )
     },
     delete: async () => {
@@ -99,7 +99,7 @@ const customer = async (options: CustomerOptions) => {
     },
     search: async () => {
       await stripe.customers.search(options.searchOptions)
-    }
+    },
   }
 }
 
@@ -110,8 +110,8 @@ const events = async (options: EventOptions) => {
     },
     list: async () => {
       await stripe.events.list(options.listOptions)
-    }
-  };
+    },
+  }
 }
 
 export {

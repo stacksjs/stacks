@@ -6,9 +6,6 @@ export interface DatabaseOptions {
   client: DatabaseClient
 }
 
-export interface FactoryOptions {
-  name: string;
-  count?: number;
-  items: object;
-  columns: object;
+export interface SeedData {
+  [key: string]: any
 }

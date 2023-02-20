@@ -1,39 +1,23 @@
-import { PrismaClient } from '@prisma/client'
-import { ResultAsync } from '@stacksjs/error-handling'
-import type { FactoryOptions } from '@stacksjs/types'
-import { database } from '@stacksjs/config'
+import fs from 'fs';
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: database.url
-    }
-  }
-});
+function generateFactoryFile(modelName: string, fileName: string): void {
+  const generateMethodName = 'generate';
 
-const factory = (options: FactoryOptions) => {
+  const factoryCode = `import faker from 'faker';
+  import type { SeedData } from '@stacksjs/types'
+
+function ${generateMethodName}(): SeedData {
   return {
-    make: async () => {
-      return ResultAsync.fromPromise(
-        await prisma[options.name].createMany({
-          data: options.items,
-          skipDuplicates: true
-        }),
-        () => new Error('Failed to create the data'),
-      )
-    },
-
-    create: async () => {
-      return ResultAsync.fromPromise(
-        await prisma[options.name].createMany({
-          data: options.items,
-          skipDuplicates: false
-        }),
-        () => new Error('Failed to create the data'),
-      )
-    },
-
-  }
+    // fields here
+  };
 }
 
-export { factory }
+export { ${generateMethodName} };
+`;
+
+  fs.writeFileSync(fileName, factoryCode);
+}
+
+export {
+  generateFactoryFile
+}
