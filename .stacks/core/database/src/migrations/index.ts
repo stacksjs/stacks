@@ -62,3 +62,5 @@ generator client {
     console.log(`Schema file generated successfully at path: ${path}`);
   });
 }
+
+export { generatePrismaSchema }
