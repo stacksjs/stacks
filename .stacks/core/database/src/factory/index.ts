@@ -1,7 +1,7 @@
-import fs from 'fs';
+import fs from 'fs'
 
 function generateFactoryFile(modelName: string, fileName: string, path: string): void {
-  const generateMethodName = 'generate';
+  const generateMethodName = 'generate'
 
   const factoryCode = `import faker from 'faker';
   import type { SeedData } from '@stacksjs/types'
@@ -19,5 +19,5 @@ export { ${generateMethodName} };
 }
 
 export {
-  generateFactoryFile
+  generateFactoryFile,
 }
