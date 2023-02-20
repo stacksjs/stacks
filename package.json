@@ -129,6 +129,7 @@
     "test:types": "pnpm buddy test:types"
   },
   "dependencies": {
+    "prisma": "^4.10.1",
     "stacks": "workspace:*"
   },
   "lint-staged": {
