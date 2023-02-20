@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 interface Column {
   name: string;
   type: string;
@@ -11,7 +13,7 @@ interface Model {
   columns: Column[];
 }
 
-function generatePrismaSchema(models: Model[]): string {
+function generatePrismaSchema(models: Model[], path: string): void {
   let schema = `datasource db {
   provider = "postgresql"
   url = env("DATABASE_URL")
@@ -52,5 +54,11 @@ generator client {
     schema += '}\n\n';
   }
 
-  return schema;
+  fs.writeFile('./.stacks/database/schema.prisma', schema, (err) => {
+    if (err) {
+      console.error(`Error writing schema file: ${err.message}`);
+      return;
+    }
+    console.log(`Schema file generated successfully at path: ${path}`);
+  });
 }
