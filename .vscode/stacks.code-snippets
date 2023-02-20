@@ -12,9 +12,9 @@
 	},
 	"Stacks Function": {
 		"scope": "typescript",
-		"prefix": "fun",
+		"prefix": "func",
 		"body": [
-			"protected function $1($2)",
+			"public function $1($2)",
 			"{",
 			"    $3",
 			"}"
@@ -23,14 +23,36 @@
 	},
 	"Stacks Method": {
 		"scope": "typescript",
-		"prefix": "fun",
+		"prefix": "met",
+		"body": [
+			"public function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Alias of the Stacks Function snippet"
+	},
+	"Stacks Protected Method": {
+		"scope": "typescript",
+		"prefix": "pmet",
 		"body": [
 			"protected function $1($2)",
 			"{",
 			"    $3",
 			"}"
 		],
-		"description": "Alias of the Stacks Function snippet"
+		"description": "Bootstrap a Protected Function"
+	},
+	"Stacks Protected Function": {
+		"scope": "typescript",
+		"prefix": "pfunct",
+		"body": [
+			"protected function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Alias of the Protected Function snippet"
 	},
 	"Print to console": {
 		"scope": "javascript,typescript",
