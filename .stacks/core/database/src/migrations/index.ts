@@ -54,7 +54,7 @@ generator client {
     schema += '}\n\n';
   }
 
-  fs.writeFile('./.stacks/database/schema.prisma', schema, (err) => {
+  fs.writeFile('.stacks/database/schema.prisma', schema, (err) => {
     if (err) {
       console.error(`Error writing schema file: ${err.message}`);
       return;
