@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-function generateFactoryFile(modelName: string, fileName: string): void {
+function generateFactoryFile(modelName: string, fileName: string, path: string): void {
   const generateMethodName = 'generate';
 
   const factoryCode = `import faker from 'faker';
@@ -13,9 +13,9 @@ function ${generateMethodName}(): SeedData {
 }
 
 export { ${generateMethodName} };
-`;
+`
 
-  fs.writeFileSync(fileName, factoryCode);
+  fs.writeFileSync(`${path}/${fileName}`, factoryCode);
 }
 
 export {
