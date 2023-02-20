@@ -15,7 +15,7 @@ function ${generateMethodName}(): SeedData {
 export { ${generateMethodName} };
 `
 
-  fs.writeFileSync(`${path}/${fileName}`, factoryCode);
+  fs.writeFileSync(`${path}/${fileName}`, factoryCode)
 }
 
 export {
