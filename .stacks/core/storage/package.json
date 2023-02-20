@@ -2,7 +2,7 @@
   "name": "@stacksjs/storage",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.27.0",
+  "packageManager": "pnpm@7.27.1",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,8 +36,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.14.0",
-    "pnpm": ">=7.27.0"
+    "node": ">=v18.14.1",
+    "pnpm": ">=7.27.1"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -50,7 +50,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "fs-extra": "^11.1.0",
-    "unstorage": "^1.1.4"
+    "unstorage": "^1.1.5"
   },
   "devDependencies": {
     "@stacksjs/path": "workspace:*",

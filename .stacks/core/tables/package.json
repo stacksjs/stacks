@@ -27,8 +27,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "engines": {
-    "node": ">=v18.14.0",
-    "pnpm": ">=7.27.0"
+    "node": ">=v18.14.1",
+    "pnpm": ">=7.27.1"
   },
   "scripts": {
     "dev": "vite",
@@ -45,13 +45,13 @@
     "meilisearch": "^0.31.1"
   },
   "dependencies": {
-    "vite": "^4.1.1"
+    "vite": "^4.1.3"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "mkdist": "^1.1.1",
     "typescript": "^4.9.5",
-    "unbuild": "^1.1.1"
+    "unbuild": "^1.1.2"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
