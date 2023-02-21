@@ -1,4 +1,5 @@
 import { filesystem } from '@stacksjs/storage'
+import { projectPath } from '@stacksjs/path'
 import type { SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
@@ -58,7 +59,9 @@ generator client {
     schema += '}\n\n'
   }
 
-  path = '.stacks/database/schema.prisma'
+  if (!fs.existsSync(`${projectPath()}/.stacks/database`)) {
+    fs.mkdirSync(`${projectPath()}/.stacks/database`)
+  }
 
   fs.writeFile(path, schema, (err) => {
     if (err) {

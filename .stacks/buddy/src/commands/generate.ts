@@ -1,5 +1,4 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
-import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
 import { componentMeta, ideHelpers, libEntries, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes, models } from '@stacksjs/actions/generate'
@@ -114,18 +113,7 @@ async function generate(buddy: CLI) {
 
   buddy
     .command('generate:model', 'Generate Model')
-    .option('-n, --name', 'Model Name')
     .action(async (options: any) => {
-      const name = buddy.args[0] || options.name
-
-      options.name = name
-
-      if (!name) {
-        log.error('You need to specify the Model Name.')
-
-        process.exit()
-      }
-
       await models(options)
     })
 }
