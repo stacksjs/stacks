@@ -128,5 +128,5 @@
     "../**/dist/**",
     "../**/node_modules/**"
   ]
-  // "extends": "./api/.nitro/types/tsconfig.json"
+  "extends": "./api/.nitro/types/tsconfig.json"
 }
