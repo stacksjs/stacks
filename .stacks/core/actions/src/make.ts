@@ -1,8 +1,7 @@
 import { italic, log, spawn } from '@stacksjs/cli'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
-import { resolve } from '@stacksjs/path'
+import { projectPath, resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
-import { projectPath } from '@stacksjs/path'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
@@ -299,8 +298,8 @@ export async function createModel(options: MakeOptions) {
     })
 
     log.success(`Successfully created your model at /config/models/${name}.json`)
-  } catch (error) {
+  }
+  catch (error) {
     log.error('There was an error creating your model. Please try again')
   }
-
 }

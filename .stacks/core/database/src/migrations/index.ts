@@ -59,9 +59,8 @@ generator client {
     schema += '}\n\n'
   }
 
-  if (!fs.existsSync(`${projectPath()}/.stacks/database`)) {
+  if (!fs.existsSync(`${projectPath()}/.stacks/database`))
     fs.mkdirSync(`${projectPath()}/.stacks/database`)
-  }
 
   fs.writeFile(path, schema, (err) => {
     if (err) {
@@ -83,7 +82,7 @@ function readModelsFromFolder(folderPath: string): ModelData[] {
 
       models.push({
         name: data.name,
-        columns: data.fields
+        columns: data.fields,
       })
     }
   })
@@ -93,5 +92,5 @@ function readModelsFromFolder(folderPath: string): ModelData[] {
 
 export {
   generatePrismaSchema,
-  readModelsFromFolder
+  readModelsFromFolder,
 }

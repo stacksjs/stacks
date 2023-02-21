@@ -1,7 +1,7 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { componentMeta, ideHelpers, libEntries, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes, models } from '@stacksjs/actions/generate'
+import { componentMeta, ideHelpers, libEntries, models, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
 
 async function generate(buddy: CLI) {
   const descriptions = {
