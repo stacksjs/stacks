@@ -129,5 +129,5 @@ export async function models(options?: any) {
     { database: 'postgresql' },
   )
 
-  await runCommand(`npx prisma migrate --schema=${path}`)  // run this command to generate the migrations..
+  await runCommand(`npx prisma migrate --schema=${path}`) // run this command to generate the migrations..
 }

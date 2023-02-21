@@ -16,7 +16,6 @@ async function seed(modelName: string, data: SeedData[]): Promise<void> {
   finally {
     await prisma.$disconnect()
   }
-  console.log('test')
 }
 
 export { seed }
