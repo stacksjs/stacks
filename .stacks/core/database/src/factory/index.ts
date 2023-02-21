@@ -1,4 +1,6 @@
-import fs from '@stacksjs/storage'
+import { filesystem } from '@stacksjs/storage'
+
+const fs = filesystem.fs
 
 function generateFactoryFile(modelName: string, fileName: string, path: string): void {
   const generateMethodName = 'generate'
