@@ -15,6 +15,10 @@ interface Model {
   columns: Column[]
 }
 
+interface ModelData {
+  [key: string]: any;
+}
+
 function generatePrismaSchema(models: Model[], path: string): void {
   let schema = `datasource db {
   provider = "postgresql"
@@ -52,7 +56,9 @@ generator client {
 
     schema += '}\n\n'
   }
+
   path = '.stacks/database/schema.prisma'
+
   fs.writeFile(path, schema, (err) => {
     if (err) {
       console.error(`Error writing schema file: ${err.message}`)
@@ -62,4 +68,28 @@ generator client {
   })
 }
 
-export { generatePrismaSchema }
+function readModelsFromFolder(folderPath: string): ModelData[] {
+  const models: ModelData[] = [];
+
+  fs.readdirSync(folderPath).forEach((file) => {
+    if (file.endsWith('.ts')) {
+      const filePath = `${folderPath}/${file}`;
+      const fileContents = fs.readFileSync(filePath, 'utf-8');
+
+      const regex = /return\s*{([^}]*)}/m;
+      const match = fileContents.match(regex);
+
+      if (match) {
+        const modelData = eval(`({${match[1]}})`);
+        models.push(modelData);
+      }
+    }
+  });
+
+  return models;
+}
+
+export {
+  generatePrismaSchema,
+  readModelsFromFolder
+}
