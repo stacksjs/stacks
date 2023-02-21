@@ -1,4 +1,5 @@
 import { filesystem } from '@stacksjs/storage'
+import type { SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
 
@@ -19,9 +20,9 @@ interface ModelData {
   [key: string]: any
 }
 
-function generatePrismaSchema(models: Model[], path: string): void {
+function generatePrismaSchema(models: Model[], path: string, options: SchemaOptions): void {
   let schema = `datasource db {
-  provider = "postgresql"
+  provider = "${options.database}"
   url = env("DATABASE_URL")
 }
 
@@ -72,18 +73,15 @@ function readModelsFromFolder(folderPath: string): ModelData[] {
   const models: ModelData[] = []
 
   fs.readdirSync(folderPath).forEach((file) => {
-    if (file.endsWith('.ts')) {
+    if (file.endsWith('.json')) {
       const filePath = `${folderPath}/${file}`
       const fileContents = fs.readFileSync(filePath, 'utf-8')
+      const data = JSON.parse(fileContents)
 
-      const regex = /return\s*{([^}]*)}/m
-      const match = fileContents.match(regex)
-
-      if (match) {
-        console.log(match[0]);
-        const modelData = eval(`({${match[1]}})`)
-        models.push(modelData)
-      }
+      models.push({
+        name: data.name,
+        columns: data.fields
+      })
     }
   })
 

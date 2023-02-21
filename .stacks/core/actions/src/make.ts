@@ -2,6 +2,7 @@ import { italic, log, spawn } from '@stacksjs/cli'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
+import { projectPath } from '@stacksjs/path'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
@@ -277,4 +278,29 @@ function send(): ${importOption} {
   catch (error) {
     return false
   }
+}
+
+export async function createModel(options: MakeOptions) {
+  const name = options.name
+  const path = `${projectPath()}/config/models/${name}.json`
+  try {
+    await writeTextFile({
+      path: `${path}`,
+      data: `{
+    "name": "${name[0].toUpperCase() + name.slice(1)}",
+    "fields": [
+      {
+        "name": "...",
+        "type": "..."
+      }
+    ]
+  }
+  `,
+    })
+
+    log.success(`Successfully created your model at /config/models/${name}.json`)
+  } catch (error) {
+    log.error('There was an error creating your model. Please try again')
+  }
+
 }

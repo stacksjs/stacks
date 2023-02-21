@@ -3,6 +3,7 @@ import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
 
 import {
+  createModel,
   createNotification,
   invoke,
   component as makeComponent,
@@ -18,6 +19,7 @@ import {
 
 async function make(buddy: CLI) {
   const descriptions = {
+    model: 'Create a new model',
     component: 'Create a new component',
     page: 'Create a new page',
     function: 'Create a new function',
@@ -235,6 +237,21 @@ async function make(buddy: CLI) {
       }
 
       await makeStack(options)
+    })
+
+  buddy
+    .command('make:model', descriptions.model)
+    .option('-n, --name', 'The name of the model')
+    .action(async (options: MakeOptions) => {
+      const name = buddy.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify the model name')
+        process.exit()
+      }
+
+      await createModel(options)
     })
 }
 

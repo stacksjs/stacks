@@ -9,3 +9,7 @@ export interface DatabaseOptions {
 export interface SeedData {
   [key: string]: any
 }
+
+export interface SchemaOptions {
+  database: string
+}
