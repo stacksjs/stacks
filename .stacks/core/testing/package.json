@@ -38,7 +38,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.14.1",
+    "node": ">=v18.14.2",
     "pnpm": ">=7.27.1"
   },
   "scripts": {
@@ -48,7 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.30.0",
+    "@playwright/test": "^1.31.0",
     "@vitest/coverage-istanbul": "^0.28.5",
     "@vitest/ui": "^0.28.5",
     "vitest": "^0.28.5"
