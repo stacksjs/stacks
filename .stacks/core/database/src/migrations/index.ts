@@ -1,6 +1,6 @@
 import { filesystem } from '@stacksjs/storage'
 
-const fs = filesystem.fs
+const { fs } = filesystem
 
 interface Column {
   name: string

@@ -117,3 +117,7 @@ export async function types(options?: GeneratorOptions) {
 
   log.success('Types were generated successfully')
 }
+
+export async function models(options?: any) {
+  log.success('Model was generated successfully')
+}
