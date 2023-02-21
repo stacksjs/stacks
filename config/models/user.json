@@ -1,0 +1,10 @@
+{
+    "name": "User",
+    "fields": [
+      {
+        "name": "name",
+        "type": "String",
+        "unique": true
+      }
+    ]
+  }
