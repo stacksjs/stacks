@@ -71,23 +71,33 @@ generator client {
   })
 }
 
-function readModelsFromFolder(folderPath: string): ModelData[] {
-  const models: ModelData[] = []
+function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
+  return new Promise((resolve, reject) => {
+    const models: ModelData[] = []
 
-  fs.readdirSync(folderPath).forEach((file) => {
-    if (file.endsWith('.json')) {
-      const filePath = `${folderPath}/${file}`
-      const fileContents = fs.readFileSync(filePath, 'utf-8')
-      const data = JSON.parse(fileContents)
+    fs.readdir(folderPath, (err, files) => {
+      if (err) {
+        reject(err)
+      }
 
-      models.push({
-        name: data.name,
-        columns: data.fields,
-      })
-    }
+      const promises = files
+        .filter((file) => file.endsWith('.ts'))
+        .map((file) => {
+          const filePath = `${folderPath}/${file}`
+
+          return import(filePath).then((data) => {
+            models.push({
+              name: data.default.name,
+              columns: data.default.fields,
+            })
+          })
+        })
+
+      Promise.all(promises)
+        .then(() => resolve(models))
+        .catch((err) => reject(err))
+    })
   })
-
-  return models
 }
 
 export {

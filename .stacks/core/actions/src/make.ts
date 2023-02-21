@@ -280,24 +280,31 @@ function send(): ${importOption} {
 }
 
 export async function createModel(options: MakeOptions) {
-  const name = options.name
-  const path = `${projectPath()}/config/models/${name}.json`
+  const optionName = options.name
+  const name = optionName[0].toUpperCase() + optionName.slice(1)
+  const path = `${projectPath()}/config/models/${name}.ts`
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `{
-    "name": "${name[0].toUpperCase() + name.slice(1)}",
-    "fields": [
-      {
-        "name": "...",
-        "type": "..."
-      }
-    ]
-  }
+      data: `interface ModelData {
+  [key: string]: any
+}
+
+const ${name}: ModelData = {
+  name: '${name}',
+  fields: [
+    {
+      name: '...',
+      type: '....',
+    },
+  ],
+}
+
+export default ${name}
   `,
     })
 
-    log.success(`Successfully created your model at /config/models/${name}.json`)
+    log.success(`Successfully created your model at /config/models/${name}.ts`)
   }
   catch (error) {
     log.error('There was an error creating your model. Please try again')
