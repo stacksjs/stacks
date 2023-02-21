@@ -16,7 +16,7 @@ interface Model {
 }
 
 interface ModelData {
-  [key: string]: any;
+  [key: string]: any
 }
 
 function generatePrismaSchema(models: Model[], path: string): void {
@@ -69,24 +69,25 @@ generator client {
 }
 
 function readModelsFromFolder(folderPath: string): ModelData[] {
-  const models: ModelData[] = [];
+  const models: ModelData[] = []
 
   fs.readdirSync(folderPath).forEach((file) => {
     if (file.endsWith('.ts')) {
-      const filePath = `${folderPath}/${file}`;
-      const fileContents = fs.readFileSync(filePath, 'utf-8');
+      const filePath = `${folderPath}/${file}`
+      const fileContents = fs.readFileSync(filePath, 'utf-8')
 
-      const regex = /return\s*{([^}]*)}/m;
-      const match = fileContents.match(regex);
+      const regex = /return\s*{([^}]*)}/m
+      const match = fileContents.match(regex)
 
       if (match) {
-        const modelData = eval(`({${match[1]}})`);
-        models.push(modelData);
+        console.log(match[0]);
+        const modelData = eval(`({${match[1]}})`)
+        models.push(modelData)
       }
     }
-  });
+  })
 
-  return models;
+  return models
 }
 
 export {

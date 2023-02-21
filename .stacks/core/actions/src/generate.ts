@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-import { migrations } from '@stacksjs/database'
+import { readModelsFromFolder } from '@stacksjs/database'
 import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
@@ -120,5 +120,6 @@ export async function types(options?: GeneratorOptions) {
 }
 
 export async function models(options?: any) {
-  log.success(migrations)
+  const test = await readModelsFromFolder(`${projectPath()}/config/models`)
+  console.log(test)
 }
