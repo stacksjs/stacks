@@ -48,6 +48,7 @@
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",

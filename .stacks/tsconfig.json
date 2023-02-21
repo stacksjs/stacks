@@ -53,6 +53,8 @@
       "@stacksjs/config/*": ["../config/*"],
       "@stacksjs/dashboard": ["./core/dashboard/src/index.ts"],
       "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],
+      "@stacksjs/database": ["./core/database/src/index.ts"],
+      "@stacksjs/database/*": ["./core/database/src/*"],
       // "@stacksjs/desktop": ["./core/desktop/src/index.ts"],
       // "@stacksjs/desktop/*": ["./core/desktop/src/*"],
       "@stacksjs/domains": ["./core/domains/src/index.ts"],
