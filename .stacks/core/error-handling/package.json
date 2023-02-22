@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.36.2",
+    "@ow3/eslint-config": "^0.36.3",
     "neverthrow": "^6.0.0"
   },
   "devDependencies": {
