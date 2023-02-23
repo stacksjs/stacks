@@ -48,7 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.31.0",
+    "@playwright/test": "^1.31.1",
     "@vitest/coverage-istanbul": "^0.28.5",
     "@vitest/ui": "^0.28.5",
     "vitest": "^0.28.5"

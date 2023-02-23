@@ -42,10 +42,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@novu/discord": "^0.11.0",
-    "@novu/node": "^0.11.0",
-    "@novu/slack": "^0.11.0",
-    "@novu/stateless": "^0.11.0",
+    "@novu/discord": "^0.12.0",
+    "@novu/node": "^0.12.0",
+    "@novu/slack": "^0.12.0",
+    "@novu/stateless": "^0.12.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
