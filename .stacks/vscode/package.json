@@ -58,6 +58,6 @@
     "antfu.goto-alias"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.17.0"
+    "@vscode/vsce": "^2.18.0"
   }
 }
