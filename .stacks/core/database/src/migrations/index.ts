@@ -76,12 +76,11 @@ function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
     const models: ModelData[] = []
 
     fs.readdir(folderPath, (err, files) => {
-      if (err) {
+      if (err)
         reject(err)
-      }
 
       const promises = files
-        .filter((file) => file.endsWith('.ts'))
+        .filter(file => file.endsWith('.ts'))
         .map((file) => {
           const filePath = `${folderPath}/${file}`
 
@@ -95,7 +94,7 @@ function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
 
       Promise.all(promises)
         .then(() => resolve(models))
-        .catch((err) => reject(err))
+        .catch(err => reject(err))
     })
   })
 }
