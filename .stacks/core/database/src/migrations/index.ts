@@ -1,27 +1,14 @@
 import { filesystem } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
-import type { SchemaOptions } from '@stacksjs/types'
+import type { ModelOptions, SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
-
-interface Column {
-  name: string
-  type: string
-  required?: boolean
-  unique?: boolean
-  default?: string
-}
-
-interface Model {
-  name: string
-  columns: Column[]
-}
 
 interface ModelData {
   [key: string]: any
 }
 
-function generatePrismaSchema(models: Model[], path: string, options: SchemaOptions): void {
+function generatePrismaSchema(models: ModelOptions[], path: string, options: SchemaOptions): void {
   let schema = `datasource db {
   provider = "${options.database}"
   url = env("DATABASE_URL")
