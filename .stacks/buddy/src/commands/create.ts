@@ -1,5 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, green, intro, link, log, runCommand } from '@stacksjs/cli'
+import { bold, cyan, green, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
@@ -52,7 +52,7 @@ async function create(buddy: CLI) {
       await install(path, options)
 
       // a custom outro
-      console.log()
+      // console.log()
 
       if (startTime) {
         const time = performance.now() - startTime
@@ -60,8 +60,8 @@ async function create(buddy: CLI) {
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
-      console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
-      console.log()
+      // console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
+      // console.log()
       log.info('To learn more, visit https://stacksjs.dev')
 
       process.exit(ExitCode.Success)

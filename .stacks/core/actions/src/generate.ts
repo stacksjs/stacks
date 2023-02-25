@@ -119,7 +119,7 @@ export async function types(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export async function models(options?: any) {
+export async function models() {
   const models = await readModelsFromFolder(`${projectPath()}/config/models`)
   const path = `${projectPath()}/.stacks/database/schema.prisma`
 

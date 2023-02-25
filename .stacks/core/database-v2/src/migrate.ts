@@ -1,5 +1,5 @@
 async function migrate() {
-  console.log('migrating')
+  // console.log('migrating')
 }
 
 export default migrate

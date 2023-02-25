@@ -113,8 +113,8 @@ async function generate(buddy: CLI) {
 
   buddy
     .command('generate:migrations', 'Generate Migrations')
-    .action(async (options: any) => {
-      await models(options)
+    .action(async () => {
+      await models()
     })
 }
 

@@ -1,5 +1,5 @@
 async function seed() {
-  console.log('seeding')
+  // console.log('seeding')
 }
 
 export default seed

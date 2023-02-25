@@ -50,11 +50,10 @@ generator client {
     fs.mkdirSync(`${projectPath()}/.stacks/database`)
 
   fs.writeFile(path, schema, (err) => {
-    if (err) {
+    if (err)
       console.error(`Error writing schema file: ${err.message}`)
-      return
-    }
-    console.log(`Schema file generated successfully at path: ${path}`)
+
+    // console.log(`Schema file generated successfully at path: ${path}`)
   })
 }
 

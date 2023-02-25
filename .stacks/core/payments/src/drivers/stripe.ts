@@ -1,7 +1,10 @@
 import { payment as config } from '@stacksjs/config'
 import type { ChargeOptions, CustomerOptions, DisputeOptions, EventOptions } from '@stacksjs/types'
+import Stripe from 'stripe'
 
-const stripe = require('stripe')(config.drivers.stripe.key)
+const stripe = new Stripe(config.drivers.stripe.key, {
+  apiVersion: '2022-11-15',
+})
 
 const balance = async () => {
   return {
