@@ -8,6 +8,9 @@ interface ModelData {
   [key: string]: any
 }
 
+/**
+ * Generates the Prisma schema file based on the given models and options.
+ */
 function generatePrismaSchema(models: ModelOptions[], path: string, options: SchemaOptions): void {
   let schema = `datasource db {
   provider = "${options.database}"
@@ -46,43 +49,45 @@ generator client {
     schema += '}\n\n'
   }
 
-  if (!fs.existsSync(`${projectPath()}/.stacks/database`))
-    fs.mkdirSync(`${projectPath()}/.stacks/database`)
+  if (!fs?.mkdirSync(`${projectPath()}/.stacks/database`, { recursive: true })) {
+    console.error(`Error creating directory: ${projectPath()}/.stacks/database`)
+    return
+  }
 
   fs.writeFile(path, schema, (err) => {
     if (err)
       console.error(`Error writing schema file: ${err.message}`)
-
-    // console.log(`Schema file generated successfully at path: ${path}`)
+    else
+      console.log(`Schema file generated successfully at path: ${path}`)
   })
 }
 
-function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
-  return new Promise((resolve, reject) => {
-    const models: ModelData[] = []
+/**
+ * Reads the model data from the given folder path.
+ */
+async function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
+  const models: ModelData[] = []
 
-    fs.readdir(folderPath, (err, files) => {
-      if (err)
-        reject(err)
-
-      const promises = files
-        .filter(file => file.endsWith('.ts'))
-        .map((file) => {
-          const filePath = `${folderPath}/${file}`
-
-          return import(filePath).then((data) => {
-            models.push({
-              name: data.default.name,
-              columns: data.default.fields,
-            })
-          })
+  try {
+    const files = await fs.promises.readdir(folderPath)
+    const promises = files
+      .filter(file => file.endsWith('.ts'))
+      .map(async (file) => {
+        const filePath = `${folderPath}/${file}`
+        const data = await import(filePath)
+        models.push({
+          name: data.default.name,
+          columns: data.default.fields,
         })
+      })
 
-      Promise.all(promises)
-        .then(() => resolve(models))
-        .catch(err => reject(err))
-    })
-  })
+    await Promise.all(promises)
+  }
+  catch (err) {
+    console.error(`Error reading models from folder: ${folderPath}`, err)
+  }
+
+  return models
 }
 
 export {
