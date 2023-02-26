@@ -4,13 +4,6 @@ import type { ModelOptions, SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
 
-interface ModelData {
-  [key: string]: any
-}
-
-/**
- * Generates the Prisma schema file based on the given models and options.
- */
 function generatePrismaSchema(models: ModelOptions[], path: string, options: SchemaOptions): void {
   let schema = `datasource db {
   provider = "${options.database}"
@@ -49,48 +42,51 @@ generator client {
     schema += '}\n\n'
   }
 
-  if (!fs?.mkdirSync(`${projectPath()}/.stacks/database`, { recursive: true })) {
-    console.error(`Error creating directory: ${projectPath()}/.stacks/database`)
-    return
-  }
+  if (!fs.existsSync(`${projectPath()}/.stacks/database`))
+    fs.mkdirSync(`${projectPath()}/.stacks/database`)
 
   fs.writeFile(path, schema, (err) => {
     if (err)
       console.error(`Error writing schema file: ${err.message}`)
-    else
-      console.log(`Schema file generated successfully at path: ${path}`)
+
+    // console.log(`Schema file generated successfully at path: ${path}`)
   })
 }
 
-/**
- * Reads the model data from the given folder path.
- */
-async function readModelsFromFolder(folderPath: string): Promise<ModelData[]> {
-  const models: ModelData[] = []
+function readModelsFromFolder(folderPath: string): Promise<ModelOptions[]> {
+  return new Promise((resolve, reject) => {
+    const models: ModelOptions[] = []
 
-  try {
-    const files = await fs.promises.readdir(folderPath)
-    const promises = files
-      .filter(file => file.endsWith('.ts'))
-      .map(async (file) => {
-        const filePath = `${folderPath}/${file}`
-        const data = await import(filePath)
-        models.push({
-          name: data.default.name,
-          columns: data.default.fields,
+    fs.readdir(folderPath, (err, files) => {
+      if (err)
+        reject(err)
+
+      const promises = files
+        .filter(file => file.endsWith('.ts'))
+        .map((file) => {
+          const filePath = `${folderPath}/${file}`
+
+          return import(filePath).then((data) => {
+            models.push({
+              name: data.default.name,
+              columns: data.default.fields,
+            })
+          })
         })
-      })
 
-    await Promise.all(promises)
-  }
-  catch (err) {
-    console.error(`Error reading models from folder: ${folderPath}`, err)
-  }
+      Promise.all(promises)
+        .then(() => resolve(models))
+        .catch(err => reject(err))
+    })
+  })
+}
 
-  return models
+async function migrate(path: string, options: SchemaOptions): Promise<void> {
+  const models = await readModelsFromFolder(`${projectPath()}/.stacks/database/models`)
+
+  generatePrismaSchema(models, path, options)
 }
 
 export {
-  generatePrismaSchema,
-  readModelsFromFolder,
+  migrate,
 }

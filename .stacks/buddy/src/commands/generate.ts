@@ -1,7 +1,7 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { componentMeta, ideHelpers, libEntries, models, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
+import { componentMeta, ideHelpers, libEntries, migrations, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
 
 async function generate(buddy: CLI) {
   const descriptions = {
@@ -114,7 +114,7 @@ async function generate(buddy: CLI) {
   buddy
     .command('generate:migrations', 'Generate Migrations')
     .action(async () => {
-      await models()
+      await migrations()
     })
 }
 

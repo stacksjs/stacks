@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-import { generatePrismaSchema, readModelsFromFolder } from '@stacksjs/database'
+import { migrate } from '@stacksjs/database'
 import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
@@ -119,15 +119,10 @@ export async function types(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export async function models() {
-  const models = await readModelsFromFolder(`${projectPath()}/config/models`)
+export async function migrations() {
   const path = `${projectPath()}/.stacks/database/schema.prisma`
 
-  await generatePrismaSchema(
-    models,
-    path,
-    { database: 'postgresql' },
-  )
+  await migrate(path, { database: 'postgresql' })
 
   await runCommand(`npx prisma migrate --schema=${path}`) // run this command to generate the migrations..
 }
