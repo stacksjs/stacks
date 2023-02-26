@@ -2,7 +2,7 @@
   "name": "@stacksjs/types",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.27.1",
+  "packageManager": "pnpm@7.28.0",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,7 +33,7 @@
   ],
   "engines": {
     "node": ">=v18.14.2",
-    "pnpm": ">=7.27.1"
+    "pnpm": ">=7.28.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -66,6 +66,6 @@
     "vite-plugin-inspect": "^0.7.15",
     "vite-plugin-vue-layouts": "^0.8.0",
     "vite-ssg": "^0.22.1",
-    "vitepress": "1.0.0-alpha.47"
+    "vitepress": "1.0.0-alpha.48"
   }
 }

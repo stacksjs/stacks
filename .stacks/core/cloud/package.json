@@ -2,7 +2,7 @@
   "name": "@stacksjs/cloud",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.27.1",
+  "packageManager": "pnpm@7.28.0",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,7 +36,7 @@
   ],
   "engines": {
     "node": ">=v18.14.2",
-    "pnpm": ">=7.27.1"
+    "pnpm": ">=7.28.0"
   },
   "scripts": {
     "build": "mkdist -d",
