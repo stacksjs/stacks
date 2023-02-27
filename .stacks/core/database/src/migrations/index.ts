@@ -82,7 +82,7 @@ function readModelsFromFolder(folderPath: string): Promise<ModelOptions[]> {
 }
 
 async function migrate(path: string, options: SchemaOptions): Promise<void> {
-  const models = await readModelsFromFolder(`${projectPath()}/.stacks/database/models`)
+  const models = await readModelsFromFolder(`${projectPath()}/config/models`)
 
   generatePrismaSchema(models, path, options)
 }

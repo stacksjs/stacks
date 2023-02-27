@@ -1,7 +1,7 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
-import { intro, italic, log, outro, prompts } from '@stacksjs/cli'
-
+import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
 import {
   createModel,
   createNotification,
@@ -11,7 +11,6 @@ import {
   factory as makeFactory,
   fx as makeFunction,
   language as makeLanguage,
-  migration as makeMigration,
   page as makePage,
   stack as makeStack,
 
@@ -113,23 +112,6 @@ async function make(buddy: CLI) {
       }
 
       await makeDatabase(options)
-    })
-
-  buddy
-    .command('make:migration', descriptions.migration)
-    .option('-n, --name', 'The name of the migration')
-    .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
-    .action(async (options: MakeOptions) => {
-      const name = buddy.args[0] || options.name
-      options.name = name
-
-      if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
-      }
-
-      await makeMigration(options)
     })
 
   buddy
@@ -252,6 +234,24 @@ async function make(buddy: CLI) {
       }
 
       await createModel(options)
+    })
+
+  buddy
+    .command('make:migration', descriptions.migration)
+    .option('-n, --name', 'The name of the migration')
+    .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
+    .action(async (options: MakeOptions) => {
+      const path = `${projectPath()}/.stacks/database/schema.prisma`
+      const name = buddy.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify the migration name')
+        process.exit()
+      }
+
+      await runCommand(`npx prisma migrate ${options.env} --name=${name} --schema=${path}`)
+      log.success(path, name)
     })
 }
 

@@ -124,5 +124,7 @@ export async function migrations() {
 
   await migrate(path, { database: 'postgresql' })
 
-  await runCommand(`npx prisma migrate --schema=${path}`) // run this command to generate the migrations..
+  await runCommand(`npx prisma migrate --schema=${path}`)
+
+  log.success('Successfully updated migrations')
 }
