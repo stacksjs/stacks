@@ -60,7 +60,7 @@
     "defu": "^6.1.2",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",
-    "dinero.js": "2.0.0-alpha.13",
+    "dinero.js": "2.0.0-alpha.14",
     "esno": "^0.16.3",
     "fast-glob": "^3.2.12",
     "kolorist": "1.7.0",

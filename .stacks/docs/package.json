@@ -45,6 +45,6 @@
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "rimraf": "^4.1.2",
-    "vitepress": "^1.0.0-alpha.48"
+    "vitepress": "^1.0.0-alpha.49"
   }
 }
