@@ -49,7 +49,7 @@
     "vite": "^4.1.4"
   },
   "dependencies": {
-    "serverless": "^3.27.0"
+    "serverless": "^3.28.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
