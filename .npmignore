@@ -4,11 +4,7 @@ node_modules
 .cache
 .temp
 .pnpm-debug.log
-.stacks/core/server/.nitro
-.stacks/core/server/.output
-.stacks/components/vue/.vite-inspect/*
-.stacks/components/vue/dist/*
-.stacks/components/web/dist/*
+.vite-inspect/*
+.stacks/components/**/dist/*
 .stacks/docs/dist/*
 .stacks/functions/dist/*
-!.stacks/dist/*

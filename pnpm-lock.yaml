@@ -4,17 +4,15 @@ importers:
 
   .:
     specifiers:
-      prisma: ^4.11.0
       stacks: workspace:*
     dependencies:
-      prisma: 4.11.0
       stacks: link:.stacks
 
   .stacks:
     specifiers:
       '@stacksjs/buddy': workspace:*
     dependencies:
-      '@stacksjs/buddy': link:buddy
+      '@stacksjs/buddy': link:core/buddy
 
   .stacks/api:
     specifiers:
@@ -27,93 +25,6 @@ importers:
       '@stacksjs/config': link:../core/config
       '@stacksjs/path': link:../core/path
       '@stacksjs/server': link:../core/server
-
-  .stacks/buddy:
-    specifiers:
-      '@stacksjs/actions': workspace:*
-      '@stacksjs/ai': workspace:*
-      '@stacksjs/alias': workspace:*
-      '@stacksjs/arrays': workspace:*
-      '@stacksjs/auth': workspace:*
-      '@stacksjs/build': workspace:*
-      '@stacksjs/cache': workspace:*
-      '@stacksjs/cli': workspace:*
-      '@stacksjs/cloud': workspace:*
-      '@stacksjs/collections': workspace:*
-      '@stacksjs/config': workspace:*
-      '@stacksjs/database': workspace:*
-      '@stacksjs/docs': workspace:*
-      '@stacksjs/domains': workspace:*
-      '@stacksjs/email': workspace:*
-      '@stacksjs/error-handling': workspace:*
-      '@stacksjs/events': workspace:*
-      '@stacksjs/git': workspace:*
-      '@stacksjs/health': workspace:*
-      '@stacksjs/lint': workspace:*
-      '@stacksjs/logging': workspace:*
-      '@stacksjs/modules': workspace:*
-      '@stacksjs/notifications': workspace:*
-      '@stacksjs/objects': workspace:*
-      '@stacksjs/pages': workspace:*
-      '@stacksjs/path': workspace:*
-      '@stacksjs/payments': workspace:*
-      '@stacksjs/realtime': workspace:*
-      '@stacksjs/router': workspace:*
-      '@stacksjs/search-engine': workspace:*
-      '@stacksjs/security': workspace:*
-      '@stacksjs/server': workspace:*
-      '@stacksjs/storage': workspace:*
-      '@stacksjs/strings': workspace:*
-      '@stacksjs/testing': workspace:*
-      '@stacksjs/types': workspace:*
-      '@stacksjs/ui': workspace:*
-      '@stacksjs/utils': workspace:*
-      only-allow: ^1.1.1
-      typescript: ^4.9.5
-      unbuild: ^1.1.2
-    dependencies:
-      '@stacksjs/actions': link:../core/actions
-      '@stacksjs/ai': link:../core/ai
-      '@stacksjs/alias': link:../core/alias
-      '@stacksjs/arrays': link:../core/arrays
-      '@stacksjs/auth': link:../core/auth
-      '@stacksjs/build': link:../core/build
-      '@stacksjs/cache': link:../core/cache
-      '@stacksjs/cli': link:../core/cli
-      '@stacksjs/cloud': link:../core/cloud
-      '@stacksjs/collections': link:../core/collections
-      '@stacksjs/config': link:../core/config
-      '@stacksjs/database': link:../core/database
-      '@stacksjs/docs': link:../core/docs
-      '@stacksjs/domains': link:../core/domains
-      '@stacksjs/email': link:../core/email
-      '@stacksjs/error-handling': link:../core/error-handling
-      '@stacksjs/events': link:../core/events
-      '@stacksjs/git': link:../core/git
-      '@stacksjs/health': link:../core/health
-      '@stacksjs/lint': link:../core/lint
-      '@stacksjs/logging': link:../core/logging
-      '@stacksjs/modules': link:../core/modules
-      '@stacksjs/notifications': link:../core/notifications
-      '@stacksjs/objects': link:../core/objects
-      '@stacksjs/pages': link:../core/pages
-      '@stacksjs/path': link:../core/path
-      '@stacksjs/payments': link:../core/payments
-      '@stacksjs/realtime': link:../core/realtime
-      '@stacksjs/router': link:../core/router
-      '@stacksjs/search-engine': link:../core/search-engine
-      '@stacksjs/security': link:../core/security
-      '@stacksjs/server': link:../core/server
-      '@stacksjs/storage': link:../core/storage
-      '@stacksjs/strings': link:../core/strings
-      '@stacksjs/testing': link:../core/testing
-      '@stacksjs/types': link:../core/types
-      '@stacksjs/ui': link:../core/ui
-      '@stacksjs/utils': link:../core/utils
-    devDependencies:
-      only-allow: 1.1.1
-      typescript: 4.9.5
-      unbuild: 1.1.2
 
   .stacks/components/vue:
     specifiers:
@@ -194,6 +105,21 @@ importers:
       mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
+  .stacks/core/analytics:
+    specifiers:
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.1
+      typescript: ^4.9.5
+    dependencies:
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.1_typescript@4.9.5
+      typescript: 4.9.5
+
   .stacks/core/arrays:
     specifiers:
       '@stacksjs/testing': workspace:*
@@ -216,6 +142,95 @@ importers:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
+
+  .stacks/core/buddy:
+    specifiers:
+      '@stacksjs/actions': workspace:*
+      '@stacksjs/ai': workspace:*
+      '@stacksjs/alias': workspace:*
+      '@stacksjs/arrays': workspace:*
+      '@stacksjs/auth': workspace:*
+      '@stacksjs/build': workspace:*
+      '@stacksjs/cache': workspace:*
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/cloud': workspace:*
+      '@stacksjs/collections': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/database': workspace:*
+      '@stacksjs/docs': workspace:*
+      '@stacksjs/domains': workspace:*
+      '@stacksjs/email': workspace:*
+      '@stacksjs/error-handling': workspace:*
+      '@stacksjs/events': workspace:*
+      '@stacksjs/faker': workspace:*
+      '@stacksjs/git': workspace:*
+      '@stacksjs/health': workspace:*
+      '@stacksjs/lint': workspace:*
+      '@stacksjs/logging': workspace:*
+      '@stacksjs/modules': workspace:*
+      '@stacksjs/notifications': workspace:*
+      '@stacksjs/objects': workspace:*
+      '@stacksjs/pages': workspace:*
+      '@stacksjs/path': workspace:*
+      '@stacksjs/payments': workspace:*
+      '@stacksjs/realtime': workspace:*
+      '@stacksjs/router': workspace:*
+      '@stacksjs/search-engine': workspace:*
+      '@stacksjs/security': workspace:*
+      '@stacksjs/server': workspace:*
+      '@stacksjs/storage': workspace:*
+      '@stacksjs/strings': workspace:*
+      '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
+      '@stacksjs/ui': workspace:*
+      '@stacksjs/utils': workspace:*
+      only-allow: ^1.1.1
+      typescript: ^4.9.5
+      unbuild: ^1.1.2
+    dependencies:
+      '@stacksjs/actions': link:../actions
+      '@stacksjs/ai': link:../ai
+      '@stacksjs/alias': link:../alias
+      '@stacksjs/arrays': link:../arrays
+      '@stacksjs/auth': link:../auth
+      '@stacksjs/build': link:../build
+      '@stacksjs/cache': link:../cache
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/cloud': link:../cloud
+      '@stacksjs/collections': link:../collections
+      '@stacksjs/config': link:../config
+      '@stacksjs/database': link:../database
+      '@stacksjs/docs': link:../docs
+      '@stacksjs/domains': link:../domains
+      '@stacksjs/email': link:../email
+      '@stacksjs/error-handling': link:../error-handling
+      '@stacksjs/events': link:../events
+      '@stacksjs/faker': link:../faker
+      '@stacksjs/git': link:../git
+      '@stacksjs/health': link:../health
+      '@stacksjs/lint': link:../lint
+      '@stacksjs/logging': link:../logging
+      '@stacksjs/modules': link:../modules
+      '@stacksjs/notifications': link:../notifications
+      '@stacksjs/objects': link:../objects
+      '@stacksjs/pages': link:../pages
+      '@stacksjs/path': link:../path
+      '@stacksjs/payments': link:../payments
+      '@stacksjs/realtime': link:../realtime
+      '@stacksjs/router': link:../router
+      '@stacksjs/search-engine': link:../search-engine
+      '@stacksjs/security': link:../security
+      '@stacksjs/server': link:../server
+      '@stacksjs/storage': link:../storage
+      '@stacksjs/strings': link:../strings
+      '@stacksjs/testing': link:../testing
+      '@stacksjs/types': link:../types
+      '@stacksjs/ui': link:../ui
+      '@stacksjs/utils': link:../utils
+    devDependencies:
+      only-allow: 1.1.1
+      typescript: 4.9.5
+      unbuild: 1.1.2
 
   .stacks/core/build:
     specifiers:
@@ -418,29 +433,6 @@ importers:
       mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
-  .stacks/core/database-v2:
-    specifiers:
-      '@prisma/client': ^4.11.0
-      '@stacksjs/path': workspace:*
-      '@stacksjs/testing': workspace:*
-      '@stacksjs/utils': workspace:*
-      faker: ^6.6.6
-      mkdist: ^1.1.1
-      pg: ^8.9.0
-      typescript: ^4.9.5
-      yargs: ^17.7.1
-    dependencies:
-      '@prisma/client': 4.11.0
-      '@stacksjs/path': link:../path
-      '@stacksjs/utils': link:../utils
-      faker: 6.6.6
-      pg: 8.9.0
-      yargs: 17.7.1
-    devDependencies:
-      '@stacksjs/testing': link:../testing
-      mkdist: 1.1.1_typescript@4.9.5
-      typescript: 4.9.5
-
   .stacks/core/datetime:
     specifiers:
       '@stacksjs/testing': workspace:*
@@ -587,6 +579,23 @@ importers:
     dependencies:
       '@stacksjs/alias': link:../alias
       mitt: 3.0.0
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.1_typescript@4.9.5
+      typescript: 4.9.5
+
+  .stacks/core/faker:
+    specifiers:
+      '@faker-js/faker': ^7.6.0
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.1
+      typescript: ^4.9.5
+    dependencies:
+      '@faker-js/faker': 7.6.0
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
@@ -947,6 +956,25 @@ importers:
       nitropack: 2.2.3
       serverless: 3.28.0
       vite: 4.1.4
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.1_typescript@4.9.5
+      typescript: 4.9.5
+
+  .stacks/core/signals:
+    specifiers:
+      '@maverick-js/signals': ^5.9.1
+      '@stacksjs/cli': workspace:*
+      '@stacksjs/config': workspace:*
+      '@stacksjs/testing': workspace:*
+      '@stacksjs/types': workspace:*
+      mkdist: ^1.1.1
+      typescript: ^4.9.5
+    dependencies:
+      '@maverick-js/signals': 5.9.1
+      '@stacksjs/cli': link:../cli
+      '@stacksjs/config': link:../config
+      '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
       mkdist: 1.1.1_typescript@4.9.5
@@ -4153,6 +4181,11 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: false
 
+  /@faker-js/faker/7.6.0:
+    resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
+    engines: {node: '>=14.0.0', npm: '>=6.0.0'}
+    dev: false
+
   /@humanwhocodes/config-array/0.11.8:
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}
     engines: {node: '>=10.10.0'}
@@ -4424,6 +4457,10 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: false
+
+  /@maverick-js/signals/5.9.1:
+    resolution: {integrity: sha512-/iq6pyYUcN9VDOv3KyOsrSJRuImOZOSJuDA/hS3zWseg4BkW7LWn08cr4gMM2FSNi06758T1P34nJG+UbCAm4A==}
     dev: false
 
   /@mdit-vue/plugin-component/0.11.2:
@@ -4962,11 +4999,6 @@ packages:
 
   /@prisma/engines-version/4.11.0-57.8fde8fef4033376662cad983758335009d522acb:
     resolution: {integrity: sha512-3Vd8Qq06d5xD8Ch5WauWcUUrsVPdMC6Ge8ILji8RFfyhUpqon6qSyGM0apvr1O8n8qH8cKkEFqRPsYjuz5r83g==}
-
-  /@prisma/engines/4.11.0:
-    resolution: {integrity: sha512-0AEBi2HXGV02cf6ASsBPhfsVIbVSDC9nbQed4iiY5eHttW9ZtMxHThuKZE1pnESbr8HRdgmFSa/Kn4OSNYuibg==}
-    requiresBuild: true
-    dev: false
 
   /@redis/bloom/1.2.0_@redis+client@1.5.6:
     resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
@@ -7259,11 +7291,6 @@ packages:
 
   /buffer-from/1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
-
-  /buffer-writer/2.0.0:
-    resolution: {integrity: sha512-a7ZpuTZU1TRtnwyCNW3I5dc0wWNC3VR9S++Ewyk2HHZdrO3CQJqSpd+95Us590V6AL7JqUAH2IwZ/398PmNFgw==}
-    engines: {node: '>=4'}
-    dev: false
 
   /buffer/4.9.2:
     resolution: {integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg==}
@@ -9814,10 +9841,6 @@ packages:
   /extsprintf/1.3.0:
     resolution: {integrity: sha512-11Ndz7Nv+mvAC1j0ktTa7fAb0vLyGGX+rMHNBYQviQDGU0Hw7lhctJANqbPhu9nV9/izT/IntTgZ7Im/9LJs9g==}
     engines: {'0': node >=0.6.0}
-    dev: false
-
-  /faker/6.6.6:
-    resolution: {integrity: sha512-9tCqYEDHI5RYFQigXFwF1hnCwcWCOJl/hmll0lr5D2Ljjb0o4wphb69wikeJDz5qCEzXCoPvG6ss5SDP6IfOdg==}
     dev: false
 
   /fast-deep-equal/3.1.3:
@@ -13900,10 +13923,6 @@ packages:
       semver: 6.3.0
     dev: false
 
-  /packet-reader/1.0.0:
-    resolution: {integrity: sha512-HAKu/fG3HpHFO0AA8WE8q2g+gBJaZ9MG7fcKk+IJPLTGAD6Psw4443l+9DGRbOIh3/aXr7Phy0TjilYivJo5XQ==}
-    dev: false
-
   /packrup/0.1.0:
     resolution: {integrity: sha512-HnUl9ztHGty5ZK13WM8Q7854SWPKH/eCT+MiTO0P1qCu1Y4S5PPJ8E9MwD3cnjSr7PUPzXDnmOVJIKM043OfJQ==}
 
@@ -14080,62 +14099,6 @@ packages:
 
   /performance-now/2.1.0:
     resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
-    dev: false
-
-  /pg-connection-string/2.5.0:
-    resolution: {integrity: sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==}
-    dev: false
-
-  /pg-int8/1.0.1:
-    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
-    engines: {node: '>=4.0.0'}
-    dev: false
-
-  /pg-pool/3.5.2_pg@8.9.0:
-    resolution: {integrity: sha512-His3Fh17Z4eg7oANLob6ZvH8xIVen3phEZh2QuyrIl4dQSDVEabNducv6ysROKpDNPSD+12tONZVWfSgMvDD9w==}
-    peerDependencies:
-      pg: '>=8.0'
-    dependencies:
-      pg: 8.9.0
-    dev: false
-
-  /pg-protocol/1.6.0:
-    resolution: {integrity: sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==}
-    dev: false
-
-  /pg-types/2.2.0:
-    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
-    engines: {node: '>=4'}
-    dependencies:
-      pg-int8: 1.0.1
-      postgres-array: 2.0.0
-      postgres-bytea: 1.0.0
-      postgres-date: 1.0.7
-      postgres-interval: 1.2.0
-    dev: false
-
-  /pg/8.9.0:
-    resolution: {integrity: sha512-ZJM+qkEbtOHRuXjmvBtOgNOXOtLSbxiMiUVMgE4rV6Zwocy03RicCVvDXgx8l4Biwo8/qORUnEqn2fdQzV7KCg==}
-    engines: {node: '>= 8.0.0'}
-    peerDependencies:
-      pg-native: '>=3.0.1'
-    peerDependenciesMeta:
-      pg-native:
-        optional: true
-    dependencies:
-      buffer-writer: 2.0.0
-      packet-reader: 1.0.0
-      pg-connection-string: 2.5.0
-      pg-pool: 3.5.2_pg@8.9.0
-      pg-protocol: 1.6.0
-      pg-types: 2.2.0
-      pgpass: 1.0.5
-    dev: false
-
-  /pgpass/1.0.5:
-    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
-    dependencies:
-      split2: 4.1.0
     dev: false
 
   /picocolors/0.2.1:
@@ -14396,28 +14359,6 @@ packages:
       nanoid: 3.3.4
       picocolors: 1.0.0
       source-map-js: 1.0.2
-
-  /postgres-array/2.0.0:
-    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
-    engines: {node: '>=4'}
-    dev: false
-
-  /postgres-bytea/1.0.0:
-    resolution: {integrity: sha512-xy3pmLuQqRBZBXDULy7KbaitYqLcmxigw14Q5sj8QBVLqEwXfeybIKVWiqAXTlcvdvb0+xkOtDbfQMOf4lST1w==}
-    engines: {node: '>=0.10.0'}
-    dev: false
-
-  /postgres-date/1.0.7:
-    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
-    engines: {node: '>=0.10.0'}
-    dev: false
-
-  /postgres-interval/1.2.0:
-    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      xtend: 4.0.2
-    dev: false
 
   /posthtml-attrs-parser/0.1.1:
     resolution: {integrity: sha512-ZFZfTIb74uHFdn80+7DyP+qrryDX/Bb7Q2rUaByh6iUJ1HlKGSxkChKORpwIUHjChJDzcKEtnyXxzXzcjpH9CQ==}
@@ -14686,15 +14627,6 @@ packages:
       condense-newlines: 0.2.1
       extend-shallow: 2.0.1
       js-beautify: 1.14.7
-    dev: false
-
-  /prisma/4.11.0:
-    resolution: {integrity: sha512-4zZmBXssPUEiX+GeL0MUq/Yyie4ltiKmGu7jCJFnYMamNrrulTBc+D+QwAQSJ01tyzeGHlD13kOnqPwRipnlNw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@prisma/engines': 4.11.0
     dev: false
 
   /process-nextick-args/2.0.1:
@@ -16089,11 +16021,6 @@ packages:
     resolution: {integrity: sha512-9NThjpgZnifTkJpzTZ7Eue85S49QwpNhZTq6GRJwObb6jnLFNGB7Qm73V5HewTROPyxD0C29xqmaI68bQtV+hg==}
     dependencies:
       readable-stream: 3.6.0
-    dev: false
-
-  /split2/4.1.0:
-    resolution: {integrity: sha512-VBiJxFkxiXRlUIeyMQi8s4hgvKCSjtknJv/LVYbrgALPwf5zSKmEwV9Lst25AkvMDnvxODugjdl6KZgwKM1WYQ==}
-    engines: {node: '>= 10.x'}
     dev: false
 
   /sprintf-js/1.0.3:

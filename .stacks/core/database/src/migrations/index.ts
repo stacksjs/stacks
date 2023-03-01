@@ -1,10 +1,10 @@
 import { filesystem } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
-import type { ModelOptions, SchemaOptions } from '@stacksjs/types'
+import type { Model, SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
 
-function generatePrismaSchema(models: ModelOptions[], path: string, options: SchemaOptions): void {
+function generatePrismaSchema(models: Model[], path: string, options: SchemaOptions): void {
   let schema = `datasource db {
   provider = "${options.database}"
   url = env("DATABASE_URL")
@@ -53,9 +53,9 @@ generator client {
   })
 }
 
-function readModelsFromFolder(folderPath: string): Promise<ModelOptions[]> {
+function readModelsFromFolder(folderPath: string): Promise<Model[]> {
   return new Promise((resolve, reject) => {
-    const models: ModelOptions[] = []
+    const models: Model[] = []
 
     fs.readdir(folderPath, (err, files) => {
       if (err)

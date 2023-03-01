@@ -286,11 +286,9 @@ export async function createModel(options: MakeOptions) {
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `interface ModelData {
-  [key: string]: any
-}
+      data: `import type { Model } from '@stacksjs/types'
 
-const ${name}: ModelData = {
+const ${name}: Model = {
   name: '${name}',
   fields: [
     {

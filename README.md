@@ -1,4 +1,4 @@
-![Social Card of Stacks](./.stacks/buddy/art/social.png)
+![Social Card of Stacks](./.stacks/core/buddy/art/social.png)
 
 # Rapid App Development
 
@@ -54,7 +54,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** _run your heavy workload in the background_
-- 💬 **Realtime** _"everything you need to build dynamic real-time apps"_
+- 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
@@ -338,7 +338,7 @@ console.log('increased count is', count)
 
 </details>
 
-You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
+You may view this framework as an incredibly “useful set of frames” to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
 
 ## 🚙 Roadmap
 

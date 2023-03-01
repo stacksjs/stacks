@@ -50,7 +50,7 @@
     "pnpm": ">=7.28.0"
   },
   "scripts": {
-    "buddy": "esno .stacks/buddy/src/cli.ts",
+    "buddy": "esno .stacks/core/buddy/src/cli.ts",
     "bud": "pnpm buddy",
     "stx": "pnpm buddy",
     "stacks": "pnpm buddy",
@@ -129,7 +129,6 @@
     "test:types": "pnpm buddy test:types"
   },
   "dependencies": {
-    "prisma": "^4.11.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {

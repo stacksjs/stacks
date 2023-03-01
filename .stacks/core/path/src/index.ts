@@ -54,6 +54,10 @@ export function authPath(path?: string) {
   return corePath(`auth/${path || ''}`)
 }
 
+export function appPath(path?: string) {
+  return projectPath(`app/${path || ''}`)
+}
+
 /**
  * Returns the path to the build directory. The build directory
  * contains Stacks' build engine & its tooling integrations.
@@ -146,6 +150,10 @@ export function eventsPath(path?: string) {
   return corePath(`events/${path || ''}`)
 }
 
+export function fakerPath(path?: string) {
+  return corePath(`faker/${path || ''}`)
+}
+
 export function healthPath(path?: string) {
   return corePath(`health/${path || ''}`)
 }
@@ -190,6 +198,10 @@ export function xRayPath(path?: string) {
   return corePath(`x-ray/${path || ''}`)
 }
 
+export function modelsPath(path?: string) {
+  return appPath(`models/${path || ''}`)
+}
+
 export function modulesPath(path?: string) {
   return corePath(`modules/${path || ''}`)
 }
@@ -220,7 +232,7 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 }
 
 export function pagesPath(path?: string) {
-  return projectPath(`pages/${path || ''}`)
+  return appPath(`pages/${path || ''}`)
 }
 
 export function pathPath(path?: string) {
@@ -276,6 +288,10 @@ export function settingsPath(path?: string) {
 
 export function smsPath(path?: string) {
   return corePath(`sms/${path || ''}`)
+}
+
+export function signalsPath(path?: string) {
+  return corePath(`signals/${path || ''}`)
 }
 
 export function routesPath(path?: string) {
@@ -360,6 +376,7 @@ export const path = {
   emailPath,
   errorHandlingPath,
   eventsPath,
+  fakerPath,
   healthPath,
   examplesPath,
   frameworkPath,
@@ -388,6 +405,7 @@ export const path = {
   searchEnginePath,
   settingsPath,
   smsPath,
+  signalsPath,
   scriptsPath,
   securityPath,
   serverPath,

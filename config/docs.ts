@@ -1,6 +1,6 @@
 import { type DocsConfig } from '@stacksjs/types'
-import { frameworkPath } from '@stacksjs/path'
 import type { PluginOption } from 'vite'
+import { frameworkPath } from '../.stacks/core/path/src'
 import services from './services'
 
 function CustomHmr(): PluginOption {
@@ -67,7 +67,7 @@ export default <DocsConfig> {
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2022-present Open Web Foundation',
+      copyright: 'Copyright © 2023-present Stacks',
     },
 
     algolia: services.algolia,

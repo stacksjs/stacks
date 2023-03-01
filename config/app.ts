@@ -1,14 +1,14 @@
-import { type AppOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from 'stacks/core/utils/src/helpers'
+import { defineAppConfig } from 'stacks/core/config/src/helpers'
 
 /**
- * **Application Options**
+ * **Application Configuration**
  *
  * This configuration defines all of your application options. Because Stacks is fully-typed,
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-const config = {
+export default defineAppConfig({
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),
@@ -21,8 +21,4 @@ const config = {
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
   editor: 'vscode',
-} satisfies AppOptions
-
-export { config as app }
-
-export default config
+})

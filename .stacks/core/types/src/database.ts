@@ -4,11 +4,16 @@ import type { Model } from './model'
 export type DatabaseClient = PrismaClient
 
 export interface DatabaseOptions {
-  client: DatabaseClient
+  driver?: string
+  url?: string
+  client?: DatabaseClient
 }
 
-export interface SeedData {
-  [key: string]: any
+export interface FactoryOptions {
+  name: string
+  count?: number
+  items: object
+  columns: object
 }
 
 export interface SchemaOptions {
@@ -17,7 +22,7 @@ export interface SchemaOptions {
 
 export interface DatabaseDriver {
   client: DatabaseClient
-  migrate: (models: Model, path: string, options?: SchemaOptions) => Promise<void>
+  migrate: (models: Model[], path: string, options?: SchemaOptions) => Promise<void>
   seed: (modelName: string, data: SeedData) => Promise<void>
   factory: (modelName: string, fileName: string, path: string) => Promise<void>
 }

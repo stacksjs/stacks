@@ -8,6 +8,7 @@ async function seed(modelName: string, data: SeedData[]): Promise<void> {
     const model = prisma[modelName]
     const seedPromises = data.map(item => model.create({ data: item }))
     await Promise.all(seedPromises)
+    // eslint-disable-next-line no-console
     console.log(`Seeding successful for model "${modelName}"`)
   }
   catch (error) {

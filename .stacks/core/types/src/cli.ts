@@ -169,6 +169,7 @@ export interface CleanOptions extends CliOptions {}
 export interface CommitOptions extends CliOptions {}
 export interface KeyOptions extends CliOptions {}
 export interface FreshOptions extends CliOptions {}
+export interface InspireOptions extends CliOptions {}
 export interface ReleaseOptions extends CliOptions {}
 export interface PreinstallOptions extends CliOptions {}
 export interface PrepublishOptions extends CliOptions {}
@@ -233,7 +234,7 @@ export const enum Action {
   Bump = 'bump', // wip - changelog action
   Release = 'release',
   Prepublish = 'prepublish',
-  BuildStacks = 'build-stacks',
+  BuildStacks = 'build/stacks',
   BuildComponentLibs = 'build-component-libs',
   BuildVueComponentLib = 'build-vue-component-lib',
   BuildWebComponentLib = 'build-web-component-lib',
@@ -259,6 +260,7 @@ export const enum Action {
   MakeNotification = 'make-notification', // wip
   DevComponents = 'dev/components', // wip
   DevDocs = 'dev/docs', // wip
+  Migrate = 'migrate', // wip
 }
 
 export type { CAC as CLI } from 'cac'

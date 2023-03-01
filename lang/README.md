@@ -1,4 +1,4 @@
-# Language Files
+# The Language Folder
 
 This folder contains the language files for your application. If you are building an internationalized application, you should populate this directory with the appropriate language files.
 

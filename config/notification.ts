@@ -1,14 +1,14 @@
-import { type NotificationOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '../.stacks/core/utils/src'
+import { defineNotificationConfig } from '../.stacks/core/config/src/helpers'
 
 /**
- * **Notification Options**
+ * **Notification Configuration**
  *
  * This configuration defines all of your notification options. Because Stacks is fully-typed,
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default <NotificationOptions> {
+export default defineNotificationConfig({
   type: env('NOTIFICATION_TYPE', 'email'),
   driver: env('NOTIFICATION_DRIVER', 'sendgrid'),
 
@@ -132,4 +132,4 @@ export default <NotificationOptions> {
 
     // discord: {},
   },
-}
+})

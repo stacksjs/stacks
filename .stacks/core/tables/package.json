@@ -32,7 +32,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "",
     "preview": "vite preview",
     "dev:components": "vite -c vite.config.ts"
   },

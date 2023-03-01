@@ -1,10 +1,14 @@
-import { env } from '@stacksjs/utils'
-import { type PaymentOptions } from '@stacksjs/types'
+import { definePaymentConfig } from '../.stacks/core/config/src/helpers'
 
-export default <PaymentOptions> {
-  drivers: {
-    stripe: {
-      key: env('STRIPE_API_KEY', 'pk_test'),
-    },
-  },
-}
+/**
+ * **Payment Configuration**
+ *
+ * This configuration defines all of your Payment options. Because Stacks is fully-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
+export default definePaymentConfig({
+  driver: 'stripe',
+
+  // ... other
+})

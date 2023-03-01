@@ -1,14 +1,14 @@
-import { env } from '@stacksjs/utils'
+import { env } from '../.stacks/core/utils/src'
+import { defineCacheConfig } from '../.stacks/core/config/src/helpers'
 
 /**
- * **Cache Options**
+ * **Cache Configuration**
  *
  * This configuration defines all of your cache options. Because Stacks is fully-typed,
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-// export default <CacheOptions> {
-export default {
+export default defineCacheConfig({
   driver: env('CACHE_DRIVER', 'redis'),
 
   redis: {
@@ -40,4 +40,4 @@ export default {
     table: env('DYNAMODB_CACHE_TABLE', 'cache'),
     endpoint: env('DYNAMODB_ENDPOINT', ''),
   },
-}
+})

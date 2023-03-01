@@ -55,7 +55,9 @@
     "mattpocock.ts-error-translator",
     "amazonwebservices.aws-toolkit-vscode",
     "rangav.vscode-thunder-client",
-    "antfu.goto-alias"
+    "antfu.goto-alias",
+    "mikestead.dotenv",
+    "pflannery.vscode-versionlens"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.18.0"

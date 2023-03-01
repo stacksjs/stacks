@@ -1,5 +1,5 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import { clamp } from '@stacksjs/utils'
+import { clamp } from '../../utils/src'
 
 export function contains(needle: string, haystack: string[]) {
   return haystack.some(hay => needle.includes(hay))

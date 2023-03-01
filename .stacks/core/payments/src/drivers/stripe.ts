@@ -1,8 +1,16 @@
-import { payment as config } from '@stacksjs/config'
 import type { ChargeOptions, CustomerOptions, DisputeOptions, EventOptions } from '@stacksjs/types'
+import { isString } from '@stacksjs/utils'
 import Stripe from 'stripe'
+import services from '../../../../../config/services'
 
-const stripe = new Stripe(config.drivers.stripe.key, {
+const apiKey = services?.stripe?.apiKey
+
+if (!isString(apiKey)) {
+  console.error('Stripe API key is not defined')
+  process.exit(1)
+}
+
+const stripe = new Stripe(apiKey, {
   apiVersion: '2022-11-15',
 })
 

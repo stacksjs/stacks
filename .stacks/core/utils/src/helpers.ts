@@ -1,9 +1,9 @@
-import { log, runCommand, spawn } from '@stacksjs/cli'
 import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/path'
-import storage from '@stacksjs/storage'
-import { ui } from '@stacksjs/config'
 import detectIndent from 'detect-indent'
+import storage from '../../storage/src'
+import { frameworkPath, projectPath } from '../../path/src'
+import { log, runCommand, spawn } from '../../cli/src'
+import ui from '../../../../config/ui'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -63,8 +63,9 @@ export function determineResetPreset(preset?: string) {
 export function env(key?: string, fallback?: any) {
   // console.log('isClient', isClient)
 
-  if (key && import.meta?.env)
-    return import.meta.env[key]
+  // if uncommenting the following, `wip` fails
+  // if (key && import.meta?.env)
+  //   return import.meta.env[key]
 
   return fallback
 }

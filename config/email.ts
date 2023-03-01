@@ -1,6 +1,13 @@
-import { app } from './app'
+import { app, defineEmailConfig } from '../.stacks/core/config/src/helpers'
 
-export default {
+/**
+ * **Email Configuration**
+ *
+ * This configuration defines all of your email options. Because Stacks is fully-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ */
+export default defineEmailConfig({
   from: {
     name: 'My App',
     address: '',
@@ -13,4 +20,4 @@ export default {
       forwardTo: 'your@mailbox', // forwards all emails from hi@domain to your mailbox (e.g. stacksjs@gmail.com)
     },
   ],
-}
+})

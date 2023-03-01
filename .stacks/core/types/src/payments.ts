@@ -1,9 +1,5 @@
 export interface PaymentOptions {
-  drivers: {
-    stripe: {
-      key: string
-    }
-  }
+  driver: 'stripe'
 }
 
 export interface ChargeOptions {

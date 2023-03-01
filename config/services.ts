@@ -1,5 +1,5 @@
-// import type { ServicesOptions } from '@stacksjs/types'
-import { env } from '@stacksjs/utils'
+import { env } from '../.stacks/core//utils/src'
+import { defineServicesConfig } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Services**
@@ -8,18 +8,15 @@ import { env } from '@stacksjs/utils'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-// export default <ServicesOptions> {
-export default {
+export default defineServicesConfig({
   algolia: {
     appId: '',
     apiKey: '',
-    indexName: '',
   },
 
   meilisearch: {
     appId: '',
     apiKey: '',
-    indexName: '',
   },
 
   stripe: {
@@ -45,4 +42,4 @@ export default {
   novu: {
     key: env('NOVU_API_KEY', 'test-key'),
   },
-}
+})

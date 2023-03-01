@@ -1,12 +1,12 @@
-import { type Events } from '@stacksjs/types'
+import { defineEventsConfig } from '../.stacks/core/config/src/helpers'
 
 /**
- * **Events**
+ * **Events Configuration**
  *
  * This configuration defines all of your events. Think of this as your Events type definitions:
  * first, pick an event name and then define it with its return type. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default <Events> {
+export default defineEventsConfig({
   // 'user:registered': User,
-}
+})

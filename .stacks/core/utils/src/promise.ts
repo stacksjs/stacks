@@ -1,5 +1,5 @@
-import { remove } from '@stacksjs/arrays'
 import type { Fn } from '@stacksjs/types'
+import { remove } from '../../arrays/src'
 
 export interface SingletonPromiseReturn<T> {
   (): Promise<T>

@@ -1,13 +1,13 @@
-import type { LibraryOptions } from '@stacksjs/types'
+import { defineLibraryConfig } from '../.stacks/core/config/src/helpers'
 
 /**
- * **Library Options**
+ * **Library Configuration**
  *
  * This configuration defines all of your library options. Because Stacks is fully-typed, you
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default <LibraryOptions> {
+export default defineLibraryConfig({
   name: 'hello-world',
   parentName: '@stacksjs',
   repository: 'stacksjs/stacks',
@@ -55,4 +55,4 @@ export default <LibraryOptions> {
       'dark',
     ],
   },
-}
+})

@@ -1,4 +1,4 @@
-# Stacks Config
+# The Config Folder
 
 This folder contains your Stacks configuration files. Each file comes with its descriptions, allowing you to easily learn at your own pace.
 

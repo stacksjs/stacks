@@ -1,4 +1,4 @@
-import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Document as Record, DocumentOptions as RecordOptions, Documents as Records, DocumentsResults as RecordsResults, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
+import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
 import type { MaybePromise } from '.'
 
 type Search = any
@@ -30,6 +30,54 @@ export interface SearchEngineOptions {
   }
 }
 
+export interface ServicesOptions {
+  algolia?: {
+    appId: string
+    apiKey: string
+  }
+
+  meilisearch?: {
+    appId: string
+    apiKey: string
+  }
+
+  stripe?: {
+    appId: string
+    apiKey: string
+  }
+
+  planetscale?: {
+    appId: string
+    apiKey: string
+  }
+
+  supabase?: {
+    appId: string
+    apiKey: string
+  }
+
+  aws?: {
+    appId: string
+    apiKey: string
+  }
+
+  novu?: {
+    key: string
+  }
+}
+
+export interface StorageOptions {
+  /**
+   * **Storage Driver**
+   *
+   * The storage driver to utilize.
+   *
+   * @default string 's3'
+   * @see https://stacksjs.dev/docs/storage
+   */
+  driver: 's3' | 'local'
+}
+
 export interface MeiliSearchOptions {
   apiKey: string
   host: string
@@ -48,12 +96,12 @@ export interface SearchEngineDriver {
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
   // Records (MeiliSearch uses the term "documents")
-  getRecord?: (key: string) => MaybePromise<Record>
+  getRecord?: (key: string) => MaybePromise<any>
   getRecords?: (key: string) => MaybePromise<RecordOptions>
-  createRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createRecords?: (records: Records, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createOrReplaceRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createOrUpdateRecord?: (record: Record, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createRecords?: (records: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrReplaceRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrUpdateRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
   deleteRecord?: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
   deleteAllRecords?: (indexName: string) => MaybePromise<EnqueuedTask>
   batchDeleteRecords?: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>
@@ -115,4 +163,4 @@ export interface SearchEngineStorage {
   currentPage: number
 }
 
-export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Record, RecordOptions, Records, RecordsResults, SearchEngineSettings, SearchParams, SearchResponse }
+export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, SearchEngineSettings, SearchParams, SearchResponse }

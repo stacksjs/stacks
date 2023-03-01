@@ -1,4 +1,4 @@
-# Your Components
+# The Components Folder
 
 This is where you create your components.
 

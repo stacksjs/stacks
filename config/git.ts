@@ -1,13 +1,13 @@
-import type { GitOptions } from '@stacksjs/types'
+import { defineGitConfig } from '../.stacks/core/config/src/helpers'
 
 /**
- * **Git Options**
+ * **Git Configuration**
  *
  * This configuration defines all of your git options. Because Stacks is fully-typed, you may
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default <GitOptions> {
+export default defineGitConfig({
   hooks: {
     'pre-commit': 'lint-staged',
   },
@@ -46,4 +46,4 @@ export default <GitOptions> {
     { value: 'chore', name: 'chore:    🔨  Other changes that don\'t modify src or test files', emoji: ':hammer:' },
     { value: 'revert', name: 'revert:   ⏪️  Reverts a previous commit', emoji: ':rewind:' },
   ],
-}
+})

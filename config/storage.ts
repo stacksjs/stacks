@@ -1,4 +1,4 @@
-// import type { StorageOptions } from '@stacksjs/types'
+import { defineStorageConfig } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Storage Options**
@@ -7,7 +7,6 @@
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-// export default <StorageOptions> {
-export default {
+export default defineStorageConfig({
   driver: 's3',
-}
+})

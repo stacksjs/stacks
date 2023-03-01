@@ -58,6 +58,7 @@ dessant
 destructurable
 dinero
 docgen
+dotenv
 dprint
 encrypter
 envrc
@@ -114,6 +115,8 @@ meemalabs
 meilisearch
 memjs
 mergeable
+mikestead
+minzipped
 mkdist
 mult
 netcore
@@ -134,6 +137,7 @@ ow3org
 pathe
 pausable
 peasy
+pflannery
 phpcs
 phpunit
 pinia
@@ -151,6 +155,7 @@ pubspec
 pullapprove
 pyproject
 pyrightconfig
+rangav
 releaserc
 resx
 rimraf
@@ -195,6 +200,7 @@ unstorage
 vclass
 vemit
 vercel
+versionlens
 versionrc
 vetur
 vfor

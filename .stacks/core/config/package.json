@@ -34,8 +34,8 @@
     "pnpm": ">=7.28.0"
   },
   "scripts": {
-    "build": "unbuild",
     "dev": "unbuild --stub",
+    "build": "unbuild",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
