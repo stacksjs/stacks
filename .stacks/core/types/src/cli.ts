@@ -232,35 +232,35 @@ export const enum NpmScript {
 
 export const enum Action {
   Bump = 'bump', // wip - changelog action
-  Release = 'release',
-  Prepublish = 'prepublish',
   BuildStacks = 'build/stacks',
   BuildComponentLibs = 'build-component-libs',
   BuildVueComponentLib = 'build-vue-component-lib',
   BuildWebComponentLib = 'build-web-component-lib',
   BuildCli = 'build-cli',
-  BuildCore = 'build-core', // ✅
+  BuildCore = 'build-core', // wip
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
   Changelog = 'changelog', // wip
-  Fresh = 'fresh', // ✅
-  GeneratePackageJsons = 'generate-package-jsons', // ✅
-  GenerateSettings = 'generate-settings',
-  GenerateOnboarding = 'generate-onboarding',
-  Lint = 'lint', // ✅
-  LintFix = 'lint-fix', // ✅
-  Test = 'test', // ✅
-  TestUi = 'test-ui', // ✅
-  TestUnit = 'test-unit', // ✅
-  TestFeature = 'test-feature', // wip
-  TestCoverage = 'test-coverage', // ✅
-  ShowFeatureTestReport = 'show-feature-test-report', // wip
-  Typecheck = 'typecheck', // wip
-  KeyGenerate = 'key-generate', // wip
-  MakeNotification = 'make-notification', // wip
   DevComponents = 'dev/components', // wip
   DevDocs = 'dev/docs', // wip
+  Fresh = 'fresh', // wip
+  GeneratePackageJsons = 'generate-package-jsons', // wip
+  GenerateSettings = 'generate-settings',
+  GenerateOnboarding = 'generate-onboarding',
+  KeyGenerate = 'key-generate', // wip
+  MakeNotification = 'make-notification', // wip
   Migrate = 'migrate', // wip
+  Lint = 'lint', // wip
+  LintFix = 'lint-fix', // wip
+  Prepublish = 'prepublish', // wip
+  Release = 'release', // wip
+  Test = 'test', // wip
+  TestUi = 'test-ui', // wip
+  TestUnit = 'test-unit', // wip
+  TestFeature = 'test-feature', // wip
+  TestCoverage = 'test-coverage', // wip
+  Typecheck = 'typecheck', // wip
+  ShowFeatureTestReport = 'show-feature-test-report', // wip
 }
 
 export type { CAC as CLI } from 'cac'
