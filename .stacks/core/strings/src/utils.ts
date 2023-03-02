@@ -1,3 +1,14 @@
+import slugify from 'slugify'
+
+interface SlugOptions {
+  replacement?: string
+  remove?: RegExp
+  lower?: boolean
+  strict?: boolean
+  locale?: string
+  trim?: boolean
+}
+
 /**
  * Replace backslash to slash
  *
@@ -77,4 +88,14 @@ export function randomStr(size = 16, dict = urlAlphabet) {
  */
 export function capitalize(str: string): string {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
+}
+
+export function slug(str: string, options?: SlugOptions): string {
+  if (options)
+    return slugify(str, options)
+
+  return slugify(str, {
+    lower: true,
+    strict: true,
+  })
 }
