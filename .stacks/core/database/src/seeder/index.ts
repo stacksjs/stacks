@@ -1,22 +1,32 @@
 import { PrismaClient } from '@prisma/client'
-import type { SeedData } from '@stacksjs/types'
+import { filesystem } from '@stacksjs/storage'
+import type { Model } from '@stacksjs/types'
 
-async function seed(modelName: string, data: SeedData[]): Promise<void> {
-  const prisma = new PrismaClient()
+const { fs } = filesystem
 
-  try {
-    const model = prisma[modelName]
-    const seedPromises = data.map(item => model.create({ data: item }))
-    await Promise.all(seedPromises)
-    // eslint-disable-next-line no-console
-    console.log(`Seeding successful for model "${modelName}"`)
-  }
-  catch (error) {
-    console.error(`Error seeding model "${modelName}": ${error.message}`)
-  }
-  finally {
-    await prisma.$disconnect()
-  }
+function readModels(folderPath: string): Promise<Model[]> {
+  return new Promise((resolve, reject) => {
+    const models: Model[] = []
+
+    fs.readdir(folderPath, (err, files) => {
+      if (err)
+        reject(err)
+
+      const promises = files
+        .filter(file => file.endsWith('.ts'))
+        .map((file) => {
+          const filePath = `${folderPath}/${file}`
+
+          return import(filePath).then((data) => {
+            console.log(data.factory)
+          })
+        })
+
+      Promise.all(promises)
+        .then(() => resolve(models))
+        .catch(err => reject(err))
+    })
+  })
 }
 
-export { seed }
+export { readModels as seed }

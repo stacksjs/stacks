@@ -60,7 +60,7 @@ importers:
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
-      '@stacksjs/database': link:../database
+      '@stacksjs/database': link:../slug
       '@stacksjs/logging': link:../logging
       '@stacksjs/pages': link:../pages
       '@stacksjs/path': link:../path
@@ -199,7 +199,7 @@ importers:
       '@stacksjs/cloud': link:../cloud
       '@stacksjs/collections': link:../collections
       '@stacksjs/config': link:../config
-      '@stacksjs/database': link:../database
+      '@stacksjs/database': link:../slug
       '@stacksjs/docs': link:../docs
       '@stacksjs/domains': link:../domains
       '@stacksjs/email': link:../email
@@ -983,12 +983,16 @@ importers:
   .stacks/core/slug:
     specifiers:
       '@prisma/client': ^4.11.0
+      '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
+      '@stacksjs/utils': workspace:*
       mkdist: ^1.1.1
       slugify: ^1.6.5
       typescript: ^4.9.5
     dependencies:
       '@prisma/client': 4.11.0
+      '@stacksjs/path': link:../path
+      '@stacksjs/utils': link:../utils
       slugify: 1.6.5
     devDependencies:
       '@stacksjs/testing': link:../testing
