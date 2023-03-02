@@ -1071,6 +1071,7 @@ importers:
       change-case: ^4.1.2
       mkdist: ^1.1.1
       pluralize: ^8.0.0
+      slugify: ^1.6.5
       typescript: ^4.9.5
       unbuild: ^1.1.2
       validator: ^13.9.0
@@ -1081,6 +1082,7 @@ importers:
       '@types/validator': 13.7.12
       change-case: 4.1.2
       pluralize: 8.0.0
+      slugify: 1.6.5
       validator: 13.9.0
     devDependencies:
       '@stacksjs/testing': link:../testing
