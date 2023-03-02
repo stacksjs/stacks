@@ -9,8 +9,11 @@ export interface Model {
 
 export interface ColumnOptions {
   name: string
-  type: string
-  required?: boolean
+  type: 'String' | 'Number' | 'Boolean' | 'Date' | 'Object' | 'Array'
   unique?: boolean
-  default?: string
+  required?: boolean
+  default?: any
+  factory?: () => any
+  validate?: (value: any) => boolean
+  records?: Record<string, any>[];
 }
