@@ -980,6 +980,19 @@ importers:
       mkdist: 1.1.1_typescript@4.9.5
       typescript: 4.9.5
 
+  .stacks/core/slug:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.1
+      slugify: ^1.6.5
+      typescript: ^4.9.5
+    dependencies:
+      slugify: 1.6.5
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.1_typescript@4.9.5
+      typescript: 4.9.5
+
   .stacks/core/sms:
     specifiers:
       '@novu/gupshup': ^0.12.0
@@ -16257,6 +16270,11 @@ packages:
 
   /slick/1.12.2:
     resolution: {integrity: sha512-4qdtOGcBjral6YIBCWJ0ljFSKNLz9KkhbWtuGvUyRowl1kxfuE1x/Z/aJcaiilpb3do9bl5K7/1h9XC5wWpY/A==}
+    dev: false
+
+  /slugify/1.6.5:
+    resolution: {integrity: sha512-8mo9bslnBO3tr5PEVFzMPIWwWnipGS0xVbYf65zxDqfNwmzYn1LpiKNrR6DlClusuvo+hDHd1zKpmfAe83NQSQ==}
+    engines: {node: '>=8.0.0'}
     dev: false
 
   /smart-buffer/4.2.0:
