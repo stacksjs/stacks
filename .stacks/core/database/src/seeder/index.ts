@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { client as DatabaseClient } from './drivers'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 

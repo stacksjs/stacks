@@ -1,8 +1,8 @@
 import slugify from 'slugify'
 import type { Model, ColumnOptions } from '@stacksjs/types'
-import { PrismaClient } from '@prisma/client'
+import { client as DatabaseClient } from '@stacksjs/database'
 
-const prisma = new PrismaClient()
+const database = new DatabaseClient()
 
 export function generateSlug(model: Model, column: string, text: string): string {
   // Find the field that corresponds to the given column name
@@ -28,7 +28,7 @@ export function generateSlug(model: Model, column: string, text: string): string
 }
 
 async function addSlugColumn(modelName: string, columnName: string): Promise<void> {
-  const model = (prisma as any)[modelName]
+  const model = (database as any)[modelName]
   const fields = model._schema.fields
 
   const originalField = fields.find((field: any) => field.dbName === columnName)
@@ -41,7 +41,7 @@ async function addSlugColumn(modelName: string, columnName: string): Promise<voi
     default: '',
   }
 
-  await prisma.$executeRaw(`ALTER TABLE "${modelName}" ADD COLUMN "${columnName}_slug" VARCHAR(255)`)
+  await database.$executeRaw(`ALTER TABLE "${modelName}" ADD COLUMN "${columnName}_slug" VARCHAR(255)`)
 
   const records = await model.findMany()
 
