@@ -1,15 +1,13 @@
-import slugify from 'slugify'
-import type { Model, ColumnOptions } from '@stacksjs/types'
+import { slug as slugify } from '@stacksjs/strings'
+import type { ColumnOptions, Model } from '@stacksjs/types'
 import { client as DatabaseClient } from '@stacksjs/database'
 
 const database = new DatabaseClient()
 
 export function generateSlug(model: Model, column: string, text: string): string {
-  // Find the field that corresponds to the given column name
   const field: ColumnOptions | undefined = model.columns.find((f: ColumnOptions) => f.name === column)
-  if (!field) {
+  if (!field)
     throw new Error(`Invalid column name: ${column}`)
-  }
 
   const fieldValue = text || ''
   const slug = slugify(fieldValue, { lower: true })
@@ -17,7 +15,7 @@ export function generateSlug(model: Model, column: string, text: string): string
   if (field.unique) {
     let uniqueSlug = slug
     let count = 0
-    while (model.records.some((record) => record[column] === uniqueSlug)) {
+    while (model.records.some(record => record[column] === uniqueSlug)) {
       count++
       uniqueSlug = `${slug}-${count}`
     }
@@ -53,5 +51,5 @@ async function addSlugColumn(modelName: string, columnName: string): Promise<voi
 }
 
 export {
-  generateSlug as slug
+  generateSlug as slug,
 }
