@@ -982,11 +982,13 @@ importers:
 
   .stacks/core/slug:
     specifiers:
+      '@prisma/client': ^4.11.0
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.1
       slugify: ^1.6.5
       typescript: ^4.9.5
     dependencies:
+      '@prisma/client': 4.11.0
       slugify: 1.6.5
     devDependencies:
       '@stacksjs/testing': link:../testing
