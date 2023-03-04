@@ -54,7 +54,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@vueuse/core": "^9.13.0",
-    "@vueuse/head": "^1.1.9",
+    "@vueuse/head": "^1.1.15",
     "@vueuse/math": "^9.13.0",
     "@vueuse/shared": "^9.13.0",
     "defu": "^6.1.2",
@@ -65,7 +65,7 @@
     "fast-glob": "^3.2.12",
     "kolorist": "1.7.0",
     "p-limit": "^4.0.0",
-    "rimraf": "^4.1.2",
+    "rimraf": "^4.2.0",
     "throttle-debounce": "^5.0.0"
   },
   "devDependencies": {
