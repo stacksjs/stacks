@@ -9,10 +9,18 @@ interface SlugOptions {
   trim?: boolean
 }
 
+// port from nanoid
+// https://github.com/ai/nanoid
+const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
+
 /**
  * Replace backslash to slash
  *
  * @category String
+ * @example
+ * ```
+ * slash('C:\\Users\\Chris') => 'C:/Users/Chris'
+ * ```
  */
 export function slash(str: string) {
   return str.replace(/\\/g, '/')
@@ -22,6 +30,10 @@ export function slash(str: string) {
  * Ensure prefix of a string
  *
  * @category String
+ * @example
+ * ```
+ * ensurePrefix('https://', 'google.com') => 'https://google.com'
+ * ensurePrefix('https://', 'http://google.com') => 'https://google.com'
  */
 export function ensurePrefix(prefix: string, str: string) {
   if (!str.startsWith(prefix))
@@ -33,6 +45,11 @@ export function ensurePrefix(prefix: string, str: string) {
  * Ensure suffix of a string
  *
  * @category String
+ * @example
+ * ```
+ * ensureSuffix('.js', 'index') => 'index.js'
+ * ensureSuffix('.js', 'index.js') => 'index.js'
+ * ```
  */
 export function ensureSuffix(suffix: string, str: string) {
   if (!str.endsWith(suffix))
@@ -46,8 +63,7 @@ export function ensureSuffix(suffix: string, str: string) {
  * @category String
  * @example
  * ```
- * const result = template(
- *   'Hello {0}! My name is {1}.',
+ * const result = template('Hello {0}! My name is {1}.',
  *   'Buddy',
  *   'Chris'
  * ) // Hello Buddy! My name is Chris.
@@ -62,9 +78,6 @@ export function template(str: string, ...args: any[]): string {
   })
 }
 
-// port from nanoid
-// https://github.com/ai/nanoid
-const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 /**
  * Generate a random string
  * @category String
@@ -83,13 +96,21 @@ export function randomStr(size = 16, dict = urlAlphabet) {
  * @category string
  * @example
  * ```
- * capitalize('hello') => 'Hello'
+ * capitalize('hello world') => 'Hello world'
  * ```
  */
 export function capitalize(str: string): string {
   return str[0].toUpperCase() + str.slice(1).toLowerCase()
 }
 
+/**
+ * Slugify a string
+ * @category string
+ * @example
+ * ```
+ * slug('Hello World') => 'hello-world'
+ * ```
+ */
 export function slug(str: string, options?: SlugOptions): string {
   if (options)
     return slugify(str, options)
