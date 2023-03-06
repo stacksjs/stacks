@@ -1,9 +1,12 @@
+import type { ZodBoolean as Boolean, ZodDate as Date, ZodNumber as Number, ZodString as String } from 'zod'
+import type { Settings as IndexSettings } from 'stacks/core/types/src'
+
 /**
  * Model.
  */
 export interface Model {
   name: string
-  searchable?: boolean // | IndexSettings,
+  searchable?: boolean | IndexSettings
   seeder?: {
     count: number
   }
@@ -15,16 +18,5 @@ export interface Field {
   unique?: boolean
   required?: boolean
   factory?: () => any
-  validate?: (value: any) => boolean
-}
-
-export interface ColumnOptions {
-  name: string
-  type: 'String' | 'Number' | 'Boolean' | 'Date' | 'Object' | 'Array'
-  unique?: boolean
-  required?: boolean
-  default?: any
-  factory?: () => any
-  validate?: (value: any) => boolean
-  records?: Record<string, any>[]
+  validation?: String | Number | Boolean | Date
 }

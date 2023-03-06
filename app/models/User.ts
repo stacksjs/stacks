@@ -18,12 +18,12 @@ export default <Model> {
       name: 'email',
       validation: validate.string().min(1).max(255),
       unique: true,
-      factory: () => faker.email,
+      factory: () => faker.internet.email,
     },
     {
       name: 'password',
       validation: validate.string().min(6).max(255),
-      factory: () => faker.password,
+      factory: () => faker.internet.password(),
     },
   ],
 }
