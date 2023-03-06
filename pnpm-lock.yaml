@@ -1284,9 +1284,9 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.1
       typescript: ^4.9.5
-      zod: ^3.21.2
+      zod: ^3.21.3
     dependencies:
-      zod: 3.21.2
+      zod: 3.21.3
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
@@ -19418,6 +19418,6 @@ packages:
       readable-stream: 3.6.1
     dev: false
 
-  /zod/3.21.2:
-    resolution: {integrity: sha512-0Ygy2/IZNIxHterZdHjE5Vb8hp1fUHJD/BGvSHj8QJx+UipEVNvo9WLchoyBpz5JIaN6KmdGDGYdloGzpFK98g==}
+  /zod/3.21.3:
+    resolution: {integrity: sha512-tz1QgJomEhMTQhOBvQxnnrTo8q77EjpGLlaWicCoEEkMzScuONzDkJKIHr83CS89fGY24iGCStj2ZOCHpPOEyA==}
     dev: false
