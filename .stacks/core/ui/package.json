@@ -2,7 +2,7 @@
   "name": "@stacksjs/ui",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.28.0",
+  "packageManager": "pnpm@7.29.0",
   "description": "The Stacks atomic UI engine, powered by UnoCSS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": ">=v18.14.2",
-    "pnpm": ">=7.28.0"
+    "pnpm": ">=7.29.0"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -51,9 +51,9 @@
     "@julr/unocss-preset-forms": "^0.0.3",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.50.3",
-    "pinia": "^2.0.32",
-    "unocss": "^0.50.3",
+    "@unocss/transformer-compile-class": "^0.50.4",
+    "pinia": "^2.0.33",
+    "unocss": "^0.50.4",
     "vue": "^3.2.47",
     "vue-tsc": "^1.2.0"
   },
