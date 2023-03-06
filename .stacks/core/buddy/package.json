@@ -175,12 +175,14 @@
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/server": "workspace:*",
+    "@stacksjs/signals": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "only-allow": "^1.1.1",

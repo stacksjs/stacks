@@ -1,10 +1,10 @@
 {
-  "name": "stacks",
+  "name": "your-projext-name",
   "type": "module",
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@7.29.0",
-  "description": "Develop your modern framework-agnostic web app or library, faster.",
+  "description": "Your project description",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -16,32 +16,6 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "features",
-    "emailjs",
-    "mailgun",
-    "mailjet",
-    "mandrill",
-    "netcore",
-    "nodemailer",
-    "postmark",
-    "sendgrid",
-    "ses",
-    "gupshup",
-    "nexmo",
-    "plivo",
-    "sms77",
-    "sns",
-    "telnyx",
-    "termii",
-    "twilio",
-    "discord",
-    "slack",
-    "notifications",
-    "sms",
-    "chat",
-    "push-notification"
-  ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

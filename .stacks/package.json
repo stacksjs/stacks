@@ -65,10 +65,11 @@
     "pnpm": ">=7.29.0"
   },
   "scripts": {
-    "buddy": "esno ./buddy/src/cli.ts",
+    "buddy": "esno ./core/buddy/src/cli.ts",
     "prepublish": "pnpm buddy prepublish",
     "build": "pnpm buddy build:stacks",
     "dev": "pnpm buddy dev:stacks // wip",
+    "clean": "pnpm buddy clean",
     "stx": "pnpm run buddy",
     "stacks": "pnpm run buddy"
   },

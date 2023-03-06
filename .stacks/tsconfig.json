@@ -108,6 +108,8 @@
       "@stacksjs/ui/*": ["./core/ui/src/*"],
       "@stacksjs/utils": ["./core/utils/src/index.ts"],
       "@stacksjs/utils/*": ["./core/utils/src/*"],
+      "@stacksjs/validation": ["./core/validation/src/index.ts"],
+      "@stacksjs/validation/*": ["./core/validation/src/*"],
       "@stacksjs/x-ray": ["./core/x-ray/src/index.ts"],
       "@stacksjs/x-ray/*": ["./core/x-ray/src/*"],
       "stacks": ["core/buddy/src/index.ts"],

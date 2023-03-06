@@ -24,7 +24,7 @@ pnpm i -D @stacksjs/signals
 You may now use it in your project:
 
 ```ts
-import { root, signal, computed, effect, tick } from '@stacksjs/signals'
+import { computed, effect, root, signal, tick } from '@stacksjs/signals'
 
 root((dispose) => {
   // Create - all types supported (string, array, object, etc.)
@@ -49,7 +49,7 @@ root((dispose) => {
   // Otherwise, effects will be batched and run on the microtask queue.
   tick()
 
-  $b.set((prev) => prev + 5) // logs `15` inside effect
+  $b.set(prev => prev + 5) // logs `15` inside effect
 
   tick()
 

@@ -1,4 +1,3 @@
-import { client as DatabaseClient } from './drivers'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 
@@ -18,6 +17,7 @@ function readModels(folderPath: string): Promise<Model[]> {
           const filePath = `${folderPath}/${file}`
 
           return import(filePath).then((data) => {
+            // eslint-disable-next-line no-console
             console.log(data.factory)
           })
         })

@@ -4,7 +4,18 @@
 export interface Model {
   name: string
   searchable?: boolean // | IndexSettings,
-  columns: ColumnOptions[]
+  seeder?: {
+    count: number
+  }
+  fields: Field[]
+}
+
+export interface Field {
+  name: string
+  unique?: boolean
+  required?: boolean
+  factory?: () => any
+  validate?: (value: any) => boolean
 }
 
 export interface ColumnOptions {
@@ -15,5 +26,5 @@ export interface ColumnOptions {
   default?: any
   factory?: () => any
   validate?: (value: any) => boolean
-  records?: Record<string, any>[];
+  records?: Record<string, any>[]
 }

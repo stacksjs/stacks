@@ -1,18 +1,21 @@
-import { PrismaClient } from '@prisma/client'
+import Prisma from '@prisma/client'
+const { PrismaClient } = Prisma
 
 /**
- * ##  Stacks Database Client
+ * **Database Client**
  *
- * Type-safe database client for TypeScript & Node.js
+ * The database client is a wrapper around your database of choice.
+ *
  * @example
  * ```ts
- * const database = new client()
- * // Fetch zero or more Users
- * const users = await database.user.findMany()
+ * import { client } from '@stacks/database'
+ *
+ * const db = new client()
+ *
+ * // fetch users
+ * const users = await db.user.findMany()
  * ```
- *
- *
- * Read more in our [docs](https://docs.stacksjs.dev/database).
+ * @see https://docs.stacksjs.dev/database
  */
 const client = PrismaClient
 
