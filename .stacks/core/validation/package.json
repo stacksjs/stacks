@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "zod": "^3.21.3"
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@stacksjs/path": "workspace:*",
