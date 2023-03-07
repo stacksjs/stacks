@@ -42,8 +42,8 @@ generator client {
     schema += '}\n\n'
   }
 
-  if (!fs.existsSync(`${projectPath()}/.stacks/database`))
-    fs.mkdirSync(`${projectPath()}/.stacks/database`)
+  if (!fs.existsSync(projectPath('.stacks/database')))
+    fs.mkdirSync(projectPath('.stacks/database'))
 
   fs.writeFile(path, schema, (err) => {
     if (err)
@@ -82,7 +82,7 @@ function readModelsFromFolder(folderPath: string): Promise<Model[]> {
 }
 
 async function migrate(path: string, options: SchemaOptions): Promise<void> {
-  const models = await readModelsFromFolder(`${projectPath()}/config/models`)
+  const models = await readModelsFromFolder(projectPath('/config/models'))
 
   generatePrismaSchema(models, path, options)
 }
