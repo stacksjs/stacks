@@ -1,5 +1,5 @@
 import { filesystem } from '@stacksjs/storage'
-import { projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { Model, SchemaOptions } from '@stacksjs/types'
 
 const { fs } = filesystem
@@ -42,8 +42,8 @@ generator client {
     schema += '}\n\n'
   }
 
-  if (!fs.existsSync(projectPath('.stacks/database')))
-    fs.mkdirSync(projectPath('.stacks/database'))
+  if (!fs.existsSync(frameworkPath('database')))
+    fs.mkdirSync(frameworkPath('database'))
 
   fs.writeFile(path, schema, (err) => {
     if (err)
@@ -82,7 +82,7 @@ function readModelsFromFolder(folderPath: string): Promise<Model[]> {
 }
 
 async function migrate(path: string, options: SchemaOptions): Promise<void> {
-  const models = await readModelsFromFolder(projectPath('/config/models'))
+  const models = await readModelsFromFolder(projectPath('models'))
 
   generatePrismaSchema(models, path, options)
 }
