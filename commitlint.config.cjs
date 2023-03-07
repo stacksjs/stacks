@@ -1,5 +1,5 @@
-const { readdirSync } = require('fs')
-const { resolve } = require('path')
+const { readdirSync } = require('node:fs')
+const { resolve } = require('node:path')
 const { paramCase } = require('change-case')
 const jiti = require('jiti')(__filename)
 const git = jiti('./config/git.ts')

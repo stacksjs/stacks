@@ -3,7 +3,7 @@ import { ref } from 'vue-demi'
 import Multiselect from '@vueform/multiselect'
 
 interface Props {
-  filterValues: object | any // the Meilisearch index you would like to use for this table
+  filterValues: object | any // the Meilisearch index to use for this table
 }
 
 const {
@@ -83,11 +83,11 @@ function modifyFilters(name: string, value: any, id: number) {
 </script>
 
 <template>
-  <div class="bg-white max-w-7xl mx-auto">
+  <div class="bg-white mx-auto max-w-7xl">
     <!-- Filters -->
     <section
       aria-labelledby="filter-heading"
-      class="relative z-10 border-t border-b border-gray-200 grid items-center"
+      class="border-t border-b border-gray-200 grid z-10 relative items-center"
     >
       <h2
         id="filter-heading"
@@ -95,18 +95,18 @@ function modifyFilters(name: string, value: any, id: number) {
       >
         Filters
       </h2>
-      <div class="relative col-start-1 row-start-1 py-4">
-        <div class="max-w-7xl mx-auto flex space-x-6 divide-x divide-gray-200 text-sm px-4 sm:px-6 lg:px-8">
+      <div class="py-4 col-start-1 row-start-1 relative">
+        <div class="divide-x flex mx-auto space-x-6 divide-gray-200 text-sm max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <button
               type="button"
-              class="group text-gray-700 font-medium flex items-center"
+              class="flex font-medium text-gray-700 group items-center"
               aria-controls="disclosure-1"
               aria-expanded="false"
             >
               <!-- Heroicon name: solid/filter -->
               <svg
-                class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500"
+                class="flex-none h-5 mr-2 text-gray-400 w-5 group-hover:text-gray-500"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -136,17 +136,17 @@ function modifyFilters(name: string, value: any, id: number) {
         id="disclosure-1"
         class="border-t border-gray-200 py-10"
       >
-        <div class="max-w-7xl mx-auto  px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-          <div class="grid grid-cols-1 gap-y-10 auto-rows-min md:grid-cols-4 md:gap-x-6">
+        <div class="mx-auto text-sm  max-w-7xl px-4 sm:px-6 md:gap-x-6 lg:px-8">
+          <div class="auto-rows-min grid gap-y-10 grid-cols-1 md:gap-x-6 md:grid-cols-4">
             <fieldset
               v-for="(filter, index) in allFilters"
               :key="index"
             >
-              <legend class="block font-medium">
+              <legend class="font-medium block">
                 {{ filter.name }}
               </legend>
-              <div class="pt-6 space-y-6 sm:pt-4 sm:space-y-4">
-                <div class="flex items-center text-base sm:text-sm">
+              <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                <div class="flex text-base items-center sm:text-sm">
                   <Multiselect
                     ref="multiselect"
                     :options="getFilters(filter.column)"
@@ -164,7 +164,7 @@ function modifyFilters(name: string, value: any, id: number) {
           <div class="flex justify-end">
             <button
               type="button"
-              class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="border border-transparent rounded-full font-medium bg-indigo-600 shadow-sm text-xs text-white py-1.5 px-3 inline-flex items-center hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               @click="applyFilters"
             >
               Apply filters

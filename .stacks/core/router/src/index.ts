@@ -4,9 +4,10 @@
 // -> to generate our Laravel source into their API
 // -> todo: alias `useHead` to `metaTags` or something more readable
 
-import type { NitroEventHandler } from '@stacksjs/types'
+// import type { NitroEventHandler } from '@stacksjs/types'
 
-export function router(options: NitroEventHandler) {
+export function router() {
+// export function router(options: NitroEventHandler) {
 
 }
 
