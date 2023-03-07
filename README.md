@@ -63,7 +63,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 ### Stacks Cloud
 
-_Create your personal or professional Vercel-like cloud._
+_Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
