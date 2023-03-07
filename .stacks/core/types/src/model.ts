@@ -1,16 +1,19 @@
 import type { ZodBoolean as Boolean, ZodDate as Date, ZodNumber as Number, ZodString as String } from 'zod'
-import type { Settings as IndexSettings } from 'stacks/core/types/src'
+import type { SearchIndexSettings } from 'stacks/core/types/src'
+
+export interface SeedOptions {
+  count: number
+}
 
 /**
  * Model.
  */
 export interface Model {
   name: string
-  searchable?: boolean | IndexSettings
-  seeder?: {
-    count: number
-  }
+  searchable?: boolean | SearchIndexSettings
+  seedable?: boolean | SeedOptions
   fields: Field[]
+  usesTimestamps?: boolean
 }
 
 export interface Field {

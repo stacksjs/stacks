@@ -1,4 +1,4 @@
-import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, SearchParams, SearchResponse, Settings } from 'meilisearch'
+import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, Settings as SearchIndexSettings, SearchParams, SearchResponse } from 'meilisearch'
 import type { MaybePromise } from '.'
 
 type Search = any
@@ -91,7 +91,7 @@ export interface SearchEngineDriver {
   getIndex: (name: string) => MaybePromise<Index>
   updateIndex?: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
   deleteIndex?: (name: string) => MaybePromise<EnqueuedTask>
-  updateIndexSettings: (name: string, settings: Settings) => MaybePromise<EnqueuedTask>
+  updateIndexSettings: (name: string, settings: SearchIndexSettings) => MaybePromise<EnqueuedTask>
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
@@ -163,4 +163,4 @@ export interface SearchEngineStorage {
   currentPage: number
 }
 
-export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, Settings, SearchParams, SearchResponse }
+export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, SearchIndexSettings, SearchParams, SearchResponse }
