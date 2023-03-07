@@ -5,15 +5,22 @@ export interface SeedOptions {
   count: number
 }
 
+export interface TimestampOptions {
+  createdAt?: string // defaults to 'created_at'
+  updatedAt?: string
+  deletedAt?: string
+}
+
 /**
  * Model.
  */
 export interface Model {
-  name: string
-  searchable?: boolean | SearchIndexSettings
-  seedable?: boolean | SeedOptions
+  name?: string // defaults to the file name of the model
   fields: Field[]
-  usesTimestamps?: boolean
+  useSearch?: boolean | SearchIndexSettings
+  useSeed?: boolean | SeedOptions
+  useTimestamps?: boolean | TimestampOptions
+  // useSoftDeletes?: boolean | SoftDeleteOptions
 }
 
 export interface Field {
