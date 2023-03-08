@@ -2,7 +2,7 @@
   "name": "@stacksjs/validation",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.29.0",
+  "packageManager": "pnpm@7.29.1",
   "description": "The Stacks Validation methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,8 +33,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.14.2",
-    "pnpm": ">=7.29.0"
+    "node": ">=v18.15.0",
+    "pnpm": ">=7.29.1"
   },
   "scripts": {
     "build": "mkdist -d",

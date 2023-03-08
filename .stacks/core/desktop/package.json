@@ -2,7 +2,7 @@
   "name": "@stacksjs/desktop",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.29.0",
+  "packageManager": "pnpm@7.29.1",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -41,8 +41,8 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=v18.14.2",
-    "pnpm": ">=7.29.0"
+    "node": ">=v18.15.0",
+    "pnpm": ">=7.29.1"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -56,7 +56,7 @@
     "@tauri-apps/api": "1.2.0",
     "@tauri-apps/cli": "1.2.3",
     "unified-network": "0.6.4",
-    "unstorage": "^1.3.0",
+    "unstorage": "^1.4.0",
     "vue": "3.2.47",
     "vue3-highlightjs": "^1.0.5"
   },
