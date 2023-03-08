@@ -17,9 +17,9 @@ export interface TimestampOptions {
 export interface Model {
   name?: string // defaults to the file name of the model
   fields: Field[]
-  hasOne: string
-  hasMany: string
-  belongsToMany: string
+  hasOne?: string
+  hasMany?: string
+  belongsToMany?: string
   useSeed?: boolean | SeedOptions
   useSearch?: boolean | SearchIndexSettings
   useTimestamps?: boolean | TimestampOptions
