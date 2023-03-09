@@ -65,7 +65,7 @@
     "fast-glob": "^3.2.12",
     "kolorist": "1.7.0",
     "p-limit": "^4.0.0",
-    "rimraf": "^4.3.0",
+    "rimraf": "^4.4.0",
     "throttle-debounce": "^5.0.0"
   },
   "devDependencies": {
