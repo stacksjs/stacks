@@ -39,7 +39,47 @@ generator client {
       schema += columnSchema
     }
 
+    if (model.hasOne) {
+      schema += `  ${model.hasOne} ${titleCase(model.hasOne)}?`
+      schema += ` @relation(fields: [${model.hasOne}Id], references: [id])\n`
+      schema += `  ${model.hasOne}Id Int\n`
+    }
+
+    if (model.belongsTo) {
+      schema += `  ${model.belongsTo} ${titleCase(model.belongsTo)}`
+      schema += ` @relation(fields: [${model.belongsTo}Id], references: [id])\n`
+      schema += `  ${model.belongsTo}Id Int\n`
+    }
+
+    if (model.hasMany) {
+      schema += `  ${model.hasMany} ${titleCase(model.hasMany)}[]`
+      schema += ` @relation(fields: [id], references: [${model.name.toLowerCase()}Id])\n`
+    }
+
     schema += '}\n\n'
+
+    if (model.hasMany) {
+      schema += `model ${titleCase(model.hasMany)} {
+  id       Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  ${model.name.toLowerCase()}Id Int
+  ${model.name.toLowerCase()} ${titleCase(model.name)}
+  @relation(fields: [${model.name.toLowerCase()}Id], references: [id])
+}\n\n`
+    }
+
+    if (model.hasOne || model.belongsTo) {
+      const relatedModelName = model.hasOne || model.belongsTo
+      schema += `model ${titleCase(relatedModelName)} {
+  id       Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  ${model.name.toLowerCase()} ${titleCase(model.name)}?
+  ${model.name.toLowerCase()}Id Int?
+  @unique
+}\n\n`
+    }
   }
 
   if (!fs.existsSync(frameworkPath('database')))
@@ -48,37 +88,13 @@ generator client {
   fs.writeFile(path, schema, (err) => {
     if (err)
       console.error(`Error writing schema file: ${err.message}`)
-
+    // else
     // console.log(`Schema file generated successfully at path: ${path}`)
   })
 }
 
-function readModelsFromFolder(folderPath: string): Promise<Model[]> {
-  return new Promise((resolve, reject) => {
-    const models: Model[] = []
-
-    fs.readdir(folderPath, (err, files) => {
-      if (err)
-        reject(err)
-
-      const promises = files
-        .filter(file => file.endsWith('.ts'))
-        .map((file) => {
-          const filePath = `${folderPath}/${file}`
-
-          return import(filePath).then((data) => {
-            models.push({
-              name: data.default.name,
-              columns: data.default.fields,
-            })
-          })
-        })
-
-      Promise.all(promises)
-        .then(() => resolve(models))
-        .catch(err => reject(err))
-    })
-  })
+function titleCase(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 async function migrate(path: string, options: SchemaOptions): Promise<void> {
