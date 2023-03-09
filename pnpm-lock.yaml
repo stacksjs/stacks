@@ -1076,6 +1076,7 @@ importers:
       mkdist: ^1.1.1
       pluralize: ^8.0.0
       slugify: ^1.6.5
+      title-case: ^3.0.3
       typescript: ^4.9.5
       unbuild: ^1.1.2
       validator: ^13.9.0
@@ -1087,6 +1088,7 @@ importers:
       change-case: 4.1.2
       pluralize: 8.0.0
       slugify: 1.6.5
+      title-case: 3.0.3
       validator: 13.9.0
     devDependencies:
       '@stacksjs/testing': link:../testing
@@ -17254,6 +17256,12 @@ packages:
   /tinyspy/1.1.1:
     resolution: {integrity: sha512-UVq5AXt/gQlti7oxoIg5oi/9r0WpF7DGEVwXgqWSMmyN16+e3tl5lIvTaOpJ3TAtu5xFzWccFRM4R5NaWHF+4g==}
     engines: {node: '>=14.0.0'}
+    dev: false
+
+  /title-case/3.0.3:
+    resolution: {integrity: sha512-e1zGYRvbffpcHIrnuqT0Dh+gEJtDaxDSoG4JAIpq4oDFyooziLBIiYQv0GBT4FUAnUop5uZ1hiIAj7oAF6sOCA==}
+    dependencies:
+      tslib: 2.5.0
     dev: false
 
   /tmp/0.0.33:

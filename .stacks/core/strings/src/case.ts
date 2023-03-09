@@ -12,3 +12,4 @@ export {
   sentenceCase,
   snakeCase,
 } from 'change-case'
+export { titleCase } from 'title-case'
