@@ -1,4 +1,4 @@
-import type { AppOptions, CacheOptions, CliOptions, DatabaseOptions, DebugOptions, DeployOptions, DnsOptions, Events, HashingOptions, LibraryOptions, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
+import type { AppOptions, CacheOptions, CliOptions, DatabaseOptions, DebugOptions, DeployOptions, DnsOptions, Events, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
 import type { GitOptions } from 'stacks/core/buddy/src'
 import * as c from '.'
 
@@ -51,6 +51,10 @@ export function defineDeployConfig(options: DeployOptions) {
 }
 
 export function defineDnsConfig(options: DnsOptions) {
+  return options
+}
+
+export function defineModel(options: Model) {
   return options
 }
 

@@ -1,7 +1,8 @@
-import type { PrismaClient } from '@prisma/client'
+// import type { PrismaClient } from '@prisma/client'
 import type { Model } from './model'
 
-export type DatabaseClient = PrismaClient
+export type DatabaseClient = any
+// export type DatabaseClient = PrismaClient
 
 export interface DatabaseOptions {
   driver?: string
