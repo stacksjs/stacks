@@ -44,7 +44,7 @@
   "dependencies": {
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "rimraf": "^4.3.0",
-    "vitepress": "^1.0.0-alpha.50"
+    "rimraf": "^4.4.0",
+    "vitepress": "^1.0.0-alpha.51"
   }
 }
