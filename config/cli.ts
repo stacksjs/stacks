@@ -9,4 +9,5 @@ import { env } from 'stacks/core/utils/src/helpers'
  */
 export default defineCLIConfig({
   name: env('CLI_NAME', 'stx'),
+  command: env('CLI_COMMAND', 'stx'),
 })

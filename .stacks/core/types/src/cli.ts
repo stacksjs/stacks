@@ -237,7 +237,7 @@ export const enum Action {
   BuildVueComponentLib = 'build-vue-component-lib',
   BuildWebComponentLib = 'build-web-component-lib',
   BuildCli = 'build-cli',
-  BuildCore = 'build-core', // wip
+  BuildCore = 'build/core', // wip
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
   Changelog = 'changelog', // wip

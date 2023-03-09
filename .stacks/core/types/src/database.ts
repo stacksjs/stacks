@@ -23,6 +23,6 @@ export interface SchemaOptions {
 export interface DatabaseDriver {
   client: DatabaseClient
   migrate: (models: Model[], path: string, options?: SchemaOptions) => Promise<void>
-  seed: (modelName: string, data: SeedData) => Promise<void>
+  // seed: (modelName: string, data: SeedData) => Promise<void>
   factory: (modelName: string, fileName: string, path: string) => Promise<void>
 }
