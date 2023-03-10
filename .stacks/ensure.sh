@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REQUIRED_NODE_VERSION="18.15.0"
+REQUIRED_NODE_VERSION=$(cat ./node-version)
 
 if command -v nvm &> /dev/null
 then
