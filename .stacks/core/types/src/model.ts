@@ -16,7 +16,7 @@ export interface TimestampOptions {
  */
 export interface Model {
   name?: string // defaults to the file name of the model
-  fields: Field[]
+  fields: Fields
   hasOne?: string
   hasMany?: string
   belongsToMany?: string
@@ -26,10 +26,11 @@ export interface Model {
   // useSoftDeletes?: boolean | SoftDeleteOptions
 }
 
-export interface Field {
-  name: string
-  unique?: boolean
-  required?: boolean
-  factory?: () => any
-  validation?: String | Number | Boolean | Date
+export interface Fields {
+  [key: string]: {
+    unique?: boolean
+    required?: boolean
+    factory?: () => any
+    validation?: String | Number | Boolean | Date
+  }
 }

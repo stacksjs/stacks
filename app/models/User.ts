@@ -1,29 +1,27 @@
-import { faker } from 'stacks/core/faker/src'
-import { validate } from 'stacks/core/validation'
-import type { Model } from 'stacks/core/types/src'
+import { faker } from '../../.stacks/core/faker/src' // stacks/faker or @stacksjs/faker
+import { validate } from '../../.stacks/core/validation/src' // stacks/validate or @stacksjs/validate
+import type { Model } from '../../.stacks/core/types/src' // stacks/types or @stacksjs/types
 
 export default <Model> {
   name: 'User',
-  searchable: true, // boolean | IndexSettings
+  searchable: true, // boolean | IndexSettings,
+  authenticatable: true, // boolean | AuthSettings,
   seeder: {
     count: 10,
   },
-  fields: [
-    {
-      name: 'name',
+  fields: {
+    name: {
       validation: validate.string().min(3).max(255),
       factory: () => faker.name,
     },
-    {
-      name: 'email',
+    email: {
       validation: validate.string().min(1).max(255),
       unique: true,
       factory: () => faker.internet.email,
     },
-    {
-      name: 'password',
+    password: {
       validation: validate.string().min(6).max(255),
       factory: () => faker.internet.password(),
     },
-  ],
+  },
 }
