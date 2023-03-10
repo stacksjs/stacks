@@ -1,5 +1,4 @@
-import type { AppOptions, CacheOptions, CliOptions, DatabaseOptions, DebugOptions, DeployOptions, DnsOptions, Events, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
-import type { GitOptions } from 'stacks/core/buddy/src'
+import type { AppOptions, CacheOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DeployOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
 import * as c from '.'
 
 type Config = 'app' | 'cache' | 'database' | 'debug' | 'deploy' | 'docs' | 'git' | 'hashing' | 'library' | 'notification' | 'searchEngine' | 'services' | 'storage' | 'ui'
@@ -38,6 +37,14 @@ export function defineCacheConfig(options: CacheOptions) {
   return options
 }
 
+export function defineCLIConfig(options: CliOptions) {
+  return options
+}
+
+export function defineCronJobsConfig(options: CronJobOptions[]) {
+  return options
+}
+
 export function defineDatabaseConfig(options: DatabaseOptions) {
   return options
 }
@@ -54,7 +61,7 @@ export function defineDnsConfig(options: DnsOptions) {
   return options
 }
 
-export function defineModel(options: Model) {
+export function defineEmailConfig(options: EmailOptions) {
   return options
 }
 
@@ -71,6 +78,10 @@ export function defineHashingConfig(options: HashingOptions) {
 }
 
 export function defineLibraryConfig(options: LibraryOptions) {
+  return options
+}
+
+export function defineModel(options: Model) {
   return options
 }
 

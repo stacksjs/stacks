@@ -1,5 +1,5 @@
-import { env } from 'stacks/core/utils/src/helpers'
-import { defineDatabaseConfig } from 'stacks/core/config/src/helpers'
+import { env } from '../.stacks/core/utils/src/helpers'
+import { defineDatabaseConfig } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Database Configuration**

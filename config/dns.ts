@@ -9,4 +9,8 @@ import { defineDnsConfig } from '../.stacks/core/config/src/helpers'
  */
 export default defineDnsConfig({
   a: [],
+  aaaa: [],
+  cname: [],
+  txt: [],
+  mx: [],
 })

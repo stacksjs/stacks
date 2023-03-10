@@ -2,6 +2,8 @@
 
 This folder contains your Stacks configuration files. Each file comes with its descriptions, allowing you to easily learn at your own pace.
 
+_No worries, it is fully typed._
+
 ## 💪🏼 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.

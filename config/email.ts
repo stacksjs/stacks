@@ -1,4 +1,5 @@
-import { app, defineEmailConfig } from '../.stacks/core/config/src/helpers'
+import { app } from '../.stacks/core/config/src'
+import { defineEmailConfig } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Email Configuration**

@@ -1,5 +1,3 @@
-import type { IChatOptions, IEmailOptions, ISendMessageSuccessResponse, ISmsOptions } from '@novu/stateless'
-
 export interface NotificationOptions {
   type?: 'email' | 'sms' | 'chat' | 'push'
   driver?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses' | 'mailgun' | 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns'
@@ -124,13 +122,6 @@ export interface NotificationOptions {
   }
 }
 
-export type EmailOptions = IEmailOptions
-
-export type SendMessageSuccessResponse = ISendMessageSuccessResponse
-
-export type ChatOptions = IChatOptions
-
-export type SmsOptions = ISmsOptions
 export interface FCMPushNotificationOptions {
   eventName: string
   to: {
@@ -167,3 +158,10 @@ export interface ExpoPushNotificationOptions {
     mutableContent: boolean
   }
 }
+
+export type {
+  IChatOptions as ChatOptions,
+  IEmailOptions as EmailOptions,
+  ISendMessageSuccessResponse as SendMessageSuccessResponse,
+  ISmsOptions as SmsOptions,
+} from '@novu/stateless'
