@@ -1,6 +1,7 @@
 import { filesystem } from '@stacksjs/storage'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { Model, SchemaOptions } from '@stacksjs/types'
+import { titleCase } from '@stacksjs/strings'
 
 const { fs } = filesystem
 
@@ -93,8 +94,32 @@ generator client {
   })
 }
 
-function titleCase(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
+function readModelsFromFolder(folderPath: string): Promise<Model[]> {
+  return new Promise((resolve, reject) => {
+    const models: Model[] = []
+
+    fs.readdir(folderPath, (err, files) => {
+      if (err)
+        reject(err)
+
+      const promises = files
+        .filter(file => file.endsWith('.ts'))
+        .map((file) => {
+          const filePath = `${folderPath}/${file}`
+
+          return import(filePath).then((data) => {
+            models.push({
+              name: data.default.name,
+              columns: data.default.fields,
+            })
+          })
+        })
+
+      Promise.all(promises)
+        .then(() => resolve(models))
+        .catch(err => reject(err))
+    })
+  })
 }
 
 async function migrate(path: string, options: SchemaOptions): Promise<void> {
