@@ -424,6 +424,7 @@ importers:
     specifiers:
       '@prisma/client': ^4.11.0
       '@stacksjs/path': workspace:*
+      '@stacksjs/strings': workspace:*
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.1
@@ -431,6 +432,7 @@ importers:
     dependencies:
       '@prisma/client': 4.11.0
       '@stacksjs/path': link:../path
+      '@stacksjs/strings': link:../strings
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing

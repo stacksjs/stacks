@@ -1,4 +1,4 @@
-import type { Options } from 'unplugin-vue-components'
+export type { Options as ComponentOptions } from 'unplugin-vue-components'
 
 export interface TagOption {
   /**
@@ -62,5 +62,3 @@ export interface TagOption {
 }
 
 export type TagsOptions = TagOption[]
-
-export type ComponentOptions = Options
