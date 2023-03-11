@@ -9,7 +9,7 @@ import { defineLibraryConfig } from '../.stacks/core/config/src/helpers'
  */
 export default defineLibraryConfig({
   name: 'hello-world',
-  parentName: '@stacksjs',
+  parentName: '@stacksjs', // hmm... maybe orgName?
   repository: 'stacksjs/stacks',
   license: 'MIT',
   author: 'Chris Breuer',

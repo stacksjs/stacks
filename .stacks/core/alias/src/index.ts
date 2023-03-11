@@ -78,8 +78,6 @@ const alias: Record<string, string> = {
   '@stacksjs/signals/*': p.signalsPath('src/*'),
   '@stacksjs/storage': p.storagePath('src/index.ts'),
   '@stacksjs/storage/*': p.storagePath('src/*'),
-  '@stacksjs/signals': p.signalsPath('src/index.ts'),
-  '@stacksjs/signals/*': p.signalsPath('src/*'),
   '@stacksjs/strings': p.stringsPath('src/index.ts'),
   '@stacksjs/strings/*': p.stringsPath('src/*'),
   '@stacksjs/testing/*': p.testingPath('*'),
