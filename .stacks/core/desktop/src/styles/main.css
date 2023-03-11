@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-Regular.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-RegularItalic.ttf');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-Bold.ttf');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-ExtraBold.ttf');
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-Medium.ttf');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Mona-Sans';
+  src: url('/src/fonts/mona-sans/ttf/Mona-Sans-SemiBold.ttf');
+  font-weight: 600;
+  font-style: normal;
+}
+
+.mona-sans {
+  font-family:'Mona-Sans';
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: rgb(13,148,136);
+  opacity: 0.75;
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+.router-link-active, .router-link-exact-active {
+  @apply bg-gray-100 dark:bg-gray-700 p-2 dark:text-gray-100 flex items-center text-sm rounded-md !important
+}
+
+.sidebar-links {
+  @apply dark:text-gray-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-100 dark-hover:bg-gray-900 dark-hover:text-gray-200 flex items-center px-2 py-1.5 text-sm rounded-md
+}
+
+
+.active-subsection-sidebar {
+  @apply bg-gray-200 dark:bg-gray-900 p-2 dark:text-gray-100 flex items-center text-sm rounded-md !important
+}
+
+.primary-button {
+  @apply inline-flex sm:w-auto w-full justify-center items-center px-2 py-1.5 text-base transition duration-150 ease-in-out font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2
+}
+
+.secondary-button {
+  @apply inline-flex justify-center sm:w-auto w-full items-center px-2 py-1.5 transition duration-150 ease-in-out text-base font-medium text-gray-700 dark:text-gray-200 dark:text-gray-200 bg-white dark-hover:bg-gray-700 dark:border-gray-500 dark:bg-gray-800 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2
+}
+
+.filter-button {
+  @apply inline-flex justify-center sm:w-auto w-full items-center px-2 py-1.5 transition duration-150 ease-in-out text-base font-medium text-gray-700 dark:text-gray-200 dark:text-gray-200 bg-white dark-hover:bg-gray-700 dark:border-gray-500 dark:bg-gray-800 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2
+}
+
+.divider-line {
+  @apply border border-b mt-6 border-gray-100 dark:border-gray-700;
+}
+
+.section-title {
+  @apply text-2xl leading-6 text-gray-800 dark:text-gray-200;
+}
+
+.section-text {
+  @apply mt-1 text-sm text-gray-500 mt-2;
+}
+
+.settings-btn {
+  @apply text-white px-4 py-2 rounded-md text-sm;
+}
+
+.input-label {
+  @apply dark:text-gray-200;
+}
+
+.input {
+  @apply dark:text-gray-700 dark:bg-gray-800 dark:border-gray-700;
+}
+
+.initials-avatar {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  background-color:	#d78077;
+  color: #fff;
+  border-radius: 50%;
+  height: 3rem;
+  width: 3rem;
+}
