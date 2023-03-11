@@ -44,6 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@stacksjs/alias": "workspace:*",
     "pathe": "^1.1.0"
   },
   "devDependencies": {
