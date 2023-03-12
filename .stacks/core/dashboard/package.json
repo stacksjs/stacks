@@ -46,6 +46,6 @@
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.1"
+    "mkdist": "^1.1.2"
   }
 }

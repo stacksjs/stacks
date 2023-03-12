@@ -57,13 +57,13 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "cac": "^6.7.14",
-    "execa": "^7.0.0",
+    "execa": "^7.1.0",
     "ora": "^6.1.2",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
     "esno": "^0.16.3",
-    "mkdist": "^1.1.1"
+    "mkdist": "^1.1.2"
   }
 }
