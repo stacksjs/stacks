@@ -499,7 +499,7 @@ importers:
       vite-plugin-inspect: ^0.7.10
       vite-plugin-pages: ^0.27.1
       vite-plugin-pwa: ^0.14.0
-      vite-plugin-vue-component-preview: ^0.3.3
+      vite-plugin-vue-component-preview: ^1.1.5
       vite-plugin-vue-inspector: ^3.3.2
       vite-plugin-vue-layouts: ^0.7.0
       vite-plugin-vue-markdown: ^0.22.1
@@ -558,7 +558,7 @@ importers:
       vite-plugin-inspect: 0.7.16_rollup@2.79.1+vite@4.1.4
       vite-plugin-pages: 0.27.1_vite@4.1.4
       vite-plugin-pwa: 0.14.4_qtdhuw7qkuvvectm2wxn5d44j4
-      vite-plugin-vue-component-preview: 0.3.4_rollup@2.79.1+vite@4.1.4
+      vite-plugin-vue-component-preview: 1.1.5_txcvk7gybr23kxzgen4nnhsyoq
       vite-plugin-vue-inspector: 3.3.2_vite@4.1.4
       vite-plugin-vue-layouts: 0.7.0_s7i5cn7xswa4rctkzerr3e4clm
       vite-plugin-vue-markdown: 0.22.4_rollup@2.79.1+vite@4.1.4
@@ -20200,11 +20200,15 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /vite-plugin-vue-component-preview/0.3.4_rollup@2.79.1+vite@4.1.4:
-    resolution: {integrity: sha512-35Oy11DIe/owthbgSRSDVaIhtH1TyA7d90ibgjmfXcHdsa/1/t/Fsy6xceaQVz+10SrRFToSK4/iMFbBbA/i1Q==}
+  /vite-plugin-vue-component-preview/1.1.5_txcvk7gybr23kxzgen4nnhsyoq:
+    resolution: {integrity: sha512-5aSYDIM/e+JG4d3Rpgr6kS3zdD2fKmpYKs3BSuSyVZwcCY2XMRJj3GVCl4eM4UWqsLT2/z7T6Xpe8QADEJIiJg==}
+    peerDependencies:
+      vue: '>=3.0.0'
     dependencies:
+      '@volar/vue-language-core': 1.2.0
       magic-string: 0.27.0
       vite-plugin-vue-markdown: 0.22.4_rollup@2.79.1+vite@4.1.4
+      vue: 3.2.47
     transitivePeerDependencies:
       - rollup
       - vite
