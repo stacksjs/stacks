@@ -23,6 +23,7 @@ then
             echo "Node.js version $REQUIRED_NODE_VERSION not found. Installing..."
             nvm install "$REQUIRED_NODE_VERSION"
         fi
+        nvm use "$REQUIRED_NODE_VERSION"
     elif [ -f "$HOME/.fnm/fnm" ]; then
         echo "fnm found. Installing Node.js version $REQUIRED_NODE_VERSION..."
         fnm install "$REQUIRED_NODE_VERSION"
@@ -31,6 +32,7 @@ then
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
         . "$HOME/.nvm/nvm.sh"
         nvm install "$REQUIRED_NODE_VERSION"
+        nvm use "$REQUIRED_NODE_VERSION"
     fi
 fi
 
