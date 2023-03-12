@@ -376,9 +376,9 @@ export const path = {
   emailPath,
   errorHandlingPath,
   eventsPath,
-  fakerPath,
   healthPath,
   examplesPath,
+  fakerPath,
   frameworkPath,
   storagePath,
   functionsPath,
@@ -387,7 +387,6 @@ export const path = {
   libraryEntryPath,
   lintPath,
   loggingPath,
-  xRayPath,
   modulesPath,
   objectsPath,
   onboardingPath,
@@ -419,6 +418,7 @@ export const path = {
   uiPath,
   utilsPath,
   validationPath,
+  xRayPath,
 
   // path utils
   basename,
