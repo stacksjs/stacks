@@ -34,6 +34,12 @@ then
     fi
 fi
 
+if ! command -v corepack &> /dev/null
+then
+    echo "corepack not found. Installing corepack..."
+    curl -L https://raw.githubusercontent.com/kristoferjoseph/flexbox-layout/master/install_corepack.sh | bash
+fi
+
 if ! command -v pnpm &> /dev/null
 then
     echo "pnpm not found. Enabling pnpm..."
