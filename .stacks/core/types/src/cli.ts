@@ -251,8 +251,8 @@ export const enum Action {
   KeyGenerate = 'key-generate', // wip
   MakeNotification = 'make-notification', // wip
   Migrate = 'migrate', // wip
-  Lint = 'lint', // wip
-  LintFix = 'lint-fix', // wip
+  Lint = 'lint/index', // wip
+  LintFix = 'lint/fix', // wip
   Prepublish = 'prepublish', // wip
   Release = 'release', // wip
   Test = 'test', // wip
