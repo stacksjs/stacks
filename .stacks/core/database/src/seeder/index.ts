@@ -1,5 +1,6 @@
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
+import faker from 'faker'
 
 const { fs } = filesystem
 
@@ -28,5 +29,26 @@ function readModels(folderPath: string): Promise<Model[]> {
     })
   })
 }
+
+const seedData = Array.from({ length: count }).map(() => {
+  const fields = Object.entries(model.fields)
+  const data: Record<string, any> = {}
+
+  fields.forEach(([name, type]) => {
+    switch (type) {
+      case 'string':
+        data[name] = faker.lorem.words(3)
+        break
+      case 'number':
+        data[name] = faker.random.number()
+        break
+      case 'boolean':
+        data[name] = faker.random.boolean()
+        break
+    }
+  })
+
+  return data
+})
 
 export { readModels as seed }
