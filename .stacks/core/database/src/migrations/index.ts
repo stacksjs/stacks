@@ -30,15 +30,15 @@ generator client {
       schema += `  ${model.hasOne}Id Int\n`
     }
 
-    if (model.belongsTo) {
-      schema += `  ${model.belongsTo} ${titleCase(model.belongsTo)}`
-      schema += ` @relation(fields: [${model.belongsTo}Id], references: [id])\n`
-      schema += `  ${model.belongsTo}Id Int\n`
+    if (model.belongsToMany) {
+      schema += `  ${model.belongsToMany} ${titleCase(model.belongsToMany)}`
+      schema += ` @relation(fields: [${model.belongsToMany}Id], references: [id])\n`
+      schema += `  ${model.belongsToMany}Id Int\n`
     }
 
     if (model.hasMany) {
       schema += `  ${model.hasMany} ${titleCase(model.hasMany)}[]`
-      schema += ` @relation(fields: [id], references: [${model.name.toLowerCase()}Id])\n`
+      schema += ` @relation(fields: [id], references: [${model.name?.toLowerCase()}Id])\n`
     }
 
     if (model.hasThrough) {
@@ -57,20 +57,20 @@ generator client {
 id       Int      @id @default(autoincrement())
 createdAt DateTime @default(now())
 updatedAt DateTime @updatedAt()
-${model.name.toLowerCase()}Id Int
-${model.name.toLowerCase()} ${titleCase(model.name)}
-@relation(fields: [${model.name.toLowerCase()}Id], references: [id])
+${model.name?.toLowerCase()}Id Int
+${model.name?.toLowerCase()} ${titleCase(model.name)}
+@relation(fields: [${model.name?.toLowerCase()}Id], references: [id])
 }\n\n`
     }
 
-    if (model.hasOne || model.belongsTo) {
-      const relatedModelName = model.hasOne || model.belongsTo
+    if (model.hasOne || model.belongsToMany) {
+      const relatedModelName = model.hasOne || model.belongsToMany
       schema += `model ${titleCase(relatedModelName)} {
 id       Int      @id @default(autoincrement())
 createdAt DateTime @default(now())
 updatedAt DateTime @updatedAt()
-${model.name.toLowerCase()} ${titleCase(model.name)}?
-${model.name.toLowerCase()}Id Int?
+${model.name?.toLowerCase()} ${titleCase(model.name)}?
+${model.name?.toLowerCase()}Id Int?
 @unique
 }\n\n`
     }
