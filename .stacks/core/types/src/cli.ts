@@ -187,7 +187,7 @@ export const enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
-  Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules',
+  Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ .stacks/**/node_modules',
   Dev = 'dev',
   DevComponents = 'vite --config ./core/build/src/vue-components.ts',
   DevDocs = 'npx vitepress dev ./docs/src',
@@ -241,6 +241,7 @@ export const enum Action {
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
   Changelog = 'changelog', // wip
+  Clean = 'clean', // wip
   DevComponents = 'dev/components', // wip
   DevDocs = 'dev/docs', // wip
   Fresh = 'fresh', // wip

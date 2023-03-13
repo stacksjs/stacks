@@ -885,6 +885,19 @@ importers:
       mkdist: 1.1.2_typescript@4.9.5
       typescript: 4.9.5
 
+  .stacks/core/scheduler:
+    specifiers:
+      '@stacksjs/testing': workspace:*
+      mkdist: ^1.1.2
+      node-cron: 3.0.2
+      typescript: ^4.9.5
+    dependencies:
+      node-cron: 3.0.2
+    devDependencies:
+      '@stacksjs/testing': link:../testing
+      mkdist: 1.1.2_typescript@4.9.5
+      typescript: 4.9.5
+
   .stacks/core/search-engine:
     specifiers:
       '@stacksjs/cli': workspace:*
@@ -7377,13 +7390,20 @@ packages:
   /argparse/2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  /array-buffer-byte-length/1.0.0:
+    resolution: {integrity: sha512-LPuwb2P+NrQw3XhxGc36+XSvuBPopovXYTR9Ew++Du9Yb/bx5AzBfrIsBoj0EZUifjQU+sHL21sseZ3jerWO/A==}
+    dependencies:
+      call-bind: 1.0.2
+      is-array-buffer: 3.0.2
+    dev: false
+
   /array-includes/3.1.6:
     resolution: {integrity: sha512-sgTbLvL6cNnw24FnbaDyjmvddQ2ML8arZsgaJhoABMoplz/4QRhtrYS+alr1BUM1Bwp6dhx8vVCBSLG+StwOFw==}
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
       get-intrinsic: 1.2.0
       is-string: 1.0.7
     dev: false
@@ -7406,7 +7426,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
       es-shim-unscopables: 1.0.0
     dev: false
 
@@ -7416,7 +7436,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
       es-shim-unscopables: 1.0.0
     dev: false
 
@@ -9625,15 +9645,15 @@ packages:
       stackframe: 0.3.1
     dev: false
 
-  /es-abstract/1.21.1:
-    resolution: {integrity: sha512-QudMsPOz86xYz/1dG1OuGBKOELjCh99IIWHLzy5znUB6j8xG2yMA7bfTV86VSqKF+Y/H08vQPR+9jyXpuC6hfg==}
+  /es-abstract/1.21.2:
+    resolution: {integrity: sha512-y/B5POM2iBnIxCiernH1G7rC9qQoM77lLIMQLuob0zhp8C56Po81+2Nj0WFKnd0pNReDTnkYryc+zhOzpEIROg==}
     engines: {node: '>= 0.4'}
     dependencies:
+      array-buffer-byte-length: 1.0.0
       available-typed-arrays: 1.0.5
       call-bind: 1.0.2
       es-set-tostringtag: 2.0.1
       es-to-primitive: 1.2.1
-      function-bind: 1.1.1
       function.prototype.name: 1.1.5
       get-intrinsic: 1.2.0
       get-symbol-description: 1.0.0
@@ -9657,6 +9677,7 @@ packages:
       object.assign: 4.1.4
       regexp.prototype.flags: 1.4.3
       safe-regex-test: 1.0.0
+      string.prototype.trim: 1.2.7
       string.prototype.trimend: 1.0.6
       string.prototype.trimstart: 1.0.6
       typed-array-length: 1.0.4
@@ -10878,7 +10899,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
       functions-have-names: 1.2.3
     dev: false
 
@@ -13878,6 +13899,13 @@ packages:
     dev: true
     optional: true
 
+  /node-cron/3.0.2:
+    resolution: {integrity: sha512-iP8l0yGlNpE0e6q1o185yOApANRe47UPbLf4YxfbiNHt/RU5eBcGB/e0oudruheSf+LQeDMezqC5BVAb5wwRcQ==}
+    engines: {node: '>=6.0.0'}
+    dependencies:
+      uuid: 8.3.2
+    dev: false
+
   /node-dir/0.1.17:
     resolution: {integrity: sha512-tmPX422rYgofd4epzrNoOXiE8XFZYOcCq1vD7MAXCDO+O+zndlA2ztdKKMa+EeuBG5tHETpr4ml4RGgpqDCCAg==}
     engines: {node: '>= 0.10.5'}
@@ -14226,7 +14254,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
     dev: false
 
   /obliterator/1.6.1:
@@ -16915,7 +16943,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
       get-intrinsic: 1.2.0
       has-symbols: 1.0.3
       internal-slot: 1.0.5
@@ -16923,12 +16951,21 @@ packages:
       side-channel: 1.0.4
     dev: false
 
+  /string.prototype.trim/1.2.7:
+    resolution: {integrity: sha512-p6TmeT1T3411M8Cgg9wBTMRtY2q9+PNy9EV1i2lIXUN/btt763oIfxwN3RR8VU6wHX8j/1CFy0L+YuThm6bgOg==}
+    engines: {node: '>= 0.4'}
+    dependencies:
+      call-bind: 1.0.2
+      define-properties: 1.2.0
+      es-abstract: 1.21.2
+    dev: false
+
   /string.prototype.trimend/1.0.6:
     resolution: {integrity: sha512-JySq+4mrPf9EsDBEDYMOb/lM7XQLulwg5R/m1r0PXEFqrV0qHvl58sdTilSXtKOflCsK2E8jxf+GKC0T07RWwQ==}
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
     dev: false
 
   /string.prototype.trimstart/1.0.6:
@@ -16936,7 +16973,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.2.0
-      es-abstract: 1.21.1
+      es-abstract: 1.21.2
     dev: false
 
   /string_decoder/0.10.31:

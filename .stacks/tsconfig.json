@@ -86,6 +86,8 @@
       "@stacksjs/push/*": ["./core/push/src/*"],
       "@stacksjs/router": ["./core/router/src/index.ts"],
       "@stacksjs/router/*": ["./core/router/src/*"],
+      "@stacksjs/scheduler": ["./core/scheduler/src/index.ts"],
+      "@stacksjs/scheduler/*": ["./core/scheduler/src/*"],
       "@stacksjs/search-engine": ["./core/search-engine/src/index.ts"],
       "@stacksjs/search-engine/*": ["./core/search-engine/src/*"],
       "@stacksjs/security": ["./core/security/src/index.ts"],

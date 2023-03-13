@@ -290,6 +290,10 @@ export function smsPath(path?: string) {
   return corePath(`sms/${path || ''}`)
 }
 
+export function schedulerPath(path?: string) {
+  return corePath(`scheduler/${path || ''}`)
+}
+
 export function signalsPath(path?: string) {
   return corePath(`signals/${path || ''}`)
 }
@@ -402,6 +406,7 @@ export const path = {
   routerPath,
   routesPath,
   searchEnginePath,
+  schedulerPath,
   settingsPath,
   smsPath,
   signalsPath,

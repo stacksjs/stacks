@@ -1,5 +1,6 @@
 import type { CLI, CleanOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/clean'
+import { runAction } from '@stacksjs/actions'
+import { Action } from '@stacksjs/types'
 
 async function clean(buddy: CLI) {
   const descriptions = {
@@ -13,7 +14,7 @@ async function clean(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: CleanOptions) => {
-      await invoke(options)
+      await runAction(Action.Clean, options)
     })
 }
 

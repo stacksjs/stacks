@@ -74,6 +74,8 @@ const alias: Record<string, string> = {
   '@stacksjs/serverless/*': p.serverlessPath('src/*'),
   '@stacksjs/sms': p.smsPath('src/index.ts'),
   '@stacksjs/sms/*': p.smsPath('src/*'),
+  '@stacksjs/scheduler': p.schedulerPath('src/index.ts'),
+  '@stacksjs/scheduler/*': p.schedulerPath('src/*'),
   '@stacksjs/signals': p.signalsPath('src/index.ts'),
   '@stacksjs/signals/*': p.signalsPath('src/*'),
   '@stacksjs/storage': p.storagePath('src/index.ts'),
