@@ -82,8 +82,9 @@ ${model.name?.toLowerCase()}Id Int?
   fs.writeFile(path, schema, (err) => {
     if (err)
       console.error(`Error writing schema file: ${err.message}`)
-    // else
-    // console.log(`Schema file generated successfully at path: ${path}`)
+    else
+      // eslint-disable-next-line no-console
+      console.log(`Schema file generated successfully at path: ${path}`)
   })
 }
 
@@ -103,7 +104,7 @@ function readModelsFromFolder(folderPath: string): Promise<Model[]> {
           return import(filePath).then((data) => {
             models.push({
               name: data.default.name,
-              columns: data.default.fields,
+              fields: data.default.fields,
             })
           })
         })
