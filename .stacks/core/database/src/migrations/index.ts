@@ -24,22 +24,6 @@ generator client {
   updatedAt DateTime @updatedAt()
 `
 
-    for (const column of model.columns) {
-      let columnSchema = `  ${column.name} ${column.type}`
-
-      if (column.required)
-        columnSchema += ' @required'
-
-      if (column.unique)
-        columnSchema += ' @unique'
-
-      if (column.default)
-        columnSchema += ` @default(${column.default})`
-
-      columnSchema += '\n'
-      schema += columnSchema
-    }
-
     if (model.hasOne) {
       schema += `  ${model.hasOne} ${titleCase(model.hasOne)}?`
       schema += ` @relation(fields: [${model.hasOne}Id], references: [id])\n`
@@ -57,28 +41,37 @@ generator client {
       schema += ` @relation(fields: [id], references: [${model.name.toLowerCase()}Id])\n`
     }
 
+    if (model.hasThrough) {
+      schema += `  ${model.hasThrough.model} ${titleCase(model.hasThrough.model)}[]`
+      schema += ` @relation("${model.hasThrough.using}")`
+      schema += ` ${model.hasThrough.using} ${titleCase(model.hasThrough.using)}`
+      schema += ` @relation("${model.hasThrough.through}")`
+      schema += ` ${model.hasThrough.through} ${titleCase(model.hasThrough.through)}`
+      schema += ` @relation(fields: [${model.hasThrough.using}], references: [id])\n`
+    }
+
     schema += '}\n\n'
 
     if (model.hasMany) {
       schema += `model ${titleCase(model.hasMany)} {
-  id       Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  ${model.name.toLowerCase()}Id Int
-  ${model.name.toLowerCase()} ${titleCase(model.name)}
-  @relation(fields: [${model.name.toLowerCase()}Id], references: [id])
+id       Int      @id @default(autoincrement())
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt()
+${model.name.toLowerCase()}Id Int
+${model.name.toLowerCase()} ${titleCase(model.name)}
+@relation(fields: [${model.name.toLowerCase()}Id], references: [id])
 }\n\n`
     }
 
     if (model.hasOne || model.belongsTo) {
       const relatedModelName = model.hasOne || model.belongsTo
       schema += `model ${titleCase(relatedModelName)} {
-  id       Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  ${model.name.toLowerCase()} ${titleCase(model.name)}?
-  ${model.name.toLowerCase()}Id Int?
-  @unique
+id       Int      @id @default(autoincrement())
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt()
+${model.name.toLowerCase()} ${titleCase(model.name)}?
+${model.name.toLowerCase()}Id Int?
+@unique
 }\n\n`
     }
   }

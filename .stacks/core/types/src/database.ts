@@ -8,6 +8,7 @@ export interface DatabaseOptions {
   driver?: string
   url?: string
   client?: DatabaseClient
+  dbms: string
 }
 
 export interface FactoryOptions {

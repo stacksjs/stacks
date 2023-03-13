@@ -20,6 +20,11 @@ export interface Model {
   hasOne?: string
   hasMany?: string
   belongsToMany?: string
+  hasThrough?: {
+    model: string
+    through: string
+    using: string
+  }
   useSeed?: boolean | SeedOptions
   useSearch?: boolean | SearchIndexSettings
   useTimestamps?: boolean | TimestampOptions

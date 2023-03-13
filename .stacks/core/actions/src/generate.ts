@@ -4,6 +4,7 @@ import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runCommand } from '@stacksjs/cli'
+import { database } from '@stacksjs/config'
 import { runAction } from './helpers'
 
 export async function invoke(options?: GeneratorOptions) {
@@ -121,7 +122,7 @@ export async function types(options?: GeneratorOptions) {
 export async function migrations() {
   const path = frameworkPath('database/schema.prisma')
 
-  await migrate(path, { database: 'postgresql' })
+  await migrate(path, { database: database.dbms })
 
   await runCommand(`npx prisma migrate --schema=${path}`)
 
