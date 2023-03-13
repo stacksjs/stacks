@@ -1,6 +1,6 @@
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
-import faker from 'faker'
+import { faker } from '@stacksjs/faker'
 
 const { fs } = filesystem
 
@@ -40,10 +40,10 @@ const seedData = Array.from({ length: count }).map(() => {
         data[name] = faker.lorem.words(3)
         break
       case 'number':
-        data[name] = faker.random.number()
+        // data[name] = faker.random.number()
         break
       case 'boolean':
-        data[name] = faker.random.boolean()
+        // data[name] = faker.random.boolean()
         break
     }
   })

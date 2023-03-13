@@ -423,6 +423,7 @@ importers:
   .stacks/core/database:
     specifiers:
       '@prisma/client': ^4.11.0
+      '@stacksjs/faker': workspace:*
       '@stacksjs/path': workspace:*
       '@stacksjs/strings': workspace:*
       '@stacksjs/testing': workspace:*
@@ -431,6 +432,7 @@ importers:
       typescript: ^4.9.5
     dependencies:
       '@prisma/client': 4.11.0
+      '@stacksjs/faker': link:../faker
       '@stacksjs/path': link:../path
       '@stacksjs/strings': link:../strings
       '@stacksjs/utils': link:../utils
