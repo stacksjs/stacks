@@ -86,5 +86,10 @@
   "prettier.enable": false, // to ensure it is disabled
   "terminal.integrated.scrollback": 10000,
   "grammarly.files.include": ["**/README.md", "**/readme.md", "**/*.txt"],
-  "grammarly.files.exclude": ["**/dictionary.txt"]
+  "grammarly.files.exclude": [
+    "**/dictionary.txt"
+  ],
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }
