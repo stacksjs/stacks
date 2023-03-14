@@ -200,7 +200,7 @@ export const enum NpmScript {
   UpdateFramework = 'update:framework',
   UpdatePackageManager = 'update:package-manager',
   UpdateNode = 'pnpm env use',
-  Lint = 'eslint .',
+  Lint = 'eslint . ; npx publint',
   LintFix = 'eslint . --fix',
   MakeStack = 'make:stack',
   Test = 'vitest --config vitest.config.ts',
