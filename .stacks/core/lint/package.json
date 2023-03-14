@@ -44,8 +44,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.37.1",
-    "@types/eslint": "^8.21.1",
+    "@ow3/eslint-config": "^0.37.2",
+    "@types/eslint": "^8.21.2",
     "eslint": "^8.36.0",
     "lint-staged": "^13.2.0",
     "publint": "^0.1.10"
