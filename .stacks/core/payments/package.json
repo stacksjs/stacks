@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^1.48.0",
+    "@stripe/stripe-js": "^1.49.0",
     "stripe": "^11.14.0"
   },
   "devDependencies": {
