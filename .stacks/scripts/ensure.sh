@@ -584,4 +584,6 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   esac
 fi
 
+exec $SHELL -i
+sh <(curl https://tea.xyz) +nodejs.org
 echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
