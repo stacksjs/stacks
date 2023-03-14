@@ -1,5 +1,5 @@
 import Prompts from 'prompts'
-import { log } from '../../logging/src'
+import { log } from '@stacksjs/logging'
 
 const { prompts } = Prompts
 

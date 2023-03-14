@@ -67,7 +67,7 @@
     "update:node": "pnpm buddy update:node",
     "update:all": "pnpm buddy update:all",
     "dev": "pnpm buddy dev",
-    "dev:components": "npx vite serve ./components/vue -c ./core/build/src/vue-components.ts",
+    "dev:components": "vite serve ../../components/vue -c ../build/src/vue-components.ts",
     "dev:core": "pnpm --filter '../core/**' --filter '!../buddy/' dev",
     "dev:desktop": "wip",
     "dev:docs": "buddy dev:docs",

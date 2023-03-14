@@ -6,4 +6,4 @@ export * from './run'
 export * from './spinner'
 export * from './utilities'
 
-export { ExitCode } from '../../types/src'
+export { ExitCode } from '@stacksjs/types'
