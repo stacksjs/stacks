@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REQUIRED_NODE_VERSION=$(cat ./node-version)
+REQUIRED_NODE_VERSION=$(cat ./.node-version)
 
 INSTALLED_NODE_VERSION=$(node -v 2>/dev/null || echo "")
 INSTALLED_NODE_VERSION=${INSTALLED_NODE_VERSION#v} # removes the 'v' prefix
