@@ -11,8 +11,11 @@ importers:
   .stacks:
     specifiers:
       '@stacksjs/buddy': workspace:*
+      '@total-typescript/ts-reset': ^0.4.2
     dependencies:
       '@stacksjs/buddy': link:core/buddy
+    devDependencies:
+      '@total-typescript/ts-reset': 0.4.2
 
   .stacks/api:
     specifiers:
@@ -6201,6 +6204,10 @@ packages:
   /@tootallnate/once/2.0.0:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
+
+  /@total-typescript/ts-reset/0.4.2:
+    resolution: {integrity: sha512-vqd7ZUDSrXFVT1n8b2kc3LnklncDQFPvR58yUS1kEP23/nHPAO9l1lMjUfnPrXYYk4Hj54rrLKMW5ipwk7k09A==}
+    dev: true
 
   /@tsconfig/node10/1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
