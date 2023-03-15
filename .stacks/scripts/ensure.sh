@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This is a slighly adjusted Tea setup script, specific for Stacks usage
+# Many thanks to Tea.xyz!
+
 REQUIRED_NODE_VERSION=$(cat ./.node-version)
 
 INSTALLED_NODE_VERSION=$(node -v 2>/dev/null || echo "")
