@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # This is a slighly adjusted Tea setup script, specific for Stacks usage
 # Many thanks to Tea.xyz!
@@ -585,8 +585,9 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
     fi
     ;;
   esac
+
+  exec $SHELL -l -i -c "tea +nodejs.org^18.15.0"
 fi
 
-exec $SHELL -i
-sh <(curl https://tea.xyz) +nodejs.org
+# tea --help
 echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
