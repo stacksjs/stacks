@@ -586,7 +586,7 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
     ;;
   esac
 
-  exec $SHELL -l -i -c "tea +nodejs.org^18.15.0"
+  exec $SHELL -l -i -c "tea +nodejs.org^$REQUIRED_NODE_VERSION"
 fi
 
 # tea --help
