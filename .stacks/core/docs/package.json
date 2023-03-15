@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "vitepress": "1.0.0-alpha.56"
+    "vitepress": "1.0.0-alpha.60"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
