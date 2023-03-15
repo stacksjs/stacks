@@ -2,7 +2,7 @@
   "name": "@stacksjs/arrays",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.29.1",
+  "packageManager": "pnpm@7.29.3",
   "description": "The Stacks array utilities.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,7 +36,7 @@
   ],
   "engines": {
     "node": ">=v18.15.0",
-    "pnpm": ">=7.29.1"
+    "pnpm": ">=7.29.3"
   },
   "scripts": {
     "build": "mkdist -d",

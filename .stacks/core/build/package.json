@@ -2,7 +2,7 @@
   "name": "@stacksjs/build",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.29.1",
+  "packageManager": "pnpm@7.29.3",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.15.0",
-    "pnpm": ">=7.29.1"
+    "pnpm": ">=7.29.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -57,7 +57,7 @@
     "unplugin-auto-import": "^0.15.1",
     "unplugin-vue-components": "^0.24.1",
     "vite": "^4.1.4",
-    "vite-plugin-inspect": "^0.7.16",
+    "vite-plugin-inspect": "^0.7.17",
     "vite-plugin-pages": "^0.29.0",
     "vite-plugin-pwa": "^0.14.4",
     "vite-plugin-vue-layouts": "^0.8.0",
