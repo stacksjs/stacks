@@ -22,5 +22,4 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   exec sh -c "curl https://tea.xyz | sh; exec $SHELL -l -i -c 'tea +nodejs.org^$REQUIRED_NODE_VERSION'"
 fi
 
-# tea --help
 echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
