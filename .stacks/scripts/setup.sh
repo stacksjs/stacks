@@ -120,7 +120,7 @@ prepare() {
 				-P;'\$9_L"\`\`\`\`\`\`196@\`\`
 				\`
 				end
-				EOF
+			EOF
             if uudecode -p "$TMPFILE" | tar Jtf - >/dev/null 2>&1; then
                 ZZ=xz
             fi
@@ -260,7 +260,7 @@ welcome() {
 		* (we won’t touch anything else)
 
 		> docs https://github.com/teaxyz/cli#getting-started
-		EoMD
+	EoMD
 
     echo #spacer
 }
@@ -273,7 +273,7 @@ get_tea_version() {
     v_sh="$(mktemp)"
     cat <<-EoMD >"$v_sh"
 		$CURL "https://dist.tea.xyz/tea.xyz/$MIDFIX/versions.txt" | tail -n1 > "$v_sh"
-		EoMD
+	EoMD
 
     gum_func spin --title 'determining tea version' -- sh "$v_sh"
 
@@ -337,7 +337,7 @@ check_path() {
 		# one second!
 		without magic, tea’s not in your path!
 		> *we may need to ask for your **root password*** (via \`sudo\` obv.)
-		EoMD
+	EoMD
 
     if gum_func confirm "create /usr/local/bin/tea?" --affirmative="make symlink" --negative="skip"; then
         echo #spacer
@@ -357,7 +357,7 @@ check_path() {
             gum_func format -- <<-EoMD
 				> hmmm, sudo command not found.
 				> try installing sudo
-				EoMD
+			EoMD
         fi
 
         if ! command -v tea >/dev/null 2>&1; then
@@ -369,7 +369,7 @@ check_path() {
 				> sorry 😞
 
 				\`PATH=$PATH\`
-				EoMD
+			EoMD
         fi
     fi
 
@@ -439,7 +439,7 @@ check_shell_magic() {
 			we don’t know how to support \`$SHELL\` yet. can you make a pull request?
 
 			> https://github.com/teaxyz/cli/pulls
-			EoMD
+		EoMD
         return 1
         ;;
     esac
@@ -455,10 +455,10 @@ check_shell_magic() {
     echo #spacer
 
     gum_func format -- <<-EoMD
-			Added:
+		Added:
 
-			\`$__TEA_ONE_LINER\`
-			EoMD
+		\`$__TEA_ONE_LINER\`
+	EoMD
 
     echo #spacer
 }
@@ -498,7 +498,7 @@ install)
 				try it out:
 
 				\`tea wget -qO- tea.xyz/white-paper | tea glow -\`
-				EoMD
+			EoMD
         else
             if test -n "$GITHUB_ACTIONS"; then
                 # if the user did call us directly from GHA may as well help them out
@@ -512,13 +512,13 @@ install)
 
 				\`exec $SHELL -i\`  # or open a new tab
 				\`wget -qO- tea.xyz/white-paper | glow -\`
-				EoMD
+			EoMD
         fi
     elif test -n "$TEA_IS_CURRENT"; then
         gum_func format -- <<-EoMD
 			# the latest version of tea was already installed
 			> $TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea
-			EoMD
+		EoMD
     fi
     echo #spacer
     ;;
@@ -533,7 +533,7 @@ exec)
 
         gum_func format <<-EoMD >&2
 			> powered by [tea](https://tea.xyz)
-			EoMD
+		EoMD
 
         echo #spacer
     else
