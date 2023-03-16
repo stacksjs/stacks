@@ -323,7 +323,7 @@ install() {
     fix_links
 
     if ! test "$MODE" = exec; then
-        gum_func format -- "k, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
+        gum_func format -- "awesome, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
     fi
 
     TEA_VERSION_MAJOR="$(echo "$TEA_VERSION" | cut -d. -f1)"
