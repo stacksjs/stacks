@@ -508,10 +508,7 @@ install)
             gum_func format -- <<-EoMD
 				# you’re all set!
 
-				try it out:
-
-        node --version  # check if node is installed
-        pnpm --version # check if pnpm is installed
+                Please reopen your shell for changes to take effect.
 			EoMD
         fi
     elif test -n "$TEA_IS_CURRENT"; then
