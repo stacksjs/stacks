@@ -11,22 +11,10 @@ INSTALLED_NODE_MAJOR=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f1)
 INSTALLED_NODE_MINOR=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f2)
 INSTALLED_NODE_PATCH=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f3)
 
-executeSetup() {
-  sh ./setup.sh
-  source ~/.zshrc
-  pnpm -v
-  source ~/.zshrc
-}
-
-fork() {
-    executeSetup
-}
-
 if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -lt "$REQUIRED_NODE_MINOR") ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -eq "$REQUIRED_NODE_MINOR" && "$INSTALLED_NODE_PATCH" -lt "$REQUIRED_NODE_PATCH") ]]; then
-
-  fork
+  $SHELL -c "sh ./setup.sh; source ~/.zshrc"
 fi
 
 echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
