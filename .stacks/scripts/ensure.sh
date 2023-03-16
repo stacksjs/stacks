@@ -14,8 +14,7 @@ INSTALLED_NODE_PATCH=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f3)
 if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -lt "$REQUIRED_NODE_MINOR") ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -eq "$REQUIRED_NODE_MINOR" && "$INSTALLED_NODE_PATCH" -lt "$REQUIRED_NODE_PATCH") ]]; then
-
-  exec sh -c "sh ./setup.sh; exec $SHELL -l -i -c 'tea +nodejs.org^$REQUIRED_NODE_VERSION  > /dev/null 2>&1'"
+  exec sh -c "sh ./setup.sh; exec $SHELL -l -i -c 'pnpm -v'; exec $SHELL -l -i -c 'node -v'; exec $SHELL"
 fi
 
 echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
