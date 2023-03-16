@@ -253,13 +253,13 @@ gum_func() {
 
 welcome() {
     gum_func format -- <<-EoMD
-		# hi 👋 let’s set up tea
+		# hi 👋 let’s set up stacks
 
-		* we’ll put it here: \`$TEA_DESTDIR\`
-		* everything tea installs goes there
-		* (we won’t touch anything else)
+		* stacks uses tea to manage your environments
+		* everything stacks installs goes here: \`$TEA_DESTDIR\`
+		* (it won’t touch anything else)
 
-		> docs https://github.com/teaxyz/cli#getting-started
+		> docs https://github.com/stacksjs/stacks
 	EoMD
 
     echo #spacer
