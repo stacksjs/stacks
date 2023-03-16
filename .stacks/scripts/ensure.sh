@@ -12,7 +12,10 @@ INSTALLED_NODE_MINOR=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f2)
 INSTALLED_NODE_PATCH=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f3)
 
 executeSetup() {
-  exec $SHELL -c "sh ./setup.sh; source ~/.zshrc; pnpm -v; source ~/.zshrc"
+  sh ./setup.sh
+  source ~/.zshrc
+  pnpm -v
+  source ~/.zshrc
 }
 
 fork() {
