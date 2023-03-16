@@ -155,9 +155,9 @@ prepare() {
             if test "$MODE" = exec; then
                 TEA_DESTDIR="$(mktemp -dt tea-XXXXXX)"
             else
-                TEA_DESTDIR="$HOME/.tea"
+                TEA_DESTDIR="$HOME/.stacks"
                 # make our configurations portable
-                TEA_DESTDIR_WRITABLE="\$HOME/.tea"
+                TEA_DESTDIR_WRITABLE="\$HOME/.stacks"
             fi
         fi
     fi
