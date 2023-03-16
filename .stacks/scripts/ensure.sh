@@ -17,4 +17,4 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   exec $SHELL -c "sh ./setup.sh; source ~/.zshrc; tea +nodejs.org'=$REQUIRED_NODE_VERSION' >/dev/null 2>&1 ; echo Node.js installed:;tea +nodejs.org'=$REQUIRED_NODE_VERSION' node -v; echo pnpm installed:; pnpm -v;"
 fi
 
-echo "Node.js version $REQUIRED_NODE_VERSION or greater is installed!"
+echo "Node.js v$REQUIRED_NODE_VERSION or greater is installed!"
