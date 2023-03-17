@@ -504,12 +504,6 @@ install)
                 # if the user did call us directly from GHA may as well help them out
                 echo "$TEA_DESTDIR/tea.xyz/v$TEA_VERSION_MAJOR/bin" >>"$GITHUB_PATH"
             fi
-
-            gum_func format -- <<-EoMD
-				# you’re all set!
-
-                Please reopen your shell for changes to take effect.
-			EoMD
         fi
     elif test -n "$TEA_IS_CURRENT"; then
         gum_func format -- <<-EoMD
