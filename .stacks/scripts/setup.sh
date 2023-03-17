@@ -252,7 +252,7 @@ gum_func() {
 }
 
 welcome() {
-  gum_func format -- <<-EoMD
+  gum_func format --theme="dracula" -- <<-EoMD
 		# hi 👋 let’s set up stacks
 
 		* stacks uses tea to manage your environments
