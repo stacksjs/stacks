@@ -16,12 +16,16 @@ INSTALLED_NODE_PATCH=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f3)
 if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -lt "$REQUIRED_NODE_MINOR") ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -eq "$REQUIRED_NODE_MINOR" && "$INSTALLED_NODE_PATCH" -lt "$REQUIRED_NODE_PATCH") ]]; then
-  sh ./setup.sh
+    sh ./setup.sh
 
-  exec $SHELL -l
-  echo "Please reopen your shell for updates to take effect." | awk '{print "\033[3m" $0 "\033[0m"}'
+    node_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +nodejs.org'=$REQUIRED_NODE_VERSION' node -v")
+    pnpm_version=$(exec $SHELL -c "source ~/.zshrc; tea >/dev/null 2>&1; pnpm -v")
+    echo "  Stacks Managed"
+    echo "  • Node.js $node_version"
+    echo "  • pnpm v$pnpm_version"
 
-  exit
+    echo "\n  Please reopen your shell for updates to take effect." | awk '{print "\033[3m" $0 "\033[0m"}'
+    exit
 fi
 
 echo "Node.js v$REQUIRED_NODE_VERSION or greater is installed!"
