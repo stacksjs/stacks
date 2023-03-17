@@ -323,7 +323,7 @@ install() {
   fix_links
 
   if ! test "$MODE" = exec; then
-    gum_func format -- "awesome, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
+    gum_func format --theme="dracula" -- "awesome, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
   fi
 
   TEA_VERSION_MAJOR="$(echo "$TEA_VERSION" | cut -d. -f1)"
@@ -333,7 +333,7 @@ install() {
 }
 
 check_path() {
-  gum_func format -- <<-EoMD
+  gum_func format --theme="dracula" -- <<-EoMD
 		# one second!
 		without magic, tea’s not in your path!
 		> *we may need to ask for your **root password*** (via \`sudo\` obv.)
@@ -354,7 +354,7 @@ check_path() {
       sudo ln -sf "$TEA_EXENAME" /usr/local/bin/tea
     else
       echo #spacer
-      gum_func format -- <<-EoMD
+      gum_func format --theme="dracula" -- <<-EoMD
 				> hmmm, sudo command not found.
 				> try installing sudo
 			EoMD
@@ -363,7 +363,7 @@ check_path() {
     if ! command -v tea >/dev/null 2>&1; then
 
       echo #spacer
-      gum_func format -- <<-EoMD
+      gum_func format --theme="dracula" -- <<-EoMD
 				> hmmm, \`/usr/local/bin\` isn’t in your path,
 				> you’ll need to fix that yourself.
 				> sorry 😞
@@ -431,7 +431,7 @@ check_shell_magic() {
     __TEA_ONE_LINER="test -d \"$TEA_DESTDIR_WRITABLE\" && \"$TEA_DESTDIR_WRITABLE/tea.xyz/v*/bin/tea\" --magic=fish --silent | source"
     ;;
   *)
-    gum_func format -- <<-EoMD
+    gum_func format --theme="dracula" -- <<-EoMD
 			# we need your help 🙏
 
 			tea’s magic is optional but it’s the way it’s meant to be used.
@@ -454,7 +454,7 @@ check_shell_magic() {
 
   echo #spacer
 
-  gum_func format -- <<-EoMD
+  gum_func format --theme="dracula" -- <<-EoMD
 		Added:
 
 		\`$__TEA_ONE_LINER\`
@@ -492,7 +492,7 @@ install)
   if ! test -n "$ALREADY_INSTALLED"; then
     if ! check_shell_magic; then
       check_path
-      gum_func format -- <<-EoMD
+      gum_func format --theme="dracula" -- <<-EoMD
 				# you’re all set!
 
 				try it out:
@@ -506,7 +506,7 @@ install)
       fi
     fi
   elif test -n "$TEA_IS_CURRENT"; then
-    gum_func format -- <<-EoMD
+    gum_func format --theme="dracula" -- <<-EoMD
 			# the latest version of tea was already installed
 			> $TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea
 		EoMD
@@ -522,7 +522,7 @@ exec)
 
     echo #spacer
 
-    gum_func format <<-EoMD >&2
+    gum_func format --theme="dracula" <<-EoMD >&2
 			> powered by [tea](https://tea.xyz)
 		EoMD
 
