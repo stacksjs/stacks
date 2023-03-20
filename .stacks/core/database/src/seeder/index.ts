@@ -1,5 +1,10 @@
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
+import { faker } from '@stacksjs/faker'
+import { client as Client } from '@stacksjs/database'
+import { projectPath } from '@stacksjs/path'
+
+const prisma = new Client()
 
 const { fs } = filesystem
 
@@ -29,25 +34,38 @@ function readModels(folderPath: string): Promise<Model[]> {
   })
 }
 
-// const seedData = Array.from({ length: count }).map(() => {
-//   const fields = Object.entries(model.fields)
-//   const data: Record<string, any> = {}
+function seedData(model: Model) {
+  const fields = Object.entries(model.fields)
+  const data: Record<string, any> = {}
 
-//   fields.forEach(([name, type]) => {
-//     switch (type) {
-//       case 'string':
-//         data[name] = faker.lorem.words(3)
-//         break
-//       case 'number':
-//         // data[name] = faker.random.number()
-//         break
-//       case 'boolean':
-//         // data[name] = faker.random.boolean()
-//         break
-//     }
-//   })
+  fields.forEach(([name, type]) => {
+    switch (type) {
+      case 'string':
+        data[name] = faker.lorem.words(3)
+        break
+      case 'number':
+        data[name] = faker.random.numeric()
+        break
+      case 'boolean':
+        data[name] = Math.round(Math.random())
+        break
+    }
+  })
 
-//   return data
-// })
+  return data
+}
 
-export { readModels as seed }
+async function seed() {
+  const models = await readModels(projectPath('app/models'))
+  const promises = models.map((model) => {
+    const data = seedData(model)
+
+    return prisma[model.name].create({
+      data,
+    })
+  })
+
+  return Promise.all(promises)
+}
+
+export { seed }

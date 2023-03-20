@@ -119,6 +119,12 @@ export interface NotificationOptions {
       clientId: string
       secret: string
     }
+
+    msTeams: {
+      appId: string
+      clientId: string
+      secret: string
+    }
   }
 }
 

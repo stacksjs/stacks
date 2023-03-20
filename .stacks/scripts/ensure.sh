@@ -18,9 +18,9 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
   ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -eq "$REQUIRED_NODE_MINOR" && "$INSTALLED_NODE_PATCH" -lt "$REQUIRED_NODE_PATCH") ]]; then
     sh ./setup.sh
     node_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +nodejs.org'=$REQUIRED_NODE_VERSION' >/dev/null 2>&1; tea +nodejs.org'=$REQUIRED_NODE_VERSION' node -v")
-    pnpm_version=$(exec $SHELL -c "source ~/.zshrc; tea >/dev/null 2>&1; pnpm -v")
-    echo "  Stacks Managed"
-    echo "  • Node.js $node_version"
+    pnpm_version=$(exec $SHELL -c "source ~/.zshrc; tea >/dev/null 2>&1; pnpm -v >/dev/null 2>&1; pnpm -v")
+    echo "  # managed by stacks"
+    echo "  • node.js $node_version"
     echo "  • pnpm v$pnpm_version"
 
     echo "\n  Please reopen your shell for updates to take effect." | awk '{print "\033[3m" $0 "\033[0m"}'

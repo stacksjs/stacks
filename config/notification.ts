@@ -130,6 +130,12 @@ export default defineNotificationConfig({
       secret: env('SLACK_SECRET_KEY', 'test-value'),
     },
 
+    msTeams: {
+      appId: env('MICROSOFT_TEAMS_APPLICATION_ID', 'test-value'),
+      clientId: env('MICROSOFT_TEAMS_CLIENT_ID', 'test-value'),
+      secret: env('MICROSOFT_TEAMS_SECRET', 'test-value'),
+    },
+
     // discord: {},
   },
 })
