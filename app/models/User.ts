@@ -11,15 +11,18 @@ export default <Model> {
   },
   fields: {
     name: {
+      type: 'String',
       validation: validate.string().min(3).max(255),
       factory: () => faker.name,
     },
     email: {
+      type: 'String',
       validation: validate.string().min(1).max(255),
       unique: true,
       factory: () => faker.internet.email,
     },
     password: {
+      type: 'String',
       validation: validate.string().min(6).max(255),
       factory: () => faker.internet.password(),
     },

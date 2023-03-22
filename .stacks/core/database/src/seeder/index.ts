@@ -22,8 +22,10 @@ function readModels(folderPath: string): Promise<Model[]> {
           const filePath = `${folderPath}/${file}`
 
           return import(filePath).then((data) => {
-            // eslint-disable-next-line no-console
-            console.log(data.factory)
+            models.push({
+              name: data.default.name,
+              fields: data.default.fields,
+            })
           })
         })
 
@@ -40,15 +42,14 @@ function seedData(model: Model) {
 
   fields.forEach(([name, type]) => {
     switch (type) {
-      case 'string':
-        data[name] = faker.lorem.words(3)
-        break
       case 'number':
         data[name] = faker.random.numeric()
         break
       case 'boolean':
         data[name] = Math.round(Math.random())
         break
+      default:
+        data[name] = faker.lorem.words(3)
     }
   })
 

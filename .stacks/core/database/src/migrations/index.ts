@@ -24,6 +24,24 @@ generator client {
   updatedAt DateTime @updatedAt()
 `
 
+    for (const fieldName in model.fields) {
+      const field = model.fields[fieldName]
+
+      let columnSchema = `  ${fieldName} ${field.type}`
+
+      if (field.required)
+        columnSchema += ' @required'
+
+      if (field.unique)
+        columnSchema += ' @unique'
+
+      if (field.default)
+        columnSchema += ` @default(${field.default})`
+
+      columnSchema += '\n'
+      schema += columnSchema
+    }
+
     if (model.hasOne) {
       schema += `  ${model.hasOne} ${titleCase(model.hasOne)}?`
       schema += ` @relation(fields: [${model.hasOne}Id], references: [id])\n`
@@ -75,6 +93,7 @@ ${model.name?.toLowerCase()}Id Int?
 }\n\n`
     }
   }
+
 
   if (!fs.existsSync(frameworkPath('database')))
     fs.mkdirSync(frameworkPath('database'))
