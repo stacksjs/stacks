@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-import { migrate } from '@stacksjs/database'
+import { migrate, seed } from '@stacksjs/database'
 import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
@@ -128,4 +128,8 @@ export async function migrations() {
   await runCommand(`npx prisma migrate dev --schema=${path}`)
 
   log.success('Successfully updated migrations')
+}
+
+export async function seeder() {
+  await seed()
 }

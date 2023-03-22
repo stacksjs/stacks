@@ -1,6 +1,3 @@
-import { runCommands } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { seeder } from '@stacksjs/actions/generate'
 
-await runCommands([
-  'pnpm install',
-], { cwd: frameworkPath(), verbose: true })
+await seeder()
