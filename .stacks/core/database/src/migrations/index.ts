@@ -20,8 +20,6 @@ generator client {
   for (const model of models) {
     schema += `model ${model.name} {
   id       Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
 `
 
     for (const fieldName in model.fields) {
@@ -68,6 +66,8 @@ generator client {
       schema += ` @relation(fields: [${model.hasThrough.using}], references: [id])\n`
     }
 
+    schema += '  createdAt DateTime @default(now())\n'
+    schema += '  updatedAt DateTime @updatedAt()\n'
     schema += '}\n\n'
 
     if (model.hasMany) {
