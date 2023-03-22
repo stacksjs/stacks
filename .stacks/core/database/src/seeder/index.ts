@@ -1,10 +1,10 @@
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 import { faker } from '@stacksjs/faker'
-import { client as Client } from '@stacksjs/database'
 import { projectPath } from '@stacksjs/path'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new Client()
+const prisma = new PrismaClient()
 
 const { fs } = filesystem
 

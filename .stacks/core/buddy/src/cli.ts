@@ -4,7 +4,7 @@ import { command, log } from '@stacksjs/cli'
 import { env, frameworkVersion, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
-import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, setup, test, update } from './commands'
+import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update } from './commands'
 
 const cli = command('stacks')
 
@@ -50,6 +50,7 @@ async function main() {
   await release(cli)
   await make(cli)
   await migrate(cli)
+  await seed(cli)
   await example(cli)
   await test(cli)
 

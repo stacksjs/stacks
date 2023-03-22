@@ -6,6 +6,7 @@ import { runNpmScript } from '@stacksjs/utils'
 import { runCommand } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { runAction } from '../helpers'
+import { frameworkPath } from '@stacksjs/path'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)

@@ -318,6 +318,7 @@ importers:
   .stacks/core/chat:
     specifiers:
       '@novu/discord': ^0.12.0
+      '@novu/ms-teams': ^0.12.0
       '@novu/node': ^0.12.0
       '@novu/slack': ^0.12.0
       '@novu/stateless': ^0.12.0
@@ -330,6 +331,7 @@ importers:
       typescript: ^4.9.5
     dependencies:
       '@novu/discord': 0.12.0
+      '@novu/ms-teams': 0.12.0
       '@novu/node': 0.12.0
       '@novu/slack': 0.12.0
       '@novu/stateless': 0.12.0
@@ -4861,6 +4863,16 @@ packages:
       - debug
     dev: false
 
+  /@novu/ms-teams/0.12.0:
+    resolution: {integrity: sha512-MBIyHgolr8Bcha2k0HwUOC5/c5nKsbVUF+DiRxLUwOnEXgyDXnBnLItOGS0Lq/OrpvKCzbnmLpaK6XUuyL7LpA==}
+    engines: {node: '>=10'}
+    dependencies:
+      '@novu/stateless': 0.7.2
+      axios: 1.3.4
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /@novu/netcore/0.12.0:
     resolution: {integrity: sha512-zVdydxoBfKHnbqpyiEMhgYRaW80YCoyexTdjDKrEG2/+iNftbzyqgamsa/iXNZtMVy529kVgsj5Iy/mJffbBCA==}
     engines: {node: '>=10'}
@@ -4992,6 +5004,18 @@ packages:
       handlebars: 4.7.7
       lodash.get: 4.4.2
       lodash.merge: 4.6.2
+    dev: false
+
+  /@novu/stateless/0.7.2:
+    resolution: {integrity: sha512-hZPVjtdckROXF4WpcpUJGigA+7Nfz1mM5dIHwuDfh6MZ6cRGOgjQVq2TKhiOjHcu2umcKORem4cuyz47KoSA5w==}
+    engines: {node: '>=10'}
+    dependencies:
+      axios: 0.26.1
+      handlebars: 4.7.7
+      lodash.get: 4.4.2
+      lodash.merge: 4.6.2
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /@novu/telnyx/0.12.0:
@@ -5816,7 +5840,7 @@ packages:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
       '@types/eslint': 8.21.3
-      '@types/estree': 0.0.51
+      '@types/estree': 1.0.0
     dev: false
 
   /@types/eslint-utils/3.0.2:
