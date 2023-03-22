@@ -282,29 +282,34 @@ function send(): ${importOption} {
 export async function createModel(options: MakeOptions) {
   const optionName = options.name
   const name = optionName[0].toUpperCase() + optionName.slice(1)
-  const path = `${projectPath()}/config/models/${name}.ts`
+  const path = projectPath(`app/models/${name}.ts`)
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `import type { Model } from '@stacksjs/types'
+      data: `import { faker } from '../../.stacks/core/faker/src' // stacks/faker or @stacksjs/faker
+import { validate } from '../../.stacks/core/validation/src' // stacks/validate or @stacksjs/validate
+import type { Model } from '../../.stacks/core/types/src' // stacks/types or @stacksjs/types
 
-const ${name}: Model = {
+export default <Model> {
   name: '${name}',
-  fields: [
-    {
-      name: '...',
-      type: '....',
+  searchable: true, // boolean | IndexSettings,
+  authenticatable: true, // boolean | AuthSettings,
+  seeder: {
+    count: 10,
+  },
+  fields: {
+    name: {
+      type: 'String',
+      validation: validate.string().min(3).max(255),
+      factory: () => faker.name,
     },
-  ],
-}
-
-export default ${name}
-  `,
-    })
+    // more fields here
+  },
+}`,})
 
     log.success(`Successfully created your model at /config/models/${name}.ts`)
   }
   catch (error) {
-    log.error('There was an error creating your model. Please try again')
+    log.error(error)
   }
 }
