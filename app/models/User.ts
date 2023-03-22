@@ -6,20 +6,20 @@ export default <Model> {
   name: 'User',
   searchable: true, // boolean | IndexSettings,
   authenticatable: true, // boolean | AuthSettings,
-  seeder: {
+  useSeed: {
     count: 10,
   },
   fields: {
     name: {
       type: 'String',
       validation: validate.string().min(3).max(255),
-      factory: () => faker.name,
+      factory: () => faker.name.firstName(),
     },
     email: {
       type: 'String',
       validation: validate.string().min(1).max(255),
       unique: true,
-      factory: () => faker.internet.email,
+      factory: () => faker.internet.email(),
     },
     password: {
       type: 'String',

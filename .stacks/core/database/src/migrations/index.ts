@@ -94,7 +94,6 @@ ${model.name?.toLowerCase()}Id Int?
     }
   }
 
-
   if (!fs.existsSync(frameworkPath('database')))
     fs.mkdirSync(frameworkPath('database'))
 

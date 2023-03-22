@@ -1,6 +1,5 @@
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { projectPath } from '@stacksjs/path'
 import { PrismaClient } from '@prisma/client'
 
@@ -25,6 +24,7 @@ function readModels(folderPath: string): Promise<Model[]> {
             models.push({
               name: data.default.name,
               fields: data.default.fields,
+              useSeed: data.default.useSeed,
             })
           })
         })
@@ -36,34 +36,24 @@ function readModels(folderPath: string): Promise<Model[]> {
   })
 }
 
-function seedData(model: Model) {
-  const fields = Object.entries(model.fields)
-  const data: Record<string, any> = {}
-
-  fields.forEach(([name, type]) => {
-    switch (type) {
-      case 'number':
-        data[name] = faker.random.numeric()
-        break
-      case 'boolean':
-        data[name] = Math.round(Math.random())
-        break
-      default:
-        data[name] = faker.lorem.words(3)
-    }
-  })
-
-  return data
-}
-
 async function seed() {
   const models = await readModels(projectPath('app/models'))
-  const promises = models.map((model) => {
-    const data = seedData(model)
+  const promises = models.flatMap((model) => {
+    const { useSeed, fields } = model
+    const data: Record<string, any>[] = []
 
-    return prisma[model.name].create({
-      data,
-    })
+    if (useSeed && useSeed.count) {
+      for (let i = 0; i < useSeed.count; i++) {
+        const record: Record<string, any> = {}
+        Object.entries(fields).forEach(([name, field]) => {
+          if (field.factory)
+            record[name] = field.factory()
+        })
+        data.push(record)
+      }
+    }
+
+    return data.map(record => prisma[model.name].create({ data: record }))
   })
 
   return Promise.all(promises)

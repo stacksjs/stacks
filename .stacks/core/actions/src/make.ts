@@ -305,9 +305,10 @@ export default <Model> {
     },
     // more fields here
   },
-}`,})
+}`,
+    })
 
-    log.success(`Successfully created your model at /config/models/${name}.ts`)
+    log.success(`Successfully created your model at app/models/${name}.ts`)
   }
   catch (error) {
     log.error(error)
