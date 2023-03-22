@@ -1,7 +1,7 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
+import { frameworkPath } from '@stacksjs/path'
 import {
   createModel,
   createNotification,
@@ -241,7 +241,7 @@ async function make(buddy: CLI) {
     .option('-n, --name', 'The name of the migration')
     .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
     .action(async (options: MakeOptions) => {
-      const path = `${projectPath()}/.stacks/database/schema.prisma`
+      const path = frameworkPath('database/schema.prisma')
       const name = buddy.args[0] || options.name
       options.name = name
 
