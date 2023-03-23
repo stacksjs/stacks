@@ -7,7 +7,7 @@ import { env, frameworkVersion, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 import semver from 'semver'
-import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update } from './commands'
+import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update, version } from './commands'
 
 const cli = command('stacks')
 
@@ -57,6 +57,7 @@ async function main() {
   await seed(cli)
   await example(cli)
   await test(cli)
+  await version(cli)
 
   cli.help()
   cli.version(await frameworkVersion())
@@ -72,11 +73,8 @@ function installIfVersionMismatch(): void {
   const installedVersion = execSync('pnpm -v', { encoding: 'utf8' }).trim()
 
   if (!semver.satisfies(installedVersion, requiredVersion)) {
-    console.log(`Installed pnpm version (${installedVersion}) does not satisfy required version (${requiredVersion}). Installing...`)
+    log.error(`Installed pnpm version (${installedVersion}) does not satisfy required version (${requiredVersion}). Installing...`)
     execSync('pnpm i -g pnpm', { stdio: 'inherit' })
-  }
-  else {
-    console.log(`Installed pnpm version (${installedVersion}) satisfies required version (${requiredVersion}).`)
   }
 }
 
