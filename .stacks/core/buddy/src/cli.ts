@@ -1,9 +1,12 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import { runAction } from '@stacksjs/actions'
 import { command, log } from '@stacksjs/cli'
 import { env, frameworkVersion, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
+import semver from 'semver'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update } from './commands'
 
 const cli = command('stacks')
@@ -14,6 +17,7 @@ process.on('unhandledRejection', errorHandler)
 
 async function main() {
   // the following commands are not dependent on the project being initialized
+  installIfVersionMismatch()
   await setup(cli)
   await key(cli)
 
@@ -61,6 +65,20 @@ async function main() {
 }
 
 main()
+
+function installIfVersionMismatch(): void {
+  const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'))
+  const requiredVersion = packageJson.engines.pnpm
+  const installedVersion = execSync('pnpm -v', { encoding: 'utf8' }).trim()
+
+  if (!semver.satisfies(installedVersion, requiredVersion)) {
+    console.log(`Installed pnpm version (${installedVersion}) does not satisfy required version (${requiredVersion}). Installing...`)
+    execSync('pnpm i -g pnpm', { stdio: 'inherit' })
+  }
+  else {
+    console.log(`Installed pnpm version (${installedVersion}) satisfies required version (${requiredVersion}).`)
+  }
+}
 
 function errorHandler(error: Error): void {
   log.error(error)
