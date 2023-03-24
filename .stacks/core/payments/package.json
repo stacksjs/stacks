@@ -2,7 +2,7 @@
   "name": "@stacksjs/payments",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.30.0",
+  "packageManager": "pnpm@7.30.3",
   "description": "The Stacks payments package. Currently supporting Stripe.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "engines": {
     "node": ">=v18.15.0",
-    "pnpm": ">=7.30.0"
+    "pnpm": ">=7.30.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -44,8 +44,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^1.49.0",
-    "stripe": "^11.14.0"
+    "@stripe/stripe-js": "^1.52.0",
+    "stripe": "^11.16.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

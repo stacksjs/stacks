@@ -28,7 +28,7 @@
   ],
   "engines": {
     "node": ">=v18.15.0",
-    "pnpm": ">=7.30.0"
+    "pnpm": ">=7.30.3"
   },
   "scripts": {
     "dev": "vite",
@@ -45,7 +45,7 @@
     "meilisearch": "^0.31.1"
   },
   "dependencies": {
-    "vite": "^4.1.4"
+    "vite": "^4.2.1"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
