@@ -2,7 +2,7 @@
   "name": "@stacksjs/serverless",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.30.0",
+  "packageManager": "pnpm@7.30.3",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "engines": {
     "node": ">=v18.15.0",
-    "pnpm": ">=7.30.0"
+    "pnpm": ">=7.30.3"
   },
   "scripts": {
     "build": "mkdist -d",
@@ -45,11 +45,11 @@
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "nitropack": "^2.3.1",
-    "vite": "^4.1.4"
+    "nitropack": "^2.3.2",
+    "vite": "^4.2.1"
   },
   "dependencies": {
-    "serverless": "^3.28.1"
+    "serverless": "^3.29.0"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",
