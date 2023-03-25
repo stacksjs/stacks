@@ -58,7 +58,7 @@ importers:
       esno: ^0.16.3
       markdown-it: ^13.0.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue-component-meta: ^1.2.0
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -74,11 +74,11 @@ importers:
       '@stacksjs/utils': link:../utils
       esno: 0.16.3
       markdown-it: 13.0.1
-      vue-component-meta: 1.2.0_typescript@4.9.5
+      vue-component-meta: 1.2.0_typescript@5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/ai:
     specifiers:
@@ -86,27 +86,27 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/alias:
     specifiers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/path': link:../path
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/analytics:
     specifiers:
@@ -114,37 +114,37 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/arrays:
     specifiers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/auth:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/buddy:
     specifiers:
@@ -190,7 +190,7 @@ importers:
       '@stacksjs/utils': workspace:*
       '@stacksjs/validation': workspace:*
       only-allow: ^1.1.1
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
     dependencies:
       '@stacksjs/actions': link:../actions
@@ -236,7 +236,7 @@ importers:
       '@stacksjs/validation': link:../validation
     devDependencies:
       only-allow: 1.1.1
-      typescript: 4.9.5
+      typescript: 5.0.2
       unbuild: 1.1.2
 
   .stacks/core/build:
@@ -252,7 +252,7 @@ importers:
       markdown-it-link-attributes: ^4.0.1
       markdown-it-shiki: ^0.8.0
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
       unplugin-auto-import: ^0.15.2
       unplugin-vue-components: ^0.24.1
@@ -289,8 +289,8 @@ importers:
       vue-docgen-web-types: 0.1.8_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/cache:
     specifiers:
@@ -302,7 +302,7 @@ importers:
       memjs: ^1.3.0
       mkdist: ^1.1.2
       redis: ^4.6.5
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@aws-sdk/client-dynamodb': 3.299.0
       '@stacksjs/config': link:../config
@@ -312,8 +312,8 @@ importers:
       redis: 4.6.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/chat:
     specifiers:
@@ -328,7 +328,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@novu/discord': 0.12.0
       '@novu/ms-teams': 0.12.0
@@ -341,8 +341,8 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/cli:
     specifiers:
@@ -381,24 +381,24 @@ importers:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/collections:
     specifiers:
       '@stacksjs/testing': workspace:*
       collect.js: ^4.34.3
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       collect.js: 4.34.3
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/config:
     specifiers:
@@ -407,7 +407,7 @@ importers:
       '@stacksjs/types': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
     dependencies:
       '@stacksjs/path': link:../path
@@ -415,8 +415,8 @@ importers:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
       unbuild: 1.1.2
 
   .stacks/core/dashboard:
@@ -436,7 +436,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@prisma/client': 4.11.0
       '@stacksjs/faker': link:../faker
@@ -445,21 +445,21 @@ importers:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/datetime:
     specifiers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/desktop:
     specifiers:
@@ -469,7 +469,7 @@ importers:
       '@tauri-apps/api': 1.2.0
       '@tauri-apps/cli': 1.2.3
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unified-network: 0.6.4
       unstorage: ^1.4.1
       vue: 3.2.47
@@ -485,31 +485,31 @@ importers:
       vue3-highlightjs: 1.0.5_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/docs:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
-      vitepress: 1.0.0-alpha.61
+      typescript: ^5.0.2
+      vitepress: 1.0.0-alpha.62
     dependencies:
-      vitepress: 1.0.0-alpha.61_2xdflmy6sc2qhwxavtux3g5lt4
+      vitepress: 1.0.0-alpha.62_2xdflmy6sc2qhwxavtux3g5lt4
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/domains:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/drivers:
     specifiers:
@@ -517,14 +517,14 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/email:
     specifiers:
@@ -546,10 +546,10 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@maizzle/framework': 4.4.2_glob@7.2.3+webpack@5.76.2
-      '@novu/emailjs': 0.12.0_typescript@4.9.5
+      '@novu/emailjs': 0.12.0_typescript@5.0.2
       '@novu/mailgun': 0.12.0
       '@novu/mailjet': 0.12.0
       '@novu/mandrill': 0.12.0
@@ -566,8 +566,8 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/error-handling:
     specifiers:
@@ -575,14 +575,14 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
       neverthrow: ^6.0.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
-      '@ow3/eslint-config': 0.37.2_vgl77cfdswitgr47lm5swmv43m
+      '@ow3/eslint-config': 0.37.2_j4766f7ecgqbon3u7zlxn5zszu
       neverthrow: 6.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/events:
     specifiers:
@@ -590,14 +590,14 @@ importers:
       '@stacksjs/testing': workspace:*
       mitt: ^3.0.0
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/alias': link:../alias
       mitt: 3.0.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/faker:
     specifiers:
@@ -606,15 +606,15 @@ importers:
       '@stacksjs/config': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@faker-js/faker': 7.6.0
       '@stacksjs/cli': link:../cli
       '@stacksjs/config': link:../config
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/git:
     specifiers:
@@ -626,7 +626,7 @@ importers:
       giget: ^1.1.2
       mkdist: ^1.1.2
       simple-git-hooks: ^2.8.1
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       bumpp: 9.0.0
       changelogen: 0.5.1
@@ -636,21 +636,21 @@ importers:
       simple-git-hooks: 2.8.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/health:
     specifiers:
       '@stacksjs/notifications': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/notifications': link:../notifications
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/lint:
     specifiers:
@@ -661,32 +661,32 @@ importers:
       lint-staged: ^13.2.0
       mkdist: ^1.1.2
       publint: ^0.1.11
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
-      '@ow3/eslint-config': 0.37.2_vgl77cfdswitgr47lm5swmv43m
+      '@ow3/eslint-config': 0.37.2_j4766f7ecgqbon3u7zlxn5zszu
       '@types/eslint': 8.21.3
       eslint: 8.36.0
       lint-staged: 13.2.0
       publint: 0.1.11
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/logging:
     specifiers:
       '@stacksjs/testing': workspace:*
       consola: ^2.15.3
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue-ray: ^1.17.3
     dependencies:
       consola: 2.15.3
       vue-ray: 1.17.3
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/modules:
     specifiers:
@@ -695,7 +695,7 @@ importers:
       '@types/nprogress': ^0.2.0
       mkdist: ^1.1.2
       nprogress: ^0.2.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue-i18n: ^9.2.2
     dependencies:
       '@stacksjs/types': link:../types
@@ -704,8 +704,8 @@ importers:
       vue-i18n: 9.2.2_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/notifications:
     specifiers:
@@ -741,12 +741,12 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
     dependencies:
       '@maizzle/framework': 4.4.2_glob@7.2.3+webpack@5.76.2
       '@novu/discord': 0.12.0
-      '@novu/emailjs': 0.12.0_typescript@4.9.5
+      '@novu/emailjs': 0.12.0_typescript@5.0.2
       '@novu/gupshup': 0.12.0
       '@novu/mailgun': 0.12.0
       '@novu/mailjet': 0.12.0
@@ -776,8 +776,8 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
       unbuild: 1.1.2
 
   .stacks/core/objects:
@@ -785,13 +785,13 @@ importers:
       '@stacksjs/collections': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/pages:
     specifiers:
@@ -800,28 +800,28 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/collections': link:../collections
     devDependencies:
       '@stacksjs/testing': link:../testing
       '@stacksjs/utils': link:../utils
       fs-extra: 11.1.1
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/path:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
       pathe: ^1.1.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       pathe: 1.1.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/payments:
     specifiers:
@@ -829,14 +829,14 @@ importers:
       '@stripe/stripe-js': ^1.52.0
       mkdist: ^1.1.2
       stripe: ^11.16.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stripe/stripe-js': 1.52.0
       stripe: 11.16.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/push:
     specifiers:
@@ -848,7 +848,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@novu/node': 0.12.0
       '@novu/stateless': 0.12.0
@@ -858,54 +858,54 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/queue:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/realtime:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/router:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue-router: ^4.1.6
     dependencies:
       vue-router: 4.1.6_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/scheduler:
     specifiers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
       node-cron: 3.0.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       node-cron: 3.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/search-engine:
     specifiers:
@@ -915,7 +915,7 @@ importers:
       '@vueuse/core': ^9.13.0
       meilisearch: ^0.31.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue: ^3.2.47
     dependencies:
       '@stacksjs/cli': link:../cli
@@ -925,8 +925,8 @@ importers:
       vue: 3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/security:
     specifiers:
@@ -937,7 +937,7 @@ importers:
       crypto-js: ^4.1.1
       js-base64: ^3.7.5
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/config': link:../config
       '@stacksjs/types': link:../types
@@ -946,8 +946,8 @@ importers:
       js-base64: 3.7.5
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/server:
     specifiers:
@@ -956,7 +956,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
       nitropack: ^2.3.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vite: ^4.2.1
     dependencies:
       '@stacksjs/config': link:../config
@@ -965,8 +965,8 @@ importers:
       vite: 4.2.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/serverless:
     specifiers:
@@ -976,7 +976,7 @@ importers:
       mkdist: ^1.1.2
       nitropack: ^2.3.2
       serverless: ^3.29.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vite: ^4.2.1
     dependencies:
       '@stacksjs/config': link:../config
@@ -986,8 +986,8 @@ importers:
       vite: 4.2.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/signals:
     specifiers:
@@ -997,7 +997,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@maverick-js/signals': 5.9.1
       '@stacksjs/cli': link:../cli
@@ -1005,8 +1005,8 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/slug:
     specifiers:
@@ -1016,7 +1016,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/utils': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/database': 'link:'
       '@stacksjs/path': link:../path
@@ -1024,8 +1024,8 @@ importers:
       '@stacksjs/utils': link:../utils
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/sms:
     specifiers:
@@ -1045,7 +1045,7 @@ importers:
       '@stacksjs/testing': workspace:*
       '@stacksjs/types': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@novu/gupshup': 0.12.0
       '@novu/nexmo': 0.12.0
@@ -1063,8 +1063,8 @@ importers:
       '@stacksjs/types': link:../types
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/storage:
     specifiers:
@@ -1075,7 +1075,7 @@ importers:
       '@stacksjs/utils': workspace:*
       fs-extra: ^11.1.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unstorage: ^1.4.1
     dependencies:
       '@stacksjs/arrays': link:../arrays
@@ -1086,8 +1086,8 @@ importers:
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/strings:
     specifiers:
@@ -1101,7 +1101,7 @@ importers:
       pluralize: ^8.0.0
       slugify: ^1.6.5
       title-case: ^3.0.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
       validator: ^13.9.0
     dependencies:
@@ -1116,8 +1116,8 @@ importers:
       validator: 13.9.0
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
       unbuild: 1.1.2
 
   .stacks/core/tables:
@@ -1130,7 +1130,7 @@ importers:
       '@vueform/multiselect': ^2.6.1
       meilisearch: ^0.31.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unbuild: ^1.1.2
       vite: ^4.2.1
     dependencies:
@@ -1143,26 +1143,26 @@ importers:
       vite: 4.2.1
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
       unbuild: 1.1.2
 
   .stacks/core/testing:
     specifiers:
-      '@playwright/test': ^1.32.0
+      '@playwright/test': ^1.32.1
       '@vitest/coverage-istanbul': ^0.29.7
       '@vitest/ui': ^0.29.7
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vitest: ^0.29.7
     dependencies:
-      '@playwright/test': 1.32.0
+      '@playwright/test': 1.32.1
       '@vitest/coverage-istanbul': 0.29.7_vitest@0.29.7
       '@vitest/ui': 0.29.7
       vitest: 0.29.7_@vitest+ui@0.29.7
     devDependencies:
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/types:
     specifiers:
@@ -1177,20 +1177,20 @@ importers:
       '@types/fs-extra': ^11.0.1
       '@types/markdown-it-link-attributes': ^3.0.1
       '@types/minimatch': ^5.1.2
-      '@types/node': ^18.15.8
+      '@types/node': ^18.15.9
       '@types/nprogress': ^0.2.0
       '@types/pluralize': ^0.0.29
       '@types/prompts': ^2.4.3
       cac: ^6.7.14
       markdown-it: ^13.0.1
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unplugin-auto-import: ^0.15.2
       unplugin-vue-components: ^0.24.1
       vite-plugin-inspect: ^0.7.18
       vite-plugin-vue-layouts: ^0.8.0
       vite-ssg: ^0.22.1
-      vitepress: 1.0.0-alpha.61
+      vitepress: 1.0.0-alpha.62
     devDependencies:
       '@mdit-vue/plugin-component': 0.12.0
       '@mdit-vue/plugin-frontmatter': 0.12.0
@@ -1203,20 +1203,20 @@ importers:
       '@types/fs-extra': 11.0.1
       '@types/markdown-it-link-attributes': 3.0.1
       '@types/minimatch': 5.1.2
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       '@types/nprogress': 0.2.0
       '@types/pluralize': 0.0.29
       '@types/prompts': 2.4.3
       cac: 6.7.14
       markdown-it: 13.0.1
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
       unplugin-auto-import: 0.15.2
       unplugin-vue-components: 0.24.1_vue@3.2.47
       vite-plugin-inspect: 0.7.18_vite@4.2.1
       vite-plugin-vue-layouts: 0.8.0_asesa6ksds7mbxqm7d5qamvm34
       vite-ssg: 0.22.1_ducazv67qbupwf5wp4evz2t54u
-      vitepress: 1.0.0-alpha.61_y3pe3i2tcyf4xogm6j4kdmxqtm
+      vitepress: 1.0.0-alpha.62_trvko32h3gjscqampd22cgnsm4
 
   .stacks/core/ui:
     specifiers:
@@ -1229,7 +1229,7 @@ importers:
       '@unocss/transformer-compile-class': ^0.50.6
       mkdist: ^1.1.2
       pinia: ^2.0.33
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       unocss: ^0.50.6
       vue: ^3.2.47
       vue-tsc: ^1.2.0
@@ -1240,14 +1240,14 @@ importers:
       '@stacksjs/build': link:../build
       '@stacksjs/config': link:../config
       '@unocss/transformer-compile-class': 0.50.6
-      pinia: 2.0.33_hmuptsblhheur2tugfgucj7gc4
+      pinia: 2.0.33_p4srtwdgezcoeovfcc2yxzvaue
       unocss: 0.50.6_postcss@8.4.21+vite@4.2.1
       vue: 3.2.47
-      vue-tsc: 1.2.0_typescript@4.9.5
+      vue-tsc: 1.2.0_typescript@5.0.2
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/utils:
     specifiers:
@@ -1275,7 +1275,7 @@ importers:
       p-limit: ^4.0.0
       rimraf: ^4.4.1
       throttle-debounce: ^5.0.0
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@stacksjs/arrays': link:../arrays
       '@stacksjs/cli': link:../cli
@@ -1301,23 +1301,23 @@ importers:
     devDependencies:
       '@stacksjs/testing': link:../testing
       '@types/throttle-debounce': 5.0.0
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/validation:
     specifiers:
       '@stacksjs/path': workspace:*
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       zod: ^3.21.4
     dependencies:
       zod: 3.21.4
     devDependencies:
       '@stacksjs/path': link:../path
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/core/x-ray:
     specifiers:
@@ -1326,7 +1326,7 @@ importers:
       '@stacksjs/testing': workspace:*
       mkdist: ^1.1.2
       node-ray: ^1.19.4
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       vue3-highlightjs: ^1.0.5
     dependencies:
       '@stacksjs/desktop': link:../desktop
@@ -1335,20 +1335,20 @@ importers:
       vue3-highlightjs: 1.0.5_vue@3.2.47
     devDependencies:
       '@stacksjs/testing': link:../testing
-      mkdist: 1.1.2_typescript@4.9.5
-      typescript: 4.9.5
+      mkdist: 1.1.2_typescript@5.0.2
+      typescript: 5.0.2
 
   .stacks/docs:
     specifiers:
       '@stacksjs/docs': workspace:*
       '@stacksjs/path': workspace:*
       rimraf: ^4.4.1
-      vitepress: ^1.0.0-alpha.61
+      vitepress: ^1.0.0-alpha.62
     dependencies:
       '@stacksjs/docs': link:../core/docs
       '@stacksjs/path': link:../core/path
       rimraf: 4.4.1
-      vitepress: 1.0.0-alpha.61_2xdflmy6sc2qhwxavtux3g5lt4
+      vitepress: 1.0.0-alpha.62_2xdflmy6sc2qhwxavtux3g5lt4
 
   .stacks/fonts/hubot-sans:
     specifiers: {}
@@ -4672,15 +4672,15 @@ packages:
       '@commitlint/execute-rule': 17.4.0
       '@commitlint/resolve-extends': 17.4.4
       '@commitlint/types': 17.4.4
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       chalk: 4.1.2
       cosmiconfig: 8.1.3
-      cosmiconfig-typescript-loader: 4.3.0_7zctxngcapk5ehdzrnoqyfi4ca
+      cosmiconfig-typescript-loader: 4.3.0_liua4qjgafcks4ipjaztclznqm
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
       resolve-from: 5.0.0
-      ts-node: 10.9.1_cvyi7kayeebmg4wmdms74sm43e
+      ts-node: 10.9.1_3flabivgbrnlfzsgzfhinuvrvy
       typescript: 4.9.5
     transitivePeerDependencies:
       - '@swc/core'
@@ -5356,12 +5356,12 @@ packages:
       - debug
     dev: false
 
-  /@novu/emailjs/0.12.0_typescript@4.9.5:
+  /@novu/emailjs/0.12.0_typescript@5.0.2:
     resolution: {integrity: sha512-6mijoS1O1jX8UgDk4xsOmrV8eG8k/rO0tPGgHbH41hq1HZ3xv+kHJFWjTqFoM2tAkYvauKVIpX/y0vlFX7oIVQ==}
     engines: {node: '>=10'}
     dependencies:
       '@novu/stateless': 0.12.0
-      emailjs: 3.8.1_typescript@4.9.5
+      emailjs: 3.8.1_typescript@5.0.2
     transitivePeerDependencies:
       - typescript
     dev: false
@@ -5589,7 +5589,7 @@ packages:
       - supports-color
     dev: false
 
-  /@ow3/eslint-config-basic/0.37.2_cpj4tv3hntrcia52vnrrg3eslq:
+  /@ow3/eslint-config-basic/0.37.2_y7rczx7zuvsmujgglzevd4vf44:
     resolution: {integrity: sha512-+JwVotRTDYUKmzRkWAnxMSkLO4Pt6KGuGOi94T8PV2UlmK2Kie200LXAqG0VsPCmOvD3VICUoglfqy0ehNIopA==}
     peerDependencies:
       eslint: '>=7.4.0'
@@ -5602,7 +5602,7 @@ packages:
       eslint-plugin-markdown: 3.0.0_eslint@8.36.0
       eslint-plugin-n: 15.6.1_eslint@8.36.0
       eslint-plugin-no-only-tests: 3.1.0
-      eslint-plugin-ow3: 0.37.2_vgl77cfdswitgr47lm5swmv43m
+      eslint-plugin-ow3: 0.37.2_j4766f7ecgqbon3u7zlxn5zszu
       eslint-plugin-promise: 6.1.1_eslint@8.36.0
       eslint-plugin-unicorn: 45.0.2_eslint@8.36.0
       eslint-plugin-unused-imports: 2.0.0_pjgbsoxltfjhart6hcjsvw66hu
@@ -5618,19 +5618,19 @@ packages:
       - typescript
     dev: false
 
-  /@ow3/eslint-config-ts/0.37.2_vgl77cfdswitgr47lm5swmv43m:
+  /@ow3/eslint-config-ts/0.37.2_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-suJe1pCjtdbF71K5S1BOEN5vSRiDJFZaIIqZB/eZHpt84kO47OHZKJkmHJgPy8yvfoNByEQONG86kogXh5+Atg==}
     peerDependencies:
       eslint: '>=7.4.0'
       typescript: '>=3.9'
     dependencies:
-      '@ow3/eslint-config-basic': 0.37.2_cpj4tv3hntrcia52vnrrg3eslq
-      '@typescript-eslint/eslint-plugin': 5.56.0_iskin7c6dxqunwflhstekcjqmq
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@ow3/eslint-config-basic': 0.37.2_y7rczx7zuvsmujgglzevd4vf44
+      '@typescript-eslint/eslint-plugin': 5.56.0_2hcjazgfnbtq42tcc73br2vup4
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       eslint: 8.36.0
-      eslint-plugin-jest: 27.2.1_t2az3euonckxht7o3xjedcge5q
-      eslint-plugin-neverthrow: 1.1.4_iskin7c6dxqunwflhstekcjqmq
-      typescript: 4.9.5
+      eslint-plugin-jest: 27.2.1_penut7up43u63msicz6cwojxg4
+      eslint-plugin-neverthrow: 1.1.4_2hcjazgfnbtq42tcc73br2vup4
+      typescript: 5.0.2
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -5638,13 +5638,13 @@ packages:
       - supports-color
     dev: false
 
-  /@ow3/eslint-config-vue/0.37.2_cpj4tv3hntrcia52vnrrg3eslq:
+  /@ow3/eslint-config-vue/0.37.2_y7rczx7zuvsmujgglzevd4vf44:
     resolution: {integrity: sha512-JTUVZ52df3EtGIgPVytuo8NTB1Mqv4YvA7HP6XCk6/FHfucbhu89HatUXUiv8Jc2N1fhn57UYlMR0SEhlU1wBQ==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
-      '@ow3/eslint-config-basic': 0.37.2_cpj4tv3hntrcia52vnrrg3eslq
-      '@ow3/eslint-config-ts': 0.37.2_vgl77cfdswitgr47lm5swmv43m
+      '@ow3/eslint-config-basic': 0.37.2_y7rczx7zuvsmujgglzevd4vf44
+      '@ow3/eslint-config-ts': 0.37.2_j4766f7ecgqbon3u7zlxn5zszu
       eslint: 8.36.0
       eslint-plugin-vue: 9.9.0_eslint@8.36.0
       local-pkg: 0.4.3
@@ -5658,14 +5658,14 @@ packages:
       - typescript
     dev: false
 
-  /@ow3/eslint-config/0.37.2_vgl77cfdswitgr47lm5swmv43m:
+  /@ow3/eslint-config/0.37.2_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-JHtu2lOd2CXIDIxVPvSAbZMjT3JTRy7MuPXkHNc/z3UIh94tPKqb+w2x+KnC4HjPy5WS+Zp2W5miU/ndDszTIA==}
     peerDependencies:
       eslint: '>=7.4.0'
     dependencies:
-      '@ow3/eslint-config-vue': 0.37.2_cpj4tv3hntrcia52vnrrg3eslq
-      '@typescript-eslint/eslint-plugin': 5.56.0_iskin7c6dxqunwflhstekcjqmq
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@ow3/eslint-config-vue': 0.37.2_y7rczx7zuvsmujgglzevd4vf44
+      '@typescript-eslint/eslint-plugin': 5.56.0_2hcjazgfnbtq42tcc73br2vup4
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       eslint: 8.36.0
       eslint-plugin-eslint-comments: 3.2.0_eslint@8.36.0
       eslint-plugin-html: 7.1.0
@@ -5706,13 +5706,13 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@playwright/test/1.32.0:
-    resolution: {integrity: sha512-zOdGloaF0jeec7hqoLqM5S3L2rR4WxMJs6lgiAeR70JlH7Ml54ZPoIIf3X7cvnKde3Q9jJ/gaxkFh8fYI9s1rg==}
+  /@playwright/test/1.32.1:
+    resolution: {integrity: sha512-FTwjCuhlm1qHUGf4hWjfr64UMJD/z0hXYbk+O387Ioe6WdyZQ+0TBDAc6P+pHjx2xCv1VYNgrKbYrNixFWy4Dg==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      '@types/node': 18.15.8
-      playwright-core: 1.32.0
+      '@types/node': 18.15.9
+      playwright-core: 1.32.1
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
@@ -6346,7 +6346,7 @@ packages:
     dependencies:
       '@types/http-cache-semantics': 4.0.1
       '@types/keyv': 3.1.4
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       '@types/responselike': 1.0.0
     dev: false
 
@@ -6367,7 +6367,7 @@ packages:
   /@types/cors/2.8.13:
     resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: false
 
   /@types/crypto-js/4.1.1:
@@ -6415,14 +6415,14 @@ packages:
     resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
       '@types/jsonfile': 6.1.1
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: true
 
   /@types/glob/7.2.0:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: false
 
   /@types/http-cache-semantics/4.0.1:
@@ -6439,13 +6439,13 @@ packages:
   /@types/jsonfile/6.1.1:
     resolution: {integrity: sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: true
 
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: false
 
   /@types/linkify-it/3.0.2:
@@ -6503,6 +6503,10 @@ packages:
 
   /@types/node/18.15.8:
     resolution: {integrity: sha512-kzGNJZ57XEH7RdckxZ7wfRjB9hgZABF+NLgR1B2zogUvV0gmK0/60VYA4yb4oKZckPiiJlmmfpdqTfCN0VRX+Q==}
+    dev: false
+
+  /@types/node/18.15.9:
+    resolution: {integrity: sha512-dUxhiNzBLr6IqlZXz6e/rN2YQXlFgOei/Dxy+e3cyXTJ4txSUbGT2/fmnD6zd/75jDMeW5bDee+YXxlFKHoV0A==}
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -6521,14 +6525,14 @@ packages:
   /@types/prompts/2.4.3:
     resolution: {integrity: sha512-qpzXlxoPv67TCtTCS+SwYmz1M+G5ARTrE5YVlrZPy/xBD36dzLqiJLDzOzsMXkcJYq6+6UkWqFwtLAOjsfec5Q==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       kleur: 3.0.3
     dev: true
 
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: false
 
   /@types/resolve/1.20.2:
@@ -6537,7 +6541,7 @@ packages:
   /@types/responselike/1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
     dev: false
 
   /@types/semver/7.3.13:
@@ -6563,7 +6567,7 @@ packages:
   /@types/web-bluetooth/0.0.16:
     resolution: {integrity: sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==}
 
-  /@typescript-eslint/eslint-plugin/5.56.0_iskin7c6dxqunwflhstekcjqmq:
+  /@typescript-eslint/eslint-plugin/5.56.0_2hcjazgfnbtq42tcc73br2vup4:
     resolution: {integrity: sha512-ZNW37Ccl3oMZkzxrYDUX4o7cnuPgU+YrcaYXzsRtLB16I1FR5SHMqga3zGsaSliZADCWo2v8qHWqAYIj8nWCCg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -6575,23 +6579,23 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.4.0
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       '@typescript-eslint/scope-manager': 5.56.0
-      '@typescript-eslint/type-utils': 5.56.0_vgl77cfdswitgr47lm5swmv43m
-      '@typescript-eslint/utils': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/type-utils': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
+      '@typescript-eslint/utils': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       debug: 4.3.4
       eslint: 8.36.0
       grapheme-splitter: 1.0.4
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
       semver: 7.3.8
-      tsutils: 3.21.0_typescript@4.9.5
-      typescript: 4.9.5
+      tsutils: 3.21.0_typescript@5.0.2
+      typescript: 5.0.2
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@typescript-eslint/parser/5.56.0_vgl77cfdswitgr47lm5swmv43m:
+  /@typescript-eslint/parser/5.56.0_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-sn1OZmBxUsgxMmR8a8U5QM/Wl+tyqlH//jTqCg8daTAmhAk26L2PFhcqPLlYBhYUJMZJK276qLXlHN3a83o2cg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -6603,10 +6607,10 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 5.56.0
       '@typescript-eslint/types': 5.56.0
-      '@typescript-eslint/typescript-estree': 5.56.0_typescript@4.9.5
+      '@typescript-eslint/typescript-estree': 5.56.0_typescript@5.0.2
       debug: 4.3.4
       eslint: 8.36.0
-      typescript: 4.9.5
+      typescript: 5.0.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -6619,7 +6623,7 @@ packages:
       '@typescript-eslint/visitor-keys': 5.56.0
     dev: false
 
-  /@typescript-eslint/type-utils/5.56.0_vgl77cfdswitgr47lm5swmv43m:
+  /@typescript-eslint/type-utils/5.56.0_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-8WxgOgJjWRy6m4xg9KoSHPzBNZeQbGlQOH7l2QEhQID/+YseaFxg5J/DLwWSsi9Axj4e/cCiKx7PVzOq38tY4A==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -6629,12 +6633,12 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/typescript-estree': 5.56.0_typescript@4.9.5
-      '@typescript-eslint/utils': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/typescript-estree': 5.56.0_typescript@5.0.2
+      '@typescript-eslint/utils': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       debug: 4.3.4
       eslint: 8.36.0
-      tsutils: 3.21.0_typescript@4.9.5
-      typescript: 4.9.5
+      tsutils: 3.21.0_typescript@5.0.2
+      typescript: 5.0.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -6644,7 +6648,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: false
 
-  /@typescript-eslint/typescript-estree/5.56.0_typescript@4.9.5:
+  /@typescript-eslint/typescript-estree/5.56.0_typescript@5.0.2:
     resolution: {integrity: sha512-41CH/GncsLXOJi0jb74SnC7jVPWeVJ0pxQj8bOjH1h2O26jXN3YHKDT1ejkVz5YeTEQPeLCCRY0U2r68tfNOcg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -6659,13 +6663,13 @@ packages:
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.3.8
-      tsutils: 3.21.0_typescript@4.9.5
-      typescript: 4.9.5
+      tsutils: 3.21.0_typescript@5.0.2
+      typescript: 5.0.2
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@typescript-eslint/utils/5.56.0_vgl77cfdswitgr47lm5swmv43m:
+  /@typescript-eslint/utils/5.56.0_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-XhZDVdLnUJNtbzaJeDSCIYaM+Tgr59gZGbFuELgF7m0IY03PlciidS7UQNKLE0+WpUTn1GlycEr6Ivb/afjbhA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
@@ -6676,7 +6680,7 @@ packages:
       '@types/semver': 7.3.13
       '@typescript-eslint/scope-manager': 5.56.0
       '@typescript-eslint/types': 5.56.0
-      '@typescript-eslint/typescript-estree': 5.56.0_typescript@4.9.5
+      '@typescript-eslint/typescript-estree': 5.56.0_typescript@5.0.2
       eslint: 8.36.0
       eslint-scope: 5.1.1
       semver: 7.3.8
@@ -8985,7 +8989,7 @@ packages:
       vary: 1.1.2
     dev: false
 
-  /cosmiconfig-typescript-loader/4.3.0_7zctxngcapk5ehdzrnoqyfi4ca:
+  /cosmiconfig-typescript-loader/4.3.0_liua4qjgafcks4ipjaztclznqm:
     resolution: {integrity: sha512-NTxV1MFfZDLPiBMjxbHRwSh5LaLcPMwNdCutmnHJCKoVnlvldPWlllonKwrsRJ5pYZBIBGRWWU2tfvzxgeSW5Q==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
@@ -8994,9 +8998,9 @@ packages:
       ts-node: '>=10'
       typescript: '>=3'
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       cosmiconfig: 8.1.3
-      ts-node: 10.9.1_cvyi7kayeebmg4wmdms74sm43e
+      ts-node: 10.9.1_3flabivgbrnlfzsgzfhinuvrvy
       typescript: 4.9.5
     dev: false
     optional: true
@@ -9791,7 +9795,7 @@ packages:
       string-uglify: 1.5.0
     dev: false
 
-  /emailjs/3.8.1_typescript@4.9.5:
+  /emailjs/3.8.1_typescript@5.0.2:
     resolution: {integrity: sha512-AOpQyi1op250n66ocgFQRkmsMcYAylmbBBfIQrwqv6OxuDSDG4Mr/7gROkKc7nNjLt0WycPRLRxiX1+XAhZJuQ==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -9800,7 +9804,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /emoji-regex/8.0.0:
@@ -9845,7 +9849,7 @@ packages:
     dependencies:
       '@types/cookie': 0.4.1
       '@types/cors': 2.8.13
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.4.2
@@ -10142,7 +10146,7 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       debug: 3.2.7
       eslint: 8.36.0
       eslint-import-resolver-node: 0.3.7
@@ -10188,7 +10192,7 @@ packages:
       '@typescript-eslint/parser':
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       array-includes: 3.1.6
       array.prototype.flat: 1.3.1
       array.prototype.flatmap: 1.3.1
@@ -10211,7 +10215,7 @@ packages:
       - supports-color
     dev: false
 
-  /eslint-plugin-jest/27.2.1_t2az3euonckxht7o3xjedcge5q:
+  /eslint-plugin-jest/27.2.1_penut7up43u63msicz6cwojxg4:
     resolution: {integrity: sha512-l067Uxx7ZT8cO9NJuf+eJHvt6bqJyz2Z29wykyEdz/OtmcELQl2MQGQLX8J94O1cSJWAwUSEvCjwjA7KEK3Hmg==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
@@ -10224,8 +10228,8 @@ packages:
       jest:
         optional: true
     dependencies:
-      '@typescript-eslint/eslint-plugin': 5.56.0_iskin7c6dxqunwflhstekcjqmq
-      '@typescript-eslint/utils': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/eslint-plugin': 5.56.0_2hcjazgfnbtq42tcc73br2vup4
+      '@typescript-eslint/utils': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       eslint: 8.36.0
     transitivePeerDependencies:
       - supports-color
@@ -10273,7 +10277,7 @@ packages:
       semver: 7.3.8
     dev: false
 
-  /eslint-plugin-neverthrow/1.1.4_iskin7c6dxqunwflhstekcjqmq:
+  /eslint-plugin-neverthrow/1.1.4_2hcjazgfnbtq42tcc73br2vup4:
     resolution: {integrity: sha512-+8zsE5rDqsDfKYAOq0Fr2jbuxHXTmntIWWJqJA3ms1GAKcVCjl0ycetzOu/hTxot9ctr+WYQpCBgB3F2HATR7A==}
     engines: {node: '>=14.17'}
     peerDependencies:
@@ -10281,10 +10285,10 @@ packages:
       eslint: '>=5.16.0'
     dependencies:
       '@types/eslint-utils': 3.0.2
-      '@typescript-eslint/parser': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/parser': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
       eslint: 8.36.0
       eslint-utils: 3.0.0_eslint@8.36.0
-      tsutils: 3.21.0_typescript@4.9.5
+      tsutils: 3.21.0_typescript@5.0.2
     transitivePeerDependencies:
       - typescript
     dev: false
@@ -10294,10 +10298,10 @@ packages:
     engines: {node: '>=5.0.0'}
     dev: false
 
-  /eslint-plugin-ow3/0.37.2_vgl77cfdswitgr47lm5swmv43m:
+  /eslint-plugin-ow3/0.37.2_j4766f7ecgqbon3u7zlxn5zszu:
     resolution: {integrity: sha512-u6tL6r6oR4hlGjDx5VYNFBZ/TO1Duu8yupR4o5VXnFKAhdawcEvK/a6aapFLkmST/iSL9n1RDjLcEGqdPzwW2A==}
     dependencies:
-      '@typescript-eslint/utils': 5.56.0_vgl77cfdswitgr47lm5swmv43m
+      '@typescript-eslint/utils': 5.56.0_j4766f7ecgqbon3u7zlxn5zszu
     transitivePeerDependencies:
       - eslint
       - supports-color
@@ -10348,7 +10352,7 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
     dependencies:
-      '@typescript-eslint/eslint-plugin': 5.56.0_iskin7c6dxqunwflhstekcjqmq
+      '@typescript-eslint/eslint-plugin': 5.56.0_2hcjazgfnbtq42tcc73br2vup4
       eslint: 8.36.0
       eslint-rule-composer: 0.3.0
     dev: false
@@ -12620,7 +12624,7 @@ packages:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: false
@@ -12629,7 +12633,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: false
@@ -13893,6 +13897,29 @@ packages:
       pathe: 1.1.0
       typescript: 4.9.5
 
+  /mkdist/1.1.2_typescript@5.0.2:
+    resolution: {integrity: sha512-s9whPlQsr84iY3XoufsDrVlzGiDdTnMwf2+7QU6ekJPgTIgGwn7EsU8lcefWqLH6no+/4UqjDBwyIkGKfZyH9g==}
+    hasBin: true
+    peerDependencies:
+      sass: ^1.58.3
+      typescript: '>=4.9.5'
+    peerDependenciesMeta:
+      sass:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      defu: 6.1.2
+      esbuild: 0.17.12
+      fs-extra: 11.1.1
+      globby: 13.1.3
+      jiti: 1.18.2
+      mlly: 1.2.0
+      mri: 1.2.0
+      pathe: 1.1.0
+      typescript: 5.0.2
+    dev: true
+
   /mlly/1.2.0:
     resolution: {integrity: sha512-+c7A3CV0KGdKcylsI6khWyts/CYrGTrRVo4R/I7u/cUsy0Conxa6LUhiEzVKIw14lc2L5aiO4+SeVe4TeGRKww==}
     dependencies:
@@ -14998,7 +15025,7 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pinia/2.0.33_hmuptsblhheur2tugfgucj7gc4:
+  /pinia/2.0.33_p4srtwdgezcoeovfcc2yxzvaue:
     resolution: {integrity: sha512-HOj1yVV2itw6rNIrR2f7+MirGNxhORjrULL8GWgRwXsGSvEqIQ+SE0MYt6cwtpegzCda3i+rVTZM+AM7CG+kRg==}
     peerDependencies:
       '@vue/composition-api': ^1.4.0
@@ -15011,7 +15038,7 @@ packages:
         optional: true
     dependencies:
       '@vue/devtools-api': 6.5.0
-      typescript: 4.9.5
+      typescript: 5.0.2
       vue: 3.2.47
       vue-demi: 0.13.11_vue@3.2.47
     dev: false
@@ -15049,8 +15076,8 @@ packages:
       mlly: 1.2.0
       pathe: 1.1.0
 
-  /playwright-core/1.32.0:
-    resolution: {integrity: sha512-Z9Ij17X5Z3bjpp6XKujGBp9Gv4eViESac9aDmwgQFUEJBW0K80T21m/Z+XJQlu4cNsvPygw33b6V1Va6Bda5zQ==}
+  /playwright-core/1.32.1:
+    resolution: {integrity: sha512-KZYUQC10mXD2Am1rGlidaalNGYk3LU1vZqqNk0gT4XPty1jOqgup8KDP8l2CUlqoNKhXM5IfGjWgW37xvGllBA==}
     engines: {node: '>=14'}
     hasBin: true
     dev: false
@@ -17774,7 +17801,7 @@ packages:
     resolution: {integrity: sha512-vDWbsl26LIcPGmDpoVzjEP6+hvHZkBkLW7JpvwbCv/5IYPJlsbzCVXY3wsCeAxAUeTclNOUZxnLdGh3VBD/J6w==}
     dev: false
 
-  /ts-node/10.9.1_cvyi7kayeebmg4wmdms74sm43e:
+  /ts-node/10.9.1_3flabivgbrnlfzsgzfhinuvrvy:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -17793,14 +17820,14 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.15.8
+      '@types/node': 18.15.9
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 4.9.5
+      typescript: 5.0.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: false
@@ -17822,14 +17849,14 @@ packages:
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
-  /tsutils/3.21.0_typescript@4.9.5:
+  /tsutils/3.21.0_typescript@5.0.2:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
     dependencies:
       tslib: 1.14.1
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /tsx/3.12.6:
@@ -17979,6 +18006,11 @@ packages:
   /typescript/4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
     engines: {node: '>=4.2.0'}
+    hasBin: true
+
+  /typescript/5.0.2:
+    resolution: {integrity: sha512-wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==}
+    engines: {node: '>=12.20'}
     hasBin: true
 
   /ua-parser-js/1.0.34:
@@ -18624,7 +18656,7 @@ packages:
       kolorist: 1.7.0
       sirv: 2.0.2
       ufo: 1.1.1
-      vite: 4.2.1_@types+node@18.15.8
+      vite: 4.2.1_@types+node@18.15.9
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -18807,9 +18839,44 @@ packages:
       rollup: 3.20.0
     optionalDependencies:
       fsevents: 2.3.2
+    dev: false
 
-  /vitepress/1.0.0-alpha.61_2xdflmy6sc2qhwxavtux3g5lt4:
-    resolution: {integrity: sha512-NvzERVS3/TU9YkYcaiK7yNSe0zY9UcSV58tx3mxbvVLCuwRykzO4OWbl6vQT6Ut6YGuZU1y3Z5WcSS+fHfaxJA==}
+  /vite/4.2.1_@types+node@18.15.9:
+    resolution: {integrity: sha512-7MKhqdy0ISo4wnvwtqZkjke6XN4taqQ2TBaTccLIpOKv7Vp2h4Y+NpmWCnGDeSvvn45KxvWgGyb0MkHvY1vgbg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.15.9
+      esbuild: 0.17.12
+      postcss: 8.4.21
+      resolve: 1.22.1
+      rollup: 3.20.0
+    optionalDependencies:
+      fsevents: 2.3.2
+    dev: true
+
+  /vitepress/1.0.0-alpha.62_2xdflmy6sc2qhwxavtux3g5lt4:
+    resolution: {integrity: sha512-99RvczAQANultUykkRQeWb75pD07Fgg+dc7epqctrPmLuK/9FC2DQojC0xFNUMJJMYWCR4liCfHjKMPdOpChIA==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.3
@@ -18835,8 +18902,8 @@ packages:
       - terser
     dev: false
 
-  /vitepress/1.0.0-alpha.61_y3pe3i2tcyf4xogm6j4kdmxqtm:
-    resolution: {integrity: sha512-NvzERVS3/TU9YkYcaiK7yNSe0zY9UcSV58tx3mxbvVLCuwRykzO4OWbl6vQT6Ut6YGuZU1y3Z5WcSS+fHfaxJA==}
+  /vitepress/1.0.0-alpha.62_trvko32h3gjscqampd22cgnsm4:
+    resolution: {integrity: sha512-99RvczAQANultUykkRQeWb75pD07Fgg+dc7epqctrPmLuK/9FC2DQojC0xFNUMJJMYWCR4liCfHjKMPdOpChIA==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.3
@@ -18846,7 +18913,7 @@ packages:
       '@vueuse/core': 9.13.0_vue@3.2.47
       body-scroll-lock: 4.0.0-beta.0
       shiki: 0.14.1
-      vite: 4.2.1_@types+node@18.15.8
+      vite: 4.2.1_@types+node@18.15.9
       vue: 3.2.47
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -18944,7 +19011,7 @@ packages:
   /vscode-textmate/8.0.0:
     resolution: {integrity: sha512-AFbieoL7a5LMqcnOF04ji+rpXadgOXnZsxQr//r83kLPr7biP7am3g9zbaZIaBGwBRWeSvoMD4mgPdX3e4NWBg==}
 
-  /vue-component-meta/1.2.0_typescript@4.9.5:
+  /vue-component-meta/1.2.0_typescript@5.0.2:
     resolution: {integrity: sha512-z+/pL4txu5qCULbGHFn6vOlSR1V5gFDGWkD64Z2yLlKtYr0Wlb9oOfWTaXxpSl7R+EiX7JusbTlek0szSYeH1g==}
     peerDependencies:
       typescript: '*'
@@ -18952,7 +19019,7 @@ packages:
       '@volar/language-core': 1.3.0-alpha.0
       '@volar/vue-language-core': 1.2.0
       typesafe-path: 0.2.2
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /vue-demi/0.13.11_vue@3.2.47:
@@ -19063,7 +19130,7 @@ packages:
       he: 1.2.0
     dev: false
 
-  /vue-tsc/1.2.0_typescript@4.9.5:
+  /vue-tsc/1.2.0_typescript@5.0.2:
     resolution: {integrity: sha512-rIlzqdrhyPYyLG9zxsVRa+JEseeS9s8F2BbVVVWRRsTZvJO2BbhLEb2HW3MY+DFma0378tnIqs+vfTzbcQtRFw==}
     hasBin: true
     peerDependencies:
@@ -19071,7 +19138,7 @@ packages:
     dependencies:
       '@volar/vue-language-core': 1.2.0
       '@volar/vue-typescript': 1.2.0
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /vue/3.2.47:
