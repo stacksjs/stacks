@@ -60,10 +60,6 @@
     "auto-imports.d.ts",
     "components.d.ts"
   ],
-  "engines": {
-    "node": ">=v18.15.0",
-    "pnpm": ">=7.30.3"
-  },
   "scripts": {
     "buddy": "esno ./core/buddy/src/cli.ts",
     "prepublish": "pnpm buddy prepublish",

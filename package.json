@@ -19,10 +19,6 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "engines": {
-    "node": ">=v18.15.0",
-    "pnpm": ">=7.30.3"
-  },
   "scripts": {
     "buddy": "esno .stacks/core/buddy/src/cli.ts",
     "bud": "pnpm buddy",
