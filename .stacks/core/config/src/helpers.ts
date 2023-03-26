@@ -20,8 +20,6 @@ export function env(key: string, fallback: any) {
  * @param options
  */
 export function determineDebugMode(options?: CliOptions) {
-  // eslint-disable-next-line no-console
-  console.log('options?.verbose', options?.verbose)
   if (options?.verbose === true)
     return true
 

@@ -1,0 +1,3 @@
+dependencies:
+  nodejs.org: ^18.15.0
+  pnpm.io: ^7.30.3
