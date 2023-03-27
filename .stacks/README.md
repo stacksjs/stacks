@@ -1,4 +1,4 @@
-![Social Card of Stacks](./buddy/art/social.png)
+![Social Card of Stacks](./core/buddy/art/social.png)
 
 # Rapid App Development
 

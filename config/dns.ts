@@ -1,4 +1,4 @@
-import { defineDnsConfig } from '../.stacks/core/config/src/helpers'
+import { defineDnsConfig } from '../.stacks/core/utils/src'
 
 /**
  * **DNS Options**

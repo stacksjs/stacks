@@ -1,4 +1,4 @@
-import { definePaymentConfig } from '../.stacks/core/config/src/helpers'
+import { definePaymentConfig } from '../.stacks/core/utils/src'
 
 /**
  * **Payment Configuration**

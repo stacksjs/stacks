@@ -1,3 +1,5 @@
+import type { IEmailOptions } from '@novu/stateless'
+
 export interface NotificationOptions {
   type?: 'email' | 'sms' | 'chat' | 'push'
   driver?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses' | 'mailgun' | 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns'
@@ -167,7 +169,20 @@ export interface ExpoPushNotificationOptions {
 
 export type {
   IChatOptions as ChatOptions,
-  IEmailOptions as EmailOptions,
   ISendMessageSuccessResponse as SendMessageSuccessResponse,
   ISmsOptions as SmsOptions,
 } from '@novu/stateless'
+
+export type EmailOptions = Omit<IEmailOptions, 'from'> & {
+  from: {
+    name?: string
+    address?: string
+  }
+
+  domain?: string
+
+  mailboxes?: {
+    'username': string
+    'forwardTo': string
+  }[]
+}

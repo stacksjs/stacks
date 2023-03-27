@@ -1,5 +1,4 @@
-import { env } from '../.stacks/core//utils/src'
-import { defineServicesConfig } from '../.stacks/core/config/src/helpers'
+import { defineServicesConfig, env } from '../.stacks/core/utils/src'
 
 /**
  * **Services**

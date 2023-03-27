@@ -1,5 +1,4 @@
-import { env } from '../.stacks/core/utils/src'
-import { defineNotificationConfig } from '../.stacks/core/config/src/helpers'
+import { defineNotificationConfig, env } from '../.stacks/core/utils/src'
 
 /**
  * **Notification Configuration**

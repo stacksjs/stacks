@@ -1,7 +1,7 @@
 import { log, spawn } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import type { PreinstallOptions } from '@stacksjs/types'
-import { determineDebugMode } from '@stacksjs/config'
+import { determineDebugMode } from '@stacksjs/utils'
 
 export async function invoke(options?: PreinstallOptions) {
   try {

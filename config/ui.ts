@@ -1,4 +1,4 @@
-import { defineUiConfig } from '../.stacks/core/config/src/helpers'
+import { defineUiConfig } from '../.stacks/core/utils/src'
 
 /**
  * **UI Engine Options**

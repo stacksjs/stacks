@@ -1,4 +1,4 @@
-import { defineStorageConfig } from '../.stacks/core/config/src/helpers'
+import { defineStorageConfig } from '../.stacks/core/utils/src'
 
 /**
  * **Storage Options**

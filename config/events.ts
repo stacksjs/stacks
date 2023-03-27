@@ -1,4 +1,4 @@
-import { defineEventsConfig } from '../.stacks/core/config/src/helpers'
+import { defineEventsConfig } from '../.stacks/core/utils/src'
 
 /**
  * **Events Configuration**

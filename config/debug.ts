@@ -1,4 +1,4 @@
-import { defineDebugConfig } from '../.stacks/core/config/src/helpers'
+import { defineDebugConfig } from '../.stacks/core/utils/src'
 
 /**
  * **Debug Configuration**

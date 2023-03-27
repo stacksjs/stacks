@@ -1,4 +1,4 @@
-import { defineCronJobsConfig } from '../.stacks/core/config/src/helpers'
+import { defineCronJobsConfig } from '../.stacks/core/utils/src'
 
 /**
  * **Cron Jobs Configuration**

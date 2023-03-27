@@ -25,7 +25,9 @@ export interface Model {
     through: string
     using: string
   }
+  seedable?: boolean | SeedOptions
   useSeed?: boolean | SeedOptions
+  searchable?: boolean | SearchIndexSettings
   useSearch?: boolean | SearchIndexSettings
   useTimestamps?: boolean | TimestampOptions
   // useSoftDeletes?: boolean | SoftDeleteOptions

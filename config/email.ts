@@ -1,5 +1,5 @@
-import { app } from '../.stacks/core/config/src'
-import { defineEmailConfig } from '../.stacks/core/config/src/helpers'
+import { defineEmailConfig } from '../.stacks/core/utils/src'
+import app from './app'
 
 /**
  * **Email Configuration**
@@ -15,10 +15,11 @@ export default defineEmailConfig({
   },
 
   domain: app.url,
+
   mailboxes: [
     {
-      username: 'hi', // enables hi@domain
-      forwardTo: 'your@mailbox', // forwards all emails from hi@domain to your mailbox (e.g. stacksjs@gmail.com)
+      username: 'hi', // enables hi@domain.com
+      forwardTo: 'your@mailbox.com', // forwards all emails from hi@domain.com to your@mailbox.com (e.g. stacksjs@gmail.com)
     },
   ],
 })
