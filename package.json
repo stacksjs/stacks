@@ -99,8 +99,7 @@
     "test:types": "pnpm buddy test:types"
   },
   "dependencies": {
-    "stacks": "workspace:*",
-    "yaml": "^2.2.1"
+    "stacks": "workspace:*"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"

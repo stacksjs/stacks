@@ -1,3 +1,4 @@
+import { execSync as childExec } from 'node:child_process'
 import type { Err } from '@stacksjs/error-handling'
 import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ResultAsync, err } from '@stacksjs/error-handling'
@@ -24,6 +25,16 @@ export function exec(command: string, options?: CliOptions) {
     spawn(command, { stdio, cwd, shell }),
     () => new Error(`Failed to run command: ${italic(command)}`),
   )
+}
+
+/**
+ * Execute a command and return result.
+ *
+ * @param command The command to execute.
+ * @returns The result of the command.
+ */
+export function execSync(command: string) {
+  return childExec(command, { encoding: 'utf-8' })
 }
 
 /**

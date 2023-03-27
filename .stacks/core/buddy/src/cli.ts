@@ -1,12 +1,9 @@
 #!/usr/bin/env node
-import { execSync } from 'node:child_process'
 import { runAction } from '@stacksjs/actions'
-import { command, log, runCommand } from '@stacksjs/cli'
-import { env, frameworkVersion, isProjectCreated } from '@stacksjs/utils'
+import { command, execSync, log, runCommand } from '@stacksjs/cli'
+import { env, frameworkVersion, isProjectCreated, parseYaml, semver } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
-import { parse as parseYaml } from 'yaml'
-import semver from 'semver'
 import { filesystem } from '@stacksjs/storage'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update, version } from './commands'
 
@@ -77,7 +74,7 @@ async function installIfVersionMismatch(): void {
   const requiredPnpmVersion = dependencies['pnpm.io']
 
   const installedNodeVersion = process.version
-  const installedPnpmVersion = execSync('pnpm -v', { encoding: 'utf8' }).trim()
+  const installedPnpmVersion = execSync('pnpm -v').trim()
 
   if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
     log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). Installing...`)

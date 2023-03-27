@@ -1,10 +1,8 @@
 #!/bin/sh
-
 REQUIRED_NODE_VERSION=$(awk '/nodejs.org/{print substr($2, 2)}' ../../tea.yaml | tr -d "'")
 
 # Remove the '>=v' prefix from the version string
 REQUIRED_NODE_VERSION=${REQUIRED_NODE_VERSION#>=v}
-
 
 REQUIRED_NODE_MAJOR=$(echo "$REQUIRED_NODE_VERSION" | cut -d. -f1)
 REQUIRED_NODE_MINOR=$(echo "$REQUIRED_NODE_VERSION" | cut -d. -f2)

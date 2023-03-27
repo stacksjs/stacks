@@ -95,6 +95,15 @@ export interface CliOptions {
    * @default false
    */
   shell?: boolean
+
+  /**
+   * **Encoding**
+   *
+   * Encoding type
+   *
+   * @default 'utf-8'
+   */
+  encoding?: string
 }
 
 export type { Ora as SpinnerOptions } from 'ora'

@@ -4,12 +4,12 @@ importers:
 
   .:
     dependencies:
+      eslint:
+        specifier: ^8.36.0
+        version: 8.36.0
       stacks:
         specifier: workspace:*
         version: link:.stacks
-      yaml:
-        specifier: ^2.2.1
-        version: 2.2.1
 
   .stacks:
     dependencies:

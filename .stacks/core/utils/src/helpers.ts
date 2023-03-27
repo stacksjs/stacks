@@ -3,6 +3,8 @@ import detectIndent from 'detect-indent'
 import storage from '@stacksjs/storage'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { log, runCommand, spawn } from '@stacksjs/cli'
+import semver from 'semver'
+import { parse } from 'yaml'
 import ui from '../../../../config/ui'
 
 export async function isProjectCreated() {
@@ -131,6 +133,11 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   return false
 }
 
+export function parseYaml(content: any) {
+  return parse(content)
+}
+
+export { semver }
 export * from '@dinero.js/currencies'
 export * from 'dinero.js'
 export { detectIndent }
