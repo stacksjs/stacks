@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DBMS=$(grep "dbms:" ../../config/database.ts | awk '{print $2}' | tr -d "',")
+DBMS=$(grep "driver:" ../../config/database.ts | awk '{print $2}' | tr -d "',")
 SEARCH_DRIVER=$(grep "driver:" ../../config/search-engine.ts | awk '{print $2}' | tr -d "',")
 
 if [ "$DBMS" = "mysql" ]; then

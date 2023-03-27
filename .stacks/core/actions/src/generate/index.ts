@@ -123,7 +123,7 @@ export async function types(options?: GeneratorOptions) {
 export async function migrations() {
   const path = frameworkPath('database/schema.prisma')
 
-  await migrate(path, { database: database.dbms })
+  await migrate(path, { database: database.driver })
 
   await runCommand(`npx prisma migrate dev --schema=${path}`)
 

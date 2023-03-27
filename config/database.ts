@@ -9,7 +9,6 @@ import { defineDatabaseConfig } from '../.stacks/core/config/src/helpers'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineDatabaseConfig({
-  driver: 'planetscale',
+  driver: 'mysql',
   url: env('DATABASE_URL', ''),
-  dbms: 'mysql',
 })

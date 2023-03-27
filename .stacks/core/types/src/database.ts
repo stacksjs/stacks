@@ -5,10 +5,9 @@ export type DatabaseClient = any
 // export type DatabaseClient = PrismaClient
 
 export interface DatabaseOptions {
-  driver?: string
+  driver: string
   url?: string
   client?: DatabaseClient
-  dbms: string
 }
 
 export interface FactoryOptions {
