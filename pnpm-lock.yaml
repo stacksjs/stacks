@@ -1825,6 +1825,15 @@ importers:
         specifier: workspace:*
         version: link:..
 
+  .stacks/pages/desktop:
+    dependencies:
+      '@stacksjs/alias':
+        specifier: workspace:*
+        version: link:../../core/alias
+      '@stacksjs/desktop':
+        specifier: workspace:*
+        version: link:../../core/desktop
+
   .stacks/vscode:
     devDependencies:
       '@vscode/vsce':
