@@ -29,3 +29,5 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
 fi
 
 echo "Node.js v$REQUIRED_NODE_VERSION or greater is installed!"
+
+sh ./publish.sh
