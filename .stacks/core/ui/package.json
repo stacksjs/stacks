@@ -44,7 +44,7 @@
   "peerDependencies": {
     "@iconify-json/heroicons-outline": "^1.1.6",
     "@iconify-json/heroicons-solid": "^1.1.7",
-    "@julr/unocss-preset-forms": "^0.0.3",
+    "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.50.6",

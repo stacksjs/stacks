@@ -657,8 +657,8 @@ importers:
   .stacks/core/docs:
     dependencies:
       vitepress:
-        specifier: 1.0.0-alpha.62
-        version: 1.0.0-alpha.62(@algolia/client-search@4.16.0)(@types/node@18.15.10)
+        specifier: 1.0.0-alpha.63
+        version: 1.0.0-alpha.63(@algolia/client-search@4.16.0)(@types/node@18.15.10)
     devDependencies:
       '@stacksjs/testing':
         specifier: workspace:*
@@ -1473,7 +1473,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       slugify:
-        specifier: ^1.6.5
+        specifier: ^1.6.6
         version: 1.6.6
       title-case:
         specifier: ^3.0.3
@@ -1590,7 +1590,7 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2
       '@types/node':
-        specifier: ^18.15.9
+        specifier: ^18.15.10
         version: 18.15.10
       '@types/nprogress':
         specifier: ^0.2.0
@@ -1629,8 +1629,8 @@ importers:
         specifier: ^0.22.1
         version: 0.22.1(@vueuse/head@1.1.23)(vite@4.2.1)(vue-router@4.1.6)(vue@3.2.47)
       vitepress:
-        specifier: 1.0.0-alpha.62
-        version: 1.0.0-alpha.62(@algolia/client-search@4.16.0)(@types/node@18.15.10)
+        specifier: 1.0.0-alpha.63
+        version: 1.0.0-alpha.63(@algolia/client-search@4.16.0)(@types/node@18.15.10)
 
   .stacks/core/ui:
     dependencies:
@@ -1641,8 +1641,8 @@ importers:
         specifier: ^1.1.7
         version: 1.1.7
       '@julr/unocss-preset-forms':
-        specifier: ^0.0.3
-        version: 0.0.3(unocss@0.50.6)
+        specifier: ^0.0.5
+        version: 0.0.5(unocss@0.50.6)
       '@stacksjs/build':
         specifier: workspace:*
         version: link:../build
@@ -1810,8 +1810,8 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1
       vitepress:
-        specifier: ^1.0.0-alpha.62
-        version: 1.0.0-alpha.62(@algolia/client-search@4.16.0)(@types/node@18.15.10)
+        specifier: ^1.0.0-alpha.63
+        version: 1.0.0-alpha.63(@algolia/client-search@4.16.0)(@types/node@18.15.10)
 
   .stacks/fonts/hubot-sans: {}
 
@@ -5064,8 +5064,8 @@ packages:
       type-detect: 4.0.8
     dev: false
 
-  /@julr/unocss-preset-forms@0.0.3(unocss@0.50.6):
-    resolution: {integrity: sha512-/DD9WO1FIQM2JHBQNmwn1AClII8UwvY07jqUN3A2Y3WB2x4Ks7Ni2fPmHH+82COSQdqSaPYz9Aw/XdwIuxtuCA==}
+  /@julr/unocss-preset-forms@0.0.5(unocss@0.50.6):
+    resolution: {integrity: sha512-lUMhKc8KooObDWIs0wyqh903ix5a6PRHtq1RAszhyEoDR2aqbnfSXnv0QiG2lDp2AWafioNbgquFGiUyyJCDVg==}
     engines: {node: '>=16'}
     peerDependencies:
       unocss: '>= 0.31.13 < 1'
@@ -18235,8 +18235,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress@1.0.0-alpha.62(@algolia/client-search@4.16.0)(@types/node@18.15.10):
-    resolution: {integrity: sha512-99RvczAQANultUykkRQeWb75pD07Fgg+dc7epqctrPmLuK/9FC2DQojC0xFNUMJJMYWCR4liCfHjKMPdOpChIA==}
+  /vitepress@1.0.0-alpha.63(@algolia/client-search@4.16.0)(@types/node@18.15.10):
+    resolution: {integrity: sha512-7QMwjT9888S64SkmJqSmRlP417yniCj4IqawIpzYSQMnlJ5CjBWOTbzXKvmzRZkjOJGTcaYr2C88+1/z8ERG+g==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.3
