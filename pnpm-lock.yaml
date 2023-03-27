@@ -7,6 +7,9 @@ importers:
       stacks:
         specifier: workspace:*
         version: link:.stacks
+      yaml:
+        specifier: ^2.2.1
+        version: 2.2.1
 
   .stacks:
     dependencies:

@@ -1,21 +1,25 @@
 #!/usr/bin/env node
+import { execSync } from 'node:child_process'
 import { runAction } from '@stacksjs/actions'
-import { command, log } from '@stacksjs/cli'
+import { command, log, runCommand } from '@stacksjs/cli'
 import { env, frameworkVersion, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
+import { parse as parseYaml } from 'yaml'
+import semver from 'semver'
+import { filesystem } from '@stacksjs/storage'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update, version } from './commands'
 
 const cli = command('stacks')
+const { fs } = filesystem
 
 // setup global error handlers
 process.on('uncaughtException', errorHandler)
 process.on('unhandledRejection', errorHandler)
 
 async function main() {
-  // installIfVersionMismatch()
-
   // the following commands are not dependent on the project being initialized
+  installIfVersionMismatch()
   await setup(cli)
   await key(cli)
 
@@ -64,6 +68,27 @@ async function main() {
 }
 
 main()
+
+async function installIfVersionMismatch(): void {
+  const dependenciesYaml = fs.readFileSync('./tea.yaml', 'utf8')
+  const dependencies = parseYaml(dependenciesYaml).dependencies
+
+  const requiredNodeVersion = dependencies['nodejs.org']
+  const requiredPnpmVersion = dependencies['pnpm.io']
+
+  const installedNodeVersion = process.version
+  const installedPnpmVersion = execSync('pnpm -v', { encoding: 'utf8' }).trim()
+
+  if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
+    log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). Installing...`)
+    await runCommand(`tea +nodejs.org${requiredNodeVersion} >/dev/null 2>&1`)
+  }
+
+  if (!semver.satisfies(installedPnpmVersion, requiredPnpmVersion)) {
+    log.error(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). Installing...`)
+    await runCommand(`tea +pnpm.io${requiredPnpmVersion} >/dev/null 2>&1`)
+  }
+}
 
 function errorHandler(error: Error): void {
   log.error(error)
