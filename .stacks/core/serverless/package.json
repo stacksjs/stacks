@@ -2,7 +2,7 @@
   "name": "@stacksjs/serverless",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.30.3",
+  "packageManager": "pnpm@8.0.0",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",

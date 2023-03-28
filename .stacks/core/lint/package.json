@@ -2,7 +2,7 @@
   "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@7.30.3",
+  "packageManager": "pnpm@8.0.0",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
