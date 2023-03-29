@@ -2,7 +2,7 @@
   "name": "@stacksjs/docs",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.0.0",
+  "packageManager": "pnpm@8.1.0",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "vitepress": "1.0.0-alpha.63"
+    "vitepress": "1.0.0-alpha.64"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
