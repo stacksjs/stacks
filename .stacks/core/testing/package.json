@@ -38,8 +38,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -50,7 +50,7 @@
     "vitest": "^0.29.7"
   },
   "devDependencies": {
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "unbuild": "^1.1.2"
   }
 }

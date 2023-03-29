@@ -16,6 +16,7 @@ export interface TimestampOptions {
  */
 export interface Model {
   name?: string // defaults to the file name of the model
+  table?: string // defaults to the lowercase, plural name of the model
   fields: Fields
   hasOne?: string
   hasMany?: string

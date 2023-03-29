@@ -1,10 +1,10 @@
 import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
 import detectIndent from 'detect-indent'
-import storage from '@stacksjs/storage'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import { log, runCommand, spawn } from '@stacksjs/cli'
 import semver from 'semver'
 import { parse } from 'yaml'
+import { log, runCommand, spawn } from '../../cli/src'
+import storage from '../../storage/src'
 import ui from '../../../../config/ui'
 
 export async function isProjectCreated() {

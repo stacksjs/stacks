@@ -38,8 +38,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -60,8 +60,6 @@
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

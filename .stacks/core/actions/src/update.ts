@@ -1,7 +1,6 @@
 import { intro, log, outro, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { loop } from '@stacksjs/utils'
-import { determineDebugMode } from '@stacksjs/config'
+import { determineDebugMode, loop } from '@stacksjs/utils'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpdateOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'

@@ -150,6 +150,7 @@
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/domains": "workspace:*",
     "@stacksjs/email": "workspace:*",
@@ -181,9 +182,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
-    "only-allow": "^1.1.1",
-    "typescript": "^5.0.2",
-    "unbuild": "^1.1.2"
+    "@stacksjs/development": "workspace:*"
   },
   "config": {
     "commitizen": {

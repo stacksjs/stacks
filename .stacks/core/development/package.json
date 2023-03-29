@@ -1,0 +1,41 @@
+{
+  "name": "@stacksjs/development",
+  "type": "module",
+  "version": "0.51.0",
+  "packageManager": "pnpm@8.0.0",
+  "description": "The Stacks development dependencies.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/development#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/development"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "development",
+    "dependencies",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "README.md"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

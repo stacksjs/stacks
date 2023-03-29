@@ -1,4 +1,4 @@
-import { defineAppConfig, env } from '../.stacks/core/utils/src'
+import { defineAppConfig, env } from 'stacks/core/utils/src'
 
 /**
  * **Application Configuration**

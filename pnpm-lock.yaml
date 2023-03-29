@@ -4,9 +4,6 @@ importers:
 
   .:
     dependencies:
-      eslint:
-        specifier: ^8.36.0
-        version: 8.36.0
       stacks:
         specifier: workspace:*
         version: link:.stacks
@@ -28,7 +25,7 @@ importers:
         version: link:../core/alias
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../core/config
+        version: link:../config
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../core/path
@@ -48,6 +45,22 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  .stacks/config:
+    dependencies:
+      '@stacksjs/path':
+        specifier: workspace:*
+        version: link:../core/path
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../core/types
+      '@stacksjs/utils':
+        specifier: workspace:*
+        version: link:../core/utils
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../core/development
+
   .stacks/core/actions:
     dependencies:
       '@stacksjs/cli':
@@ -55,7 +68,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/database':
         specifier: workspace:*
         version: link:../slug
@@ -93,15 +106,9 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.0.2)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/ai:
     dependencies:
@@ -110,17 +117,11 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/alias:
     dependencies:
@@ -128,15 +129,9 @@ importers:
         specifier: workspace:*
         version: link:../path
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/analytics:
     dependencies:
@@ -145,17 +140,11 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/arrays:
     dependencies:
@@ -163,27 +152,15 @@ importers:
         specifier: workspace:*
         version: link:../utils
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/auth:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/buddy:
     dependencies:
@@ -219,7 +196,7 @@ importers:
         version: link:../collections
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/database':
         specifier: workspace:*
         version: link:../slug
@@ -311,15 +288,9 @@ importers:
         specifier: workspace:*
         version: link:../validation
     devDependencies:
-      only-allow:
-        specifier: ^1.1.1
-        version: 1.1.1
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      unbuild:
-        specifier: ^1.1.2
-        version: 1.1.2
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
 
   .stacks/core/build:
     dependencies:
@@ -328,7 +299,7 @@ importers:
         version: link:../alias
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -387,15 +358,9 @@ importers:
         specifier: ^0.1.8
         version: 0.1.8(vue@3.2.47)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/cache:
     dependencies:
@@ -404,7 +369,7 @@ importers:
         version: 3.299.0
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@types/memjs':
         specifier: ^1.3.0
         version: 1.3.0
@@ -418,15 +383,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/chat:
     dependencies:
@@ -450,7 +409,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -458,15 +417,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/cli:
     dependencies:
@@ -475,7 +428,7 @@ importers:
         version: 0.1.1
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -504,27 +457,18 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
+        version: link:../development
       esno:
         specifier: ^0.16.3
         version: 0.16.3
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@4.9.5)
 
   .stacks/core/cloud:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/collections:
     dependencies:
@@ -532,49 +476,15 @@ importers:
         specifier: ^4.34.3
         version: 4.34.3
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-
-  .stacks/core/config:
-    dependencies:
-      '@stacksjs/path':
-        specifier: workspace:*
-        version: link:../path
-      '@stacksjs/types':
-        specifier: workspace:*
-        version: link:../types
-      '@stacksjs/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
-      '@stacksjs/testing':
-        specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      unbuild:
-        specifier: ^1.1.2
-        version: 1.1.2
+        version: link:../development
 
   .stacks/core/dashboard:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@4.9.5)
+        version: link:../development
 
   .stacks/core/database:
     dependencies:
@@ -594,15 +504,9 @@ importers:
         specifier: workspace:*
         version: link:../utils
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/datetime:
     dependencies:
@@ -610,15 +514,9 @@ importers:
         specifier: workspace:*
         version: link:../utils
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/desktop:
     dependencies:
@@ -647,15 +545,15 @@ importers:
         specifier: ^1.0.5
         version: 1.0.5(vue@3.2.47)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
+
+  .stacks/core/development:
+    dependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: 'link:'
 
   .stacks/core/docs:
     dependencies:
@@ -663,46 +561,28 @@ importers:
         specifier: 1.0.0-alpha.63
         version: 1.0.0-alpha.63(@algolia/client-search@4.16.0)(@types/node@18.15.10)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/domains:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/drivers:
     dependencies:
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/email:
     dependencies:
@@ -711,7 +591,7 @@ importers:
         version: 4.4.2(glob@7.2.3)
       '@novu/emailjs':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.0.2)
+        version: 0.12.0
       '@novu/mailgun':
         specifier: ^0.12.0
         version: 0.12.0
@@ -747,7 +627,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -755,15 +635,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/error-handling:
     dependencies:
@@ -774,15 +648,9 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/events:
     dependencies:
@@ -793,15 +661,9 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/faker:
     dependencies:
@@ -813,17 +675,11 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/git:
     dependencies:
@@ -846,15 +702,9 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/health:
     dependencies:
@@ -862,15 +712,9 @@ importers:
         specifier: workspace:*
         version: link:../notifications
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/lint:
     dependencies:
@@ -890,15 +734,9 @@ importers:
         specifier: ^0.1.11
         version: 0.1.11
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/logging:
     dependencies:
@@ -909,15 +747,9 @@ importers:
         specifier: ^1.17.3
         version: 1.17.3
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/modules:
     dependencies:
@@ -934,15 +766,9 @@ importers:
         specifier: ^9.2.2
         version: 9.2.2(vue@3.2.47)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/notifications:
     dependencies:
@@ -954,7 +780,7 @@ importers:
         version: 0.12.0
       '@novu/emailjs':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.0.2)
+        version: 0.12.0
       '@novu/gupshup':
         specifier: ^0.12.0
         version: 0.12.0
@@ -1020,7 +846,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/email':
         specifier: workspace:*
         version: link:../email
@@ -1037,18 +863,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      unbuild:
-        specifier: ^1.1.2
-        version: 1.1.2
+        version: link:../development
 
   .stacks/core/objects:
     dependencies:
@@ -1056,15 +873,9 @@ importers:
         specifier: workspace:*
         version: link:../collections
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/pages:
     dependencies:
@@ -1072,21 +883,15 @@ importers:
         specifier: workspace:*
         version: link:../collections
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
+        version: link:../development
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
       fs-extra:
         specifier: ^11.1.1
         version: 11.1.1
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
 
   .stacks/core/path:
     dependencies:
@@ -1094,15 +899,9 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/payments:
     dependencies:
@@ -1113,15 +912,9 @@ importers:
         specifier: ^11.16.0
         version: 11.16.0
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/push:
     dependencies:
@@ -1136,7 +929,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -1144,39 +937,21 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/queue:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/realtime:
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/router:
     dependencies:
@@ -1184,15 +959,9 @@ importers:
         specifier: ^4.1.6
         version: 4.1.6(vue@3.2.47)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/scheduler:
     dependencies:
@@ -1200,49 +969,25 @@ importers:
         specifier: 3.0.2
         version: 3.0.2
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/search-engine:
     dependencies:
-      '@stacksjs/cli':
-        specifier: workspace:*
-        version: link:../cli
-      '@stacksjs/config':
-        specifier: workspace:*
-        version: link:../config
-      '@vueuse/core':
-        specifier: ^9.13.0
-        version: 9.13.0(vue@3.2.47)
       meilisearch:
         specifier: ^0.31.1
         version: 0.31.1
-      vue:
-        specifier: ^3.2.47
-        version: 3.2.47
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/security:
     dependencies:
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
@@ -1256,21 +1001,15 @@ importers:
         specifier: ^3.7.5
         version: 3.7.5
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/server:
     dependencies:
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -1281,21 +1020,15 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.10)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/serverless:
     dependencies:
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -1309,15 +1042,9 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.10)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/signals:
     dependencies:
@@ -1329,20 +1056,14 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/slug:
     dependencies:
@@ -1359,15 +1080,9 @@ importers:
         specifier: workspace:*
         version: link:../utils
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/sms:
     dependencies:
@@ -1406,7 +1121,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -1414,15 +1129,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/storage:
     dependencies:
@@ -1442,18 +1151,12 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
     devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
-      '@stacksjs/testing':
-        specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
 
   .stacks/core/strings:
     dependencies:
@@ -1485,18 +1188,9 @@ importers:
         specifier: ^13.9.0
         version: 13.9.0
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      unbuild:
-        specifier: ^1.1.2
-        version: 1.1.2
+        version: link:../development
 
   .stacks/core/tables:
     dependencies:
@@ -1522,18 +1216,9 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.10)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      unbuild:
-        specifier: ^1.1.2
-        version: 1.1.2
+        version: link:../development
 
   .stacks/core/testing:
     dependencies:
@@ -1550,12 +1235,12 @@ importers:
         specifier: ^0.29.7
         version: 0.29.7(@vitest/ui@0.29.7)
     devDependencies:
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
       typescript:
         specifier: ^5.0.2
         version: 5.0.2
+      unbuild:
+        specifier: ^1.1.2
+        version: 1.1.2
 
   .stacks/core/types:
     devDependencies:
@@ -1574,6 +1259,9 @@ importers:
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@2.79.1)
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
       '@types/bcryptjs':
         specifier: ^2.4.2
         version: 2.4.2
@@ -1610,12 +1298,6 @@ importers:
       markdown-it:
         specifier: ^13.0.1
         version: 13.0.1
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
       unplugin-auto-import:
         specifier: ^0.15.2
         version: 0.15.2(rollup@2.79.1)
@@ -1651,7 +1333,7 @@ importers:
         version: link:../build
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@unocss/transformer-compile-class':
         specifier: ^0.50.6
         version: 0.50.6
@@ -1668,15 +1350,9 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.0.2)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/core/utils:
     dependencies:
@@ -1688,7 +1364,7 @@ importers:
         version: link:../cli
       '@stacksjs/config':
         specifier: workspace:*
-        version: link:../config
+        version: link:../../config
       '@stacksjs/lint':
         specifier: workspace:*
         version: link:../lint
@@ -1743,19 +1419,16 @@ importers:
       throttle-debounce:
         specifier: ^5.0.0
         version: 5.0.0
+      yaml:
+        specifier: ^2.2.1
+        version: 2.2.1
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
+        version: link:../development
       '@types/throttle-debounce':
         specifier: ^5.0.0
         version: 5.0.0
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
 
   .stacks/core/validation:
     dependencies:
@@ -1763,18 +1436,12 @@ importers:
         specifier: ^3.21.4
         version: 3.21.4
     devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
-      '@stacksjs/testing':
-        specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
 
   .stacks/core/x-ray:
     dependencies:
@@ -1791,15 +1458,9 @@ importers:
         specifier: ^1.0.5
         version: 1.0.5(vue@3.2.47)
     devDependencies:
-      '@stacksjs/testing':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../testing
-      mkdist:
-        specifier: ^1.1.2
-        version: 1.1.2(typescript@5.0.2)
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
+        version: link:../development
 
   .stacks/docs:
     dependencies:
@@ -5275,12 +4936,12 @@ packages:
       - debug
     dev: false
 
-  /@novu/emailjs@0.12.0(typescript@5.0.2):
+  /@novu/emailjs@0.12.0:
     resolution: {integrity: sha512-6mijoS1O1jX8UgDk4xsOmrV8eG8k/rO0tPGgHbH41hq1HZ3xv+kHJFWjTqFoM2tAkYvauKVIpX/y0vlFX7oIVQ==}
     engines: {node: '>=10'}
     dependencies:
       '@novu/stateless': 0.12.0
-      emailjs: 3.8.1(typescript@5.0.2)
+      emailjs: 3.8.1
     transitivePeerDependencies:
       - typescript
     dev: false
@@ -7210,6 +6871,7 @@ packages:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}
     dependencies:
       string-width: 4.2.3
+    dev: false
 
   /ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -7751,20 +7413,6 @@ packages:
     resolution: {integrity: sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==}
     dev: false
 
-  /boxen@4.2.0:
-    resolution: {integrity: sha512-eB4uT9RGzg2odpER62bBwSLvUeGC+WbRjjyyFhGsKnc8wp/m0+hQsMUvUe3H2V0D5vw0nBdO1hCJoZo5mKeuIQ==}
-    engines: {node: '>=8'}
-    dependencies:
-      ansi-align: 3.0.1
-      camelcase: 5.3.1
-      chalk: 3.0.0
-      cli-boxes: 2.2.1
-      string-width: 4.2.3
-      term-size: 2.2.1
-      type-fest: 0.8.1
-      widest-line: 3.1.0
-    dev: true
-
   /boxen@5.1.2:
     resolution: {integrity: sha512-9gYgQKXx+1nP8mP7CzFyaUARhg7D3n1dF/FnErWmu9l6JvGpNUN278h0aSb+QjoiKSWG+iZ3uHrcqk0qrY9RQQ==}
     engines: {node: '>=10'}
@@ -8072,6 +7720,7 @@ packages:
   /camelcase@5.3.1:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
+    dev: false
 
   /camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
@@ -8124,14 +7773,6 @@ packages:
       ansi-styles: 3.2.1
       escape-string-regexp: 1.0.5
       supports-color: 5.5.0
-
-  /chalk@3.0.0:
-    resolution: {integrity: sha512-4D3B6Wf41KOYRFdszmDqMCGq5VV/uMAB273JILmO+3jAlh8X4qDtdtgCR3fxtbLEMzSx22QdhnDcJvu2u1fVwg==}
-    engines: {node: '>=8'}
-    dependencies:
-      ansi-styles: 4.3.0
-      supports-color: 7.2.0
-    dev: true
 
   /chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -8312,6 +7953,7 @@ packages:
   /cli-boxes@2.2.1:
     resolution: {integrity: sha512-y4coMcylgSCdVinjiDBuR8PCC2bLjyGTwEmPb9NHR/QaNU6EUOXcTY/s6VjGMD6ENSEaeQYHCY0GNGS5jfMwPw==}
     engines: {node: '>=6'}
+    dev: false
 
   /cli-color@2.0.3:
     resolution: {integrity: sha512-OkoZnxyC4ERN3zLzZaY9Emb7f/MhBOIpePv0Ycok0fJYT+Ouo00UBEIwsVsr0yoow++n5YWlSUgST9GKhNHiRQ==}
@@ -9481,7 +9123,7 @@ packages:
       string-uglify: 1.5.0
     dev: false
 
-  /emailjs@3.8.1(typescript@5.0.2):
+  /emailjs@3.8.1:
     resolution: {integrity: sha512-AOpQyi1op250n66ocgFQRkmsMcYAylmbBBfIQrwqv6OxuDSDG4Mr/7gROkKc7nNjLt0WycPRLRxiX1+XAhZJuQ==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -9489,8 +9131,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-    dependencies:
-      typescript: 5.0.2
     dev: false
 
   /emoji-regex@8.0.0:
@@ -13491,29 +13131,6 @@ packages:
       pathe: 1.1.0
       typescript: 4.9.5
 
-  /mkdist@1.1.2(typescript@5.0.2):
-    resolution: {integrity: sha512-s9whPlQsr84iY3XoufsDrVlzGiDdTnMwf2+7QU6ekJPgTIgGwn7EsU8lcefWqLH6no+/4UqjDBwyIkGKfZyH9g==}
-    hasBin: true
-    peerDependencies:
-      sass: ^1.58.3
-      typescript: '>=4.9.5'
-    peerDependenciesMeta:
-      sass:
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      defu: 6.1.2
-      esbuild: 0.17.14
-      fs-extra: 11.1.1
-      globby: 13.1.3
-      jiti: 1.18.2
-      mlly: 1.2.0
-      mri: 1.2.0
-      pathe: 1.1.0
-      typescript: 5.0.2
-    dev: true
-
   /mlly@1.2.0:
     resolution: {integrity: sha512-+c7A3CV0KGdKcylsI6khWyts/CYrGTrRVo4R/I7u/cUsy0Conxa6LUhiEzVKIw14lc2L5aiO4+SeVe4TeGRKww==}
     dependencies:
@@ -14156,14 +13773,6 @@ packages:
     dependencies:
       mimic-fn: 4.0.0
     dev: false
-
-  /only-allow@1.1.1:
-    resolution: {integrity: sha512-WE01hpInLQUF3MKK7vhu4p1VZLKb4rL4d+CI3rwwwsToXELx6YawNFhZy3rVU3rpQpI9kF9zFMk4OjB3xwXdJA==}
-    hasBin: true
-    dependencies:
-      boxen: 4.2.0
-      which-pm-runs: 1.1.0
-    dev: true
 
   /open@7.4.2:
     resolution: {integrity: sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q==}
@@ -16984,6 +16593,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       has-flag: 4.0.0
+    dev: false
 
   /supports-color@8.1.1:
     resolution: {integrity: sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==}
@@ -17128,11 +16738,6 @@ packages:
       type-fest: 0.16.0
       unique-string: 2.0.0
     dev: false
-
-  /term-size@2.2.1:
-    resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}
-    engines: {node: '>=8'}
-    dev: true
 
   /terminal-link@2.1.1:
     resolution: {integrity: sha512-un0FmiRUQNr5PJqy9kP7c40F5BOfpGlYTrxonDChEZB7pzZxRNp/bt+ymiy9/npwXya9KH99nJ/GXFIiUkYGFQ==}
@@ -17495,6 +17100,7 @@ packages:
   /type-fest@0.8.1:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
+    dev: false
 
   /type-fest@2.19.0:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
@@ -18612,11 +18218,6 @@ packages:
       is-weakset: 2.0.2
     dev: false
 
-  /which-pm-runs@1.1.0:
-    resolution: {integrity: sha512-n1brCuqClxfFfq/Rb0ICg9giSZqCS+pLtccdag6C2HyufBrh3fBOiy9nb6ggRMvWOVH5GrdJskj5iGTZNxd7SA==}
-    engines: {node: '>=4'}
-    dev: true
-
   /which-typed-array@1.1.9:
     resolution: {integrity: sha512-w9c4xkx6mPidwp7180ckYWfMmvxpjlZuIudNtDf4N/tTAUB8VJbX25qZoAsrtGuYNnGw3pa0AXgbGKRB8/EceA==}
     engines: {node: '>= 0.4'}
@@ -18664,6 +18265,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       string-width: 4.2.3
+    dev: false
 
   /with@7.0.2:
     resolution: {integrity: sha512-RNGKj82nUPg3g5ygxkQl0R937xLyho1J24ItRCBTr/m1YnZkzJy1hUiHUJrc/VlsDQzsCnInEGSg3bci0Lmd4w==}

@@ -13,6 +13,7 @@ enum Type {
 
 export default <Model> {
   name: 'User',
+  table: 'users',
   authenticatable: true, // boolean | AuthSettings (including TokenSettings),
   searchable: true, // boolean | IndexSettings,
   seedable: { // boolean | SeedSettings,

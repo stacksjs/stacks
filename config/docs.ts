@@ -1,6 +1,6 @@
-import { type DocsConfig } from '@stacksjs/types'
+import { type DocsConfig } from 'stacks/core/types/src'
 import type { PluginOption } from 'vite'
-import { frameworkPath } from '../.stacks/core/path/src'
+import { frameworkPath } from 'stacks/core/path/src'
 import services from './services'
 
 function CustomHmr(): PluginOption {

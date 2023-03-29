@@ -1,21 +1,26 @@
-# Actions
+# Stacks Actions
 
-Placeholder for the "On-The-Fly API."
+This package contains the Stacks Actions.
 
 ## ☘️ Features
 
-- ⚡️
+- Generate Component Meta information
+- Generate IDE Helper files
+- Generate Stacks Library Entry Points
+- Generate Package Manifests
+- Generate VS Code Custom Data file
+- Generate Vue 2 Compatibility (maybe deprecate)
 
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/cloud
+pnpm i -D @stacksjs/actions
 ```
 
 Now, you can use it in your project:
 
-```js
-import { actions } from '@stacksjs/cloud'
+```ts
+import actions from '@stacksjs/actions'
 
 // wip
 ```

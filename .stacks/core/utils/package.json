@@ -37,8 +37,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -67,9 +67,7 @@
     "yaml": "^2.2.1"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "@types/throttle-debounce": "^5.0.0",
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2"
+    "@stacksjs/development": "workspace:*",
+    "@types/throttle-debounce": "^5.0.0"
   }
 }

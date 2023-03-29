@@ -1,4 +1,4 @@
-import { defineCLIConfig, env } from '../.stacks/core/utils/src'
+import { defineCLIConfig, env } from 'stacks/core/utils/src'
 
 /**
  * **CLI Configuration**

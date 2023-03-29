@@ -1,4 +1,4 @@
-import { defineGitConfig } from '../.stacks/core/utils/src'
+// import { defineGitConfig } from 'stacks/core/utils/src'
 
 /**
  * **Git Configuration**
@@ -7,7 +7,8 @@ import { defineGitConfig } from '../.stacks/core/utils/src'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineGitConfig({
+// export default defineGitConfig({
+export default {
   hooks: {
     'pre-commit': 'lint-staged',
   },
@@ -46,4 +47,4 @@ export default defineGitConfig({
     { value: 'chore', name: 'chore:    🔨  Other changes that don\'t modify src or test files', emoji: ':hammer:' },
     { value: 'revert', name: 'revert:   ⏪️  Reverts a previous commit', emoji: ':rewind:' },
   ],
-})
+}

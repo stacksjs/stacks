@@ -42,9 +42,6 @@
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2",
-    "unbuild": "^1.1.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

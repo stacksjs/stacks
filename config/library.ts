@@ -1,4 +1,4 @@
-import { defineLibraryConfig } from '../.stacks/core/utils/src'
+import { defineLibraryConfig } from 'stacks/core/utils/src'
 
 /**
  * **Library Configuration**

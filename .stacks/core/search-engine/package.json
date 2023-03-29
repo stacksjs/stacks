@@ -39,21 +39,15 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@vueuse/core": "^9.13.0",
-    "meilisearch": "^0.31.1",
-    "vue": "^3.2.47"
+    "meilisearch": "^0.31.1"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

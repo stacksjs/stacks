@@ -1,7 +1,7 @@
 import type { CronJob } from '../../.stacks/core/types/src'
 
 // easily monitor and manage your cron jobs
-export default <CronJob> {
+export default <CronJob> { // or <CronJobs>
   function: '/demo', // ./functions/demo.ts
   schedule: '*/5 * * * *', // at every 5th minute
   name: 'Demo Cron Job', // optional

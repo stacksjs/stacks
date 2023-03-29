@@ -51,8 +51,6 @@
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "mkdist": "^1.1.2",
-    "typescript": "^5.0.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

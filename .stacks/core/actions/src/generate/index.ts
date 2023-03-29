@@ -4,8 +4,8 @@ import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runCommand } from '@stacksjs/cli'
-import { database } from '@stacksjs/config'
 import { frameworkPath } from '@stacksjs/path'
+import { database } from '../../../../config/src'
 import { runAction } from '../helpers'
 
 export async function invoke(options?: GeneratorOptions) {

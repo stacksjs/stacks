@@ -40,8 +40,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist -d",
-    "dev": "mkdist -d",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -54,13 +54,13 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "cac": "^6.7.14",
+    "esno": "^0.16.3",
     "execa": "^7.1.1",
     "ora": "^6.3.0",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "esno": "^0.16.3",
-    "mkdist": "^1.1.2"
+    "@stacksjs/development": "workspace:*",
+    "esno": "^0.16.3"
   }
 }
