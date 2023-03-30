@@ -54,7 +54,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
 - 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
-- ⚙️ **Queues** _run your heavy workload in the background_
+- ⚙️ **Queues** _run any heavy workload in the background_
 - 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
 - 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
@@ -117,7 +117,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 8 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 

@@ -52,9 +52,11 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
+- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
-- ⚙️ **Queues** _run your heavy workload in the background_
-- 💬 **Realtime** _"everything you need to build dynamic real-time apps"_
+- ⚙️ **Queues** _run any heavy workload in the background_
+- 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
+- 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
@@ -63,12 +65,12 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 ### Stacks Cloud
 
-_Create your personal or professional Vercel-like cloud._
+_Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
 
 - ☁️ **Server** _local development server & production-ready servers_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks_
-- 🤌🏼 **Brotli & gzip** _optimized request compressions to speed up page load times_
+- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
+- 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS)_
 - 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🏗️ **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
@@ -91,7 +93,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
-- ⏩ **Code Snippets** _say goodbye to the boilerplate_
+- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once when there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
@@ -115,7 +117,7 @@ npx stacks new my-project
 ```
 
 > **Note**
-> pnpm 7.26 or higher required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
+> pnpm 8 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
@@ -338,7 +340,7 @@ console.log('increased count is', count)
 
 </details>
 
-You may view this framework as an incredibly "useful set of frames" to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
+You may view this framework as an incredibly “useful set of frames” to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
 
 ## 🚙 Roadmap
 
