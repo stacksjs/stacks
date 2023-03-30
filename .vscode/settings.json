@@ -21,6 +21,9 @@
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true
   },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
   "git.enableSmartCommit": true,
   "css.validate": false, // for WindiCSS IntelliSense
   "npm.enableRunFromFolder": true,
@@ -49,10 +52,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "volar.autoCompleteRefs": false,
-  "volar.codeLens.pugTools": false,
-  "volar.codeLens.scriptSetupTools": true,
   "volar.completion.preferredTagNameCase": "pascal",
-  "volar.takeOverMode.enabled": "auto",
   "todo-tree.highlights.enabled": true,
   "cSpell.ignorePaths": [
     "node_modules",
@@ -89,7 +89,4 @@
   "grammarly.files.exclude": [
     "**/dictionary.txt"
   ],
-  "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  }
 }

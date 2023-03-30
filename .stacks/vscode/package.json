@@ -56,7 +56,8 @@
     "rangav.vscode-thunder-client",
     "antfu.goto-alias",
     "mikestead.dotenv",
-    "pflannery.vscode-versionlens"
+    "pflannery.vscode-versionlens",
+    "foxundermoon.shell-format"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.18.0"
