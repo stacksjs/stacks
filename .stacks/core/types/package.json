@@ -2,7 +2,7 @@
   "name": "@stacksjs/types",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.0.0",
+  "packageManager": "pnpm@8.1.0",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -42,16 +42,16 @@
     "@mdit-vue/plugin-component": "^0.12.0",
     "@mdit-vue/plugin-frontmatter": "^0.12.0",
     "@mdit-vue/types": "^0.12.0",
-    "@prisma/client": "^4.11.0",
+    "@prisma/client": "^4.12.0",
     "@rollup/pluginutils": "^5.0.2",
     "@stacksjs/development": "workspace:*",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
-    "@types/eslint": "^8.21.3",
+    "@types/eslint": "^8.37.0",
     "@types/fs-extra": "^11.0.1",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "@types/nprogress": "^0.2.0",
     "@types/pluralize": "^0.0.29",
     "@types/prompts": "^2.4.3",
@@ -62,6 +62,6 @@
     "vite-plugin-inspect": "^0.7.18",
     "vite-plugin-vue-layouts": "^0.8.0",
     "vite-ssg": "^0.22.1",
-    "vitepress": "1.0.0-alpha.63"
+    "vitepress": "1.0.0-alpha.64"
   }
 }

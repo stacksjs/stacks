@@ -2,7 +2,7 @@
   "name": "stacks-docs",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.0.0",
+  "packageManager": "pnpm@8.1.0",
   "description": "The Stacks documentation.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -41,6 +41,6 @@
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "rimraf": "^4.4.1",
-    "vitepress": "^1.0.0-alpha.63"
+    "vitepress": "^1.0.0-alpha.64"
   }
 }
