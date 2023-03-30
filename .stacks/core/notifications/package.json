@@ -77,7 +77,7 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.4.3"
+    "@maizzle/framework": "^4.4.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

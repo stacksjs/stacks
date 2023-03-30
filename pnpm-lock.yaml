@@ -473,8 +473,8 @@ importers:
   .stacks/core/collections:
     dependencies:
       collect.js:
-        specifier: ^4.34.3
-        version: 4.34.3
+        specifier: ^4.36.1
+        version: 4.36.1
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -587,8 +587,8 @@ importers:
   .stacks/core/email:
     dependencies:
       '@maizzle/framework':
-        specifier: ^4.4.3
-        version: 4.4.3(glob@7.2.3)
+        specifier: ^4.4.4
+        version: 4.4.4(glob@7.2.3)
       '@novu/emailjs':
         specifier: ^0.13.0
         version: 0.13.0
@@ -773,8 +773,8 @@ importers:
   .stacks/core/notifications:
     dependencies:
       '@maizzle/framework':
-        specifier: ^4.4.3
-        version: 4.4.3(glob@7.2.3)
+        specifier: ^4.4.4
+        version: 4.4.4(glob@7.2.3)
       '@novu/discord':
         specifier: ^0.13.0
         version: 0.13.0
@@ -5061,8 +5061,8 @@ packages:
       - zenObservable
     dev: false
 
-  /@maizzle/framework@4.4.3(glob@7.2.3):
-    resolution: {integrity: sha512-wOXoVudZVwLAmlWTEj+lLsdJTqDyTnq5aWa5QeW1wDYNpXREgOW6YRgeh9RWQ3ll7O2sG3PLP6zPFeYjTz5oFQ==}
+  /@maizzle/framework@4.4.4(glob@7.2.3):
+    resolution: {integrity: sha512-gf2jhKJ+xcmDxySZE2/FBOjuNiB/xo41yPn8DhgkE1J6ikbt95it0H0bRzErauYoPivtaC3P8EEo7eJpeIZVyg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -8404,8 +8404,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: false
 
-  /collect.js@4.34.3:
-    resolution: {integrity: sha512-aFr67xDazPwthsGm729mnClgNuh15JEagU6McKBKqxuHOkWL7vMFzGbhsXDdPZ+H6ia5QKIMGYuGOMENBHnVpg==}
+  /collect.js@4.36.1:
+    resolution: {integrity: sha512-jd97xWPKgHn6uvK31V6zcyPd40lUJd7gpYxbN2VOVxGWO4tyvS9Li4EpsFjXepGTo2tYcOTC4a8YsbQXMJ4XUw==}
     dev: false
 
   /color-convert@1.9.3:
