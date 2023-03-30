@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "collect.js": "^4.34.3"
+    "collect.js": "^4.36.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
