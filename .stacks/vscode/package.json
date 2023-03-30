@@ -26,7 +26,7 @@
   ],
   "icon": "logo.png",
   "engines": {
-    "vscode": "^1.76.2"
+    "vscode": "^1.77.0"
   },
   "scripts": {
     "package": "vsce package",
