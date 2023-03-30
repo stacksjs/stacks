@@ -52,8 +52,10 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
+- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** _run your heavy workload in the background_
+- 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
 - 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
