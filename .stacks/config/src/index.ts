@@ -1,20 +1,70 @@
-export { default as app } from '../../../config/app'
-export { default as cache } from '../../../config/cache'
-export { default as database } from '../../../config/database'
-export { default as debug } from '../../../config/debug'
-export { default as deploy } from '../../../config/deploy'
-export { default as dns } from '../../../config/dns'
-export { default as events } from '../../../config/events'
-export { default as git } from '../../../config/git'
-export { default as hashing } from '../../../config/hashing'
-export { default as library } from '../../../config/library'
-export { default as page } from '../../../config/page'
-export { default as payments } from '../../../config/payment'
-export { default as notification } from '../../../config/notification'
-export { default as searchEngine } from '../../../config/search-engine'
-export { default as services } from '../../../config/services'
-export { default as storage } from '../../../config/storage'
-export { default as ui } from '../../../config/ui'
+import { type CliOptions } from '@stacksjs/types'
+import app from '../../../config/app.ts'
+import cache from '../../../config/cache'
+import database from '../../../config/database'
+import debug from '../../../config/debug'
+import deploy from '../../../config/deploy'
+import dns from '../../../config/dns'
+import events from '../../../config/events'
+import git from '../../../config/git'
+import hashing from '../../../config/hashing'
+import library from '../../../config/library'
+import page from '../../../config/page'
+import payments from '../../../config/payment'
+import notification from '../../../config/notification'
+import searchEngine from '../../../config/search-engine'
+import services from '../../../config/services'
+import storage from '../../../config/storage'
+import ui from '../../../config/ui'
 
 // TODO: Vitepress requires this to be a named export
-export * as docs from '../../../config/docs'
+import * as docs from '../../../config/docs'
+
+const c = {
+  app,
+  cache,
+  database,
+  debug,
+  deploy,
+  dns,
+  docs,
+  events,
+  git,
+  hashing,
+  library,
+  page,
+  payments,
+  notification,
+  searchEngine,
+  services,
+  storage,
+  ui,
+}
+
+type Config = 'app' | 'cache' | 'database' | 'debug' | 'deploy' | 'docs' | 'git' | 'hashing' | 'library' | 'notification' | 'searchEngine' | 'services' | 'storage' | 'ui'
+
+/**
+ * Determines the level of debugging.
+ * @param options
+ */
+export function determineDebugMode(options?: CliOptions) {
+  if (options?.verbose === true)
+    return true
+
+  if (app.debug === true)
+    return true
+
+  return false
+}
+
+export function config(key?: Config, fallback?: any) {
+  return key ? c[key] : fallback
+}
+
+export function env(key: string, fallback: any) {
+  // console.log('isClient', isClient)
+  // if (key && import.meta?.env)
+  //   return import.meta.env[key]
+
+  return fallback
+}

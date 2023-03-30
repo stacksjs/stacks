@@ -1,0 +1,1 @@
+export { defineBuildConfig } from 'unbuild'

@@ -42,7 +42,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/path": "workspace:*"
   }
 }

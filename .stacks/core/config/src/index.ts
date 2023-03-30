@@ -1,33 +1,6 @@
 import type { AppOptions, CacheOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DeployOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
-import * as c from '../../../config/src'
 
-type Config = 'app' | 'cache' | 'database' | 'debug' | 'deploy' | 'docs' | 'git' | 'hashing' | 'library' | 'notification' | 'searchEngine' | 'services' | 'storage' | 'ui'
-
-export function config(key?: Config, fallback?: any) {
-  return key ? c[key] : fallback
-}
-
-export function env(key: string, fallback: any) {
-  // console.log('isClient', isClient)
-  // if (key && import.meta?.env)
-  //   return import.meta.env[key]
-
-  return fallback
-}
-
-/**
- * Determines the level of debugging.
- * @param options
- */
-export function determineDebugMode(options?: CliOptions) {
-  if (options?.verbose === true)
-    return true
-
-  if (c.app.debug === true)
-    return true
-
-  return false
-}
+export { defineBuildConfig } from 'unbuild'
 
 export function defineAppConfig(options: AppOptions) {
   return options

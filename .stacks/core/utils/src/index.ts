@@ -1,5 +1,4 @@
 export { assert, toString, noop, loop, getTypeName } from './base'
-export * from './config'
 export * from './equal'
 export * from './helpers'
 export type { SingletonPromiseReturn, ControlledPromise } from './promise'

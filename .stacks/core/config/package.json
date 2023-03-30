@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.51.0",
   "packageManager": "pnpm@8.1.0",
-  "description": "The Stacks configuration.",
+  "description": "The Stacks config helper methods.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -17,10 +17,11 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "configuration",
+    "config",
+    "utilities",
+    "functions",
     "stacks"
   ],
-  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -31,18 +32,12 @@
     "README.md"
   ],
   "scripts": {
-    "dev": "unbuild --stub",
     "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/development": "workspace:*"
   }
 }

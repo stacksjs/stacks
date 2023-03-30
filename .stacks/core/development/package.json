@@ -34,5 +34,8 @@
     "@stacksjs/testing": "workspace:*",
     "typescript": "^5.0.2",
     "unbuild": "^1.1.2"
+  },
+  "dependencies": {
+    "unbuild": "^1.1.2"
   }
 }
