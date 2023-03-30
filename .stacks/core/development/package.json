@@ -36,6 +36,8 @@
     "prepublishOnly": "pnpm run build"
   },
   "peerDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/testing": "workspace:*",
+    "typescript": "^5.0.2",
+    "unbuild": "^1.1.2"
   }
 }

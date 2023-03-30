@@ -6,7 +6,11 @@ console.log('here __filename', __filename)
 const jiti = require('jiti')(__filename)
 // eslint-disable-next-line no-console
 // console.log('jiti', jiti)
-const git = jiti('./config/git.ts')
+const git = jiti('./config/git.ts', {
+  alias: { // test this with the ./config/git config import
+    '@': resolve(__dirname, './'),
+  },
+})
 console.log('git is', git)
 
 const toDelete = ['readme-md']
