@@ -30,11 +30,6 @@
   "files": [
     "README.md"
   ],
-  "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "pnpm run build"
-  },
   "peerDependencies": {
     "@stacksjs/testing": "workspace:*",
     "typescript": "^5.0.2",

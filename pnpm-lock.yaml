@@ -551,9 +551,15 @@ importers:
 
   .stacks/core/development:
     dependencies:
-      '@stacksjs/development':
+      '@stacksjs/testing':
         specifier: workspace:*
-        version: 'link:'
+        version: link:../testing
+      typescript:
+        specifier: ^5.0.2
+        version: 5.0.2
+      unbuild:
+        specifier: ^1.1.2
+        version: 1.1.2
 
   .stacks/core/docs:
     dependencies:

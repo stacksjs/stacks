@@ -1,37 +1,6 @@
-# Stacks Actions
+# Stacks Development
 
-This package contains the Stacks Actions.
-
-## ☘️ Features
-
-- Generate Component Meta information
-- Generate IDE Helper files
-- Generate Stacks Library Entry Points
-- Generate Package Manifests
-- Generate VS Code Custom Data file
-- Generate Vue 2 Compatibility (maybe deprecate)
-
-## 🤖 Usage
-
-```bash
-pnpm i -D @stacksjs/actions
-```
-
-Now, you can use it in your project:
-
-```ts
-import actions from '@stacksjs/actions'
-
-// wip
-```
-
-Learn more in the docs.
-
-## 🧪 Testing
-
-```bash
-pnpm test
-```
+This package is solely used as a source of truth for development dependencies.
 
 ## 📈 Changelog
 
