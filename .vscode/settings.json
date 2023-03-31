@@ -88,5 +88,5 @@
   "grammarly.files.include": ["**/README.md", "**/readme.md", "**/*.txt"],
   "grammarly.files.exclude": [
     "**/dictionary.txt"
-  ],
+  ]
 }

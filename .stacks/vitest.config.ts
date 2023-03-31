@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config'
-import { projectPath } from './core/path'
-import { alias } from './core/alias'
+import { projectPath } from './core/path/src'
+import { alias } from './core/alias/src'
 
 export default defineConfig({
   root: '..',

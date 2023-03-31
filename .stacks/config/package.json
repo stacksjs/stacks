@@ -31,9 +31,6 @@
     "README.md"
   ],
   "scripts": {
-    "dev": "unbuild --stub",
-    "build": "unbuild",
-    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
