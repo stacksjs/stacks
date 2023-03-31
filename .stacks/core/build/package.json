@@ -49,7 +49,7 @@
     "@vitejs/plugin-vue": "^4.1.0",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.8.0",
-    "unbuild": "^1.1.2",
+    "unbuild": "^1.2.0",
     "unplugin-auto-import": "^0.15.2",
     "unplugin-vue-components": "^0.24.1",
     "vite": "^4.2.1",
