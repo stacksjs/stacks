@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "^1.52.0",
-    "stripe": "^11.16.0"
+    "stripe": "^11.17.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
