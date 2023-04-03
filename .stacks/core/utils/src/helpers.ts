@@ -132,12 +132,12 @@ export function determineDebugMode(options?: CliOptions) {
   return app.debug === true
 }
 
-export function env(key: string, fallback: any) {
+export function env(key: string, fallback?: any) {
   // console.log('isClient', isClient)
   // if (key && import.meta?.env)
   //   return import.meta.env[key]
 
-  return fallback
+  return key ?? fallback
 }
 
 export { semver }
