@@ -5,7 +5,7 @@ import semver from 'semver'
 import { parse } from 'yaml'
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import ui from '@stacksjs/ui'
+import { app, ui } from '@stacksjs/config'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
