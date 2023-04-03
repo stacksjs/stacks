@@ -1,15 +1,15 @@
 const { readdirSync } = require('node:fs')
 const { resolve } = require('node:path')
 const { paramCase } = require('change-case')
-// eslint-disable-next-line no-console
-console.log('here __filename', __filename)
 const jiti = require('jiti')(__filename)
 
-const git = jiti('./config/git.ts', {
-  alias: { // test this with the ./config/git config import
-    '@': resolve(__dirname, './'),
-  },
-})
+const git = jiti('./config/git.ts',
+// {
+//   alias: { // test this with the ./config/git config import
+//     '@': resolve(__dirname, './'),
+//   },
+// }
+)
 
 const toDelete = ['readme-md']
 

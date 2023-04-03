@@ -67,7 +67,7 @@ async function main() {
 main()
 
 async function installIfVersionMismatch(): void {
-  const dependenciesYaml = fs.readFileSync('./tea.yaml', 'utf8')
+  const dependenciesYaml = fs.readFileSync(projectPath('tea.yaml'), 'utf8')
   const dependencies = parseYaml(dependenciesYaml).dependencies
 
   const requiredNodeVersion = dependencies['nodejs.org']
