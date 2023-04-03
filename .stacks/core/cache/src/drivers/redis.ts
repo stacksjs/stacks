@@ -10,9 +10,12 @@ const client: RedisClientType = createClient({
   password: '',
 })
 
-await client.connect()
+// await client.connect()
+// client.on('error', (error) => {
+//   console.error(error)
+// })
 
-async function set(key, value): Promise<void> {
+async function set(key: string, value: any): Promise<void> {
   await client.set(key, value)
 }
 

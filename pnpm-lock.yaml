@@ -145,6 +145,9 @@ importers:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
 
   .stacks/core/auth:
     devDependencies:

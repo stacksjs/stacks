@@ -1,20 +1,21 @@
-import type { Client } from 'memjs'
-import { Memcached } from 'memjs'
+export {}
 
-const client: Client = Memcached.Client.create('127.0.0.1:11211')
+// import { Client } from 'memjs'
 
-async function set(key: string, value: any, duration: number): Promise<void> {
-  await client.set(key, value, { expires: duration })
-}
+// const client = Client.create('127.0.0.1:11211')
 
-async function get(key: string): Promise<any> {
-  const value = await client.get(key)
+// async function set(key: string, value: any, duration: number): Promise<void> {
+//   await client.set(key, value, { expires: duration })
+// }
 
-  return value.toString()
-}
+// async function get(key: string): Promise<any> {
+//   const value = await client.get(key)
 
-async function del(key: string): Promise<void> {
-  await client.delete(key)
-}
+//   return value.toString()
+// }
 
-export { set, get, del }
+// async function del(key: string): Promise<void> {
+//   await client.delete(key)
+// }
+
+// export { set, get, del }

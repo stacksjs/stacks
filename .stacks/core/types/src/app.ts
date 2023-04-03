@@ -128,5 +128,3 @@ export interface AppOptions {
 
   // inspect: <InspectOptions>{},
 }
-
-export interface CacheOptions {}

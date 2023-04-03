@@ -9,6 +9,8 @@ import { defineCacheConfig, env } from 'stacks/core/config/src'
  */
 export default defineCacheConfig({
   driver: env('CACHE_DRIVER', 'redis'),
+  prefix: env('CACHE_PREFIX', 'stacks'),
+  ttl: env('CACHE_TTL', 3600),
 
   redis: {
     connection: 'cache',
