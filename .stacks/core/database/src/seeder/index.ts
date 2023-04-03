@@ -1,7 +1,9 @@
+import { Kysely, MysqlDialect, sql } from 'kysely'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { PrismaClient } from '@prisma/client'
+import { database as config } from '@stacksjs/config'
 
 const prisma = new PrismaClient()
 
@@ -37,26 +39,41 @@ function readModels(folderPath: string): Promise<Model[]> {
 }
 
 async function seed() {
-  const models = await readModels(projectPath('app/models'))
-  const promises = models.flatMap((model) => {
-    const { useSeed, fields } = model
-    const data: Record<string, any>[] = []
-
-    if (useSeed && useSeed.count) {
-      for (let i = 0; i < useSeed.count; i++) {
-        const record: Record<string, any> = {}
-        Object.entries(fields).forEach(([name, field]) => {
-          if (field.factory)
-            record[name] = field.factory()
-        })
-        data.push(record)
-      }
-    }
-
-    return data.map(record => prisma[model.name].create({ data: record }))
+  const db = new Kysely({
+    dialect: new MysqlDialect({
+      pool: {
+        connection: {
+          host: config.host,
+          port: config.port,
+        },
+      },
+    }),
   })
 
-  return Promise.all(promises)
+  const models = await readModels(projectPath('app/models'))
+
+  const queries = models.flatMap((model) => {
+    const { useSeed, fields } = model
+
+    if (!useSeed || !useSeed.count)
+      return []
+
+    const records: Record<string, any>[] = []
+    for (let i = 0; i < useSeed.count; i++) {
+      const record: Record<string, any> = {}
+      Object.entries(fields).forEach(([name, field]) => {
+        if (field.factory)
+          record[name] = field.factory()
+      })
+      records.push(record)
+    }
+
+    return db.insertInto(model.name).values(records).build(sql`RETURNING *`)
+  })
+
+  const { rows } = await db.transaction(queries).execute()
+
+  return rows
 }
 
 export { seed }

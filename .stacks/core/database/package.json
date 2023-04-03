@@ -47,7 +47,9 @@
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "kysely": "^0.24.2",
+    "mysql2": "^3.2.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

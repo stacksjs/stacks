@@ -7,6 +7,8 @@ export type DatabaseClient = any
 export interface DatabaseOptions {
   driver: string
   url?: string
+  host?: string
+  port?: number
   client?: DatabaseClient
 }
 

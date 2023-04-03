@@ -10,4 +10,6 @@ import { defineDatabaseConfig, env } from 'stacks/core/utils/src'
 export default defineDatabaseConfig({
   driver: 'mysql',
   url: env('DATABASE_URL', ''),
+  host: 'localhost',
+  port: 3306,
 })

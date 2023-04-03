@@ -1,6 +1,6 @@
 import { italic, log, spawn } from '@stacksjs/cli'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
-import { projectPath, resolve } from '@stacksjs/path'
+import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
 import type { MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
@@ -104,24 +104,6 @@ export async function factory(options: MakeOptions) {
 }
 
 export async function createFactory(options: MakeOptions) {
-  // eslint-disable-next-line no-console
-  console.log('options', options) // wip
-}
-
-export async function migration(options: MakeOptions) {
-  try {
-    const name = options.name
-    log.info(`Creating your ${italic(name)} migration...`)
-    await createMigration(options)
-    log.success(`Created the ${italic(name)} migration.`)
-  }
-  catch (error) {
-    log.error('There was an error creating your migration.', error)
-    process.exit()
-  }
-}
-
-export async function createMigration(options: MakeOptions) {
   // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
@@ -276,6 +258,32 @@ function send(): ${importOption} {
   }
   catch (error) {
     return false
+  }
+}
+
+export async function createMigration(options: MakeOptions) {
+  const optionName = options.name
+  const table = options.tableName
+  const name = optionName[0].toUpperCase() + optionName.slice(1)
+  const path = frameworkPath(`database/migrations/${name}.ts`)
+
+  try {
+    await writeTextFile({
+      path: `${path}`,
+      data: `import { Kysely } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('${table}')
+    .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
+    .execute()
+}`,
+    })
+
+    log.success(`Successfully created your migration file at .stacks/database/migrations/${name}.ts`)
+  }
+  catch (error) {
+    log.error(error)
   }
 }
 
