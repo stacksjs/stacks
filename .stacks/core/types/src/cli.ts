@@ -196,7 +196,7 @@ export const enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
-  Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ .stacks/**/node_modules',
+  Clean = 'rm -rf ./pnpm-lock.yaml ./node_modules/ .stacks/**/node_modules',
   Dev = 'dev',
   DevComponents = 'vite --config ./core/build/src/vue-components.ts',
   DevDocs = 'npx vitepress dev ./docs/src',
