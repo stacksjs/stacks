@@ -1,4 +1,4 @@
-import { defineCacheConfig, env } from 'stacks/core/utils/src'
+import { defineCacheConfig, env } from 'stacks/core/config/src'
 
 /**
  * **Cache Configuration**

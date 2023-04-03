@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "strict": true,
     "jsx": "preserve",
@@ -51,7 +51,7 @@
       "@stacksjs/cloud/*": ["./core/cloud/src/*"],
       "@stacksjs/collections": ["./core/collections/src/index.ts"],
       "@stacksjs/collections/*": ["./core/collections/src/*"],
-      "@stacksjs/config": ["./config/src/index.ts"],
+      "@stacksjs/config": ["./core/config/src/index.ts"],
       "@stacksjs/config/*": ["../config/*"],
       "@stacksjs/dashboard": ["./core/dashboard/src/index.ts"],
       "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],

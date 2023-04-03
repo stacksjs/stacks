@@ -1,4 +1,4 @@
-import { defineDatabaseConfig, env } from 'stacks/core/utils/src'
+import { defineDatabaseConfig, env } from 'stacks/core/config/src'
 
 /**
  * **Database Configuration**

@@ -2,10 +2,7 @@ import { Kysely, MysqlDialect, sql } from 'kysely'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
-import { PrismaClient } from '@prisma/client'
 import { database as config } from '@stacksjs/config'
-
-const prisma = new PrismaClient()
 
 const { fs } = filesystem
 

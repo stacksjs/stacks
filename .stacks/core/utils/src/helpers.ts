@@ -3,9 +3,9 @@ import detectIndent from 'detect-indent'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import semver from 'semver'
 import { parse } from 'yaml'
-import { log, runCommand, spawn } from '../../cli/src'
-import storage from '../../storage/src'
-import ui from '../../../../config/ui'
+import { log, runCommand, spawn } from '@stacksjs/cli'
+import storage from '@stacksjs/storage'
+import ui from '@stacksjs/ui'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -119,6 +119,25 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
 
 export function parseYaml(content: any) {
   return parse(content)
+}
+
+/**
+ * Determines the level of debugging.
+ * @param options
+ */
+export function determineDebugMode(options?: CliOptions) {
+  if (options?.verbose === true)
+    return true
+
+  return app.debug === true
+}
+
+export function env(key: string, fallback: any) {
+  // console.log('isClient', isClient)
+  // if (key && import.meta?.env)
+  //   return import.meta.env[key]
+
+  return fallback
 }
 
 export { semver }

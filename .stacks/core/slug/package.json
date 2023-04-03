@@ -1,9 +1,9 @@
 {
-  "name": "@stacksjs/database",
+  "name": "@stacksjs/slug",
   "type": "module",
   "version": "0.51.0",
   "packageManager": "pnpm@8.1.0",
-  "description": "The Stacks database integration.",
+  "description": "The Stacks slug functionality.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -11,20 +11,15 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/database"
+    "directory": "./.stacks/core/slug"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "database",
-    "orm",
-    "mysql",
-    "postgres",
-    "planetScale",
-    "supabase",
-    "singleStore",
-    "prisma",
+    "slugs",
+    "models",
+    "urls",
     "stacks"
   ],
   "module": "dist/index.mjs",

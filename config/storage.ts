@@ -1,4 +1,4 @@
-import { defineStorageConfig } from 'stacks/core/utils/src'
+import { defineStorageConfig } from 'stacks/core/config/src'
 
 /**
  * **Storage Options**

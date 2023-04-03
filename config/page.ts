@@ -1,4 +1,4 @@
-import { definePageConfig } from 'stacks/core/utils/src'
+import { definePageConfig } from 'stacks/core/config/src'
 
 /**
  * **Page Configuration**

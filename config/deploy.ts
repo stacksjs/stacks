@@ -1,4 +1,4 @@
-import { defineDeployConfig } from 'stacks/core/utils/src'
+import { defineDeployConfig } from 'stacks/core/config/src'
 
 /**
  * **Deployment Configuration**

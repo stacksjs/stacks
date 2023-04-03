@@ -4,12 +4,6 @@ importers:
 
   .:
     dependencies:
-      kysely:
-        specifier: ^0.24.2
-        version: 0.24.2
-      mysql2:
-        specifier: ^3.2.0
-        version: 3.2.0
       stacks:
         specifier: workspace:*
         version: link:.stacks
@@ -19,6 +13,12 @@ importers:
       '@stacksjs/buddy':
         specifier: workspace:*
         version: link:core/buddy
+      kysely:
+        specifier: ^0.24.2
+        version: 0.24.2
+      mysql2:
+        specifier: ^3.2.0
+        version: 3.2.0
     devDependencies:
       '@total-typescript/ts-reset':
         specifier: ^0.4.2
@@ -51,22 +51,6 @@ importers:
         specifier: workspace:*
         version: link:../..
 
-  .stacks/config:
-    dependencies:
-      '@stacksjs/path':
-        specifier: workspace:*
-        version: link:../core/path
-      '@stacksjs/utils':
-        specifier: workspace:*
-        version: link:../core/utils
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../core/development
-      '@stacksjs/types':
-        specifier: workspace:*
-        version: link:../core/types
-
   .stacks/core/actions:
     dependencies:
       '@stacksjs/cli':
@@ -77,7 +61,7 @@ importers:
         version: link:../config
       '@stacksjs/database':
         specifier: workspace:*
-        version: link:../slug
+        version: link:../database
       '@stacksjs/logging':
         specifier: workspace:*
         version: link:../logging
@@ -205,7 +189,7 @@ importers:
         version: link:../config
       '@stacksjs/database':
         specifier: workspace:*
-        version: link:../slug
+        version: link:../database
       '@stacksjs/docs':
         specifier: workspace:*
         version: link:../docs
@@ -503,9 +487,6 @@ importers:
 
   .stacks/core/database:
     dependencies:
-      '@prisma/client':
-        specifier: ^4.12.0
-        version: 4.12.0
       '@stacksjs/faker':
         specifier: workspace:*
         version: link:../faker
@@ -518,6 +499,12 @@ importers:
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
+      kysely:
+        specifier: ^0.24.2
+        version: 0.24.2
+      mysql2:
+        specifier: ^3.2.0
+        version: 3.2.0
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1090,7 +1077,7 @@ importers:
     dependencies:
       '@stacksjs/database':
         specifier: workspace:*
-        version: 'link:'
+        version: link:../database
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -1274,9 +1261,6 @@ importers:
       '@mdit-vue/types':
         specifier: ^0.12.0
         version: 0.12.0
-      '@prisma/client':
-        specifier: ^4.12.0
-        version: 4.12.0
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@2.79.1)
@@ -5917,21 +5901,6 @@ packages:
 
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
-
-  /@prisma/client@4.12.0:
-    resolution: {integrity: sha512-j9/ighfWwux97J2dS15nqhl60tYoH8V0IuSsgZDb6bCFcQD3fXbXmxjYC8GHhIgOk3lB7Pq+8CwElz2MiDpsSg==}
-    engines: {node: '>=14.17'}
-    requiresBuild: true
-    peerDependencies:
-      prisma: '*'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-    dependencies:
-      '@prisma/engines-version': 4.12.0-67.659ef412370fa3b41cd7bf6e94587c1dfb7f67e7
-
-  /@prisma/engines-version@4.12.0-67.659ef412370fa3b41cd7bf6e94587c1dfb7f67e7:
-    resolution: {integrity: sha512-JIHNj5jlXb9mcaJwakM0vpgRYJIAurxTUqM0iX0tfEQA5XLZ9ONkIckkhuAKdAzocZ+80GYg7QSsfpjg7OxbOA==}
 
   /@redis/bloom@1.2.0(@redis/client@1.5.6):
     resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}

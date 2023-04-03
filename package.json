@@ -21,8 +21,6 @@
   ],
   "scripts": {
     "buddy": "esno .stacks/core/buddy/src/cli.ts",
-    "bud": "pnpm buddy",
-    "stx": "pnpm buddy",
     "stacks": "pnpm buddy",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
@@ -96,7 +94,9 @@
     "test": "pnpm buddy test",
     "test:ui": "pnpm buddy test:ui",
     "test:coverage": "pnpm buddy test:coverage",
-    "test:types": "pnpm buddy test:types"
+    "test:types": "pnpm buddy test:types",
+    "bud": "pnpm buddy",
+    "stx": "pnpm buddy"
   },
   "dependencies": {
     "stacks": "workspace:*"
