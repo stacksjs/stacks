@@ -2,7 +2,6 @@ import { defineBuildConfig } from '@stacksjs/development'
 import { alias } from '@stacksjs/alias'
 
 export default defineBuildConfig({
-  failOnWarn: false, // it may fail for "Potential missing package.json files: dist/index.mjs, dist/index.d.ts"
   alias,
   entries: [
     './src/cli',

@@ -11,5 +11,4 @@ export default defineBuildConfig({
     emitCJS: true,
     inlineDependencies: true,
   },
-  failOnWarn: false,
 })
