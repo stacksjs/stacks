@@ -26,10 +26,11 @@ export interface Scheduler {
   weekly: () => void
   quarterly: () => void
   yearly: () => void
-  cron: (interval: string) => void
+  cron: (interval: string, timezone?: string) => void
 }
 
-function run(callback: Function): Scheduler {
+// function run(callback: Function): Scheduler {
+function run(callback: ((now: Date | 'manual' | 'init') => void) | string): Scheduler {
   return {
     everySecond: () => {
       cron.schedule('* * * * * *', callback)
@@ -106,8 +107,8 @@ function run(callback: Function): Scheduler {
     yearly: () => {
       cron.schedule('0 0 1 1 *', callback)
     },
-    cron: (interval: string) => {
-      cron.schedule(interval, callback)
+    cron: (interval: string, timezone?: string) => {
+      timezone ? cron.schedule(interval, callback, { scheduled: true, timezone }) : cron.schedule(interval, callback)
     },
   }
 }
