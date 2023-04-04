@@ -499,6 +499,9 @@ importers:
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
+      '@stacksjs/storage':
+        specifier: workspace:*
+        version: link:../storage
       '@stacksjs/strings':
         specifier: workspace:*
         version: link:../strings
