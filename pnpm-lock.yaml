@@ -13,12 +13,6 @@ importers:
       '@stacksjs/buddy':
         specifier: workspace:*
         version: link:core/buddy
-      kysely:
-        specifier: ^0.24.2
-        version: 0.24.2
-      mysql2:
-        specifier: ^3.2.0
-        version: 3.2.0
     devDependencies:
       '@total-typescript/ts-reset':
         specifier: ^0.4.2
@@ -499,6 +493,9 @@ importers:
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
+      '@stacksjs/query-builder':
+        specifier: workspace:*
+        version: link:../query-builder
       '@stacksjs/storage':
         specifier: workspace:*
         version: link:../storage
@@ -508,12 +505,6 @@ importers:
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
-      kysely:
-        specifier: ^0.24.2
-        version: 0.24.2
-      mysql2:
-        specifier: ^3.2.0
-        version: 3.2.0
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -971,6 +962,22 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
+
+  .stacks/core/query-builder:
+    dependencies:
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
+      kysely:
+        specifier: ^0.24.2
+        version: 0.24.2
+      mysql2:
+        specifier: ^3.2.0
+        version: 3.2.0
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -7224,7 +7231,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.5
-      caniuse-lite: 1.0.30001473
+      caniuse-lite: 1.0.30001474
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -7554,8 +7561,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001473
-      electron-to-chromium: 1.4.349
+      caniuse-lite: 1.0.30001474
+      electron-to-chromium: 1.4.350
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10(browserslist@4.21.5)
 
@@ -7774,8 +7781,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /caniuse-lite@1.0.30001473:
-    resolution: {integrity: sha512-ewDad7+D2vlyy+E4UJuVfiBsU69IL+8oVmTuZnH5Q6CIUbxNfI50uVpRHbUPDD6SUaN2o0Lh4DhTrvLG/Tn1yg==}
+  /caniuse-lite@1.0.30001474:
+    resolution: {integrity: sha512-iaIZ8gVrWfemh5DG3T9/YqarVZoYf0r188IjaGwx68j4Pf0SGY6CQkmJUIE+NZHkkecQGohzXmBGEwWDr9aM3Q==}
 
   /capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -9151,8 +9158,8 @@ packages:
       jake: 10.8.5
     dev: false
 
-  /electron-to-chromium@1.4.349:
-    resolution: {integrity: sha512-34LBfVDiL6byWorSmQOPwq4gD5wpN8Mhh5yPGQr67FbcxsfUS0BDJP9y6RykSgeWVUfSkN/2dChywnsrmKVyUg==}
+  /electron-to-chromium@1.4.350:
+    resolution: {integrity: sha512-XnXcWpVnOfHZ4C3NPiL+SubeoGV8zc/pg8GEubRtc1dPA/9jKS2vsOPmtClJHhWxUb2RSGC1OBLCbgNUJMtZPw==}
 
   /elegant-spinner@1.0.1:
     resolution: {integrity: sha512-B+ZM+RXvRqQaAmkMlO/oSe5nMUOaUnyfGYCEHoR8wrXsZR2mA0XVibsxV1bvTwxdRWah1PkQqso2EzhILGHtEQ==}
@@ -13470,8 +13477,8 @@ packages:
       - supports-color
     dev: false
 
-  /node-abi@3.33.0:
-    resolution: {integrity: sha512-7GGVawqyHF4pfd0YFybhv/eM9JwTtPqx0mAanQ146O3FlSh3pA24zf9IRQTOsfTSqXTNzPSP5iagAJ94jjuVog==}
+  /node-abi@3.34.0:
+    resolution: {integrity: sha512-O5sNsdgxptez/bSXk2CfpTcVu4yTiFW1YcMHIVn2uAY8MksXWQeReMx63krFrj/QSyjRJ5/jIBkWvJ3/ZimdcA==}
     engines: {node: '>=10'}
     dependencies:
       semver: 7.3.8
@@ -14788,7 +14795,7 @@ packages:
       minimist: 1.2.8
       mkdirp-classic: 0.5.3
       napi-build-utils: 1.0.2
-      node-abi: 3.33.0
+      node-abi: 3.34.0
       pump: 3.0.0
       rc: 1.2.8
       simple-get: 4.0.1
