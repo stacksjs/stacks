@@ -1,4 +1,4 @@
-import { Kysely, MysqlDialect, sql } from '@stacksjs/query-builder'
+import { QueryBuilder, MysqlDialect, sql } from '@stacksjs/query-builder'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
@@ -36,27 +36,28 @@ function readModels(folderPath: string): Promise<Model[]> {
 }
 
 async function seed() {
-  const db = new Kysely({
+  const db = new QueryBuilder({
     dialect: new MysqlDialect({
-      pool: {
-        connection: {
-          host: config.host,
-          port: config.port,
-        },
-      },
-    }),
+      pool: createPool({
+        database: config.database,
+        host: config.host,
+        password: config.password,
+        user: config.username,
+      }),
+    });
   })
 
   const models = await readModels(projectPath('app/models'))
 
   const queries = models.flatMap((model) => {
-    const { useSeed, fields } = model
+    const { seedable, fields } = model
 
-    if (!useSeed || !useSeed.count)
+    if (!seedable)
       return []
 
+    const count = seedable.count || 10
     const records: Record<string, any>[] = []
-    for (let i = 0; i < useSeed.count; i++) {
+    for (let i = 0; i < count; i++) {
       const record: Record<string, any> = {}
       Object.entries(fields).forEach(([name, field]) => {
         if (field.factory)

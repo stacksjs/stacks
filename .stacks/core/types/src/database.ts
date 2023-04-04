@@ -7,7 +7,10 @@ export interface DatabaseOptions {
   url?: string
   host?: string
   port?: number
-  client?: DatabaseClient
+  client?: DatabaseClient,
+  database: string
+  username?: string
+  password?: string
 }
 
 export interface FactoryOptions {

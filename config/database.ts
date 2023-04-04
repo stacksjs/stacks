@@ -12,4 +12,7 @@ export default defineDatabaseConfig({
   url: env('DATABASE_URL', ''),
   host: 'localhost',
   port: 3306,
+  database: 'stacks',
+  username: 'root',
+  password: 'root_pass',
 })
