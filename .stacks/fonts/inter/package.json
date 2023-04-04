@@ -1,7 +1,7 @@
 {
   "name": "inter-font",
   "version": "3.19.0",
-  "packageManager": "pnpm@8.1.0",
+  "packageManager": "pnpm@8.1.1",
   "description": "Mona Sans, a variable font from GitHub.",
   "author": {
     "name": "Rasmus Andersson"
