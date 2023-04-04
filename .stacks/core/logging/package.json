@@ -44,11 +44,11 @@
     "node-ray": "^1.19.4",
     "vue-ray": "^1.17.3"
   },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
-  },
   "dependencies": {
     "node-ray": "^1.19.4",
     "vue-ray": "^1.17.3"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
   }
 }

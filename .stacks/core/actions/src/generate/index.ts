@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-// import { migrate, seed } from '@stacksjs/database'
+import { seed } from '@stacksjs/database'
 import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
@@ -130,5 +130,5 @@ export async function migrations() {
 }
 
 export async function seeder() {
-  // await seed()
+  await seed()
 }

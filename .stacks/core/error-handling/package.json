@@ -42,10 +42,10 @@
   "peerDependencies": {
     "@ow3/eslint-config": "^0.37.2"
   },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
-  },
   "dependencies": {
     "neverthrow": "^6.0.0"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
   }
 }

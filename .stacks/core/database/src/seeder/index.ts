@@ -1,4 +1,4 @@
-import { QueryBuilder, MysqlDialect, sql } from '@stacksjs/query-builder'
+import { MysqlDialect, QueryBuilder, createPool } from '@stacksjs/query-builder'
 import { filesystem } from '@stacksjs/storage'
 import type { Model } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
@@ -44,7 +44,7 @@ async function seed() {
         password: config.password,
         user: config.username,
       }),
-    });
+    }),
   })
 
   const models = await readModels(projectPath('app/models'))
@@ -55,7 +55,8 @@ async function seed() {
     if (!seedable)
       return []
 
-    const count = seedable.count || 10
+    const count = typeof seedable === 'boolean' ? 10 : seedable.count
+
     const records: Record<string, any>[] = []
     for (let i = 0; i < count; i++) {
       const record: Record<string, any> = {}
@@ -66,12 +67,13 @@ async function seed() {
       records.push(record)
     }
 
-    return db.insertInto(model.name).values(records).build(sql`RETURNING *`)
+      return model
+    // return db.insertInto('User').values(records).build(sql`RETURNING *`)
   })
 
-  const { rows } = await db.transaction(queries).execute()
+  // const { rows } = await db.transaction().execute()
 
-  return rows
+  // return rows
 }
 
 export { seed }
