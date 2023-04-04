@@ -1,7 +1,6 @@
-import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
+import type { CliOptions, CommandResult, Manifest, NpmScript, Result } from '@stacksjs/types'
 import detectIndent from 'detect-indent'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import semver from 'semver'
 import { parse } from 'yaml'
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
@@ -95,7 +94,7 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions) {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<CommandResult<string>, Error>> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
@@ -140,8 +139,7 @@ export function env(key: string, fallback?: any) {
   return key ?? fallback
 }
 
-export { semver }
-export * from '@dinero.js/currencies'
+// export { SemVer } from 'semver'
 export * from 'dinero.js'
 export { detectIndent }
 export { detectNewline } from 'detect-newline'

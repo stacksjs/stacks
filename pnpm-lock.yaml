@@ -766,6 +766,9 @@ importers:
       consola:
         specifier: ^2.15.3
         version: 2.15.3
+      node-ray:
+        specifier: ^1.19.4
+        version: 1.19.4
       vue-ray:
         specifier: ^1.17.3
         version: 1.17.3
@@ -928,6 +931,9 @@ importers:
 
   .stacks/core/payments:
     dependencies:
+      '@stacksjs/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@stripe/stripe-js':
         specifier: ^1.52.0
         version: 1.52.0
@@ -935,9 +941,15 @@ importers:
         specifier: ^11.17.0
         version: 11.17.0
     devDependencies:
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
 
   .stacks/core/push:
     dependencies:

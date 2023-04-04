@@ -11,7 +11,7 @@ export const isBrowser = typeof window !== 'undefined'
 export const isServer = typeof document === 'undefined' // https://remix.run/docs/en/v1/pages/gotchas#typeof-window-checks
 export const isMap = (val: any): val is Map<any, any> => toString(val) === '[object Map]'
 export const isSet = (val: any): val is Set<any> => toString(val) === '[object Set]'
-export const isPromise = <T = any>(val: any): val is Promise<T> => isObject(val) && isFunction(val.then) && isFunction(val.catch)
+export const isPromise = <T = any>(val: any): val is Promise<T> => toString(val) === '[object Promise]'
 export const isUndefined = (v: any) => getTypeName(v) === 'undefined'
 export const isNull = (v: any) => getTypeName(v) === 'null'
 export const isSymbol = (v: any) => getTypeName(v) === 'symbol'

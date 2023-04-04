@@ -40,10 +40,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^1.52.0",
     "stripe": "^11.17.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   }
 }

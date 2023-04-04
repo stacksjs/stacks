@@ -40,10 +40,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.37.2",
-    "neverthrow": "^6.0.0"
+    "@ow3/eslint-config": "^0.37.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
+  },
+  "dependencies": {
+    "neverthrow": "^6.0.0"
   }
 }

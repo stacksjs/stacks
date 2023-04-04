@@ -8,6 +8,7 @@ export * from './guards'
 export { isDef, isBoolean, isFunction, isNumber, isString, isObject, isWindow, isBrowser, isServer, isMap, isSet, isPromise } from './is'
 export * from './p'
 export * from './vendor'
+export * as semver from 'semver'
 
 export * from '@vueuse/core'
 export * from '@vueuse/math'
