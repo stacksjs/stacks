@@ -566,8 +566,8 @@ importers:
   .stacks/core/docs:
     dependencies:
       vitepress:
-        specifier: 1.0.0-alpha.64
-        version: 1.0.0-alpha.64(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: 1.0.0-alpha.65
+        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -1021,8 +1021,8 @@ importers:
   .stacks/core/search-engine:
     dependencies:
       meilisearch:
-        specifier: ^0.32.1
-        version: 0.32.1
+        specifier: ^0.32.2
+        version: 0.32.2
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1255,8 +1255,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
       meilisearch:
-        specifier: ^0.32.1
-        version: 0.32.1
+        specifier: ^0.32.2
+        version: 0.32.2
       vite:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.11)
@@ -1356,8 +1356,8 @@ importers:
         specifier: ^0.22.1
         version: 0.22.1(@vueuse/head@1.1.23)(vite@4.2.1)(vue-router@4.1.6)(vue@3.2.47)
       vitepress:
-        specifier: 1.0.0-alpha.64
-        version: 1.0.0-alpha.64(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: 1.0.0-alpha.65
+        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
 
   .stacks/core/ui:
     dependencies:
@@ -1516,8 +1516,8 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1
       vitepress:
-        specifier: ^1.0.0-alpha.64
-        version: 1.0.0-alpha.64(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: ^1.0.0-alpha.65
+        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
 
   .stacks/fonts/hubot-sans: {}
 
@@ -12952,8 +12952,8 @@ packages:
   /mdurl@1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
 
-  /meilisearch@0.32.1:
-    resolution: {integrity: sha512-ceC0TSKL7GF91b50y1Qb2lKUUF/d5uZ242Iry093cTDRO3KfL/lcSwXxNxKzluk71iBPH0A0cKAIy6v06sPriA==}
+  /meilisearch@0.32.2:
+    resolution: {integrity: sha512-Ajc7tahu7fZdSoBfXwIwtF6ZfFhFdpM/5eRTjw3v59sQmE6NWq5I5TxIdpS0FAiJaD3KtD9sOWAQRepdk8QJwA==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
@@ -18071,8 +18071,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitepress@1.0.0-alpha.64(@algolia/client-search@4.17.0)(@types/node@18.15.11):
-    resolution: {integrity: sha512-u12wcDH4VzgxxkQfVQWkXumrL3WRetpenz4VuAtiMWXeZSCayWcJtieWOFxmX/RzS2KEuTJpXGbtJAXORyyJBQ==}
+  /vitepress@1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11):
+    resolution: {integrity: sha512-iGWC0AQC6WrfRZTJf5+TiGG4o8PLhqIJNyai8NVxZCY9YpmMJhddvQeqqjJdQniF/LQK/hQ5nQZ9HgSZDGRPGQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.3
