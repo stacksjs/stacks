@@ -49,6 +49,9 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
+  "dependencies": {
+    "@stacksjs/config": "workspace:*"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
   }

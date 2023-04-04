@@ -487,6 +487,9 @@ importers:
 
   .stacks/core/database:
     dependencies:
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
       '@stacksjs/faker':
         specifier: workspace:*
         version: link:../faker
