@@ -443,6 +443,9 @@ importers:
       execa:
         specifier: ^7.1.1
         version: 7.1.1
+      kolorist:
+        specifier: 1.7.0
+        version: 1.7.0
       ora:
         specifier: ^6.3.0
         version: 6.3.0

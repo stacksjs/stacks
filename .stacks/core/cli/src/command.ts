@@ -1,7 +1,2 @@
-import cac from 'cac'
-import { execaCommand } from 'execa'
-
-const spawn = execaCommand
-const command = cac
-
-export { spawn, command }
+export { cac as command } from 'cac'
+export { execaCommand as spawn } from 'execa'
