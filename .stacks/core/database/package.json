@@ -44,11 +44,7 @@
   "peerDependencies": {
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
-<<<<<<< Updated upstream
     "@stacksjs/storage": "workspace:*",
-=======
-    "@stacksjs/query-builder": "workspace:*",
->>>>>>> Stashed changes
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },

@@ -1,17 +1,8 @@
-<<<<<<< Updated upstream
 // import { Kysely, MysqlDialect, sql } from 'kysely'
 // import { filesystem } from '@stacksjs/storage'
 // import type { Model } from '@stacksjs/types'
 // import { projectPath } from '@stacksjs/path'
 // import { database as config } from '@stacksjs/config'
-=======
-import { Kysely, MysqlDialect, sql } from '@stacksjs/query-builder'
-import { filesystem } from '@stacksjs/storage'
-import type { Model } from '@stacksjs/types'
-import { projectPath } from '@stacksjs/path'
-import { PrismaClient } from '@prisma/client'
-import { database as config } from '@stacksjs/config'
->>>>>>> Stashed changes
 
 // const { fs } = filesystem
 
