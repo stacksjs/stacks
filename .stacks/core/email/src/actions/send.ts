@@ -6,7 +6,7 @@ import * as Maizzle from '@maizzle/framework'
 import * as maizzleConfig from '../utils/config'
 import { config } from '../tailwind.config'
 
-export async function send(options: EmailOptions, provider: any, providerName: string, css?: string) {
+export async function send(options: EmailOptions, provider: any, providerName: string, css?: string): Promise<ResultAsync<any, Error>> {
   const template = `
   <extends src="./core/notifications/src/utils/template.html">
     <block name="template">

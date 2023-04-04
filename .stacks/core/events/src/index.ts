@@ -1,5 +1,5 @@
 import mitt from 'mitt'
-import type { Events } from '@stacksjs/types'
+// import type { Events } from '@stacksjs/types'
 
 /**
  * This module provides a simple, yet powerful, event bus for the application.
@@ -19,7 +19,7 @@ import type { Events } from '@stacksjs/types'
 
 const events = mitt
 
-const emitter = events<Events>()
+const emitter = events()
 
 const useEvent = emitter.emit
 const dispatch = emitter.emit

@@ -651,13 +651,16 @@ importers:
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
-      '@stacksjs/types':
+      '@stacksjs/logging':
         specifier: workspace:*
-        version: link:../types
+        version: link:../logging
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
 
   .stacks/core/error-handling:
     dependencies:

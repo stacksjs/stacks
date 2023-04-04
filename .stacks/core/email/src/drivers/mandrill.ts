@@ -1,6 +1,7 @@
 import { MandrillProvider } from '@novu/mandrill'
 import type { EmailOptions } from '@stacksjs/types'
 import { notification } from '@stacksjs/config'
+import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
 const env = notification.email.mandrill
@@ -10,7 +11,7 @@ const provider = new MandrillProvider({
   from: env.from,
 })
 
-async function send(options: EmailOptions, css?: string) {
+async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {
   return sendEmail(options, provider, 'Mandrill', css)
 }
 
