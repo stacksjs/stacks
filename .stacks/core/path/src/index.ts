@@ -270,6 +270,10 @@ export function pushPath(path?: string) {
   return corePath(`push/${path || ''}`)
 }
 
+export function queryBuilderPath(path?: string) {
+  return corePath(`query-builder/${path || ''}`)
+}
+
 export function queuePath(path?: string) {
   return corePath(`queue/${path || ''}`)
 }
@@ -406,6 +410,7 @@ export const path = {
   paymentsPath,
   projectPath,
   pushPath,
+  queryBuilderPath,
   queuePath,
   realtimePath,
   routerPath,

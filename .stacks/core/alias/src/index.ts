@@ -64,6 +64,8 @@ const alias: Record<string, string> = {
   '@stacksjs/path/*': p.pathPath('src/*'),
   '@stacksjs/push': p.pushPath('src/index.ts'),
   '@stacksjs/push/*': p.pushPath('src/*'),
+  '@stacksjs/query-builder': p.queryBuilderPath('src/index.ts'),
+  '@stacksjs/query-builder/*': p.queryBuilderPath('src/*'),
   '@stacksjs/router': p.routerPath('src/index.ts'),
   '@stacksjs/router/*': p.routerPath('src/*'),
   '@stacksjs/search-engine': p.searchEnginePath('src/index.ts'),

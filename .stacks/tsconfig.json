@@ -86,6 +86,8 @@
       "@stacksjs/path/*": ["./core/path/src/*"],
       "@stacksjs/push": ["./core/push/src/index.ts"],
       "@stacksjs/push/*": ["./core/push/src/*"],
+      "@stacksjs/query-builder": ["./core/query-builder/src/index.ts"],
+      "@stacksjs/query-builder/*": ["./core/query-builder/src/*"],
       "@stacksjs/router": ["./core/router/src/index.ts"],
       "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/scheduler": ["./core/scheduler/src/index.ts"],
