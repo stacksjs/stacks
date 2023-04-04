@@ -47,7 +47,13 @@
   "peerDependencies": {
     "meilisearch": "^0.32.2"
   },
+  "dependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/ui": "workspace:*"
+  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   }
 }

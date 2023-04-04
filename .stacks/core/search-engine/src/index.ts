@@ -1,5 +1,6 @@
 import { searchEngine } from '@stacksjs/config'
-import type { Ref } from 'vue'
+// import type { Ref } from '@stacksjs/types'
+import type { UiEngine } from '@stacksjs/ui'
 import { client as meilisearch, search } from './drivers/meilisearch'
 import { determineState } from './helpers'
 
@@ -7,7 +8,7 @@ const table = (useStorage('table', determineState()).value)
 const totalHits = table.results?.estimatedTotalHits ?? 1
 
 // state
-const pages: Ref<number[]> = ref([])
+const pages: UiEngine.Ref<number[]> = ref([])
 export const totalPages = ref(0)
 export const currentPage = computed(() => table.currentPage)
 export const filterName = computed(() => table.filterName)

@@ -1023,6 +1023,15 @@ importers:
 
   .stacks/core/search-engine:
     dependencies:
+      '@stacksjs/cli':
+        specifier: workspace:*
+        version: link:../cli
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
+      '@stacksjs/ui':
+        specifier: workspace:*
+        version: link:../ui
       meilisearch:
         specifier: ^0.32.2
         version: 0.32.2
@@ -1030,6 +1039,9 @@ importers:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
 
   .stacks/core/security:
     dependencies:
