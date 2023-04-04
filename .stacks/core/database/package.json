@@ -44,6 +44,7 @@
   "peerDependencies": {
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
