@@ -1,0 +1,46 @@
+{
+  "name": "@stacksjs/query-builder",
+  "type": "module",
+  "version": "0.51.0",
+  "packageManager": "pnpm@8.1.0",
+  "description": "The Stacks Push integration",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/push#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/push"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "stacks",
+    "kysely"
+  ],
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/types": "workspace:*",
+    "kysely": "^0.24.2",
+    "mysql2": "^3.2.0"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

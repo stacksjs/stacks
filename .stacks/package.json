@@ -71,9 +71,7 @@
   },
   "web-types": "./web-types.json",
   "dependencies": {
-    "@stacksjs/buddy": "workspace:*",
-    "kysely": "^0.24.2",
-    "mysql2": "^3.2.0"
+    "@stacksjs/buddy": "workspace:*"
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.4.2"
