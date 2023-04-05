@@ -33,7 +33,7 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",

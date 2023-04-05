@@ -38,7 +38,7 @@
     "build": "npx unbuild",
     "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npx tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

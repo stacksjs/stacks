@@ -37,7 +37,7 @@
     "build": "npx unbuild",
     "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.37.2"

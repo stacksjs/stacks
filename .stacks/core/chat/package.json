@@ -35,7 +35,7 @@
     "build": "npx unbuild",
     "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
     "@novu/discord": "^0.13.0",

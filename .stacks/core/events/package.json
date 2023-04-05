@@ -36,7 +36,7 @@
     "build": "npx unbuild",
     "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",

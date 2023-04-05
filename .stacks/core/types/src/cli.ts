@@ -217,7 +217,7 @@ export const enum NpmScript {
   TestFeature = 'playwright test --config playwright.config.ts',
   TestUi = 'vitest --config vitest.config.ts --ui',
   TestCoverage = 'vitest --config vitest.config.ts --coverage',
-  TestTypes = 'vue-tsc --noEmit',
+  TestTypes = 'vue-npx tsc --noEmit',
   Generate = 'generate',
   GenerateTypes = 'generate:types',
   GenerateEntries = 'generate:entries',
