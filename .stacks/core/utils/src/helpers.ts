@@ -136,7 +136,7 @@ export function env(key: string, fallback?: any) {
   // if (key && import.meta?.env)
   //   return import.meta.env[key]
 
-  return key ?? fallback
+  return fallback
 }
 
 // export { SemVer } from 'semver'
