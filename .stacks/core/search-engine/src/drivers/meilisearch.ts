@@ -1,6 +1,7 @@
 import { log } from '@stacksjs/cli'
 import { searchEngine } from '@stacksjs/config'
 import { MeiliSearch } from 'meilisearch'
+import type { SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
 
 interface SearchEngineOptions {
   host: string
@@ -25,7 +26,7 @@ function client(options?: SearchEngineOptions) {
   return new MeiliSearch({ host, apiKey })
 }
 
-async function search(index: string, params: any) {
+async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
   return await client()
     .index(index)
     .search(params.query, { limit: params.perPage, offset: params.page * params.perPage })

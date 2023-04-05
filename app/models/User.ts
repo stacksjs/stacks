@@ -1,6 +1,6 @@
-import { faker } from '../../.stacks/core/faker/src' // stacks/faker or @stacksjs/faker
-import { validate } from '../../.stacks/core/validation/src' // stacks/validate or @stacksjs/validate
-import type { Model } from '../../.stacks/core/types/src' // stacks/types or @stacksjs/types
+import { faker } from 'stacks/core/faker/src' // stacks/faker or @stacksjs/faker
+import { validate } from 'stacks/core/validation/src' // stacks/validate or @stacksjs/validate
+import type { Model } from 'stacks/core/types/src' // stacks/types or @stacksjs/types
 
 enum Type {
   String = 'String',

@@ -1,4 +1,4 @@
-import type { CronJob } from '../../.stacks/core/types/src'
+import type { CronJob } from 'stacks/core/types/src'
 
 // easily monitor and manage your cron jobs
 export default <CronJob> { // or <CronJobs>

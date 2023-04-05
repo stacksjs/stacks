@@ -1,5 +1,5 @@
 import type { ZodBoolean as Boolean, ZodDate as Date, ZodNumber as Number, ZodString as String } from 'zod'
-import type { SearchIndexSettings } from 'stacks/core/types/src'
+import type { SearchIndexSettings } from './search-engine'
 
 export interface SeedOptions {
   count: number
