@@ -38,7 +38,7 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "npx tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "@mdit-vue/plugin-component": "^0.12.0",
     "@mdit-vue/plugin-frontmatter": "^0.12.0",
     "@mdit-vue/types": "^0.12.0",
@@ -55,12 +55,19 @@
     "@types/pluralize": "^0.0.29",
     "@types/prompts": "^2.4.4",
     "cac": "^6.7.14",
+    "execa": "^7.1.1",
     "markdown-it": "^13.0.1",
+    "meilisearch": "^0.32.2",
+    "neverthrow": "^6.0.0",
+    "ora": "^6.3.0",
     "unplugin-auto-import": "^0.15.2",
     "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.2.0",
     "vite-plugin-inspect": "^0.7.18",
     "vite-plugin-vue-layouts": "^0.8.0",
     "vite-ssg": "^0.22.1",
-    "vitepress": "1.0.0-alpha.65"
+    "vitepress": "1.0.0-alpha.65",
+    "vue": "^3.2.47",
+    "zod": "^3.21.4"
   }
 }

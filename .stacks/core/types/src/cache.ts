@@ -73,5 +73,4 @@ export interface CacheOptions {
 
   dynamodb: {
   }
-
 }
