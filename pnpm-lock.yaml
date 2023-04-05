@@ -1503,6 +1503,9 @@ importers:
       rimraf:
         specifier: ^4.4.1
         version: 4.4.1
+      semver:
+        specifier: ^7.3.8
+        version: 7.3.8
       throttle-debounce:
         specifier: ^5.0.0
         version: 5.0.0

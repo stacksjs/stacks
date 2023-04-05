@@ -63,6 +63,7 @@
     "kolorist": "1.7.0",
     "p-limit": "^4.0.0",
     "rimraf": "^4.4.1",
+    "semver": "^7.3.8",
     "throttle-debounce": "^5.0.0",
     "yaml": "^2.2.1"
   },

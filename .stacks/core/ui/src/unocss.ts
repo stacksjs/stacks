@@ -2,7 +2,7 @@ import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import ui from '../../../../config/ui'
+import { ui } from '@stacksjs/config'
 
 const config: UserConfig = defineConfig({
   shortcuts: ui.shortcuts,
@@ -14,7 +14,7 @@ const config: UserConfig = defineConfig({
     presetIcons({
       prefix: 'i-',
       warn: true,
-      collections: ui.icons,
+      // collections: ui.icons,
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
