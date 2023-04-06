@@ -1096,8 +1096,8 @@ importers:
         specifier: ^2.3.2
         version: 2.3.2
       serverless:
-        specifier: ^3.29.0
-        version: 3.29.0
+        specifier: ^3.30.0
+        version: 3.30.0
       vite:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.11)
@@ -12824,6 +12824,13 @@ packages:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
     dev: false
 
+  /json-colorizer@2.2.2:
+    resolution: {integrity: sha512-56oZtwV1piXrQnRNTtJeqRv+B9Y/dXAYLqBBaYl/COcUdoZxgLBLAO88+CnkbT6MxNs0c5E9mPBIb2sFcNz3vw==}
+    dependencies:
+      chalk: 2.4.2
+      lodash.get: 4.4.2
+    dev: false
+
   /json-cycle@1.3.0:
     resolution: {integrity: sha512-FD/SedD78LCdSvJaOUQAXseT8oQBb5z6IVYaQaCrVUlu9zOAr1BDdKyVYQaSD/GDsAMrXpKcOyBD4LIl8nfjHw==}
     engines: {node: '>= 4'}
@@ -16582,8 +16589,8 @@ packages:
     resolution: {integrity: sha512-rb+9B5YBIEzYcD6x2VKidaa+cqYBJQKnU4oe4E3ANwRRN56yk/ua1YCJT1n21NTS8w6CcOclAKNP3PhdCXKYtQ==}
     dev: false
 
-  /serverless@3.29.0:
-    resolution: {integrity: sha512-sfX9sOsCIrNhevyhGu/tj3wfY/+hZf/edUBV80sYYXw8efo5+ZTtKOtXh3/NLFHpNaYrnxABgXTC+0F3IVnX3g==}
+  /serverless@3.30.0:
+    resolution: {integrity: sha512-vhLfu8u5d+2ESmDexEI6ymxxPCqmd0vmkV+nEDYD9aziVTt2ZHdNwfCuCYbZhiG6kQMHWN3NdgzwYm2OwdWHKQ==}
     engines: {node: '>=12.0'}
     hasBin: true
     requiresBuild: true
@@ -16618,6 +16625,7 @@ packages:
       https-proxy-agent: 5.0.1(supports-color@8.1.1)
       is-docker: 2.2.1
       js-yaml: 4.1.0
+      json-colorizer: 2.2.2
       json-cycle: 1.3.0
       json-refs: 3.0.15(supports-color@8.1.1)
       lodash: 4.17.21
@@ -16633,6 +16641,7 @@ packages:
       require-from-string: 2.0.2
       semver: 7.3.8
       signal-exit: 3.0.7
+      stream-buffers: 3.0.2
       strip-ansi: 6.0.1
       supports-color: 8.1.1
       tar: 6.1.13
@@ -16640,6 +16649,7 @@ packages:
       type: 2.7.2
       untildify: 4.0.0
       uuid: 9.0.0
+      ws: 7.5.9
       yaml-ast-parser: 0.0.43
     transitivePeerDependencies:
       - bufferutil
@@ -17106,6 +17116,11 @@ packages:
 
   /stopwatch-node@1.1.0:
     resolution: {integrity: sha512-TpRTztFjiq/B5wn84oKK0YHHtprgrC8pLOUkqVU+MN+2DgdBMaEIeSyGeAn2n+7mT9zrfJyhM33Yw4j/rRV2Bg==}
+    dev: false
+
+  /stream-buffers@3.0.2:
+    resolution: {integrity: sha512-DQi1h8VEBA/lURbSwFtEHnSTb9s2/pwLEaFuNhXwy1Dx3Sa0lOuYT2yNUr4/j2fs8oCAMANtrZ5OrPZtyVs3MQ==}
+    engines: {node: '>= 0.10.0'}
     dev: false
 
   /stream-promise@3.2.0:
@@ -19543,7 +19558,7 @@ packages:
   /xml2js@0.4.19:
     resolution: {integrity: sha512-esZnJZJOiJR9wWKMyuvSE1y6Dq5LCuJanqhxslH2bxM6duahNZ+HMpCLhBQGZkbX6xRf8x1Y2eJlgt2q3qo49Q==}
     dependencies:
-      sax: 1.2.1
+      sax: 1.2.4
       xmlbuilder: 9.0.7
     dev: false
 
