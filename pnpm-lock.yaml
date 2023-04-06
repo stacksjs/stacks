@@ -932,8 +932,8 @@ importers:
         specifier: ^1.52.0
         version: 1.52.0
       stripe:
-        specifier: ^11.17.0
-        version: 11.17.0
+        specifier: ^12.0.0
+        version: 12.0.0
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -17416,8 +17416,8 @@ packages:
       escape-string-regexp: 1.0.5
     dev: false
 
-  /stripe@11.17.0:
-    resolution: {integrity: sha512-nDH5afq2J5x8cp0b3Uf0h4U7mLLntDLXA91/4cg+LRhMOrDc2BI6xOGjYpI2uwRG80PU16pqhZh9oVupvCG/pQ==}
+  /stripe@12.0.0:
+    resolution: {integrity: sha512-9zdcWApF4Yg2WG4GVv1qnvAv+h5KD103gKwbTsTyk5G3lf9h4vN0FXGQ5d5eWKP9itAjt0D5gZtWG7cLPzyLxw==}
     engines: {node: '>=12.*'}
     dependencies:
       '@types/node': 18.15.11
