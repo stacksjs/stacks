@@ -38,14 +38,14 @@
     "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*"
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/storage": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/collections": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "fs-extra": "^11.1.1"
+    "@stacksjs/utils": "workspace:*"
   }
 }
