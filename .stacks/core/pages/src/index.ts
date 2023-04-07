@@ -10,7 +10,7 @@ function generateSettings() {
       '',
       (err) => {
         if (err) throw err;
-        console.log(`${page}.vue was appended successfully!`);
+        console.log(`${page}.vue was generated successfully!`);
       }
     );
   });
@@ -23,7 +23,7 @@ function generateOnboarding() {
       '',
       (err) => {
         if (err) throw err;
-        console.log(`${page}.vue was appended successfully!`);
+        console.log(`${page}.vue was generated successfully!`);
       }
     );
   })
