@@ -48,7 +48,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@unocss/transformer-compile-class": "^0.50.6",
-    "pinia": "^2.0.33",
+    "pinia": "^2.0.34",
     "unocss": "^0.50.6",
     "vue": "^3.2.47",
     "vue-tsc": "^1.2.0"

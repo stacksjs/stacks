@@ -745,8 +745,8 @@ importers:
         specifier: ^8.37.0
         version: 8.37.0
       lint-staged:
-        specifier: ^13.2.0
-        version: 13.2.0
+        specifier: ^13.2.1
+        version: 13.2.1
       publint:
         specifier: ^0.1.11
         version: 0.1.11
@@ -1425,8 +1425,8 @@ importers:
         specifier: ^0.50.6
         version: 0.50.6
       pinia:
-        specifier: ^2.0.33
-        version: 2.0.33(typescript@5.0.3)(vue@3.2.47)
+        specifier: ^2.0.34
+        version: 2.0.34(typescript@5.0.3)(vue@3.2.47)
       unocss:
         specifier: ^0.50.6
         version: 0.50.6(postcss@8.4.21)(rollup@2.79.1)(vite@4.2.1)
@@ -13139,8 +13139,8 @@ packages:
       uc.micro: 1.0.6
     dev: false
 
-  /lint-staged@13.2.0:
-    resolution: {integrity: sha512-GbyK5iWinax5Dfw5obm2g2ccUiZXNGtAS4mCbJ0Lv4rq6iEtfBSjOYdcbOtAIFtM114t0vdpViDDetjVTSd8Vw==}
+  /lint-staged@13.2.1:
+    resolution: {integrity: sha512-8gfzinVXoPfga5Dz/ZOn8I2GOhf81Wvs+KwbEXQn/oWZAvCVS2PivrXfVbFJc93zD16uC0neS47RXHIjXKYZQw==}
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
     dependencies:
@@ -15099,8 +15099,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /pinia@2.0.33(typescript@5.0.3)(vue@3.2.47):
-    resolution: {integrity: sha512-HOj1yVV2itw6rNIrR2f7+MirGNxhORjrULL8GWgRwXsGSvEqIQ+SE0MYt6cwtpegzCda3i+rVTZM+AM7CG+kRg==}
+  /pinia@2.0.34(typescript@5.0.3)(vue@3.2.47):
+    resolution: {integrity: sha512-cgOoGUiyqX0SSgX8XelK9+Ri4XA2/YyNtgjogwfzIx1g7iZTaZPxm7/bZYMCLU2qHRiHhxG7SuQO0eBacFNc2Q==}
     peerDependencies:
       '@vue/composition-api': ^1.4.0
       typescript: '>=4.4.4'
