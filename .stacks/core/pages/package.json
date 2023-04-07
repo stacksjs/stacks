@@ -37,6 +37,9 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "npx tsc --noEmit"
   },
+  "peerDependencies": {
+    "@stacksjs/config": "workspace:*"
+  },
   "dependencies": {
     "@stacksjs/collections": "workspace:*"
   },

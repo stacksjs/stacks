@@ -56,6 +56,9 @@ importers:
       '@stacksjs/database':
         specifier: workspace:*
         version: link:../database
+      '@stacksjs/error-handling':
+        specifier: workspace:*
+        version: link:../error-handling
       '@stacksjs/logging':
         specifier: workspace:*
         version: link:../logging
@@ -74,15 +77,18 @@ importers:
       '@stacksjs/strings':
         specifier: workspace:*
         version: link:../strings
-      '@stacksjs/types':
-        specifier: workspace:*
-        version: link:../types
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
       esno:
         specifier: ^0.16.3
         version: 0.16.3
+      fast-glob:
+        specifier: ^3.2.12
+        version: 3.2.12
+      fs-extra:
+        specifier: ^11.1.1
+        version: 11.1.1
       markdown-it:
         specifier: ^13.0.1
         version: 13.0.1
@@ -93,6 +99,9 @@ importers:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
 
   .stacks/core/ai:
     dependencies:
@@ -902,6 +911,9 @@ importers:
       '@stacksjs/collections':
         specifier: workspace:*
         version: link:../collections
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*

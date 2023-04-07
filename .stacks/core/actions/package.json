@@ -48,6 +48,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -60,9 +61,12 @@
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
-    "esno": "^0.16.3"
+    "esno": "^0.16.3",
+    "fast-glob": "^3.2.12",
+    "fs-extra": "^11.1.1"
   },
   "devDependencies": {
+    "@stacksjs/types": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }
