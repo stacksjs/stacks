@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 'use strict'
 
-import '../dist/cli.mjs.js'
+import '../dist/cli.mjs'

@@ -10,7 +10,7 @@ export default defineBuildConfig({
   clean: false,
   externals: ['chokidar', '@intlify/shared', '@intlify/message-compiler', 'vite', 'gray-matter'],
   rollup: {
-    emitCJS: true,
+    emitCJS: false,
     inlineDependencies: true,
   },
 })
