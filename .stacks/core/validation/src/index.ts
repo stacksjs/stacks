@@ -1,3 +1,12 @@
 import { z as validate, z } from 'zod'
 
-export { validate, z }
+enum Type {
+  String = 'String',
+  Number = 'Number',
+  Boolean = 'Boolean',
+  Date = 'Date',
+  Object = 'Object',
+  Array = 'Array',
+}
+
+export { validate, z, Type }

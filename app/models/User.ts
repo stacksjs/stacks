@@ -1,15 +1,6 @@
 import { faker } from 'stacks/core/faker/src' // stacks/faker or @stacksjs/faker
-import { validate } from 'stacks/core/validation/src' // stacks/validate or @stacksjs/validate
+import { Type, validate } from 'stacks/core/validation/src' // stacks/validate or @stacksjs/validate
 import type { Model } from 'stacks/core/types/src' // stacks/types or @stacksjs/types
-
-enum Type {
-  String = 'String',
-  Number = 'Number',
-  Boolean = 'Boolean',
-  Date = 'Date',
-  Object = 'Object',
-  Array = 'Array',
-}
 
 export default <Model> {
   name: 'User',
