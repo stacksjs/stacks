@@ -22,6 +22,7 @@
     "stacks",
     "framework",
     "typescript",
+    "ts-reset",
     "javascript"
   ],
   "contributors": [
@@ -37,5 +38,8 @@
   },
   "dependencies": {
     "unbuild": "^1.2.0"
+  },
+  "devDependencies": {
+    "@total-typescript/ts-reset": "^0.4.2"
   }
 }

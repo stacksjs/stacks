@@ -151,8 +151,5 @@
   "web-types": "./web-types.json",
   "dependencies": {
     "@stacksjs/buddy": "workspace:*"
-  },
-  "devDependencies": {
-    "@total-typescript/ts-reset": "^0.4.2"
   }
 }

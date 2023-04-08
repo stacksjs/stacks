@@ -13,10 +13,6 @@ importers:
       '@stacksjs/buddy':
         specifier: workspace:*
         version: link:core/buddy
-    devDependencies:
-      '@total-typescript/ts-reset':
-        specifier: ^0.4.2
-        version: 0.4.2
 
   .stacks/api:
     dependencies:
@@ -574,6 +570,10 @@ importers:
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
+    devDependencies:
+      '@total-typescript/ts-reset':
+        specifier: ^0.4.2
+        version: 0.4.2
 
   .stacks/core/docs:
     dependencies:
