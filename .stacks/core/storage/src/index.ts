@@ -1,9 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { detectIndent, detectNewline } from '../../utils/src'
+import { detectIndent, detectNewline } from '@stacksjs/utils'
 import type { JsonFile, TextFile } from '@stacksjs/types'
-import { componentsPath, dirname, functionsPath, join, projectPath } from '../../path/src'
-import { contains } from '../../arrays/src'
+import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
+import { contains } from '@stacksjs/arrays'
 
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
