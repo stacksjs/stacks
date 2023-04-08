@@ -1,7 +1,7 @@
 // import type { ChargeOptions, CustomerOptions, DisputeOptions, EventOptions } from '@stacksjs/types'
 // import { isString } from '@stacksjs/utils'
 // import Stripe from 'stripe'
-// import { services } from '@stacksjs/config'
+// import { services } from '@stacksjs/config/user'
 
 // const apiKey = services?.stripe?.apiKey
 

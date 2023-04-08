@@ -1,4 +1,4 @@
-import { page as config } from '@stacksjs/config'
+import { page as config } from '@stacksjs/config/user'
 import { filesystem } from '@stacksjs/storage'
 
 const { fs } = filesystem
@@ -9,11 +9,13 @@ function generateSettings() {
       `${config.settings.path}/${page}.vue`,
       '',
       (err) => {
-        if (err) throw err;
-        console.log(`${page}.vue was generated successfully!`);
-      }
-    );
-  });
+        if (err)
+          throw err
+        // eslint-disable-next-line no-console
+        console.log(`${page}.vue was generated successfully!`)
+      },
+    )
+  })
 }
 
 function generateOnboarding() {
@@ -22,10 +24,12 @@ function generateOnboarding() {
       `${config.onboarding.path}/${page}.vue`,
       '',
       (err) => {
-        if (err) throw err;
-        console.log(`${page}.vue was generated successfully!`);
-      }
-    );
+        if (err)
+          throw err
+        // eslint-disable-next-line no-console
+        console.log(`${page}.vue was generated successfully!`)
+      },
+    )
   })
 }
 

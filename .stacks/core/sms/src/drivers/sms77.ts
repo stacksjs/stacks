@@ -2,7 +2,7 @@ import { Sms77SmsProvider } from '@novu/sms77'
 import { italic } from '@stacksjs/cli'
 import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
-import { notification } from '@stacksjs/config'
+import { notification } from '@stacksjs/config/user'
 
 const env = notification.sms.sms77
 

@@ -1,6 +1,6 @@
 // import { SESEmailProvider } from '@novu/ses'
 // import type { EmailOptions } from '@stacksjs/types'
-// import { notification } from '@stacksjs/config'
+// import { notification } from '@stacksjs/config/user'
 // import { send as sendEmail } from '../actions/send'
 // import { ResultAsync } from '@stacksjs/error-handling'
 

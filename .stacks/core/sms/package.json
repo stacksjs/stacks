@@ -60,6 +60,7 @@
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

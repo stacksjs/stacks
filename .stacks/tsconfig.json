@@ -52,7 +52,7 @@
       "@stacksjs/collections": ["./core/collections/src/index.ts"],
       "@stacksjs/collections/*": ["./core/collections/src/*"],
       "@stacksjs/config": ["./core/config/src/index.ts"],
-      "@stacksjs/config/*": ["../config/*"],
+      "@stacksjs/config/*": ["./core/config/src/*"],
       "@stacksjs/dashboard": ["./core/dashboard/src/index.ts"],
       "@stacksjs/dashboard/*": ["./core/dashboard/src/*"],
       "@stacksjs/database": ["./core/database/src/index.ts"],

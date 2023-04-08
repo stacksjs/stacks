@@ -2,7 +2,7 @@ import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { buildEntriesPath, frameworkPath, functionsPath, projectPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
+import { library } from '@stacksjs/config/user'
 import { alias } from '@stacksjs/alias'
 import { autoImports } from '.'
 

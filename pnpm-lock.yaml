@@ -1197,9 +1197,6 @@ importers:
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
-      '@stacksjs/config':
-        specifier: workspace:*
-        version: link:../config
       '@stacksjs/error-handling':
         specifier: workspace:*
         version: link:../error-handling
@@ -1207,6 +1204,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
@@ -1216,6 +1216,9 @@ importers:
       '@stacksjs/arrays':
         specifier: workspace:*
         version: link:../arrays
+      '@stacksjs/path':
+        specifier: workspace:*
+        version: link:../path
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
@@ -1232,9 +1235,6 @@ importers:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
-      '@stacksjs/path':
-        specifier: workspace:*
-        version: link:../path
 
   .stacks/core/strings:
     dependencies:

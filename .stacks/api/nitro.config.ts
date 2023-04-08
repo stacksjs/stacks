@@ -1,7 +1,7 @@
 import { defineNitroConfig } from 'nitropack'
 // import { alias } from '@stacksjs/alias'
 // import { resolve } from '@stacksjs/path'
-// import { deploy } from '@stacksjs/config'
+// import { deploy } from '@stacksjs/config/user'
 
 export default defineNitroConfig({
   // alias,

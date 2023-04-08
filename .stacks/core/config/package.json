@@ -1,6 +1,7 @@
 {
   "name": "@stacksjs/config",
   "type": "module",
+  "private": true,
   "version": "0.51.0",
   "packageManager": "pnpm@8.1.1",
   "description": "The Stacks config helper methods.",
@@ -22,19 +23,16 @@
     "functions",
     "stacks"
   ],
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist",
+    "src",
     "README.md"
   ],
   "scripts": {
-    "build": "npx unbuild",
+    "build": "echo 'No build needed.'",
     "dev": "npx unbuild --stub",
-    "prepublishOnly": "pnpm run build",
     "typecheck": "npx tsc --noEmit"
   },
   "devDependencies": {

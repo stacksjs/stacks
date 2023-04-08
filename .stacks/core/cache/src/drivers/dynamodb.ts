@@ -2,7 +2,7 @@ export {}
 
 // import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 // import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-// import { cache } from '@stacksjs/config'
+// import { cache } from '@stacksjs/config/user'
 
 // const valueAttribute = 'value'
 // const keyAttribute = 'key'

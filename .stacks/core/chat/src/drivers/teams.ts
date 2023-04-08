@@ -2,7 +2,7 @@
 // import { italic } from '@stacksjs/cli'
 // import type { ChatOptions } from '@stacksjs/types'
 // import { ResultAsync } from '@stacksjs/error-handling'
-// import { notification } from '@stacksjs/config'
+// import { notification } from '@stacksjs/config/user'
 
 // const env = notification.chat.msTeams
 

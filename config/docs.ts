@@ -3,27 +3,6 @@ import type { PluginOption } from 'vite'
 import { frameworkPath } from 'stacks/core/path/src'
 import services from './services'
 
-function CustomHmr(): PluginOption {
-  return {
-    name: 'custom-hmr',
-    enforce: 'post',
-    // HMR
-    handleHotUpdate({ file, server }) {
-      // eslint-disable-next-line no-console
-      console.log('file', file)
-      // eslint-disable-next-line no-console
-      console.log('server', server)
-
-      // console.log('reloading json file...')
-
-      server.ws.send({
-        type: 'full-reload',
-        path: '*',
-      })
-    },
-  }
-}
-
 /**
  * **Documentation Options**
  *
@@ -77,6 +56,27 @@ export default <DocsConfig> {
       placement: '',
     },
   },
+}
+
+function CustomHmr(): PluginOption {
+  return {
+    name: 'custom-hmr',
+    enforce: 'post',
+    // HMR
+    handleHotUpdate({ file, server }) {
+      // eslint-disable-next-line no-console
+      console.log('file', file)
+      // eslint-disable-next-line no-console
+      console.log('server', server)
+
+      // console.log('reloading json file...')
+
+      server.ws.send({
+        type: 'full-reload',
+        path: '*',
+      })
+    },
+  }
 }
 
 function nav() {

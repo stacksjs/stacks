@@ -1,4 +1,4 @@
-// import { app } from '@stacksjs/config'
+// import { app } from '@stacksjs/config/user'
 
 export const config = {
   // port: app.port,

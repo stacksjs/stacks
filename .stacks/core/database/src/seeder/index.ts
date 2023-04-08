@@ -2,7 +2,7 @@
 // import { filesystem } from '@stacksjs/storage'
 // import type { Model } from '@stacksjs/types'
 // import { projectPath } from '@stacksjs/path'
-// import { database as config } from '@stacksjs/config'
+// import { database as config } from '@stacksjs/config/user'
 
 // const { fs } = filesystem
 

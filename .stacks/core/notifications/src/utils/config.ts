@@ -1,4 +1,4 @@
-import { notification } from '@stacksjs/config'
+import { notification } from '@stacksjs/config/user'
 
 export default {
   purgeCSS: notification.email.purgeCSS,

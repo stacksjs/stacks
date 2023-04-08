@@ -1,6 +1,6 @@
 import { NetCoreProvider } from '@novu/netcore'
 import type { EmailOptions } from '@stacksjs/types'
-import { notification } from '@stacksjs/config'
+import { notification } from '@stacksjs/config/user'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
