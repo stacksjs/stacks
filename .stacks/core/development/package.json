@@ -32,7 +32,7 @@
   ],
   "peerDependencies": {
     "@stacksjs/testing": "workspace:*",
-    "typescript": "^5.0.3",
+    "typescript": "^5.0.4",
     "unbuild": "^1.2.0"
   },
   "dependencies": {
