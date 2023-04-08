@@ -40,7 +40,7 @@
     "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.37.2",
+    "@ow3/eslint-config": "^0.39.2",
     "@types/eslint": "^8.37.0",
     "eslint": "^8.38.0",
     "lint-staged": "^13.2.1",
