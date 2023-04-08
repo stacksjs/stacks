@@ -38,7 +38,9 @@
     "typecheck": "npx tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/collections": "workspace:*"
+    "@stacksjs/collections": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

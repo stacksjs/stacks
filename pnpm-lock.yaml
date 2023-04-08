@@ -901,6 +901,12 @@ importers:
       '@stacksjs/collections':
         specifier: workspace:*
         version: link:../collections
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../types
+      '@stacksjs/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
