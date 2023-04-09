@@ -47,9 +47,9 @@
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.50.8",
+    "@unocss/transformer-compile-class": "^0.51.2",
     "pinia": "^2.0.34",
-    "unocss": "^0.50.8",
+    "unocss": "^0.51.2",
     "vue": "^3.2.47",
     "vue-tsc": "^1.2.0"
   },
