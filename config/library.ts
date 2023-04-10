@@ -9,6 +9,7 @@ import { defineLibraryConfig } from 'stacks/core/config/src'
  */
 export default defineLibraryConfig({
   name: 'hello-world',
+  packageRegistry: 'npm',
   parentName: '@stacksjs', // hmm... maybe orgName?
   repository: 'stacksjs/stacks',
   license: 'MIT',

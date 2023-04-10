@@ -1,7 +1,5 @@
 import type { UserShortcuts } from 'unocss'
 
-export type { Ref } from 'vue'
-
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicon-outline' | 'heroicon-solid'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'

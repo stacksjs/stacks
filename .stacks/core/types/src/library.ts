@@ -19,6 +19,11 @@ export interface LibraryOptions {
   parentName: string | null
 
   /**
+   * The package registry to use.
+   */
+  packageRegistry: 'npm'
+
+  /**
    * The path of your repository.
    *
    * @example

@@ -111,7 +111,6 @@ declare global {
   const deleteFiles: typeof import('./core/storage/src/index')['deleteFiles']
   const deleteFolder: typeof import('./core/storage/src/index')['deleteFolder']
   const delimiter: typeof import('./core/path/src/index')['delimiter']
-  const deploy: typeof import('../config/deploy')['deploy']
   const describe: typeof import('vitest')['describe']
   const desktopPath: typeof import('./core/path/src/index')['desktopPath']
   const detectIndent: typeof import('./core/utils/src/helpers')['detectIndent']
@@ -754,7 +753,7 @@ declare module 'vue' {
     readonly deleteFiles: UnwrapRef<typeof import('./core/storage/src/index')['deleteFiles']>
     readonly deleteFolder: UnwrapRef<typeof import('./core/storage/src/index')['deleteFolder']>
     readonly delimiter: UnwrapRef<typeof import('./core/path/src/index')['delimiter']>
-    readonly deploy: UnwrapRef<typeof import('../config/deploy')['deploy']>
+    readonly deploy: UnwrapRef<typeof import('../config/cloud')['deploy']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('./core/path/src/index')['desktopPath']>
     readonly detectIndent: UnwrapRef<typeof import('./core/utils/src/helpers')['detectIndent']>
