@@ -40,7 +40,7 @@
     "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
-    "consola": "^2.15.3",
+    "consola": "^3.0.1",
     "node-ray": "^1.19.4",
     "vue-ray": "^1.17.3"
   },
