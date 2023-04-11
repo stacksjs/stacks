@@ -3,6 +3,7 @@ import { bold, dim, green, intro } from '@stacksjs/cli'
 import { filesystem } from '@stacksjs/storage'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
+
 const { fs } = filesystem
 
 async function version(buddy: CLI) {

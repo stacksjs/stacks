@@ -4,15 +4,15 @@ import { email } from './drivers/email'
 import { chat } from './drivers/chat'
 import { sms } from './drivers/sms'
 
-const useChat = (driver = 'slack') => {
+function useChat(driver = 'slack') {
   return chat[driver as keyof typeof chat]
 }
 
-const useEmail = (driver = 'sendgrid') => {
+function useEmail(driver = 'sendgrid') {
   return email[driver as keyof typeof email]
 }
 
-const useSMS = (driver = 'twilio') => {
+function useSMS(driver = 'twilio') {
   return sms[driver as keyof typeof sms]
 }
 

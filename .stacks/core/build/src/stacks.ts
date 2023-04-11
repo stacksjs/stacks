@@ -206,14 +206,16 @@ function uiEngine(isWebComponent = false) {
   })
 }
 
-const componentPreset = (isWebComponent = false) => <PluginOption>[
-  inspect,
-  uiEngine(isWebComponent),
-  cssEngine(isWebComponent),
-  autoImports,
-  components,
-  markdown,
-]
+function componentPreset(isWebComponent = false) {
+  return <PluginOption>[
+    inspect,
+    uiEngine(isWebComponent),
+    cssEngine(isWebComponent),
+    autoImports,
+    components,
+    markdown,
+  ]
+}
 
 // const pagesPreset = (isWebComponent = false) => <PluginOption>[
 //   //

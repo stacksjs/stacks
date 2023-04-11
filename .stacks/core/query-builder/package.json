@@ -3,15 +3,15 @@
   "type": "module",
   "version": "0.51.0",
   "packageManager": "pnpm@8.1.1",
-  "description": "The Stacks Push integration",
+  "description": "The Stacks Query Builder integration",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/push#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/query-builder#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/push"
+    "directory": "./.stacks/core/query-builder"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -38,7 +38,11 @@
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.24.2",
-    "mysql2": "^3.2.0"
+    "mysql2": "^3.2.0",
+    "pg": "^8.10.0"
+  },
+  "dependencies": {
+    "pg-cursor": "^2.9.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

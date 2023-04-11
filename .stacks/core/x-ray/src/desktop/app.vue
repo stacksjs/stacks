@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import type { Log } from './functions/types'
 import request from './functions/http'
+
 const logs: Ref<Log[]> = ref([])
 
 const allLogs: Ref<Log[]> = ref([])

@@ -1,17 +1,19 @@
-export const assert = (condition: boolean, message: string): asserts condition => {
+export function assert(condition: boolean, message: string): asserts condition {
   if (!condition)
     throw new Error(message)
 }
 
-export const toString = (v: any) => Object.prototype.toString.call(v)
+export function toString(v: any) {
+  return Object.prototype.toString.call(v)
+}
 
-export const noop = () => {}
+export function noop() {}
 
-export const loop = (times: number, callback: any) => {
+export function loop(times: number, callback: any) {
   [...Array(times)].forEach((item, i) => callback(i))
 }
 
-export const getTypeName = (v: any) => {
+export function getTypeName(v: any) {
   if (v === null)
     return 'null'
   const type = toString(v).slice(8, -1).toLowerCase()

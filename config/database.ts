@@ -14,5 +14,5 @@ export default defineDatabaseConfig({
   port: 3306,
   database: env('DATABASE_NAME', ''),
   username: env('DATABASE_USERNAME', ''),
-  password: env('DATABASE_PASSWORD', '')
+  password: env('DATABASE_PASSWORD', ''),
 })

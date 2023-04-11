@@ -1,26 +1,24 @@
 {
-  "name": "@stacksjs/objects",
+  "name": "@stacksjs/orm",
   "type": "module",
   "version": "0.51.0",
   "packageManager": "pnpm@8.1.1",
-  "description": "The Stacks objects.",
+  "description": "The Stacks ORM integration",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/objects#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/orm#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/objects"
+    "directory": "./.stacks/core/orm"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "objects",
-    "utilities",
-    "functions",
-    "stacks"
+    "stacks",
+    "kysely"
   ],
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -32,15 +30,14 @@
     "README.md"
   ],
   "scripts": {
-    "build": "npx unbuild",
-    "dev": "npx unbuild --stub",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "npx tsc --noEmit"
   },
-  "dependencies": {
-    "@stacksjs/collections": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+  "peerDependencies": {
+    "@stacksjs/query-builder": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

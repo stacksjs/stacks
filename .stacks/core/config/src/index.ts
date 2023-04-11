@@ -1,4 +1,4 @@
-import type { AppOptions, CacheOptions, CliOptions, CloudOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
+import type { AppOptions, CacheOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
 
 export function env(key: string, fallback: any) {
   // console.log('isClient', isClient)
@@ -34,9 +34,9 @@ export function defineDebugConfig(options: DebugOptions) {
   return options
 }
 
-export function defineCloudConfig(options: CloudOptions) {
-  return options
-}
+// export function defineCloudConfig(options: CloudOptions) {
+//   return options
+// }
 
 export function defineDnsConfig(options: DnsOptions) {
   return options

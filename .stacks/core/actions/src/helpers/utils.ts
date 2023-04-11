@@ -5,7 +5,7 @@ import type { CliOptions, CommandResult } from '@stacksjs/types'
 import type { Err, Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 
-const parseOptions = (options?: CliOptions) => {
+function parseOptions(options?: CliOptions) {
   if (!options)
     return ''
 
