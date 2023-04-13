@@ -40,7 +40,7 @@
   },
   "peerDependencies": {
     "bumpp": "^9.1.0",
-    "changelogen": "^0.5.2",
+    "changelogen": "^0.5.3",
     "commitizen": "^4.3.0",
     "cz-git": "^1.6.1",
     "giget": "^1.1.2",
