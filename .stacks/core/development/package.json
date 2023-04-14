@@ -34,10 +34,10 @@
   "peerDependencies": {
     "@stacksjs/testing": "workspace:*",
     "typescript": "^5.0.4",
-    "unbuild": "^1.2.0"
+    "unbuild": "^1.2.1"
   },
   "dependencies": {
-    "unbuild": "^1.2.0"
+    "unbuild": "^1.2.1"
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.4.2"

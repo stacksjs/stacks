@@ -320,11 +320,11 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
       unbuild:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       unplugin-auto-import:
-        specifier: ^0.15.2
-        version: 0.15.2(rollup@2.79.1)
+        specifier: ^0.15.3
+        version: 0.15.3(rollup@2.79.1)
       unplugin-vue-components:
         specifier: ^0.24.1
         version: 0.24.1(rollup@2.79.1)(vue@3.2.47)
@@ -344,8 +344,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0(vite@4.2.1)(vue-router@4.1.6)(vue@3.2.47)
       vite-plugin-vue-markdown:
-        specifier: ^0.22.4
-        version: 0.22.4(rollup@2.79.1)(vite@4.2.1)
+        specifier: ^0.22.5
+        version: 0.22.5(rollup@2.79.1)(vite@4.2.1)
       vite-ssg:
         specifier: ^0.22.2
         version: 0.22.2(@vueuse/head@1.1.23)(vite@4.2.1)(vue-router@4.1.6)(vue@3.2.47)
@@ -574,8 +574,8 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
       unbuild:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
     devDependencies:
       '@total-typescript/ts-reset':
         specifier: ^0.4.2
@@ -773,8 +773,8 @@ importers:
   .stacks/core/logging:
     dependencies:
       consola:
-        specifier: ^3.0.1
-        version: 3.0.1
+        specifier: ^3.0.2
+        version: 3.0.2
       node-ray:
         specifier: ^1.19.4
         version: 1.19.4
@@ -969,8 +969,8 @@ importers:
         specifier: ^1.52.1
         version: 1.52.1
       stripe:
-        specifier: ^12.0.0
-        version: 12.0.0
+        specifier: ^12.1.1
+        version: 12.1.1
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -1016,8 +1016,8 @@ importers:
         specifier: ^0.24.2
         version: 0.24.2
       mysql2:
-        specifier: ^3.2.0
-        version: 3.2.0
+        specifier: ^3.2.1
+        version: 3.2.1
       pg:
         specifier: ^8.10.0
         version: 8.10.0
@@ -1251,8 +1251,8 @@ importers:
         specifier: ^0.0.29
         version: 0.0.29
       '@types/validator':
-        specifier: ^13.7.14
-        version: 13.7.14
+        specifier: ^13.7.15
+        version: 13.7.15
       change-case:
         specifier: ^4.1.2
         version: 4.1.2
@@ -1320,8 +1320,8 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
       unbuild:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
 
   .stacks/core/types:
     dependencies:
@@ -1395,8 +1395,8 @@ importers:
         specifier: ^0.51.4
         version: 0.51.4(postcss@8.4.21)(rollup@2.79.1)(vite@4.2.1)
       unplugin-auto-import:
-        specifier: ^0.15.2
-        version: 0.15.2(rollup@2.79.1)
+        specifier: ^0.15.3
+        version: 0.15.3(rollup@2.79.1)
       unplugin-vue-components:
         specifier: ^0.24.1
         version: 0.24.1(rollup@2.79.1)(vue@3.2.47)
@@ -5020,26 +5020,10 @@ packages:
     resolution: {integrity: sha512-3gplBFZFg0KFTBZkntSFs/8gyMYKLmJ8b0znanPw6XlojGspc8wvCOGC6z/2+DIkaHzyzDr97AHBCO4YfHTW+g==}
     dev: false
 
-  /@mdit-vue/plugin-component@0.11.2:
-    resolution: {integrity: sha512-ucFiEULCkLcCG1Tf1MfG5u5PS4BIXWIeKGHRGsXxz1ix2GbZWKFVgWEdNEckBu8s75Fv1WJLIOiAYZyri2f1nw==}
-    dependencies:
-      '@types/markdown-it': 12.2.3
-      markdown-it: 13.0.1
-    dev: false
-
   /@mdit-vue/plugin-component@0.12.0:
     resolution: {integrity: sha512-LrwV3f0Y6H7b7m/w1Y3bkGuR3HOiBK4QiHHW3HuRMza6MZodDQbj8Baik5/V5GiSg1/ltijS1CymVcycd1EfTw==}
     dependencies:
       '@types/markdown-it': 12.2.3
-      markdown-it: 13.0.1
-    dev: false
-
-  /@mdit-vue/plugin-frontmatter@0.11.1:
-    resolution: {integrity: sha512-AdZJInjD1pTJXlfhuoBS5ycuIQ3ewBfY0R/XHM3TRDEaDHQJHxouUCpCyijZmpdljTU45lFetIowaKtAi7GBog==}
-    dependencies:
-      '@mdit-vue/types': 0.11.0
-      '@types/markdown-it': 12.2.3
-      gray-matter: 4.0.3
       markdown-it: 13.0.1
     dev: false
 
@@ -5050,10 +5034,6 @@ packages:
       '@types/markdown-it': 12.2.3
       gray-matter: 4.0.3
       markdown-it: 13.0.1
-    dev: false
-
-  /@mdit-vue/types@0.11.0:
-    resolution: {integrity: sha512-ygCGP7vFpqS02hpZwEe1uz8cfImWX06+zRs08J+tCZRKb6k+easIaIHFtY9ZSxt7j9L/gAPLDo/5RmOT6z0DPQ==}
     dev: false
 
   /@mdit-vue/types@0.12.0:
@@ -5509,18 +5489,6 @@ packages:
       '@redis/client': 1.5.6
     dev: false
 
-  /@rollup/plugin-alias@4.0.4(rollup@3.20.2):
-    resolution: {integrity: sha512-0CaAY238SMtYAWEXXptWSR8iz8NYZnH7zNBKuJ14xFJSGwLtPgjvXYsoApAHfzYXXH1ejxpVw7WlHss3zhh9SQ==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      rollup: 3.20.2
-      slash: 4.0.0
-
   /@rollup/plugin-alias@5.0.0(rollup@3.20.2):
     resolution: {integrity: sha512-l9hY5chSCjuFRPsnRm16twWBiSApl2uYFLsepQYwtBuAxNMQ/1dJqADld40P0Jkqm65GRTLy/AC6hnpVebtLsA==}
     engines: {node: '>=14.0.0'}
@@ -5532,7 +5500,6 @@ packages:
     dependencies:
       rollup: 3.20.2
       slash: 4.0.0
-    dev: false
 
   /@rollup/plugin-babel@5.3.1(@babel/core@7.21.4)(rollup@2.79.1):
     resolution: {integrity: sha512-WFfdLWU/xVWKeRQnKmIAQULUI7Il0gZnBIH/ZFO069wYIfPu+8zrfp/KMW0atmELoRDq8FbiP3VCss9MhCut7Q==}
@@ -5553,6 +5520,24 @@ packages:
 
   /@rollup/plugin-commonjs@24.0.1(rollup@3.20.2):
     resolution: {integrity: sha512-15LsiWRZk4eOGqvrJyu3z3DaBu5BhXIMeWnijSRvd8irrrg9SHpQ1pH+BUK4H6Z9wL9yOxZJMTLU+Au86XHxow==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^2.68.0||^3.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
+      commondir: 1.0.1
+      estree-walker: 2.0.2
+      glob: 8.1.0
+      is-reference: 1.2.1
+      magic-string: 0.27.0
+      rollup: 3.20.2
+    dev: false
+
+  /@rollup/plugin-commonjs@24.1.0(rollup@3.20.2):
+    resolution: {integrity: sha512-eSL45hjhCWI0jCCXcNtLVqM5N1JlBGvlFfY0m6oOYnLCJ6N0qEXoZql4sY2MOUArzhH4SA/qBpTxvvZp2Sc+DQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.68.0||^3.0.0
@@ -6166,8 +6151,8 @@ packages:
     resolution: {integrity: sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==}
     dev: false
 
-  /@types/validator@13.7.14:
-    resolution: {integrity: sha512-J6OAed6rhN6zyqL9Of6ZMamhlsOEU/poBVvbHr/dKOYKTeuYYMlDkMv+b6UUV0o2i0tw73cgyv/97WTWaUl0/g==}
+  /@types/validator@13.7.15:
+    resolution: {integrity: sha512-yeinDVQunb03AEP8luErFcyf/7Lf7AzKCD0NXfgVoGCCQDNpZET8Jgq74oBgqKld3hafLbfzt/3inUdQvaFeXQ==}
     dev: false
 
   /@types/web-bluetooth@0.0.16:
@@ -6367,7 +6352,7 @@ packages:
       cac: 6.7.14
       chokidar: 3.5.3
       colorette: 2.0.19
-      consola: 3.0.1
+      consola: 3.0.2
       fast-glob: 3.2.12
       magic-string: 0.30.0
       pathe: 1.1.0
@@ -8021,7 +8006,7 @@ packages:
   /class-validator@0.14.0:
     resolution: {integrity: sha512-ct3ltplN8I9fOwUd8GrP8UQixwff129BkEtuWDKL5W45cQuLd19xqmTLu5ge78YDm/fdje6FMt0hGOhl0lii3A==}
     dependencies:
-      '@types/validator': 13.7.14
+      '@types/validator': 13.7.15
       libphonenumber-js: 1.10.26
       validator: 13.9.0
     dev: false
@@ -8334,12 +8319,12 @@ packages:
     resolution: {integrity: sha512-bTTG28diWg7R7/+qE5NZumwPbCiJOT8uPdZYu674brDjBWQctbaQbYlDKhalS+4i5HxIx+G8dZsnBHKzWpp01A==}
     dev: false
 
-  /consola@2.15.3:
-    resolution: {integrity: sha512-9vAdYbHj6x2fLKC4+oPH0kFzY/orMZyG2Aj+kNylHxKGJ/Ed4dpNyAQYwJOdqO4zdM7XpVHmyejQDcQHrnuXbw==}
-
   /consola@3.0.1:
     resolution: {integrity: sha512-08E7bC2N6gaFdzPU/qtBi4ulVvJitYnfrDdxEiwElC3jSNICbOvkcE+8N56EfIrBoxp37O9Qnn5ZZPElov83UQ==}
     dev: false
+
+  /consola@3.0.2:
+    resolution: {integrity: sha512-o/Wau2FmZKiQgyp3c3IULgN6J5yc0lwYMnoyiZdEpdGxKGBtt2ACbkulBZ6BUsHy1HlSJqoP4YOyPIJLgRJyKQ==}
 
   /console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
@@ -10526,6 +10511,17 @@ packages:
 
   /globby@13.1.3:
     resolution: {integrity: sha512-8krCNHXvlCgHDpegPzleMq07yMYTO2sXKASmZmquEYWEmCx6J5UTRbp5RwMJkTJGtcQ44YpiUYUiN0b9mzy8Bw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      dir-glob: 3.0.1
+      fast-glob: 3.2.12
+      ignore: 5.2.4
+      merge2: 1.4.1
+      slash: 4.0.0
+    dev: false
+
+  /globby@13.1.4:
+    resolution: {integrity: sha512-iui/IiiW+QrJ1X1hKH5qwlMQyv34wJAYwH1vrf8b9kBA4sNiif3gKsMHa+BrdnOpEudWjpotfa7LrTzB1ERS/g==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       dir-glob: 3.0.1
@@ -12916,7 +12912,7 @@ packages:
       defu: 6.1.2
       esbuild: 0.17.16
       fs-extra: 11.1.1
-      globby: 13.1.3
+      globby: 13.1.4
       jiti: 1.18.2
       mlly: 1.2.0
       mri: 1.2.0
@@ -12972,15 +12968,15 @@ packages:
   /mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
-  /mysql2@3.2.0:
-    resolution: {integrity: sha512-0Vn6a9WSrq6fWwvPgrvIwnOCldiEcgbzapVRDAtDZ4cMTxN7pnGqCTx8EG32S/NYXl6AXkdO+9hV1tSIi/LigA==}
+  /mysql2@3.2.1:
+    resolution: {integrity: sha512-o/5GH3/NwgOk6fO+AaVoZfyCAliFWUzTXaPUa80ZPzJFHy9kQyR/D2OSJW9gyB1TFATyY3ZsKY3/srZXMZCKUg==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
       generate-function: 2.3.1
       iconv-lite: 0.6.3
       long: 5.2.1
-      lru-cache: 7.18.3
+      lru-cache: 8.0.5
       named-placeholders: 1.1.3
       seq-queue: 0.0.5
       sqlstring: 2.3.3
@@ -13066,7 +13062,7 @@ packages:
       c12: 1.2.0
       chalk: 5.2.0
       chokidar: 3.5.3
-      consola: 3.0.1
+      consola: 3.0.2
       cookie-es: 0.5.0
       defu: 6.1.2
       destr: 1.2.2
@@ -16196,8 +16192,8 @@ packages:
       acorn: 8.8.2
     dev: false
 
-  /stripe@12.0.0:
-    resolution: {integrity: sha512-9zdcWApF4Yg2WG4GVv1qnvAv+h5KD103gKwbTsTyk5G3lf9h4vN0FXGQ5d5eWKP9itAjt0D5gZtWG7cLPzyLxw==}
+  /stripe@12.1.1:
+    resolution: {integrity: sha512-vn74vXtZeJx18oGzA0AhL818euhLF/juCgkKrJfAS1Y0bp5/EzQKPuc/75qQUvY43nNGIkgOVb3kUBuyoeqEkA==}
     engines: {node: '>=12.*'}
     dependencies:
       '@types/node': 18.15.11
@@ -16849,21 +16845,21 @@ packages:
       which-boxed-primitive: 1.0.2
     dev: false
 
-  /unbuild@1.2.0:
-    resolution: {integrity: sha512-GcolNMBatav7FbRdLDR8BMbnYWMoKfxXdJIHibpBtx3GERN4GbbUD5h4RfGIFi+mjWPz4AphSz5gIg9FWNWw3Q==}
+  /unbuild@1.2.1:
+    resolution: {integrity: sha512-J4efk69Aye43tWcBPCsLK7TIRppGrEN4pAlDzRKo3HSE6MgTSTBxSEuE3ccx7ixc62JvGQ/CoFXYqqF2AHozow==}
     hasBin: true
     dependencies:
-      '@rollup/plugin-alias': 4.0.4(rollup@3.20.2)
-      '@rollup/plugin-commonjs': 24.0.1(rollup@3.20.2)
+      '@rollup/plugin-alias': 5.0.0(rollup@3.20.2)
+      '@rollup/plugin-commonjs': 24.1.0(rollup@3.20.2)
       '@rollup/plugin-json': 6.0.0(rollup@3.20.2)
       '@rollup/plugin-node-resolve': 15.0.2(rollup@3.20.2)
       '@rollup/plugin-replace': 5.0.2(rollup@3.20.2)
       '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
       chalk: 5.2.0
-      consola: 2.15.3
+      consola: 3.0.2
       defu: 6.1.2
       esbuild: 0.17.16
-      globby: 13.1.3
+      globby: 13.1.4
       hookable: 5.5.3
       jiti: 1.18.2
       magic-string: 0.30.0
@@ -17047,8 +17043,8 @@ packages:
     engines: {node: '>= 0.8'}
     dev: false
 
-  /unplugin-auto-import@0.15.2(rollup@2.79.1):
-    resolution: {integrity: sha512-Wivfu+xccgvEZG8QtZcIvt6napfX9wyOFqM//7FHOtev8+k+dp3ykiqsEl6TODgHmqTTBeQX4Ah1JvRgUNjlkg==}
+  /unplugin-auto-import@0.15.3(rollup@2.79.1):
+    resolution: {integrity: sha512-RLT8SqbPn4bT7yBshZId0uPSofKWnwr66RyDaxWaFb/+f7OTDOWAsVNz+hOQLBWSjvbekr2xZY9ccS8TDHJbCQ==}
     engines: {node: '>=14'}
     peerDependencies:
       '@nuxt/kit': ^3.2.2
@@ -17063,7 +17059,7 @@ packages:
       '@rollup/pluginutils': 5.0.2(rollup@2.79.1)
       local-pkg: 0.4.3
       magic-string: 0.30.0
-      minimatch: 7.4.6
+      minimatch: 9.0.0
       unimport: 3.0.6(rollup@2.79.1)
       unplugin: 1.3.1
     transitivePeerDependencies:
@@ -17429,15 +17425,15 @@ packages:
       - supports-color
     dev: false
 
-  /vite-plugin-vue-markdown@0.22.4(rollup@2.79.1)(vite@4.2.1):
-    resolution: {integrity: sha512-+kDzqGI5Lq0Wa6M4EJtV7cqOIHgGp6g4jcazXljQKLl9Og4fRs6FuGAPa2HiJ44Z9es85LAPiPbTjwrZEGEUKA==}
+  /vite-plugin-vue-markdown@0.22.5(rollup@2.79.1)(vite@4.2.1):
+    resolution: {integrity: sha512-VH0SbESc6ij+iC9AQ9BG40yayHmYwoVyJ4ZjcWQzg0O3hdxW4yYt7c7JmRkKHCkECb8Dsp02VsAUV4YLy29hhg==}
     peerDependencies:
       vite: ^2.0.0 || ^3.0.0-0 || ^4.0.0
     dependencies:
       '@antfu/utils': 0.7.2
-      '@mdit-vue/plugin-component': 0.11.2
-      '@mdit-vue/plugin-frontmatter': 0.11.1
-      '@mdit-vue/types': 0.11.0
+      '@mdit-vue/plugin-component': 0.12.0
+      '@mdit-vue/plugin-frontmatter': 0.12.0
+      '@mdit-vue/types': 0.12.0
       '@rollup/pluginutils': 5.0.2(rollup@2.79.1)
       '@types/markdown-it': 12.2.3
       markdown-it: 13.0.1
