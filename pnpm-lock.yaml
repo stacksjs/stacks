@@ -1492,8 +1492,8 @@ importers:
         specifier: ^1.1.23
         version: 1.1.23(vue@3.2.47)
       '@vueuse/math':
-        specifier: ^9.13.0
-        version: 9.13.0(vue@3.2.47)
+        specifier: ^10.0.2
+        version: 10.0.2(vue@3.2.47)
       '@vueuse/shared':
         specifier: ^10.0.2
         version: 10.0.2(vue@3.2.47)
@@ -6835,11 +6835,11 @@ packages:
       vue: 3.2.47
     dev: false
 
-  /@vueuse/math@9.13.0(vue@3.2.47):
-    resolution: {integrity: sha512-FE2n8J1AfBb4dNvNyE6wS+l87XDcC/y3/037AmrwonsGD5QwJJl6rGr57idszs3PXTuEYcEkDysHLxstSxbQEg==}
+  /@vueuse/math@10.0.2(vue@3.2.47):
+    resolution: {integrity: sha512-5Cuzzfri9Jlpgl8uM1v5ps71840G9TK/jkdOWcmlpm2ivud5AOBvArUylaH9HhEsl35DbL0FHd1tlnE6sLa0nw==}
     dependencies:
-      '@vueuse/shared': 9.13.0(vue@3.2.47)
-      vue-demi: 0.13.11(vue@3.2.47)
+      '@vueuse/shared': 10.0.2(vue@3.2.47)
+      vue-demi: 0.14.0(vue@3.2.47)
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
