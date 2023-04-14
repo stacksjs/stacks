@@ -1495,8 +1495,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0(vue@3.2.47)
       '@vueuse/shared':
-        specifier: ^9.13.0
-        version: 9.13.0(vue@3.2.47)
+        specifier: ^10.0.2
+        version: 10.0.2(vue@3.2.47)
       defu:
         specifier: ^6.1.2
         version: 6.1.2
@@ -6865,7 +6865,7 @@ packages:
   /@vueuse/shared@9.13.0(vue@3.2.47):
     resolution: {integrity: sha512-UrnhU+Cnufu4S6JLCPZnkWh0WwZGUp72ktOF2DFptMlOs3TOdVv8xJN53zhHGARmVOsz5KqOls09+J1NR6sBKw==}
     dependencies:
-      vue-demi: 0.13.11(vue@3.2.47)
+      vue-demi: 0.14.0(vue@3.2.47)
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
