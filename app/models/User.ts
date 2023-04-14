@@ -28,4 +28,69 @@ export default <Model> {
       factory: () => faker.internet.password(),
     },
   },
+  // dashboard: {
+  //   cards: [
+  //     {
+  //       title: 'Users',
+  //       icon: 'heroicon-o-user',
+  //       color: 'primary',
+  //       value: 'users',
+  //       query: {
+  //         model: 'User',
+  //         count: true,
+
+  // or
+
+  // model: 'User',
+  // count: true,
+  // where: {
+  //   id: 1,
+  // },
+
+  // or
+
+  // model: 'User',
+  // count: true,
+  // where: {
+  //   id: {
+  //     $gt: 1,
+  //   },
+  // },
+
+  // or
+
+  // model: 'User',
+  // count: true,
+  // where: {
+  //   id: {
+  //     $in: [1, 2, 3],
+  //   },
+  // },
+
+  // or
+
+  // model: 'User',
+  // count: true,
+  // where: {
+  //   id: {
+  //     $notIn: [1, 2, 3],
+  //   },
+  // },
+
+  // or
+
+  // model: 'User',
+  // count: true,
+  // where: {
+  //   id: {
+  //     // $notIn: [1, 2, 3],
+  //     $not: {
+  //       $in: [1, 2, 3],
+  //     },
+  //   },
+  // },
+  //       }
+  //     }
+  //   ]
+  // }
 }
