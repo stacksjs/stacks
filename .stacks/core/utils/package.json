@@ -50,7 +50,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^9.13.0",
+    "@vueuse/core": "^10.0.2",
     "@vueuse/head": "^1.1.23",
     "@vueuse/math": "^9.13.0",
     "@vueuse/shared": "^9.13.0",
