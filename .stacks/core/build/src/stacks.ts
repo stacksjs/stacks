@@ -84,7 +84,7 @@ function autoImports(options?: AutoImportsOptions) {
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
-      { '@vueuse/shared': ['isClient', 'isDef', 'isBoolean', 'isFunction', 'isNumber', 'isString', 'isObject', 'isWindow', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+      { '@vueuse/shared': ['isClient', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
     ],
     dirs: [
       p.functionsPath(),
