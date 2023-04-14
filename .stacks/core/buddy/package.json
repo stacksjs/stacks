@@ -70,6 +70,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*",
+    "@stacksjs/desktop": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/domains": "workspace:*",
     "@stacksjs/email": "workspace:*",

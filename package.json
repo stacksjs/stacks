@@ -109,8 +109,5 @@
     "commitizen": {
       "path": ".stacks/node_modules/cz-git"
     }
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^1.2.3"
   }
 }
