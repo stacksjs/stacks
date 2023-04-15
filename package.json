@@ -99,7 +99,6 @@
     "stx": "pnpm buddy"
   },
   "dependencies": {
-    "pg": "^8.10.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {

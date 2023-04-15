@@ -4,9 +4,6 @@ importers:
 
   .:
     dependencies:
-      pg:
-        specifier: ^8.10.0
-        version: 8.10.0
       stacks:
         specifier: workspace:*
         version: link:.stacks

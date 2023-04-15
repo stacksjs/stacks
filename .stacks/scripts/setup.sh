@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# This is a slighly adjusted Tea setup script, specific for Stacks usage
-# Many thanks to Tea.xyz!
+# This is a slighly adjusted Tea.xyz setup script,
+# specific for Stacks usage—many thanks to Tea!
 
 set -e
 set -o noglob
@@ -256,7 +256,7 @@ welcome() {
 		# hi 👋 let’s set up stacks
 
 		* stacks uses tea to manage your environments
-		* everything stacks installs goes here: \`$TEA_DESTDIR\`
+		* everything stacks installs goes: \`$TEA_DESTDIR\`
 		* (it won’t touch anything else)
 
 		> docs https://github.com/stacksjs/stacks
@@ -455,7 +455,7 @@ check_shell_magic() {
   echo #spacer
 
   gum_func format --theme="dracula" -- <<-EoMD
-		Added:
+		Added one-liner to \`$__TEA_SH_FILE\`:
 
 		\`$__TEA_ONE_LINER\`
 	EoMD
