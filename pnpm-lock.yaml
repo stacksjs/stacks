@@ -329,8 +329,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.11)
       vite-plugin-inspect:
-        specifier: ^0.7.21
-        version: 0.7.21(rollup@2.79.1)(vite@4.2.1)
+        specifier: ^0.7.22
+        version: 0.7.22(rollup@2.79.1)(vite@4.2.1)
       vite-plugin-pages:
         specifier: ^0.29.0
         version: 0.29.0(vite@4.2.1)
@@ -581,8 +581,8 @@ importers:
   .stacks/core/docs:
     dependencies:
       vitepress:
-        specifier: 1.0.0-alpha.65
-        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: 1.0.0-alpha.69
+        version: 1.0.0-alpha.69(@algolia/client-search@4.17.0)(@types/node@18.15.11)
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -1401,8 +1401,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(@types/node@18.15.11)
       vite-plugin-inspect:
-        specifier: ^0.7.21
-        version: 0.7.21(rollup@2.79.1)(vite@4.2.1)
+        specifier: ^0.7.22
+        version: 0.7.22(rollup@2.79.1)(vite@4.2.1)
       vite-plugin-pwa:
         specifier: ^0.14.7
         version: 0.14.7(vite@4.2.1)(workbox-build@6.5.4)(workbox-window@6.5.4)
@@ -1413,8 +1413,8 @@ importers:
         specifier: ^0.22.2
         version: 0.22.2(@vueuse/head@1.1.23)(vite@4.2.1)(vue-router@4.1.6)(vue@3.2.47)
       vitepress:
-        specifier: 1.0.0-alpha.65
-        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: 1.0.0-alpha.69
+        version: 1.0.0-alpha.69(@algolia/client-search@4.17.0)(@types/node@18.15.11)
       vue:
         specifier: ^3.2.47
         version: 3.2.47
@@ -1582,8 +1582,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       vitepress:
-        specifier: ^1.0.0-alpha.65
-        version: 1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11)
+        specifier: ^1.0.0-alpha.69
+        version: 1.0.0-alpha.69(@algolia/client-search@4.17.0)(@types/node@18.15.11)
 
   .stacks/fonts/hubot-sans: {}
 
@@ -6793,18 +6793,6 @@ packages:
       - vue
     dev: false
 
-  /@vueuse/core@9.13.0(vue@3.2.47):
-    resolution: {integrity: sha512-pujnclbeHWxxPRqXWmdkKV5OX4Wk4YeK7wusHqRwU0Q7EFusHoqNA/aPhB6KCh9hEqJkLAJo7bb0Lh9b+OIVzw==}
-    dependencies:
-      '@types/web-bluetooth': 0.0.16
-      '@vueuse/metadata': 9.13.0
-      '@vueuse/shared': 9.13.0(vue@3.2.47)
-      vue-demi: 0.14.0(vue@3.2.47)
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
-
   /@vueuse/head@1.1.23(vue@3.2.47):
     resolution: {integrity: sha512-bJiiQXrICvCI740jR2CLK+FhXyvMx2dIfyeF3FdOsYJn6OtexdBI2wchyuKNYmiAQ8cibAHxmDUytAFqIdIRJg==}
     peerDependencies:
@@ -6831,21 +6819,8 @@ packages:
     resolution: {integrity: sha512-APSjlABrV+Q74c+FR0kFETvcN9W2pAaT3XF3WwqWUuk4srmVxv7DY4WshZxK2KYk1+MVY0Fus6J1Hk/JXVm6Aw==}
     dev: false
 
-  /@vueuse/metadata@9.13.0:
-    resolution: {integrity: sha512-gdU7TKNAUVlXXLbaF+ZCfte8BjRJQWPCa2J55+7/h+yDtzw3vOoGQDRXzI6pyKyo6bXFT5/QoPE4hAknExjRLQ==}
-    dev: false
-
   /@vueuse/shared@10.0.2(vue@3.2.47):
     resolution: {integrity: sha512-7W2l6qZaFvla3zAeEVo8hNHkNRKCezJa3JjZAKv3K4KsevXobHhVNr+RHaOVNK/6ETpFmtqiK+0pMIADbHjjag==}
-    dependencies:
-      vue-demi: 0.14.0(vue@3.2.47)
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    dev: false
-
-  /@vueuse/shared@9.13.0(vue@3.2.47):
-    resolution: {integrity: sha512-UrnhU+Cnufu4S6JLCPZnkWh0WwZGUp72ktOF2DFptMlOs3TOdVv8xJN53zhHGARmVOsz5KqOls09+J1NR6sBKw==}
     dependencies:
       vue-demi: 0.14.0(vue@3.2.47)
     transitivePeerDependencies:
@@ -12858,6 +12833,10 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /minisearch@6.0.1:
+    resolution: {integrity: sha512-Ly1w0nHKnlhAAh6/BF/+9NgzXfoJxaJ8nhopFhQ3NcvFJrFIL+iCg9gw9e9UMBD+XIsp/RyznJ/o5UIe5Kw+kg==}
+    dev: false
+
   /minizlib@2.1.2:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
     engines: {node: '>= 8'}
@@ -17345,8 +17324,8 @@ packages:
       - terser
     dev: false
 
-  /vite-plugin-inspect@0.7.21(rollup@2.79.1)(vite@4.2.1):
-    resolution: {integrity: sha512-zIyTGkoj76EnDV/Hj20cYjRCtOvzab6EX2tcKy4QWe/qrW/Apxuqc2nZgv4BkTg/bXyL1/1cozlxzx7GfAh9yw==}
+  /vite-plugin-inspect@0.7.22(rollup@2.79.1)(vite@4.2.1):
+    resolution: {integrity: sha512-Z4y3MPuvn//0/XcpNLwTBqjfSt+c2utIFZu8Dw+nbR2HrPoIrKHedvSuqC8mLzxOpRKRoW60HWvZUDz8J2zRIA==}
     engines: {node: '>=14'}
     peerDependencies:
       vite: ^3.1.0 || ^4.0.0
@@ -17512,16 +17491,17 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress@1.0.0-alpha.65(@algolia/client-search@4.17.0)(@types/node@18.15.11):
-    resolution: {integrity: sha512-iGWC0AQC6WrfRZTJf5+TiGG4o8PLhqIJNyai8NVxZCY9YpmMJhddvQeqqjJdQniF/LQK/hQ5nQZ9HgSZDGRPGQ==}
+  /vitepress@1.0.0-alpha.69(@algolia/client-search@4.17.0)(@types/node@18.15.11):
+    resolution: {integrity: sha512-d7Vz+S/1i/7szVUSOHJf12APtoGlHXIJXzDvXLChhlE000TVzWoYX6rUAchjJzfxdFjng3Eo96ZkPs7OJxDjMg==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.3
       '@docsearch/js': 3.3.3(@algolia/client-search@4.17.0)
       '@vitejs/plugin-vue': 4.1.0(vite@4.2.1)(vue@3.2.47)
       '@vue/devtools-api': 6.5.0
-      '@vueuse/core': 9.13.0(vue@3.2.47)
+      '@vueuse/core': 10.0.2(vue@3.2.47)
       body-scroll-lock: 4.0.0-beta.0
+      minisearch: 6.0.1
       shiki: 0.14.1
       vite: 4.2.1(@types/node@18.15.11)
       vue: 3.2.47
