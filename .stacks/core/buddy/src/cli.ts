@@ -23,18 +23,21 @@ async function main() {
   // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
     if (env('APP_ENV') !== 'production') {
-      log.info('Project not initialized, generating application key...')
-      const result = await runAction(Action.KeyGenerate, { cwd: projectPath(), verbose: true })
-      if (result.isErr()) {
-        log.error(result.error)
-        process.exit()
-      }
-      log.info('Application key generated.')
+      log.info('Project not yet initialized, generating application key...')
     }
     else {
       log.error('Please run `buddy key:generate` to generate an application key.')
       process.exit()
     }
+
+    const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
+
+    if (result.isErr()) {
+      log.error(result.error)
+      process.exit()
+    }
+
+    log.info('Application key generated.')
 
     await create(cli)
   }

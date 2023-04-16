@@ -93,7 +93,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
-- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
+- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you [Sarah Drasner](https://github.com/sdras/vue-vscode-snippets)_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
