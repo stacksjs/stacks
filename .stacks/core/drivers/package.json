@@ -2,7 +2,7 @@
   "name": "@stacksjs/drivers",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.2.0",
+  "packageManager": "pnpm@8.3.1",
   "description": "Easily create a driver-based system.",
   "author": "Chris Breuer",
   "license": "MIT",
