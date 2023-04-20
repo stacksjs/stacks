@@ -31,7 +31,7 @@ async function build(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompts.multiselect({
+        const answers: string[] = await prompts.multiselect({
           type: 'multiselect',
           name: 'update',
           message: 'What are you trying to build?',

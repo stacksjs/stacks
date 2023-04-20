@@ -5,7 +5,7 @@ import { env, frameworkVersion, isProjectCreated, parseYaml, semver } from '@sta
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 import { filesystem } from '@stacksjs/storage'
-import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, update, version } from './commands'
+import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
 const cli = command('stacks')
 const { fs } = filesystem
@@ -44,7 +44,7 @@ async function main() {
 
   await preinstall(cli)
   await prepublish(cli)
-  await update(cli)
+  await upgrade(cli)
   await generate(cli)
   await dev(cli)
   await build(cli)

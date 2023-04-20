@@ -22,7 +22,7 @@ async function add(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompts.multiselect({
+        const answers: string[] = await prompts.multiselect({
           type: 'multiselect',
           name: 'add',
           message: 'Which stack/s are you trying to add?',

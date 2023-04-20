@@ -2,40 +2,19 @@ import { intro, log, outro, prompts, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
 import { determineDebugMode, loop } from '@stacksjs/utils'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import type { UpdateOptions } from '@stacksjs/types'
+import type { UpgradeOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
-
-export async function invoke(options?: UpdateOptions) {
-  if (options?.framework || options?.all)
-    await updateFramework(options)
-
-  if (options?.dependencies || options?.all)
-    await updateDependencies(options)
-
-  if (options?.packageManager || options?.all)
-    await updatePackageManager(options)
-
-  if (options?.node || options?.all)
-    await updateNode(options)
-
-  else
-    process.exit(ExitCode.InvalidArgument)
-
-  // TODO: also update CI files & configurations, and other files, possibly
-  // we want this to be smart enough to update only if files that have been updated
-  // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
-}
 
 /**
  * An alias of the invoke method.
  * @param options
  * @returns
  */
-export async function update(options: UpdateOptions) {
+export async function update(options: UpgradeOptions) {
   return await invoke(options)
 }
 
-export async function checkForUncommittedChanges(path = './.stacks', options: UpdateOptions) {
+export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
   try {
     const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
 
@@ -67,7 +46,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
   }
 }
 
-export async function updateFramework(options: UpdateOptions) {
+export async function updateFramework(options: UpgradeOptions) {
   const perf = await intro('buddy update:framework')
 
   await checkForUncommittedChanges('./.stacks', options)
@@ -94,7 +73,7 @@ export async function updateFramework(options: UpdateOptions) {
   process.exit()
 }
 
-export async function downloadFrameworkUpdate(options: UpdateOptions) {
+export async function downloadFrameworkUpdate(options: UpgradeOptions) {
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
 
@@ -107,7 +86,7 @@ export async function downloadFrameworkUpdate(options: UpdateOptions) {
   log.success('Your framework updated correctly to version: ', version)
 }
 
-export async function updateDependencies(options: UpdateOptions) {
+export async function updateDependencies(options: UpgradeOptions) {
   const perf = await intro('buddy update:dependencies')
   const result = await runCommand(NpmScript.UpdateDependencies, options)
 
@@ -120,7 +99,7 @@ export async function updateDependencies(options: UpdateOptions) {
   process.exit()
 }
 
-export async function updatePackageManager(options: UpdateOptions) {
+export async function updatePackageManager(options: UpgradeOptions) {
   const perf = await intro('buddy update:package-manager')
   const version = options?.version || 'latest'
   const result = await runCommand(`corepack prepare pnpm@${version} --activate`, options)
@@ -134,7 +113,7 @@ export async function updatePackageManager(options: UpdateOptions) {
   process.exit()
 }
 
-export async function updateNode(options: UpdateOptions) {
+export async function updateNode(options: UpgradeOptions) {
   const perf = await intro('buddy update:node')
   const result = await runCommand(NpmScript.UpdateNode, options)
 

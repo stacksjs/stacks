@@ -109,15 +109,12 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-sh <(curl stacksjs.dev)
+sh <(curl stacksjs.dev) # runs giget stacks & ./setup.sh
 
-# alternatively, if Node.js >= v18.12 is installed already,
+# alternatively, if Node.js >= v18.16 is installed already,
 # you may also get started via:
 npx stacks new my-project
 ```
-
-> **Note**
-> pnpm 8 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
@@ -129,7 +126,7 @@ buddy dev # starts one of the dev servers (components, functions, pages, or docs
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
-buddy upgrade # auto-update deps & the Stacks framework
+buddy upgrade # auto-update all deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function

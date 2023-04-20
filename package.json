@@ -22,6 +22,7 @@
   "scripts": {
     "buddy": "esno .stacks/core/buddy/src/cli.ts",
     "stacks": "pnpm buddy",
+    "setup": "./.stacks/scripts/setup.sh",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
     "update": "pnpm buddy update",

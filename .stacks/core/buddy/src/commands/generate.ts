@@ -30,7 +30,7 @@ async function generate(buddy: CLI) {
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: GeneratorOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompts.multiselect({
+        const answers: string[] = await prompts.multiselect({
           type: 'multiselect',
           name: 'generate',
           message: 'What are you trying to generate?',

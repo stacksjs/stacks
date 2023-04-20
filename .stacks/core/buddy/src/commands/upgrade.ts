@@ -1,24 +1,24 @@
-import type { CLI, UpdateOptions } from '@stacksjs/types'
+import { Action, CLI, UpgradeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompts } from '@stacksjs/cli'
-import { invoke as updateStacks } from '@stacksjs/actions/update'
+import { runAction } from '@stacksjs/actions'
 
-async function update(buddy: CLI) {
+async function upgrade(buddy: CLI) {
   const descriptions = {
-    command: 'Update dependencies, framework, package manager, and/or Node',
-    framework: 'Update the Stacks framework',
-    dependencies: 'Update your dependencies',
-    packageManager: 'Update your package manager, i.e. pnpm',
-    node: 'Update Node to the version defined in ./node-version',
-    all: 'Update Node, package manager, project dependencies, and framework',
+    command: 'Upgrade dependencies, framework, package manager, and/or Node',
+    framework: 'Upgrade the Stacks framework',
+    dependencies: 'Upgrade your dependencies',
+    packageManager: 'Upgrade your package manager, i.e. pnpm',
+    node: 'Upgrade Node to the version defined in ./node-version',
+    all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
-    select: 'What are you trying to update?',
+    select: 'What are you trying to upgrade?',
     verbose: 'Enable verbose output',
     debug: 'Enable debug mode',
   }
 
   buddy
-    .command('update', descriptions.command)
+    .command('upgrade', descriptions.command)
     .option('-c, --framework', descriptions.framework, { default: false })
     .option('-d, --dependencies', descriptions.dependencies, { default: false })
     .option('-p, --package-manager', descriptions.packageManager, { default: false })
@@ -28,9 +28,9 @@ async function update(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .example('buddy update -a --verbose')
-    .action(async (options: UpdateOptions) => {
+    .action(async (options: UpgradeOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompts.multiselect({
+        const answers: string[] = await prompts.multiselect({
           type: 'multiselect',
           name: 'update',
           message: descriptions.select,
@@ -42,74 +42,83 @@ async function update(buddy: CLI) {
           ],
         })
 
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        if (answers.includes('dependencies'))
+          options.dependencies = true
+
+        if (answers.includes('framework'))
+          options.framework = true
+
+        if (answers.includes('node'))
+          options.node = true
+
+        if (answers.includes('package-manager'))
+          options.packageManager = true
       }
 
-      await updateStacks(options)
+      await runAction(Action.Upgrade, options)
     })
 
   buddy
-    .command('update:framework', descriptions.framework)
+    .command('upgrade:framework', descriptions.framework)
     .option('-f, --framework', descriptions.framework, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .example('buddy update:framework --verbose')
-    .action(async (options: UpdateOptions) => {
-      await updateStacks(options)
+    .example('buddy upgrade:framework --verbose')
+    .action(async (options: UpgradeOptions) => {
+      await runAction(Action.Upgrade, options)
     })
 
   buddy
-    .command('update:dependencies', descriptions.dependencies)
+    .command('upgrade:dependencies', descriptions.dependencies)
     .option('-d, --dependencies', descriptions.dependencies, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .alias('update:deps')
-    .example('buddy update:dependencies --verbose')
-    .action(async (options: UpdateOptions) => {
-      await updateStacks(options)
+    .alias('upgrade:deps')
+    .example('buddy upgrade:dependencies --verbose')
+    .action(async (options: UpgradeOptions) => {
+      await runAction(Action.Upgrade, options)
     })
 
   buddy
-    .command('update:package-manager', descriptions.packageManager)
+    .command('upgrade:package-manager', descriptions.packageManager)
     .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .alias('update:pm')
-    .example('buddy update:package-manager 7.16.1 --verbose')
-    .example('buddy update:package-manager latest')
-    .action(async (options: UpdateOptions) => {
+    .alias('upgrade:pm')
+    .example('buddy upgrade:package-manager 7.16.1 --verbose')
+    .example('buddy upgrade:package-manager latest')
+    .action(async (options: UpgradeOptions) => {
       options.version = 'latest'
 
       if (buddy.args[0])
         options.version = buddy.args[0]
 
-      await updateStacks(options)
+      await runAction(Action.Upgrade, options)
 
       process.exit(ExitCode.Success)
     })
 
   buddy
-    .command('update:node', descriptions.node)
+    .command('upgrade:node', descriptions.node)
     .option('-n, --node', descriptions.node, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .action(async (options: UpdateOptions) => {
-      await updateStacks(options)
+    .action(async (options: UpgradeOptions) => {
+      await runAction(Action.Upgrade, options)
     })
 
   buddy
-    .command('update:all', descriptions.all)
+    .command('upgrade:all', descriptions.all)
     .option('-a, --all', descriptions.all, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .action(async (options: UpdateOptions) => {
-      await updateStacks(options)
+    .action(async (options: UpgradeOptions) => {
+      await runAction(Action.Upgrade, options)
     })
 }
 
-function hasNoOptions(options: UpdateOptions) {
+function hasNoOptions(options: UpgradeOptions) {
   return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
 }
 
-export { update }
+export { upgrade }

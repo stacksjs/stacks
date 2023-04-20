@@ -1,6 +1,6 @@
 export * from './commands'
 export * from '@stacksjs/alias'
-export * from '@stacksjs/ai'
+// export * from '@stacksjs/ai'
 export * from '@stacksjs/arrays'
 export * from '@stacksjs/build'
 export * from '@stacksjs/cli'

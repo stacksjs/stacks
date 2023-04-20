@@ -156,7 +156,7 @@ export type MakeOptions = {
 
 export type UpdateString = 'version'
 export type UpdateBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
-export type UpdateOptions = {
+export type UpgradeOptions = {
   [key in UpdateString]: string;
 } & {
   [key in UpdateBoolean]: boolean;
@@ -265,13 +265,14 @@ export const enum Action {
   LintFix = 'lint/fix', // wip
   Prepublish = 'prepublish', // wip
   Release = 'release', // wip
+  ShowFeatureTestReport = 'show-feature-test-report', // wip
   Test = 'test', // wip
   TestUi = 'test-ui', // wip
   TestUnit = 'test-unit', // wip
   TestFeature = 'test-feature', // wip
   TestCoverage = 'test-coverage', // wip
   Typecheck = 'typecheck', // wip
-  ShowFeatureTestReport = 'show-feature-test-report', // wip
+  Upgrade = 'upgrade/index', // wip
 }
 
 export type { CAC as CLI } from 'cac'

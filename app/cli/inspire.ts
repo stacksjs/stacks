@@ -1,26 +1,28 @@
 // triggered via `stx inspire`
+import type { CLI } from 'stacks/core/types/src'
+import { Action, ExitCode } from 'stacks/core/types/src'
+import { runAction } from 'stacks/core/actions/src'
+import { intro, outro, defineCommand } from 'stacks/core/cli/src'
 
-import type { CLI } from '@stacksjs/types'
-import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
-import { Action, ExitCode } from '@stacksjs/types'
+export default defineCommand({
+  name: 'inspire',
+  description: 'Inspire yourself with a random quote',
+  options: [ // or ['--two', 'Show two quotes', { default: false }]
+    {
+      name: '--two',
+      description: 'Show two quotes',
+      default: false
+    }
+  ],
+  action: async () => {
+    const perf = await intro('buddy inspire')
 
-async function inspire(buddy: CLI) {
-  buddy
-    .command('inspire', 'Inspire yourself with a random quote')
-    .option('--two', 'Show two quotes', { default: false })
-    .action(async () => {
-      const perf = await intro('buddy inspire')
-      const result = await runAction(Action.Inspire)
+    if (result.isErr()) {
+      outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      process.exit()
+    }
 
-      if (result.isErr()) {
-        outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
-
-      outro('Your quote is: ...', { startTime: perf, useSeconds: true })
-      process.exit(ExitCode.Success)
-    })
-}
-
-export { inspire }
+    outro('Your quote is: ...', { startTime: perf, useSeconds: true })
+    process.exit(ExitCode.Success)
+  }
+})
