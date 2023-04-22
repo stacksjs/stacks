@@ -31,7 +31,6 @@ export interface AAAARecord {
 
 export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecord
 
-export interface DnsOptions {
   /**
    * **DNS Options**
    *
@@ -39,9 +38,9 @@ export interface DnsOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    *
-   * @default {}
    * @see https://stacksjs.dev/docs/dns
    */
+export interface DnsOptions {
   a?: ARecord[]
   aaaa?: AAAARecord[]
   cname?: CNameRecord[]
