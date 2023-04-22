@@ -144,17 +144,18 @@ buddy --help # view help menu
 # please note: you may suffix any command with the
 # `command --help` flag to review the help menu
 
-buddy install # installs your dependencies
+buddy install # installs dependencies
+buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
-buddy clean # removes all your deps
+buddy clean # removes all deps
 
-buddy update # auto-update deps & the Stacks framework
-buddy update:dependencies # auto-update deps & the Stacks framework
-buddy update:framework # auto-update deps & the Stacks framework
-buddy update:package-manager # auto-update deps & the Stacks framework
-buddy update:search-engine # auto-updates Meilisearch
-buddy update:node # update to latest project-defined node version
-buddy update:all # update Node, package manager, framework, dependencies
+buddy upgrade # auto-upgrade deps, framework, node.js, and/or pnpm
+buddy upgrade:dependencies # auto-upgrade deps & the Stacks framework
+buddy upgrade:framework # auto-upgrade deps & the Stacks framework
+buddy upgrade:package-manager # auto-upgrade deps & the Stacks framework
+buddy upgrade:search-engine # auto-upgrades Meilisearch
+buddy upgrade:node # upgrade to latest project-defined node version
+buddy upgrade:all # upgrade Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
@@ -170,6 +171,7 @@ buddy development # `buddy dev` alias
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve
 buddy serve:components
+buddy serve:desktop
 buddy serve:pages
 buddy serve:functions
 buddy serve:docs
@@ -177,19 +179,23 @@ buddy serve:docs
 # building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
 buddy build # select a specific build (follow CLI prompts)
 buddy build:components # build Vue component library & Web Component library
-buddy build:vue-components # build Vue 2 & 3-ready Component library
-buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-buddy build:functions # build function library
+buddy build:desktop # build Desktop application
+buddy build:library # build any or all libraries
 buddy build:pages # build SSG pages
+buddy build:functions # build function library
+buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
+buddy build:vue-components # build Vue 2 & 3-ready Component library
 buddy build:all # build all your code
 
 # `buddy build` aliases
 buddy prod
 buddy prod:components
+buddy prod:desktop
+buddy prod:library
+buddy prod:pages
+buddy prod:functions
 buddy prod:vue-components
 buddy prod:web-components
-buddy prod:functions
-buddy prod:pages
 buddy prod:all
 buddy production # `buddy prod` alias
 
@@ -203,7 +209,7 @@ buddy make:page hello-world
 buddy make:lang de
 buddy make:notification welcome-email
 buddy make:database cars
-buddy make:table brands
+buddy make:table cars
 buddy make:migration create_cars_table
 buddy make:factory cars
 buddy make:seed cars
@@ -255,12 +261,6 @@ stx fresh
 buddy fresh
 bud fresh
 buddy fresh
-pnpm stx fresh
-pnpm buddy fresh
-pnpm buddy fresh
-pnpm fresh
-pnpm run fresh
-pnpm run buddy fresh
 ```
 
 </details>
