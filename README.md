@@ -149,23 +149,23 @@ buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 
-buddy upgrade # auto-upgrade deps, framework, node.js, and/or pnpm
-buddy upgrade:dependencies # auto-upgrade deps & the Stacks framework
-buddy upgrade:framework # auto-upgrade deps & the Stacks framework
-buddy upgrade:package-manager # auto-upgrade deps & the Stacks framework
-buddy upgrade:search-engine # auto-upgrades Meilisearch
-buddy upgrade:node # upgrade to latest project-defined node version
-buddy upgrade:all # upgrade Node, package manager, framework, dependencies
+buddy upgrade # auto-upgrades deps, framework, node.js, and/or pnpm
+buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
+buddy upgrade:framework # auto-upgrades deps & the Stacks framework
+buddy upgrade:package-manager # auto-upgrades deps & the Stacks framework
+buddy upgrade:search-engine # auto-upgrades configured search engine
+buddy upgrade:node # upgrades to latest project-defined node version
+buddy upgrade:all # upgrades Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
 
-buddy dev # start one of the dev servers (components, functions, pages, or docs)
-buddy dev:components # start local playground dev server
+buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev:components # starts local playground dev server
 buddy dev:desktop # starts the Desktop playground
-buddy dev:pages # start local playground pages dev server
-buddy dev:functions # stub local the functions
-buddy dev:docs # start local docs dev server
+buddy dev:pages # starts local playground pages dev server
+buddy dev:functions # stubs local the functions
+buddy dev:docs # starts local docs dev server
 buddy development # `buddy dev` alias
 
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
@@ -178,14 +178,14 @@ buddy serve:docs
 
 # building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
 buddy build # select a specific build (follow CLI prompts)
-buddy build:components # build Vue component library & Web Component library
-buddy build:desktop # build Desktop application
-buddy build:library # build any or all libraries
-buddy build:pages # build SSG pages
-buddy build:functions # build function library
-buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-buddy build:vue-components # build Vue 2 & 3-ready Component library
-buddy build:all # build all your code
+buddy build:pages # builds SSG pages
+buddy build:desktop # builds Desktop application
+buddy build:library # builds any or all libraries
+buddy build:functions # builds function library
+buddy build:components # builds Vue component library & Web Component library
+buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+buddy build:vue-components # builds Vue 2 & 3-ready Component library
+buddy build:all # builds all your code
 
 # `buddy build` aliases
 buddy prod
@@ -202,17 +202,17 @@ buddy production # `buddy prod` alias
 # sets your application key
 buddy key:generate
 
-buddy make:stack project
-buddy make:component HelloWorld
-buddy make:function hello-world
-buddy make:page hello-world
-buddy make:lang de
-buddy make:notification welcome-email
-buddy make:database cars
-buddy make:table cars
-buddy make:migration create_cars_table
-buddy make:factory cars
-buddy make:seed cars
+buddy make:component HelloWorld # bootstraps a HelloWorld component
+buddy make:function hello-world # bootstraps a hello-world function
+buddy make:page hello-world # bootstraps a hello-word page
+buddy make:lang de # bootstraps a lang/de.yml language file
+buddy make:notification welcome-email # bootstraps a welcome-email notification
+buddy make:database cars # creates a cars database
+buddy make:table cars # creates a cars data table
+buddy make:migration create_cars_table # creates a cars migration file
+buddy make:factory cars # creates a Car factory file
+buddy make:seed cars # creates a Car seed file
+buddy make:stack my-project # shares logic with `npx stacks new my-project`
 
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues
@@ -222,33 +222,33 @@ buddy release # creates the releases for the stack & triggers the Release Action
 buddy changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
-buddy deploy
-buddy deploy:docs
-buddy deploy:functions
-buddy deploy:pages
-buddy deploy:all
+buddy deploy # select a specific deployment (follow CLI prompts)
+buddy deploy:docs # deploys docs to AWS (or other configured provider)
+buddy deploy:functions # deploys functions to AWS (or other configured provider)
+buddy deploy:pages # deploys pages to AWS (or other configured provider)
+buddy deploy:all # deploys all your code
 
 # select the example to run (follow CLI prompts)
-buddy example
-buddy example:vue
-buddy example:web-components
+buddy example # prompts you to select which example to run
+buddy example:vue # runs the Vue example
+buddy example:web-components # runs the Web Component example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
-buddy generate
-buddy generate:entries
-buddy generate:vue-compat
-buddy generate:web-types
-buddy generate:vscode-custom-data
-buddy generate:ide-helpers
-buddy generate:component-meta
-buddy generate:all
+buddy generate  # prompts you to select which generator to run
+buddy generate:entries # generates entry files for components, functions, & pages
+buddy generate:vue-compat # generates Vue 2 compatibility layer
+buddy generate:web-types # generates Web Component types
+buddy generate:vscode-custom-data # generates VSCode custom data
+buddy generate:ide-helpers # generates IDE helpers
+buddy generate:component-meta # generates component meta
+buddy generate:all # runs all generators
 
 # generates your application key
-buddy key:generate
+buddy key:generate # generates your application key
 
 # generate your TypeScript declarations
-buddy types:generate
-buddy types:fix
+buddy types:generate # generates types for your components, functions, & pages
+buddy types:fix # auto-fixes types for your components, functions, & pages
 
 # test your stack
 buddy test # runs test suite (unit & e2e)
