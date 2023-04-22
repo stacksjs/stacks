@@ -1,11 +1,11 @@
 import { Action, CLI, UpgradeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { prompts } from '@stacksjs/cli'
+import { prompts, intro, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
 async function upgrade(buddy: CLI) {
   const descriptions = {
-    command: 'Upgrade dependencies, framework, package manager, and/or Node',
+    command: 'Upgrade dependencies, framework, package manager, and/or Node.js',
     framework: 'Upgrade the Stacks framework',
     dependencies: 'Upgrade your dependencies',
     packageManager: 'Upgrade your package manager, i.e. pnpm',
@@ -27,8 +27,10 @@ async function upgrade(buddy: CLI) {
     .option('-f, --force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
-    .example('buddy update -a --verbose')
+    .example('buddy upgrade -a --verbose')
     .action(async (options: UpgradeOptions) => {
+      const perf = await intro('buddy upgrade')
+
       if (hasNoOptions(options)) {
         const answers: string[] = await prompts.multiselect({
           type: 'multiselect',
@@ -37,7 +39,7 @@ async function upgrade(buddy: CLI) {
           choices: [
             { title: 'Dependencies', value: 'dependencies' },
             { title: 'Framework', value: 'framework' },
-            { title: 'Node', value: 'node' },
+            { title: 'Node.js', value: 'node' },
             { title: 'pnpm', value: 'package-manager' },
           ],
         })
@@ -55,22 +57,29 @@ async function upgrade(buddy: CLI) {
           options.packageManager = true
       }
 
-      await runAction(Action.Upgrade, options)
+      const result = await runAction(Action.Upgrade, { ...options, shell: true })
+
+      if (result.isErr()) {
+        outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        process.exit()
+      }
+
+      outro(`Upgrade complete.`, { startTime: perf, useSeconds: true })
+      process.exit()
     })
 
   buddy
     .command('upgrade:framework', descriptions.framework)
-    .option('-f, --framework', descriptions.framework, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
+      const perf = await intro('buddy update:framework')
       await runAction(Action.Upgrade, options)
     })
 
   buddy
     .command('upgrade:dependencies', descriptions.dependencies)
-    .option('-d, --dependencies', descriptions.dependencies, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .alias('upgrade:deps')
@@ -81,7 +90,6 @@ async function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:package-manager', descriptions.packageManager)
-    .option('-p, --package-manager', descriptions.packageManager, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .alias('upgrade:pm')
@@ -93,27 +101,39 @@ async function upgrade(buddy: CLI) {
       if (buddy.args[0])
         options.version = buddy.args[0]
 
-      await runAction(Action.Upgrade, options)
+      const perf = await intro('buddy upgrade:package-manager')
+      const response = await runAction(Action.UpgradePackageManager, options)
+
+      if (response.isErr()) {
+        outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
+        process.exit()
+      }
 
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:node', descriptions.node)
-    .option('-n, --node', descriptions.node, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpgradeOptions) => {
-      await runAction(Action.Upgrade, options)
+      const perf = await intro('buddy upgrade:node')
+      const response = await runAction(Action.UpgradeNode, options)
+
+      if (response.isErr()) {
+        outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
+        process.exit()
+      }
+
+      process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:all', descriptions.all)
-    .option('-a, --all', descriptions.all, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpgradeOptions) => {
-      await runAction(Action.Upgrade, options)
+      await runAction(Action.Upgrade, { ...options, all: true })
     })
 }
 

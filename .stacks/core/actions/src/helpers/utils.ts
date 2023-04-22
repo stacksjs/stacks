@@ -1,23 +1,25 @@
 import storage from '@stacksjs/storage'
 import { log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { CliOptions, CommandResult } from '@stacksjs/types'
+import type { CliOptions as ActionOptions, CommandResult } from '@stacksjs/types'
 import type { Err, Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 
-function parseOptions(options?: CliOptions) {
+function parseOptions(options?: ActionOptions) {
   if (!options)
     return ''
 
   const parsedOptions = Object.entries(options).map(([key, value]) => {
-    if (typeof value === 'boolean')
+    if (key.length === 1)
+      return
+    if (typeof value === 'boolean' && value) // if the value is a boolean and true, just return the key
       return `--${key}`
     else
       return `--${key}=${value}`
   })
 
-  // ----= only happens when no flags are passed
-  return parsedOptions.join(' ').replace('----=', '')
+  // filter out undefined values and join the array
+  return parsedOptions.filter(Boolean).join(' ').replace('----=', '')
 }
 
 export type ActionResult = Promise<
@@ -33,7 +35,7 @@ export type ActionResult = Promise<
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: CliOptions): Promise<
+export async function runAction(action: string, options?: ActionOptions): Promise<
   Result<CommandResult<string>, Error>
   | Result<CommandResult<string>, Error>[]
   | Err<CommandResult<string>, string>
@@ -41,12 +43,13 @@ export async function runAction(action: string, options?: CliOptions): Promise<
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist.`)
 
-  // we need to parse options here because we need to pass them to the action command
+  // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
+
   const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.debug)
-    log.info('Running command:', cmd, options)
+    log.info('Running command:', cmd)
 
   return options?.showSpinner
     ? await runCommands([cmd], options)
@@ -60,7 +63,7 @@ export async function runAction(action: string, options?: CliOptions): Promise<
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
+export async function runActions(actions: string[], options?: ActionOptions): Promise<Result<CommandResult<string>, Error>[] | Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
   if (!actions.length)
     return err('No actions were specified')
 

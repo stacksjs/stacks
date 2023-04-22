@@ -154,12 +154,13 @@ export type MakeOptions = {
   [key in MakeStringOption]: string
 } & CliOptions
 
-export type UpdateString = 'version'
-export type UpdateBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
+export type UpgradeBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
+export type UpgradeString = 'version'
+
 export type UpgradeOptions = {
-  [key in UpdateString]: string;
+  [key in UpgradeBoolean]: boolean;
 } & {
-  [key in UpdateBoolean]: boolean;
+  [key in UpgradeString]: string;
 } & CliOptions
 
 export type ExamplesString = 'version'
@@ -204,11 +205,6 @@ export const enum NpmScript {
   DevPages = 'dev:pages',
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
-  Update = 'update',
-  UpdateDependencies = 'pnpm update',
-  UpdateFramework = 'update:framework',
-  UpdatePackageManager = 'update:package-manager',
-  UpdateNode = 'pnpm env use',
   Lint = 'eslint . ; npx publint',
   LintFix = 'eslint . --fix',
   MakeStack = 'make:stack',
@@ -237,6 +233,8 @@ export const enum NpmScript {
   Preinstall = 'preinstall',
   Prepublish = 'prepublish',
   Wip = 'wip',
+  UpgradeNode = './.stacks/scripts/setup.sh +nodejs.org',
+  UpgradePackageManager = './.stacks/scripts/setup.sh +pnpm.io',
 }
 
 export const enum Action {
@@ -253,6 +251,7 @@ export const enum Action {
   Clean = 'clean', // wip
   DevComponents = 'dev/components', // wip
   DevDocs = 'dev/docs', // wip
+  Deploy = 'deploy', // wip
   Fresh = 'fresh', // wip
   GeneratePackageJsons = 'generate-package-jsons', // wip
   GenerateSettings = 'generate-settings',
@@ -273,6 +272,8 @@ export const enum Action {
   TestCoverage = 'test-coverage', // wip
   Typecheck = 'typecheck', // wip
   Upgrade = 'upgrade/index', // wip
+  UpgradeNode = 'upgrade/node', // wip
+  UpgradePackageManager = 'upgrade/package-manager', // wip
 }
 
 export type { CAC as CLI } from 'cac'

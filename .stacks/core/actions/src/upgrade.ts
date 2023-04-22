@@ -5,15 +5,6 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
-export async function update(options: UpgradeOptions) {
-  return await invoke(options)
-}
-
 export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
   try {
     const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
@@ -46,33 +37,6 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
   }
 }
 
-export async function updateFramework(options: UpgradeOptions) {
-  const perf = await intro('buddy update:framework')
-
-  await checkForUncommittedChanges('./.stacks', options)
-  await downloadFrameworkUpdate(options)
-
-  log.info('Updating framework...')
-
-  const exclude = ['functions/package.json', 'components/vue/package.json', 'components/web/package.json', 'auto-imports.d.ts', 'components.d.ts', 'dist']
-  await storage.deleteFiles(frameworkPath(), exclude)
-
-  // loop 5 times to make sure all "deep empty" folders are deleted
-  loop(5, async () => {
-    await storage.deleteEmptyFolders(frameworkPath())
-  })
-
-  await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
-
-  if (determineDebugMode(options))
-    log.info('Cleanup...')
-
-  await storage.deleteFolder(projectPath('updates'))
-
-  outro('Framework updated', { startTime: perf, useSeconds: true })
-  process.exit()
-}
-
 export async function downloadFrameworkUpdate(options: UpgradeOptions) {
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
@@ -87,11 +51,11 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 }
 
 export async function updateDependencies(options: UpgradeOptions) {
-  const perf = await intro('buddy update:dependencies')
-  const result = await runCommand(NpmScript.UpdateDependencies, options)
+  const perf = await intro('buddy upgrade:dependencies')
+  const result = await runCommand(NpmScript.UpgradeDependencies, options)
 
   if (result.isErr()) {
-    outro('While running the update:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
     process.exit()
   }
 
@@ -100,28 +64,15 @@ export async function updateDependencies(options: UpgradeOptions) {
 }
 
 export async function updatePackageManager(options: UpgradeOptions) {
-  const perf = await intro('buddy update:package-manager')
+  const perf = await intro('buddy upgrade:package-manager')
   const version = options?.version || 'latest'
   const result = await runCommand(`corepack prepare pnpm@${version} --activate`, options)
 
   if (result.isErr()) {
-    outro('While running the update:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+    outro('While running the upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
     process.exit()
   }
 
   outro(`Updated to version: ${version}`, { startTime: perf, useSeconds: true })
-  process.exit()
-}
-
-export async function updateNode(options: UpgradeOptions) {
-  const perf = await intro('buddy update:node')
-  const result = await runCommand(NpmScript.UpdateNode, options)
-
-  if (result.isErr()) {
-    outro('While running the update:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit()
-  }
-
-  outro(`Updated your project's Node.js version to: ${process.version}`, { startTime: perf, useSeconds: true })
   process.exit()
 }

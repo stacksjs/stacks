@@ -8,6 +8,11 @@ import { defineServicesConfig, env } from 'stacks/core/config/src'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineServicesConfig({
+  aws: {
+    appId: env('AWS_ACCESS_KEY_ID', ''),
+    apiKey: env('AWS_SECRET_ACCESS_KEY', ''),
+  },
+
   algolia: {
     appId: '',
     apiKey: '',
@@ -29,11 +34,6 @@ export default defineServicesConfig({
   },
 
   supabase: {
-    appId: '',
-    apiKey: '',
-  },
-
-  aws: {
     appId: '',
     apiKey: '',
   },
