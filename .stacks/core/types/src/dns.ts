@@ -1,3 +1,36 @@
+interface ARecord {
+  name: string | '@' | '*'
+  address: string // IPv4
+  ttl?: number | 'auto'
+}
+
+interface CNameRecord {
+  name: string
+  target: string
+  ttl: number | 'auto'
+}
+
+interface MXRecord {
+  name: string | '@'
+  mailServer: string
+  ttl: number | 'auto'
+  priority: number // 0-65535
+}
+
+interface TxtRecord {
+  name: string | '@'
+  ttl: number | 'auto'
+  content: string
+}
+
+interface AAAARecord {
+  name: string | '@' | '*'
+  address: string // IPv6
+  ttl: number | 'auto'
+}
+
+export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecord
+
 export interface DnsOptions {
   /**
    * **DNS Options**
@@ -9,10 +42,10 @@ export interface DnsOptions {
    * @default {}
    * @see https://stacksjs.dev/docs/dns
    */
-  a?: []
-  aaaa?: []
-  cname?: []
-  mx?: []
+  a?: ARecord[]
+  aaaa?: AAAARecord[]
+  cname?: CNameRecord[]
+  mx?: MXRecord[]
+  txt?: TxtRecord[]
   ns?: []
-  txt?: []
 }
