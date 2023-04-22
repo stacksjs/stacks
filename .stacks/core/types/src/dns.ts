@@ -1,29 +1,29 @@
-interface ARecord {
+export interface ARecord {
   name: string | '@' | '*'
   address: string // IPv4
   ttl?: number | 'auto'
 }
 
-interface CNameRecord {
+export interface CNameRecord {
   name: string
   target: string
   ttl: number | 'auto'
 }
 
-interface MXRecord {
+export interface MXRecord {
   name: string | '@'
   mailServer: string
   ttl: number | 'auto'
   priority: number // 0-65535
 }
 
-interface TxtRecord {
+export interface TxtRecord {
   name: string | '@'
   ttl: number | 'auto'
   content: string
 }
 
-interface AAAARecord {
+export interface AAAARecord {
   name: string | '@' | '*'
   address: string // IPv6
   ttl: number | 'auto'
@@ -47,5 +47,4 @@ export interface DnsOptions {
   cname?: CNameRecord[]
   mx?: MXRecord[]
   txt?: TxtRecord[]
-  ns?: []
 }
