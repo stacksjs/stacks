@@ -25,12 +25,10 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "git.enableSmartCommit": true,
-  "css.validate": false, // for WindiCSS IntelliSense
   "npm.enableRunFromFolder": true,
   "eslint.packageManager": "pnpm",
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "windicss.sortOnSave": true,
   "unocss.root": "./.stacks/core/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"

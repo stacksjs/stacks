@@ -212,14 +212,11 @@ vitepress
 vitest
 vmodel
 vonage
-voorjaar
 vsix
 vslot
 vsrc
 vstyle
 vue-demi
 vueuse
-windi
-windicss
 wmaurer
 zixuanchen
