@@ -205,13 +205,14 @@ buddy key:generate
 buddy make:component HelloWorld # bootstraps a HelloWorld component
 buddy make:function hello-world # bootstraps a hello-world function
 buddy make:page hello-world # bootstraps a hello-word page
-buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:notification welcome-email # bootstraps a welcome-email notification
+buddy make:model Car # bootstraps a lang/de.yml language file
 buddy make:database cars # creates a cars database
 buddy make:table cars # creates a cars data table
 buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:seed cars # creates a Car seed file
+buddy make:notification welcome-email # bootstraps a welcome-email notification
+buddy make:lang de # bootstraps a lang/de.yml language file
 buddy make:stack my-project # shares logic with `npx stacks new my-project`
 
 buddy lint # runs linter
