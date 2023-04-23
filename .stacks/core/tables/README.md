@@ -88,7 +88,7 @@ yarn test
 
 Please see our [releases](https://github.com/stacksjs/table/releases) page for more information on what has changed recently.
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 

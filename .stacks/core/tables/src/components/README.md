@@ -89,7 +89,7 @@ pnpm test
 
 Please see our [releases](https://github.com/stacksjs/vue-components-library-starter/releases) page for more information on what has changed recently.
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
