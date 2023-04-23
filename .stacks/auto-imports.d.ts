@@ -99,7 +99,7 @@ declare global {
   const database: typeof import('../config/database')['database']
   const databasePath: typeof import('./core/path/src/index')['databasePath']
   const dd: typeof import('./core/logging/src/index')['dd']
-  const debounce: typeof import('./core/utils/src/vendor')['debounce']
+  const debounce: typeof import('./core/utils/src/debounce')['debounce']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
   const debug: typeof import('./core/logging/src/index')['debug']
@@ -409,7 +409,7 @@ declare global {
   const test: typeof import('vitest')['test']
   const testingPath: typeof import('./core/path/src/index')['testingPath']
   const testsPath: typeof import('./core/path/src/index')['testsPath']
-  const throttle: typeof import('./core/utils/src/vendor')['throttle']
+  const throttle: typeof import('./core/utils/src/debounce')['throttle']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
   const timestamp: typeof import('@vueuse/shared')['timestamp']
@@ -741,7 +741,7 @@ declare module 'vue' {
     readonly database: UnwrapRef<typeof import('../config/database')['database']>
     readonly databasePath: UnwrapRef<typeof import('./core/path/src/index')['databasePath']>
     readonly dd: UnwrapRef<typeof import('./core/logging/src/index')['dd']>
-    readonly debounce: UnwrapRef<typeof import('./core/utils/src/vendor')['debounce']>
+    readonly debounce: UnwrapRef<typeof import('./core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
     readonly debug: UnwrapRef<typeof import('./core/logging/src/index')['debug']>
@@ -1052,7 +1052,7 @@ declare module 'vue' {
     readonly test: UnwrapRef<typeof import('vitest')['test']>
     readonly testingPath: UnwrapRef<typeof import('./core/path/src/index')['testingPath']>
     readonly testsPath: UnwrapRef<typeof import('./core/path/src/index')['testsPath']>
-    readonly throttle: UnwrapRef<typeof import('./core/utils/src/vendor')['throttle']>
+    readonly throttle: UnwrapRef<typeof import('./core/utils/src/debounce')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
     readonly timestamp: UnwrapRef<typeof import('@vueuse/shared')['timestamp']>
