@@ -2,7 +2,7 @@
 
 This folder contains optimized VS Code settings for this particular project. Feel free to adjust it to your needs, as this is simply a "great starting point."
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

@@ -11,7 +11,7 @@ To learn more about how to develop your own CLI, check out the [documentation](h
 
 To create a custom CLI, you may your commands here.
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

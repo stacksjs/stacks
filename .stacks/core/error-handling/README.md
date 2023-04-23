@@ -110,7 +110,7 @@ Quote from user [kstenerud](https://news.ycombinator.com/user?id=kstenerud).
 
 Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

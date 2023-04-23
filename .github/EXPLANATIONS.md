@@ -16,7 +16,7 @@ This folder contains GitHub configurations for the project, including the follow
 
 Aside from these implemented features, this folder also contains the issue templates used to create new GitHub issues.
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

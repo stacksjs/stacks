@@ -7,7 +7,7 @@ To learn more about Stacks Routes, check out the [documentation](https://stacksj
 > **Note**
 > If your project does not require any routes, you can remove this folder._
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

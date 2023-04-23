@@ -7,7 +7,7 @@ To learn more about Stacks Internationalization, check out the [documentation](h
 > **Note**
 > If your project does not require any routes, you can remove this folder._
 
-## 💪🏼 Contributing
+## 🏗️ Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
