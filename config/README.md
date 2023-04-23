@@ -6,7 +6,7 @@ Note that you may not need all of these config files. For example, if you are no
 
 _No worries, it is fully typed._
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

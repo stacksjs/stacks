@@ -11,7 +11,7 @@ To learn more about how to develop your own notifications, check out the [docume
 
 wip
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

@@ -372,7 +372,7 @@ pnpm test
 
 Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please see the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 

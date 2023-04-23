@@ -7,7 +7,7 @@ To learn more about Stacks Functions, check out the [documentation](https://stac
 > **Note**
 > If your project does not require any functions, you can remove this folder._
 
-## 🏗️ Contributing
+## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
