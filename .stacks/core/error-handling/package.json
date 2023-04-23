@@ -40,7 +40,7 @@
     "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.42.0"
+    "@ow3/eslint-config": "^0.42.1"
   },
   "dependencies": {
     "neverthrow": "^6.0.0"
