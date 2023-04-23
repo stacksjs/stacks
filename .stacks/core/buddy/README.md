@@ -342,7 +342,7 @@ console.log('increased count is', count)
 
 You may view this framework as an incredibly “useful set of frames” to assist in efficiently bootstrapping, designing, and managing component & function libraries—using industry best practices, to reach one of the broadest user bases possible.
 
-## 🚙 Roadmap
+## 🎯 Roadmap
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
