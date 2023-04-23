@@ -1,8 +1,9 @@
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import type { CLI, DevOption, DevOptions } from '@stacksjs/types'
-import { intro, log, outro, prompts } from '@stacksjs/cli'
+import type { CLI, DevOptions } from '@stacksjs/types'
+import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
+
 // import { components, desktop, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 async function dev(buddy: CLI) {
@@ -12,8 +13,8 @@ async function dev(buddy: CLI) {
     functions: 'Start the Functions development server',
     docs: 'Start the Documentation development server',
     pages: 'Start the Pages development server',
+    select: 'Which development server are you trying to start?',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
@@ -23,18 +24,17 @@ async function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-p, --pages', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       if (hasNoOptions(options)) {
-        const answer: DevOption | void = await prompts.select({
+        const answer = await prompt(descriptions.select, {
           type: 'select',
-          name: 'development',
-          message: 'Which development server are you trying to start?',
-          choices: [
-            { title: 'Components', value: 'components' },
-            { title: 'Functions', value: 'functions' },
-            { title: 'Pages', value: 'pages' },
-            { title: 'Docs', value: 'docs' },
+          required: true,
+          options: [
+            { value: 'pages', label: 'Pages' },
+            { value: 'desktop', label: 'Desktop' },
+            { value: 'components', label: 'Components' },
+            { value: 'functions', label: 'Functions' },
+            { value: 'docs', label: 'Documentation' },
           ],
         })
 
@@ -88,7 +88,6 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:docs', descriptions.docs)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:docs')
       const result = await runAction(Action.DevDocs, { ...options, verbose: true })
@@ -115,7 +114,6 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await desktop(options)
     })
@@ -123,7 +121,6 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:functions', descriptions.functions)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await functions(options)
     })
@@ -131,7 +128,6 @@ async function dev(buddy: CLI) {
   buddy
     .command('dev:pages', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DevOptions) => {
       await pages(options)
     })

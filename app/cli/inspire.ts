@@ -1,8 +1,6 @@
 // triggered via `stx inspire`
-import type { CLI } from 'stacks/core/types/src'
-import { Action, ExitCode } from 'stacks/core/types/src'
-import { runAction } from 'stacks/core/actions/src'
-import { intro, outro, defineCommand } from 'stacks/core/cli/src'
+import { ExitCode } from 'stacks/core/types/src'
+import { defineCommand, intro, outro } from 'stacks/core/cli/src'
 
 export default defineCommand({
   name: 'inspire',
@@ -11,8 +9,8 @@ export default defineCommand({
     {
       name: '--two',
       description: 'Show two quotes',
-      default: false
-    }
+      default: false,
+    },
   ],
   action: async () => {
     const perf = await intro('buddy inspire')
@@ -24,5 +22,5 @@ export default defineCommand({
 
     outro('Your quote is: ...', { startTime: perf, useSeconds: true })
     process.exit(ExitCode.Success)
-  }
+  },
 })

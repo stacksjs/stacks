@@ -1,6 +1,6 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { prompts } from '@stacksjs/cli'
+import { prompt } from '@stacksjs/cli'
 import { invoke } from '@stacksjs/actions/add'
 
 async function add(buddy: CLI) {
@@ -9,8 +9,8 @@ async function add(buddy: CLI) {
     table: 'Add the Table Stack to your project',
     calendar: 'Add the Calendar Stack to your project',
     all: 'Add all stacks',
+    select: 'Which stack/s are you trying to add?',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
@@ -19,16 +19,13 @@ async function add(buddy: CLI) {
     .option('-c, --calendar', descriptions.calendar, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers: string[] = await prompts.multiselect({
+        const answers = await prompt(descriptions.select, {
           type: 'multiselect',
-          name: 'add',
-          message: 'Which stack/s are you trying to add?',
-          choices: [
-            { title: 'Calendar', value: 'calendar' },
-            { title: 'Table', value: 'table' },
+          options: [
+            { label: 'Calendar', value: 'calendar' },
+            { label: 'Table', value: 'table' },
           ],
         })
 
@@ -45,7 +42,6 @@ async function add(buddy: CLI) {
     .command('add:table', descriptions.table)
     .option('-t, --table', descriptions.table, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })
@@ -54,7 +50,6 @@ async function add(buddy: CLI) {
     .command('add:calendar', descriptions.calendar)
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: BuildOptions) => {
       await invoke(options)
     })

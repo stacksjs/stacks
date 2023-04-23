@@ -7,13 +7,11 @@ async function deploy(buddy: CLI) {
   const descriptions = {
     deploy: 'Reinstalls your npm dependencies',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('deploy', descriptions.deploy)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: DeployOptions) => {
       const perf = await intro('buddy deploy')
       const result = await runAction(Action.Deploy, options)

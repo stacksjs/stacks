@@ -1,7 +1,7 @@
 import storage from '@stacksjs/storage'
-import { log, runCommand, runCommands } from '@stacksjs/cli'
+import { italic, log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { CliOptions as ActionOptions, CommandResult } from '@stacksjs/types'
+import type { ActionOptions, CommandResult } from '@stacksjs/types'
 import type { Err, Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 
@@ -48,8 +48,8 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
 
-  if (options?.debug)
-    log.info('Running command:', cmd)
+  if (options?.verbose)
+    log.debug('running command:', italic(cmd))
 
   return options?.showSpinner
     ? await runCommands([cmd], options)

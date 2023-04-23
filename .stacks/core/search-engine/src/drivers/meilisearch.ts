@@ -1,6 +1,7 @@
 import { log } from '@stacksjs/cli'
 import { searchEngine } from '@stacksjs/config/user'
 import { MeiliSearch } from 'meilisearch'
+
 import type { SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
 
 interface SearchEngineOptions {

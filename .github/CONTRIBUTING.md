@@ -70,7 +70,7 @@ buddy upgrade # auto-update deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
-buddy make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+buddy make:page hello-world # scaffolds a page (https://my-project.test/hello-world)
 
 buddy help
 ```

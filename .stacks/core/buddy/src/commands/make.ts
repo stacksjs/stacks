@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
-import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompt, runCommand } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 import {
   createModel,
@@ -28,8 +28,8 @@ async function make(buddy: CLI) {
     factory: 'Create a new factory',
     notification: 'Create a new notification',
     stack: 'Create a new new stack',
+    select: 'What are you trying to make?',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
@@ -44,7 +44,6 @@ async function make(buddy: CLI) {
     .option('-n, --notification', descriptions.notification, { default: false })
     .option('-s, --stack', descriptions.stack, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0]
 
@@ -54,20 +53,19 @@ async function make(buddy: CLI) {
       }
 
       if (hasNoOptions(options)) {
-        const answers = await prompts.multiselect({
+        const answers = await prompt(descriptions.select, {
           type: 'multiselect',
-          name: 'make',
-          message: 'What are you trying to make?',
-          choices: [
-            { title: 'Component', value: 'component' },
-            { title: 'Function', value: 'function' },
-            { title: 'Page', value: 'page' },
-            { title: 'Language', value: 'language' },
-            { title: 'Notification', value: 'notification' },
-            { title: 'Database', value: 'database' },
-            { title: 'Migration', value: 'migration' },
-            { title: 'Factory', value: 'factory' },
-            { title: 'Stack', value: 'stack' },
+          required: true,
+          options: [
+            { label: 'Page', value: 'page' },
+            { label: 'Function', value: 'function' },
+            { label: 'Component', value: 'component' },
+            { label: 'Notification', value: 'notification' },
+            { label: 'Language', value: 'language' },
+            { label: 'Database', value: 'database' },
+            { label: 'Migration', value: 'migration' },
+            { label: 'Factory', value: 'factory' },
+            { label: 'Stack', value: 'stack' },
           ],
         })
 
@@ -84,7 +82,6 @@ async function make(buddy: CLI) {
     .command('make:component', descriptions.component)
     .option('-n, --name', 'The name of the component')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -101,7 +98,6 @@ async function make(buddy: CLI) {
     .command('make:database', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -118,7 +114,6 @@ async function make(buddy: CLI) {
     .command('make:factory', descriptions.factory)
     .option('-n, --name', 'The name of the factory')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -135,7 +130,6 @@ async function make(buddy: CLI) {
     .command('make:page', descriptions.page)
     .option('-n, --name', 'The name of the page')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -152,7 +146,6 @@ async function make(buddy: CLI) {
     .command('make:function', descriptions.function)
     .option('-n, --name', 'The name of the function')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       await makeFunction(options)
     })
@@ -161,7 +154,6 @@ async function make(buddy: CLI) {
     .command('make:lang', descriptions.language)
     .option('-n, --name', 'The name of the language')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
@@ -181,7 +173,6 @@ async function make(buddy: CLI) {
     .option('-c, --chat', 'Is it a chat notification?', { default: false })
     .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const perf = await intro('buddy make:notification')
 
@@ -208,7 +199,6 @@ async function make(buddy: CLI) {
     .command('make:stack', descriptions.stack)
     .option('-n, --name', 'The name of the stack')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name

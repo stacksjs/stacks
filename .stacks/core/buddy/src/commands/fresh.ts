@@ -7,13 +7,11 @@ async function fresh(buddy: CLI) {
   const descriptions = {
     fresh: 'Reinstalls your npm dependencies',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('fresh', descriptions.fresh)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })

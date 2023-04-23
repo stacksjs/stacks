@@ -7,13 +7,11 @@ async function migrate(buddy: CLI) {
   const descriptions = {
     migrate: 'Migrates your database',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('migrate', descriptions.migrate)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy migrate')
       const result = await runAction(Action.Migrate, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })

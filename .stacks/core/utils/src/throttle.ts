@@ -16,7 +16,7 @@
  *   }, 250)
  * )
  */
-export const throttle = (fn: Function, wait: number = 300) => {
+export function throttle(fn: Function, wait = 300) {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>
   let lastTime: number
@@ -30,7 +30,8 @@ export const throttle = (fn: Function, wait: number = 300) => {
 
       lastTime = Date.now()
       inThrottle = true
-    } else {
+    }
+    else {
       clearTimeout(lastFn)
 
       lastFn = setTimeout(() => {

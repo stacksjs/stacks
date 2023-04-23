@@ -1,9 +1,10 @@
-import { ExitCode, parseArgs, runCommand } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
+import { ExitCode, parseArgs } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '../helpers'
 
 const options = parseArgs()
+// eslint-disable-next-line no-console
+console.log('here is opt', options)
 
 // run all the upgrade actions
 // if (options?.framework || options?.all)

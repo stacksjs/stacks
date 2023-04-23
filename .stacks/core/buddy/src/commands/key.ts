@@ -7,13 +7,11 @@ async function key(buddy: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('key:generate', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: KeyOptions) => {
       const startTime = await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)

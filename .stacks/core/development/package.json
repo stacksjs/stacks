@@ -32,11 +32,13 @@
     "README.md"
   ],
   "peerDependencies": {
+    "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
     "typescript": "^5.0.4",
     "unbuild": "^1.2.1"
   },
   "dependencies": {
+    "@stacksjs/logging": "workspace:*",
     "unbuild": "^1.2.1"
   },
   "devDependencies": {

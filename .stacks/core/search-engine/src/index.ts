@@ -1,4 +1,5 @@
 import { searchEngine } from '@stacksjs/config/user'
+
 // import type { Ref } from '@stacksjs/types'
 import type { UiEngine } from '@stacksjs/ui'
 import { client as meilisearch, search } from './drivers/meilisearch'

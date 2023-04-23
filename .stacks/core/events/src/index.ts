@@ -1,4 +1,5 @@
 import mitt from 'mitt'
+
 // import type { Events } from '@stacksjs/types'
 
 /**

@@ -5,13 +5,11 @@ async function seed(buddy: CLI) {
   const descriptions = {
     seed: 'Seed your database',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('seed', descriptions.seed)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
       // const perf = await intro('buddy seed')
       // const result = await runAction(Action.Seed, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })

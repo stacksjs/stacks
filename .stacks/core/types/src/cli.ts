@@ -108,9 +108,13 @@ export interface CliOptions {
 
 export type { Ora as SpinnerOptions } from 'ora'
 
-export type ActionsOption = 'types'
-export type ActionsOptions = {
-  [key in ActionsOption]?: boolean;
+export type ActionOption = 'types'
+
+/**
+ * The options to pass to the Action.
+ */
+export type ActionOptions = {
+  [key in ActionOption]?: boolean;
 } & CliOptions
 
 export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'

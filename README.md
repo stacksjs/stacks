@@ -109,7 +109,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-sh <(curl stacksjs.dev) # runs giget stacks & ./setup.sh
+sh <(curl stacksjs.dev) my-project #
 
 # alternatively, if Node.js >= v18.16 is installed already,
 # you may also get started via:
@@ -130,7 +130,7 @@ buddy upgrade # auto-update all deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
-buddy make:page hello-world # scaffolds a page (https://127.0.0.1/hello-world)
+buddy make:page hello-world # scaffolds a page (https://my-project.test/hello-world)
 
 buddy --help
 ```

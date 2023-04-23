@@ -7,13 +7,11 @@ async function changelog(buddy: CLI) {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
     .command('changelog', descriptions.changelog)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)

@@ -10,11 +10,10 @@ async function test(buddy: CLI) {
     types: 'Typechecks your codebase',
     coverage: 'Generates a test coverage report',
     ui: 'Runs your test suite in the browser',
-    verbose: 'Enable verbose output',
     unit: 'Runs your unit tests',
     feature: 'Runs your feature tests',
     showReport: 'Show the test report',
-    debug: 'Enable debug mode',
+    verbose: 'Enable verbose output',
   }
 
   buddy
@@ -36,7 +35,6 @@ async function test(buddy: CLI) {
   buddy
     .command('test:unit', descriptions.unit)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:unit')
       const result = await runAction(Action.TestUnit, { ...options, verbose: true, cwd: projectPath() })
@@ -53,7 +51,6 @@ async function test(buddy: CLI) {
     .command('test:feature', descriptions.feature)
     .option('--show-report', descriptions.showReport, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:feature')
       let result
@@ -74,7 +71,6 @@ async function test(buddy: CLI) {
   buddy
     .command('test:ui', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:ui')
       const result = await runAction(Action.TestUi, { ...options, verbose: true, cwd: projectPath() })
@@ -91,7 +87,6 @@ async function test(buddy: CLI) {
     .command('test:types', descriptions.types)
     .alias('typecheck')
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:types')
       const result = await runAction(Action.Typecheck, { ...options, verbose: true, cwd: projectPath() })

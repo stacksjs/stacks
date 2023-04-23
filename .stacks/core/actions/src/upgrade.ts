@@ -1,7 +1,7 @@
-import { intro, log, outro, prompts, runCommand, spawn } from '@stacksjs/cli'
+import { intro, log, outro, prompt, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { determineDebugMode, loop } from '@stacksjs/utils'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { determineDebugMode } from '@stacksjs/utils'
+import { projectPath } from '@stacksjs/path'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
@@ -20,14 +20,11 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
       // the user knows what they are doing. There is also a change that simply the deps within .stacks
       // folder have been updated and that could produce a diff.
       if (!options?.force) {
-        const answer = await prompts.confirm({
-          type: 'select',
-          name: 'framework-update',
-          message: 'We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?',
+        const confirmed = await prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
+          type: 'confirm',
         })
 
-        // @ts-expect-error the answer object type expects to return a void type but it returns boolean
-        if (!answer) {
+        if (!confirmed) {
           log.info('Aborted. Stacks did not update itself.')
           log.info('Note: if you commit your changes and replay the update, you can see what changed.')
           process.exit(ExitCode.Success)

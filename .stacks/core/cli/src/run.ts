@@ -3,6 +3,7 @@ import type { Err } from '@stacksjs/error-handling'
 import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { ResultAsync, err } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { determineDebugMode } from '@stacksjs/utils'
 import { spawn } from './command'
 import { startSpinner } from './helpers'
@@ -23,7 +24,7 @@ export function exec(command: string, options?: CliOptions) {
 
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd, shell }),
-    () => new Error(`Failed to run command: ${italic(command)}`),
+    () => log.error(new Error(`Failed to run command: ${italic(command)}`)),
   )
 }
 
@@ -72,7 +73,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
     if (result?.isErr()) {
       if (spinner) {
-        spinner.fail('Failed to run command.')
+        // spinner.fail('Failed to run command.')
         err(result.error)
         process.exit()
       }

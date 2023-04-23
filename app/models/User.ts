@@ -1,5 +1,9 @@
-import { faker } from 'stacks/core/faker/src' // stacks/faker or @stacksjs/faker
-import { Type, validate } from 'stacks/core/validation/src' // stacks/validate or @stacksjs/validate
+import { faker } from 'stacks/core/faker/src'
+
+// stacks/faker or @stacksjs/faker
+import { Type, validate } from 'stacks/core/validation/src'
+
+// stacks/validate or @stacksjs/validate
 import type { Model } from 'stacks/core/types/src' // stacks/types or @stacksjs/types
 
 export default <Model> {

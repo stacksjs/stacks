@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, ExamplesOption, ExamplesOptions } from '@stacksjs/types'
-import { italic, log, prompts } from '@stacksjs/cli'
+import type { CLI, ExamplesOptions } from '@stacksjs/types'
+import { italic, log, prompt } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
 
 async function example(buddy: CLI) {
@@ -9,8 +9,8 @@ async function example(buddy: CLI) {
     components: 'Test your libraries against your built bundle',
     vue: 'Test your Vue component library',
     webComponents: 'Test your web component library',
+    select: 'Which example are you trying to view?',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
@@ -19,15 +19,13 @@ async function example(buddy: CLI) {
     .option('-v, --vue', descriptions.vue)
     .option('-w, --web-components', descriptions.webComponents)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: ExamplesOptions) => {
-      const answer: ExamplesOption = await prompts.select({
+      const answer = await prompt(descriptions.select, {
         type: 'select',
-        name: 'example',
-        message: 'Which example are you trying to view?',
-        choices: [
-          { title: 'Components', value: 'components' },
-          { title: 'Web Components', value: 'web-components' },
+        required: true,
+        options: [
+          { value: 'components', label: 'Vue Components' },
+          { value: 'web-components', label: 'Web Components' },
         ],
       })
 
@@ -50,7 +48,6 @@ async function example(buddy: CLI) {
     .command('example:vue', descriptions.vue)
     .option('-v, --vue', descriptions.verbose, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .alias('example:components')
     .action(async (options: ExamplesOptions) => {
       await runExample(options)
@@ -60,7 +57,6 @@ async function example(buddy: CLI) {
     .command('example:web-components', 'Test your Web Component library.')
     .option('-w, --web-components', descriptions.verbose, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: ExamplesOptions) => {
       await runExample(options)
     })

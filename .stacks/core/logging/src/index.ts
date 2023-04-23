@@ -1,15 +1,11 @@
-import consola from 'consola'
-import { ray } from 'node-ray'
+import { ray as debug } from 'node-ray'
 
-const log = consola
-const debug = ray
-
-function dump(...args: any[]) {
+export function dump(...args: any[]) {
   return debug(...args)
 }
 
-function dd(...args: any[]) {
+export function dd(...args: any[]) {
   return dump(...args).showApp()
 }
 
-export { log, debug, dd, dump, ray }
+export { consola as log } from 'consola'

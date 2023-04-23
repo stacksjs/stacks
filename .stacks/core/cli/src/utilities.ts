@@ -1,11 +1,12 @@
 export function parseArgs(args?: string[]) {
-  if (!args) args = process.argv.slice(2)
+  if (!args)
+    args = process.argv.slice(2)
 
   // parse the args into an object
   return args.reduce((acc, arg) => {
     if (arg.startsWith('--')) {
       const [key, value] = arg.slice(2).split('=')
-      acc[key] = value === 'false' ? false : true
+      acc[key] = value !== 'false'
     }
     return acc
   }, {} as Record<string, boolean>)

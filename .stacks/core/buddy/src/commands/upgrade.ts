@@ -1,6 +1,6 @@
-import { Action, CLI, UpgradeOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import { prompts, intro, outro } from '@stacksjs/cli'
+import type { CLI, UpgradeOptions } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
+import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
 async function upgrade(buddy: CLI) {
@@ -14,7 +14,6 @@ async function upgrade(buddy: CLI) {
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',
     verbose: 'Enable verbose output',
-    debug: 'Enable debug mode',
   }
 
   buddy
@@ -26,21 +25,20 @@ async function upgrade(buddy: CLI) {
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
+    .alias('update')
     .example('buddy upgrade -a --verbose')
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade')
 
       if (hasNoOptions(options)) {
-        const answers: string[] = await prompts.multiselect({
+        const answers = await prompt(descriptions.select, {
           type: 'multiselect',
-          name: 'update',
-          message: descriptions.select,
-          choices: [
-            { title: 'Dependencies', value: 'dependencies' },
-            { title: 'Framework', value: 'framework' },
-            { title: 'Node.js', value: 'node' },
-            { title: 'pnpm', value: 'package-manager' },
+          required: true,
+          options: [
+            { value: 'dependencies', label: 'Dependencies' },
+            { value: 'framework', label: 'Framework' },
+            { value: 'node', label: 'Node.js' },
+            { value: 'package-manager', label: 'Package Manager' },
           ],
         })
 
@@ -64,14 +62,13 @@ async function upgrade(buddy: CLI) {
         process.exit()
       }
 
-      outro(`Upgrade complete.`, { startTime: perf, useSeconds: true })
+      outro('Upgrade complete.', { startTime: perf, useSeconds: true })
       process.exit()
     })
 
   buddy
     .command('upgrade:framework', descriptions.framework)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy update:framework')
@@ -81,7 +78,6 @@ async function upgrade(buddy: CLI) {
   buddy
     .command('upgrade:dependencies', descriptions.dependencies)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .alias('upgrade:deps')
     .example('buddy upgrade:dependencies --verbose')
     .action(async (options: UpgradeOptions) => {
@@ -91,7 +87,6 @@ async function upgrade(buddy: CLI) {
   buddy
     .command('upgrade:package-manager', descriptions.packageManager)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .alias('upgrade:pm')
     .example('buddy upgrade:package-manager 7.16.1 --verbose')
     .example('buddy upgrade:package-manager latest')
@@ -115,7 +110,6 @@ async function upgrade(buddy: CLI) {
   buddy
     .command('upgrade:node', descriptions.node)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:node')
       const response = await runAction(Action.UpgradeNode, options)
@@ -131,7 +125,6 @@ async function upgrade(buddy: CLI) {
   buddy
     .command('upgrade:all', descriptions.all)
     .option('--verbose', descriptions.verbose, { default: false })
-    .option('--debug', descriptions.debug, { default: false })
     .action(async (options: UpgradeOptions) => {
       await runAction(Action.Upgrade, { ...options, all: true })
     })

@@ -31,7 +31,7 @@ export interface AAAARecord {
 
 export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecord
 
-  /**
+/**
    * **DNS Options**
    *
    * This configuration defines all of your DNS options. Because Stacks is fully-typed,

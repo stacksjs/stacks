@@ -1,6 +1,5 @@
-import Prompts from 'prompts'
 import { log } from '@stacksjs/logging'
 
-const { prompts } = Prompts
+const prompt = log.prompt
 
-export { log, prompts }
+export { log, prompt }
