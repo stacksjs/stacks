@@ -30,22 +30,11 @@ type SpinnerOptions = Ora
  */
 export interface CliOptions {
   /**
-   * **CLI Debug Level**
+   * **Verbose Output**
    *
-   * When your application is in debug mode, a different level
-   * of information, like stack traces, will be shown. When
-   * disabled, it defaults to the "normal experience."
-   *
-   * @default false
-   */
-  debug?: boolean
-
-  /**
-   * **Verbosity Mode**
-   *
-   * When your application is in verbose mode, a different level of information,
-   * like useful outputs for debugging reasons, will be shown. When
-   * disabled, it defaults to the "normal experience."
+   * When your application is in "verbose"-mode, a different level of,
+   * information like useful outputs for debugging reasons, will be
+   * shown. When disabled, it defaults to the "normal experience."
    *
    * @default false
    */
