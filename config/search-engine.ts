@@ -1,4 +1,4 @@
-import { defineSearchEngineConfig } from 'stacks/core/config/src'
+import { defineSearchEngine } from 'stacks/core/config/src'
 
 /**
  * **Search Engine Options**
@@ -7,6 +7,6 @@ import { defineSearchEngineConfig } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineSearchEngineConfig({
+export default defineSearchEngine({
   driver: 'meilisearch',
 })

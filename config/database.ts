@@ -1,4 +1,4 @@
-import { defineDatabaseConfig, env } from 'stacks/core/config/src'
+import { defineDatabase, env } from 'stacks/core/config/src'
 
 /**
  * **Database Configuration**
@@ -7,7 +7,7 @@ import { defineDatabaseConfig, env } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineDatabaseConfig({
+export default defineDatabase({
   driver: 'mysql',
   url: env('DATABASE_URL', ''),
   host: 'localhost',

@@ -1,4 +1,4 @@
-import { defineAppConfig, env } from 'stacks/core/config/src'
+import { defineApp, env } from 'stacks/core/config/src'
 
 /**
  * **Application Configuration**
@@ -7,7 +7,7 @@ import { defineAppConfig, env } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineAppConfig({
+export default defineApp({
   name: env('APP_NAME', 'Stacks'),
   env: env('APP_ENV', 'local'),
   key: env('APP_KEY', ''),

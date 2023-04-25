@@ -1,4 +1,4 @@
-import type { CliOptions, CommandResult, Manifest, NpmScript, Result } from '@stacksjs/types'
+import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
 import detectIndent from 'detect-indent'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
@@ -94,7 +94,7 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<CommandResult<string>, Error>> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<CommandResult> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
@@ -122,9 +122,17 @@ export function parseYaml(content: any) {
 
 /**
  * Determines the level of debugging.
+ *
+ * The debug level is determined by the following:
+ * 1. The --verbose flag
+ * 2. The debug property in the app configuration
+ *
+ * Currently, we don't support a custom debug level,
+ * though, we would like to in the future.
+ *
  * @param options
  */
-export function determineDebugMode(options?: CliOptions) {
+export function determineDebugLevel(options?: CliOptions) {
   if (options?.verbose === true)
     return true
 

@@ -1,4 +1,4 @@
-import { defineCacheConfig, env } from 'stacks/core/config/src'
+import { defineCache, env } from 'stacks/core/config/src'
 
 /**
  * **Cache Configuration**
@@ -7,7 +7,7 @@ import { defineCacheConfig, env } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineCacheConfig({
+export default defineCache({
   driver: env('CACHE_DRIVER', 'redis'),
   prefix: env('CACHE_PREFIX', 'stacks'),
   ttl: env('CACHE_TTL', 3600),

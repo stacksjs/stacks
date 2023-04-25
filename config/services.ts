@@ -1,4 +1,4 @@
-import { defineServicesConfig, env } from 'stacks/core/config/src'
+import { defineServices, env } from 'stacks/core/config/src'
 
 /**
  * **Services**
@@ -7,7 +7,7 @@ import { defineServicesConfig, env } from 'stacks/core/config/src'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineServicesConfig({
+export default defineServices({
   aws: {
     appId: env('AWS_ACCESS_KEY_ID', ''),
     apiKey: env('AWS_SECRET_ACCESS_KEY', ''),

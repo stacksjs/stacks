@@ -14,7 +14,7 @@ async function migrate(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy migrate')
-      const result = await runAction(Action.Migrate, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })
+      const result = await runAction(Action.Migrate, { ...options, showSpinner: true, spinnerText: 'Migrating...' })
 
       if (result.isErr()) {
         outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

@@ -3,6 +3,10 @@
  */
 
 import type { Ora } from 'ora'
+import type { ExecaReturnValue as CommandReturnValue } from 'execa'
+import type { ResultAsync } from './'
+
+export type CommandResult = ResultAsync<CommandReturnValue<string>, Error>
 
 export interface StacksOptions {
   componentsSrcPath?: string
@@ -270,4 +274,3 @@ export const enum Action {
 }
 
 export type { CAC as CLI } from 'cac'
-export type { ExecaReturnValue as CommandResult } from 'execa'

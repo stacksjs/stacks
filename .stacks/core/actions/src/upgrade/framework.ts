@@ -1,6 +1,6 @@
 import { log, outro } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { determineDebugMode, loop } from '@stacksjs/utils'
+import { determineDebugLevel, loop } from '@stacksjs/utils'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 
 // await runCommand(NpmScript.UpgradeFramework, parseArgs())
@@ -20,7 +20,7 @@ loop(5, async () => {
 
 await storage.copyFolder(frameworkPath(), projectPath('./updates/.stacks'), exclude)
 
-if (determineDebugMode(options))
+if (determineDebugLevel(options))
   log.info('Cleanup...')
 
 await storage.deleteFolder(projectPath('updates'))

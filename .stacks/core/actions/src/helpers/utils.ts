@@ -2,7 +2,7 @@ import storage from '@stacksjs/storage'
 import { italic, log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { ActionOptions, CommandResult } from '@stacksjs/types'
-import type { Err, Result } from '@stacksjs/error-handling'
+import type { Result, errAsync } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
@@ -22,11 +22,7 @@ function parseOptions(options?: ActionOptions) {
   return parsedOptions.filter(Boolean).join(' ').replace('----=', '')
 }
 
-export type ActionResult = Promise<
-  Result<CommandResult<string>, Error>
-  | Result<CommandResult<string>, Error>[]
-  | Err<CommandResult<string>, string>
->
+export type ActionResult = CommandResult
 
 /**
  * Run an Action the Stacks way.
@@ -35,17 +31,12 @@ export type ActionResult = Promise<
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<
-  Result<CommandResult<string>, Error>
-  | Result<CommandResult<string>, Error>[]
-  | Err<CommandResult<string>, string>
-> {
+export async function runAction(action: string, options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
   if (!hasAction(action))
-    return err(`The specified action "${action}" does not exist.`)
+    return errAsync(`The specified action "${action}" does not exist.`)
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
-
   const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
@@ -63,7 +54,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: ActionOptions): Promise<Result<CommandResult<string>, Error>[] | Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
+export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult> | Promise<CommandResult>[] {
   if (!actions.length)
     return err('No actions were specified')
 

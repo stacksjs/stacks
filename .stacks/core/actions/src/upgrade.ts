@@ -1,13 +1,13 @@
 import { intro, log, outro, prompt, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { determineDebugMode } from '@stacksjs/utils'
+import { determineDebugLevel } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
   try {
-    const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
+    const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 
     // check if the .stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/

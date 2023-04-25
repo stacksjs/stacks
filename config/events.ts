@@ -1,4 +1,4 @@
-import { defineEventsConfig } from 'stacks/core/config/src'
+import { defineEvents } from 'stacks/core/config/src'
 
 /**
  * **Events Configuration**
@@ -7,6 +7,6 @@ import { defineEventsConfig } from 'stacks/core/config/src'
  * first, pick an event name and then define it with its return type. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineEventsConfig({
+export default defineEvents({
   // 'user:registered': User,
 })

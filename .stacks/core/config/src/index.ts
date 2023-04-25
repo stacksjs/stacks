@@ -10,15 +10,15 @@ export function env(key: string, fallback: any) {
 
 export { defineBuildConfig } from 'unbuild'
 
-export function defineAppConfig(options: AppOptions) {
+export function defineApp(options: AppOptions) {
   return options
 }
 
-export function defineCacheConfig(options: CacheOptions) {
+export function defineCache(options: CacheOptions) {
   return options
 }
 
-export function defineCliConfig(options: CliOptions) {
+export function defineCli(options: CliOptions) {
   return options
 }
 
@@ -26,7 +26,7 @@ export function defineCronJobsConfig(options: CronJobOptions[]) {
   return options
 }
 
-export function defineDatabaseConfig(options: DatabaseOptions) {
+export function defineDatabase(options: DatabaseOptions) {
   return options
 }
 
@@ -38,7 +38,7 @@ export function defineDebugConfig(options: DebugOptions) {
 //   return options
 // }
 
-export function defineDnsConfig(options: DnsOptions) {
+export function defineDns(options: DnsOptions) {
   return options
 }
 
@@ -46,19 +46,19 @@ export function defineEmailConfig(options: EmailOptions) {
   return options
 }
 
-export function defineEventsConfig(options: Events) {
+export function defineEvents(options: Events) {
   return options
 }
 
-export function defineGitConfig(options: GitOptions) {
+export function defineGit(options: GitOptions) {
   return options
 }
 
-export function defineHashingConfig(options: HashingOptions) {
+export function defineHashing(options: HashingOptions) {
   return options
 }
 
-export function defineLibraryConfig(options: LibraryOptions) {
+export function defineLibrary(options: LibraryOptions) {
   return options
 }
 
@@ -66,30 +66,30 @@ export function defineModel(options: Model) {
   return options
 }
 
-export function defineNotificationConfig(options: NotificationOptions) {
+export function defineNotification(options: NotificationOptions) {
   return options
 }
 
-export function definePageConfig(options: PagesOption) {
+export function definePage(options: PagesOption) {
   return options
 }
 
-export function definePaymentConfig(options: PaymentOptions) {
+export function definePayment(options: PaymentOptions) {
   return options
 }
 
-export function defineSearchEngineConfig(options: SearchEngineOptions) {
+export function defineSearchEngine(options: SearchEngineOptions) {
   return options
 }
 
-export function defineServicesConfig(options: ServicesOptions) {
+export function defineServices(options: ServicesOptions) {
   return options
 }
 
-export function defineStorageConfig(options: StorageOptions) {
+export function defineStorage(options: StorageOptions) {
   return options
 }
 
-export function defineUiConfig(options: UiOptions) {
+export function defineUi(options: UiOptions) {
   return options
 }

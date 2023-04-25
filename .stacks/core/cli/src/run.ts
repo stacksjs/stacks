@@ -1,10 +1,8 @@
 import { execSync as childExec } from 'node:child_process'
-import type { Err } from '@stacksjs/error-handling'
-import type { CliOptions, CommandResult, Result, SpinnerOptions as Spinner } from '@stacksjs/types'
+import type { CliOptions, CommandResult, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { ResultAsync, err } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/logging'
-import { determineDebugMode } from '@stacksjs/utils'
+import { determineDebugLevel } from '@stacksjs/utils'
 import { spawn } from './command'
 import { startSpinner } from './helpers'
 import { italic } from '.'
@@ -17,14 +15,15 @@ import { italic } from '.'
  * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
  */
-export function exec(command: string, options?: CliOptions) {
+export function exec(command: string, options?: CliOptions): CommandResult {
   const cwd = options?.cwd || projectPath()
-  const stdio = determineDebugMode(options) ? 'inherit' : 'ignore'
+  const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
   const shell = options?.shell || false
 
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd, shell }),
-    () => log.error(new Error(`Failed to run command: ${italic(command)}`)),
+    // () => new Error(`Failed to run command: ${italic(command)}`),
+    () => new Error(`Failed to run command: ${italic(command)}`),
   )
 }
 
@@ -45,7 +44,7 @@ export function execSync(command: string) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions) {
+export async function runCommand(command: string, options?: CliOptions): Promise<CommandResult> {
   return await exec(command, options)
 }
 
@@ -56,12 +55,14 @@ export async function runCommand(command: string, options?: CliOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<Result<CommandResult<string>, Error>[] | Result<CommandResult<string>, Error> | Err<CommandResult<string>, string>> {
-  const results: Result<CommandResult<string>, Error>[] = []
+export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult[]> {
+  const results: CommandResult[] = []
   const numberOfCommands = commands.length
 
-  if (!numberOfCommands)
-    return err('No commands were specified')
+  if (!numberOfCommands) {
+    log.error(new Error('No commands were specified'))
+    process.exit()
+  }
 
   const spinner = determineSpinner(options)
 
@@ -93,7 +94,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 }
 
 function determineSpinner(options?: CliOptions): Spinner | undefined {
-  if (!determineDebugMode(options))
+  if (!determineDebugLevel(options))
     return startSpinner(options?.spinnerText)
 
   return undefined

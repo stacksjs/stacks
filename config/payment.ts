@@ -1,4 +1,4 @@
-import { definePaymentConfig } from 'stacks/core/config/src'
+import { definePayment } from 'stacks/core/config/src'
 
 /**
  * **Payment Configuration**
@@ -7,7 +7,7 @@ import { definePaymentConfig } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default definePaymentConfig({
+export default definePayment({
   driver: 'stripe',
 
   // ... other

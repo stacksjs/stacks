@@ -1,4 +1,4 @@
-import { definePageConfig } from 'stacks/core/config/src'
+import { definePage } from 'stacks/core/config/src'
 
 /**
  * **Page Configuration**
@@ -7,7 +7,7 @@ import { definePageConfig } from 'stacks/core/config/src'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default definePageConfig({
+export default definePage({
   onboarding: {
     path: 'pages/dashboard/onboarding',
     pages: [],

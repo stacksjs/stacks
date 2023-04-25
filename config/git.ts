@@ -1,4 +1,4 @@
-import { defineGitConfig } from 'stacks/core/config/src'
+import { defineGit } from 'stacks/core/config/src'
 
 /**
  * **Git Configuration**
@@ -7,7 +7,7 @@ import { defineGitConfig } from 'stacks/core/config/src'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineGitConfig({
+export default defineGit({
   hooks: {
     'pre-commit': 'lint-staged',
   },

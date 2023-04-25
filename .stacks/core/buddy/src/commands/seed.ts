@@ -12,7 +12,7 @@ async function seed(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       // const perf = await intro('buddy seed')
-      // const result = await runAction(Action.Seed, { ...options, showSpinner: true, spinnerText: 'Freshly installing dependencies...' })
+      // const result = await runAction(Action.Seed, { ...options, showSpinner: true, spinnerText: 'Seeding...' })
 
       // if (result.isErr()) {
       //   outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
