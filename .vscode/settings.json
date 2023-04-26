@@ -29,7 +29,7 @@
   "eslint.packageManager": "pnpm",
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./.stacks/core/unocss.ts",
+  "unocss.root": "./.stacks/core/ui/unocss.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
