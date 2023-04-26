@@ -37,8 +37,8 @@
     "typecheck": "npx tsc --noEmit"
   },
   "peerDependencies": {
-    "@novu/node": "^0.13.0",
-    "@novu/stateless": "^0.13.0",
+    "@novu/node": "^0.14.0",
+    "@novu/stateless": "^0.14.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
