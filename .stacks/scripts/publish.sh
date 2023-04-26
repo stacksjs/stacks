@@ -12,7 +12,7 @@ else
 fi
 
 if [ "$SEARCH_DRIVER" = "meilisearch" ]; then
-  echo "  meilisearch: ^0.1.1" >>../../tea.yaml
+  echo "  meilisearch: ^1.0.0" >>../../tea.yaml
 else
   echo "Unexpected SEARCH DRIVER value: $SEARCH_DRIVER"
 fi

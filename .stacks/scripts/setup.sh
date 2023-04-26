@@ -450,6 +450,11 @@ check_shell_magic() {
   fi
 
   echo >>"$__TEA_SH_FILE"
+  echo "alias buddy='./buddy '" >>"$__TEA_SH_FILE"
+  echo "alias bud='./buddy '" >>"$__TEA_SH_FILE"
+  echo "alias stacks='./buddy '" >>"$__TEA_SH_FILE"
+  echo "alias stx='./buddy '" >>"$__TEA_SH_FILE"
+  echo >>"$__TEA_SH_FILE"
   echo "$__TEA_ONE_LINER" >>"$__TEA_SH_FILE"
 
   echo #spacer
@@ -523,7 +528,7 @@ exec)
     echo #spacer
 
     gum_func format --theme="dracula" <<-EoMD >&2
-			> powered by [tea](https://tea.xyz)
+			> powered by [stacks](https://stacksjs.dev) & [tea](https://tea.xyz)
 		EoMD
 
     echo #spacer
