@@ -24,7 +24,7 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
     echo "  # managed by stacks"
     echo "  • node.js $node_version"
     echo "  • pnpm v$pnpm_version"
-    sh ./publish.sh
+    # sh ./publish.sh
     echo "\n  Please reopen your shell for updates to take effect." | awk '{print "\033[3m" $0 "\033[0m"}'
 
     exit
