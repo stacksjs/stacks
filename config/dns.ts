@@ -10,8 +10,8 @@ import { defineDns } from 'stacks/core/config/src'
 export default defineDns({
   a: [
     {
-      name: '',
-      address: '',
+      name: env('A_NAME', 'name'),
+      address: env('A_NAME', 'name'),
       ttl: 300,
     },
   ],

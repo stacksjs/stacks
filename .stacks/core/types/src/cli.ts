@@ -143,6 +143,15 @@ export type LintOptions = {
   [key in LintOption]: boolean;
 } & CliOptions
 
+export type DnsStringOptionBoolean = 'a' | 'aaaa' | 'cname'
+export type DnsStringOptions = ''
+export type DnsBoolOptions = DnsStringOptionBoolean & DnsStringOptions | void
+export type DnsOptions = {
+  [key in DnsStringOptionBoolean]: boolean;
+} & {
+  [key in DnsStringOptions]: string;
+} & CliOptions
+
 export type MakeStringOption = 'name' | 'chat' | 'sms' | 'env'
 export type MakeBooleanOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'factory' | 'notification' | 'stack'
 export type MakeOptions = {
