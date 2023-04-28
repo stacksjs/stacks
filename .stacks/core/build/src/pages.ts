@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+
 // import generateSitemap from 'vite-ssg-sitemap'
 import type { ViteConfig } from '@stacksjs/types'
 import { functionsPath, projectPath } from '@stacksjs/path'

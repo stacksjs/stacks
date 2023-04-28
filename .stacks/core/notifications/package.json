@@ -45,6 +45,19 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "npx tsc --noEmit"
   },
+  "peerDependencies": {
+    "@stacksjs/chat": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/email": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/push": "workspace:*",
+    "@stacksjs/sms": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@maizzle/framework": "^4.4.4"
+  },
   "optionalDependencies": {
     "@novu/discord": "^0.14.0",
     "@novu/emailjs": "^0.14.0",
@@ -67,19 +80,6 @@
     "@novu/telnyx": "^0.14.0",
     "@novu/termii": "^0.14.0",
     "@novu/twilio": "^0.14.0"
-  },
-  "peerDependencies": {
-    "@stacksjs/chat": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/push": "workspace:*",
-    "@stacksjs/sms": "workspace:*",
-    "@stacksjs/types": "workspace:*"
-  },
-  "dependencies": {
-    "@maizzle/framework": "^4.4.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
