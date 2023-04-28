@@ -41,10 +41,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "npx unbuild",
-    "dev": "npx unbuild --stub",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@maizzle/framework": "^4.4.4",

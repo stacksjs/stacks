@@ -54,10 +54,10 @@
   "scripts": {
     "buddy": "esno ./src/cli.ts",
     "preinstall": "npx only-allow pnpm",
-    "build": "npx unbuild",
-    "dev": "npx unbuild --stub",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm buddy prepublish",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/actions": "workspace:*",

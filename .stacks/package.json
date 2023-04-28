@@ -62,10 +62,9 @@
   ],
   "scripts": {
     "buddy": "esno ./core/buddy/src/cli.ts",
-    "stx": "pnpm run buddy",
-    "stacks": "pnpm run buddy",
+    "build": "pnpm build -r --filter '../core/**'",
+
     "prepublish": "pnpm buddy prepublish",
-    "build": "pnpm buddy build:stacks",
     "dev": "pnpm buddy dev:stacks // wip",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",

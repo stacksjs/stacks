@@ -32,8 +32,8 @@
   ],
   "scripts": {
     "build": "echo 'No build needed.'",
-    "dev": "npx unbuild --stub",
-    "typecheck": "npx tsc --noEmit"
+    "dev": "unbuild --stub",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

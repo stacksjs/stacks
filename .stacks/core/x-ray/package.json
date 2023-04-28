@@ -42,7 +42,7 @@
     "dev": "echo 'wip'",
     "serve:tauri": "vite",
     "prepublishOnly": "pnpm run build",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/desktop": "workspace:*",
