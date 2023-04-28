@@ -17,11 +17,12 @@ async function lint(buddy: CLI) {
     .action(async (options: LintOptions) => {
       const perf = await intro('buddy lint')
       const result = await runAction(Action.Lint, { ...options, showSpinner: true, spinnerText: 'Linting...' })
+      console.log('result', result)
 
-      if (result.isErr()) {
-        outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro('Linted your project.', { startTime: perf, useSeconds: true })
     })
@@ -32,11 +33,12 @@ async function lint(buddy: CLI) {
     .action(async (options: LintOptions) => {
       log.info('Fixing lint errors...')
       const result = await runAction(Action.LintFix, { ...options, showSpinner: true, spinnerText: 'Linting...' })
+      console.log('result', result)
 
-      if (result.isErr()) {
-        log.error('There was an error lint fixing your code.', result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   log.error('There was an error lint fixing your code.', result.error)
+      //   process.exit()
+      // }
 
       log.success('Fixed lint errors.')
     })

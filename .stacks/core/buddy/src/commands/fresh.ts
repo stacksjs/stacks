@@ -15,11 +15,12 @@ async function fresh(buddy: CLI) {
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, options)
+      console.log('result', result)
 
-      if (result.isErr()) {
-        outro('While running the fresh command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running the fresh command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

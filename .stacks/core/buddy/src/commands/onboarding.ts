@@ -15,11 +15,12 @@ async function onboarding(buddy: CLI) {
     .action(async () => {
       const startTime = await intro('buddy page:onboarding')
       const result = await runAction(Action.GenerateOnboarding)
+      console.log('result', result)
 
-      if (result.isErr()) {
-        log.error('Something went wrong when generating', result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   log.error('Something went wrong when generating', result.error)
+      //   process.exit()
+      // }
 
       outro('Pages generated successfully', { startTime })
     })

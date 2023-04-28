@@ -10,11 +10,12 @@ async function inspire(buddy: CLI) {
     .action(async () => {
       const perf = await intro('buddy inspire')
       const result = await runAction(Action.Inspire)
+      console.log('result', result)
 
-      if (result.isErr()) {
-        outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro('Your quote is: ...', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

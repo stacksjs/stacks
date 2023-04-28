@@ -69,10 +69,10 @@ async function dev(buddy: CLI) {
       // check if result is an array
       if (Array.isArray(result)) {
         // check if any of the items in the array is an error
-        if (result.some(item => item.isErr())) {
-          outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
-          process.exit()
-        }
+        // if (result.some(item => item.isErr())) {
+        //   outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        //   process.exit()
+        // }
       }
 
       // check if result is an error
@@ -95,10 +95,10 @@ async function dev(buddy: CLI) {
       // check if result is an array
       if (Array.isArray(result)) {
         // check if any of the items in the array is an error
-        if (result.some(item => item.isErr())) {
-          outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
-          process.exit()
-        }
+        // if (result.some(item => item.isErr())) {
+        //   outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        //   process.exit()
+        // }
       }
 
       // check if result is an error

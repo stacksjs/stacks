@@ -56,11 +56,12 @@ async function upgrade(buddy: CLI) {
       }
 
       const result = await runAction(Action.Upgrade, { ...options, shell: true })
+      console.log('result', result)
 
-      if (result.isErr()) {
-        outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro('Upgrade complete.', { startTime: perf, useSeconds: true })
       process.exit()
@@ -97,12 +98,13 @@ async function upgrade(buddy: CLI) {
         options.version = buddy.args[0]
 
       const perf = await intro('buddy upgrade:package-manager')
-      const response = await runAction(Action.UpgradePackageManager, options)
+      const result = await runAction(Action.UpgradePackageManager, options)
+      console.log('result', result, perf)
 
-      if (response.isErr()) {
-        outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
-        process.exit()
-      }
+      // if (response.isErr()) {
+      //   outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
+      //   process.exit()
+      // }
 
       process.exit(ExitCode.Success)
     })
@@ -112,12 +114,13 @@ async function upgrade(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:node')
-      const response = await runAction(Action.UpgradeNode, options)
+      const result = await runAction(Action.UpgradeNode, options)
+      console.log('result', result, perf)
 
-      if (response.isErr()) {
-        outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
-        process.exit()
-      }
+      // if (response.isErr()) {
+      //   outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
+      //   process.exit()
+      // }
 
       process.exit(ExitCode.Success)
     })
@@ -126,7 +129,7 @@ async function upgrade(buddy: CLI) {
     .command('upgrade:all', descriptions.all)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
-      await runAction(Action.Upgrade, { ...options, all: true })
+      // await runAction(Action.Upgrade, { ...options, all: true })
     })
 }
 

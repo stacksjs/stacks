@@ -253,6 +253,7 @@ export const enum Action {
   GeneratePackageJsons = 'generate-package-jsons', // wip
   GenerateSettings = 'generate-settings',
   GenerateOnboarding = 'generate-onboarding',
+  Inspire = 'inspire', // wip
   KeyGenerate = 'key-generate', // wip
   MakeNotification = 'make-notification', // wip
   Migrate = 'migrate', // wip

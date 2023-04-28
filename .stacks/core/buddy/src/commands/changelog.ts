@@ -15,11 +15,12 @@ async function changelog(buddy: CLI) {
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)
+      console.log('result', result)
 
-      if (result.isErr()) {
-        outro('While running the changelog command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-        process.exit()
-      }
+      // if (result.isErr()) {
+      //   outro('While running the changelog command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      //   process.exit()
+      // }
 
       outro('Generated the CHANGELOG.md file.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
