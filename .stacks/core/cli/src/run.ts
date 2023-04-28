@@ -2,6 +2,7 @@ import { execSync as childExec } from 'node:child_process'
 import type { CliOptions, CommandResult, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { ResultAsync, err } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/cli'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { spawn } from './command'
 import { startSpinner } from './helpers'
@@ -23,7 +24,7 @@ export function exec(command: string, options?: CliOptions): CommandResult {
   return ResultAsync.fromPromise(
     spawn(command, { stdio, cwd, shell }),
     // () => new Error(`Failed to run command: ${italic(command)}`),
-    () => new Error(`Failed to run command: ${italic(command)}`),
+    () => log.error(new Error(`Failed to run command: ${italic(command)}`)),
   )
 }
 

@@ -1,6 +1,6 @@
-import { parseArgs } from '@stacksjs/cli'
+import { parseOptions } from '@stacksjs/cli'
 
-const options = parseArgs(process.argv.slice(2))
+const options = parseOptions()
 
 console.log('options', options)
 

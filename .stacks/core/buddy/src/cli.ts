@@ -7,7 +7,7 @@ import { Action } from '@stacksjs/types'
 import { filesystem } from '@stacksjs/storage'
 import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
-const cli = command('stacks')
+const cli = command('buddy')
 const { fs } = filesystem
 
 // setup global error handlers
