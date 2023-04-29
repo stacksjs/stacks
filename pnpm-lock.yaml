@@ -479,6 +479,10 @@ importers:
         version: link:../development
 
   .stacks/core/config:
+    dependencies:
+      c12:
+        specifier: ^1.4.1
+        version: 1.4.1
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*

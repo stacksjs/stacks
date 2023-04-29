@@ -8,88 +8,89 @@ export function env(key: string, fallback: any) {
   return fallback
 }
 
-export { defineBuildConfig } from 'unbuild'
-
-export function defineApp(options: AppOptions) {
+export function defineApp(options: Partial<AppOptions>) {
   return options
 }
 
-export function defineCache(options: CacheOptions) {
+export function defineCache(options: Partial<CacheOptions>) {
   return options
 }
 
-export function defineCli(options: CliOptions) {
+export function defineCli(options: Partial<CliOptions>) {
   return options
 }
 
-export function defineCronJobsConfig(options: CronJobOptions[]) {
+export function defineCronJobsConfig(options: Partial<CronJobOptions>[]) {
   return options
 }
 
-export function defineDatabase(options: DatabaseOptions) {
+export function defineDatabase(options: Partial<DatabaseOptions>) {
   return options
 }
 
-export function defineDebugConfig(options: DebugOptions) {
+export function defineDebugConfig(options: Partial<DebugOptions>) {
   return options
 }
 
-// export function defineCloudConfig(options: CloudOptions) {
+// export function defineCloudConfig(options: Partial<CloudOptions>) {
 //   return options
 // }
 
-export function defineDns(options: DnsOptions) {
+export function defineDns(options: Partial<DnsOptions>) {
   return options
 }
 
-export function defineEmailConfig(options: EmailOptions) {
+export function defineEmailConfig(options: Partial<EmailOptions>) {
   return options
 }
 
-export function defineEvents(options: Events) {
+export function defineEvents(options: Partial<Events>) {
   return options
 }
 
-export function defineGit(options: GitOptions) {
+export function defineGit(options: Partial<GitOptions>) {
   return options
 }
 
-export function defineHashing(options: HashingOptions) {
+export function defineHashing(options: Partial<HashingOptions>) {
   return options
 }
 
-export function defineLibrary(options: LibraryOptions) {
+export function defineLibrary(options: Partial<LibraryOptions>) {
   return options
 }
 
-export function defineModel(options: Model) {
+export function defineModel(options: Partial<Model>) {
   return options
 }
 
-export function defineNotification(options: NotificationOptions) {
+export function defineNotification(options: Partial<NotificationOptions>) {
   return options
 }
 
-export function definePage(options: PagesOption) {
+export function definePage(options: Partial<PagesOption>) {
   return options
 }
 
-export function definePayment(options: PaymentOptions) {
+export function definePayment(options: Partial<PaymentOptions>) {
   return options
 }
 
-export function defineSearchEngine(options: SearchEngineOptions) {
+export function defineSearchEngine(options: Partial<SearchEngineOptions>) {
   return options
 }
 
-export function defineServices(options: ServicesOptions) {
+export function defineServices(options: Partial<ServicesOptions>) {
   return options
 }
 
-export function defineStorage(options: StorageOptions) {
+export function defineStorage(options: Partial<StorageOptions>) {
   return options
 }
 
-export function defineUi(options: UiOptions) {
+export function defineUi(options: Partial<UiOptions>) {
   return options
 }
+
+export { defineBuildConfig } from 'unbuild'
+export { loadConfig } from 'c12'
