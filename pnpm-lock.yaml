@@ -588,8 +588,8 @@ importers:
   .stacks/core/docs:
     dependencies:
       vitepress:
-        specifier: 1.0.0-alpha.74
-        version: 1.0.0-alpha.74(@algolia/client-search@4.17.0)(@types/node@18.16.3)
+        specifier: 1.0.0-alpha.75
+        version: 1.0.0-alpha.75(@algolia/client-search@4.17.0)(@types/node@18.16.3)
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -1418,8 +1418,8 @@ importers:
         specifier: ^0.22.2
         version: 0.22.2(@vueuse/head@1.1.26)(vite@4.3.3)(vue-router@4.1.6)(vue@3.2.47)
       vitepress:
-        specifier: 1.0.0-alpha.74
-        version: 1.0.0-alpha.74(@algolia/client-search@4.17.0)(@types/node@18.16.3)
+        specifier: 1.0.0-alpha.75
+        version: 1.0.0-alpha.75(@algolia/client-search@4.17.0)(@types/node@18.16.3)
       vue:
         specifier: ^3.2.47
         version: 3.2.47
@@ -1584,8 +1584,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       vitepress:
-        specifier: ^1.0.0-alpha.74
-        version: 1.0.0-alpha.74(@algolia/client-search@4.17.0)(@types/node@18.16.3)
+        specifier: ^1.0.0-alpha.75
+        version: 1.0.0-alpha.75(@algolia/client-search@4.17.0)(@types/node@18.16.3)
 
   .stacks/fonts/hubot-sans: {}
 
@@ -15654,6 +15654,15 @@ packages:
       vscode-textmate: 8.0.0
     dev: false
 
+  /shiki@0.14.2:
+    resolution: {integrity: sha512-ltSZlSLOuSY0M0Y75KA+ieRaZ0Trf5Wl3gutE7jzLuIcWxLp5i/uEnLoQWNvgKXQ5OMpGkJnVMRLAuzjc0LJ2A==}
+    dependencies:
+      ansi-sequence-parser: 1.1.0
+      jsonc-parser: 3.2.0
+      vscode-oniguruma: 1.7.0
+      vscode-textmate: 8.0.0
+    dev: false
+
   /side-channel@1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
     dependencies:
@@ -17658,8 +17667,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vitepress@1.0.0-alpha.74(@algolia/client-search@4.17.0)(@types/node@18.16.3):
-    resolution: {integrity: sha512-n5UHqsLJKaJ3V6BSiofS5ZVhtxzarNIn3/kyOzUp/vePmVbQyX/pZ6/MhZgNr0g5t4E55j7XM3AHf/Fo0hnrpw==}
+  /vitepress@1.0.0-alpha.75(@algolia/client-search@4.17.0)(@types/node@18.16.3):
+    resolution: {integrity: sha512-twpPZ/6UnDR8X0Nmj767KwKhXlTQQM9V/J1i2BP9ryO29/w4hpxBfEum6nvfpNhJ4H3h+cIhwzAK/e9crZ6HEQ==}
     hasBin: true
     dependencies:
       '@docsearch/css': 3.3.4
@@ -17670,7 +17679,7 @@ packages:
       body-scroll-lock: 4.0.0-beta.0
       mark.js: 8.11.1
       minisearch: 6.0.1
-      shiki: 0.14.1
+      shiki: 0.14.2
       vite: 4.3.3(@types/node@18.16.3)
       vue: 3.2.47
     transitivePeerDependencies:

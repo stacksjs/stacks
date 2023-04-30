@@ -68,7 +68,7 @@
     "vite-plugin-pwa": "^0.14.7",
     "vite-plugin-vue-layouts": "^0.8.0",
     "vite-ssg": "^0.22.2",
-    "vitepress": "1.0.0-alpha.74",
+    "vitepress": "1.0.0-alpha.75",
     "vue": "^3.2.47",
     "zod": "^3.21.4"
   }
