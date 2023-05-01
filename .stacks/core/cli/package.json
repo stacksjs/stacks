@@ -59,8 +59,7 @@
     "ora": "^6.3.0"
   },
   "dependencies": {
-    "kolorist": "1.8.0",
-    "mri": "^1.2.0"
+    "kolorist": "1.8.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

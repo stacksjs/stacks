@@ -198,6 +198,7 @@ unimport
 unocss
 unplugin
 unstorage
+upstash
 vclass
 vemit
 vercel

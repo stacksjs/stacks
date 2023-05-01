@@ -234,6 +234,9 @@ importers:
       '@stacksjs/objects':
         specifier: workspace:*
         version: link:../objects
+      '@stacksjs/orm':
+        specifier: workspace:*
+        version: link:../orm
       '@stacksjs/pages':
         specifier: workspace:*
         version: link:../pages
@@ -448,9 +451,6 @@ importers:
       kolorist:
         specifier: 1.8.0
         version: 1.8.0
-      mri:
-        specifier: ^1.2.0
-        version: 1.2.0
       ora:
         specifier: ^6.3.0
         version: 6.3.0
@@ -490,6 +490,9 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
+      unbuild:
+        specifier: ^1.2.1
+        version: 1.2.1
 
   .stacks/core/dashboard:
     devDependencies:
@@ -925,6 +928,9 @@ importers:
 
   .stacks/core/orm:
     dependencies:
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:../config
       '@stacksjs/query-builder':
         specifier: workspace:*
         version: link:../query-builder

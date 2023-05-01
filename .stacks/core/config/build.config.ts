@@ -1,11 +1,19 @@
 import { defineBuildConfig } from '@stacksjs/development'
 import { alias } from '@stacksjs/alias'
+import { path as p } from '@stacksjs/path'
+
+// eslint-disable-next-line no-console
+console.log('here')
 
 export default defineBuildConfig({
   alias,
   entries: [
-    './src/index',
-    './src/cli',
+    p.configPath('src/index'),
+    {
+      builder: 'mkdist',
+      input: p.configPath('src/user'),
+      outDir: p.configPath('dist/user')
+    },
   ],
   declaration: true,
   clean: true,

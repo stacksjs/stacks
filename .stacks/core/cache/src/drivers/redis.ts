@@ -4,8 +4,8 @@ import { cache } from '@stacksjs/config/user'
 
 const client: RedisClientType = createClient({
   socket: {
-    host: cache.redis.host,
-    port: cache.redis.port,
+    host: cache?.redis?.host,
+    port: cache?.redis?.port,
   },
   password: '',
 })

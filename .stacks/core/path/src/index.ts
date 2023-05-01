@@ -218,6 +218,10 @@ export function notificationsPath(path?: string) {
   return corePath(`notifications/${path || ''}`)
 }
 
+export function ormPath(path?: string) {
+  return corePath(`orm/${path || ''}`)
+}
+
 export function objectsPath(path?: string) {
   return corePath(`objects/${path || ''}`)
 }
@@ -406,6 +410,7 @@ export const path = {
   lintPath,
   loggingPath,
   modulesPath,
+  ormPath,
   objectsPath,
   onboardingPath,
   notificationsPath,

@@ -1,8 +1,8 @@
 import { execSync as childExec } from 'node:child_process'
-import type { CliOptions, CommandResult, SpinnerOptions as Spinner } from '@stacksjs/types'
+import type { CliOptions, CommandResult, SpinnerOptions as Spinner, ResultAsync, CommandReturnValue } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
-import { ResultAsync, err } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/cli'
+import { err, ResultAsync as AsyncResult } from '@stacksjs/error-handling'
+import { log } from './console'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { spawn } from './command'
 import { startSpinner } from './helpers'
@@ -16,15 +16,14 @@ import { italic } from '.'
  * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
  */
-export function exec(command: string, options?: CliOptions): CommandResult {
+export function exec(command: string, options?: CliOptions): ResultAsync<CommandReturnValue, Error> {
   const cwd = options?.cwd || projectPath()
   const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
   const shell = options?.shell || false
 
-  return ResultAsync.fromPromise(
+  return AsyncResult.fromPromise(
     spawn(command, { stdio, cwd, shell }),
-    // () => new Error(`Failed to run command: ${italic(command)}`),
-    () => log.error(new Error(`Failed to run command: ${italic(command)}`)),
+    () => new Error(`Failed to run command: ${italic(command)}`),
   )
 }
 
@@ -45,7 +44,7 @@ export function execSync(command: string) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions): Promise<CommandResult> {
+export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<CommandReturnValue, Error>> {
   return await exec(command, options)
 }
 
@@ -56,7 +55,7 @@ export async function runCommand(command: string, options?: CliOptions): Promise
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult[]> {
+export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult | CommandResult[]> {
   const results: CommandResult[] = []
   const numberOfCommands = commands.length
 
@@ -70,10 +69,10 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result?.isOk())
+    if (result.isOk())
       results.push(result)
 
-    if (result?.isErr()) {
+    else if (result.isErr()) {
       if (spinner) {
         // spinner.fail('Failed to run command.')
         err(result.error)

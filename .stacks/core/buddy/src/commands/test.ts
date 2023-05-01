@@ -55,12 +55,12 @@ async function test(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:feature')
-      let result
+      // let result
 
-      if (options.showReport)
-        result = await runAction(Action.ShowFeatureTestReport, { ...options, verbose: true, cwd: projectPath() })
-      else
-        result = await runAction(Action.TestFeature, { ...options, verbose: true, cwd: projectPath() })
+      // if (options.showReport)
+      //   result = await runAction(Action.ShowFeatureTestReport, { ...options, verbose: true, cwd: projectPath() })
+      // else
+      //   result = await runAction(Action.TestFeature, { ...options, verbose: true, cwd: projectPath() })
 
       // if (result.isErr()) {
       //   outro('While running `buddy test:feature`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

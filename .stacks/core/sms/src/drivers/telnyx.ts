@@ -4,12 +4,12 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config/user'
 
-const env = notification.sms.telnyx
+const env = notification.sms?.telnyx
 
 const provider = new TelnyxSmsProvider({
-  apiKey: env.key,
-  messageProfileId: env.messageProfileId,
-  from: env.from,
+  apiKey: env?.key,
+  messageProfileId: env?.messageProfileId,
+  from: env?.from,
 })
 
 function send(options: SmsOptions) {

@@ -2,7 +2,7 @@ import storage from '@stacksjs/storage'
 import { italic, log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { ActionOptions, CommandResult } from '@stacksjs/types'
-import { err, errAsync } from '@stacksjs/error-handling'
+import { err } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
   if (!options)
@@ -30,9 +30,9 @@ export type ActionResult = CommandResult
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
+export async function runAction(action: string, options?: ActionOptions): Promise<CommandResult> {
   if (!hasAction(action))
-    return errAsync(`The specified action "${action}" does not exist.`)
+    return err(`The specified action "${action}" does not exist`)
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
@@ -42,7 +42,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
     log.debug('running command:', italic(cmd))
 
   return options?.showSpinner
-    ? await runCommands([cmd], options)
+    ? await runCommands([cmd], options) as CommandResult
     : await runCommand(cmd, options)
 }
 
@@ -53,9 +53,9 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult> | Promise<CommandResult>[] {
+export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
   if (!actions.length)
-    return err('No actions were specified')
+    return err(`No actions were specified`)
 
   for (const action of actions) {
     if (!hasAction(action))

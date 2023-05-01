@@ -3,10 +3,11 @@
  */
 
 import type { Ora } from 'ora'
-import type { ExecaReturnValue as CommandReturnValue } from 'execa'
-import type { ResultAsync } from './'
+import type { Ok, Err } from './errors'
+import type { ExecaReturnValue } from 'execa'
 
-export type CommandResult = ResultAsync<CommandReturnValue<string>, Error>
+export type CommandReturnValue = ExecaReturnValue<string>
+export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>
 
 export interface StacksOptions {
   componentsSrcPath?: string

@@ -42,10 +42,10 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "bin": {
-    "stacks": "bin/stacks.mjs",
-    "stx": "bin/stacks.mjs",
-    "buddy": "bin/stacks.mjs",
-    "bud": "bin/stacks.mjs"
+    "stacks": "dist/cli.mjs",
+    "stx": "dist/cli.mjs",
+    "buddy": "dist/cli.mjs",
+    "bud": "dist/cli.mjs"
   },
   "files": [
     "dist",
@@ -87,6 +87,7 @@
     "@stacksjs/modules": "workspace:*",
     "@stacksjs/notifications": "workspace:*",
     "@stacksjs/objects": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
     "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",

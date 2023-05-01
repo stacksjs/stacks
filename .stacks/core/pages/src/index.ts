@@ -4,9 +4,9 @@ import { filesystem } from '@stacksjs/storage'
 const { fs } = filesystem
 
 function generateSettings() {
-  config.settings.pages.forEach((page: string) => {
+  config.settings?.pages.forEach((page: string) => {
     fs.appendFile(
-      `${config.settings.path}/${page}.vue`,
+      `${config.settings?.path}/${page}.vue`,
       '',
       (err) => {
         if (err)
@@ -19,9 +19,9 @@ function generateSettings() {
 }
 
 function generateOnboarding() {
-  config.onboarding.pages.forEach((page: string) => {
+  config.onboarding?.pages.forEach((page: string) => {
     fs.appendFile(
-      `${config.onboarding.path}/${page}.vue`,
+      `${config.onboarding?.path}/${page}.vue`,
       '',
       (err) => {
         if (err)

@@ -4,12 +4,12 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config/user'
 
-const env = notification.sms.plivo
+const env = notification.sms?.plivo
 
 const provider = new PlivoSmsProvider({
-  accountSid: env.sid,
-  authToken: env.authToken,
-  from: env.from,
+  accountSid: env?.sid,
+  authToken: env?.authToken,
+  from: env?.from,
 })
 
 function send(options: SmsOptions) {

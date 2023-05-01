@@ -62,8 +62,7 @@
   ],
   "scripts": {
     "buddy": "esno ./core/buddy/src/cli.ts",
-    "build": "pnpm build -r --filter '../core/**'",
-
+    "build": "pnpm -r --filter='./core/**' build",
     "prepublish": "pnpm buddy prepublish",
     "dev": "pnpm buddy dev:stacks // wip",
     "fresh": "pnpm buddy fresh",
@@ -81,7 +80,6 @@
     "dev:pages": "nitro dev",
     "dev:functions": "pnpm buddy dev:functions",
     "development": "pnpm run dev",
-    "build:bin": "pkg .",
     "build:components": "pnpm buddy build:components",
     "build:vue-components": "npx vite build -c ./core/build/src/vue-components.ts",
     "build:web-components": "npx vite build -c ./core/build/src/web-components.ts",

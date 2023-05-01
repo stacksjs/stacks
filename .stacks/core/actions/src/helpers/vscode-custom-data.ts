@@ -18,7 +18,7 @@ export async function generateVsCodeCustomData() {
 }
 
 function generateComponentInfoData() {
-  const componentsData = JSON.stringify(library.vueComponents.tags)
+  const componentsData = JSON.stringify(library.vueComponents?.tags)
 
   return `{
   "version": 1.1,

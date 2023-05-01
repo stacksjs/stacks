@@ -62,6 +62,8 @@ const alias: Record<string, string> = {
   '@stacksjs/notifications/*': p.notificationsPath('src/*'),
   '@stacksjs/objects': p.objectsPath('src/index.ts'),
   '@stacksjs/objects/*': p.objectsPath('src/*'),
+  '@stacksjs/orm': p.ormPath('src/index.ts'),
+  '@stacksjs/orm/*': p.ormPath('src/*'),
   '@stacksjs/path': p.pathPath('src/index.ts'), // 🤦🏼‍♂️
   '@stacksjs/path/*': p.pathPath('src/*'),
   '@stacksjs/push': p.pushPath('src/index.ts'),

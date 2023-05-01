@@ -31,7 +31,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "echo 'No build needed.'",
+    "build": "unbuild",
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },

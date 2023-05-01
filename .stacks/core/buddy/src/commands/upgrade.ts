@@ -72,7 +72,7 @@ async function upgrade(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
-      const perf = await intro('buddy update:framework')
+      // const perf = await intro('buddy update:framework')
       await runAction(Action.Upgrade, options)
     })
 
