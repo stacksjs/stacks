@@ -1331,6 +1331,16 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
 
+  .stacks/core/tinker:
+    dependencies:
+      tsx:
+        specifier: ^3.12.7
+        version: 3.12.7
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../development
+
   .stacks/core/types:
     dependencies:
       '@mdit-vue/plugin-component':
