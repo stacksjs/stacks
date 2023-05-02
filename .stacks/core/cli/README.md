@@ -68,7 +68,7 @@ command.parse() // parse the command
 You may now run the command via:
 
 ```bash
-esno command.ts
+tsx command.ts
 ```
 
 To view a more detailed example, check out [Buddy](../../buddy/).

@@ -52,7 +52,7 @@
     "README.md"
   ],
   "scripts": {
-    "buddy": "esno ./src/cli.ts",
+    "buddy": "tsx ./src/cli.ts",
     "preinstall": "npx only-allow pnpm",
     "build": "unbuild",
     "dev": "unbuild --stub",

@@ -62,7 +62,6 @@ dotenv
 dprint
 encrypter
 envrc
-esno
 execa
 flowconfig
 fontshare

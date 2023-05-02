@@ -20,7 +20,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "buddy": "esno .stacks/core/buddy/src/cli.ts",
+    "buddy": "tsx .stacks/core/buddy/src/cli.ts",
     "stacks": "pnpm buddy",
     "setup": "./.stacks/scripts/setup.sh",
     "fresh": "pnpm buddy fresh",

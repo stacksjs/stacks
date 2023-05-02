@@ -36,7 +36,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
-  const cmd = `npx esno ${actionsPath(`${action}.ts ${opts}`)}`
+  const cmd = `npx tsx ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
     log.debug('running command:', italic(cmd))
@@ -62,7 +62,7 @@ export async function runActions(actions: string[], options?: ActionOptions): Pr
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const commands = actions.map(action => `npx esno ${actionsPath(`${action}.ts`)}`)
+  const commands = actions.map(action => `npx tsx ${actionsPath(`${action}.ts`)}`)
 
   return await runCommands(commands, options)
 }
