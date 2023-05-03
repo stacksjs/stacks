@@ -3,8 +3,8 @@
  */
 
 import type { Ora } from 'ora'
-import type { Ok, Err } from './errors'
 import type { ExecaReturnValue } from 'execa'
+import type { Err, Ok } from './errors'
 
 export type CommandReturnValue = ExecaReturnValue<string>
 export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>

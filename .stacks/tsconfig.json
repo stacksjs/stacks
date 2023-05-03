@@ -27,7 +27,7 @@
       "vite/client",
       "vue/ref-macros",
       "vite-plugin-pages/client",
-      // "vite-plugin-vue-layouts/client",
+      "vite-plugin-vue-layouts/client",
       "vite-plugin-pwa/client"
     ],
     "paths": {
@@ -63,8 +63,6 @@
       // "@stacksjs/desktop/*": ["./core/desktop/src/*"],
       "@stacksjs/domains": ["./core/domains/src/index.ts"],
       "@stacksjs/domains/*": ["./core/domains/src/*"],
-      "@stacksjs/drivers": ["./core/drivers/src/index.ts"],
-      "@stacksjs/drivers/*": ["./core/drivers/src/*"],
       "@stacksjs/email": ["./core/email/src/index.ts"],
       "@stacksjs/email/*": ["./core/email/src/*"],
       "@stacksjs/events": ["./core/events/src/index.ts"],
@@ -126,9 +124,7 @@
       "buddy/*": ["core/buddy/src/*"],
       "framework/*": ["./*"],
       "functions/*": ["../functions/*"],
-      "config/*": ["../config/*"],
-      "components/*": ["../components/*"],
-      "views/*": ["../views/*"]
+      "components/*": ["../components/*"]
     }
   },
   "include": [

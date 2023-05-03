@@ -1,9 +1,9 @@
 import { execSync as childExec } from 'node:child_process'
-import type { CliOptions, CommandResult, SpinnerOptions as Spinner, ResultAsync, CommandReturnValue } from '@stacksjs/types'
+import type { CliOptions, CommandResult, CommandReturnValue, ResultAsync, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
-import { err, ResultAsync as AsyncResult } from '@stacksjs/error-handling'
-import { log } from './console'
+import { ResultAsync as AsyncResult, err } from '@stacksjs/error-handling'
 import { determineDebugLevel } from '@stacksjs/utils'
+import { log } from './console'
 import { spawn } from './command'
 import { startSpinner } from './helpers'
 import { italic } from '.'
@@ -69,8 +69,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result.isOk())
-      results.push(result)
+    if (result.isOk()) { results.push(result) }
 
     else if (result.isErr()) {
       if (spinner) {

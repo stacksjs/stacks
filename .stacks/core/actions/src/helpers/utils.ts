@@ -55,7 +55,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  */
 export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
   if (!actions.length)
-    return err(`No actions were specified`)
+    return err('No actions were specified')
 
   for (const action of actions) {
     if (!hasAction(action))

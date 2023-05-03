@@ -89,6 +89,7 @@ async function upgrade(buddy: CLI) {
     .command('upgrade:package-manager', descriptions.packageManager)
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('upgrade:pm')
+    .alias('upgrade:pnpm')
     .example('buddy upgrade:package-manager 7.16.1 --verbose')
     .example('buddy upgrade:package-manager latest')
     .action(async (options: UpgradeOptions) => {

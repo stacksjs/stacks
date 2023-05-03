@@ -60,6 +60,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🧭 **Router** _smart routing, file-based or Laravel-like_
 - 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
 - 💾 **Storage** _easily create & make use of local & remote storages/file systems_
+- 🧪 **Tinker** _a powerful TypeScript REPL_
 - 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
 - 🎯 **X-Ray** _all you need to debug, log & analyze_
 

@@ -8,7 +8,6 @@ declare global {
   const $ref: typeof import('vue/macros')['$ref']
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
-  const // wip: typeof import('./core/realtime/src/index')['// wip']
   const Collection: typeof import('./core/objects/src/index')['Collection']
   const EffectScope: typeof import('vue')['EffectScope']
   const Err: typeof import('./core/error-handling/src/index')['Err']

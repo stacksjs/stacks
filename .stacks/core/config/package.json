@@ -35,11 +35,11 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "c12": "^1.4.1"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*"
-  },
-  "dependencies": {
-    "c12": "^1.4.1"
   }
 }

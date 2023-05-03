@@ -138,10 +138,6 @@ export function domainsPath(path?: string) {
   return corePath(`domains/${path || ''}`)
 }
 
-export function driversPath(path?: string) {
-  return corePath(`drivers/${path || ''}`)
-}
-
 export function customElementsDataPath() {
   return frameworkPath('custom-elements.json')
 }
@@ -394,7 +390,6 @@ export const path = {
   desktopPath,
   docsPath,
   domainsPath,
-  driversPath,
   emailPath,
   errorHandlingPath,
   eventsPath,

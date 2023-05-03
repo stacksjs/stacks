@@ -1,4 +1,4 @@
-import { parseArgs, runCommands } from '@stacksjs/cli'
+import { parseArgs } from '@stacksjs/cli'
 
 const options = parseArgs()
 

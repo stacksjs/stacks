@@ -1,5 +1,6 @@
 import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql, sql as qbSql } from 'kysely'
 import { createPool } from 'mysql2'
+
 // import { Pool } from 'pg'
 // import { Cursor as qbCursor } from 'pg-cursor'
 

@@ -1,1 +1,5 @@
-export type { UserConfig as DocsConfig } from 'vitepress'
+import type { UserConfig } from 'vitepress'
+
+export type DocsConfig = UserConfig
+
+export type DocsOptions = DocsConfig

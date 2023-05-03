@@ -95,6 +95,9 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
+      unbuild:
+        specifier: ^1.2.1
+        version: 1.2.1
 
   .stacks/core/ai:
     dependencies:
@@ -599,19 +602,6 @@ importers:
         version: link:../development
 
   .stacks/core/domains:
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../development
-
-  .stacks/core/drivers:
-    dependencies:
-      '@stacksjs/config':
-        specifier: workspace:*
-        version: link:../config
-      '@stacksjs/types':
-        specifier: workspace:*
-        version: link:../types
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*

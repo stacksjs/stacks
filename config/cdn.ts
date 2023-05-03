@@ -1,4 +1,4 @@
-// import { defineCdn, env } from 'stacks/core/config/src'
+import { defineCdn } from 'stacks/core/config/src'
 
 /**
  * **CDN Configuration**
@@ -7,6 +7,6 @@
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-// export default defineCdn({
-//   //
-// })
+export default defineCdn({
+  driver: 'cloudfront',
+})

@@ -12,7 +12,7 @@ export default defineBuildConfig({
     {
       builder: 'mkdist',
       input: p.configPath('src/user'),
-      outDir: p.configPath('dist/user')
+      outDir: p.configPath('dist/user'),
     },
   ],
   declaration: true,
