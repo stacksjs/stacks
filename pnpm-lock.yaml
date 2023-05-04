@@ -86,8 +86,8 @@ importers:
         specifier: ^13.0.1
         version: 13.0.1
       vue-component-meta:
-        specifier: ^1.6.3
-        version: 1.6.3(typescript@5.0.4)
+        specifier: ^1.6.4
+        version: 1.6.4(typescript@5.0.4)
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -317,8 +317,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       markdown-it-shiki:
-        specifier: ^0.8.1
-        version: 0.8.1
+        specifier: ^0.9.0
+        version: 0.9.0
       unbuild:
         specifier: ^1.2.1
         version: 1.2.1
@@ -332,8 +332,8 @@ importers:
         specifier: ^4.3.4
         version: 4.3.4(@types/node@18.16.3)
       vite-plugin-inspect:
-        specifier: ^0.7.24
-        version: 0.7.24(rollup@2.79.1)(vite@4.3.4)
+        specifier: ^0.7.25
+        version: 0.7.25(rollup@2.79.1)(vite@4.3.4)
       vite-plugin-pages:
         specifier: ^0.29.0
         version: 0.29.0(vite@4.3.4)
@@ -363,8 +363,8 @@ importers:
   .stacks/core/cache:
     dependencies:
       '@aws-sdk/client-dynamodb':
-        specifier: ^3.325.0
-        version: 3.325.0
+        specifier: ^3.326.0
+        version: 3.326.0
       '@stacksjs/config':
         specifier: workspace:*
         version: link:../config
@@ -1409,8 +1409,8 @@ importers:
         specifier: ^4.3.4
         version: 4.3.4(@types/node@18.16.3)
       vite-plugin-inspect:
-        specifier: ^0.7.24
-        version: 0.7.24(rollup@2.79.1)(vite@4.3.4)
+        specifier: ^0.7.25
+        version: 0.7.25(rollup@2.79.1)(vite@4.3.4)
       vite-plugin-pwa:
         specifier: ^0.14.7
         version: 0.14.7(vite@4.3.4)(workbox-build@6.5.4)(workbox-window@6.5.4)
@@ -1460,8 +1460,8 @@ importers:
         specifier: ^3.2.47
         version: 3.2.47
       vue-tsc:
-        specifier: ^1.6.3
-        version: 1.6.3(typescript@5.0.4)
+        specifier: ^1.6.4
+        version: 1.6.4(typescript@5.0.4)
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1823,21 +1823,21 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@aws-sdk/client-dynamodb@3.325.0:
-    resolution: {integrity: sha512-B7bCt/JyuvBO6+qi0j4UNXeBn4CoXkgHrUprWvgKe+CEnC2LHieVdRPpcFQp5zGv0OE2riI1abqrn2pAkacbVg==}
+  /@aws-sdk/client-dynamodb@3.326.0:
+    resolution: {integrity: sha512-Q9F5IC6z8Gd004Hr/mz/vZhisy25YQcoUycA/qlLik2fK9ZaSz+JJXskDgcrvzvfC0BoGbhOD+hAyDSEgo8STg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.325.0
+      '@aws-sdk/client-sts': 3.326.0
       '@aws-sdk/config-resolver': 3.310.0
-      '@aws-sdk/credential-provider-node': 3.325.0
+      '@aws-sdk/credential-provider-node': 3.326.0
       '@aws-sdk/fetch-http-handler': 3.310.0
       '@aws-sdk/hash-node': 3.310.0
       '@aws-sdk/invalid-dependency': 3.310.0
       '@aws-sdk/middleware-content-length': 3.325.0
       '@aws-sdk/middleware-endpoint': 3.325.0
-      '@aws-sdk/middleware-endpoint-discovery': 3.325.0
+      '@aws-sdk/middleware-endpoint-discovery': 3.326.0
       '@aws-sdk/middleware-host-header': 3.325.0
       '@aws-sdk/middleware-logger': 3.325.0
       '@aws-sdk/middleware-recursion-detection': 3.325.0
@@ -2038,8 +2038,8 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sso-oidc@3.325.0:
-    resolution: {integrity: sha512-D20mpgiZ5/O/CAR18F16h7hJlcmPvOjh6IcjtZexte0NhkSO4oV1MzgmXT/aWOo2zIeovPRzZTNULAH24sosNQ==}
+  /@aws-sdk/client-sso-oidc@3.326.0:
+    resolution: {integrity: sha512-JLxIiWDKYUExYOzsxSPV8nf9w4mmgkkZ495GtSF6YnZhh0Ryxp3yB7KjsEgF3opOVo7uXkkgz4y30GWFzD1pEg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
@@ -2158,8 +2158,8 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sso@3.325.0:
-    resolution: {integrity: sha512-ajxL7cVtK0OPQz37hnKDbL6hPBNv3+sTgyZ+RTuBxjS3MKh/TVu/yXfrL+hfFFMijk494b7CctgRZrTABEvWdw==}
+  /@aws-sdk/client-sso@3.326.0:
+    resolution: {integrity: sha512-dLV9JyTvalh/0vIMd+eJ93n4lvmXcBqXuSFJkyFnyFN/HAB/zC8XB3ccZ1DbwydWMpyVevW6h8+z2gGcq6mweQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
@@ -2286,14 +2286,14 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sts@3.325.0:
-    resolution: {integrity: sha512-5ZOScg5EvyLV59mDUxSbL9x10cUbZsoSqvNETGLruyXILHaRHa8WS00wffcDA/dRzKIk9xQwJNwplcWnpT8WUw==}
+  /@aws-sdk/client-sts@3.326.0:
+    resolution: {integrity: sha512-kVxqOqfoTsObH085AbD6MVdizju03h9bmxDNRXm8ehGtQUDN6B3aqZ78Hp4DryBC87W8SdlehzuRkByW8gQL4A==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
       '@aws-sdk/config-resolver': 3.310.0
-      '@aws-sdk/credential-provider-node': 3.325.0
+      '@aws-sdk/credential-provider-node': 3.326.0
       '@aws-sdk/fetch-http-handler': 3.310.0
       '@aws-sdk/hash-node': 3.310.0
       '@aws-sdk/invalid-dependency': 3.310.0
@@ -2303,7 +2303,7 @@ packages:
       '@aws-sdk/middleware-logger': 3.325.0
       '@aws-sdk/middleware-recursion-detection': 3.325.0
       '@aws-sdk/middleware-retry': 3.325.0
-      '@aws-sdk/middleware-sdk-sts': 3.325.0
+      '@aws-sdk/middleware-sdk-sts': 3.326.0
       '@aws-sdk/middleware-serde': 3.325.0
       '@aws-sdk/middleware-signing': 3.325.0
       '@aws-sdk/middleware-stack': 3.325.0
@@ -2425,14 +2425,14 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-ini@3.325.0:
-    resolution: {integrity: sha512-jvNEHU4zEBbtvf2JqiC2ENb0Y55BurA5X6KVBP1vA3mvn7+zIGH9qD1nAkpvrRelzuorbC5Ey7AmZshR+AugTg==}
+  /@aws-sdk/credential-provider-ini@3.326.0:
+    resolution: {integrity: sha512-6iaDk2W1HOtQMMynbSy3VHumfGG8jkbAZ0tXPAbIXxN7w65GObOsamOkUBRp+Y6A+JuZYJyu1CRFHASENluJOA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.310.0
       '@aws-sdk/credential-provider-imds': 3.310.0
       '@aws-sdk/credential-provider-process': 3.310.0
-      '@aws-sdk/credential-provider-sso': 3.325.0
+      '@aws-sdk/credential-provider-sso': 3.326.0
       '@aws-sdk/credential-provider-web-identity': 3.310.0
       '@aws-sdk/property-provider': 3.310.0
       '@aws-sdk/shared-ini-file-loader': 3.310.0
@@ -2478,15 +2478,15 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-node@3.325.0:
-    resolution: {integrity: sha512-SG3F3yywnSzYcG5diErez9ukG8tToQIksedL/pM/gYFJ1zKYH560VJRc7Rkt0yjnl2cPFewazvPoDLBN/5Azbw==}
+  /@aws-sdk/credential-provider-node@3.326.0:
+    resolution: {integrity: sha512-7wopivXUgx5rcUSSUD4Zf5UQtFZEw/AFh1/DBjA/gWFjwKVdNUN0WxciV3g7zhIhZp2ffe4hTtlmHl3GuDR+zA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.310.0
       '@aws-sdk/credential-provider-imds': 3.310.0
-      '@aws-sdk/credential-provider-ini': 3.325.0
+      '@aws-sdk/credential-provider-ini': 3.326.0
       '@aws-sdk/credential-provider-process': 3.310.0
-      '@aws-sdk/credential-provider-sso': 3.325.0
+      '@aws-sdk/credential-provider-sso': 3.326.0
       '@aws-sdk/credential-provider-web-identity': 3.310.0
       '@aws-sdk/property-provider': 3.310.0
       '@aws-sdk/shared-ini-file-loader': 3.310.0
@@ -2544,14 +2544,14 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-sso@3.325.0:
-    resolution: {integrity: sha512-Te7jxJwjVGJAPWN3jCq2xcYrX8d4WkZFIqSIWSmrHqGKgWPc8+QgUkpRQkHaM+4NeNBJadRG1XbJNfu22gjDWA==}
+  /@aws-sdk/credential-provider-sso@3.326.0:
+    resolution: {integrity: sha512-GYCcFH6wsXdV6ULYUC5oZDtigaoPdDxOG8/ny1QQvNCo0MhQ35v+2xYf+84FgtQDPba0B/or4ErzHdPkPHM39g==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso': 3.325.0
+      '@aws-sdk/client-sso': 3.326.0
       '@aws-sdk/property-provider': 3.310.0
       '@aws-sdk/shared-ini-file-loader': 3.310.0
-      '@aws-sdk/token-providers': 3.325.0
+      '@aws-sdk/token-providers': 3.326.0
       '@aws-sdk/types': 3.310.0
       tslib: 2.5.0
     transitivePeerDependencies:
@@ -2679,8 +2679,8 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@aws-sdk/middleware-endpoint-discovery@3.325.0:
-    resolution: {integrity: sha512-/Cyj/Tt4NfQPf/3HS1VBwrXK6zHRX2HWJwo133yA6Uh4YQuqvsTL6VjnGo/C9ZRG06D3I/WnLvdlQXC5+5BQnw==}
+  /@aws-sdk/middleware-endpoint-discovery@3.326.0:
+    resolution: {integrity: sha512-svA2C7+nphfn0M+/WwK9eYsGn1xHSjDBi8FzGsJoTl+DQBNvGzzVUmpxbLl/Se2OIpaVUT36/xdRtCHAN98XZA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/endpoint-cache': 3.310.0
@@ -2863,8 +2863,8 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@aws-sdk/middleware-sdk-sts@3.325.0:
-    resolution: {integrity: sha512-deRK1ZuNueQ6OOTEhBZ9bLmjPema/N3cwbtO+tDVwpi7MipjE4EZDXX8WL0xza5YLRnz9kxcHuyfL47vvKgO3A==}
+  /@aws-sdk/middleware-sdk-sts@3.326.0:
+    resolution: {integrity: sha512-suOkuXxyAfOH0hznK63ZU10EoytKX5YPs9amO416VbgYFtuIeliCmntYfnl1jUvutp0fctGGpEGE9OnoYI+fhw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/middleware-signing': 3.325.0
@@ -3206,11 +3206,11 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/token-providers@3.325.0:
-    resolution: {integrity: sha512-h/ecgqXaMwEkUWo+SZJNcOMWJkAknjonWWpK/vQ4uz+qE9rBqRugsIeIiey+Ij7zCtwh6WhtpfCpt5RbxRHe6g==}
+  /@aws-sdk/token-providers@3.326.0:
+    resolution: {integrity: sha512-Ghe4K6KgMWb5sx5HUzshJGjTMHUbzrxrjCwpEj2DHSMFivpy6LADS0+Ch3WR7w9CIu2V2tK20YrCPj4JC64dvA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.325.0
+      '@aws-sdk/client-sso-oidc': 3.326.0
       '@aws-sdk/property-provider': 3.310.0
       '@aws-sdk/shared-ini-file-loader': 3.310.0
       '@aws-sdk/types': 3.310.0
@@ -6938,8 +6938,8 @@ packages:
       typescript: 5.0.4
     dev: false
 
-  /@volar/vue-language-core@1.6.3:
-    resolution: {integrity: sha512-e9OTDCPa8Wuh0ORhD4z++qTIcrsrqcI9waspr93YcQCq6j+Q+JTFuy7HBSQgyezSAsP6x1WWokKVk4fWWDJQOw==}
+  /@volar/vue-language-core@1.6.4:
+    resolution: {integrity: sha512-1o+cAtN2DIDNAX/HS8rkjZc8wTMTK+zCab/qtYbvEVlmokhZiDrQeoD9/l0Ug7YCNg+mVuMNHKNBY7pX8U2/Jw==}
     dependencies:
       '@volar/language-core': 1.4.1
       '@volar/source-map': 1.4.1
@@ -6952,13 +6952,13 @@ packages:
       vue-template-compiler: 2.7.14
     dev: false
 
-  /@volar/vue-typescript@1.6.3(typescript@5.0.4):
-    resolution: {integrity: sha512-Dz29Qym33P1MSZDTZJ6PPLN1TLQfkX+g2pRnHqLCsFdSUu4yWYnElBURCn5WJkekxV/v+k2T43aur2RCSY3Ovg==}
+  /@volar/vue-typescript@1.6.4(typescript@5.0.4):
+    resolution: {integrity: sha512-qKwgP0KVQR/aaH/SN3AP7RB8NnXPWDn3tjyXP6IT6etxkDeZLBLsXWUD9KMak/RvV1DgbXDuz4F9yuZlbt29rA==}
     peerDependencies:
       typescript: '*'
     dependencies:
       '@volar/typescript': 1.4.1(typescript@5.0.4)
-      '@volar/vue-language-core': 1.6.3
+      '@volar/vue-language-core': 1.6.4
       typescript: 5.0.4
     dev: false
 
@@ -12905,10 +12905,10 @@ packages:
     resolution: {integrity: sha512-pg5OK0jPLg62H4k7M9mRJLT61gUp9nvG0XveKYHMOOluASo9OEF13WlXrpAp2aj35LbedAy3QOCgQCw0tkLKAQ==}
     dev: false
 
-  /markdown-it-shiki@0.8.1:
-    resolution: {integrity: sha512-x3R9nxmOMGai+ZWNL+KpiA6f39xplB7ssyeOrptwlMVPRSMVBnKFi66acIqqbUjK2o8caH48B+sWwL0/8ljAOA==}
+  /markdown-it-shiki@0.9.0:
+    resolution: {integrity: sha512-TyP5YbDnFu3T7MPwC8jFs1swzAXqALy50MPPdis2tNc5MQ0UxSqhARFfMzEJN21mE0ihAngi2kqDzKR5+ZsMqg==}
     dependencies:
-      shiki: 0.14.1
+      shiki: 0.14.2
       synckit: 0.8.5
     dev: false
 
@@ -15845,15 +15845,6 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /shiki@0.14.1:
-    resolution: {integrity: sha512-+Jz4nBkCBe0mEDqo1eKRcCdjRtrCjozmcbTUjbPTX7OOJfEbTZzlUWlZtGe3Gb5oV1/jnojhG//YZc3rs9zSEw==}
-    dependencies:
-      ansi-sequence-parser: 1.1.0
-      jsonc-parser: 3.2.0
-      vscode-oniguruma: 1.7.0
-      vscode-textmate: 8.0.0
-    dev: false
-
   /shiki@0.14.2:
     resolution: {integrity: sha512-ltSZlSLOuSY0M0Y75KA+ieRaZ0Trf5Wl3gutE7jzLuIcWxLp5i/uEnLoQWNvgKXQ5OMpGkJnVMRLAuzjc0LJ2A==}
     dependencies:
@@ -17671,8 +17662,8 @@ packages:
       - terser
     dev: false
 
-  /vite-plugin-inspect@0.7.24(rollup@2.79.1)(vite@4.3.4):
-    resolution: {integrity: sha512-XyrhTxYF+5X8CH0PFmYJhs8WGJMOa2UxwUftTaT0FiMm24VfUp+UsAh7xDZI3doPOiB5GxKEizDGxdU98Ay+Vg==}
+  /vite-plugin-inspect@0.7.25(rollup@2.79.1)(vite@4.3.4):
+    resolution: {integrity: sha512-11j3hG3stRfFkoI+adIDX+KvZueWNgd9lFGdh7lgm0IjGqpP6luCQAMSSnHHV7AZXaTE06X+bUG3M68diz8ZyA==}
     engines: {node: '>=14'}
     peerDependencies:
       vite: ^3.1.0 || ^4.0.0
@@ -17954,20 +17945,20 @@ packages:
     resolution: {integrity: sha512-AFbieoL7a5LMqcnOF04ji+rpXadgOXnZsxQr//r83kLPr7biP7am3g9zbaZIaBGwBRWeSvoMD4mgPdX3e4NWBg==}
     dev: false
 
-  /vue-component-meta@1.6.3(typescript@5.0.4):
-    resolution: {integrity: sha512-ani/zGhKFriJna5FcuNfTp+t9X2Xy6AS4mwAeln3s8R3OYIrXp+yGmkJc+u6WmUgHeCPupTaXlfAC4nFYbrSCA==}
+  /vue-component-meta@1.6.4(typescript@5.0.4):
+    resolution: {integrity: sha512-NITO336OMWzQXbR7B4Mjrl2CRubSEC/aIZr9d4KQxZQVcl3EKuTUzJgbHTynVO4Cue+/QQPp7QA8FiVRy2XZjA==}
     peerDependencies:
       typescript: '*'
     dependencies:
       '@volar/language-core': 1.4.1
-      '@volar/vue-language-core': 1.6.3
+      '@volar/vue-language-core': 1.6.4
       typesafe-path: 0.2.2
       typescript: 5.0.4
-      vue-component-type-helpers: 1.6.3
+      vue-component-type-helpers: 1.6.4
     dev: false
 
-  /vue-component-type-helpers@1.6.3:
-    resolution: {integrity: sha512-d1SA+w3EMauEG38rjdtUNOp3TK4dl/RVMHb4aCVaG5490rNIGoybJurWbwLa0ofdPTkT0ie8yUQSyhebyqGQQw==}
+  /vue-component-type-helpers@1.6.4:
+    resolution: {integrity: sha512-T0m+vtQIsAsKdy5H/2y5UQtDlpVBSw0EtEVb1Nqbm1Ni9NZlJMqIxtQCDX31+o6k9gnJWkNNP0YZ8USdIw14OQ==}
     dev: false
 
   /vue-demi@0.14.0(vue@3.2.47):
@@ -18080,14 +18071,14 @@ packages:
       he: 1.2.0
     dev: false
 
-  /vue-tsc@1.6.3(typescript@5.0.4):
-    resolution: {integrity: sha512-q7l27j0eSJgyGat0khetrvoeaAHieRZFnf8WAJyKvB3eF0AxmLqfs4ahwZhaojBJjZ/lAXZa+Xt8EX54KzQ34w==}
+  /vue-tsc@1.6.4(typescript@5.0.4):
+    resolution: {integrity: sha512-8rg8S1AhRJ6/WriENQEhyqH5wsxSxuD5iaD+QnkZn2ArZ6evlhqfBAIcVN8mfSyCV9DeLkQXkOSv/MaeJiJPAQ==}
     hasBin: true
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@volar/vue-language-core': 1.6.3
-      '@volar/vue-typescript': 1.6.3(typescript@5.0.4)
+      '@volar/vue-language-core': 1.6.4
+      '@volar/vue-typescript': 1.6.4(typescript@5.0.4)
       semver: 7.5.0
       typescript: 5.0.4
     dev: false
