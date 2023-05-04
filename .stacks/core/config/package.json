@@ -31,8 +31,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "npx unbuild",
+    "dev": "npx unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

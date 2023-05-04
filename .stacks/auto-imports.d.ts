@@ -123,7 +123,6 @@ declare global {
   const doesFolderExist: typeof import('./core/storage/src/index')['doesFolderExist']
   const domainsPath: typeof import('./core/path/src/index')['domainsPath']
   const dotCase: typeof import('./core/strings/src/case')['dotCase']
-  const driversPath: typeof import('./core/path/src/index')['driversPath']
   const dump: typeof import('./core/logging/src/index')['dump']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
@@ -766,7 +765,6 @@ declare module 'vue' {
     readonly doesFolderExist: UnwrapRef<typeof import('./core/storage/src/index')['doesFolderExist']>
     readonly domainsPath: UnwrapRef<typeof import('./core/path/src/index')['domainsPath']>
     readonly dotCase: UnwrapRef<typeof import('./core/strings/src/case')['dotCase']>
-    readonly driversPath: UnwrapRef<typeof import('./core/path/src/index')['driversPath']>
     readonly dump: UnwrapRef<typeof import('./core/logging/src/index')['dump']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>

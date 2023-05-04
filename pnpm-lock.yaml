@@ -10,9 +10,141 @@ importers:
 
   .stacks:
     dependencies:
+      '@stacksjs/actions':
+        specifier: workspace:*
+        version: link:core/actions
+      '@stacksjs/ai':
+        specifier: workspace:*
+        version: link:core/ai
+      '@stacksjs/alias':
+        specifier: workspace:*
+        version: link:core/alias
+      '@stacksjs/arrays':
+        specifier: workspace:*
+        version: link:core/arrays
+      '@stacksjs/auth':
+        specifier: workspace:*
+        version: link:core/auth
       '@stacksjs/buddy':
         specifier: workspace:*
         version: link:core/buddy
+      '@stacksjs/build':
+        specifier: workspace:*
+        version: link:core/build
+      '@stacksjs/cache':
+        specifier: workspace:*
+        version: link:core/cache
+      '@stacksjs/cli':
+        specifier: workspace:*
+        version: link:core/cli
+      '@stacksjs/cloud':
+        specifier: workspace:*
+        version: link:core/cloud
+      '@stacksjs/collections':
+        specifier: workspace:*
+        version: link:core/collections
+      '@stacksjs/config':
+        specifier: workspace:*
+        version: link:core/config
+      '@stacksjs/database':
+        specifier: workspace:*
+        version: link:core/database
+      '@stacksjs/desktop':
+        specifier: workspace:*
+        version: link:core/desktop
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:core/development
+      '@stacksjs/docs':
+        specifier: workspace:*
+        version: link:core/docs
+      '@stacksjs/domains':
+        specifier: workspace:*
+        version: link:core/domains
+      '@stacksjs/email':
+        specifier: workspace:*
+        version: link:core/email
+      '@stacksjs/error-handling':
+        specifier: workspace:*
+        version: link:core/error-handling
+      '@stacksjs/events':
+        specifier: workspace:*
+        version: link:core/events
+      '@stacksjs/faker':
+        specifier: workspace:*
+        version: link:core/faker
+      '@stacksjs/git':
+        specifier: workspace:*
+        version: link:core/git
+      '@stacksjs/health':
+        specifier: workspace:*
+        version: link:core/health
+      '@stacksjs/lint':
+        specifier: workspace:*
+        version: link:core/lint
+      '@stacksjs/logging':
+        specifier: workspace:*
+        version: link:core/logging
+      '@stacksjs/modules':
+        specifier: workspace:*
+        version: link:core/modules
+      '@stacksjs/notifications':
+        specifier: workspace:*
+        version: link:core/notifications
+      '@stacksjs/objects':
+        specifier: workspace:*
+        version: link:core/objects
+      '@stacksjs/orm':
+        specifier: workspace:*
+        version: link:core/orm
+      '@stacksjs/pages':
+        specifier: workspace:*
+        version: link:core/pages
+      '@stacksjs/path':
+        specifier: workspace:*
+        version: link:core/path
+      '@stacksjs/payments':
+        specifier: workspace:*
+        version: link:core/payments
+      '@stacksjs/realtime':
+        specifier: workspace:*
+        version: link:core/realtime
+      '@stacksjs/router':
+        specifier: workspace:*
+        version: link:core/router
+      '@stacksjs/search-engine':
+        specifier: workspace:*
+        version: link:core/search-engine
+      '@stacksjs/security':
+        specifier: workspace:*
+        version: link:core/security
+      '@stacksjs/server':
+        specifier: workspace:*
+        version: link:core/server
+      '@stacksjs/signals':
+        specifier: workspace:*
+        version: link:core/signals
+      '@stacksjs/storage':
+        specifier: workspace:*
+        version: link:core/storage
+      '@stacksjs/strings':
+        specifier: workspace:*
+        version: link:core/strings
+      '@stacksjs/testing':
+        specifier: workspace:*
+        version: link:core/testing
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:core/types
+      '@stacksjs/ui':
+        specifier: workspace:*
+        version: link:core/ui
+      '@stacksjs/utils':
+        specifier: workspace:*
+        version: link:core/utils
+      '@stacksjs/validation':
+        specifier: workspace:*
+        version: link:core/validation
 
   .stacks/api:
     dependencies:
@@ -954,6 +1086,9 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
     devDependencies:
+      '@stacksjs/alias':
+        specifier: workspace:*
+        version: link:../alias
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development

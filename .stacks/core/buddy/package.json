@@ -54,8 +54,8 @@
   "scripts": {
     "buddy": "tsx ./src/cli.ts",
     "preinstall": "npx only-allow pnpm",
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "npx unbuild",
+    "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm buddy prepublish",
     "typecheck": "tsc --noEmit"
   },

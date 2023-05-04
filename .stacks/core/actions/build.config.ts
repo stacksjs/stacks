@@ -1,4 +1,4 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { defineBuildConfig } from 'unbuild'
 
 // eslint-disable-next-line no-console
 console.log('Building core... ?')

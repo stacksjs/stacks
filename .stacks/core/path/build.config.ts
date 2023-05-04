@@ -1,12 +1,19 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { alias } from '@stacksjs/alias'
+import { defineBuildConfig } from 'unbuild'
+
+// eslint-disable-next-line no-console
+console.log('Building @stacksjs/core...')
 
 export default defineBuildConfig({
+  alias,
+
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-    },
+    './src/index.ts',
+    // {
+    //   builder: 'mkdist',
+    //   input: './src/',
+    //   outDir: './dist/',
+    // },
   ],
 
   declaration: true,

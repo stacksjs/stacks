@@ -30,8 +30,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "npx unbuild",
+    "dev": "npx unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },

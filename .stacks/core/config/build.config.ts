@@ -1,4 +1,4 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { defineBuildConfig } from 'unbuild'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 
