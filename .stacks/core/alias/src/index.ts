@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import p from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 
 const alias: Record<string, string> = {
   '~/*': p.projectPath('*'),

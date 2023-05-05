@@ -28,13 +28,19 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "build": "npx unbuild",
-    "dev": "npx unbuild --stub",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },

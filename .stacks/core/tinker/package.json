@@ -36,12 +36,6 @@
     "dist",
     "README.md"
   ],
-  "scripts": {
-    "build": "npx unbuild",
-    "dev": "npx unbuild --stub",
-    "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "tsx": "^3.12.7"
   },

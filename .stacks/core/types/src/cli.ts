@@ -9,12 +9,6 @@ import type { Err, Ok } from './errors'
 export type CommandReturnValue = ExecaReturnValue<string>
 export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>
 
-export interface StacksOptions {
-  componentsSrcPath?: string
-  dtsPath?: string
-  extensions?: string[]
-}
-
 export interface OutroOptions {
   startTime?: number
   useSeconds?: boolean

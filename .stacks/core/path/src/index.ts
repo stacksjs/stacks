@@ -366,7 +366,7 @@ export function validationPath(path?: string) {
   return corePath(`validation/${path || ''}`)
 }
 
-export const path = {
+const path = {
   aiPath,
   actionsPath,
   aliasPath,
@@ -457,6 +457,4 @@ export const path = {
   toNamespacedPath,
 }
 
-export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
-
-export default path
+export { path, basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
