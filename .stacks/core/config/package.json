@@ -38,6 +38,9 @@
   "dependencies": {
     "c12": "^1.4.1"
   },
+  "peerDependencies": {
+    "c12": "^1.4.1"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*"

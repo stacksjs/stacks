@@ -8,12 +8,6 @@ export default defineBuildConfig({
       outDir: './dist/',
     },
   ],
-  // declaration: true,
+  declaration: true,
   clean: true,
-  // rollup: {
-  //   inlineDependencies: true,
-  // },
-  // externals: [
-  //   'vue',
-  // ],
 })
