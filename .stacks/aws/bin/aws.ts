@@ -9,7 +9,7 @@ new AwsStack(app, 'AwsStack', {
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
   env: {
-    region: 'us-east-1',
+    region: 'us-east-1', // this shouldnt be here
     account: '923076644019',
   },
   /* Uncomment the next line to specialize this stack for the AWS Account

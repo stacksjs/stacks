@@ -56,6 +56,7 @@ export class AwsStack extends cdk.Stack {
     }
     /* TODO before creating a hostedZone,
     * I want to check to delete the zone entirely to create from fresh the records.
+    * Since updating the records creates a new record with this implementation.
     */
 
     const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
