@@ -1,24 +1,30 @@
 {
-  "name": "@stacksjs/drivers",
+  "name": "@stacksjs/x-ray",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.3.1",
-  "description": "Easily create a driver-based system.",
+  "packageManager": "pnpm@8.4.0",
+  "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/driver#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/x-ray#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/driver"
+    "directory": "./.stacks/core/x-ray"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "drivers",
-    "framework",
+    "x-ray",
+    "ray",
+    "debug",
+    "dump",
+    "logs",
+    "console",
+    "consola",
+    "type safe",
     "stacks"
   ],
   "module": "dist/index.mjs",
@@ -31,14 +37,18 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "echo 'wip'",
+    "serve": "vite --config ../build/src/desktop.ts",
+    "dev": "echo 'wip'",
+    "serve:tauri": "vite",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/desktop": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "node-ray": "^1.19.4",
+    "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

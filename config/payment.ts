@@ -1,4 +1,4 @@
-import { definePayment } from 'stacks/core/config/src'
+import { definePayment } from '@stacksjs/config'
 
 /**
  * **Payment Configuration**

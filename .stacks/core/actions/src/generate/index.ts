@@ -40,7 +40,7 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  const result = await runCommand('esno .stacks/core/actions/src/generate-package-json.ts', { ...options, verbose: true, cwd: projectPath() })
+  const result = await runCommand('tsx .stacks/core/actions/src/generate-package-json.ts', { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
     log.error('There was an error generating your library entry points.', result.error)

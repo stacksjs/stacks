@@ -4,11 +4,11 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config/user'
 
-const env = notification.sms.termii
+const env = notification.sms?.termii
 
 const provider = new TermiiSmsProvider({
-  apiKey: env.key,
-  from: env.from,
+  apiKey: env?.key,
+  from: env?.from,
 })
 
 function send(options: SmsOptions) {

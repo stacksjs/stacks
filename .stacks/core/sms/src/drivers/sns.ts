@@ -4,12 +4,12 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config/user'
 
-const env = notification.sms.sns
+const env = notification.sms?.sns
 
 const provider = new SNSSmsProvider({
-  region: env.region,
-  accessKeyId: env.key,
-  secretAccessKey: env.secret,
+  region: env?.region,
+  accessKeyId: env?.key,
+  secretAccessKey: env?.secret,
 })
 
 function send(options: SmsOptions) {

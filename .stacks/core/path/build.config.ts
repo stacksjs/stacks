@@ -1,13 +1,14 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { alias } from '@stacksjs/alias'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
+  alias,
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-    },
+    './src/index',
   ],
-
   declaration: true,
+  rollup: {
+    emitCJS: true,
+    inlineDependencies: true,
+  },
 })

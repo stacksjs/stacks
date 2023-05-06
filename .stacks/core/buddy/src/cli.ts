@@ -92,5 +92,5 @@ async function installIfVersionMismatch() {
 
 function errorHandler(error: Error): void {
   log.error(error)
-  process.exit()
+  process.exit(1)
 }

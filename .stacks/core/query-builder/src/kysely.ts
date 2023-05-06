@@ -1,7 +1,8 @@
 import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql, sql as qbSql } from 'kysely'
 import { createPool } from 'mysql2'
-import { Pool } from 'pg'
-import { Cursor as qbCursor } from 'pg-cursor'
+
+// import { Pool } from 'pg'
+// import { Cursor as qbCursor } from 'pg-cursor'
 
 interface MysqlConfig {
   driver?: string
@@ -13,11 +14,11 @@ interface MysqlConfig {
   password?: string
 }
 
-interface PostgresqlConfig {
-  host?: string
-  database?: string
-}
-export const Cursor = qbCursor
+// interface PostgresqlConfig {
+//   host?: string
+//   database?: string
+// }
+// export const Cursor = qbCursor
 
 export const sql = qbSql
 
@@ -27,9 +28,9 @@ export const MysqlDialect = qbMysqlDialect
 
 export const PostgresDialect = qbPostgresql
 
-export function createPostgresPool(config: PostgresqlConfig) {
-  return Pool(config)
-}
+// export function createPostgresPool(config: PostgresqlConfig) {
+//   return Pool(config)
+// }
 
 export function createMysqlPool(config: MysqlConfig) {
   return createPool(config)

@@ -1,4 +1,6 @@
-import type { AppOptions, CacheOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
+import { loadConfig } from 'c12'
+import type { ResolvedStacksOptions, StacksOptions } from './types'
+import { defaultConfig } from './defaults'
 
 export function env(key: string, fallback: any) {
   // console.log('isClient', isClient)
@@ -8,88 +10,17 @@ export function env(key: string, fallback: any) {
   return fallback
 }
 
-export { defineBuildConfig } from 'unbuild'
+export { loadConfig, watchConfig } from 'c12'
 
-export function defineApp(options: AppOptions) {
-  return options
+export async function resolveConfig(options: StacksOptions) {
+  // const { loadConfig } = await import('c12')
+  const config = await loadConfig<StacksOptions>({
+    name: 'stacks',
+    defaults: defaultConfig,
+    overrides: options,
+  }).then(r => r.config || defaultConfig)
+
+  return config as ResolvedStacksOptions
 }
 
-export function defineCache(options: CacheOptions) {
-  return options
-}
-
-export function defineCli(options: CliOptions) {
-  return options
-}
-
-export function defineCronJobsConfig(options: CronJobOptions[]) {
-  return options
-}
-
-export function defineDatabase(options: DatabaseOptions) {
-  return options
-}
-
-export function defineDebugConfig(options: DebugOptions) {
-  return options
-}
-
-// export function defineCloudConfig(options: CloudOptions) {
-//   return options
-// }
-
-export function defineDns(options: DnsOptions) {
-  return options
-}
-
-export function defineEmailConfig(options: EmailOptions) {
-  return options
-}
-
-export function defineEvents(options: Events) {
-  return options
-}
-
-export function defineGit(options: GitOptions) {
-  return options
-}
-
-export function defineHashing(options: HashingOptions) {
-  return options
-}
-
-export function defineLibrary(options: LibraryOptions) {
-  return options
-}
-
-export function defineModel(options: Model) {
-  return options
-}
-
-export function defineNotification(options: NotificationOptions) {
-  return options
-}
-
-export function definePage(options: PagesOption) {
-  return options
-}
-
-export function definePayment(options: PaymentOptions) {
-  return options
-}
-
-export function defineSearchEngine(options: SearchEngineOptions) {
-  return options
-}
-
-export function defineServices(options: ServicesOptions) {
-  return options
-}
-
-export function defineStorage(options: StorageOptions) {
-  return options
-}
-
-export function defineUi(options: UiOptions) {
-  return options
-}
+export * from './types'

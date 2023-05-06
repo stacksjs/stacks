@@ -3,13 +3,7 @@ const { resolve } = require('node:path')
 const { paramCase } = require('change-case')
 const jiti = require('jiti')(__filename)
 
-const git = jiti('./config/git.ts',
-// {
-//   alias: { // test this with the ./config/git config import
-//     '@': resolve(__dirname, './'),
-//   },
-// }
-)
+const git = jiti('./config/git.ts')
 
 const toDelete = ['readme-md']
 
@@ -49,12 +43,12 @@ module.exports = {
     breaklineNumber: 100,
     breaklineChar: '|',
     skipQuestions: [],
-    issuePrefixs: [{ value: 'closed', name: 'closed:   ISSUES has been processed' }],
-    customIssuePrefixsAlign: 'top',
-    emptyIssuePrefixsAlias: 'skip',
-    customIssuePrefixsAlias: 'custom',
-    allowCustomIssuePrefixs: true,
-    allowEmptyIssuePrefixs: true,
+    issuePrefixes: [{ value: 'closed', name: 'closed:   ISSUES has been processed' }],
+    customIssuePrefixesAlign: 'top',
+    emptyIssuePrefixesAlias: 'skip',
+    customIssuePrefixesAlias: 'custom',
+    allowCustomIssuePrefixes: true,
+    allowEmptyIssuePrefixes: true,
     confirmColorize: true,
     maxHeaderLength: Infinity,
     maxSubjectLength: Infinity,

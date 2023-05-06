@@ -1,30 +1,28 @@
 {
-  "name": "@stacksjs/x-ray",
+  "name": "@stacksjs/dashboard",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.3.1",
-  "description": "All you need to debug, log & analyze.",
+  "packageManager": "pnpm@8.4.0",
+  "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/x-ray#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/dashboard#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/x-ray"
+    "directory": "./.stacks/core/dashboard"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "x-ray",
-    "ray",
-    "debug",
-    "dump",
+    "dashboard",
+    "reporting",
+    "analytics",
     "logs",
-    "console",
-    "consola",
-    "type safe",
+    "debugging",
+    "requests",
     "stacks"
   ],
   "module": "dist/index.mjs",
@@ -37,18 +35,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "echo 'wip'",
-    "serve": "vite --config ../build/src/desktop.ts",
-    "dev": "echo 'wip'",
-    "serve:tauri": "vite",
+    "build": "unbuild",
+    "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "node-ray": "^1.19.4",
-    "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

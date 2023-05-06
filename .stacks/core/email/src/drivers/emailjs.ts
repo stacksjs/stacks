@@ -4,15 +4,15 @@ import { notification } from '@stacksjs/config/user'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email.emailjs
+const env = notification.email?.emailjs
 
 const provider = new EmailJsProvider({
-  from: env.from,
-  host: env.host,
-  user: env.user,
-  password: env.password,
-  port: env.port,
-  secure: env.secure,
+  from: env?.from || '',
+  host: env?.host || '',
+  user: env?.user,
+  password: env?.password,
+  port: env?.port || 587,
+  secure: env?.secure,
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import p from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 
 const alias: Record<string, string> = {
   '~/*': p.projectPath('*'),
@@ -27,8 +27,8 @@ const alias: Record<string, string> = {
   '@stacksjs/cloud/*': p.cloudPath('src/*'),
   '@stacksjs/collections': p.collectionsPath('src/index.ts'),
   '@stacksjs/collections/*': p.collectionsPath('src/*'),
-  '@stacksjs/config': p.configPath(),
-  '@stacksjs/config/*': p.projectPath('config/*'),
+  '@stacksjs/config': p.configPath('src/index.ts'),
+  '@stacksjs/config/*': p.configPath('src/*'),
   '@stacksjs/dashboard': p.dashboardPath('src/index.ts'),
   '@stacksjs/dashboard/*': p.dashboardPath('src/*'),
   '@stacksjs/database': p.databasePath('src/index.ts'),
@@ -41,8 +41,6 @@ const alias: Record<string, string> = {
   '@stacksjs/docs/*': p.docsPath('src/*'),
   '@stacksjs/domains': p.domainsPath('src/index.ts'),
   '@stacksjs/domains/*': p.domainsPath('src/*'),
-  '@stacksjs/drivers': p.driversPath('src/index.ts'),
-  '@stacksjs/drivers/*': p.driversPath('src/*'),
   '@stacksjs/email': p.emailPath('src/index.ts'),
   '@stacksjs/email/*': p.emailPath('src/*'),
   '@stacksjs/error-handling': p.errorHandlingPath('src/index.ts'),
@@ -62,6 +60,8 @@ const alias: Record<string, string> = {
   '@stacksjs/notifications/*': p.notificationsPath('src/*'),
   '@stacksjs/objects': p.objectsPath('src/index.ts'),
   '@stacksjs/objects/*': p.objectsPath('src/*'),
+  '@stacksjs/orm': p.ormPath('src/index.ts'),
+  '@stacksjs/orm/*': p.ormPath('src/*'),
   '@stacksjs/path': p.pathPath('src/index.ts'), // 🤦🏼‍♂️
   '@stacksjs/path/*': p.pathPath('src/*'),
   '@stacksjs/push': p.pushPath('src/index.ts'),
@@ -99,7 +99,6 @@ const alias: Record<string, string> = {
   '@stacksjs/x-ray/*': p.xRayPath('src/*'),
   'framework/*': p.frameworkPath('*'),
   'stacks': p.frameworkPath('src/index.ts'),
-  'config/*': p.projectPath('config/*'),
   'components/*': p.componentsPath('*'),
   'functions/*': p.functionsPath('*'),
   'pages/*': p.pagesPath('*'),

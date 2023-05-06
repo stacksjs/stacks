@@ -1,5 +1,5 @@
 import { installPackage as installPkg } from '@antfu/install-pkg'
-import type { CommandResult } from '@stacksjs/types'
+import type { CommandReturnValue } from '@stacksjs/types'
 
 /**
  * Install an npm package.
@@ -7,7 +7,7 @@ import type { CommandResult } from '@stacksjs/types'
  * @param pkg - The package name to install.
  * @returns The result of the install.
  */
-export async function installPackage(pkg: string): Promise<CommandResult<string>> {
+export async function installPackage(pkg: string): Promise<CommandReturnValue> {
   return await installPkg(pkg, { silent: true })
 }
 
@@ -17,6 +17,6 @@ export async function installPackage(pkg: string): Promise<CommandResult<string>
  * @param pkg - The Stack name to install.
  * @returns The result of the install.
  */
-export async function installStack(name: string): Promise<CommandResult<string>> {
+export async function installStack(name: string): Promise<CommandReturnValue> {
   return await installPkg(`@stacksjs/${name}`, { silent: true })
 }

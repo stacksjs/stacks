@@ -8,26 +8,26 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   let name, description, directory, keywords, config, prettyName
 
   if (type === 'vue-components') {
-    name = library.vueComponents.name
-    description = library.vueComponents.description
+    name = library.vueComponents?.name
+    description = library.vueComponents?.description
     directory = 'components'
-    keywords = library.vueComponents.keywords
+    keywords = library.vueComponents?.keywords
     config = 'vue-components'
   }
 
   else if (type === 'web-components') {
-    name = library.webComponents.name
-    description = library.webComponents.description
+    name = library.webComponents?.name
+    description = library.webComponents?.description
     directory = 'components'
-    keywords = library.webComponents.keywords
+    keywords = library.webComponents?.keywords
     config = 'web-components'
   }
 
   else if (type === 'functions') {
-    name = library.functions.name
-    description = library.functions.description
+    name = library.functions?.name
+    description = library.functions?.description
     directory = 'functions'
-    keywords = library.functions.keywords
+    keywords = library.functions?.keywords
     config = 'functions'
   }
 

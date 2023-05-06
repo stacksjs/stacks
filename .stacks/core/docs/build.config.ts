@@ -1,6 +1,8 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { defineBuildConfig } from 'unbuild'
+import { alias } from '@stacksjs/alias'
 
 export default defineBuildConfig({
+  alias,
   entries: [
     {
       builder: 'mkdist',
@@ -8,6 +10,6 @@ export default defineBuildConfig({
       outDir: './dist/',
     },
   ],
-
   declaration: true,
+  clean: true,
 })

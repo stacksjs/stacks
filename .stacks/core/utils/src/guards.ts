@@ -4,9 +4,9 @@
  * @category Guards
  * @example array.filter(notNullish)
  */
-export function notNullish<T>(v: T | null | undefined): v is NonNullable<T> {
-  return v != null
-}
+// export function notNullish<T>(v: T | null | undefined): v is NonNullable<T> {
+//   return v != null
+// }
 
 /**
  * Type guard to filter out null values

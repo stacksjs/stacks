@@ -67,12 +67,12 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   let arr = []
 
   if (type === 'functions') {
-    if (!library.functions.functions) {
+    if (!library.functions?.functions) {
       log.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit()
     }
 
-    for (const fx of library.functions.functions) {
+    for (const fx of library.functions?.functions) {
       if (Array.isArray(fx))
         arr.push(`export * as ${fx[1]} from '../../../functions/${fx[0]}'`)
       else
@@ -84,14 +84,14 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   }
 
   if (type === 'vue-components') {
-    if (!library.vueComponents.tags) {
+    if (!library.vueComponents?.tags) {
       log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
       process.exit()
     }
 
     arr = determineResetPreset()
 
-    for (const component of library.vueComponents.tags.map(tag => tag.name)) {
+    for (const component of library.vueComponents?.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '../../../components/${component[0]}.vue'`)
       else
@@ -108,12 +108,12 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
   const declarations = []
   const definitions = []
 
-  if (!library.webComponents.tags) {
+  if (!library.webComponents?.tags) {
     log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
     process.exit()
   }
 
-  for (const component of library.webComponents.tags.map(tag => tag.name)) {
+  for (const component of library.webComponents?.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '../../../components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)

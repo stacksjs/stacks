@@ -39,7 +39,7 @@ const config: UserConfig = defineConfig({
     transformerVariantGroup(),
   ],
 
-  safelist: ui.safelist.split(' '),
+  safelist: ui.safelist?.split(' '),
 })
 
 export default config

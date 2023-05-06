@@ -1,14 +1,14 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { defineBuildConfig } from 'unbuild'
 import { alias } from '@stacksjs/alias'
 
 export default defineBuildConfig({
   alias,
   entries: [
+    './src/index',
     './src/cli',
   ],
-  declaration: false,
-  clean: false,
-  externals: ['chokidar', '@intlify/shared', '@intlify/message-compiler', 'vite', 'gray-matter'],
+  declaration: true,
+  clean: true,
   rollup: {
     emitCJS: false,
     inlineDependencies: true,

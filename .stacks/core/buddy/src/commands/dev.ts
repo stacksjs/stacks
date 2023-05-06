@@ -77,7 +77,7 @@ async function dev(buddy: CLI) {
 
       // check if result is an error
       else if (result.isErr()) {
-        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
       }
 
@@ -103,7 +103,7 @@ async function dev(buddy: CLI) {
 
       // check if result is an error
       else if (result.isErr()) {
-        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
       }
 

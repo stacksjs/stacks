@@ -1,4 +1,4 @@
-import { defineDns } from 'stacks/core/config/src'
+import { defineDns } from '@stacksjs/config'
 
 /**
  * **DNS Options**

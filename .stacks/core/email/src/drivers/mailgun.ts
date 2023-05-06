@@ -4,13 +4,13 @@ import { notification } from '@stacksjs/config/user'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email.mailgun
+const env = notification.email?.mailgun
 
 const provider = new MailgunEmailProvider({
-  apiKey: env.key,
-  domain: env.domain,
-  username: env.username,
-  from: env.from,
+  apiKey: env?.key || '',
+  domain: env?.domain || '',
+  username: env?.username || '',
+  from: env?.from || '',
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

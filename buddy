@@ -5,4 +5,4 @@ case $(uname) in
 *CYGWIN*) basedir=$(cygpath -w "$basedir") ;;
 esac
 
-exec esno "$basedir/.stacks/core/buddy/src/cli.ts" "$@"
+exec tsx "$basedir/.stacks/core/buddy/src/cli.ts" "$@"

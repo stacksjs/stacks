@@ -3,16 +3,11 @@
  */
 
 import type { Ora } from 'ora'
-import type { ExecaReturnValue as CommandReturnValue } from 'execa'
-import type { ResultAsync } from './'
+import type { ExecaReturnValue } from 'execa'
+import type { Err, Ok } from './errors'
 
-export type CommandResult = ResultAsync<CommandReturnValue<string>, Error>
-
-export interface StacksOptions {
-  componentsSrcPath?: string
-  dtsPath?: string
-  extensions?: string[]
-}
+export type CommandReturnValue = ExecaReturnValue<string>
+export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>
 
 export interface OutroOptions {
   startTime?: number
@@ -180,6 +175,7 @@ export interface InspireOptions extends CliOptions {}
 export interface ReleaseOptions extends CliOptions {}
 export interface PreinstallOptions extends CliOptions {}
 export interface PrepublishOptions extends CliOptions {}
+export interface TinkerOptions extends CliOptions {}
 export interface TypesOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
@@ -268,6 +264,7 @@ export const enum Action {
   TestUnit = 'test-unit', // wip
   TestFeature = 'test-feature', // wip
   TestCoverage = 'test-coverage', // wip
+  Tinker = 'tinker',
   Typecheck = 'typecheck', // wip
   Upgrade = 'upgrade/index', // wip
   UpgradeNode = 'upgrade/node', // wip

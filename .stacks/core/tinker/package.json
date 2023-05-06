@@ -1,28 +1,27 @@
 {
-  "name": "@stacksjs/dashboard",
+  "name": "@stacksjs/tinker",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.3.1",
-  "description": "The Stacks Dashboard.",
+  "packageManager": "pnpm@8.4.0",
+  "description": "The Stacks way to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/dashboard#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/tinker#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/dashboard"
+    "directory": "./.stacks/core/tinker"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "dashboard",
-    "reporting",
-    "analytics",
-    "logs",
-    "debugging",
-    "requests",
+    "tinker",
+    "repl",
+    "typescript",
+    "tsx",
+    "zero-config",
     "stacks"
   ],
   "module": "dist/index.mjs",
@@ -30,15 +29,15 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "bin": {
+    "tinker": "tinker.js"
+  },
   "files": [
     "dist",
     "README.md"
   ],
-  "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "pnpm run build",
-    "typecheck": "tsc --noEmit"
+  "dependencies": {
+    "tsx": "^3.12.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

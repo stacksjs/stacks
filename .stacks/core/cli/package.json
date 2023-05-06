@@ -2,7 +2,7 @@
   "name": "@stacksjs/cli",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.3.1",
+  "packageManager": "pnpm@8.4.0",
   "description": "The simple way to create beautiful CLIs.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -54,16 +54,13 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "cac": "^6.7.14",
-    "esno": "^0.16.3",
     "execa": "^7.1.1",
     "ora": "^6.3.0"
   },
   "dependencies": {
-    "kolorist": "1.8.0",
-    "mri": "^1.2.0"
+    "kolorist": "1.8.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "esno": "^0.16.3"
+    "@stacksjs/development": "workspace:*"
   }
 }

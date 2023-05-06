@@ -1,9 +1,9 @@
-import { notification } from '@stacksjs/config/user'
+// import { notification } from '@stacksjs/config/user'
 
-const email = notification.email
+// const email = notification.email
 
 export const config = {
-  ...email.build,
+  // ...email.build,
   theme: {
     screens: {
       sm: '480px',

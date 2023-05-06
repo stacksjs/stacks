@@ -1,4 +1,4 @@
-import { defineServices, env } from 'stacks/core/config/src'
+import { defineServices, env } from '@stacksjs/config'
 
 /**
  * **Services**

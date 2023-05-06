@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.3.1",
+  "packageManager": "pnpm@8.4.0",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -57,16 +57,16 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.6.1"
+    "vue-component-meta": "^1.6.4"
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
-    "esno": "^0.16.3",
     "fast-glob": "^3.2.12",
     "fs-extra": "^11.1.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "unbuild": "^1.2.1"
   }
 }

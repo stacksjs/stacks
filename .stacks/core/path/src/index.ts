@@ -138,10 +138,6 @@ export function domainsPath(path?: string) {
   return corePath(`domains/${path || ''}`)
 }
 
-export function driversPath(path?: string) {
-  return corePath(`drivers/${path || ''}`)
-}
-
 export function customElementsDataPath() {
   return frameworkPath('custom-elements.json')
 }
@@ -216,6 +212,10 @@ export function modulesPath(path?: string) {
 
 export function notificationsPath(path?: string) {
   return corePath(`notifications/${path || ''}`)
+}
+
+export function ormPath(path?: string) {
+  return corePath(`orm/${path || ''}`)
 }
 
 export function objectsPath(path?: string) {
@@ -366,7 +366,7 @@ export function validationPath(path?: string) {
   return corePath(`validation/${path || ''}`)
 }
 
-export const path = {
+const path = {
   aiPath,
   actionsPath,
   aliasPath,
@@ -390,7 +390,6 @@ export const path = {
   desktopPath,
   docsPath,
   domainsPath,
-  driversPath,
   emailPath,
   errorHandlingPath,
   eventsPath,
@@ -406,6 +405,7 @@ export const path = {
   lintPath,
   loggingPath,
   modulesPath,
+  ormPath,
   objectsPath,
   onboardingPath,
   notificationsPath,
@@ -457,6 +457,4 @@ export const path = {
   toNamespacedPath,
 }
 
-export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
-
-export default path
+export { path, basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }

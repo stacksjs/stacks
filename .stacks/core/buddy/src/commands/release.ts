@@ -1,7 +1,8 @@
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
-import { Action } from '@stacksjs/types'
+import { intro, outro } from '@stacksjs/cli'
+
+// import { runAction } from '@stacksjs/actions'
+// import { Action } from '@stacksjs/types'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
@@ -14,7 +15,7 @@ async function release(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, options)
+      // const result = await runAction(Action.Release, options)
 
       // console.log('result', result)
 

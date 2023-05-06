@@ -62,7 +62,6 @@ dotenv
 dprint
 encrypter
 envrc
-esno
 execa
 flowconfig
 fontshare
@@ -198,6 +197,7 @@ unimport
 unocss
 unplugin
 unstorage
+upstash
 vclass
 vemit
 vercel

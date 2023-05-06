@@ -1,4 +1,4 @@
-import { defineUi } from 'stacks/core/config/src'
+import { defineUi } from '@stacksjs/config'
 
 /**
  * **UI Engine Options**
