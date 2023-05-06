@@ -5,7 +5,7 @@ import { env, frameworkVersion, isProjectCreated, parseYaml, semver } from '@sta
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 import { filesystem } from '@stacksjs/storage'
-import { build, changelog, clean, commit, create, deploy, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
+import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
 const cli = command('buddy')
 const { fs } = filesystem
@@ -47,7 +47,6 @@ async function main() {
   await upgrade(cli)
   await generate(cli)
   await dev(cli)
-  await deploy(cli)
   await build(cli)
   await changelog(cli)
   await clean(cli)

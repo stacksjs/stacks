@@ -100,6 +100,9 @@
     "stx": "pnpm buddy"
   },
   "dependencies": {
+    "@aws-cdk/aws-route53": "^1.200.0",
+    "@aws-cdk/aws-route53-patterns": "^1.200.0",
+    "@aws-cdk/aws-route53-targets": "^1.200.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {
