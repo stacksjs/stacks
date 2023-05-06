@@ -6,9 +6,9 @@
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export interface DeployOptions {
-    // a: string
-    // aaaa: string
-    // cname: string
-    // txt: string
-    // mx: string
+  // a: string
+  // aaaa: string
+  // cname: string
+  // txt: string
+  // mx: string
 }

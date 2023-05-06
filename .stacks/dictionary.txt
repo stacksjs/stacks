@@ -26,6 +26,7 @@ changelogithub
 chrisbbreuer
 chrisbreuer
 circleci
+citty
 clangd
 classpath
 clippy
@@ -124,6 +125,7 @@ neverthrow
 nexe
 nexmo
 nitropack
+nocheck
 noopener
 novu
 npmrc

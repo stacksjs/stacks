@@ -1,7 +1,7 @@
-import { parseArgs, runCommands } from '@stacksjs/cli'
+import { parseRawArgs, runCommands } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 
-const options = parseArgs()
+const options = parseRawArgs()
 // eslint-disable-next-line no-console
 console.log('here is opt', options)
 

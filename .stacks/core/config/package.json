@@ -35,10 +35,10 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "c12": "^1.4.1"
   },
-  "peerDependencies": {
+  "dependencies": {
     "c12": "^1.4.1"
   },
   "devDependencies": {

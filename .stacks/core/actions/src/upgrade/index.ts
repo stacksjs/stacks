@@ -1,8 +1,8 @@
-import { ExitCode, parseArgs } from '@stacksjs/cli'
+import { ExitCode, parseRawArgs } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '../helpers'
 
-const options = parseArgs()
+const options = parseRawArgs()
 // eslint-disable-next-line no-console
 console.log('here is opt', options)
 
