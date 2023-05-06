@@ -63,8 +63,8 @@
   "scripts": {
     "buddy": "tsx ./core/buddy/src/cli.ts",
     "build": "pnpm -r --filter='./core/**' build",
+    "dev": "pnpm -r --filter './core/**' dev",
     "prepublish": "pnpm buddy prepublish",
-    "dev": "pnpm buddy dev:stacks // wip",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
     "update": "pnpm buddy update",
