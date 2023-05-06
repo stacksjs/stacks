@@ -4,6 +4,15 @@ importers:
 
   .:
     dependencies:
+      '@aws-cdk/aws-route53':
+        specifier: ^1.200.0
+        version: 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53-patterns':
+        specifier: ^1.200.0
+        version: 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudfront@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-route53-targets@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53-targets':
+        specifier: ^1.200.0
+        version: 1.200.0(@aws-cdk/aws-apigateway@1.200.0)(@aws-cdk/aws-cloudfront@1.200.0)(@aws-cdk/aws-cognito@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-elasticloadbalancing@1.200.0)(@aws-cdk/aws-elasticloadbalancingv2@1.200.0)(@aws-cdk/aws-globalaccelerator@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
       stacks:
         specifier: workspace:*
         version: link:.stacks
@@ -592,10 +601,17 @@ importers:
         version: link:../development
 
   .stacks/core/cloud:
+    dependencies:
+      constructs:
+        specifier: ^10.0.0
+        version: 10.0.0
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
+      aws-cdk-lib:
+        specifier: ^2.78.0
+        version: 2.78.0(constructs@10.0.0)
 
   .stacks/core/collections:
     dependencies:
@@ -619,12 +635,6 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
-
-  .stacks/core/dashboard:
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../development
 
   .stacks/core/database:
     dependencies:
@@ -1406,34 +1416,6 @@ importers:
         specifier: workspace:*
         version: link:../development
 
-  .stacks/core/tables:
-    dependencies:
-      '@stacksjs/search-engine':
-        specifier: workspace:*
-        version: link:../search-engine
-      '@stacksjs/server':
-        specifier: workspace:*
-        version: link:../server
-      '@stacksjs/types':
-        specifier: workspace:*
-        version: link:../types
-      '@stacksjs/utils':
-        specifier: workspace:*
-        version: link:../utils
-      '@vueform/multiselect':
-        specifier: ^2.6.2
-        version: 2.6.2
-      meilisearch:
-        specifier: ^0.32.3
-        version: 0.32.3
-      vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.4)
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../development
-
   .stacks/core/testing:
     dependencies:
       '@playwright/test':
@@ -1688,25 +1670,6 @@ importers:
         specifier: workspace:*
         version: link:../path
 
-  .stacks/core/x-ray:
-    dependencies:
-      '@stacksjs/desktop':
-        specifier: workspace:*
-        version: link:../desktop
-      '@stacksjs/logging':
-        specifier: workspace:*
-        version: link:../logging
-      node-ray:
-        specifier: ^1.19.4
-        version: 1.19.4
-      vue3-highlightjs:
-        specifier: ^1.0.5
-        version: 1.0.5(vue@3.2.47)
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../development
-
   .stacks/docs:
     dependencies:
       '@stacksjs/docs':
@@ -1742,6 +1705,59 @@ importers:
       '@stacksjs/desktop':
         specifier: workspace:*
         version: link:../../core/desktop
+
+  .stacks/stacks/dashboard:
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../../core/development
+
+  .stacks/stacks/tables:
+    dependencies:
+      '@stacksjs/search-engine':
+        specifier: workspace:*
+        version: link:../../core/search-engine
+      '@stacksjs/server':
+        specifier: workspace:*
+        version: link:../../core/server
+      '@stacksjs/types':
+        specifier: workspace:*
+        version: link:../../core/types
+      '@stacksjs/utils':
+        specifier: workspace:*
+        version: link:../../core/utils
+      '@vueform/multiselect':
+        specifier: ^2.6.2
+        version: 2.6.2
+      meilisearch:
+        specifier: ^0.32.3
+        version: 0.32.3
+      vite:
+        specifier: ^4.3.5
+        version: 4.3.5(@types/node@18.16.4)
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../../core/development
+
+  .stacks/stacks/x-ray:
+    dependencies:
+      '@stacksjs/desktop':
+        specifier: workspace:*
+        version: link:../../core/desktop
+      '@stacksjs/logging':
+        specifier: workspace:*
+        version: link:../../core/logging
+      node-ray:
+        specifier: ^1.19.4
+        version: 1.19.4
+      vue3-highlightjs:
+        specifier: ^1.0.5
+        version: 1.0.5(vue@3.2.47)
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../../core/development
 
   .stacks/vscode:
     devDependencies:
@@ -1899,6 +1915,776 @@ packages:
       json-schema: 0.4.0
       jsonpointer: 5.0.1
       leven: 3.1.0
+    dev: false
+
+  /@aws-cdk/asset-awscli-v1@2.2.163:
+    resolution: {integrity: sha512-4HfyzBxnsewMw7V4dvPEf31qogJUqRqYwoTBC41rA51JkfM7BwgaofRIW2ykJroMVNBB3KQQUFjntKkVlEXHPA==}
+    dev: true
+
+  /@aws-cdk/asset-kubectl-v20@2.1.1:
+    resolution: {integrity: sha512-U1ntiX8XiMRRRH5J1IdC+1t5CE89015cwyt5U63Cpk0GnMlN5+h9WsWMlKlPXZR4rdq/m806JRlBMRpBUB2Dhw==}
+    dev: true
+
+  /@aws-cdk/asset-node-proxy-agent-v5@2.0.137:
+    resolution: {integrity: sha512-sAkyTuX50bm0VkisMQRohav56q6mIig3pTLVVY97yQwgPMu46MQ9u4py66EONQlEnOdcudt4bk7SWwHC4hLieQ==}
+    dev: true
+
+  /@aws-cdk/assets@1.200.0(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-KtMWi+aMXwmtRVIEv+je1eogLid1LxqQgCA1MqyEFmCJeTDY+bc8GypR/8Gq+e5LcYokqE/qxLGBpPmwF8EglA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-acmpca@1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-4iWeSfZuT6c2dziRBGHOg+FgBgFQWjMqORVGnGGntKA8EsBvmO/mSGNuW+V2dHSpfUev9Kjfz6o4pdKhjGg/yg==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-apigateway@1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-cognito@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-elasticloadbalancingv2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-stepfunctions@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-WJsnnPBwlhjvo+twIdx9pd4dK5klRap/HEqbsrALdEHZDqm3yGpdcarEIxoEyuBifoMDBCQBtYpo5Z+exvT4Xw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-cognito': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/aws-s3-assets': 1.200.0
+      '@aws-cdk/aws-stepfunctions': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cognito': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3-assets': 1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-stepfunctions': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-applicationautoscaling@1.200.0(@aws-cdk/aws-autoscaling-common@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-RgXArg7EUGbtanHp0CEO10Amgi3/QxGLIFF/agfpGwMu1cR9qhfXvwYPsGtia04Fm/xJl7tXD3F90OAfMzw1aA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-autoscaling-common': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-autoscaling-common': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-autoscaling-common@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-BpTVidgMplFUHU9ZIU2OqLdb/rvQP/xtrgl/XedQ1vBXQKTf+VGKo4Mc+nQ+xWuLx2MoJZrXOYjcqrqtO9WXhQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-certificatemanager@1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-P7/GIzDMItXe/0dYqS/Y0CmirI6txxUiq/qQ/CHP4dZoTDJiIiAmBRFyfiRs+oHbSSX0iHnslFnlBkwQco8Zvw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-acmpca': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-route53': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-acmpca': 1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-cloudformation@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-60NBbBNJiCoBhpOHot/3xfFzK0PMnD0f5nMiQZg7IhlFCJZ8htw5ZBYll2CwhXt/rqDGqBgmn5JOhReRY3q3PA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/aws-sns': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-sns': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codestarnotifications@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-cloudfront@1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-7ngz334CbJog0r1Dzr/0Qf9B86nIFc2MijGFSa9e+tCBxgOAn9rFhIpiuNQsPy4qaeY9K8AKBbSqWvrfbobRvA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/aws-ssm': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ssm': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-cloudwatch@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-fFh1oUTMqOhi+GE9LcmUpHuCv5FSXQnQ443AuY14Qg9OOteZcAXr3RpqgzjmtVtCOCNbYolF9W6JS2kOz25shQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-codeguruprofiler@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-oLNKYbEWmGhXQCmnrP3pLq4CeS8MU6CnddKo6rjexSiB65tzvKsLrI+rOUkA4qTOHiD203hHHjkEH5AbJ57HSQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-codestarnotifications@1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-AhUZ6jOukeN54iHNYuZhA58SCVTWTmH/uSCBwQKmA+Q07FaftBmg1WmOf1cY5KcLbRjbw2+zSDFw0tcnyG1qUA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-cognito@1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-pue+uS1CHDjz9Mi7b+XRNZ8FXv0/94H3gzu7RyH0NZLaeISswydp549vOGa3nnr4YjVanL5kzED+ZpSSzpVW8w==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/custom-resources': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/custom-resources': 1.200.0(@aws-cdk/aws-cloudformation@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+    bundledDependencies:
+      - punycode
+
+  /@aws-cdk/aws-ec2@1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-pZLT7cVCRHk0blDKkZnKNsc0c5HLBrWrLPhn+m7/Rt4aBCmF/+HozT2vdoegkLQHuJRFIeHkaki9PVDfZ/hT4Q==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/aws-s3-assets': 1.200.0
+      '@aws-cdk/aws-ssm': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3-assets': 1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ssm': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-ecr-assets@1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-YwhI7n10b792jTS+84lNrOrTlXRjxyyjArZU+KsYYSOu8vkC+1KFPCyiJY+F7TIf5cu0sa1vMtLBSBMTxs3h7w==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/assets': 1.200.0
+      '@aws-cdk/aws-ecr': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/assets': 1.200.0(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ecr': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-ecr@1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-JsGmfMr962gy66PsMxWdFEed20vfL5G7M3WCFaJ8GCqKQZUU360BiKjqqx6K2cp9tXpxclXbDcMpWWf+ZqXTHA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-events': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-events': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-efs@1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-tk/21km47Lf+4wK1l33YvHdgkSCvaqrJrYd7+cTbNFpYTMIKuga+tKaVaiEbB6VpXGkK6DW4OpMte9+tiAdjnw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-elasticloadbalancing@1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-e+8SDrvmVpkSWiMFf4ehBSdptGEkfkl2Jj6LPRRr3dM8DRyarokPJ3eBx+Vv4iofAGnk4MP08xZvQwCFecXnyQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-elasticloadbalancingv2@1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-nKGzuEjy3lhxCXBj8M0z7wWfq0Dftw0OM12iYx09afZDSrm4KTSkZSSJ9fdDV9JvYmrIr4c57js7R2TksJfg9Q==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-route53': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-events@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-UO/s08mkK22yqUK8kj1JjS8RsIpPlLonCrYsAs1v/mwXburZ219HQ2RESuJtPPDgDqXrbXhSarpZ/opRapkkgQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-globalaccelerator@1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-wbkcoqUlmrKS44lCgGT/aPZsh7tkUP5nG22UAYbH5/9yJLtKLEMMaWyvqCHKBbSCZMlqz6TfDjBQSszaptuwnA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/custom-resources': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/custom-resources': 1.200.0(@aws-cdk/aws-cloudformation@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-iam@1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-HUpf2NucgCoXVIK62O3EFtspG0edDs9AF7uZ01sez1HR+8/bU3MTLvhpygxeabmkVMXMgQYWC9iUFw9zLoHzJg==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    transitivePeerDependencies:
+      - '@aws-cdk/cloud-assembly-schema'
+    dev: false
+
+  /@aws-cdk/aws-kms@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-kZsqy/lRxkWFhiuvuRJg0qtAHv704ks4IGfblUPBZMaPyPk/WTMhWVp050GUyG4NhLKd+3SFU0FATI4OHwbdTw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-lambda@1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-fHszuXL7QtA9JsPfadf8AbpYG7fYNxiJHpq8cALKCBUiTsK4pPJBmYGKsjrrGF4IGTI+UEgYv9aJBdnMhSIztQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-applicationautoscaling': 1.200.0
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-codeguruprofiler': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-ecr': 1.200.0
+      '@aws-cdk/aws-ecr-assets': 1.200.0
+      '@aws-cdk/aws-efs': 1.200.0
+      '@aws-cdk/aws-events': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/aws-s3-assets': 1.200.0
+      '@aws-cdk/aws-signer': 1.200.0
+      '@aws-cdk/aws-sns': 1.200.0
+      '@aws-cdk/aws-sqs': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-applicationautoscaling': 1.200.0(@aws-cdk/aws-autoscaling-common@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-codeguruprofiler': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ecr': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ecr-assets': 1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-efs': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-events': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3-assets': 1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-signer': 1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-sns': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codestarnotifications@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-sqs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-logs@1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-rgubxUkrocPmPlNyCuNgEi7rLTePXaiq4huCiJhm1sl4gZu52uNbl5lDf5XOQLn6M16p6T8MFaFK1VZmx4gSzQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-s3-assets': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3-assets': 1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-route53-patterns@1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudfront@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-route53-targets@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-jCdMH2MvaE79LGW3H2c5KKdlNNnXf92h0ClYWBBG9qGmUAZZ91pIEKKClWRV5fz38locDy2zAaT6vGIgYTd1PQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0
+      '@aws-cdk/aws-cloudfront': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-route53': 1.200.0
+      '@aws-cdk/aws-route53-targets': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.200.0(@aws-cdk/aws-acmpca@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudfront': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53-targets': 1.200.0(@aws-cdk/aws-apigateway@1.200.0)(@aws-cdk/aws-cloudfront@1.200.0)(@aws-cdk/aws-cognito@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-elasticloadbalancing@1.200.0)(@aws-cdk/aws-elasticloadbalancingv2@1.200.0)(@aws-cdk/aws-globalaccelerator@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-route53-targets@1.200.0(@aws-cdk/aws-apigateway@1.200.0)(@aws-cdk/aws-cloudfront@1.200.0)(@aws-cdk/aws-cognito@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-elasticloadbalancing@1.200.0)(@aws-cdk/aws-elasticloadbalancingv2@1.200.0)(@aws-cdk/aws-globalaccelerator@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-ypQJcGNepv6bFipxlmlwaws/F1l0QUPkUq1W0VJfbcZty5JH7595jz/WxR6sVmavN1OqpTj6pKdcXOPJU8Au5Q==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-apigateway': 1.200.0
+      '@aws-cdk/aws-cloudfront': 1.200.0
+      '@aws-cdk/aws-cognito': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-elasticloadbalancing': 1.200.0
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.200.0
+      '@aws-cdk/aws-globalaccelerator': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-route53': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-apigateway': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-cognito@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-elasticloadbalancingv2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-stepfunctions@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cloudfront': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-cognito': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-elasticloadbalancing': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.200.0(@aws-cdk/aws-certificatemanager@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-route53@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-globalaccelerator': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-route53': 1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-route53@1.200.0(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/custom-resources@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-2kMHyxN9K/AG7A1oH1/c2L2CKGlQni08t11KvafLBLZF/yqZLkqWrIhim4KKlv36JIVlxABGSoBVMWwemNXuNA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/custom-resources': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/custom-resources': 1.200.0(@aws-cdk/aws-cloudformation@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-s3-assets@1.200.0(@aws-cdk/assets@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-eu14UbDSnGFZeJN3uoEhDYcVmFrlmRXdv7XzsHFWOikhoVv1eWBMJc93BLjLPUvsDBlVvpXhfkX9jpjYxlILBQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/assets': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/assets': 1.200.0(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-s3@1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-IpC6cFhR4fyor/Rhf4BeBJxci1V5eGW35jvNttLU4jXOZbRXX23rc78PuBu93LhEChysxa5op2D8U9N+mm21Cw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-events': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-events': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-signer@1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-ltdIduTZTxkXNBlq37+t4oWtgftAEwe+5QqG1msJoikDKnbfTW8LnWIqcDICaGSa+qx8QkYbyGGhp/7cJcSqGg==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-sns@1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codestarnotifications@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-/e58Z1NzkojoTdq3pldDza4JQvaVjqkqtWY/ul+y0nsIlVWphobUjUPEoP4BnityZV2CB9vUbRXUS6YG5LJC2A==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-codestarnotifications': 1.200.0
+      '@aws-cdk/aws-events': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/aws-sqs': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-codestarnotifications': 1.200.0(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-events': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-sqs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-sqs@1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-1gzx3N0aiLF07QhiXADRy6noMix3GQzfCwxdFoK+2Z3PaFOqf4L9ykLMzpo1S/QCeSEUK/H40W2j9c4hHNTwxg==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-ssm@1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-mIoOPSzVKLP+oqC8mi2S2t+Q5pmyA86Wnx5ZWj7vXA0rfVCyLc3/Luw07cSZNQT5vGadS9lqioTlXq/KwookUw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-kms': 1.200.0
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-kms': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/aws-stepfunctions@1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-9kTZdcEwtG4p5bShf8OV8KH6MWSuN3OG5ZiKxNe7Rl25t8g0ysRdYaQSzQiwkp30pM4p8WNOF/TYbkVpDOrfAA==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0
+      '@aws-cdk/aws-events': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/aws-s3': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudwatch': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-events': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-s3': 1.200.0(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/cloud-assembly-schema@1.200.0:
+    resolution: {integrity: sha512-sgMBMWQR2boMPZa8h92cFf6VmPUAPOhMfrrABZqAU5LDSpfl8JGE6jQ8nKngKIQKlFPjLQfDG7/SOkIdR3xkJg==}
+    engines: {node: '>= 14.15.0'}
+    dev: false
+    bundledDependencies:
+      - jsonschema
+      - semver
+
+  /@aws-cdk/core@1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-zFQ+P7H208iEraVh22Qvg/iXCMpz+lg8YTCTF2/q4aaSBpVX03HdI/LDArFp8B9lll+BgYM6UGZTgjVKFoBvhw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0
+      '@aws-cdk/region-info': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+      '@aws-cdk/cx-api': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)
+      '@aws-cdk/region-info': 1.200.0
+      constructs: 3.4.293
+    dev: false
+    bundledDependencies:
+      - fs-extra
+      - minimatch
+      - '@balena/dockerignore'
+      - ignore
+
+  /@aws-cdk/custom-resources@1.200.0(@aws-cdk/aws-cloudformation@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293):
+    resolution: {integrity: sha512-WiTJcL2Hgwu4Sjj9f4GlFgzzSIIwBLN0iXrk7+BlHq0ED3Rh8M1MbJLbuqTR3SXZZPqeKkyVxz2FpKh9wNhBsw==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/aws-cloudformation': 1.200.0
+      '@aws-cdk/aws-ec2': 1.200.0
+      '@aws-cdk/aws-iam': 1.200.0
+      '@aws-cdk/aws-lambda': 1.200.0
+      '@aws-cdk/aws-logs': 1.200.0
+      '@aws-cdk/aws-sns': 1.200.0
+      '@aws-cdk/core': 1.200.0
+      constructs: ^3.3.69
+    dependencies:
+      '@aws-cdk/aws-cloudformation': 1.200.0(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-lambda@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-ec2': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-ssm@1.200.0)(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-iam': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-lambda': 1.200.0(@aws-cdk/aws-applicationautoscaling@1.200.0)(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codeguruprofiler@1.200.0)(@aws-cdk/aws-ec2@1.200.0)(@aws-cdk/aws-ecr-assets@1.200.0)(@aws-cdk/aws-ecr@1.200.0)(@aws-cdk/aws-efs@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-logs@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/aws-s3@1.200.0)(@aws-cdk/aws-signer@1.200.0)(@aws-cdk/aws-sns@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-logs': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-s3-assets@1.200.0)(@aws-cdk/core@1.200.0)(@aws-cdk/cx-api@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/aws-sns': 1.200.0(@aws-cdk/aws-cloudwatch@1.200.0)(@aws-cdk/aws-codestarnotifications@1.200.0)(@aws-cdk/aws-events@1.200.0)(@aws-cdk/aws-iam@1.200.0)(@aws-cdk/aws-kms@1.200.0)(@aws-cdk/aws-sqs@1.200.0)(@aws-cdk/core@1.200.0)(constructs@3.4.293)
+      '@aws-cdk/core': 1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0)(@aws-cdk/cx-api@1.200.0)(@aws-cdk/region-info@1.200.0)(constructs@3.4.293)
+      constructs: 3.4.293
+    dev: false
+
+  /@aws-cdk/cx-api@1.200.0(@aws-cdk/cloud-assembly-schema@1.200.0):
+    resolution: {integrity: sha512-6CxdLgNez5JTgoWjQQhlPx6q/UsoLcyxYZe3WETov+8CpeyixForMd6zhonJm+NgodjLpjt/XAEaBBKSkT78TQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+    dependencies:
+      '@aws-cdk/cloud-assembly-schema': 1.200.0
+    dev: false
+    bundledDependencies:
+      - semver
+
+  /@aws-cdk/region-info@1.200.0:
+    resolution: {integrity: sha512-z9gumK0+NBiCxyr+EAcveIcEpljzyNJtYNrFl7UOu2kq48NSFlqx7Wulp92LywF2y9t6MQAaCPnED+cQRizhuQ==}
+    engines: {node: '>= 14.15.0'}
     dev: false
 
   /@aws-crypto/ie11-detection@3.0.0:
@@ -7899,6 +8685,29 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
+  /aws-cdk-lib@2.78.0(constructs@10.0.0):
+    resolution: {integrity: sha512-meg2lb7it1n83OrtAcA4Ttc3Tx3PDei2SdZ3Xe8/7RrfiMx3D6jBQZSzOj8hIOEhyNfYoz1AfZwIcqAlmWvmJQ==}
+    engines: {node: '>= 14.15.0'}
+    peerDependencies:
+      constructs: ^10.0.0
+    dependencies:
+      '@aws-cdk/asset-awscli-v1': 2.2.163
+      '@aws-cdk/asset-kubectl-v20': 2.1.1
+      '@aws-cdk/asset-node-proxy-agent-v5': 2.0.137
+      constructs: 10.0.0
+    dev: true
+    bundledDependencies:
+      - '@balena/dockerignore'
+      - case
+      - fs-extra
+      - ignore
+      - jsonschema
+      - minimatch
+      - punycode
+      - semver
+      - table
+      - yaml
+
   /aws-sign2@0.7.0:
     resolution: {integrity: sha512-08kcGqnYf/YmjoRhfxyu+CLxBjUtHLXLXX/vUfx9l2LYzG3c1m61nrpyFUZI6zeS+Li/wWMMidD9KgrqtGq3mA==}
     dev: false
@@ -8938,6 +9747,15 @@ packages:
     dependencies:
       '@babel/parser': 7.21.4
       '@babel/types': 7.21.4
+    dev: false
+
+  /constructs@10.0.0:
+    resolution: {integrity: sha512-MIwjmrXZpM9RtwyrSD4HotDIQl8HTdIefQhU+MU1asvtSyVN3kK8kjeUOWMFb+fdyT4RX3QvvcaaPBluLEX1SA==}
+    engines: {node: '>= 10.17.0'}
+
+  /constructs@3.4.293:
+    resolution: {integrity: sha512-pUUNuJFQl8+47oFgDNLge8IupmPEKmSrdgADPmnyEqZBoqpui/yrxhIHTFEYDR1jFck9XzWHOBWnncs64mH7uw==}
+    engines: {node: '>= 14.17.0'}
     dev: false
 
   /conventional-commit-types@3.0.0:
