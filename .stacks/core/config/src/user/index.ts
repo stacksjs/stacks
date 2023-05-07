@@ -1,6 +1,8 @@
 import app from '../../../../../config/app'
 import cache from '../../../../../config/cache'
 import cdn from '../../../../../config/cdn'
+import cronJobs from '../../../../../app/jobs'
+import cli from '../../../../../config/cli'
 import database from '../../../../../config/database'
 import debug from '../../../../../config/debug'
 
@@ -21,34 +23,3 @@ import ui from '../../../../../config/ui'
 
 // TODO: Vitepress requires this to be a named export
 import * as docs from '../../../../../config/docs'
-
-const conf = {
-  app,
-  cache,
-  cdn,
-  database,
-  debug,
-  // deploy,
-  dns,
-  docs,
-  email,
-  events,
-  git,
-  hashing,
-  library,
-  pages,
-  payment,
-  notification,
-  searchEngine,
-  services,
-  storage,
-  ui,
-}
-
-export { app, cache, cdn, database, debug, dns, docs, email, events, git, hashing, library, pages, payment, notification, searchEngine, services, storage, ui }
-
-type Config = 'app' | 'cache' | 'cdn' | 'database' | 'debug' | 'dns' | 'docs' | 'email' | 'events' | 'git' | 'hashing' | 'library' | 'pages' | 'payment' | 'notification' | 'searchEngine' | 'services' | 'storage' | 'ui'
-
-export function config(key?: Config, fallback?: any) {
-  return key ? conf[key] : fallback
-}

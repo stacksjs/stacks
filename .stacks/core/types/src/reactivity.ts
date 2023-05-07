@@ -1,3 +1,1 @@
-import type { Ref } from 'vue'
-
-export type { Ref }
+export type { Ref } from 'vue'

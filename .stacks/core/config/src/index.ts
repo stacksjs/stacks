@@ -1,6 +1,10 @@
 import { loadConfig } from 'c12'
 import type { ResolvedStacksOptions, StacksOptions } from './types'
-import { defaultConfig } from './defaults'
+import { app, cache, cdn, cli, cronJobs, database, debug, dns, email, events, git, hashing, library, notification, pages, payment, searchEngine, services, storage, ui } from './user'
+
+const defaults: ResolvedStacksOptions = {
+  app, cache, cdn, cli, cronJobs, database, debug, dns, email, events, git, hashing, library, notification, pages, payment, searchEngine, services, storage, ui
+}
 
 export function env(key: string, fallback: any) {
   // console.log('isClient', isClient)
@@ -16,11 +20,15 @@ export async function resolveConfig(options: StacksOptions) {
   // const { loadConfig } = await import('c12')
   const config = await loadConfig<StacksOptions>({
     name: 'stacks',
-    defaults: defaultConfig,
+    defaults: {
+
+    },
     overrides: options,
-  }).then(r => r.config || defaultConfig)
+  }).then(r => r.config || defaults)
 
   return config as ResolvedStacksOptions
 }
+
+export { defaults }
 
 export * from './types'

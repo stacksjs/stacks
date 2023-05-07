@@ -4,7 +4,7 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { app, ui } from '@stacksjs/config/user'
+import { app, ui } from '@stacksjs/config'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
