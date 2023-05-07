@@ -178,6 +178,9 @@ importers:
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
+      '@stacksjs/cloud':
+        specifier: workspace:*
+        version: link:../cloud
       '@stacksjs/config':
         specifier: workspace:*
         version: link:../config
