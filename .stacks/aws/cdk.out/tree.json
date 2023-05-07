@@ -1,0 +1,289 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "AwsStack": {
+        "id": "AwsStack",
+        "path": "AwsStack",
+        "children": {
+          "HostedZone": {
+            "id": "HostedZone",
+            "path": "AwsStack/HostedZone",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/HostedZone/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::HostedZone",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "stacksjs.dev."
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnHostedZone",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.PublicHostedZone",
+              "version": "2.77.0"
+            }
+          },
+          "stacks.devRecord": {
+            "id": "stacks.devRecord",
+            "path": "AwsStack/stacks.devRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/stacks.devRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "stacks.dev.stacksjs.dev.",
+                    "type": "A",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "10.0.0.1"
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.ARecord",
+              "version": "2.77.0"
+            }
+          },
+          "samplearecordRecord": {
+            "id": "samplearecordRecord",
+            "path": "AwsStack/samplearecordRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/samplearecordRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "samplearecord.stacksjs.dev.",
+                    "type": "A",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "192.0.2.2"
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.ARecord",
+              "version": "2.77.0"
+            }
+          },
+          "sampleaaaaRecord": {
+            "id": "sampleaaaaRecord",
+            "path": "AwsStack/sampleaaaaRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/sampleaaaaRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "sampleaaaa.stacksjs.dev.",
+                    "type": "AAAA",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.AaaaRecord",
+              "version": "2.77.0"
+            }
+          },
+          "samplecnameRecord": {
+            "id": "samplecnameRecord",
+            "path": "AwsStack/samplecnameRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/samplecnameRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "samplecname.stacksjs.dev.",
+                    "type": "CNAME",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "@"
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.CnameRecord",
+              "version": "2.77.0"
+            }
+          },
+          "samplemxtestemailRecord": {
+            "id": "samplemxtestemailRecord",
+            "path": "AwsStack/samplemxtestemailRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/samplemxtestemailRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "samplemxtestemail.stacksjs.dev.",
+                    "type": "MX",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "10 mail.example.com"
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.MxRecord",
+              "version": "2.77.0"
+            }
+          },
+          "sampletxttestRecord": {
+            "id": "sampletxttestRecord",
+            "path": "AwsStack/sampletxttestRecord",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "AwsStack/sampletxttestRecord/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::RecordSet",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "sampletxttest.stacksjs.dev.",
+                    "type": "TXT",
+                    "hostedZoneId": {
+                      "Ref": "HostedZoneDB99F866"
+                    },
+                    "resourceRecords": [
+                      "\"v=spf1 include:_spf.example.com ~all\""
+                    ],
+                    "ttl": "300"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_route53.CfnRecordSet",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_route53.TxtRecord",
+              "version": "2.77.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "AwsStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "AwsStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.77.0"
+                }
+              },
+              "Condition": {
+                "id": "Condition",
+                "path": "AwsStack/CDKMetadata/Condition",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnCondition",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.2.15"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "AwsStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.77.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "AwsStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.77.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.77.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.2.15"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.77.0"
+    }
+  }
+}
