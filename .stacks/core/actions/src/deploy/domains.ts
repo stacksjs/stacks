@@ -1,11 +1,15 @@
-import { execSync, parseOptions } from '@stacksjs/cli'
+import { runCommand } from '@stacksjs/cli'
 import { dns } from '@stacksjs/config/user'
+import { cloud } from '@stacksjs/cloud'
 
 // Get what options were passed into the CLI
-const args = parseOptions()
+// const args = parseOptions()
 
 // Parse command line arguments
 const processArgs = process.argv.slice(2)
+
+// eslint-disable-next-line no-console
+console.log('processArgs', processArgs)
 
 // Replace these values with your actual access key ID and secret access key
 // const accessKeyId = 'YOUR_ACCESS_KEY_ID' // Should get from ENV
@@ -51,21 +55,14 @@ const processArgs = process.argv.slice(2)
 //       process.exit(1)
 //   }
 // }
-
-// Set the path to the AWS CDK stack folder
-const stackFolder = '.stacks/aws'
-
-// Change the current working directory to the stack folder
-process.chdir(stackFolder)
-
 // Sample should read from the CLI options / from defined DNS?
 const json = JSON.stringify(dns)
 const deployCommand = `cdk deploy --parameters dnsconfig='${json}'`
 
-try {
-  const output = execSync(deployCommand, { stdio: 'inherit' })
-  console.log(`Success: ${output}`)
-}
-catch (error) {
-  console.error(`Error: ${error.message}`)
-}
+// try {
+//   const output = execSync(deployCommand, { stdio: 'inherit' })
+//   console.log(`Success: ${output}`)
+// }
+// catch (error) {
+//   console.error(`Error: ${error.message}`)
+// }
