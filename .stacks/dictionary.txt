@@ -220,6 +220,7 @@ vslot
 vsrc
 vstyle
 vue-demi
+vueform
 vueuse
 wmaurer
 zixuanchen

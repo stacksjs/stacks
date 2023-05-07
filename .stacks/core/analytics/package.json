@@ -29,6 +29,16 @@
     "fathom",
     "stacks"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./drivers/fathom": {
+      "types": "./dist/drivers/fathom.d.ts",
+      "import": "./dist/drivers/fathom.mjs"
+    }
+  },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [

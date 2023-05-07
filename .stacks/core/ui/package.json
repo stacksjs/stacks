@@ -26,6 +26,16 @@
     "unocss"
   ],
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./unocss": {
+      "types": "./dist/unocss.d.ts",
+      "import": "./dist/unocss.mjs"
+    }
+  },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [

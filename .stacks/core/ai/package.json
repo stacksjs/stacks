@@ -23,6 +23,16 @@
     "api",
     "stacks"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./drivers/openai": {
+      "types": "./dist/drivers/openai.d.ts",
+      "import": "./dist/drivers/openai.mjs"
+    }
+  },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [

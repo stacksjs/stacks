@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const emit = defineEmits(['paginateToNextPage', 'paginateToPreviousPage', 'paginateToPage'])
 
-const { goToNextPage, goToPrevPage, goToPage, table, lastPageNumber, totalPages, pages } = await useTable()
+const { goToNextPage, goToPrevPage, goToPage, table, lastPageNumber, pages } = await useTable()
 
 // watch(totalPages, (newValue, oldValue) => {
 //   // eslint-disable-next-line no-console

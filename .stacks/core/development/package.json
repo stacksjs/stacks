@@ -28,6 +28,12 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
   "files": [
     "README.md"
   ],

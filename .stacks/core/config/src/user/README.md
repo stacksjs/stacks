@@ -5,7 +5,7 @@ This namespace is reserved for user-defined configurations. Think of it as a han
 ## Usage
 
 ```ts
-import { app } from '@stacksjs/config/user';
+import { app } from '@stacksjs/config/user'
 
-console.log(app); // your ./config/app.ts configuration
+console.log(app) // your ./config/app.ts configuration
 ```

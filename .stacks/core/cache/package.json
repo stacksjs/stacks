@@ -26,6 +26,28 @@
     "functions",
     "stacks"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./drivers/dynamodb": {
+      "types": "./dist/drivers/dynamodb.d.ts",
+      "import": "./dist/drivers/dynamodb.mjs"
+    },
+    "./drivers/memcached": {
+      "types": "./dist/drivers/dynamodb.d.ts",
+      "import": "./dist/drivers/dynamodb.mjs"
+    },
+    "./drivers/redis": {
+      "types": "./dist/drivers/dynamodb.d.ts",
+      "import": "./dist/drivers/dynamodb.mjs"
+    },
+    "./drivers/upstash": {
+      "types": "./dist/drivers/dynamodb.d.ts",
+      "import": "./dist/drivers/dynamodb.mjs"
+    }
+  },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [

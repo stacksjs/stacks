@@ -26,6 +26,12 @@
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
   "files": [
     "src",
     "README.md"
@@ -35,10 +41,10 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "c12": "^1.4.1"
   },
-  "peerDependencies": {
+  "dependencies": {
     "c12": "^1.4.1"
   },
   "devDependencies": {

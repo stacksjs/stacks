@@ -23,6 +23,12 @@
     "typescript",
     "javascript"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

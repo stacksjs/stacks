@@ -1,5 +1,6 @@
 import { execSync as childExec } from 'node:child_process'
-import { CliOptions, CommandResult, CommandReturnValue, ExitCode, ResultAsync, SpinnerOptions as Spinner } from '@stacksjs/types'
+import type { CliOptions, CommandResult, CommandReturnValue, ResultAsync, SpinnerOptions as Spinner } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { ResultAsync as AsyncResult, err } from '@stacksjs/error-handling'
 import { determineDebugLevel } from '@stacksjs/utils'
@@ -45,7 +46,6 @@ export function execSync(command: string) {
  * @returns The result of the command.
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<CommandReturnValue, Error>> {
-  // eslint-disable-next-line no-console
   console.log('runCommand', command, options)
   return await exec(command, options)
 }
@@ -58,7 +58,6 @@ export async function runCommand(command: string, options?: CliOptions): Promise
  * @returns The result of the command.
  */
 export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult | CommandResult[]> {
-  // eslint-disable-next-line no-console
   console.log('runCommands', commands, options)
   const results: CommandResult[] = []
   const numberOfCommands = commands.length
