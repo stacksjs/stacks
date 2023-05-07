@@ -24,6 +24,8 @@ export interface IntroOptions {
 
 type SpinnerOptions = Ora
 
+export type CliOptionsKeys = keyof CliOptions
+
 /**
  * The options to pass to the CLI.
  */
@@ -190,7 +192,7 @@ export const enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
-  Clean = 'rm -rf ./pnpm-lock.yaml ./node_modules/ .stacks/**/node_modules',
+  Clean = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules ./.stacks/**/dist',
   Dev = 'dev',
   DevComponents = 'vite --config ./core/build/src/vue-components.ts',
   DevDocs = 'npx vitepress dev ./docs/src',

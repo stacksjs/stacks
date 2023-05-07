@@ -98,6 +98,7 @@ julr
 kibibytes
 kohler
 kolorist
+kstenerud
 laravel
 latexmk
 leex
@@ -151,6 +152,7 @@ prefetch
 preinstall
 prepublishing
 procfile
+publint
 pubspec
 pullapprove
 pyproject
@@ -158,6 +160,7 @@ pyrightconfig
 rangav
 releaserc
 resx
+retriable
 rimraf
 roadmap
 rustfmt

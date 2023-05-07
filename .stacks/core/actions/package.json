@@ -13,6 +13,205 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./.stacks/core/actions"
   },
+"exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./build/component-libs": {
+      "import": "./dist/build/component-libs.mjs",
+      "types": "./dist/build/component-libs.d.ts"
+    },
+    "./build/core": {
+      "import": "./dist/build/core.mjs",
+      "types": "./dist/build/core.d.ts"
+    },
+    "./build/stacks": {
+      "import": "./dist/build/stacks.mjs",
+      "types": "./dist/build/stacks.d.ts"
+    },
+    "./deploy/domains": {
+      "import": "./dist/deploy/domains.mjs",
+      "types": "./dist/deploy/domains.d.ts"
+    },
+    "./dev": {
+      "import": "./dist/dev/index.mjs",
+      "types": "./dist/dev/index.d.ts"
+    },
+    "./dev/components": {
+      "import": "./dist/dev/components.mjs",
+      "types": "./dist/dev/components.d.ts"
+    },
+    "./dev/docs": {
+      "import": "./dist/dev/docs.mjs",
+      "types": "./dist/dev/docs.d.ts"
+    },
+    "./generate": {
+      "import": "./dist/generate/index.mjs",
+      "types": "./dist/generate/index.d.ts"
+    },
+    "./generate/component-meta": {
+      "import": "./dist/generate/component-meta.mjs",
+      "types": "./dist/generate/component-meta.d.ts"
+    },
+    "./generate/ide-helpers": {
+      "import": "./dist/generate/ide-helpers.mjs",
+      "types": "./dist/generate/ide-helpers.d.ts"
+    },
+    "./generate/lib-entries": {
+      "import": "./dist/generate/lib-entries.mjs",
+      "types": "./dist/generate/lib-entries.d.ts"
+    },
+    "./generate/package-jsons": {
+      "import": "./dist/generate/package-jsons.mjs",
+      "types": "./dist/generate/package-jsons.d.ts"
+    },
+    "./generate/settings": {
+      "import": "./dist/generate/settings.mjs",
+      "types": "./dist/generate/settings.d.ts"
+    },
+    "./generate/vscode-custom-data": {
+      "import": "./dist/generate/vscode-custom-data.mjs",
+      "types": "./dist/generate/vscode-custom-data.d.ts"
+    },
+    "./generate/vue-compat": {
+      "import": "./dist/generate/vue-compat.mjs",
+      "types": "./dist/generate/vue-compat.d.ts"
+    },
+    "./helpers": {
+      "import": "./dist/helpers/index.mjs",
+      "types": "./dist/helpers/index.d.ts"
+    },
+    "./lint": {
+      "import": "./dist/lint/index.mjs",
+      "types": "./dist/lint/index.d.ts"
+    },
+    "./lint/fix": {
+      "import": "./dist/lint/fix.mjs",
+      "types": "./dist/lint/fix.d.ts"
+    },
+    "./test/coverage": {
+      "import": "./dist/test/coverage.mjs",
+      "types": "./dist/test/coverage.d.ts"
+    },
+    "./test/feature": {
+      "import": "./dist/test/feature.mjs",
+      "types": "./dist/test/feature.d.ts"
+    },
+    "./test/ui": {
+      "import": "./dist/test/ui.mjs",
+      "types": "./dist/test/ui.d.ts"
+    },
+    "./test/unit": {
+      "import": "./dist/test/unit.mjs",
+      "types": "./dist/test/unit.d.ts"
+    },
+    "./upgrade": {
+      "import": "./dist/upgrade/index.mjs",
+      "types": "./dist/upgrade/index.d.ts"
+    },
+    "./upgrade/dependencies": {
+      "import": "./dist/upgrade/dependencies.mjs",
+      "types": "./dist/upgrade/dependencies.d.ts"
+    },
+    "./upgrade/framework": {
+      "import": "./dist/upgrade/framework.mjs",
+      "types": "./dist/upgrade/framework.d.ts"
+    },
+    "./upgrade/node": {
+      "import": "./dist/upgrade/node.mjs",
+      "types": "./dist/upgrade/node.d.ts"
+    },
+    "./upgrade/package-manager": {
+      "import": "./dist/upgrade/package-manager.mjs",
+      "types": "./dist/upgrade/package-manager.d.ts"
+    },
+    "./add": {
+      "import": "./dist/add.mjs",
+      "types": "./dist/add.d.ts"
+    },
+    "./build": {
+      "import": "./dist/build.mjs",
+      "types": "./dist/build.d.ts"
+    },
+    "./bump": {
+      "import": "./dist/bump.mjs",
+      "types": "./dist/bump.d.ts"
+    },
+    "./changelog": {
+      "import": "./dist/changelog.mjs",
+      "types": "./dist/changelog.d.ts"
+    },
+    "./clean": {
+      "import": "./dist/clean.mjs",
+      "types": "./dist/clean.d.ts"
+    },
+    "./commit": {
+      "import": "./dist/commit.mjs",
+      "types": "./dist/commit.d.ts"
+    },
+    "./copy-types": {
+      "import": "./dist/copy-types.mjs",
+      "types": "./dist/copy-types.d.ts"
+    },
+    "./deploy": {
+      "import": "./dist/deploy.mjs",
+      "types": "./dist/deploy.d.ts"
+    },
+    "./examples": {
+      "import": "./dist/examples.mjs",
+      "types": "./dist/examples.d.ts"
+    },
+    "./fresh": {
+      "import": "./dist/fresh.mjs",
+      "types": "./dist/fresh.d.ts"
+    },
+    "./key-generate": {
+      "import": "./dist/key-generate.mjs",
+      "types": "./dist/key-generate.d.ts"
+    },
+    "./make": {
+      "import": "./dist/make.mjs",
+      "types": "./dist/make.d.ts"
+    },
+    "./migrate": {
+      "import": "./dist/migrate.mjs",
+      "types": "./dist/migrate.d.ts"
+    },
+    "./preinstall": {
+      "import": "./dist/preinstall.mjs",
+      "types": "./dist/preinstall.d.ts"
+    },
+    "./prepublish": {
+      "import": "./dist/prepublish.mjs",
+      "types": "./dist/prepublish.d.ts"
+    },
+    "./release": {
+      "import": "./dist/release.mjs",
+      "types": "./dist/release.d.ts"
+    },
+    "./seed": {
+      "import": "./dist/seed.mjs",
+      "types": "./dist/seed.d.ts"
+    },
+    "./test": {
+      "import": "./dist/test.mjs",
+      "types": "./dist/test.d.ts"
+    },
+    "./tinker": {
+      "import": "./dist/tinker.mjs",
+      "types": "./dist/tinker.d.ts"
+    },
+    "./typecheck": {
+      "import": "./dist/typecheck.mjs",
+      "types": "./dist/typecheck.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.mjs",
+      "types": "./dist/types.d.ts"
+    },
+    "./*": "./*"
+  },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
