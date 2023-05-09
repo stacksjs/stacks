@@ -64,7 +64,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.328.0",
+    "@aws-sdk/client-dynamodb": "^3.329.0",
     "@stacksjs/config": "workspace:*",
     "@types/memjs": "^1.3.0",
     "memcached": "^2.2.2",
