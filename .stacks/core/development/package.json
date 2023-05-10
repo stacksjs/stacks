@@ -7,6 +7,8 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/development#readme",
   "repository": {
     "type": "git",
@@ -37,6 +39,12 @@
   "files": [
     "README.md"
   ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
   "peerDependencies": {
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",

@@ -4,7 +4,11 @@ import { alias } from '@stacksjs/alias'
 export default defineBuildConfig({
   alias,
   entries: [
-    'src/user/index',
+    {
+      builder: 'mkdist',
+      input: './src/user',
+      outDir: './dist/user',
+    },
     'src/index',
   ],
   declaration: true,
@@ -38,9 +42,10 @@ export default defineBuildConfig({
     'unocss',
     'vite-plugin-pwa',
     '@novu/stateless',
+    'semver',
   ],
   rollup: {
-    emitCJS: false,
+    emitCJS: true,
     inlineDependencies: true,
   },
 })

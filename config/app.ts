@@ -1,4 +1,4 @@
-import { defineApp, env } from '@stacksjs/config'
+import { defineApp, env } from '@stacksjs/utils'
 
 /**
  * **Application Configuration**

@@ -1,4 +1,4 @@
-import { defineEvents } from '@stacksjs/config'
+import { defineEvents } from '@stacksjs/utils'
 
 /**
  * **Events Configuration**

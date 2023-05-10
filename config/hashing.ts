@@ -1,4 +1,4 @@
-import { defineHashing } from '@stacksjs/config'
+import { defineHashing } from '@stacksjs/utils'
 
 /**
  * **Hashing Configuration**

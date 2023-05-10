@@ -1,4 +1,4 @@
-import { definePage } from '@stacksjs/config'
+import { definePage } from '@stacksjs/utils'
 
 /**
  * **Page Configuration**

@@ -1,4 +1,4 @@
-import { defineGit } from '@stacksjs/config'
+import { defineGit } from '@stacksjs/utils'
 
 /**
  * **Git Configuration**

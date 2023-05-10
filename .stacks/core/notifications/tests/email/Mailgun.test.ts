@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { email, useEmail } from '@stacksjs/notifications'
-import { notification as env } from '@stacksjs/config/user'
+import { notification as env } from '@stacksjs/utils'
 
 describe('Mailgun Test', () => {
   it('should not send email', async () => {

@@ -25,7 +25,7 @@ declare global {
   const aiPath: typeof import('./core/path/src/index')['aiPath']
   const aliasPath: typeof import('./core/path/src/index')['aliasPath']
   const all: typeof import('./core/events/src/index')['all']
-  const app: typeof import('../config/app')['app']
+  const app: typeof import('../config/app')['default']
   const arraysPath: typeof import('./core/path/src/index')['arraysPath']
   const assert: typeof import('./core/utils/src/index')['assert']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
@@ -427,7 +427,7 @@ declare global {
   const tryOnScopeDispose: typeof import('@vueuse/core')['tryOnScopeDispose']
   const tryOnUnmounted: typeof import('@vueuse/core')['tryOnUnmounted']
   const typesPath: typeof import('./core/path/src/index')['typesPath']
-  const ui: typeof import('../config/ui')['ui']
+  const ui: typeof import('../config/ui')['default']
   const uiPath: typeof import('./core/path/src/index')['uiPath']
   const uniq: typeof import('./core/arrays/src/index')['uniq']
   const uniqueBy: typeof import('./core/arrays/src/index')['uniqueBy']
@@ -666,7 +666,7 @@ declare module 'vue' {
     readonly aiPath: UnwrapRef<typeof import('./core/path/src/index')['aiPath']>
     readonly aliasPath: UnwrapRef<typeof import('./core/path/src/index')['aliasPath']>
     readonly all: UnwrapRef<typeof import('./core/events/src/index')['all']>
-    readonly app: UnwrapRef<typeof import('../config/app')['app']>
+    readonly app: UnwrapRef<typeof import('../config/app')['default']>
     readonly arraysPath: UnwrapRef<typeof import('./core/path/src/index')['arraysPath']>
     readonly assert: UnwrapRef<typeof import('./core/utils/src/index')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
@@ -684,7 +684,7 @@ declare module 'vue' {
     readonly buildEnginePath: UnwrapRef<typeof import('./core/path/src/index')['buildEnginePath']>
     readonly buildEntriesPath: UnwrapRef<typeof import('./core/path/src/index')['buildEntriesPath']>
     readonly buildPath: UnwrapRef<typeof import('./core/path/src/index')['buildPath']>
-    readonly cache: UnwrapRef<typeof import('../config/cache')['cache']>
+    readonly cache: UnwrapRef<typeof import('../config/cache')['default']>
     readonly cachePath: UnwrapRef<typeof import('./core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('./core/search-engine/src/index')['calculatePagination']>
     readonly camelCase: UnwrapRef<typeof import('./core/strings/src/case')['camelCase']>
@@ -736,7 +736,7 @@ declare module 'vue' {
     readonly customElementsDataPath: UnwrapRef<typeof import('./core/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly dashboardPath: UnwrapRef<typeof import('./core/path/src/index')['dashboardPath']>
-    readonly database: UnwrapRef<typeof import('../config/database')['database']>
+    readonly database: UnwrapRef<typeof import('../config/database')['default']>
     readonly databasePath: UnwrapRef<typeof import('./core/path/src/index')['databasePath']>
     readonly dd: UnwrapRef<typeof import('./core/logging/src/index')['dd']>
     readonly debounce: UnwrapRef<typeof import('./core/utils/src/debounce')['debounce']>
@@ -751,7 +751,6 @@ declare module 'vue' {
     readonly deleteFiles: UnwrapRef<typeof import('./core/storage/src/index')['deleteFiles']>
     readonly deleteFolder: UnwrapRef<typeof import('./core/storage/src/index')['deleteFolder']>
     readonly delimiter: UnwrapRef<typeof import('./core/path/src/index')['delimiter']>
-    readonly deploy: UnwrapRef<typeof import('../config/cloud')['deploy']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('./core/path/src/index')['desktopPath']>
     readonly detectIndent: UnwrapRef<typeof import('./core/utils/src/helpers')['detectIndent']>
@@ -1010,7 +1009,7 @@ declare module 'vue' {
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
-    readonly searchEngine: UnwrapRef<typeof import('../config/search-engine')['searchEngine']>
+    readonly searchEngine: UnwrapRef<typeof import('../config/search-engine')['default']>
     readonly searchEnginePath: UnwrapRef<typeof import('./core/path/src/index')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('./core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('./core/search-engine/src/index')['searchParams']>
@@ -1019,7 +1018,7 @@ declare module 'vue' {
     readonly sep: UnwrapRef<typeof import('./core/path/src/index')['sep']>
     readonly serverPath: UnwrapRef<typeof import('./core/path/src/index')['serverPath']>
     readonly serverlessPath: UnwrapRef<typeof import('./core/path/src/index')['serverlessPath']>
-    readonly services: UnwrapRef<typeof import('../config/services')['services']>
+    readonly services: UnwrapRef<typeof import('../config/services')['default']>
     readonly setEnvValue: UnwrapRef<typeof import('./core/utils/src/helpers')['setEnvValue']>
     readonly setTotalHits: UnwrapRef<typeof import('./core/search-engine/src/index')['setTotalHits']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
@@ -1036,7 +1035,7 @@ declare module 'vue' {
     readonly sorts: UnwrapRef<typeof import('./core/search-engine/src/index')['sorts']>
     readonly src: UnwrapRef<typeof import('./core/ui/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('./core/path/src/index')['stacksPath']>
-    readonly storage: UnwrapRef<typeof import('../config/storage')['storage']>
+    readonly storage: UnwrapRef<typeof import('../config/storage')['default']>
     readonly storagePath: UnwrapRef<typeof import('./core/path/src/index')['storagePath']>
     readonly stringsPath: UnwrapRef<typeof import('./core/path/src/index')['stringsPath']>
     readonly suite: UnwrapRef<typeof import('vitest')['suite']>
@@ -1069,7 +1068,7 @@ declare module 'vue' {
     readonly tryOnScopeDispose: UnwrapRef<typeof import('@vueuse/core')['tryOnScopeDispose']>
     readonly tryOnUnmounted: UnwrapRef<typeof import('@vueuse/core')['tryOnUnmounted']>
     readonly typesPath: UnwrapRef<typeof import('./core/path/src/index')['typesPath']>
-    readonly ui: UnwrapRef<typeof import('../config/ui')['ui']>
+    readonly ui: UnwrapRef<typeof import('../config/ui')['default']>
     readonly uiPath: UnwrapRef<typeof import('./core/path/src/index')['uiPath']>
     readonly uniq: UnwrapRef<typeof import('./core/arrays/src/index')['uniq']>
     readonly uniqueBy: UnwrapRef<typeof import('./core/arrays/src/index')['uniqueBy']>

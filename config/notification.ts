@@ -1,4 +1,4 @@
-import { defineNotification, env } from '@stacksjs/config'
+import { defineNotification, env } from '@stacksjs/utils'
 
 /**
  * **Notification Configuration**

@@ -24,9 +24,17 @@
     "javascript"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+    "./i18n": {
+      "types": "./dist/i18n.d.ts",
+      "import": "./dist/i18n.mjs"
+    },
+    "./nprogress": {
+      "types": "./dist/nprogress.d.ts",
+      "import": "./dist/nprogress.mjs"
+    },
+    "./pwa": {
+      "types": "./dist/pwa.d.ts",
+      "import": "./dist/pwa.mjs"
     }
   },
   "contributors": [

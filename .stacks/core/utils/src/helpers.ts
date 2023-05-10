@@ -4,7 +4,7 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { log, runCommand, spawn } from '@stacksjs/cli'
 import storage from '@stacksjs/storage'
-import { app, ui } from '@stacksjs/config'
+import { ui, app } from '@stacksjs/config/user'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -137,14 +137,6 @@ export function determineDebugLevel(options?: CliOptions) {
     return true
 
   return app.debug === true
-}
-
-export function env(key: string, fallback?: any) {
-  // console.log('isClient', isClient)
-  // if (key && import.meta?.env)
-  //   return import.meta.env[key]
-
-  return fallback
 }
 
 // export { SemVer } from 'semver'

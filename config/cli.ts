@@ -1,4 +1,4 @@
-import { defineCli, env } from '@stacksjs/config'
+import { defineCli, env } from '@stacksjs/utils'
 
 /**
  * **CLI Configuration**
