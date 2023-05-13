@@ -256,7 +256,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.6.4"
+    "vue-component-meta": "^1.6.5"
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
