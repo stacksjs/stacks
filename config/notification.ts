@@ -11,11 +11,21 @@ export default defineNotification({
   default: 'email',
 
   email: {
-    default: 'nodemon',
+    default: 'smtp',
     from: env('FROM_EMAIL', 'no-reply@stacksjs.dev'),
     to: env('TO_EMAIL', 'some-recipient@stacksjs.dev'),
 
     drivers: {
+      smtp: {
+        host: "smtp.example.com",
+        port: 465,
+        secure: true, // use TLS
+        auth: {
+          user: "username",
+          pass: "password",
+        },
+      },
+
       emailjs: {
         host: env('EMAILJS_HOST', 'test-value'),
         user: env('EMAILJS_USERNAME', 'test-value'),

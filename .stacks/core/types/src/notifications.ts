@@ -9,6 +9,16 @@ export interface NotificationOptions {
     to: string
 
     drivers: {
+      smtp: {
+        host: string
+        port: number
+        secure: boolean
+        auth: {
+          user: string
+          pass: string
+        }
+      }
+
       sendgrid: {
         key: string
         senderName: string
