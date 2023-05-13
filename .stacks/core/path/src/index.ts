@@ -110,6 +110,10 @@ export function configPath(path?: string) {
   return corePath(`config/${path || ''}`)
 }
 
+export function userConfigPath(path?: string) {
+  return projectPath(`config/${path || ''}`)
+}
+
 export function corePath(path?: string) {
   return frameworkPath(`core/${path || ''}`)
 }
@@ -371,6 +375,7 @@ const path = {
   actionsPath,
   aliasPath,
   arraysPath,
+  appPath,
   authPath,
   buildEnginePath,
   buildEntriesPath,
@@ -382,6 +387,7 @@ const path = {
   collectionsPath,
   componentsPath,
   configPath,
+  userConfigPath,
   corePath,
   customElementsDataPath,
   databasePath,

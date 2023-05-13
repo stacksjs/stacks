@@ -71,10 +71,6 @@ export interface StacksOptions {
    */
   pages?: Partial<PagesOption>
   /**
-   * The Payment config.
-   */
-  payment?: Partial<PaymentOptions>
-  /**
    *  The Search Engine config.
    */
   searchEngine?: Partial<SearchEngineOptions>

@@ -99,6 +99,8 @@ const alias: Record<string, string> = {
   '@stacksjs/x-ray/*': p.xRayPath('src/*'),
   'framework/*': p.frameworkPath('*'),
   'stacks': p.frameworkPath('src/index.ts'),
+  'app/*': p.appPath('*'),
+  'config/*': p.userConfigPath('*'),
   'components/*': p.componentsPath('*'),
   'functions/*': p.functionsPath('*'),
   'pages/*': p.pagesPath('*'),

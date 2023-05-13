@@ -125,6 +125,8 @@
       "buddy": ["core/buddy/src/index.ts"],
       "buddy/*": ["core/buddy/src/*"],
       "framework/*": ["./*"],
+      "app/*": ["../app/*"],
+      "config/*": ["../config/*"],
       "functions/*": ["../functions/*"],
       "components/*": ["../components/*"]
     }

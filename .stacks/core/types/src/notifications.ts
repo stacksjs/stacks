@@ -1,131 +1,146 @@
 import type { IEmailOptions } from '@novu/stateless'
 
 export interface NotificationOptions {
-  type?: 'email' | 'sms' | 'chat' | 'push'
-  driver?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses' | 'mailgun' | 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns'
+  default: 'email' | 'sms' | 'chat' | string
 
   email: {
-    purgeCSS: boolean
+    default: 'emailjs' | 'mailgun' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'sendgrid' | 'ses' | string
 
-    sendgrid: {
-      key: string
-      from: string
-      senderName: string
-    }
+    drivers: {
+      sendgrid: {
+        key: string
+        from: string
+        senderName: string
+      }
 
-    emailjs: {
-      from: string
-      host: string
-      user: string
-      password: string
-      port: number
-      secure: boolean
-    }
+      emailjs: {
+        from: string
+        host: string
+        user: string
+        password: string
+        port: number
+        secure: boolean
+      }
 
-    mailgun: {
-      key: string
-      domain: string
-      username: string
-      from: string
-    }
+      mailgun: {
+        key: string
+        domain: string
+        username: string
+        from: string
+      }
 
-    mailjet: {
-      key: string
-      secret: string
-      from: string
-    }
+      mailjet: {
+        key: string
+        secret: string
+        from: string
+      }
 
-    mandrill: {
-      key: string
-      from: string
-    }
+      mandrill: {
+        key: string
+        from: string
+      }
 
-    netcore: {
-      key: string
-      from: string
-    }
+      netcore: {
+        key: string
+        from: string
+      }
 
-    nodemailer: {
-      from: string
-      host: string
-      user: string
-      password: string
-      port: number
-      secure: boolean
-    }
+      nodemailer: {
+        from: string
+        host: string
+        user: string
+        password: string
+        port: number
+        secure: boolean
+      }
 
-    postmark: {
-      key: string
-      from: string
-    }
+      postmark: {
+        key: string
+        from: string
+      }
 
-    ses: {
-      region: string
-      key: string
-      secret: string
-      from: string
+      ses: {
+        region: string
+        key: string
+        secret: string
+        from: string
+      }
     }
   }
 
   sms: {
-    twilio: {
-      sid: string
-      authToken: string
-      from: string
-      to: string
-    }
+    default: 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | string
 
-    nexmo: {
-      key: string
-      secret: string
-      from: string
-    }
+    drivers: {
+      twilio: {
+        sid: string
+        authToken: string
+        from: string
+        to: string
+      }
 
-    gupshup: {
-      user: string
-      password: string
-    }
+      nexmo: {
+        key: string
+        secret: string
+        from: string
+      }
 
-    plivo: {
-      sid: string
-      authToken: string
-      from: string
-    }
+      gupshup: {
+        user: string
+        password: string
+      }
 
-    sms77: {
-      key: string
-      from: string
-    }
+      plivo: {
+        sid: string
+        authToken: string
+        from: string
+      }
 
-    sns: {
-      region: string
-      key: string
-      secret: string
-    }
+      sms77: {
+        key: string
+        from: string
+      }
 
-    telnyx: {
-      key: string
-      messageProfileId: string
-      from: string
-    }
+      sns: {
+        region: string
+        key: string
+        secret: string
+      }
 
-    termii: {
-      key: string
-      from: string
+      telnyx: {
+        key: string
+        messageProfileId: string
+        from: string
+      }
+
+      termii: {
+        key: string
+        from: string
+      }
     }
   }
 
   chat: {
-    slack: {
-      appId: string
-      clientId: string
-      secret: string
-    }
+    default: 'slack' | 'msTeams' | 'discord' | string
 
-    msTeams: {
-      appId: string
-      clientId: string
-      secret: string
+    drivers: {
+      slack?: {
+        appId: string
+        clientId: string
+        secret: string
+      }
+
+      msTeams?: {
+        appId: string
+        clientId: string
+        secret: string
+      }
+
+      discord?: {
+        // appId: string
+        // clientId: string
+        // secret: string
+      }
     }
   }
 }

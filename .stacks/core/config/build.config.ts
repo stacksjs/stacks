@@ -1,15 +1,18 @@
 import { defineBuildConfig } from 'unbuild'
 import { alias } from '@stacksjs/alias'
 
+// eslint-disable-next-line no-console
+console.log('Building...')
+
 export default defineBuildConfig({
   alias,
   entries: [
+    'src/user',
     {
       builder: 'mkdist',
-      input: './src/user',
-      outDir: './dist/user',
+      input: './src',
+      outDir: './dist',
     },
-    'src/index',
   ],
   declaration: true,
   clean: true,
@@ -43,6 +46,27 @@ export default defineBuildConfig({
     'vite-plugin-pwa',
     '@novu/stateless',
     'semver',
+    'config/app',
+    'config/cache',
+    'config/cdn',
+    'config/cli',
+    'config/debug',
+    'config/database',
+    'config/dns',
+    'config/docs',
+    'config/git',
+    'config/email',
+    'config/events',
+    'config/hashing',
+    'config/library',
+    'config/page',
+    'config/payment',
+    'config/notification',
+    'config/search-engine',
+    'config/storage',
+    'config/services',
+    'config/ui',
+    'app/jobs',
   ],
   rollup: {
     emitCJS: true,
