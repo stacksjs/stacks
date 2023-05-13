@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.2.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
