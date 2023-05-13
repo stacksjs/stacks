@@ -1,6 +1,6 @@
 import type { AppOptions, CacheOptions, CdnOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
 
-export function env(key: string, fallback?: any) {
+export function env(key: any, fallback?: any) {
   // console.log('isClient', isClient)
   // if (key && import.meta?.env)
   //   return import.meta.env[key]

@@ -8,12 +8,15 @@ import { defineNotification, env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineNotification({
+  default: 'email',
+
   email: {
-    default: 'ses',
+    default: 'nodemon',
+    from: env('FROM_EMAIL', 'no-reply@stacksjs.dev'),
+    to: env('TO_EMAIL', 'some-recipient@stacksjs.dev'),
 
     drivers: {
       emailjs: {
-        from: env('EMAILJS_FROM_EMAIL', 'test-value'),
         host: env('EMAILJS_HOST', 'test-value'),
         user: env('EMAILJS_USERNAME', 'test-value'),
         password: env('EMAILJS_PASSWORD', 'test-value'),
@@ -25,27 +28,22 @@ export default defineNotification({
         key: env('MAILGUN_API_KEY', 'test-value'),
         domain: env('MAILGUN_DOMAIN', 'test-value'),
         username: env('MAILGUN_USERNAME', 'test-value'),
-        from: env('MAILGUN_FROM', 'test-value'),
       },
 
       mailjet: {
         key: env('MAILJET_API_KEY', 'test-value'),
         secret: env('MAILJET_API_SECRET', 'test-value'),
-        from: env('MAILJET_FROM_EMAIL', 'test-value'),
       },
 
       mandrill: {
         key: env('MANDRILL_API_KEY', 'test-value'),
-        from: env('MANDRILL_EMAIL', 'test-value'),
       },
 
       netcore: {
         key: env('NETCORE_API_KEY', 'test-value'),
-        from: env('NETCORE_FROM', 'test-value'),
       },
 
       nodemailer: {
-        from: env('NODEMAILER_FROM_EMAIL', 'test-value'),
         host: env('NODEMAILER_HOST', 'test-value'),
         user: env('NODEMAILER_USERNAME', 'test-value'),
         password: env('NODEMAILER_PASSWORD', 'test-value'),
@@ -55,12 +53,10 @@ export default defineNotification({
 
       postmark: {
         key: env('POSTMARK_API_KEY', 'test-value'),
-        from: env('POSTMARK_FROM', 'test-value'),
       },
 
       sendgrid: {
         key: env('SENDGRID_API_KEY', 'test-value'),
-        from: env('SENDGRID_FROM', 'test-value'),
         senderName: env('SENDGRID_SENDER_NAME', 'test-value'),
       },
 
@@ -68,28 +64,24 @@ export default defineNotification({
         region: env('SES_REGION', 'test-value'),
         key: env('SES_ACCESS_KEY_ID', 'test-value'),
         secret: env('SES_SECRET_ACCESS_KEY', 'test-value'),
-        from: env('SES_FROM', 'test-value'),
       },
     },
-
-    purgeCSS: false,
   },
 
   sms: {
     default: 'twilio',
+    from: env('FROM_PHONE_NUMBER'),
+    to: env('TO_PHONE_NUMBER'),
 
     drivers: {
       twilio: {
         sid: env('TWILIO_ACCOUNT_SID', 'ACTEST'),
         authToken: env('TWILIO_AUTH_TOKEN', 'test-value'),
-        from: env('TWILIO_FROM_NUMBER', 'test-value'),
-        to: env('TWILIO_TO_NUMBER', 'test-value'),
       },
 
       nexmo: {
         key: env('VONAGE_API_KEY', 'test-value'),
         secret: env('VONAGE_API_SECRET', 'test-value'),
-        from: env('VONAGE_FROM_NUMBER', 'test-value'),
       },
 
       gupshup: {
@@ -100,12 +92,10 @@ export default defineNotification({
       plivo: {
         sid: env('PLIVO_ACCOUNT_ID', 'test-value'),
         authToken: env('PLIVO_AUTH_TOKEN', 'test-value'),
-        from: env('PLIVO_FROM_NUMBER', 'test-value'),
       },
 
       sms77: {
         key: env('SMS77_API_KEY', 'test-value'),
-        from: env('SMS77_FROM', 'test-value'),
       },
 
       sns: {
@@ -117,18 +107,18 @@ export default defineNotification({
       telnyx: {
         key: env('TELNYX_API_KEY', 'test-value'),
         messageProfileId: env('TELNYX_MESSAGE_PROFILE_ID', 'test-value'),
-        from: env('TELNYX_FROM', 'test-value'),
       },
 
       termii: {
         key: env('TERMII_API_KEY', 'test-value'),
-        from: env('TERMII_SENDER', 'test-value'),
       },
     },
   },
 
   chat: {
     default: 'slack',
+    from: env('SLACK_FROM', 'test-value'),
+    to: env('SLACK_TO', 'test-value'),
 
     drivers: {
       slack: {
