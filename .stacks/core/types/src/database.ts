@@ -4,13 +4,21 @@ export type DatabaseClient = any
 
 export interface DatabaseOptions {
   driver: string
-  url?: string
-  host?: string
-  port?: number
-  client?: DatabaseClient
-  database: string
-  username?: string
-  password?: string
+
+  drivers: {
+    mysql: {
+      url?: string
+      host?: string
+      port?: number
+      client?: DatabaseClient
+      name: string
+      username?: string
+      password?: string
+    }
+
+    planetscale: {}
+    postgres: {}
+  }
 }
 
 export interface FactoryOptions {

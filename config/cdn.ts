@@ -9,4 +9,8 @@ import { defineCdn } from '@stacksjs/utils'
  */
 export default defineCdn({
   driver: 'cloudfront',
+
+  // drivers: {
+  //   cloudfront: {}
+  // }
 })

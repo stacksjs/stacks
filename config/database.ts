@@ -9,10 +9,19 @@ import { defineDatabase, env } from '@stacksjs/utils'
  */
 export default defineDatabase({
   driver: 'mysql',
-  url: env('DATABASE_URL', ''),
-  host: 'localhost',
-  port: 3306,
-  database: env('DATABASE_NAME', ''),
-  username: env('DATABASE_USERNAME', ''),
-  password: env('DATABASE_PASSWORD', ''),
+
+  drivers: {
+    mysql: {
+      name: env('DATABASE_NAME', ''),
+      host: env('DATABASE_HOST', ''),
+      url: env('DATABASE_URL', 'localhost'),
+      port: env('DATABASE_PORT', 3306),
+      username: env('DATABASE_USERNAME', ''),
+      password: env('DATABASE_PASSWORD', ''),
+    },
+
+    planetscale: {},
+    
+    postgres: {},
+  }
 })

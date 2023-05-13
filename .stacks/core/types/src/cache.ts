@@ -44,33 +44,35 @@ export interface CacheOptions {
    */
   ttl: number
 
-  redis: {
-    connection: string
+  drivers: {
+    redis?: {
+      connection: string
 
-    /**
-     * **Redis Host**
-     *
-     * This value determines the host that will be used to connect to the Redis server.
-     *
-     * @default string "localhost"
-     * @example "localhost"
-     */
-    host: string
+      /**
+       * **Redis Host**
+       *
+       * This value determines the host that will be used to connect to the Redis server.
+       *
+       * @default string "localhost"
+       * @example "localhost"
+       */
+      host: string
 
-    /**
-     * **Redis Port**
-     *
-     * This value determines the port that will be used to connect to the Redis server.
-     *
-     * @default number 6379
-     * @example 6379
-     */
-    port: number
-  }
+      /**
+       * **Redis Port**
+       *
+       * This value determines the port that will be used to connect to the Redis server.
+       *
+       * @default number 6379
+       * @example 6379
+       */
+      port: number
+    }
 
-  memcached: {
-  }
+    memcached?: {
+    }
 
-  dynamodb: {
+    dynamodb?: {
+    }
   }
 }

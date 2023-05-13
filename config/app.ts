@@ -19,5 +19,4 @@ export default defineApp({
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-  editor: 'vscode',
 })

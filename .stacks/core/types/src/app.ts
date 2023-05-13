@@ -107,17 +107,6 @@ export interface AppOptions {
   fallbackLocale: 'en'
 
   /**
-   * **Integrated Development Environment**
-   *
-   * Currently, only VS Code is fully supported. While you may use Stacks with
-   * any editor, some of its tooling is VS Code specific. Hence, for the
-   * best experience, VS Code is currently the recommended editor.
-   *
-   * @default string "vscode"
-   */
-  editor: string
-
-  /**
    * **Cipher**
    *
    * Description WIP.
