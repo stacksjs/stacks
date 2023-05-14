@@ -20,7 +20,7 @@ import {
   UiOptions,
 } from "./"
 
-/**.
+/**
  * **Stacks Options**
  *
  * This configuration defines all of your Stacks options. Because Stacks is fully-typed,
@@ -35,7 +35,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  app: AppOptions
+  app: Partial<AppOptions>
 
   /**
    * **Cache Options**
@@ -44,7 +44,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  cache: CacheOptions
+  cache: Partial<CacheOptions>
 
   /**
    * **CDN Options**
@@ -53,7 +53,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  cdn: CdnOptions
+  cdn: Partial<CdnOptions>
 
   /**
    * **CLI Options**
@@ -62,7 +62,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  cli: CliOptions
+  cli: Partial<CliOptions>
 
   /**
    * **Database Options**
@@ -71,7 +71,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  database: DatabaseOptions
+  database: Partial<DatabaseOptions>
 
   /**
    * **Debug Options**
@@ -80,7 +80,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  debug: DebugOptions
+  debug: Partial<DebugOptions>
 
   /**
    * **DNS Options**
@@ -89,7 +89,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  dns: DnsOptions
+  dns: Partial<DnsOptions>
 
   /**
    * **Docs Options**
@@ -98,7 +98,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  docs: DocsOptions
+  docs: Partial<DocsOptions>
 
   /**
    * **Email Options**
@@ -107,7 +107,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  email: EmailOptions
+  email: Partial<EmailOptions>
 
   /**
    * **Event Options**
@@ -116,7 +116,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  event: EventOptions
+  event: Partial<EventOptions>
 
   /**
    * **Git Options**
@@ -125,7 +125,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  git: GitOptions
+  git: Partial<GitOptions>
 
   /**
    * **Hashing Options**
@@ -134,7 +134,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  hashing: HashingOptions
+  hashing: Partial<HashingOptions>
 
   /**
    * **Library Options**
@@ -143,7 +143,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  library: LibraryOptions
+  library: Partial<LibraryOptions>
 
   /**
    * **Notification Options**
@@ -152,7 +152,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  notification: NotificationOptions
+  notification: Partial<NotificationOptions>
 
   /**
    * **Payment Options**
@@ -161,7 +161,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  payment: PaymentOptions
+  payment: Partial<PaymentOptions>
 
   /**
    * **Search Engine Options**
@@ -170,7 +170,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  searchEngine: SearchEngineOptions
+  searchEngine: Partial<SearchEngineOptions>
 
   /**
    * **Services Options**
@@ -179,7 +179,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  services: ServicesOptions
+  services: Partial<ServicesOptions>
 
   /**
    * **Storage Options**
@@ -188,7 +188,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  storage: StorageOptions
+  storage: Partial<StorageOptions>
 
   /**
    * **UI Options**
@@ -197,5 +197,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  ui: UiOptions
+  ui: Partial<UiOptions>
 }
+
+export type ResolvedStacksOptions = Required<StacksOptions>

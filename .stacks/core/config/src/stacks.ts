@@ -1,39 +1,32 @@
 import { loadConfig } from 'c12'
-import type { StacksOptions } from '@stacksjs/types'
+import type { StacksOptions, ResolvedStacksOptions } from '@stacksjs/types'
+import { app, cache, cdn, cli, database, debug, dns, email, events, git, hashing, library, notification, payment, searchEngine, services, storage, ui } from './defaults'
 
-export const stacksConfigDefaults: StacksOptions = {
-  app: {
-    name: 'Stacks',
-    env: 'local',
-    key: '',
-    debug: false,
-    url: 'https://localhost',
-    port: 3000,
-    timezone: 'UTC',
-    locale: 'en',
-    fallbackLocale: 'en',
-    cipher: 'aes-256-cbc',
-    editor: 'vscode',
-  },
-
-  cache: {},
-  cli: {},
-  database: {},
-  debug: {},
-  dns: {},
-  hashing: {},
-  library: {},
-  notification: {},
-  payment: {},
-  searchEngine: {},
-  services: {},
-  storage: {},
-  ui: {}
-}
+export const stacksConfigDefaults = {
+  app,
+  cache,
+  cdn,
+  cli,
+  database,
+  debug,
+  dns,
+  docs,
+  email,
+  event: events,
+  git,
+  hashing,
+  library,
+  notification,
+  payment,
+  searchEngine,
+  services,
+  storage,
+  ui
+} satisfies ResolvedStacksOptions
 
 export async function loadStacksConfig(overrides?: Partial<StacksOptions>, cwd = process.cwd()) {
   const { config } = await loadConfig<StacksOptions>({
-    name: 'bump',
+    name: 'stacks',
     defaults: stacksConfigDefaults,
     overrides: {
       ...(overrides as StacksOptions),
@@ -44,6 +37,6 @@ export async function loadStacksConfig(overrides?: Partial<StacksOptions>, cwd =
   return config!
 }
 
-export function defineConfig(config: Partial<StacksOptions>) {
+export function defineStacksConfig(config: Partial<StacksOptions>) {
   return config
 }

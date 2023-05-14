@@ -1,24 +1,22 @@
-import type { StacksOptions } from './types'
-import { app, cache, cdn, database, debug, dns, email, events, git, hashing, library, notification, pages, payment, searchEngine, services, storage, ui } from './user'
+export { default as app } from '../../../../config/app'
+export { default as cache } from '../../../../config/cache'
+export { default as cdn } from '../../../../config/cdn'
+export { default as cronJobs } from '../../../../app/jobs'
+export { default as cli } from '../../../../config/cli'
+export { default as database } from '../../../../config/database'
+export { default as debug } from '../../../../config/debug'
+export { default as dns } from '../../../../config/dns'
+export { default as docs } from '../../../../config/docs'
+export { default as email } from '../../../../config/email'
+export { default as events } from '../../../../config/events'
+export { default as git } from '../../../../config/git'
+export { default as hashing } from '../../../../config/hashing'
+export { default as library } from '../../../../config/library'
+export { default as payment } from '../../../../config/payment'
+export { default as notification } from '../../../../config/notification'
+export { default as searchEngine } from '../../../../config/search-engine'
+export { default as services } from '../../../../config/services'
+export { default as storage } from '../../../../config/storage'
+export { default as ui } from '../../../../config/ui'
 
-export { // StacksOptions is an interface of all the ./config options
-  app,
-  cache,
-  cdn,
-  database,
-  debug,
-  dns,
-  // docs,
-  email,
-  events,
-  git,
-  hashing,
-  library,
-  notification,
-  pages,
-  payment,
-  searchEngine,
-  services,
-  storage,
-  ui,
-}
+// export { default as cloud } from '../../../../config/cloud'
