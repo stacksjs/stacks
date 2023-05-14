@@ -2,7 +2,7 @@ import {
   AppOptions,
   CacheOptions,
   CdnOptions,
-  CliOptions,
+  UserCliOptions,
   DatabaseOptions,
   DebugOptions,
   DnsOptions,
@@ -62,7 +62,7 @@ export interface StacksOptions {
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  cli: Partial<CliOptions>
+  cli: Partial<UserCliOptions>
 
   /**
    * **Database Options**

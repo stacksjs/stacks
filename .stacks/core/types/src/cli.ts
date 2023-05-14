@@ -27,6 +27,15 @@ type SpinnerOptions = Ora
 export type CliOptionsKeys = keyof CliOptions
 
 /**
+ * The CLI Options used in `./config/cli.ts`.
+ */
+export interface UserCliOptions {
+  name?: string
+  command?: string
+  description?: string
+}
+
+/**
  * The options to pass to the CLI.
  */
 export interface CliOptions {

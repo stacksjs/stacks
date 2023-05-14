@@ -10,4 +10,5 @@ import { defineCli, env } from '@stacksjs/utils'
 export default defineCli({
   name: env('CLI_NAME', 'Stacks CLI'),
   command: env('CLI_COMMAND', 'stx'),
+  description: 'This is an example command to illustrate how to create your own commands. Check out `../app/cli` for more.',
 })
