@@ -1,5 +1,5 @@
 import { err } from '@stacksjs/error-handling'
-import { notification as config } from '@stacksjs/config/user'
+import { notification as config } from '@stacksjs/config'
 import { email } from './drivers/email'
 import { chat } from './drivers/chat'
 import { sms } from './drivers/sms'

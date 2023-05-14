@@ -1,4 +1,4 @@
-import { page as config } from '@stacksjs/config/user'
+import { page as config } from '@stacksjs/config'
 import { filesystem } from '@stacksjs/storage'
 
 const { fs } = filesystem

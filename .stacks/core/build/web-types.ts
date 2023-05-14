@@ -1,6 +1,6 @@
 import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { componentsPath, frameworkPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config/user'
+import { library } from '@stacksjs/config'
 import { frameworkVersion } from '@stacksjs/utils'
 
 export default <WebTypesBuilderConfig> {

@@ -2,7 +2,7 @@
 // import { italic } from '@stacksjs/cli'
 // import type { ChatOptions } from '@stacksjs/types'
 // import { ResultAsync } from '@stacksjs/error-handling'
-// import { notification } from '@stacksjs/config/user'
+// import { notification } from '@stacksjs/config'
 
 // const env = notification.chat.slack
 

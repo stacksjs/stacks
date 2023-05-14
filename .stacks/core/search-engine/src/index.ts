@@ -1,4 +1,4 @@
-import { searchEngine } from '@stacksjs/config/user'
+import { searchEngine } from '@stacksjs/config'
 
 // import type { Ref } from '@stacksjs/types'
 import type { UiEngine } from '@stacksjs/ui'

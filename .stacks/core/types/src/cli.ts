@@ -122,8 +122,8 @@ export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue'
 export type CreateOptions = {
   [key in CreateBooleanOption]: boolean
 } & {
-  [key in CreateStringOption]: string
-} & CliOptions
+    [key in CreateStringOption]: string
+  } & CliOptions
 
 export type DevOption = 'components' | 'docs' | 'pages' | 'functions' | 'desktop' | 'all'
 export type DevOptions = {
@@ -145,8 +145,8 @@ export type MakeBooleanOption = 'component' | 'page' | 'function' | 'language' |
 export type MakeOptions = {
   [key in MakeBooleanOption]: boolean
 } & {
-  [key in MakeStringOption]: string
-} & CliOptions
+    [key in MakeStringOption]: string
+  } & CliOptions
 
 export type UpgradeBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
 export type UpgradeString = 'version'
@@ -154,8 +154,8 @@ export type UpgradeString = 'version'
 export type UpgradeOptions = {
   [key in UpgradeBoolean]: boolean;
 } & {
-  [key in UpgradeString]: string;
-} & CliOptions
+    [key in UpgradeString]: string;
+  } & CliOptions
 
 export type ExamplesString = 'version'
 export type ExamplesBoolean = 'components' | 'vue' | 'webComponents' | 'elements' | 'all' | 'force'
@@ -163,22 +163,22 @@ export type ExamplesOption = ExamplesString & ExamplesBoolean | void
 export type ExamplesOptions = {
   [key in ExamplesString]: string;
 } & {
-  [key in ExamplesBoolean]: boolean;
-} & CliOptions
+    [key in ExamplesBoolean]: boolean;
+  } & CliOptions
 export type TestOptions = CliOptions & {
   showReport?: boolean
 }
 
-export interface CleanOptions extends CliOptions {}
-export interface CommitOptions extends CliOptions {}
-export interface KeyOptions extends CliOptions {}
-export interface FreshOptions extends CliOptions {}
-export interface InspireOptions extends CliOptions {}
-export interface ReleaseOptions extends CliOptions {}
-export interface PreinstallOptions extends CliOptions {}
-export interface PrepublishOptions extends CliOptions {}
-export interface TinkerOptions extends CliOptions {}
-export interface TypesOptions extends CliOptions {}
+export interface CleanOptions extends CliOptions { }
+export interface CommitOptions extends CliOptions { }
+export interface KeyOptions extends CliOptions { }
+export interface FreshOptions extends CliOptions { }
+export interface InspireOptions extends CliOptions { }
+export interface ReleaseOptions extends CliOptions { }
+export interface PreinstallOptions extends CliOptions { }
+export interface PrepublishOptions extends CliOptions { }
+export interface TinkerOptions extends CliOptions { }
+export interface TypesOptions extends CliOptions { }
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 

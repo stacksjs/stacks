@@ -1,19 +1,9 @@
 import { defineBuildConfig } from 'unbuild'
 import { alias } from '@stacksjs/alias'
 
-// eslint-disable-next-line no-console
-console.log('Building...')
-
 export default defineBuildConfig({
   alias,
-  entries: [
-    'src/user',
-    {
-      builder: 'mkdist',
-      input: './src',
-      outDir: './dist',
-    },
-  ],
+  entries: ['src/index'],
   declaration: true,
   clean: true,
   externals: [
@@ -69,7 +59,7 @@ export default defineBuildConfig({
     'app/jobs',
   ],
   rollup: {
-    emitCJS: true,
+    // emitCJS: true,
     inlineDependencies: true,
   },
 })

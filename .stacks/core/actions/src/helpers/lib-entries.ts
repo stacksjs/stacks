@@ -5,7 +5,7 @@ import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
 import type { LibEntryType } from '@stacksjs/types'
-import { library } from '@stacksjs/config/user'
+import { library } from '@stacksjs/config'
 
 /**
  * Based on the config values, this method

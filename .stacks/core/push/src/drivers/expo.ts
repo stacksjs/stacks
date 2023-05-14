@@ -1,5 +1,5 @@
 // import { Novu } from '@novu/node'
-// import { notification } from '@stacksjs/config/user'
+// import { notification } from '@stacksjs/config'
 // import type { ExpoPushNotificationOptions } from '@stacksjs/types'
 // import { ResultAsync } from '@stacksjs/error-handling'
 // import { italic } from '@stacksjs/cli'

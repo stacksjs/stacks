@@ -1,21 +1,21 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "editor.formatOnSave": true,
-  "eslint.format.enable": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
+  // "editor.formatOnSave": true,
+  // "eslint.format.enable": true,
+  // "editor.codeActionsOnSave": {
+  //   "source.fixAll.eslint": true
+  // },
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
   "editor.quickSuggestions": {
     "strings": true
   },
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
+  // "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  // "[jsonc]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,
@@ -36,7 +36,10 @@
   "markdownlint.config": {
     "default": true,
     "MD033": {
-      "allowed_elements": ["details", "summary"]
+      "allowed_elements": [
+        "details",
+        "summary"
+      ]
     },
     "MD041": false
   },
@@ -70,7 +73,9 @@
     "readme*": "authors, backers.md, changelog.md, citation*, code_of_conduct.md, codeowners, contributing.md, contributors, copying, credits, governance.md, history.md, license*, maintainers, readme*, security.md, sponsors.md",
     "shims.d.ts": "*.d.ts"
   },
-  "cSpell.dictionaries": ["stacks-dictionary"],
+  "cSpell.dictionaries": [
+    "stacks-dictionary"
+  ],
   "cSpell.diagnosticLevel": "Hint",
   "cSpell.customDictionaries": {
     "stacks": {
@@ -83,7 +88,11 @@
   },
   "prettier.enable": false, // to ensure it is disabled
   "terminal.integrated.scrollback": 10000,
-  "grammarly.files.include": ["**/README.md", "**/readme.md", "**/*.txt"],
+  "grammarly.files.include": [
+    "**/README.md",
+    "**/readme.md",
+    "**/*.txt"
+  ],
   "grammarly.files.exclude": [
     "**/dictionary.txt"
   ]

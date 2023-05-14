@@ -1,4 +1,4 @@
-import type { AppOptions, CacheOptions, CdnOptions, CliOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
+import type { AppOptions, CacheOptions, CdnOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
 
 export function env(key: any, fallback?: any) {
   // console.log('isClient', isClient)
@@ -18,6 +18,11 @@ export function defineCache(options: Partial<CacheOptions>) {
 
 export function defineCdn(options: Partial<CdnOptions>) {
   return options
+}
+
+interface CliOptions {
+  name?: string
+  command?: string
 }
 
 export function defineCli(options: Partial<CliOptions>) {

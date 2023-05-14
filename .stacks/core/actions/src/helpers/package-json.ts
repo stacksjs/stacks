@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config/user'
+import { library } from '@stacksjs/config'
 import { packageManager } from '../../package.json' assert { type: 'json' }
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {

@@ -1,6 +1,6 @@
 import { NodemailerProvider } from '@novu/nodemailer'
 import type { EmailOptions } from '@stacksjs/types'
-import { notification } from '@stacksjs/config/user'
+import { notification } from '@stacksjs/config'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 

@@ -1,6 +1,6 @@
 import type { RedisClientType } from 'redis'
 import { createClient } from 'redis'
-import { cache } from '@stacksjs/config/user'
+import { cache } from '@stacksjs/config'
 
 const client: RedisClientType = createClient({
   socket: {

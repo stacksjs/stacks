@@ -8,6 +8,6 @@ import { defineCli, env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineCli({
-  name: env('CLI_NAME', 'stx'),
+  name: env('CLI_NAME', 'Stacks CLI'),
   command: env('CLI_COMMAND', 'stx'),
 })
