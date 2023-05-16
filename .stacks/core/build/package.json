@@ -60,7 +60,7 @@
     "unbuild": "^1.2.1",
     "unplugin-auto-import": "^0.16.0",
     "unplugin-vue-components": "^0.24.1",
-    "vite": "^4.3.6",
+    "vite": "^4.3.7",
     "vite-plugin-inspect": "^0.7.26",
     "vite-plugin-pages": "^0.29.0",
     "vite-plugin-pwa": "^0.14.7",
