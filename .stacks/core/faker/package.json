@@ -2,7 +2,7 @@
   "name": "@stacksjs/faker",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.5.0",
+  "packageManager": "pnpm@8.5.1",
   "description": "Faker functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@faker-js/faker": "^8.0.0",
+    "@faker-js/faker": "^8.0.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*"
   },
