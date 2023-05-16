@@ -4,12 +4,13 @@ import { notification } from '@stacksjs/config'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email?.sendgrid
+const env = notification.email
+const service = notification.email?.drivers.sendgrid
 
 const driver = new SendgridEmailProvider({
-  apiKey: env?.key || '',
+  apiKey: service?.key || '',
   from: env?.from || '',
-  senderName: env?.senderName || '',
+  senderName: service?.senderName || '',
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

@@ -3,12 +3,13 @@ import { notification as config } from '@stacksjs/config'
 import { email } from './drivers/email'
 import { chat } from './drivers/chat'
 import { sms } from './drivers/sms'
+import { ExitCode } from '@stacksjs/types'
 
 function useChat(driver = 'slack') {
   return chat[driver as keyof typeof chat]
 }
 
-function useEmail(driver = 'sendgrid') {
+function useEmail(driver = 'mailtrap') {
   return email[driver as keyof typeof email]
 }
 
@@ -16,9 +17,14 @@ function useSMS(driver = 'twilio') {
   return sms[driver as keyof typeof sms]
 }
 
-function useNotification(typeParam = 'email', driverParam = 'sendgrid'): any {
-  const type = typeParam || config.type
-  const driver = driverParam || config.driver
+function useNotification(typeParam = 'email', driverParam = 'mailtrap') {
+  if (!config.default) {
+    log.error('No default notification type set in config/notification.ts')
+    return process.exit(ExitCode.InvalidArgument)
+  }
+
+  const type = typeParam || config.default
+  const driver = driverParam || config.default
 
   switch (type) {
     case 'email':
@@ -32,7 +38,7 @@ function useNotification(typeParam = 'email', driverParam = 'sendgrid'): any {
   }
 }
 
-function notification(): any {
+function notification() {
   return useNotification()
 }
 

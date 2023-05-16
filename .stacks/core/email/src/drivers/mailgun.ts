@@ -4,12 +4,13 @@ import { notification } from '@stacksjs/config'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email?.mailgun
+const env = notification.email
+const service = notification.email?.drivers.mailgun
 
 const provider = new MailgunEmailProvider({
-  apiKey: env?.key || '',
-  domain: env?.domain || '',
-  username: env?.username || '',
+  apiKey: service?.key || '',
+  domain: service?.domain || '',
+  username: service?.username || '',
   from: env?.from || '',
 })
 

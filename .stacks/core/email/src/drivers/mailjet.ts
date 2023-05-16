@@ -4,11 +4,12 @@ import { notification } from '@stacksjs/config'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email?.mailjet
+const env = notification.email
+const service = notification.email?.drivers.mailjet
 
 const provider = new MailjetEmailProvider({
-  apiKey: env?.key || '',
-  apiSecret: env?.secret || '',
+  apiKey: service?.key || '',
+  apiSecret: service?.secret || '',
   from: env?.from || '',
 })
 

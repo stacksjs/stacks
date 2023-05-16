@@ -4,10 +4,11 @@ import { notification } from '@stacksjs/config'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { send as sendEmail } from '../actions/send'
 
-const env = notification.email?.netcore
+const env = notification.email
+const service = notification.email?.drivers.netcore
 
 const provider = new NetCoreProvider({
-  apiKey: env?.key || '',
+  apiKey: service?.key || '',
   from: env?.from || '',
 })
 
