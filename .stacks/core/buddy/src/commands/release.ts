@@ -14,7 +14,7 @@ async function release(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, { shell: true })
+      const result = await runAction(Action.Release, { ...options, shell: true })
 
       console.log('result', result)
 

@@ -1,21 +1,21 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  // "editor.formatOnSave": true,
-  // "eslint.format.enable": true,
-  // "editor.codeActionsOnSave": {
-  //   "source.fixAll.eslint": true
-  // },
+  "editor.formatOnSave": true,
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
   "editor.quickSuggestions": {
     "strings": true
   },
-  // "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  // "[jsonc]": {
-  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  // },
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[jsonc]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,

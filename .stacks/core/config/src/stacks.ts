@@ -1,5 +1,5 @@
 import { loadConfig } from 'c12'
-import type { StacksOptions, ResolvedStacksOptions } from '@stacksjs/types'
+import type { ResolvedStacksOptions, StacksOptions } from '@stacksjs/types'
 import { app, cache, cdn, cli, database, debug, dns, docs, email, events, git, hashing, library, notification, payment, searchEngine, services, storage, ui } from './defaults'
 
 export const stacksConfigDefaults = {
@@ -21,7 +21,7 @@ export const stacksConfigDefaults = {
   searchEngine,
   services,
   storage,
-  ui
+  ui,
 } satisfies ResolvedStacksOptions
 
 export async function loadStacksConfig(overrides?: Partial<StacksOptions>, cwd = process.cwd()) {

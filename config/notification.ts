@@ -17,12 +17,12 @@ export default defineNotification({
 
     drivers: {
       smtp: {
-        host: "smtp.example.com",
+        host: 'smtp.example.com',
         port: 465,
         secure: true, // use TLS
         auth: {
-          user: "username",
-          pass: "password",
+          user: 'username',
+          pass: 'password',
         },
       },
 
@@ -146,6 +146,6 @@ export default defineNotification({
       discord: {
         // wip
       },
-    }
+    },
   },
 })

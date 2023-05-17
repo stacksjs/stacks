@@ -1,7 +1,9 @@
-import type { UserCliOptions, AppOptions, CacheOptions, CdnOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions } from '@stacksjs/types'
+import type { AppOptions, CacheOptions, CdnOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions, UserCliOptions } from '@stacksjs/types'
 
 export function env(key: any, fallback?: any) {
-  // console.log('isClient', isClient)
+  // eslint-disable-next-line no-console
+  console.log('fallback', fallback)
+
   // if (key && import.meta?.env)
   //   return import.meta.env[key]
 

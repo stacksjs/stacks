@@ -1,90 +1,91 @@
 <script setup lang="ts">
-import { ref } from 'vue-demi'
-import Multiselect from '@vueform/multiselect'
+// import { ref } from 'vue-demi'
+// import Multiselect from '@vueform/multiselect'
 
-interface Props {
-  filterValues: object | any // the Meilisearch index to use for this table
-}
+// interface Props {
+//   filterValues: object | any // the Meilisearch index to use for this table
+// }
 
-const {
-  filterValues,
-} = defineProps<Props>()
+// const {
+//   filterValues,
+// } = defineProps<Props>()
 
-const multiselect = ref(null)
+// const multiselect = ref(null)
 
-const multiselectComputed: any = computed(() => {
-  if (multiselect.value)
-    return multiselect.value
-})
+// const multiselectComputed: any = computed(() => {
+//   if (multiselect.value)
+//     return multiselect.value
+// })
 
-const { searchFilters, type, table } = await useTable()
+// const { searchFilters, type, table } = await useTable()
 
-const activeFilters = await searchFilters(type.value)
+// const activeFilters = await searchFilters(type.value)
 
-const filterValue = ref({})
-const filterLength = ref(0)
+// const filterValue = ref({})
+// const filterLength = ref(0)
 
-const allFilters = activeFilters.map((filter: string) => {
-  const filterName = filter.split('_')
-  const name = []
+// const allFilters = activeFilters.map((filter: string) => {
+//   const filterName = filter.split('_')
+//   const name = []
 
-  for (let i = 0; i < filterName.length; i++)
-    name[i] = filterName[i].charAt(0).toUpperCase() + filterName[i].substring(1)
+//   for (let i = 0; i < filterName.length; i++)
+//     name[i] = filterName[i].charAt(0).toUpperCase() + filterName[i].substring(1)
 
-  // Directly return the joined string
-  return { name: name.join(' '), column: snakeCase(name.join(' ')) }
-})
+//   // Directly return the joined string
+//   return { name: name.join(' '), column: snakeCase(name.join(' ')) }
+// })
 
-function getFilters(filterKey: string): any {
-  return filterValues[filterKey]
-}
+// function getFilters(filterKey: string): any {
+//   return filterValues[filterKey]
+// }
 
-function snakeCase(char: string) {
-  return char.replace(/\W+/g, ' ')
-    .split(/ |\B(?=[A-Z])/)
-    .map(word => word.toLowerCase())
-    .join('_')
-}
+// function snakeCase(char: string) {
+//   return char.replace(/\W+/g, ' ')
+//     .split(/ |\B(?=[A-Z])/)
+//     .map(word => word.toLowerCase())
+//     .join('_')
+// }
 
-async function applyFilters() {
-  let length = 0
-  const mappedFilters = Object.keys(filterValue.value).map((key) => {
-    length = length += 1
+// async function applyFilters() {
+//   let length = 0
+//   const mappedFilters = Object.keys(filterValue.value).map((key) => {
+//     length = length += 1
 
-    filterLength.value = length
+//     filterLength.value = length
 
-    return filterValue.value[key].map((filter: any) => {
-      return `${key} = ${filter}`
-    })
-  })
+//     return filterValue.value[key].map((filter: any) => {
+//       return `${key} = ${filter}`
+//     })
+//   })
 
-  table.filterValue = mappedFilters
-  table.currentPage = 1
-}
+//   table.filterValue = mappedFilters
+//   table.currentPage = 1
+// }
 
-async function clearAllFilters() {
-  table.filterValue = []
-  table.currentPage = 1
+// async function clearAllFilters() {
+//   table.filterValue = []
+//   table.currentPage = 1
 
-  filterValue.value = {}
-  filterLength.value = 0
+//   filterValue.value = {}
+//   filterLength.value = 0
 
-  if (multiselectComputed.value) {
-    for (let index = 0; index < multiselectComputed.value.length; index++) {
-      if (multiselectComputed.value[index])
-        multiselectComputed.value[index].clear()
-    }
-  }
-}
+//   if (multiselectComputed.value) {
+//     for (let index = 0; index < multiselectComputed.value.length; index++) {
+//       if (multiselectComputed.value[index])
+//         multiselectComputed.value[index].clear()
+//     }
+//   }
+// }
 
-function modifyFilters(name: string, value: any, id: number) {
-  filterValue.value[name] = [...value]
-}
+// function modifyFilters(name: string, value: any, id: number) {
+//   filterValue.value[name] = [...value]
+// },
 </script>
 
 <template>
-  <div class="bg-white mx-auto max-w-7xl">
-    <!-- Filters -->
+  <div />
+  <!-- <div class="bg-white mx-auto max-w-7xl">
+    --Filters--
     <section
       aria-labelledby="filter-heading"
       class="border-t border-b border-gray-200 grid z-10 relative items-center"
@@ -104,7 +105,7 @@ function modifyFilters(name: string, value: any, id: number) {
               aria-controls="disclosure-1"
               aria-expanded="false"
             >
-              <!-- Heroicon name: solid/filter -->
+               Heroicon name: solid/filter
               <svg
                 class="flex-none h-5 mr-2 text-gray-400 w-5 group-hover:text-gray-500"
                 aria-hidden="true"
@@ -173,7 +174,7 @@ function modifyFilters(name: string, value: any, id: number) {
         </div>
       </div>
     </section>
-  </div>
+  </div> -->
 </template>
 
 <style>

@@ -1,5 +1,7 @@
-import type { CLI, FreshOptions } from '@stacksjs/types'
-import { seeder } from '@stacksjs/actions/generate'
+import type { CLI, SeedOptions } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
+import { intro, outro } from '@stacksjs/cli'
+import { Action, ExitCode } from '@stacksjs/types'
 
 async function seed(buddy: CLI) {
   const descriptions = {
@@ -10,21 +12,19 @@ async function seed(buddy: CLI) {
   buddy
     .command('seed', descriptions.seed)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: FreshOptions) => {
-      // const perf = await intro('buddy seed')
-      // const result = await runAction(Action.Seed, { ...options, showSpinner: true, spinnerText: 'Seeding...' })
+    .action(async (options: SeedOptions) => {
+      const perf = await intro('buddy seed')
+      const result = await runAction(Action.Seed, { ...options, showSpinner: true, spinnerText: 'Seeding...' })
 
-      // if (result.isErr()) {
-      //   outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit(ExitCode.FatalError)
+      }
 
-      // const APP_ENV = process.env.APP_ENV || 'local'
+      const APP_ENV = process.env.APP_ENV || 'local'
 
-      // outro(`Seeded your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
-      // process.exit(ExitCode.Success)
-
-      await seeder()
+      outro(`Seeded your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 }
 

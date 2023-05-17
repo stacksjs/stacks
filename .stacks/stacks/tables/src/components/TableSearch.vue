@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const { table } = await useTable()
+// const { table } = await useTable()
 
-const open = ref(false)
+// const open = ref(false)
 </script>
 
 <template>
-  <div class="px-8 flex justify-between mx-auto max-w-7xl">
+  <div />
+  <!-- <div class="px-8 flex justify-between mx-auto max-w-7xl">
     <div>
       <input
         v-model="table.query"
@@ -21,7 +22,7 @@ const open = ref(false)
         class="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         @click="open = !open"
       >
-        <!-- Heroicon name: solid/mail -->
+        Heroicon name: solid/mail
         <svg
           class="w-4 h-4"
           fill="currentColor"
@@ -34,5 +35,5 @@ const open = ref(false)
         /></svg>
       </button>
     </div>
-  </div>
+  </div> -->
 </template>

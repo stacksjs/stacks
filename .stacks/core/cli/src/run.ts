@@ -74,8 +74,9 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result.isOk()) { results.push(result) }
-
+    if (result.isOk()) {
+      results.push(result)
+    }
     else if (result.isErr()) {
       if (spinner) {
         // spinner.fail('Failed to run command.')

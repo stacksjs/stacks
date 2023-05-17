@@ -2,12 +2,24 @@
 
 // const route = useRoute()
 
-// route.get('users', () => {
-//   return view('users')
+// route.get('/', () => {
+//   return 'Hello, world!'
 // })
 
-// route.get('users/:id', () => {
-//   return view('users.show')
-// }
+// route.view('/welcome', 'welcome')
 
-// route.view('some-uri', 'some.page')
+// route.group({ prefix: '/users' }, () => {
+//   route.before(async (params) => {
+//     console.log(`[${now()}] ${params.method} ${params.url}`)
+//   })
+
+//   route.get('/:id', ({ id }) => {
+//     // Retrieve user from database
+//     return `User with ID ${id}`
+//   })
+
+//   route.post('/', ({ name, email }) => {
+//     // Save user to database
+//     return `User ${name} (${email}) created`
+//   })
+// })

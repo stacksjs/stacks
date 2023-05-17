@@ -118,10 +118,10 @@ async function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeNode, options)
       console.log('result', result, perf)
 
-      // if (response.isErr()) {
-      //   outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
+        process.exit()
+      }
 
       process.exit(ExitCode.Success)
     })
@@ -130,7 +130,7 @@ async function upgrade(buddy: CLI) {
     .command('upgrade:all', descriptions.all)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
-      // await runAction(Action.Upgrade, { ...options, all: true })
+      await runAction(Action.Upgrade, options)
     })
 }
 

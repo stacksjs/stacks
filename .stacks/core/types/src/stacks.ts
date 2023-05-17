@@ -1,8 +1,7 @@
-import {
+import type {
   AppOptions,
   CacheOptions,
   CdnOptions,
-  UserCliOptions,
   DatabaseOptions,
   DebugOptions,
   DnsOptions,
@@ -18,7 +17,8 @@ import {
   ServicesOptions,
   StorageOptions,
   UiOptions,
-} from "./"
+  UserCliOptions,
+} from './'
 
 /**
  * **Stacks Options**

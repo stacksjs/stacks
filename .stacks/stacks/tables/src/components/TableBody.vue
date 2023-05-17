@@ -1,13 +1,12 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 // console.log('TableBody.vue')
 
-const { table, columnName } = await useTable()
-</script>
+const { table, columnName } = await useTable(),
 
 <template>
   <tbody class="bg-white divide-y divide-gray-200">
     <TableRow
-      v-for="(hit, index) in table.results?.hits"
+      v-for="(hit, index) in table.</script>results?.hits"
       :key="index"
       :index="index"
       :hit="hit"
@@ -30,4 +29,4 @@ const { table, columnName } = await useTable()
       </template>
     </TableRow>
   </tbody>
-</template>
+</template> -->

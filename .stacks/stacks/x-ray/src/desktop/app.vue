@@ -1,132 +1,132 @@
 <script lang="ts" setup>
-import type { Ref } from 'vue'
-import { ref } from 'vue'
-import type { Log } from './functions/types'
-import request from './functions/http'
+// import type { Ref } from 'vue'
+// import { ref } from 'vue'
+// import type { Log } from './functions/types'
+// import request from './functions/http'
 
-const logs: Ref<Log[]> = ref([])
+// const logs: Ref<Log[]> = ref([])
 
-const allLogs: Ref<Log[]> = ref([])
+// const allLogs: Ref<Log[]> = ref([])
 
-request('http://127.0.0.1:3000/api/logs', 'GET')
-  .then((data) => {
-    logs.value = data
-    allLogs.value = data
-  })
+// request('http://127.0.0.1:3000/api/logs', 'GET')
+//   .then((data) => {
+//     logs.value = data
+//     allLogs.value = data
+//   })
 
-const logColors: string[] = []
+// const logColors: string[] = []
 
-function isArray(log: Log): Boolean {
-  return typeof log.content === 'object' && log.content !== null
-}
+// function isArray(log: Log): Boolean {
+//   return typeof log.content === 'object' && log.content !== null
+// }
 
-function stringifyContent(obj: object): string {
-  return JSON.stringify(obj, null, 2)
-}
+// function stringifyContent(obj: object): string {
+//   return JSON.stringify(obj, null, 2)
+// }
 
-function isCode(content: any): Boolean {
-  if (typeof content === 'string') {
-    const format = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+// function isCode(content: any): Boolean {
+//   if (typeof content === 'string') {
+//     const format = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
 
-    return format.test(content)
-  }
+//     return format.test(content)
+//   }
 
-  return false
-}
+//   return false
+// }
 
-function getCircleColor(color: string): string {
-  if (color === 'green')
-    return 'text-green-400'
+// function getCircleColor(color: string): string {
+//   if (color === 'green')
+//     return 'text-green-400'
 
-  if (color === 'gray')
-    return 'text-gray-400'
+//   if (color === 'gray')
+//     return 'text-gray-400'
 
-  if (color === 'red')
-    return 'text-red-400'
+//   if (color === 'red')
+//     return 'text-red-400'
 
-  if (color === 'gray')
-    return 'text-gray-400'
+//   if (color === 'gray')
+//     return 'text-gray-400'
 
-  if (color === 'blue')
-    return 'text-blue-400'
+//   if (color === 'blue')
+//     return 'text-blue-400'
 
-  if (color === 'indigo')
-    return 'text-indigo-400'
+//   if (color === 'indigo')
+//     return 'text-indigo-400'
 
-  return 'text-gray-400'
-}
+//   return 'text-gray-400'
+// }
 
-function getBadgeBg(color: string): string {
-  if (color === 'green')
-    return 'bg-green-100'
+// function getBadgeBg(color: string): string {
+//   if (color === 'green')
+//     return 'bg-green-100'
 
-  if (color === 'gray')
-    return 'bg-gray-100'
+//   if (color === 'gray')
+//     return 'bg-gray-100'
 
-  if (color === 'red')
-    return 'bg-red-100'
+//   if (color === 'red')
+//     return 'bg-red-100'
 
-  if (color === 'gray')
-    return 'bg-gray-100'
+//   if (color === 'gray')
+//     return 'bg-gray-100'
 
-  if (color === 'blue')
-    return 'bg-blue-100'
+//   if (color === 'blue')
+//     return 'bg-blue-100'
 
-  if (color === 'indigo')
-    return 'bg-indigo-100'
+//   if (color === 'indigo')
+//     return 'bg-indigo-100'
 
-  return 'bg-gray-100'
-}
-function getBadgeColor(color: string): string {
-  if (color === 'green')
-    return 'text-green-700'
+//   return 'bg-gray-100'
+// }
+// function getBadgeColor(color: string): string {
+//   if (color === 'green')
+//     return 'text-green-700'
 
-  if (color === 'gray')
-    return 'text-gray-700'
+//   if (color === 'gray')
+//     return 'text-gray-700'
 
-  if (color === 'red')
-    return 'text-red-700'
+//   if (color === 'red')
+//     return 'text-red-700'
 
-  if (color === 'gray')
-    return 'text-gray-700'
+//   if (color === 'gray')
+//     return 'text-gray-700'
 
-  if (color === 'blue')
-    return 'text-blue-700'
+//   if (color === 'blue')
+//     return 'text-blue-700'
 
-  if (color === 'indigo')
-    return 'text-indigo-700'
+//   if (color === 'indigo')
+//     return 'text-indigo-700'
 
-  return 'text-gray-700'
-}
+//   return 'text-gray-700'
+// }
 
-function filterTag(color: string) {
-  const oldLogs = [...logs.value]
+// function filterTag(color: string) {
+//   const oldLogs = [...logs.value]
 
-  if (!logColors.includes(color))
-    logColors.push(color)
-  else
-    logColors.splice(logColors.indexOf(color), 1)
+//   if (!logColors.includes(color))
+//     logColors.push(color)
+//   else
+//     logColors.splice(logColors.indexOf(color), 1)
 
-  allLogs.value = oldLogs.filter((log) => {
-    return logColors.includes(log.color)
-  })
+//   allLogs.value = oldLogs.filter((log) => {
+//     return logColors.includes(log.color)
+//   })
 
-  if (!logColors.length)
-    allLogs.value = [...logs.value]
-}
+//   if (!logColors.length)
+//     allLogs.value = [...logs.value]
+// }
 
-function colorFiltered(color: string): Boolean {
-  return logColors.includes(color)
-}
+// function colorFiltered(color: string): Boolean {
+//   return logColors.includes(color)
+// }
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto">
+  <div />
+  <!-- <div class="max-w-6xl mx-auto">
     <nav class="py-6 shadow bg-gray-50">
       <div class="flex h-10 justify-between">
         <div class="flex px-2 lg:px-0">
           <div class="hidden lg:ml-6 lg:flex">
-            <!-- Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
             <a
               href="#"
               class="inline-flex bg-white group items-center px-3 rounded-bl-lg border rounded-tl-lg text-sm font-medium text-gray-900"
@@ -246,7 +246,7 @@ function colorFiltered(color: string): Boolean {
             >Search</label>
             <div class="relative">
               <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <!-- Heroicon name: mini/magnifying-glass -->
+                Heroicon name: mini/magnifying-glass
                 <svg
                   class="h-5 w-5 text-gray-400"
                   xmlns="http://www.w3.org/2000/svg"
@@ -373,5 +373,5 @@ function colorFiltered(color: string): Boolean {
         </li>
       </ul>
     </div>
-  </div>
+  </div> -->
 </template>

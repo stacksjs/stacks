@@ -13,9 +13,8 @@ async function clean(buddy: CLI) {
     .command('clean', descriptions.clean)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CleanOptions) => {
-      //  { shell: true, verbose: true }
       const perf = await intro('buddy clean')
-      const result = await runAction(Action.Fresh, { verbose: true })
+      const result = await runAction(Action.Fresh, { ...options, verbose: true })
 
       if (result.isErr()) {
         outro('While running the clean command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)

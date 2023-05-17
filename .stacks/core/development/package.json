@@ -7,8 +7,6 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/development#readme",
   "repository": {
     "type": "git",
@@ -27,15 +25,17 @@
     "ts-reset",
     "javascript"
   ],
-  "contributors": [
-    "Chris Breuer <chris@ow3.org>"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     }
   },
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
   "files": [
     "README.md"
   ],

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { isString } from '@stacksjs/utils'
 import type { Hits, SearchResponse } from '@stacksjs/types'
 import { useTable } from '../functions/table'
@@ -122,7 +122,7 @@ table.actions = actions
 table.selectable = selectable
 table.selectedRows = selectedRows
 table.selectedAll = selectedAll
-table.results = results as SearchResponse
+table.results = results as SearchResponse,
 </script>
 
 <template>
@@ -339,4 +339,4 @@ Make sure disabled buttons don't get the pointer cursor.
 :disabled {
   cursor: default;
 }
-</style>
+</style> -->

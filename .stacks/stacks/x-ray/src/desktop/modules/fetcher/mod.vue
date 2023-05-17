@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { ref } from 'vue'
 
 import { $http, generalHandleHttp } from '../../services/http'
@@ -60,4 +60,4 @@ async function makeRequest() {
       <pre>{{ result }}</pre>
     </v-card-text>
   </v-card>
-</template>
+</template> -->

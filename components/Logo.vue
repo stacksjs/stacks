@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <img
     v-if="!isDark"
     src="../.github/art/logo.svg"
@@ -9,4 +9,4 @@
     src="../.github/art/logo-dark.svg"
     class="h-16"
   >
-</template>
+</template> -->

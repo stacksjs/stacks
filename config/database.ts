@@ -21,7 +21,7 @@ export default defineDatabase({
     },
 
     planetscale: {},
-    
+
     postgres: {},
-  }
+  },
 })

@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { ref } from 'vue'
 
 /* counter */
@@ -41,4 +41,4 @@ const count = ref(0)
       </v-btn>
     </div>
   </v-card>
-</template>
+</template> -->
