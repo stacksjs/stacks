@@ -51,9 +51,9 @@
   },
   "peerDependencies": {
     "@playwright/test": "^1.33.0",
-    "@vitest/coverage-istanbul": "^0.31.0",
-    "@vitest/ui": "^0.31.0",
-    "vitest": "^0.31.0"
+    "@vitest/coverage-istanbul": "^0.31.1",
+    "@vitest/ui": "^0.31.1",
+    "vitest": "^0.31.1"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
