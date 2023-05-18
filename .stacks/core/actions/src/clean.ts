@@ -1,15 +1,12 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { del } from '@stacksjs/utils'
 
-log.info('Running clean command...')
+log.info('Running clean command...', projectPath())
 
-const result = await runCommand(NpmScript.Clean, { cwd: projectPath() })
-
-if (result.isOk()) {
-  log.success('Cleaned up')
-  process.exit(ExitCode.Success)
-}
-
-log.error(result.error)
-process.exit(ExitCode.FatalError)
+await del([
+  projectPath('pnpm-lock.yaml'),
+  projectPath('node_modules/'),
+  projectPath('.stacks/**/dist'),
+  projectPath('.stacks/**/node_modules')
+])

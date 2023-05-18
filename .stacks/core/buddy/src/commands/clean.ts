@@ -14,14 +14,14 @@ async function clean(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CleanOptions) => {
       const perf = await intro('buddy clean')
-      const result = await runAction(Action.Fresh, { ...options, verbose: true })
+      const result = await runAction(Action.Clean, { ...options, verbose: true })
 
       if (result.isErr()) {
         outro('While running the clean command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit(ExitCode.FatalError)
       }
 
-      outro('Cleaned project.', { startTime: perf, useSeconds: true })
+      outro('Cleaned up', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

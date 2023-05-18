@@ -17,7 +17,7 @@ async function fresh(buddy: CLI) {
       const result = await runAction(Action.Fresh, { ...options, verbose: true })
 
       if (result.isErr()) {
-        outro('While running the fresh command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        outro('While running the `fresh` command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit(ExitCode.FatalError)
       }
 

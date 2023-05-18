@@ -16,16 +16,8 @@ async function release(buddy: CLI) {
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, { ...options, shell: true })
 
-      console.log('result', result)
-
-      // check if any element of the array is an error
-      if (Array.isArray(result) && result.some(r => r.isErr())) {
-        log.error('Failed to trigger the CI/CD release workflow.', result)
-        process.exit()
-      }
-
       if (result.isErr()) {
-        log.error('Failed to trigger the CI/CD release workflow.', result.error)
+        log.error('Failed to complete ', result.error)
         process.exit()
       }
 

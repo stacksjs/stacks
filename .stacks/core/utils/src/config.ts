@@ -1,9 +1,6 @@
 import type { AppOptions, CacheOptions, CdnOptions, CronJobOptions, DatabaseOptions, DebugOptions, DnsOptions, EmailOptions, Events, GitOptions, HashingOptions, LibraryOptions, Model, NotificationOptions, PagesOption, PaymentOptions, SearchEngineOptions, ServicesOptions, StorageOptions, UiOptions, UserCliOptions } from '@stacksjs/types'
 
-export function env(key: any, fallback?: any) {
-  // eslint-disable-next-line no-console
-  console.log('fallback', fallback)
-
+export function env(key: any, _fallback?: any) {
   // if (key && import.meta?.env)
   //   return import.meta.env[key]
 

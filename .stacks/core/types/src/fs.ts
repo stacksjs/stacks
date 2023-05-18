@@ -15,3 +15,11 @@ export interface JsonFile {
   indent: string
   newline: string | undefined
 }
+
+/**
+ * Describes a package.json file.
+ */
+export interface PackageJson {
+  packageManager: string
+  // wip
+}

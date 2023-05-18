@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { detectIndent, detectNewline } from '@stacksjs/utils'
-import type { JsonFile, TextFile } from '@stacksjs/types'
+import type { JsonFile, TextFile, PackageJson } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 
@@ -19,6 +19,16 @@ export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile
   const newline = detectNewline(file.data)
 
   return { ...file, data, indent, newline }
+}
+
+/**
+ * Reads a package.json file and returns the parsed data.
+ */
+export async function readPackageJson(name: string, cwd?: string) {
+  const file = await readJsonFile(name, cwd)
+  const data = file.data as PackageJson
+
+  return data
 }
 
 /**

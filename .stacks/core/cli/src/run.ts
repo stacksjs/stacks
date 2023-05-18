@@ -2,7 +2,7 @@ import { execSync as childExec } from 'node:child_process'
 import type { CliOptions, CommandResult, CommandReturnValue, ResultAsync, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
-import { ResultAsync as AsyncResult, err } from '@stacksjs/error-handling'
+import { ResultAsync as AsyncResult } from '@stacksjs/error-handling'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { log } from './console'
 import { spawn } from './command'
@@ -46,7 +46,6 @@ export function execSync(command: string) {
  * @returns The result of the command.
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<CommandReturnValue, Error>> {
-  console.log('runCommand', command, options)
   return await exec(command, options)
 }
 
@@ -69,8 +68,6 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
   const spinner = determineSpinner(options)
 
-  console.log('spinner', spinner)
-
   for (const command of commands) {
     const result = await runCommand(command, options)
 
@@ -79,8 +76,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
     }
     else if (result.isErr()) {
       if (spinner) {
-        // spinner.fail('Failed to run command.')
-        err(result.error)
+        log.error(new Error('Failed to run command'))
         process.exit(ExitCode.FatalError)
       }
 

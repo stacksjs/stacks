@@ -3,9 +3,17 @@ import { bold, dim, green, intro } from '@stacksjs/cli'
 import { filesystem } from '@stacksjs/storage'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
-import type { PackageJson } from 'type/node'
 
 async function version(buddy: CLI) {
+  // maybe use type-fest?
+type PackageJson = {
+  engines: {
+    node: string
+    pnpm: string
+  }
+  version: string
+}
+
   const { fs } = filesystem
 
   const descriptions = {

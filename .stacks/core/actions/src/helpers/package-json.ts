@@ -1,8 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
-import { packageManager } from '../../package.json' assert { type: 'json' }
+import { library, packageManager } from '@stacksjs/config'
 
 export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
   let name, description, directory, keywords, config, prettyName

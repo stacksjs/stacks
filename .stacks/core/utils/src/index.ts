@@ -1,6 +1,7 @@
 export { assert, toString, noop, loop, getTypeName } from './base'
 export * from './config'
 export * from './debounce'
+export * from './delete'
 export * from './equal'
 export * from './function'
 export * from './guards'

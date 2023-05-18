@@ -72,7 +72,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS)_
-- 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
+- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🚜 **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 - 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_

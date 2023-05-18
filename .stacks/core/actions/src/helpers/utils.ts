@@ -38,9 +38,6 @@ export async function runAction(action: string, options?: ActionOptions): Promis
   const opts = parseOptions(options)
   const cmd = `npx tsx ${actionsPath(`${action}.ts ${opts}`)}`
 
-  // eslint-disable-next-line no-console
-  console.log('cmd', cmd)
-
   if (options?.verbose)
     log.debug('running command:', italic(cmd))
 
