@@ -51,7 +51,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "nitropack": "^2.4.1",
-    "vite": "^4.3.7"
+    "vite": "^4.3.8"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
