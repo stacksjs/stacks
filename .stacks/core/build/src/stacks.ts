@@ -11,8 +11,8 @@ import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOptions } from '@stacksjs/types'
-import p, { resolve } from '@stacksjs/path'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOption } from '@stacksjs/types'
+import { path as p, resolve } from '@stacksjs/path'
 
 // it is important to note that path references within this file
 // are relative to the ./build folder
@@ -43,8 +43,8 @@ function components(options?: ComponentOptions): PluginOption {
 }
 
 // https://github.com/hannoeru/vite-plugin-pages
-function pages(options?: PagesOptions) {
-  const defaultOptions: PagesOptions = {
+function pages(options?: PagesOption) {
+  const defaultOptions: PagesOption = {
     extensions: ['vue', 'md'],
     dirs: [
       p.pagesPath(),

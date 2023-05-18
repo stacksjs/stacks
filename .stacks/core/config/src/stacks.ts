@@ -4,7 +4,7 @@ import { frameworkPath } from '@stacksjs/path'
 import type { ResolvedStacksOptions, StacksOptions } from '@stacksjs/types'
 import { app, cache, cdn, cli, database, debug, dns, docs, email, events, git, hashing, library, notification, payment, searchEngine, services, storage, ui } from './defaults'
 
-export const packageManager = async () => {
+export async function packageManager() {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
   return packageManager
 }

@@ -11,6 +11,7 @@ const provider = new MailjetEmailProvider({
   apiKey: service?.key || '',
   apiSecret: service?.secret || '',
   from: env?.from || '',
+  senderName: env?.from || '', // look into what exactly this stands for
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

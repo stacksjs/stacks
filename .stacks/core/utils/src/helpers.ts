@@ -140,6 +140,6 @@ export function determineDebugLevel(options?: CliOptions) {
 }
 
 // export { SemVer } from 'semver'
-export * from 'dinero.js'
+
 export { detectIndent }
 export { detectNewline } from 'detect-newline'

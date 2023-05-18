@@ -8,5 +8,5 @@ await del([
   projectPath('pnpm-lock.yaml'),
   projectPath('node_modules/'),
   projectPath('.stacks/**/dist'),
-  projectPath('.stacks/**/node_modules')
+  projectPath('.stacks/**/node_modules'),
 ])

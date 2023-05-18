@@ -26,7 +26,6 @@
   },
   "git.enableSmartCommit": true,
   "npm.enableRunFromFolder": true,
-  "eslint.packageManager": "pnpm",
   "npm.packageManager": "pnpm",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "unocss.root": "./.stacks/core/ui/unocss.ts",

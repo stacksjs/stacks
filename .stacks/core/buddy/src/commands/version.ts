@@ -6,13 +6,13 @@ import { frameworkPath } from '@stacksjs/path'
 
 async function version(buddy: CLI) {
   // maybe use type-fest?
-type PackageJson = {
-  engines: {
-    node: string
-    pnpm: string
+  interface PackageJson {
+    engines: {
+      node: string
+      pnpm: string
+    }
+    version: string
   }
-  version: string
-}
 
   const { fs } = filesystem
 
@@ -33,7 +33,7 @@ type PackageJson = {
       log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion.version}`))
       log.info(green(bold('node: ')) + dim(`   ${nodeVersion}`))
       log.info(green(bold('pnpm: ')) + dim(`   ${pnpmVersion}`))
-      // redis (or other cache/s), mysql (or other database/s),
+    // redis (or other cache/s), mysql (or other database/s),
     })
 }
 

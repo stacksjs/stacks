@@ -1,23 +1,31 @@
-import { defineConfig } from 'vitest/config'
-import { projectPath } from './core/path/src'
-import { alias } from './core/alias/src'
+import { defineWorkspace } from 'vitest/config'
+import { alias } from '@stacksjs/alias'
+import { frameworkPath } from '@stacksjs/path'
 
-export default defineConfig({
-  root: '..',
+// todo: https://github.com/vitest-dev/vscode/issues/151
 
-  optimizeDeps: {
-    entries: [],
-  },
+export default defineWorkspace([
+  frameworkPath('core/**'),
+  frameworkPath('stacks/**'),
 
-  resolve: {
-    alias,
-  },
+  {
+    // root: projectPath(),
 
-  test: {
-    globals: true,
-    coverage: {
-      provider: 'istanbul',
-      reportsDirectory: projectPath('./tests/unit/coverage'),
+    resolve: {
+      alias,
+    },
+
+    optimizeDeps: {
+      entries: [],
+    },
+
+    test: {
+      globals: true,
+      exclude: ['**/src/**', '**/node_modules/**', '**/samples/**', 'out/**'],
+      // coverage: {
+      //   provider: 'istanbul',
+      //   reportsDirectory: projectPath('./tests/unit/coverage'),
+      // },
     },
   },
-})
+])
