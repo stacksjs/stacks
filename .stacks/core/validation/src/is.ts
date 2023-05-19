@@ -34,10 +34,6 @@ export function isPostalCode(zipCode: string) {
   return validator.isPostalCode(zipCode, 'any')
 }
 
-export function isDate(date: string) {
-  return validator.isDate(date)
-}
-
 export function isNumeric(number: string) {
   return validator.isNumeric(number)
 }

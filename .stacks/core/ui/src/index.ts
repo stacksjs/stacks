@@ -8,10 +8,10 @@ import { ui as options } from '@stacksjs/config'
 import config from './unocss'
 
 export {
+  CssEngine,
   UiEngine,
   ref,
   computed,
-  CssEngine,
   Store,
   presetForms,
   transformerCompileClass,

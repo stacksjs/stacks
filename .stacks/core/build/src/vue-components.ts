@@ -22,7 +22,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', 'fsevents', '@novu/mandrill', '@maizzle/framework', 'browser-sync-ui'],
   },
 
   plugins: [

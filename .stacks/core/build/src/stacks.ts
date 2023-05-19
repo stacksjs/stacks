@@ -84,11 +84,11 @@ function autoImports(options?: AutoImportsOptions) {
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
-      { '@vueuse/shared': ['isClient', 'now', 'timestamp', 'clamp', 'noop', 'rand', 'isIOS', 'hasOwn'] },
+      { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
     ],
     dirs: [
-      p.functionsPath(),
-      p.componentsPath(),
+      p.projectPath('functions'),
+      p.projectPath('components'),
       p.projectPath('config'),
 
       // auto imported utilities start here
@@ -99,11 +99,11 @@ function autoImports(options?: AutoImportsOptions) {
       p.chatPath('src'),
       p.databasePath('src'),
       p.desktopPath('src'),
-      p.emailPath('src/index'),
+      // p.emailPath('src'),
       p.errorHandlingPath('src'),
-      p.eventsPath('src'),
+      // p.eventsPath('src'),
       p.healthPath('src'),
-      p.lintPath('src/index'),
+      p.lintPath('src'),
       p.loggingPath('src'),
       p.notificationsPath('src'),
       p.objectsPath('src'),
@@ -120,7 +120,7 @@ function autoImports(options?: AutoImportsOptions) {
       p.stringsPath('src'),
       p.tablesPath('src'),
       p.testingPath('src'),
-      p.uiPath('src'),
+      // p.uiPath('src'),
       p.utilsPath('src'),
       p.validationPath('src'),
     ],
