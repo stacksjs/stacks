@@ -75,7 +75,6 @@ declare module 'vue' {
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly chat: UnwrapRef<typeof import('./core/notifications/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('./core/path/src/index')['chatPath']>
-    readonly clamp: UnwrapRef<typeof import('./core/utils/src/is')['clamp']>
     readonly clampArrayRange: UnwrapRef<typeof import('./core/arrays/src/index')['clampArrayRange']>
     readonly clearUndefined: UnwrapRef<typeof import('./core/objects/src/index')['clearUndefined']>
     readonly cli: UnwrapRef<typeof import('../config/cli')['default']>
@@ -370,14 +369,12 @@ declare module 'vue' {
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly noCase: UnwrapRef<typeof import('./core/strings/src/case')['noCase']>
     readonly noNull: UnwrapRef<typeof import('./core/utils/src/guards')['noNull']>
-    readonly noop: UnwrapRef<typeof import('./core/utils/src/base')['noop']>
     readonly normalize: UnwrapRef<typeof import('./core/path/src/index')['normalize']>
     readonly normalizeScale: UnwrapRef<typeof import('./core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('./core/notifications/src/index')['notification']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>
-    readonly now: UnwrapRef<typeof import('./core/utils/src/is')['now']>
     readonly objectEntries: UnwrapRef<typeof import('./core/objects/src/index')['objectEntries']>
     readonly objectKeys: UnwrapRef<typeof import('./core/objects/src/index')['objectKeys']>
     readonly objectMap: UnwrapRef<typeof import('./core/objects/src/index')['objectMap']>
@@ -431,7 +428,6 @@ declare module 'vue' {
     readonly query: UnwrapRef<typeof import('./core/search-engine/src/index')['query']>
     readonly queryBuilderPath: UnwrapRef<typeof import('./core/path/src/index')['queryBuilderPath']>
     readonly queuePath: UnwrapRef<typeof import('./core/path/src/index')['queuePath']>
-    readonly rand: UnwrapRef<typeof import('./core/utils/src/is')['rand']>
     readonly randomStr: UnwrapRef<typeof import('./core/strings/src/utils')['randomStr']>
     readonly range: UnwrapRef<typeof import('./core/arrays/src/index')['range']>
     readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
@@ -522,7 +518,6 @@ declare module 'vue' {
     readonly throttle: UnwrapRef<typeof import('./core/utils/src/throttle')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
-    readonly timestamp: UnwrapRef<typeof import('./core/utils/src/is')['timestamp']>
     readonly titleCase: UnwrapRef<typeof import('./core/strings/src/case')['titleCase']>
     readonly toArray: UnwrapRef<typeof import('./core/arrays/src/index')['toArray']>
     readonly toDecimal: UnwrapRef<typeof import('./core/utils/src/currency')['toDecimal']>
@@ -826,7 +821,6 @@ declare module 'vue' {
   const chai: typeof import('vitest')['chai']
   const chat: typeof import('./core/notifications/src/index')['chat']
   const chatPath: typeof import('./core/path/src/index')['chatPath']
-  const clamp: typeof import('./core/utils/src/is')['clamp']
   const clampArrayRange: typeof import('./core/arrays/src/index')['clampArrayRange']
   const clearUndefined: typeof import('./core/objects/src/index')['clearUndefined']
   const cli: typeof import('../config/cli')['default']
@@ -1121,14 +1115,12 @@ declare module 'vue' {
   const nextTick: typeof import('vue')['nextTick']
   const noCase: typeof import('./core/strings/src/case')['noCase']
   const noNull: typeof import('./core/utils/src/guards')['noNull']
-  const noop: typeof import('./core/utils/src/base')['noop']
   const normalize: typeof import('./core/path/src/index')['normalize']
   const normalizeScale: typeof import('./core/utils/src/currency')['normalizeScale']
   const normalizeString: typeof import('./core/path/src/index')['normalizeString']
   const notUndefined: typeof import('./core/utils/src/guards')['notUndefined']
   const notification: typeof import('./core/notifications/src/index')['notification']
   const notificationsPath: typeof import('./core/path/src/index')['notificationsPath']
-  const now: typeof import('./core/utils/src/is')['now']
   const objectEntries: typeof import('./core/objects/src/index')['objectEntries']
   const objectKeys: typeof import('./core/objects/src/index')['objectKeys']
   const objectMap: typeof import('./core/objects/src/index')['objectMap']
@@ -1182,7 +1174,6 @@ declare module 'vue' {
   const query: typeof import('./core/search-engine/src/index')['query']
   const queryBuilderPath: typeof import('./core/path/src/index')['queryBuilderPath']
   const queuePath: typeof import('./core/path/src/index')['queuePath']
-  const rand: typeof import('./core/utils/src/is')['rand']
   const randomStr: typeof import('./core/strings/src/utils')['randomStr']
   const range: typeof import('./core/arrays/src/index')['range']
   const reactify: typeof import('@vueuse/core')['reactify']
@@ -1273,7 +1264,6 @@ declare module 'vue' {
   const throttle: typeof import('./core/utils/src/throttle')['throttle']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
-  const timestamp: typeof import('./core/utils/src/is')['timestamp']
   const titleCase: typeof import('./core/strings/src/case')['titleCase']
   const toArray: typeof import('./core/arrays/src/index')['toArray']
   const toDecimal: typeof import('./core/utils/src/currency')['toDecimal']
@@ -1586,7 +1576,6 @@ declare module 'vue' {
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
     readonly chat: UnwrapRef<typeof import('./core/notifications/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('./core/path/src/index')['chatPath']>
-    readonly clamp: UnwrapRef<typeof import('./core/utils/src/is')['clamp']>
     readonly clampArrayRange: UnwrapRef<typeof import('./core/arrays/src/index')['clampArrayRange']>
     readonly clearUndefined: UnwrapRef<typeof import('./core/objects/src/index')['clearUndefined']>
     readonly cli: UnwrapRef<typeof import('../config/cli')['default']>
@@ -1881,14 +1870,12 @@ declare module 'vue' {
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly noCase: UnwrapRef<typeof import('./core/strings/src/case')['noCase']>
     readonly noNull: UnwrapRef<typeof import('./core/utils/src/guards')['noNull']>
-    readonly noop: UnwrapRef<typeof import('./core/utils/src/base')['noop']>
     readonly normalize: UnwrapRef<typeof import('./core/path/src/index')['normalize']>
     readonly normalizeScale: UnwrapRef<typeof import('./core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('./core/notifications/src/index')['notification']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>
-    readonly now: UnwrapRef<typeof import('./core/utils/src/is')['now']>
     readonly objectEntries: UnwrapRef<typeof import('./core/objects/src/index')['objectEntries']>
     readonly objectKeys: UnwrapRef<typeof import('./core/objects/src/index')['objectKeys']>
     readonly objectMap: UnwrapRef<typeof import('./core/objects/src/index')['objectMap']>
@@ -1942,7 +1929,6 @@ declare module 'vue' {
     readonly query: UnwrapRef<typeof import('./core/search-engine/src/index')['query']>
     readonly queryBuilderPath: UnwrapRef<typeof import('./core/path/src/index')['queryBuilderPath']>
     readonly queuePath: UnwrapRef<typeof import('./core/path/src/index')['queuePath']>
-    readonly rand: UnwrapRef<typeof import('./core/utils/src/is')['rand']>
     readonly randomStr: UnwrapRef<typeof import('./core/strings/src/utils')['randomStr']>
     readonly range: UnwrapRef<typeof import('./core/arrays/src/index')['range']>
     readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
@@ -2033,7 +2019,6 @@ declare module 'vue' {
     readonly throttle: UnwrapRef<typeof import('./core/utils/src/throttle')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
-    readonly timestamp: UnwrapRef<typeof import('./core/utils/src/is')['timestamp']>
     readonly titleCase: UnwrapRef<typeof import('./core/strings/src/case')['titleCase']>
     readonly toArray: UnwrapRef<typeof import('./core/arrays/src/index')['toArray']>
     readonly toDecimal: UnwrapRef<typeof import('./core/utils/src/currency')['toDecimal']>

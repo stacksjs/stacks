@@ -896,8 +896,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       node-ray:
-        specifier: ^1.20.11
-        version: 1.20.11
+        specifier: 1.20.7
+        version: 1.20.7
       vue-ray:
         specifier: ^1.17.4
         version: 1.17.4
@@ -1741,9 +1741,6 @@ importers:
       '@stacksjs/logging':
         specifier: workspace:*
         version: link:../../core/logging
-      node-ray:
-        specifier: ^1.20.11
-        version: 1.20.11
       vue3-highlightjs:
         specifier: ^1.0.5
         version: 1.0.5(vue@3.3.4)
@@ -14384,6 +14381,25 @@ packages:
 
   /node-ray@1.20.11:
     resolution: {integrity: sha512-7zOXhh8h+Qob5qUab4fzQmQL2gB4pGHotqD5Dl558t6gAyHmN2Exr94MEz0mGdfCDKF8q7vwgJOKFDHm1DFXJg==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@permafrost-dev/pretty-format': 1.1.5
+      axios: 1.4.0
+      dayjs: 1.11.7
+      error-stack-parser: 2.1.4
+      find-up: 5.0.0
+      md5: 2.3.0
+      stacktrace-gps: 3.1.2
+      stopwatch-node: 1.1.0
+      tslib: 2.5.0
+      uuid: 9.0.0
+      xml-formatter: 3.3.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /node-ray@1.20.7:
+    resolution: {integrity: sha512-127T8cVGQO3amRvRxJ09U9dNMuQi4YjDcIIDxML5fOZ03/Wy/a144kcTOeCtjprJtW910XkuUhnhdje0ODiu0g==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@permafrost-dev/pretty-format': 1.1.5

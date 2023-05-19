@@ -47,11 +47,11 @@
   },
   "peerDependencies": {
     "consola": "^3.1.0",
-    "node-ray": "^1.20.11",
+    "node-ray": "1.20.7",
     "vue-ray": "^1.17.4"
   },
   "dependencies": {
-    "node-ray": "^1.20.11",
+    "node-ray": "1.20.7",
     "vue-ray": "^1.17.4"
   },
   "devDependencies": {

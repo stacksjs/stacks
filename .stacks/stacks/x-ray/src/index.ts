@@ -1,4 +1,4 @@
-// import { ray } from 'node-ray's
+// import { ray } from 'node-ray'
 
 import { send } from './client'
 import type { Log } from './types'

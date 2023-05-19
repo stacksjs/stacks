@@ -1,5 +1,6 @@
 import { err } from '@stacksjs/error-handling'
 import { notification as config } from '@stacksjs/config'
+import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { email } from './drivers/email'
 import { chat } from './drivers/chat'

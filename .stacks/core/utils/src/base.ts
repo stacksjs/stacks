@@ -8,7 +8,7 @@ export function toString(v: any) {
   return Object.prototype.toString.call(v)
 }
 
-export function noop() {}
+// export function noop() {}
 
 export function loop(times: number, callback: any) {
   [...Array(times)].forEach((item, i) => callback(i))
