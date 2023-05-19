@@ -7,8 +7,6 @@ export {
   greaterThan,
   greaterThanOrEqual,
   hasSubUnits,
-  isNegative,
-  isPositive,
   isZero,
   lessThan,
   lessThanOrEqual,

@@ -48,7 +48,7 @@ declare module 'vue' {
     readonly app: UnwrapRef<typeof import('../config/app')['default']>
     readonly appPath: UnwrapRef<typeof import('./core/path/src/index')['appPath']>
     readonly arraysPath: UnwrapRef<typeof import('./core/path/src/index')['arraysPath']>
-    readonly assert: UnwrapRef<typeof import('./core/utils/src/base')['assert']>
+    readonly assert: UnwrapRef<typeof import('vitest')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly at: UnwrapRef<typeof import('./core/arrays/src/index')['at']>
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
@@ -799,7 +799,7 @@ declare module 'vue' {
   const app: typeof import('../config/app')['default']
   const appPath: typeof import('./core/path/src/index')['appPath']
   const arraysPath: typeof import('./core/path/src/index')['arraysPath']
-  const assert: typeof import('./core/utils/src/base')['assert']
+  const assert: typeof import('vitest')['assert']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const at: typeof import('./core/arrays/src/index')['at']
   const auth: typeof import('./core/auth/src/index')['auth']
@@ -1559,7 +1559,7 @@ declare module 'vue' {
     readonly app: UnwrapRef<typeof import('../config/app')['default']>
     readonly appPath: UnwrapRef<typeof import('./core/path/src/index')['appPath']>
     readonly arraysPath: UnwrapRef<typeof import('./core/path/src/index')['arraysPath']>
-    readonly assert: UnwrapRef<typeof import('./core/utils/src/base')['assert']>
+    readonly assert: UnwrapRef<typeof import('vitest')['assert']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly at: UnwrapRef<typeof import('./core/arrays/src/index')['at']>
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
