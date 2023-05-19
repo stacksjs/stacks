@@ -47,12 +47,12 @@
   },
   "peerDependencies": {
     "consola": "^3.1.0",
-    "node-ray": "^1.20.9",
-    "vue-ray": "^1.17.3"
+    "node-ray": "^1.20.11",
+    "vue-ray": "^1.17.4"
   },
   "dependencies": {
-    "node-ray": "^1.20.9",
-    "vue-ray": "^1.17.3"
+    "node-ray": "^1.20.11",
+    "vue-ray": "^1.17.4"
   },
   "devDependencies": {
     "@stacksjs/testing": "workspace:*",

@@ -47,7 +47,7 @@
   "peerDependencies": {
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "node-ray": "^1.20.9",
+    "node-ray": "^1.20.11",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
