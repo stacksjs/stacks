@@ -3,7 +3,7 @@ import { notification } from '@stacksjs/config'
 const email = notification.email
 
 export const config = {
-  ...email.build,
+  ...email?.build,
   theme: {
     screens: {
       sm: '480px',

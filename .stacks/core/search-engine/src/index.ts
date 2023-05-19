@@ -65,24 +65,3 @@ export function calculatePagination() {
 
 // it needs these exports
 // currentPage, filterName, filters, goToNextPage, goToPage, goToPrevPage, hits, index, lastPageNumber, perPage, query, results, search, searchFilters, searchParams, setTotalHits, sort, sorts, totalPages
-
-export default {
-  useSearchEngine,
-  client,
-  search,
-  calculatePagination,
-  currentPage,
-  totalPages,
-  filterName,
-  filters,
-  goToNextPage,
-  goToPage,
-  goToPrevPage,
-  hits,
-  index,
-  searchFilters,
-  searchParams,
-  setTotalHits,
-  sort,
-  sorts,
-}
