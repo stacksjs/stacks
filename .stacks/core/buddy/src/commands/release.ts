@@ -17,11 +17,11 @@ async function release(buddy: CLI) {
       const result = await runAction(Action.Release, { ...options, shell: true })
 
       if (result.isErr()) {
-        log.error('Failed to complete ', result.error)
+        log.error('Failed to release', result.error)
         process.exit()
       }
 
-      outro('Triggered CI/CD release workflow', { startTime, useSeconds: true })
+      outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
     })
 }
 
