@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cache",
   "type": "module",
-  "version": "0.52.7",
+  "version": "0.52.8",
   "packageManager": "pnpm@8.5.1",
   "description": "The Stacks way of caching.",
   "author": "Chris Breuer",
