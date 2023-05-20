@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/health",
   "type": "module",
-  "version": "0.52.2",
+  "version": "0.52.3",
   "packageManager": "pnpm@8.5.1",
   "description": "The Stacks Health services.",
   "author": "Chris Breuer",
