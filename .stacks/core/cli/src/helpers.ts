@@ -47,6 +47,8 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
     }
 
+    console.log('options.quiet', options.quiet)
+    process.exit()
     if (options.quiet === true)
       return
 

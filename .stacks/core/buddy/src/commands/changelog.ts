@@ -1,7 +1,7 @@
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
 
 async function changelog(buddy: CLI) {
   const descriptions = {
@@ -24,7 +24,7 @@ async function changelog(buddy: CLI) {
       }
 
       outro('Generated the CHANGELOG.md file', { ...options, startTime: perf, useSeconds: true, type: 'info' })
-      process.exit()
+      process.exit(ExitCode.Success)
     })
 }
 

@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.52.4...v0.52.5
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.52.4...v0.52.5)
+
+
+### 🏡 Chore
+
+  - Release v0.52.5 ([ca1a40d8](https://github.com/stacksjs/stacks/commit/ca1a40d8))
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.52.3...v0.52.4
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.52.3...v0.52.4)
