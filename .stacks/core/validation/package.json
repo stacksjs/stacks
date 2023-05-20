@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/validation",
   "type": "module",
-  "version": "0.52.4",
+  "version": "0.52.5",
   "packageManager": "pnpm@8.5.1",
   "description": "The Stacks Validation methods.",
   "author": "Chris Breuer",
