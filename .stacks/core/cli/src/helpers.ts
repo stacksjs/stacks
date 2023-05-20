@@ -10,7 +10,7 @@ import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 export async function intro(command: string, options?: IntroOptions) {
   const version = await frameworkVersion()
 
-  if (!options?.quiet) {
+  if (options?.quiet === false) {
     console.log()
     console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
     console.log()
@@ -47,7 +47,7 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
     }
 
-    if (options.quiet)
+    if (options.quiet === false)
       return
 
     if (options.isError)

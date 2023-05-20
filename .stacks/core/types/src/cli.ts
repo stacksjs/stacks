@@ -14,7 +14,7 @@ export interface OutroOptions extends CliOptions {
   startTime?: number
   useSeconds?: boolean
   isError?: boolean
-  quiet: boolean
+  quiet?: boolean
 }
 
 export interface IntroOptions {
@@ -55,7 +55,7 @@ export interface CliOptions {
    *
    * @default false
    */
-  quiet: boolean
+  quiet?: boolean
 
   /**
    * **Verbose Output**
