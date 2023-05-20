@@ -47,15 +47,13 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
     }
 
-    console.log('options.quiet', options.quiet)
-    process.exit()
     if (options.quiet === true)
       return
 
     if (options.isError)
       log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
     else
-      log.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
+      log.success(green(`Dones in ${time}${options.useSeconds ? 's' : 'ms'}`))
   }
 }
 

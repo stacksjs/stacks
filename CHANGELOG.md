@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.52.5...v0.52.6
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.52.5...v0.52.6)
+
+
+### 🏡 Chore
+
+  - Release v0.52.6 ([bccb0dd1](https://github.com/stacksjs/stacks/commit/bccb0dd1))
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.52.4...v0.52.5
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.52.4...v0.52.5)
