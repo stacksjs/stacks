@@ -57,7 +57,6 @@ export async function runCommand(command: string, options?: CliOptions): Promise
  * @returns The result of the command.
  */
 export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult | CommandResult[]> {
-  console.log('runCommands', commands, options)
   const results: CommandResult[] = []
   const numberOfCommands = commands.length
 
