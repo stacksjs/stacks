@@ -51,7 +51,7 @@ async function create(buddy: CLI) {
 
       if (startTime) {
         const time = performance.now() - startTime
-        log.success(green(`Doness in ${time}ms`))
+        log.success(green(`Done in ${time}ms`))
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))

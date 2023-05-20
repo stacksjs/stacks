@@ -53,7 +53,7 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
     if (options.isError)
       log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
     else
-      log.success(green(`Dones in ${time}${options.useSeconds ? 's' : 'ms'}`))
+      log.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
   }
 }
 
