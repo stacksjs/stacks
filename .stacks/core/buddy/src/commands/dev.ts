@@ -81,7 +81,8 @@ async function dev(buddy: CLI) {
         process.exit()
       }
 
-      outro('Finished running dev:components.', { startTime: perf, useSeconds: true })
+      console.log('')
+      outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

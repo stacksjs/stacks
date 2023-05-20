@@ -10,6 +10,7 @@ export type CommandReturnValue = ExecaReturnValue<string>
 export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>
 
 export interface OutroOptions {
+  type?: 'success' | 'error' | 'warning' | 'info'
   startTime?: number
   useSeconds?: boolean
   isError?: boolean

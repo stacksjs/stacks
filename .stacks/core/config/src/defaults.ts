@@ -18,5 +18,3 @@ export { default as searchEngine } from '../../../../config/search-engine'
 export { default as services } from '../../../../config/services'
 export { default as storage } from '../../../../config/storage'
 export { default as ui } from '../../../../config/ui'
-
-// export { default as cloud } from '../../../../config/cloud'

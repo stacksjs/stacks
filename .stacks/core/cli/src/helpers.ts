@@ -28,7 +28,12 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
     if (error)
       log.error(error)
   }
-  else { log.success(text) }
+  else {
+    if (options?.type === 'info')
+      log.info(text)
+
+    log.success(text)
+  }
 
   if (options.startTime) {
     let time = performance.now() - options.startTime

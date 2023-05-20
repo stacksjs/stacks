@@ -83,7 +83,6 @@ declare module 'vue' {
     readonly capitalize: UnwrapRef<typeof import('./core/strings/src/utils')['capitalize']>
     readonly cdn: UnwrapRef<typeof import('../config/cdn')['default']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
-    readonly chat: UnwrapRef<typeof import('./core/notifications/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('./core/path/src/index')['chatPath']>
     readonly clamp: UnwrapRef<typeof import('./core/utils/src/math')['clamp']>
     readonly clampArrayRange: UnwrapRef<typeof import('./core/arrays/src/index')['clampArrayRange']>
@@ -201,7 +200,7 @@ declare module 'vue' {
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>
     readonly eagerComputed: UnwrapRef<typeof import('./core/utils/src/vendors')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
-    readonly email: UnwrapRef<typeof import('./core/notifications/src/index')['email']>
+    readonly email: UnwrapRef<typeof import('../config/email')['default']>
     readonly emailPath: UnwrapRef<typeof import('./core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('./core/security/src/crypt')['encrypt']>
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
@@ -395,7 +394,7 @@ declare module 'vue' {
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly not: UnwrapRef<typeof import('./core/utils/src/math')['not']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
-    readonly notification: UnwrapRef<typeof import('./core/notifications/src/index')['notification']>
+    readonly notification: UnwrapRef<typeof import('../config/notification')['default']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>
     readonly objectEntries: UnwrapRef<typeof import('./core/objects/src/index')['objectEntries']>
     readonly objectKeys: UnwrapRef<typeof import('./core/objects/src/index')['objectKeys']>
@@ -505,7 +504,6 @@ declare module 'vue' {
     readonly sleep: UnwrapRef<typeof import('./core/utils/src/promise')['sleep']>
     readonly slug: UnwrapRef<typeof import('./core/strings/src/utils')['slug']>
     readonly sms77: UnwrapRef<typeof import('./core/sms/src/index')['sms77']>
-    readonly sms: UnwrapRef<typeof import('./core/notifications/src/index')['sms']>
     readonly smsPath: UnwrapRef<typeof import('./core/path/src/index')['smsPath']>
     readonly snakeCase: UnwrapRef<typeof import('./core/strings/src/case')['snakeCase']>
     readonly sns: UnwrapRef<typeof import('./core/sms/src/index')['sns']>
@@ -818,7 +816,6 @@ declare module 'vue' {
   const capitalize: typeof import('./core/strings/src/utils')['capitalize']
   const cdn: typeof import('../config/cdn')['default']
   const chai: typeof import('vitest')['chai']
-  const chat: typeof import('./core/notifications/src/index')['chat']
   const chatPath: typeof import('./core/path/src/index')['chatPath']
   const clamp: typeof import('./core/utils/src/math')['clamp']
   const clampArrayRange: typeof import('./core/arrays/src/index')['clampArrayRange']
@@ -936,7 +933,7 @@ declare module 'vue' {
   const dynamodb: typeof import('./core/cache/src/index')['dynamodb']
   const eagerComputed: typeof import('./core/utils/src/vendors')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
-  const email: typeof import('./core/notifications/src/index')['email']
+  const email: typeof import('../config/email')['default']
   const emailPath: typeof import('./core/path/src/index')['emailPath']
   const encrypt: typeof import('./core/security/src/crypt')['encrypt']
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
@@ -1130,7 +1127,7 @@ declare module 'vue' {
   const normalizeString: typeof import('./core/path/src/index')['normalizeString']
   const not: typeof import('./core/utils/src/math')['not']
   const notUndefined: typeof import('./core/utils/src/guards')['notUndefined']
-  const notification: typeof import('./core/notifications/src/index')['notification']
+  const notification: typeof import('../config/notification')['default']
   const notificationsPath: typeof import('./core/path/src/index')['notificationsPath']
   const objectEntries: typeof import('./core/objects/src/index')['objectEntries']
   const objectKeys: typeof import('./core/objects/src/index')['objectKeys']
@@ -1239,7 +1236,6 @@ declare module 'vue' {
   const slash: typeof import('./core/strings/src/utils')['slash']
   const sleep: typeof import('./core/utils/src/promise')['sleep']
   const slug: typeof import('./core/strings/src/utils')['slug']
-  const sms: typeof import('./core/notifications/src/index')['sms']
   const sms77: typeof import('./core/sms/src/index')['sms77']
   const smsPath: typeof import('./core/path/src/index')['smsPath']
   const snakeCase: typeof import('./core/strings/src/case')['snakeCase']
@@ -1562,7 +1558,6 @@ declare module 'vue' {
     readonly capitalize: UnwrapRef<typeof import('./core/strings/src/utils')['capitalize']>
     readonly cdn: UnwrapRef<typeof import('../config/cdn')['default']>
     readonly chai: UnwrapRef<typeof import('vitest')['chai']>
-    readonly chat: UnwrapRef<typeof import('./core/notifications/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('./core/path/src/index')['chatPath']>
     readonly clamp: UnwrapRef<typeof import('./core/utils/src/math')['clamp']>
     readonly clampArrayRange: UnwrapRef<typeof import('./core/arrays/src/index')['clampArrayRange']>
@@ -1680,7 +1675,7 @@ declare module 'vue' {
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>
     readonly eagerComputed: UnwrapRef<typeof import('./core/utils/src/vendors')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
-    readonly email: UnwrapRef<typeof import('./core/notifications/src/index')['email']>
+    readonly email: UnwrapRef<typeof import('../config/email')['default']>
     readonly emailPath: UnwrapRef<typeof import('./core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('./core/security/src/crypt')['encrypt']>
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
@@ -1874,7 +1869,7 @@ declare module 'vue' {
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly not: UnwrapRef<typeof import('./core/utils/src/math')['not']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
-    readonly notification: UnwrapRef<typeof import('./core/notifications/src/index')['notification']>
+    readonly notification: UnwrapRef<typeof import('../config/notification')['default']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>
     readonly objectEntries: UnwrapRef<typeof import('./core/objects/src/index')['objectEntries']>
     readonly objectKeys: UnwrapRef<typeof import('./core/objects/src/index')['objectKeys']>
@@ -1984,7 +1979,6 @@ declare module 'vue' {
     readonly sleep: UnwrapRef<typeof import('./core/utils/src/promise')['sleep']>
     readonly slug: UnwrapRef<typeof import('./core/strings/src/utils')['slug']>
     readonly sms77: UnwrapRef<typeof import('./core/sms/src/index')['sms77']>
-    readonly sms: UnwrapRef<typeof import('./core/notifications/src/index')['sms']>
     readonly smsPath: UnwrapRef<typeof import('./core/path/src/index')['smsPath']>
     readonly snakeCase: UnwrapRef<typeof import('./core/strings/src/case')['snakeCase']>
     readonly sns: UnwrapRef<typeof import('./core/sms/src/index')['sns']>

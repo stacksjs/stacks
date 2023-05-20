@@ -39,15 +39,11 @@ function useNotification(typeParam = 'email', driverParam = 'mailtrap') {
   }
 }
 
-function notification() {
-  return useNotification()
-}
+// function notification() {
+//   return useNotification()
+// }
 
 export {
-  email,
-  chat,
-  sms,
-  notification,
   useEmail,
   useChat,
   useSMS,

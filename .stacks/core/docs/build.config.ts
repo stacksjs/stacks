@@ -8,6 +8,7 @@ export default defineBuildConfig({
       builder: 'mkdist',
       input: './src/',
       outDir: './dist/',
+      format: 'esm',
     },
   ],
   declaration: true,
