@@ -49,9 +49,6 @@ async function create(buddy: CLI) {
       await ensureEnv(path, options)
       await install(path, options)
 
-      // a custom outro
-      // console.log()
-
       if (startTime) {
         const time = performance.now() - startTime
         log.success(green(`Done in ${time}ms`))
