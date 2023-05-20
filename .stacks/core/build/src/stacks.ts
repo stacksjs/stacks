@@ -83,7 +83,7 @@ function markdown(options?: MarkdownOptions) {
 function autoImports(options?: AutoImportsOptions) {
   const defaultOptions: AutoImportsOptions = {
     imports: [
-      'vue', 'vue-router', 'vue/macros', '@vueuse/core', '@vueuse/head', '@vueuse/math', 'vitest',
+      'vue', 'vue-router', 'vue/macros', 'vitest',
       { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
     ],
     dirs: [
@@ -99,9 +99,7 @@ function autoImports(options?: AutoImportsOptions) {
       p.chatPath('src'),
       p.databasePath('src'),
       p.desktopPath('src'),
-      // p.emailPath('src'),
       p.errorHandlingPath('src'),
-      // p.eventsPath('src'),
       p.healthPath('src'),
       p.lintPath('src'),
       p.loggingPath('src'),
@@ -120,7 +118,6 @@ function autoImports(options?: AutoImportsOptions) {
       p.stringsPath('src'),
       p.tablesPath('src'),
       p.testingPath('src'),
-      // p.uiPath('src'),
       p.utilsPath('src'),
       p.validationPath('src'),
     ],
