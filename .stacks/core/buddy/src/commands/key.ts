@@ -15,12 +15,11 @@ async function key(buddy: CLI) {
     .action(async (options: KeyOptions) => {
       const startTime = await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   log.error('Failed to set random application key.', result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        log.error('Failed to set random application key.', result.error as Error)
+        process.exit()
+      }
 
       outro('Set random application key.', { startTime })
     })

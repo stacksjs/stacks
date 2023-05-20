@@ -23,12 +23,11 @@ async function test(buddy: CLI) {
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test')
       const result = await runAction(Action.Test, { ...options, cwd: projectPath() })
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   outro('While running `buddy test`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running `buddy test`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit()
+      }
 
       outro('Finished running tests', { startTime: perf, useSeconds: true })
     })
@@ -39,7 +38,6 @@ async function test(buddy: CLI) {
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:unit')
       const result = await runAction(Action.TestUnit, { ...options, verbose: true, cwd: projectPath() })
-      console.log('result', result)
 
       if (result.isErr()) {
         outro('While running `buddy test:unit`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
@@ -76,7 +74,6 @@ async function test(buddy: CLI) {
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:ui')
       const result = await runAction(Action.TestUi, { ...options, verbose: true, cwd: projectPath() })
-      console.log('result', result)
 
       if (result.isErr()) {
         outro('While running `buddy test:ui`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
@@ -93,7 +90,6 @@ async function test(buddy: CLI) {
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:types')
       const result = await runAction(Action.Typecheck, { ...options, verbose: true, cwd: projectPath() })
-      console.log('result', result)
 
       if (result.isErr()) {
         outro('While running `buddy test:types`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
@@ -108,7 +104,6 @@ async function test(buddy: CLI) {
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:coverage')
       const result = await runAction(Action.TestCoverage, { ...options, cwd: projectPath(), verbose: true })
-      console.log('result', result)
 
       if (result.isErr()) {
         outro('While running `buddy test:coverage`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)

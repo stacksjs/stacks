@@ -110,12 +110,10 @@ async function build(buddy: CLI) {
       const startTime = await intro('buddy build:core')
       const result = await runAction(Action.BuildCore, options)
 
-      console.log('result', result)
-
-      // if (result.isErr()) {
-      //   log.error('Failed to build the Stacks core.', result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        log.error('Failed to build the Stacks core.', result.error as Error)
+        process.exit()
+      }
 
       outro('Stacks core built successfully', { startTime, useSeconds: true })
     })
@@ -127,12 +125,11 @@ async function build(buddy: CLI) {
     .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   log.error('Failed to build Stacks.', result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        log.error('Failed to build Stacks.', result.error as Error)
+        process.exit()
+      }
 
       outro('Stacks built successfully', { startTime, useSeconds: true })
     })

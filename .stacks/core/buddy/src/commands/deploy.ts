@@ -15,12 +15,11 @@ async function deploy(buddy: CLI) {
     .action(async (options: DeployOptions) => {
       const perf = await intro('buddy deploy')
       const result = await runAction(Action.Deploy, options)
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit()
+      }
 
       outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

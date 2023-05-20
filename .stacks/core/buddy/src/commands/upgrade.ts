@@ -56,12 +56,11 @@ async function upgrade(buddy: CLI) {
       }
 
       const result = await runAction(Action.Upgrade, { ...options, shell: true })
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit()
+      }
 
       outro('Upgrade complete.', { startTime: perf, useSeconds: true })
       process.exit()
@@ -100,12 +99,11 @@ async function upgrade(buddy: CLI) {
 
       const perf = await intro('buddy upgrade:package-manager')
       const result = await runAction(Action.UpgradePackageManager, options)
-      console.log('result', result, perf)
 
-      // if (response.isErr()) {
-      //   outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, response.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit()
+      }
 
       process.exit(ExitCode.Success)
     })
@@ -116,7 +114,6 @@ async function upgrade(buddy: CLI) {
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:node')
       const result = await runAction(Action.UpgradeNode, options)
-      console.log('result', result, perf)
 
       if (result.isErr()) {
         outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast

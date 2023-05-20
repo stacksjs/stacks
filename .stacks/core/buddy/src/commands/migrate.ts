@@ -15,12 +15,11 @@ async function migrate(buddy: CLI) {
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy migrate')
       const result = await runAction(Action.Migrate, { ...options, showSpinner: true, spinnerText: 'Migrating...' })
-      console.log('result', result)
 
-      // if (result.isErr()) {
-      //   outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-      //   process.exit()
-      // }
+      if (result.isErr()) {
+        outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        process.exit()
+      }
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
