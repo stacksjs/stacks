@@ -9,11 +9,12 @@ import type { Err, Ok } from './errors'
 export type CommandReturnValue = ExecaReturnValue<string>
 export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>
 
-export interface OutroOptions {
+export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
   startTime?: number
   useSeconds?: boolean
   isError?: boolean
+  quiet: boolean
 }
 
 export interface IntroOptions {
@@ -21,6 +22,11 @@ export interface IntroOptions {
    * @default true
    */
   showPerformance?: boolean
+
+  /**
+   * @default false
+   */
+  quiet: boolean
 }
 
 type SpinnerOptions = Ora
@@ -40,6 +46,17 @@ export interface UserCliOptions {
  * The options to pass to the CLI.
  */
 export interface CliOptions {
+  /**
+   * **Quiet Output**
+   *
+   * When your application is in "quiet"-mode, a different level of information
+   * like useful outputs for debugging reasons, will be shown.
+   * When disabled, it defaults to the "normal experience."
+   *
+   * @default false
+   */
+  quiet: boolean
+
   /**
    * **Verbose Output**
    *

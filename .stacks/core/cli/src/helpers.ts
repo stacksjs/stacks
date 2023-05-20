@@ -9,12 +9,16 @@ import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
  */
 export async function intro(command: string, options?: IntroOptions) {
   const version = await frameworkVersion()
-  console.log()
-  console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
-  console.log()
-  log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command.`)
 
-  if (options?.showPerformance === false)
+  if (!options?.quiet) {
+    console.log()
+    console.log(cyan(bold('Stacks CLI')) + dim(` v${version}`))
+    console.log()
+  }
+
+  log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command`)
+
+  if (options?.showPerformance === false || options?.quiet)
     return
 
   return performance.now()
@@ -42,6 +46,9 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       time = time / 1000
       time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
     }
+
+    if (options.quiet)
+      return
 
     if (options.isError)
       log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
