@@ -393,6 +393,7 @@ declare module 'vue' {
     readonly normalizeScale: UnwrapRef<typeof import('./core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly not: UnwrapRef<typeof import('./core/utils/src/math')['not']>
+    readonly notNullish: UnwrapRef<typeof import('./core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('../config/notification')['default']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>
@@ -1127,6 +1128,7 @@ declare module 'vue' {
   const normalizeScale: typeof import('./core/utils/src/currency')['normalizeScale']
   const normalizeString: typeof import('./core/path/src/index')['normalizeString']
   const not: typeof import('./core/utils/src/math')['not']
+  const notNullish: typeof import('./core/utils/src/guards')['notNullish']
   const notUndefined: typeof import('./core/utils/src/guards')['notUndefined']
   const notification: typeof import('../config/notification')['default']
   const notificationsPath: typeof import('./core/path/src/index')['notificationsPath']
@@ -1870,6 +1872,7 @@ declare module 'vue' {
     readonly normalizeScale: UnwrapRef<typeof import('./core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('./core/path/src/index')['normalizeString']>
     readonly not: UnwrapRef<typeof import('./core/utils/src/math')['not']>
+    readonly notNullish: UnwrapRef<typeof import('./core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('./core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('../config/notification')['default']>
     readonly notificationsPath: UnwrapRef<typeof import('./core/path/src/index')['notificationsPath']>

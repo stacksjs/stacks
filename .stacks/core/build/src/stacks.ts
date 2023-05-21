@@ -14,9 +14,6 @@ import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
 
-// it is important to note that path references within this file
-// are relative to the ./build folder
-
 function inspect(options?: InspectOptions) {
   return Inspect(options)
 }
@@ -44,7 +41,7 @@ function components(options?: ComponentOptions): PluginOption {
 
 // https://github.com/hannoeru/vite-plugin-pages
 function pages(options?: PagesOption) {
-  const defaultOptions: PagesOption = {
+  const defaultOptions = {
     extensions: ['vue', 'md'],
     dirs: [
       p.pagesPath(),
@@ -57,10 +54,10 @@ function pages(options?: PagesOption) {
 }
 
 function markdown(options?: MarkdownOptions) {
-  const defaultOptions: MarkdownOptions = {
+  const defaultOptions = {
     wrapperClasses: 'prose prose-sm m-auto text-left',
     headEnabled: true,
-    markdownItSetup(md) {
+    markdownItSetup(md: any) {
     // https://prismjs.com/
       md.use(Shiki, {
         theme: 'nord',
