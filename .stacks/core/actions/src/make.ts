@@ -19,8 +19,8 @@ export async function invoke(options: MakeOptions) {
   if (options.language)
     await language(options)
 
-  if (options.migration)
-    await migration(options)
+  // if (options.migration)
+  //   await migration(options)
 
   if (options.notification)
     await notification(options)
@@ -46,10 +46,10 @@ export async function component(options: MakeOptions) {
     const name = options.name
     log.info('Creating your component...')
     await createComponent(options)
-    log.success(`Created the ${italic(name)} component.`)
+    log.success(`Created the ${italic(name)} component`)
   }
   catch (error) {
-    log.error('There was an error creating your component.', error)
+    log.error('There was an error creating your component', error)
     process.exit()
   }
 }
@@ -77,10 +77,10 @@ export async function database(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
     await createDatabase(options)
-    log.success(`Created the ${italic(name)} database.`)
+    log.success(`Created the ${italic(name)} database`)
   }
   catch (error) {
-    log.error('There was an error creating your database.', error)
+    log.error('There was an error creating your database', error)
     process.exit()
   }
 }
@@ -95,10 +95,10 @@ export async function factory(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
     await createDatabase(options)
-    log.success(`Created the ${italic(name)} factory.`)
+    log.success(`Created the ${italic(name)} factory`)
   }
   catch (error) {
-    log.error('There was an error creating your factory.', error)
+    log.error('There was an error creating your factory', error)
     process.exit()
   }
 }
@@ -113,10 +113,10 @@ export async function notification(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
-    log.success(`Created the ${italic(name)} notification.`)
+    log.success(`Created the ${italic(name)} notification`)
   }
   catch (error) {
-    log.error('There was an error creating your notification.', error)
+    log.error('There was an error creating your notification', error)
     process.exit()
   }
 }
@@ -126,10 +126,10 @@ export async function page(options: MakeOptions) {
     const name = options.name
     log.info('Creating your page...')
     createPage(options)
-    log.success(`Created the ${name} page.`)
+    log.success(`Created the ${name} page`)
   }
   catch (error) {
-    log.error('There was an error creating your page.', error)
+    log.error('There was an error creating your page', error)
     process.exit()
   }
 }
@@ -158,10 +158,10 @@ export async function fx(options: MakeOptions) {
     const name = options.name
     log.info('Creating your function...')
     await createFunction(options)
-    log.success(`Created the ${name} function.`)
+    log.success(`Created the ${name} function`)
   }
   catch (error) {
-    log.error('There was an error creating your function.', error)
+    log.error('There was an error creating your function', error)
     process.exit()
   }
 }
@@ -191,7 +191,7 @@ export async function language(options: MakeOptions) {
     const name = options.name
     log.info('Creating your translation file...')
     createLanguage(options)
-    log.success(`Created the ${name} translation file.`)
+    log.success(`Created the ${name} translation file`)
   }
   catch (error) {
     log.error('There was an error creating your language.', error)
@@ -220,7 +220,7 @@ export async function stack(options: MakeOptions) {
     log.info(`cd ${path} && pnpm install`)
   }
   catch (error) {
-    log.error('There was an error creating your stack.', error)
+    log.error('There was an error creating your stack', error)
     process.exit()
   }
 }
@@ -263,7 +263,8 @@ function send(): ${importOption} {
 
 export async function createMigration(options: MakeOptions) {
   const optionName = options.name
-  const table = options.tableName
+  // const table = options.tableName
+  const table = 'dummy-name'
   const name = optionName[0].toUpperCase() + optionName.slice(1)
   const path = frameworkPath(`database/migrations/${name}.ts`)
 
@@ -294,7 +295,7 @@ export async function createModel(options: MakeOptions) {
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `import { faker } from '../../.stacks/core/faker/src' // stacks/faker or @stacksjs/faker
+      data: `import { faker } from '../../.stacks/core/faker/src' // stacks/faker or
 import { validate } from '../../.stacks/core/validation/src' // stacks/validate or @stacksjs/validate
 import type { Model } from '../../.stacks/core/types/src' // stacks/types or @stacksjs/types
 

@@ -88,9 +88,9 @@ export async function generatePackageJson(type: PackageJsonType) {
     else if (type === 'functions')
       prettyName = 'Function Library'
 
-    log.success(`Created the ${prettyName} package.json file.`)
+    log.success(`Created the ${prettyName} package.json file`)
   }
   catch (err) {
-    log.error(`There was an error creating the ${prettyName} package.json.`, err)
+    log.error(`There was an error creating the ${prettyName} package.json`, err)
   }
 }

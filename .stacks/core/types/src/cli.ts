@@ -275,9 +275,9 @@ export const enum Action {
   DevDocs = 'dev/docs', // wip
   Deploy = 'deploy', // wip
   Fresh = 'fresh', // wip
-  GeneratePackageJsons = 'generate-package-jsons', // wip
-  GenerateSettings = 'generate-settings',
-  GenerateOnboarding = 'generate-onboarding',
+  GeneratePackageJsons = 'generate/package-jsons', // ✅
+  GenerateSettings = 'generate-settings', // wip
+  GenerateOnboarding = 'generate-onboarding', // wip
   Inspire = 'inspire', // wip
   KeyGenerate = 'key-generate', // wip
   MakeNotification = 'make-notification', // wip

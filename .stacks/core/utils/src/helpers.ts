@@ -100,7 +100,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions): Pro
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
     return await runCommand(`pnpm run ${script}`, options)
 
-  log.error(`The specified npm script "${script}" does not exist in the package.json file.`)
+  log.error(`The specified npm script "${script}" does not exist in the package.json file`)
   process.exit()
 }
 
