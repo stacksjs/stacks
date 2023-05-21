@@ -26,11 +26,11 @@ export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: frameworkPath('functions/dist'),
     emptyOutDir: true,
-    sourcemap: library.functions.shouldGenerateSourcemap,
+    sourcemap: library.functions?.shouldGenerateSourcemap,
     lib: {
       entry: buildEntriesPath('functions.ts'),
-      name: library.functions.name,
-      formats: library.functions.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
+      name: library.functions?.name,
+      formats: library.functions?.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'

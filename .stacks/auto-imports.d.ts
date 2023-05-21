@@ -702,6 +702,7 @@ declare module 'vue' {
     readonly useTimeoutPoll: UnwrapRef<typeof import('./core/utils/src/vendors')['useTimeoutPoll']>
     readonly useTimestamp: UnwrapRef<typeof import('./core/utils/src/vendors')['useTimestamp']>
     readonly useTitle: UnwrapRef<typeof import('./core/utils/src/vendors')['useTitle']>
+    readonly useToggle: UnwrapRef<typeof import('./core/utils/src/vendors')['useToggle']>
     readonly useTransition: UnwrapRef<typeof import('./core/utils/src/vendors')['useTransition']>
     readonly useTrunc: UnwrapRef<typeof import('./core/utils/src/math')['useTrunc']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('./core/utils/src/vendors')['useUrlSearchParams']>
@@ -1435,6 +1436,7 @@ declare module 'vue' {
   const useTimeoutPoll: typeof import('./core/utils/src/vendors')['useTimeoutPoll']
   const useTimestamp: typeof import('./core/utils/src/vendors')['useTimestamp']
   const useTitle: typeof import('./core/utils/src/vendors')['useTitle']
+  const useToggle: typeof import('./core/utils/src/vendors')['useToggle']
   const useTransition: typeof import('./core/utils/src/vendors')['useTransition']
   const useTrunc: typeof import('./core/utils/src/math')['useTrunc']
   const useUrlSearchParams: typeof import('./core/utils/src/vendors')['useUrlSearchParams']
@@ -2177,6 +2179,7 @@ declare module 'vue' {
     readonly useTimeoutPoll: UnwrapRef<typeof import('./core/utils/src/vendors')['useTimeoutPoll']>
     readonly useTimestamp: UnwrapRef<typeof import('./core/utils/src/vendors')['useTimestamp']>
     readonly useTitle: UnwrapRef<typeof import('./core/utils/src/vendors')['useTitle']>
+    readonly useToggle: UnwrapRef<typeof import('./core/utils/src/vendors')['useToggle']>
     readonly useTransition: UnwrapRef<typeof import('./core/utils/src/vendors')['useTransition']>
     readonly useTrunc: UnwrapRef<typeof import('./core/utils/src/math')['useTrunc']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('./core/utils/src/vendors')['useUrlSearchParams']>

@@ -1,1 +1,1 @@
-export default defineEventHandler(() => '.stacks is amazing!')
+// export default defineEventHandler(() => 'stacks is amazing!')

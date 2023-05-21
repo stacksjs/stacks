@@ -1,5 +1,5 @@
-import * as server from './config'
+import { config } from './config'
 
-export { server }
+export { config }
 
-export default { server }
+export default { config }

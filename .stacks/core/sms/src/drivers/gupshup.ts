@@ -4,7 +4,7 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
 
-const env = notification.sms?.gupshup
+const env = notification.sms?.drivers.gupshup
 
 const provider = new GupshupSmsProvider({
   userId: env?.user || '',

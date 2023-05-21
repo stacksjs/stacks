@@ -23,7 +23,7 @@ async function lint(buddy: CLI) {
         process.exit()
       }
 
-      outro('Linted your project.', { startTime: perf, useSeconds: true })
+      outro('Linted your project', { startTime: perf, useSeconds: true })
     })
 
   buddy
@@ -38,7 +38,7 @@ async function lint(buddy: CLI) {
         process.exit()
       }
 
-      log.success('Fixed lint errors.')
+      log.success('Fixed lint errors')
     })
 }
 
