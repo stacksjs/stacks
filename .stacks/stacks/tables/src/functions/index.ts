@@ -1,2 +1,2 @@
 export * from './dark'
-export * from './table'
+// export * from './table'

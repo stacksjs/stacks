@@ -1,10 +1,10 @@
-import { defineNitroConfig } from 'nitropack'
+import { defineServerConfig } from '@stacksjs/server'
 
 // import { alias } from '@stacksjs/alias'
 // import { resolve } from '@stacksjs/path'
 // import { deploy } from '@stacksjs/config'
 
-export default defineNitroConfig({
+export default defineServerConfig({
   // alias,
   output: {
     dir: '.output',

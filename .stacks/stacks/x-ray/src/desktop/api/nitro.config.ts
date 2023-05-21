@@ -1,7 +1,7 @@
 // nitro.config.ts
-import { defineNitroConfig } from 'nitropack'
+import { defineServerConfig } from '@stacksjs/server'
 
-export default defineNitroConfig({
+export default defineServerConfig({
   storage: {
     redis: {
       driver: 'redis',

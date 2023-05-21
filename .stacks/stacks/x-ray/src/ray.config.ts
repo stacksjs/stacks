@@ -15,12 +15,12 @@ export default {
     // return functionThatReturnsABoolean()
   },
 
-  sending_payload_callback: (rayInstance, payloads) => {
+  sending_payload_callback: (rayInstance: any, payloads: any) => {
     if (payloads[0].getType() === 'custom')
       payloads[0].html += ' <strong>- modified!</strong>'
   },
 
-  sent_payload_callback: (rayInstance) => {
+  sent_payload_callback: (rayInstance: any) => {
     // automatically make all payloads sent to Ray green.
     rayInstance.green()
   },

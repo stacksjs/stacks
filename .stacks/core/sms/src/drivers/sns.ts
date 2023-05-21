@@ -4,7 +4,7 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
 
-const env = notification.sms?.sns
+const env = notification.sms?.drivers.sns
 
 const provider = new SNSSmsProvider({
   region: env?.region,

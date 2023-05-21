@@ -1,7 +1,7 @@
-import { defineNitroConfig } from 'nitropack'
+import { defineServerConfig } from '@stacksjs/server'
 import { projectPath } from '@stacksjs/path'
 
-export default defineNitroConfig({
+export default defineServerConfig({
   preset: 'aws-lambda',
   srcDir: projectPath(),
 })

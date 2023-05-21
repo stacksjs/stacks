@@ -4,11 +4,12 @@ import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
 
-const env = notification.sms?.sms77
+const from = notification.sms?.from
+const env = notification.sms?.drivers.sms77
 
 const provider = new Sms77SmsProvider({
   apiKey: env?.key,
-  from: env?.from,
+  from,
 })
 
 function send(options: SmsOptions) {

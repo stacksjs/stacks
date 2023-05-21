@@ -37,7 +37,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: buildEntriesPath('web-components.ts'),
-      name: library.webComponents.name,
+      name: library.webComponents?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

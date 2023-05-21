@@ -1,5 +1,2 @@
-import { config as server } from './config'
-
-export { server }
-
-export default { server }
+export { config as server } from './config'
+export { defineNitroConfig as defineServerConfig } from 'nitropack/config'

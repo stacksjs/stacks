@@ -256,7 +256,7 @@ export const enum NpmScript {
   Prepublish = 'prepublish',
   Wip = 'wip',
   UpgradeNode = './.stacks/scripts/setup.sh +nodejs.org',
-  UpgradePackageManager = './.stacks/scripts/setup.sh +pnpm.io',
+  UpgradeDependencies = 'pnpm up',
 }
 
 export const enum Action {
