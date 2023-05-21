@@ -3,7 +3,9 @@ import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
 import { library, packageManager } from '@stacksjs/config'
 
-export async function generatePackageJson(type: 'vue-components' | 'web-components' | 'functions') {
+type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
+
+export async function generatePackageJson(type: PackageJsonType) {
   let name, description, directory, keywords, config, prettyName
 
   if (type === 'vue-components') {
@@ -39,7 +41,7 @@ export async function generatePackageJson(type: 'vue-components' | 'web-componen
   "name": "${name}",
   "type": "module",
   "version": "",
-  "packageManager": "${packageManager}",
+  "packageManager": "${await packageManager()}",
   "description": "${description}",
   "author": "${library.author}",
   "license": "MIT",

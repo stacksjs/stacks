@@ -258,14 +258,8 @@ export function paymentsPath(path?: string) {
 export function projectPath(filePath = '') {
   let path = process.cwd()
 
-  // workaround: simple way to determine the project path
-  if (path.includes('.stacks'))
-    path = resolve(path, '..')
-
-  if (path.includes('.stacks'))
-    path = resolve(path, '..')
-
-  if (path.includes('.stacks'))
+  // simple way to determine the project path
+  while (path.includes('.stacks'))
     path = resolve(path, '..')
 
   if (!path.includes('.stacks'))
