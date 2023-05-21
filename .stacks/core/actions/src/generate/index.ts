@@ -4,7 +4,7 @@ import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
 
 export async function invoke(options?: GeneratorOptions) {
@@ -40,14 +40,14 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  const result = await runCommand('tsx .stacks/core/actions/src/generate-package-json.ts', { ...options, verbose: true, cwd: projectPath() })
+  const result = await runAction(Action.GeneratePackageJsons, { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
     log.error('There was an error generating your library entry points.', result.error)
     process.exit()
   }
 
-  log.success('Library entry points were generated successfully')
+  log.success('Library entry points generated successfully')
 }
 
 export async function vueCompat(options?: GeneratorOptions) {
