@@ -262,9 +262,6 @@ export function projectPath(filePath = '') {
   while (path.includes('.stacks'))
     path = resolve(path, '..')
 
-  if (!path.includes('.stacks'))
-    path = resolve(path, '.')
-
   return resolve(path, filePath)
 }
 
