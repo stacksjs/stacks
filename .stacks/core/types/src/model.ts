@@ -36,7 +36,6 @@ export interface Model {
 
 export interface Fields {
   [key: string]: {
-    type: string
     default?: boolean
     unique?: boolean
     required?: boolean

@@ -21,7 +21,7 @@ async function fresh(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      outro('Freshly reinstalled your dependencies.', { startTime: perf, useSeconds: true })
+      outro('Freshly reinstalled your dependencies', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

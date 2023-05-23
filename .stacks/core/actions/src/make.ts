@@ -310,7 +310,7 @@ export default <Model> {
     name: {
       type: 'String',
       validation: validate.string().min(3).max(255),
-      factory: () => faker.name,
+      factory: () => faker.person,
     },
     // more fields here
   },

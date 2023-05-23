@@ -206,9 +206,10 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
 }
 
 
-export const filesystem = {
+export const storage = {
   _dirname,
   readJsonFile,
+  readPackageJson,
   writeJsonFile,
   readTextFile,
   writeTextFile,
@@ -223,8 +224,5 @@ export const filesystem = {
   deleteEmptyFolders,
   doesFolderExist,
   updateConfigFile,
-  fs, // potentially refactor to `...fs` but, currently, there is an issues when building @stacksjs/config
-  // the problem is relating to https://github.com/microsoft/TypeScript/issues/5711#issuecomment-157793294
+  fs,
 }
-
-export default filesystem

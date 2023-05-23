@@ -1,10 +1,6 @@
 import { faker } from 'stacks/core/faker/src'
-
-// stacks/faker or @stacksjs/faker
-import { Type, validate } from 'stacks/core/validation/src'
-
-// stacks/validate or @stacksjs/validate
-import type { Model } from 'stacks/core/types/src' // stacks/types or @stacksjs/types
+import { validate } from 'stacks/core/validation/src'
+import type { Model } from 'stacks/core/types/src'
 
 export default <Model> {
   name: 'User',
@@ -16,18 +12,15 @@ export default <Model> {
   },
   fields: {
     name: {
-      type: Type.String,
       validation: validate.string().min(3).max(255),
-      factory: () => faker.name.firstName(),
+      factory: () => faker.person.firstName(),
     },
     email: {
-      type: Type.String,
       validation: validate.string().min(1).max(255),
       unique: true,
       factory: () => faker.internet.email(),
     },
     password: {
-      type: Type.String,
       validation: validate.string().min(6).max(255),
       factory: () => faker.internet.password(),
     },

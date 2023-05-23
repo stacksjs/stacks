@@ -2,9 +2,10 @@ import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/t
 import detectIndent from 'detect-indent'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { log, runCommand, spawn } from '@stacksjs/cli'
-import storage from '@stacksjs/storage'
+import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
+import { storage } from '@stacksjs/storage'
+import { semver } from './versions'
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
@@ -17,8 +18,29 @@ export async function isProjectCreated() {
   return await isAppKeySet()
 }
 
+export async function installIfVersionMismatch() {
+  const dependenciesYaml = storage.fs.readFileSync(projectPath('tea.yaml'), 'utf8')
+  const dependencies = parseYaml(dependenciesYaml).dependencies
+
+  const requiredNodeVersion = dependencies['nodejs.org']
+  const requiredPnpmVersion = dependencies['pnpm.io']
+
+  const installedNodeVersion = process.version
+  const installedPnpmVersion = execSync('pnpm -v').trim()
+
+  if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
+    log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). One moment...`)
+    await runCommand(`tea +nodejs.org${requiredNodeVersion} >/dev/null 2>&1`)
+  }
+
+  if (!semver.satisfies(installedPnpmVersion, requiredPnpmVersion)) {
+    log.error(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). One moment...`)
+    await runCommand(`tea +pnpm.io${requiredPnpmVersion} >/dev/null 2>&1`)
+  }
+}
+
 export async function frameworkVersion(): Promise<string> {
-  const packageJson = await storage.fs.readJson(frameworkPath('package.json'))
+  const packageJson = await storage.readPackageJson(frameworkPath('package.json'))
   return packageJson.version
 }
 

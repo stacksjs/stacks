@@ -2,7 +2,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { del } from '@stacksjs/utils'
 
-log.info('Running clean command...', projectPath())
+log.info('Running clean command...')
 
 await del([
   projectPath('pnpm-lock.yaml'),

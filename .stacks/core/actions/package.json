@@ -77,10 +77,6 @@
       "types": "./dist/generate/lib-entries.d.ts",
       "import": "./dist/generate/lib-entries.mjs"
     },
-    "./generate/package-jsons": {
-      "types": "./dist/generate/package-jsons.d.ts",
-      "import": "./dist/generate/package-jsons.mjs"
-    },
     "./generate/settings": {
       "types": "./dist/generate/settings.d.ts",
       "import": "./dist/generate/settings.mjs"
