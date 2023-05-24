@@ -1,4 +1,4 @@
-import storage from '@stacksjs/storage'
+import { storage } from '@stacksjs/storage'
 import { italic, log, runCommand, runCommands } from '@stacksjs/cli'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { ActionOptions, CommandResult } from '@stacksjs/types'

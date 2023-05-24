@@ -1,21 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import { bold, dim, green, intro } from '@stacksjs/cli'
-import { filesystem } from '@stacksjs/storage'
 import { log } from '@stacksjs/logging'
-import { frameworkPath } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 
 async function version(buddy: CLI) {
-  // maybe use type-fest?
-  interface PackageJson {
-    engines: {
-      node: string
-      pnpm: string
-    }
-    version: string
-  }
-
-  const { fs } = filesystem
-
   const descriptions = {
     version: 'Retrieving Stacks build version',
   }
@@ -25,15 +13,15 @@ async function version(buddy: CLI) {
     .action(async () => {
       await intro('buddy version')
 
-      const depVersions = JSON.parse(fs.readFileSync('./package.json', 'utf8')) as PackageJson
-      const nodeVersion = depVersions.engines.node.replace('>=v', '')
-      const pnpmVersion = depVersions.engines.pnpm.replace('>=', '')
-      const stacksVersion = JSON.parse(fs.readFileSync(frameworkPath('/package.json'), 'utf8')) as PackageJson
+      const pkg = await storage.readPackageJson('./package.json')
+      const nodeVersion = pkg.engines.node.replace('>=v', '')
+      const pnpmVersion = pkg.engines.pnpm.replace('>=', '')
+      const stacksVersion = pkg.version
 
-      log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion.version}`))
+      log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion}`))
       log.info(green(bold('node: ')) + dim(`   ${nodeVersion}`))
       log.info(green(bold('pnpm: ')) + dim(`   ${pnpmVersion}`))
-    // redis (or other cache/s), mysql (or other database/s),
+      // redis (or other cache/s), mysql (or other database/s),
     })
 }
 

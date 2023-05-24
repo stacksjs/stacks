@@ -3,7 +3,7 @@ import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { ResultAsync } from '@stacksjs/error-handling'
 
-// @ts-expect-error
+// @ts-expect-error check if types are available
 import * as Maizzle from '@maizzle/framework'
 import * as maizzleConfig from '../utils/config'
 import { config } from '../tailwind.config'

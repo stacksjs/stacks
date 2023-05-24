@@ -20,6 +20,11 @@ export interface JsonFile {
  * Describes a package.json file.
  */
 export interface PackageJson {
+  engines: {
+    node: string
+    pnpm: string
+  }
+  version: string
   packageManager: string
   // wip
 }

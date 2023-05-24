@@ -40,8 +40,7 @@ export async function installIfVersionMismatch() {
 }
 
 export async function frameworkVersion(): Promise<string> {
-  const packageJson = await storage.readPackageJson(frameworkPath('package.json'))
-  return packageJson.version
+  return (await storage.readPackageJson(frameworkPath('package.json'))).version
 }
 
 export async function isAppKeySet() {
@@ -49,10 +48,7 @@ export async function isAppKeySet() {
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
-  if (appKey && appKey.length > 16)
-    return true
-
-  return false
+  return !!(appKey && appKey.length > 16)
 }
 
 /**

@@ -1,9 +1,9 @@
-// import { filesystem } from '@stacksjs/storage'
+// import { storage } from '@stacksjs/storage'
 // import { frameworkPath, projectPath } from '@stacksjs/path'
 // import type { Model, SchemaOptions } from '@stacksjs/types'
 // import { titleCase } from '@stacksjs/strings'
 
-// const { fs } = filesystem
+// const { fs } = storage
 
 // function generatePrismaSchema(models: Model[], path: string, options: SchemaOptions): void {
 //   let schema = `datasource db {

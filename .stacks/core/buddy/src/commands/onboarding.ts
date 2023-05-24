@@ -1,6 +1,6 @@
 import type { CLI } from '@stacksjs/types'
 
-async function onboarding(buddy: CLI) {
+export async function onboarding(buddy: CLI) {
   // const descriptions = {
   //   command: 'Generate Onboarding Pages',
   //   verbose: 'Enable verbose output',
@@ -20,5 +20,3 @@ async function onboarding(buddy: CLI) {
   //     outro('Pages generated successfully', { startTime })
   //   })
 }
-
-export { onboarding }

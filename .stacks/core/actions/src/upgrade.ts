@@ -1,5 +1,5 @@
 import { intro, log, outro, prompt, runCommand, spawn } from '@stacksjs/cli'
-import storage from '@stacksjs/storage'
+import { storage } from '@stacksjs/storage'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import type { UpgradeOptions } from '@stacksjs/types'

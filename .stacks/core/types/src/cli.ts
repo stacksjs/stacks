@@ -260,12 +260,12 @@ export const enum NpmScript {
 }
 
 export const enum Action {
-  Bump = 'bump', // wip - changelog action
-  BuildStacks = 'build/stacks',
-  BuildComponentLibs = 'build-component-libs',
-  BuildVueComponentLib = 'build-vue-component-lib',
-  BuildWebComponentLib = 'build-web-component-lib',
-  BuildCli = 'build-cli',
+  Bump = 'bump', // wip
+  BuildStacks = 'build/stacks', // wip
+  BuildComponentLibs = 'build-component-libs', // wip
+  BuildVueComponentLib = 'build-vue-component-lib', // wip
+  BuildWebComponentLib = 'build-web-component-lib', // wip
+  BuildCli = 'build-cli', // wip
   BuildCore = 'build/core', // wip
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
