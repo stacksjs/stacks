@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 
-const result = await runActions([
+await runActions([
   Action.GenerateLibraryEntries, // generates the package/library entry points
   Action.LintFix, // ensure there are no lint errors
   // Action.Test, // run the tests

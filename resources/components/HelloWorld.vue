@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // which properties does your component accept?
 const { greeting = 'Welcome!' } = defineProps<{
-  greeting: string
   showButtons: boolean
 }>()
 

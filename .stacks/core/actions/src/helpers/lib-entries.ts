@@ -1,6 +1,5 @@
 import { log } from '@stacksjs/logging'
-
-// import { kebabCase } from '@stacksjs/strings'
+import { kebabCase } from '@stacksjs/strings'
 import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
@@ -25,7 +24,7 @@ export async function generateLibEntry(type: LibEntryType) {
       await createFunctionLibraryEntryPoint()
   }
   catch (err) {
-    log.error('There was an error generating the library entry point.', err)
+    log.error('There was an error generating the library entry point', err)
     process.exit()
   }
 }
@@ -38,7 +37,7 @@ export async function createVueLibraryEntryPoint() {
     data: generateEntryPointData('vue-components'),
   })
 
-  log.success('Created the Vue component library entry point.')
+  log.success('Created the Vue component library entry point')
 }
 
 export async function createWebComponentLibraryEntryPoint() {
@@ -49,7 +48,7 @@ export async function createWebComponentLibraryEntryPoint() {
     data: generateEntryPointData('web-components'),
   })
 
-  log.success('Created Web Component library entry point.')
+  log.success('Created Web Component library entry point')
 }
 
 export async function createFunctionLibraryEntryPoint() {
@@ -60,7 +59,7 @@ export async function createFunctionLibraryEntryPoint() {
     data: generateEntryPointData('functions'),
   })
 
-  log.success('Created Functions library entry point.')
+  log.success('Created Functions library entry point')
 }
 
 export function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
@@ -74,9 +73,9 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
     for (const fx of library.functions?.functions) {
       if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '../../../functions/${fx[0]}'`)
+        arr.push(`export * as ${fx[1]} from '../../../resources/functions/${fx[0]}'`)
       else
-        arr.push(`export * from '../../../functions/${fx}'`)
+        arr.push(`export * from '../../../resources/functions/${fx}'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -93,9 +92,9 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
     for (const component of library.vueComponents?.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '../../../components/${component[0]}.vue'`)
+        arr.push(`export { default as ${component[1]} } from '../../../resources/components/${component[0]}.vue'`)
       else
-        arr.push(`export { default as ${component} } from '../../../components/${component}.vue'`)
+        arr.push(`export { default as ${component} } from '../../../resources/components/${component}.vue'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -115,12 +114,12 @@ export function generateEntryPointData(type: 'vue-components' | 'web-components'
 
   for (const component of library.webComponents?.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '../../../components/${component[0]}.vue'`)
+      imports.push(`import ${component[1]} from '../../../resources/components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
     }
     else {
-      imports.push(`import ${component} from '../../../components/${component}.vue'`)
+      imports.push(`import ${component} from '../../../resources/components/${component}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }

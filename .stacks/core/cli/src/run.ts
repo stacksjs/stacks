@@ -75,7 +75,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
     }
     else if (result.isErr()) {
       if (spinner) {
-        log.error(new Error('Failed to run command'))
+        log.error(new Error(`Failed to run command ${italic(command)}`, result.mapErr(e => e)))
         process.exit(ExitCode.FatalError)
       }
 
