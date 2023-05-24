@@ -46,7 +46,7 @@ export function execSync(command: string) {
  * @returns The result of the command.
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<CommandReturnValue, Error>> {
-  return await exec(command, options)
+  return exec(command, options)
 }
 
 /**

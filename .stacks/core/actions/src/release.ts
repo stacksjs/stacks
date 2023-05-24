@@ -5,8 +5,8 @@ import { Action } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 
-await runActions([
-  Action.GeneratePackageJsons, // generates the package/library entry points
+const result = await runActions([
+  Action.GenerateLibraryEntries, // generates the package/library entry points
   Action.LintFix, // ensure there are no lint errors
   // Action.Test, // run the tests
   Action.Bump, // bump the versions, create the git tag, generate the changelog, commit & push the changes

@@ -103,7 +103,7 @@ export function collectionsPath(path?: string) {
 }
 
 export function componentsPath(path?: string) {
-  return projectPath(`components/${path || ''}`)
+  return resourcesPath(`components/${path || ''}`)
 }
 
 export function configPath(path?: string) {
@@ -179,7 +179,7 @@ export function storagePath(path?: string) {
 }
 
 export function functionsPath(path?: string) {
-  return projectPath(`functions/${path || ''}`)
+  return resourcesPath(`functions/${path || ''}`)
 }
 
 export function gitPath(path?: string) {
@@ -187,7 +187,7 @@ export function gitPath(path?: string) {
 }
 
 export function langPath(path?: string) {
-  return projectPath(`lang/${path || ''}`)
+  return resourcesPath(`lang/${path || ''}`)
 }
 
 export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'functions') {
@@ -244,7 +244,7 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 }
 
 export function pagesPath(path?: string) {
-  return appPath(`pages/${path || ''}`)
+  return resourcesPath(`pages/${path || ''}`)
 }
 
 export function pathPath(path?: string) {
@@ -303,6 +303,14 @@ export function schedulerPath(path?: string) {
 
 export function signalsPath(path?: string) {
   return corePath(`signals/${path || ''}`)
+}
+
+export function storesPath(path?: string) {
+  return resourcesPath(`stores/${path || ''}`)
+}
+
+export function resourcesPath(path?: string) {
+  return projectPath(`resources/${path || ''}`)
 }
 
 export function routesPath(path?: string) {
@@ -415,6 +423,7 @@ const path = {
   queryBuilderPath,
   queuePath,
   realtimePath,
+  resourcesPath,
   routerPath,
   routesPath,
   searchEnginePath,
@@ -428,6 +437,7 @@ const path = {
   serverlessPath,
   stacksPath,
   stringsPath,
+  storesPath,
   tablesPath,
   testingPath,
   testsPath,
