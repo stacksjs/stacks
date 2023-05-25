@@ -1,26 +1,27 @@
-// triggered via `stx inspire`
-// import { ExitCode } from 'stacks/core/types/src'
-// import { defineCommand, intro, outro } from 'stacks/core/cli/src'
+// triggered via `your-cli inspire`
 //
 // export default defineCommand({
 //   name: 'inspire',
 //   description: 'Inspire yourself with a random quote',
-//   options: [ // or ['--two', 'Show two quotes', { default: false }]
+//   options: [ // or ['--two, -t', 'Show two quotes', { default: false }]
 //     {
-//       name: '--two',
+//       name: '--two, -t',
 //       description: 'Show two quotes',
 //       default: false,
 //     },
 //   ],
-//   action: async () => {
-//     const perf = await intro('buddy inspire')
+//   action: async (options: CliOptions) => {
+//     const startTime = await intro('buddy inspire', options)
+//     const result = runAction(Action.Inspire)
 //
 //     if (result.isErr()) {
-//       outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-//       process.exit()
+//       outro('While running the inspire command, there was an issue', { startTime }, result.error)
+//       process.exit(ExitCode.FatalError)
 //     }
 //
-//     outro('Your quote is: ...', { startTime: perf, useSeconds: true })
+//     const quote = result.value
+//
+//     outro(`Your custom quote is ${quote}`, { startTime })
 //     process.exit(ExitCode.Success)
 //   },
 // })

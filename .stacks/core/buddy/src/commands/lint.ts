@@ -15,15 +15,15 @@ async function lint(buddy: CLI) {
     .option('-f, --fix', descriptions.lintFix, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
-      const perf = await intro('buddy lint')
+      const startTime = await intro('buddy lint')
       const result = await runAction(Action.Lint, { ...options, showSpinner: true, spinnerText: 'Linting...' })
-
+      // console.log('res', result)
       if (result.isErr()) {
-        outro('While running `buddy lint`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Linted your project', { startTime: perf, useSeconds: true })
+      outro('Linted your project', { startTime, useSeconds: true })
     })
 
   buddy

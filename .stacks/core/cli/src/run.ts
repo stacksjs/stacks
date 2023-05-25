@@ -62,7 +62,7 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
 
   if (!numberOfCommands) {
     log.error(new Error('No commands were specified'))
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   const spinner = determineSpinner(options)
@@ -70,16 +70,18 @@ export async function runCommands(commands: string[], options?: CliOptions): Pro
   for (const command of commands) {
     const result = await runCommand(command, options)
 
+    // console.log('result', result)
+
     if (result.isOk()) {
       results.push(result)
     }
     else if (result.isErr()) {
-      if (spinner) {
+      if (spinner)
         log.error(new Error(`Failed to run command ${italic(command)}`))
-        process.exit(ExitCode.FatalError)
-      }
 
-      results.push(result)
+      process.exit(ExitCode.FatalError)
+
+      // results.push(result)
       break
     }
   }

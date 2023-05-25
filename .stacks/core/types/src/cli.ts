@@ -227,8 +227,9 @@ export const enum NpmScript {
   DevPages = 'dev:pages',
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
-  Lint = 'eslint . ; npx publint',
+  Lint = 'eslint .',
   LintFix = 'eslint . --fix',
+  LintPackageJson = 'npx publint',
   MakeStack = 'make:stack',
   Test = 'vitest --config vitest.config.ts',
   TestUnit = 'vitest --config vitest.config.ts',
@@ -282,9 +283,9 @@ export const enum Action {
   Migrate = 'migrate', // wip
   Seed = 'seed', // wip
   Lint = 'lint/index', // wip
-  LintFix = 'lint/fix', // ✅
+  LintFix = 'lint/fix', // wip
   Prepublish = 'prepublish', // wip
-  Release = 'release', // wip
+  Release = 'release', // ✅
   ShowFeatureTestReport = 'show-feature-test-report', // wip
   Test = 'test', // wip
   TestUi = 'test-ui', // wip
