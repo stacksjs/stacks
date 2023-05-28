@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { runAction } from '@stacksjs/actions'
+import { errorHandler } from '@stacksjs/error-handling'
 import { command, log } from '@stacksjs/cli'
 import { env, frameworkVersion, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
@@ -20,20 +21,15 @@ async function main() {
 
   // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
-    if (env('APP_ENV') !== 'production') {
+    if (env('APP_ENV') !== 'production')
       log.info('Project not yet initialized, generating application key...')
-    }
-    else {
-      log.error('Please run `buddy key:generate` to generate an application key.')
-      process.exit()
-    }
+    else
+      errorHandler('Please run `buddy key:generate` to generate an application key')
 
     const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
-    if (result.isErr()) {
-      log.error(result.error)
-      process.exit()
-    }
+    if (result.isErr())
+      errorHandler(result)
 
     log.info('Application key generated.')
 
@@ -66,8 +62,3 @@ async function main() {
 }
 
 main()
-
-function errorHandler(error: Error): void {
-  log.error(error)
-  process.exit(1)
-}
