@@ -2,7 +2,7 @@
   "name": "@stacksjs/notifications",
   "type": "module",
   "version": "0.53.1",
-  "packageManager": "pnpm@8.5.1",
+  "packageManager": "pnpm@8.6.0",
   "description": "The Stacks notifications integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -62,7 +62,7 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.4.4"
+    "@maizzle/framework": "^4.4.5"
   },
   "optionalDependencies": {
     "@novu/discord": "^0.15.0",
