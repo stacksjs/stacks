@@ -478,13 +478,13 @@ importers:
         version: 0.15.1(vite@4.3.9)(workbox-build@6.6.0)(workbox-window@6.6.0)
       vite-plugin-vue-layouts:
         specifier: ^0.8.0
-        version: 0.8.0(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4)
+        version: 0.8.0(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4)
       vite-plugin-vue-markdown:
         specifier: ^0.23.5
         version: 0.23.5(rollup@2.79.1)(vite@4.3.9)
       vite-ssg:
         specifier: ^0.22.2
-        version: 0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4)
+        version: 0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4)
       vite-ssg-sitemap:
         specifier: ^0.5.1
         version: 0.5.1
@@ -1184,8 +1184,8 @@ importers:
   .stacks/core/router:
     dependencies:
       vue-router:
-        specifier: ^4.2.1
-        version: 4.2.1(vue@3.3.4)
+        specifier: ^4.2.2
+        version: 4.2.2(vue@3.3.4)
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1216,8 +1216,8 @@ importers:
         specifier: workspace:*
         version: link:../ui
       meilisearch:
-        specifier: ^0.32.4
-        version: 0.32.4
+        specifier: ^0.32.5
+        version: 0.32.5
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1505,8 +1505,8 @@ importers:
         specifier: ^13.0.1
         version: 13.0.1
       meilisearch:
-        specifier: ^0.32.4
-        version: 0.32.4
+        specifier: ^0.32.5
+        version: 0.32.5
       neverthrow:
         specifier: ^6.0.0
         version: 6.0.0
@@ -1533,10 +1533,10 @@ importers:
         version: 0.15.1(vite@4.3.9)(workbox-build@6.6.0)(workbox-window@6.6.0)
       vite-plugin-vue-layouts:
         specifier: ^0.8.0
-        version: 0.8.0(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4)
+        version: 0.8.0(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4)
       vite-ssg:
         specifier: ^0.22.2
-        version: 0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4)
+        version: 0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4)
       vitepress:
         specifier: 1.0.0-beta.1
         version: 1.0.0-beta.1(@algolia/client-search@4.17.1)(@types/node@18.16.16)
@@ -1736,8 +1736,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       meilisearch:
-        specifier: ^0.32.4
-        version: 0.32.4
+        specifier: ^0.32.5
+        version: 0.32.5
       vite:
         specifier: ^4.3.9
         version: 4.3.9(@types/node@18.16.16)
@@ -6976,10 +6976,6 @@ packages:
     resolution: {integrity: sha512-NpaM49IGQQAUlBhHMF82QH80J08os4ZmyF9MkpCzWAGuOHqE4gTEbhzd7L3l5LmWuZ6E0OiC1FweQ4tsiW35+g==}
     dev: false
 
-  /@types/node@20.2.5:
-    resolution: {integrity: sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==}
-    dev: false
-
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
     dev: false
@@ -6999,7 +6995,7 @@ packages:
   /@types/resolve@1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 20.2.5
+      '@types/node': 18.16.16
     dev: false
 
   /@types/resolve@1.20.2:
@@ -12654,7 +12650,7 @@ packages:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.2.5
+      '@types/node': 18.16.16
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: false
@@ -13541,8 +13537,8 @@ packages:
   /mdurl@1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
 
-  /meilisearch@0.32.4:
-    resolution: {integrity: sha512-QvPtQ6F2TaqAT9fw072/MDjSCMpQifdtUBFeIk3M5jSnFpeSiv1iwfJWNfP6ByaCgR/s++K1Cqtf9vjcZe7prg==}
+  /meilisearch@0.32.5:
+    resolution: {integrity: sha512-pVccjGAGP1IDSLg3lx9VhyQjUo7kN8x/HVjSurtb8U24V5/pALpf5H2hj6f60QhJd0Ea4tnGRv8fGr2YqWMo9A==}
     dependencies:
       cross-fetch: 3.1.6
     transitivePeerDependencies:
@@ -18309,7 +18305,7 @@ packages:
       - supports-color
     dev: false
 
-  /vite-plugin-vue-layouts@0.8.0(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4):
+  /vite-plugin-vue-layouts@0.8.0(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4):
     resolution: {integrity: sha512-UZW2nSV2LraTSe7gsAL46hfdi7a0X1RvkGGoJVtA2O8beu7anzpXFwQLou8+kHy31CzVycT4gIPySBsHhtBN5g==}
     peerDependencies:
       vite: ^2.5.0 || ^3.0.0-0 || ^4.0.0
@@ -18321,7 +18317,7 @@ packages:
       fast-glob: 3.2.12
       vite: 4.3.9(@types/node@18.16.16)
       vue: 3.3.4
-      vue-router: 4.2.1(vue@3.3.4)
+      vue-router: 4.2.2(vue@3.3.4)
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -18347,7 +18343,7 @@ packages:
     resolution: {integrity: sha512-X3ZImSVpFMypBTIhaTqEOdKj7tO9n7Puzd8vsxuQluFUyu6x/e2Dzv8qk5qZsC34ZR6iHt0wa2sPhDu1OjdOsA==}
     dev: false
 
-  /vite-ssg@0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.1)(vue@3.3.4):
+  /vite-ssg@0.22.2(@vueuse/head@1.1.26)(vite@4.3.9)(vue-router@4.2.2)(vue@3.3.4):
     resolution: {integrity: sha512-eSlp/WiT7dkpZ6TIkZuALUcOnCJlVfqj38OdpFVZHtHFcwCH9b95edu5Hgti5WnGrq33iVfGOK67zWpt9ClroA==}
     engines: {node: '>=14.0.0'}
     hasBin: true
@@ -18373,7 +18369,7 @@ packages:
       prettier: 2.8.8
       vite: 4.3.9(@types/node@18.16.16)
       vue: 3.3.4
-      vue-router: 4.2.1(vue@3.3.4)
+      vue-router: 4.2.2(vue@3.3.4)
       yargs: 17.7.2
     transitivePeerDependencies:
       - bufferutil
@@ -18688,8 +18684,8 @@ packages:
       - debug
     dev: false
 
-  /vue-router@4.2.1(vue@3.3.4):
-    resolution: {integrity: sha512-nW28EeifEp8Abc5AfmAShy5ZKGsGzjcnZ3L1yc2DYUo+MqbBClrRP9yda3dIekM4I50/KnEwo1wkBLf7kHH5Cw==}
+  /vue-router@4.2.2(vue@3.3.4):
+    resolution: {integrity: sha512-cChBPPmAflgBGmy3tBsjeoe3f3VOSG6naKyY5pjtrqLGbNEXdzCigFUHgBvp9e3ysAtFtEx7OLqcSDh/1Cq2TQ==}
     peerDependencies:
       vue: ^3.2.0
     dependencies:

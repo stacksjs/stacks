@@ -63,7 +63,7 @@
     "cac": "^6.7.14",
     "execa": "^7.1.1",
     "markdown-it": "^13.0.1",
-    "meilisearch": "^0.32.4",
+    "meilisearch": "^0.32.5",
     "neverthrow": "^6.0.0",
     "ora": "^6.3.1",
     "unocss": "^0.52.4",

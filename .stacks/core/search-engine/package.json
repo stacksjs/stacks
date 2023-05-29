@@ -51,7 +51,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "meilisearch": "^0.32.4"
+    "meilisearch": "^0.32.5"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
