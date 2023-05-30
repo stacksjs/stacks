@@ -11,10 +11,11 @@ function parseOptions(options?: ActionOptions) {
   const parsedOptions = Object.entries(options).map(([key, value]) => {
     if (key.length === 1)
       return `-${key}=${value}`
+
     if (typeof value === 'boolean' && value) // if the value is a boolean and true, just return the key
       return `--${key}`
-    else
-      return `--${key}=${value}`
+
+    return `--${key}=${value}`
   })
 
   // filter out undefined values and join the array

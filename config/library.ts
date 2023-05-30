@@ -49,7 +49,6 @@ export default defineLibrary({
     name: 'hello-world-fx',
     description: 'Your function library description.',
     keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
-    shouldBuildIife: false,
     shouldGenerateSourcemap: false,
     functions: [
       'counter',

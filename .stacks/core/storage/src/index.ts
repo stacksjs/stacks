@@ -205,6 +205,7 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
   })
 }
 
+export { fs }
 
 export const storage = {
   _dirname,

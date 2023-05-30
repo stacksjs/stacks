@@ -8,6 +8,10 @@ export default defineBuildConfig({
   ],
   declaration: true,
   clean: true,
+  externals: [
+    '@stacksjs/storage',
+    '@stacksjs/logging',
+  ],
   rollup: {
     inlineDependencies: true,
   },

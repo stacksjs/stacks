@@ -100,7 +100,7 @@ const alias: Record<string, string> = {
   'framework/*': p.frameworkPath('*'),
   'stacks': p.frameworkPath('src/index.ts'),
   'app/*': p.appPath('*'),
-  'config/*': p.userConfigPath('*'),
+  'config/*': p.projectConfigPath('*'),
   'components/*': p.componentsPath('*'),
   'functions/*': p.functionsPath('*'),
   'pages/*': p.pagesPath('*'),

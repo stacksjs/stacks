@@ -92,13 +92,6 @@ export interface LibraryBuildOptions {
   keywords: string[]
 
   /**
-   * Should your library include an IIFE build?
-   * (Immediately Invoked Function Expression)
-   * @default false
-   */
-  shouldBuildIife?: boolean
-
-  /**
    * Should your library generate a sourcemap?
    * @default false
    */

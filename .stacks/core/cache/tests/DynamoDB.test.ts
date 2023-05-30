@@ -1,4 +1,3 @@
-import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import { describe, expect, it } from 'vitest'
 
@@ -62,22 +61,23 @@ async function createTable() {
 
 // TODO: needs to be imported to cache package
 async function set(key: string, value: string | number): Promise<void> {
-  const valueAttribute = 'value'
-  const keyAttribute = 'key'
-
-  const params: PutItemCommandInput = {
-    TableName: 'cache',
-    Item: {
-      [keyAttribute]: {
-        S: key,
-      },
-      [valueAttribute]: {
-        [getValueType(value)]: serialize(value),
-      },
-    },
-  }
-
-  await dynamodb.putItem(params)
+  return Promise.resolve()
+  // const valueAttribute = 'value'
+  // const keyAttribute = 'key'
+  //
+  // const params: PutItemCommandInput = {
+  //   TableName: 'cache',
+  //   Item: {
+  //     [keyAttribute]: {
+  //       S: key,
+  //     },
+  //     [valueAttribute]: {
+  //       [getValueType(value)]: serialize(value),
+  //     },
+  //   },
+  // }
+  //
+  // await dynamodb.putItem(params)
 }
 
 // TODO: needs to be imported to cache package
@@ -100,17 +100,6 @@ async function get(key: string): Promise<string | undefined | null> {
     return null
 
   return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
-}
-
-// TODO: needs to be imported to cache package
-function getValueType(value: string | number) {
-  if (typeof value === 'string')
-    return 'S'
-
-  if (typeof value === 'number')
-    return 'N'
-
-  return 'S'
 }
 
 // TODO: needs to be imported to cache package
@@ -142,8 +131,3 @@ async function remove(key: string): Promise<void> {
 
 //   await dynamodb.deleteItem(params)
 // }
-
-// TODO: needs to be imported to cache package
-function serialize(value: string | number) {
-  return String(value)
-}

@@ -40,10 +40,10 @@ export async function generate(options: GeneratorOptions) {
 }
 
 export async function libEntries(options: GeneratorOptions) {
-  const result = await runAction(Action.GeneratePackageJsons, { ...options, verbose: true, cwd: projectPath() })
+  const result = await runAction(Action.GenerateLibraryEntries, { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
-    log.error('There was an error generating your library entry points.', result.error)
+    log.error('There was an error generating your library entry points', result.error)
     process.exit()
   }
 

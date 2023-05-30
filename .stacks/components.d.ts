@@ -9,13 +9,13 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    Counter: typeof import('./../components/Buttons/Counter.vue')['default']
-    Demo: typeof import('./../components/Demo.vue')['default']
-    HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
-    Logo: typeof import('./../components/Logo.vue')['default']
-    README: typeof import('./../components/README.md')['default']
+    Counter: typeof import('./../resources/components/Buttons/Counter.vue')['default']
+    Demo: typeof import('./../resources/components/Demo.vue')['default']
+    HelloWorld: typeof import('./../resources/components/HelloWorld.vue')['default']
+    Logo: typeof import('./../resources/components/Logo.vue')['default']
+    README: typeof import('./../resources/components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    ToggleDark: typeof import('./../components/Buttons/ToggleDark.vue')['default']
+    ToggleDark: typeof import('./../resources/components/Buttons/ToggleDark.vue')['default']
   }
 }

@@ -49,7 +49,7 @@ export default defineConfig({
       ],
       dts: '../../../auto-imports.d.ts',
       dirs: [
-        '../../../../functions',
+        projectPath('functions'),
         '../../../../app/stores',
       ],
       vueTemplate: true,

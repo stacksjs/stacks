@@ -1,6 +1,6 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
-import { intro, outro, prompt } from '@stacksjs/cli'
+import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
 async function build(buddy: CLI) {
@@ -111,7 +111,7 @@ async function build(buddy: CLI) {
       const result = await runAction(Action.BuildCore, options)
 
       if (result.isErr()) {
-        log.error('Failed to build the Stacks core.', result.error as Error)
+        log.error('Failed to build the Stacks core.', result.error)
         process.exit()
       }
 

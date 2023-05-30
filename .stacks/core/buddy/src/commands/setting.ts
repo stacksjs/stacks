@@ -15,7 +15,7 @@ async function setting(buddy: CLI) {
       // const result = await runAction(Action.GenerateSettings)
       //
       // if (result.isErr()) {
-      //   log.error('Something went wrong when generating', result.error as Error)
+      //   log.error('Something went wrong when generating')
       //   process.exit()
       // }
       //

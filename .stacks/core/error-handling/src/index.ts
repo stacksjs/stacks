@@ -1,6 +1,6 @@
 import { fs } from '@stacksjs/storage'
 import { log } from '@stacksjs/logging'
-import { ExitCode } from 'stacks/core/types'
+import { logsPath } from '@stacksjs/path'
 
 export {
   Err,
@@ -17,25 +17,23 @@ export {
 } from 'neverthrow'
 
 class ErrorHandler {
-  static logFile = path.join(__dirname, './storage/logs/errors.log')
+  static logFile = logsPath('errors.log')
 
-  static handleError(err: Error) {
-    log.error(error)
-    process.exit(ExitCode.FatalError)
-
-    console.error(err)
-    this.writeErrorToFile(err)
+  static handleError(err: Error, options?: any) {
+    // todo: options is currently not used
+    log.error(err, options)
+    this.writeErrorToFile(err, options)
   }
 
-  static writeErrorToFile(err: Error) {
+  static writeErrorToFile(err: Error, options?: any) {
     const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-    fs.appendFile(this.logFile, formattedError, (err) => {
+    fs.appendFile(this.logFile, formattedError, (err: any) => {
       if (err)
-        console.error('Failed to write error to log file')
+        log.error('Failed to write error to log file', options)
     })
   }
 }
 
-export function errorHandler(error: Error | string, options?: any): void {
-  (new ErrorHandler()).handleError(error)
+export function errorHandler(err: Error, options?: any): void {
+  ErrorHandler.handleError(err, options)
 }

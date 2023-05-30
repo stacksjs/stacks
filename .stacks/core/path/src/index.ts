@@ -1,6 +1,24 @@
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
+ * Returns the path to the `actions` directory. The actions directory
+ * contains the core Stacks' actions. An action
+ *
+ * @param path - relative path to the file or directory
+ * @returns string - absolute path to the file or directory
+ * @example
+ * ```ts
+ * import { buildPath } from '@stacks/paths'
+ *
+ * buildPath('functions.vue')
+ * buildPath('any-path.ts')
+ * ```
+ */
+export function actionsPath(path?: string) {
+  return corePath(`actions/src/${path || ''}`)
+}
+
+/**
  * Returns the path to the `ai` directory. The AI directory
  * contains the core Stacks' AI logic which currently
  * is a wrapper of the OpenAI API.
@@ -18,24 +36,6 @@ import { basename, delimiter, dirname, extname, format, isAbsolute, join, normal
  */
 export function aiPath(path?: string) {
   return corePath(`ai/${path || ''}`)
-}
-
-/**
- * Returns the path to the `actions` directory. The actions directory
- * contains the core Stacks' actions. An action
- *
- * @param path - relative path to the file or directory
- * @returns string - absolute path to the file or directory
- * @example
- * ```ts
- * import { buildPath } from '@stacks/paths'
- *
- * buildPath('functions.vue')
- * buildPath('any-path.ts')
- * ```
- */
-export function actionsPath(path?: string) {
-  return corePath(`actions/src/${path || ''}`)
 }
 
 export function aliasPath() {
@@ -110,12 +110,12 @@ export function configPath(path?: string) {
   return corePath(`config/${path || ''}`)
 }
 
-export function userConfigPath(path?: string) {
-  return projectPath(`config/${path || ''}`)
-}
-
 export function corePath(path?: string) {
   return frameworkPath(`core/${path || ''}`)
+}
+
+export function customElementsDataPath() {
+  return frameworkPath('custom-elements.json')
 }
 
 export function dashboardPath(path?: string) {
@@ -124,6 +124,10 @@ export function dashboardPath(path?: string) {
 
 export function databasePath(path?: string) {
   return corePath(`database/${path || ''}`)
+}
+
+export function datetimePath(path?: string) {
+  return corePath(`datetime/${path || ''}`)
 }
 
 export function developmentPath(path?: string) {
@@ -142,10 +146,6 @@ export function domainsPath(path?: string) {
   return corePath(`domains/${path || ''}`)
 }
 
-export function customElementsDataPath() {
-  return frameworkPath('custom-elements.json')
-}
-
 export function emailPath(path?: string) {
   return corePath(`email/${path || ''}`)
 }
@@ -158,24 +158,20 @@ export function eventsPath(path?: string) {
   return corePath(`events/${path || ''}`)
 }
 
-export function fakerPath(path?: string) {
-  return corePath(`faker/${path || ''}`)
-}
-
-export function healthPath(path?: string) {
-  return corePath(`health/${path || ''}`)
-}
-
 export function examplesPath(type: 'vue-components' | 'web-components') {
   return frameworkPath(`examples/${type || ''}`)
+}
+
+export function fakerPath(path?: string) {
+  return corePath(`faker/${path || ''}`)
 }
 
 export function frameworkPath(path?: string) {
   return projectPath(`.stacks/${path || ''}`)
 }
 
-export function storagePath(path?: string) {
-  return corePath(`storage/${path || ''}`)
+export function healthPath(path?: string) {
+  return corePath(`health/${path || ''}`)
 }
 
 export function functionsPath(path?: string) {
@@ -202,8 +198,8 @@ export function loggingPath(path?: string) {
   return corePath(`logging/${path || ''}`)
 }
 
-export function xRayPath(path?: string) {
-  return corePath(`x-ray/${path || ''}`)
+export function logsPath(path?: string) {
+  return projectStoragePath(`logs/${path || ''}`)
 }
 
 export function modelsPath(path?: string) {
@@ -265,6 +261,14 @@ export function projectPath(filePath = '') {
   return resolve(path, filePath)
 }
 
+export function projectConfigPath(path?: string) {
+  return projectPath(`config/${path || ''}`)
+}
+
+export function projectStoragePath(path?: string) {
+  return projectPath(`storage/${path || ''}`)
+}
+
 export function pushPath(path?: string) {
   return corePath(`push/${path || ''}`)
 }
@@ -281,8 +285,16 @@ export function realtimePath(path?: string) {
   return corePath(`realtime/${path || ''}`)
 }
 
+export function resourcesPath(path?: string) {
+  return projectPath(`resources/${path || ''}`)
+}
+
 export function routerPath(path?: string) {
   return corePath(`router/${path || ''}`)
+}
+
+export function routesPath(path?: string) {
+  return projectPath(`routes/${path || ''}`)
 }
 
 export function searchEnginePath(path?: string) {
@@ -293,8 +305,8 @@ export function settingsPath(path?: string) {
   return projectPath(`${path || 'pages/dashboard/settings'}`)
 }
 
-export function smsPath(path?: string) {
-  return corePath(`sms/${path || ''}`)
+export function scriptsPath(path?: string) {
+  return frameworkPath(`scripts/${path || ''}`)
 }
 
 export function schedulerPath(path?: string) {
@@ -305,16 +317,20 @@ export function signalsPath(path?: string) {
   return corePath(`signals/${path || ''}`)
 }
 
+export function slugPath(path?: string) {
+  return corePath(`slug/${path || ''}`)
+}
+
+export function smsPath(path?: string) {
+  return corePath(`sms/${path || ''}`)
+}
+
+export function storagePath(path?: string) {
+  return corePath(`storage/${path || ''}`)
+}
+
 export function storesPath(path?: string) {
   return resourcesPath(`stores/${path || ''}`)
-}
-
-export function resourcesPath(path?: string) {
-  return projectPath(`resources/${path || ''}`)
-}
-
-export function routesPath(path?: string) {
-  return projectPath(`routes/${path || ''}`)
 }
 
 export function securityPath(path?: string) {
@@ -333,8 +349,8 @@ export function stacksPath(path?: string) {
   return frameworkPath(`src/${path || ''}`)
 }
 
-export function tablesPath(path?: string) {
-  return corePath(`tables/${path || ''}`)
+export function stringsPath(path?: string) {
+  return corePath(`strings/${path || ''}`)
 }
 
 export function testingPath(path?: string) {
@@ -349,14 +365,6 @@ export function typesPath(path?: string) {
   return corePath(`types/${path || ''}`)
 }
 
-export function stringsPath(path?: string) {
-  return corePath(`strings/${path || ''}`)
-}
-
-export function scriptsPath(path?: string) {
-  return frameworkPath(`scripts/${path || ''}`)
-}
-
 export function uiPath(path?: string) {
   return corePath(`ui/${path || ''}`)
 }
@@ -367,6 +375,10 @@ export function utilsPath(path?: string) {
 
 export function validationPath(path?: string) {
   return corePath(`validation/${path || ''}`)
+}
+
+export function xRayPath(path?: string) {
+  return corePath(`x-ray/${path || ''}`)
 }
 
 const path = {
@@ -386,10 +398,11 @@ const path = {
   collectionsPath,
   componentsPath,
   configPath,
-  userConfigPath,
+  projectConfigPath,
   corePath,
   customElementsDataPath,
   databasePath,
+  datetimePath,
   developmentPath,
   dashboardPath,
   desktopPath,
@@ -431,6 +444,7 @@ const path = {
   settingsPath,
   smsPath,
   signalsPath,
+  slugPath,
   scriptsPath,
   securityPath,
   serverPath,
@@ -438,7 +452,6 @@ const path = {
   stacksPath,
   stringsPath,
   storesPath,
-  tablesPath,
   testingPath,
   testsPath,
   typesPath,

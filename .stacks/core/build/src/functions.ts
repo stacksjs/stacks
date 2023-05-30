@@ -30,16 +30,13 @@ export function functionsBuildOptions(): ViteBuildOptions {
     lib: {
       entry: buildEntriesPath('functions.ts'),
       name: library.functions?.name,
-      formats: library.functions?.shouldBuildIife ? ['cjs', 'es', 'iife'] : ['cjs', 'es'],
+      formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
           return 'index.mjs'
 
         if (format === 'cjs')
           return 'index.cjs'
-
-        if (format === 'iife')
-          return 'index.iife.js'
 
         return 'index.?.js'
       },

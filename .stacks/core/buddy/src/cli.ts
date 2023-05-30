@@ -24,12 +24,12 @@ async function main() {
     if (env('APP_ENV') !== 'production')
       log.info('Project not yet initialized, generating application key...')
     else
-      errorHandler('Please run `buddy key:generate` to generate an application key')
+      errorHandler(new Error('Please run `buddy key:generate` to generate an application key'))
 
     const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
     if (result.isErr())
-      errorHandler(result)
+      errorHandler(result.error as Error)
 
     log.info('Application key generated.')
 
