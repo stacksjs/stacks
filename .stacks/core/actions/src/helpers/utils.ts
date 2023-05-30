@@ -26,7 +26,7 @@ export type ActionResult = CommandResult
 /**
  * Run an Action the Stacks way.
  *
- * @param command The action to invoke.
+ * @param action The action to invoke.
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
@@ -49,7 +49,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 /**
  * Run Actions the Stacks way.
  *
- * @param command The action to invoke.
+ * @param actions The actions to invoke.
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
@@ -71,8 +71,5 @@ export function hasAction(action: string) {
   if (storage.isFile(functionsPath(`actions/${action}.ts`)))
     return true
 
-  if (storage.isFile(actionsPath(`${action}.ts`)))
-    return true
-
-  return false
+  return storage.isFile(actionsPath(`${action}.ts`))
 }

@@ -10,3 +10,9 @@ node_modules
 updates
 tests/unit/coverage
 dist*
+
+# todo: ensure Buddy auto-removes these ignored files for the developer and these files
+# in which case, they should be version-controlled
+.fleet
+.idea
+.vscode
