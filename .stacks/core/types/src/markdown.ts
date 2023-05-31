@@ -48,14 +48,14 @@ export interface Options {
   vueVersion?: string
 
   /**
-   * Enable head support, need to install @vueuse/head and register to App in main.js
+   * Enable head support, need to install @unhead/vue and register to App in main.js
    *
    * @default false
    */
   headEnabled?: boolean
 
   /**
-   * The head field in frontmatter used to be used for @vueuse/head
+   * The head field in frontmatter used to be used for @unhead/vue
    *
    * When an empty string is passed, it will use the root properties of the frontmatter
    *
@@ -82,7 +82,7 @@ export interface Options {
   /**
    * Remove custom SFC block
    *
-   * @default ['route']
+   * @default ['route', 'i18n']
    */
   customSfcBlocks?: string[]
 
@@ -106,7 +106,10 @@ export interface Options {
    */
   frontmatterPreprocess?: (
     frontmatter: Frontmatter,
-    options: ResolvedOptions
+    options: ResolvedOptions,
+    id: string,
+    defaultHeadProcess: any,
+    // defaultHeadProcess: typeof preprocessHead,
   ) => {
     head: Record<string, any>
     frontmatter: Frontmatter
@@ -159,14 +162,14 @@ export interface Options {
    *
    * @default 'markdown-body'
    */
-  wrapperClasses?: string | string[]
+  wrapperClasses?: string | string[] | undefined | null | ((id: string, code: string) => string | string[] | undefined | null)
 
   /**
    * Component name to wrapper with
    *
    * @default undefined
    */
-  wrapperComponent?: string | undefined | null
+  wrapperComponent?: string | undefined | null | ((id: string, code: string) => string | undefined | null)
 
   /**
    * Custom transformations apply before and after the markdown transformation
