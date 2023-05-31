@@ -8,8 +8,10 @@ export default async function lintAction() {
     NpmScript.LintPackageJson,
   ], { cwd: projectPath(), verbose: true })
 
-  if (result.isErr())
-    process.exit(ExitCode.FatalError)
+  if (Array.isArray(result)) {
+    if (result.map(r => r.isErr()).includes(true))
+      process.exit(ExitCode.FatalError)
+  }
 
   process.exit(ExitCode.Success)
 }
