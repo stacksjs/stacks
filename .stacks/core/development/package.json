@@ -49,7 +49,7 @@
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
     "tsx": "^3.12.7",
-    "typescript": "^5.0.4",
+    "typescript": "^5.1.3",
     "unbuild": "^1.2.1"
   },
   "dependencies": {
