@@ -1,27 +1,29 @@
 {
-  "name": "@stacksjs/domains",
+  "name": "@stacksjs/dns",
   "type": "module",
   "version": "0.53.1",
   "packageManager": "pnpm@8.6.0",
-  "description": "Easily manage your domains.",
+  "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/domains#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/dns#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/domains"
+    "directory": "./.stacks/core/dns"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "domains",
     "dns",
+    "domain",
     "management",
     "custom emails",
     "stacks",
+    "aws",
+    "route53",
     "framework",
     "typescript",
     "javascript"
@@ -45,8 +47,11 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {},
+  "dependencies": {
+    "@aws-cdk/aws-route53": "^1.203.0"
+  },
   "devDependencies": {
+    "@stacksjs/cloud": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

@@ -2,7 +2,7 @@
 
 // const email = notification.email
 
-export const config = {
+export default {
   // ...email.build,
   theme: {
     screens: {

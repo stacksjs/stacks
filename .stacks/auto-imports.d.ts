@@ -91,7 +91,6 @@ declare global {
   const computedEager: typeof import('./core/utils/src/vendors')['computedEager']
   const computedInject: typeof import('./core/utils/src/vendors')['computedInject']
   const computedWithControl: typeof import('./core/utils/src/vendors')['computedWithControl']
-  const config: typeof import('./core/notifications/src/tailwind.config')['config']
   const configPath: typeof import('./core/path/src/index')['configPath']
   const constantCase: typeof import('./core/strings/src/case')['constantCase']
   const contains: typeof import('./core/arrays/src/index')['contains']
@@ -183,7 +182,7 @@ declare global {
   const docsPath: typeof import('./core/path/src/index')['docsPath']
   const doesFolderExist: typeof import('./core/storage/src/index')['doesFolderExist']
   const doesNotContain: typeof import('./core/arrays/src/index')['doesNotContain']
-  const domainsPath: typeof import('./core/path/src/index')['domainsPath']
+  const dnsPath: typeof import('./core/path/src/index')['dnsPath']
   const dotCase: typeof import('./core/strings/src/case')['dotCase']
   const dump: typeof import('./core/logging/src/index')['dump']
   const dynamodb: typeof import('./core/cache/src/index')['dynamodb']
@@ -837,7 +836,6 @@ declare module 'vue' {
     readonly computedEager: UnwrapRef<typeof import('./core/utils/src/vendors')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('./core/utils/src/vendors')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('./core/utils/src/vendors')['computedWithControl']>
-    readonly config: UnwrapRef<typeof import('./core/notifications/src/tailwind.config')['config']>
     readonly configPath: UnwrapRef<typeof import('./core/path/src/index')['configPath']>
     readonly constantCase: UnwrapRef<typeof import('./core/strings/src/case')['constantCase']>
     readonly contains: UnwrapRef<typeof import('./core/arrays/src/index')['contains']>
@@ -929,7 +927,7 @@ declare module 'vue' {
     readonly docsPath: UnwrapRef<typeof import('./core/path/src/index')['docsPath']>
     readonly doesFolderExist: UnwrapRef<typeof import('./core/storage/src/index')['doesFolderExist']>
     readonly doesNotContain: UnwrapRef<typeof import('./core/arrays/src/index')['doesNotContain']>
-    readonly domainsPath: UnwrapRef<typeof import('./core/path/src/index')['domainsPath']>
+    readonly dnsPath: UnwrapRef<typeof import('./core/path/src/index')['dnsPath']>
     readonly dotCase: UnwrapRef<typeof import('./core/strings/src/case')['dotCase']>
     readonly dump: UnwrapRef<typeof import('./core/logging/src/index')['dump']>
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>
@@ -1576,7 +1574,6 @@ declare module '@vue/runtime-core' {
     readonly computedEager: UnwrapRef<typeof import('./core/utils/src/vendors')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('./core/utils/src/vendors')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('./core/utils/src/vendors')['computedWithControl']>
-    readonly config: UnwrapRef<typeof import('./core/notifications/src/tailwind.config')['config']>
     readonly configPath: UnwrapRef<typeof import('./core/path/src/index')['configPath']>
     readonly constantCase: UnwrapRef<typeof import('./core/strings/src/case')['constantCase']>
     readonly contains: UnwrapRef<typeof import('./core/arrays/src/index')['contains']>
@@ -1668,7 +1665,7 @@ declare module '@vue/runtime-core' {
     readonly docsPath: UnwrapRef<typeof import('./core/path/src/index')['docsPath']>
     readonly doesFolderExist: UnwrapRef<typeof import('./core/storage/src/index')['doesFolderExist']>
     readonly doesNotContain: UnwrapRef<typeof import('./core/arrays/src/index')['doesNotContain']>
-    readonly domainsPath: UnwrapRef<typeof import('./core/path/src/index')['domainsPath']>
+    readonly dnsPath: UnwrapRef<typeof import('./core/path/src/index')['dnsPath']>
     readonly dotCase: UnwrapRef<typeof import('./core/strings/src/case')['dotCase']>
     readonly dump: UnwrapRef<typeof import('./core/logging/src/index')['dump']>
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>

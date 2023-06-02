@@ -11,7 +11,7 @@ export interface DatabaseOptions {
       host?: string
       port?: number
       client?: DatabaseClient
-      name: string
+      name?: string
       username?: string
       password?: string
     }

@@ -46,12 +46,14 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
-  },
   "dependencies": {
+    "@aws-cdk/core": "^1.203.0",
     "@aws-lambda-powertools/logger": "^1.8.0",
     "@aws-lambda-powertools/metrics": "^1.8.0",
-    "@aws-lambda-powertools/tracer": "^1.8.0"
+    "@aws-lambda-powertools/tracer": "^1.8.0",
+    "@stacksjs/dns": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
   }
 }

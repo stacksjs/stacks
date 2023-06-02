@@ -142,7 +142,7 @@ export function docsPath(path?: string) {
   return corePath(`docs/${path || ''}`)
 }
 
-export function domainsPath(path?: string) {
+export function dnsPath(path?: string) {
   return corePath(`domains/${path || ''}`)
 }
 
@@ -407,7 +407,7 @@ const path = {
   dashboardPath,
   desktopPath,
   docsPath,
-  domainsPath,
+  dnsPath,
   emailPath,
   errorHandlingPath,
   eventsPath,

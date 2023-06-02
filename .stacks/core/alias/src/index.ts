@@ -4,7 +4,7 @@
 
 import { path as p } from '@stacksjs/path'
 
-const alias: Record<string, string> = {
+export const alias: Record<string, string> = {
   '~/*': p.projectPath('*'),
   '@stacksjs/ai': p.aiPath('src/index.ts'),
   '@stacksjs/ai/*': p.aiPath('src/*'),
@@ -37,10 +37,10 @@ const alias: Record<string, string> = {
   '@stacksjs/development/*': p.developmentPath('src/*'),
   // '@stacksjs/desktop': p.desktopPath('src/index.ts'),
   // '@stacksjs/desktop/*': p.desktopPath('src/*'),
+  '@stacksjs/dns': p.dnsPath('src/index.ts'),
+  '@stacksjs/dns/*': p.dnsPath('src/*'),
   '@stacksjs/docs': p.docsPath('src/index.ts'),
   '@stacksjs/docs/*': p.docsPath('src/*'),
-  '@stacksjs/domains': p.domainsPath('src/index.ts'),
-  '@stacksjs/domains/*': p.domainsPath('src/*'),
   '@stacksjs/email': p.emailPath('src/index.ts'),
   '@stacksjs/email/*': p.emailPath('src/*'),
   '@stacksjs/error-handling': p.errorHandlingPath('src/index.ts'),
@@ -105,5 +105,3 @@ const alias: Record<string, string> = {
   'functions/*': p.functionsPath('*'),
   'pages/*': p.pagesPath('*'),
 }
-
-export { alias }

@@ -6,12 +6,9 @@ import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
 import type { PluginOption } from 'vite'
-import Markdown from 'vite-plugin-vue-markdown'
-import LinkAttributes from 'markdown-it-link-attributes'
-import Shiki from 'markdown-it-shiki'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, MarkdownOptions, PagesOption } from '@stacksjs/types'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
 
 function inspect(options?: InspectOptions) {
@@ -51,30 +48,6 @@ function pages(options?: PagesOption) {
   const newOptions = defu(options, defaultOptions)
 
   return Pages(newOptions)
-}
-
-function markdown(options?: MarkdownOptions) {
-  const defaultOptions = {
-    wrapperClasses: 'prose prose-sm m-auto text-left',
-    headEnabled: true,
-    markdownItSetup(md: any) {
-    // https://prismjs.com/
-      md.use(Shiki, {
-        theme: 'nord',
-      })
-      md.use(LinkAttributes, {
-        matcher: (link: string) => /^https?:\/\//.test(link),
-        attrs: {
-          target: '_blank',
-          rel: 'noopener',
-        },
-      })
-    },
-  }
-
-  const newOptions = defu(options, defaultOptions)
-
-  return Markdown(newOptions)
 }
 
 function autoImports(options?: AutoImportsOptions) {
@@ -214,7 +187,6 @@ function componentPreset(isWebComponent = false) {
     cssEngine(isWebComponent),
     autoImports,
     components,
-    markdown,
   ]
 }
 
@@ -226,4 +198,4 @@ function componentPreset(isWebComponent = false) {
 //   //
 // ]
 
-export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, markdown, pages, pwa, layouts }
+export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, pages, pwa, layouts }

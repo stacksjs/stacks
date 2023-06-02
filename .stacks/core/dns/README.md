@@ -12,13 +12,13 @@ Easily manage your domains.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/domains
+pnpm i -D @stacksjs/dns
 ```
 
 Now, you can use it in your project:
 
 ```js
-import { domains } from '@stacksjs/domains'
+import { domains } from '@stacksjs/dns'
 
 // wip - coming soon
 ```
