@@ -1,7 +1,7 @@
-import type { StacksEnv } from '@stacksjs/validation'
+import type { Env } from '@stacksjs/validation'
 
 declare global {
   namespace NodeJS {
-    interface ProcessEnv extends StacksEnv {}
+    interface ProcessEnv extends Env {}
   }
 }

@@ -1,4 +1,5 @@
-import { defineApp, env } from '@stacksjs/utils'
+import { defineApp } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **Application Configuration**
@@ -7,8 +8,10 @@ import { defineApp, env } from '@stacksjs/utils'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
+
+const name = env.APP_NAME || 'Stacks'
 export default defineApp({
-  name: env.APP_NAME || 'Stacks',
+  name,
   env: env.APP_ENV || 'local',
   key: env.APP_KEY || '',
   debug: env.APP_DEBUG || false,

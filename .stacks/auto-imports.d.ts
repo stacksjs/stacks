@@ -54,6 +54,8 @@ declare global {
   const auth: typeof import('./core/auth/src/index')['auth']
   const authPath: typeof import('./core/path/src/index')['authPath']
   const autoResetRef: typeof import('./core/utils/src/vendors')['autoResetRef']
+  const backendEnv: typeof import('./core/validation/src/validate')['backendEnv']
+  const backendEnvValidations: typeof import('./core/validation/src/validate')['backendEnvValidations']
   const base64Encode: typeof import('./core/security/src/hash')['base64Encode']
   const base64Verify: typeof import('./core/security/src/hash')['base64Verify']
   const basename: typeof import('./core/path/src/index')['basename']
@@ -263,6 +265,8 @@ declare global {
   const fromPromise: typeof import('./core/error-handling/src/index')['fromPromise']
   const fromSafePromise: typeof import('./core/error-handling/src/index')['fromSafePromise']
   const fromThrowable: typeof import('./core/error-handling/src/index')['fromThrowable']
+  const frontendEnv: typeof import('./core/validation/src/validate')['frontendEnv']
+  const frontendEnvValidations: typeof import('./core/validation/src/validate')['frontendEnvValidations']
   const fs: typeof import('./core/storage/src/index')['fs']
   const functionsPath: typeof import('./core/path/src/index')['functionsPath']
   const generateAppKey: typeof import('./core/security/src/key')['generateAppKey']
@@ -545,6 +549,7 @@ declare global {
   const runCommands: typeof import('./core/cli/src/run')['runCommands']
   const runNpmScript: typeof import('./core/utils/src/helpers')['runNpmScript']
   const runtimePath: typeof import('./core/path/src/index')['runtimePath']
+  const safeEnv: typeof import('./core/validation/src/validate')['safeEnv']
   const sample: typeof import('./core/arrays/src/index')['sample']
   const schedulerPath: typeof import('./core/path/src/index')['schedulerPath']
   const scriptsPath: typeof import('./core/path/src/index')['scriptsPath']
@@ -893,6 +898,8 @@ declare module 'vue' {
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
+    readonly backendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnv']>
+    readonly backendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidations']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -1102,6 +1109,8 @@ declare module 'vue' {
     readonly fromPromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
+    readonly frontendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnv']>
+    readonly frontendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidations']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
@@ -1384,6 +1393,7 @@ declare module 'vue' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
+    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
@@ -1724,6 +1734,8 @@ declare module '@vue/runtime-core' {
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
+    readonly backendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnv']>
+    readonly backendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidations']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -1933,6 +1945,8 @@ declare module '@vue/runtime-core' {
     readonly fromPromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
+    readonly frontendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnv']>
+    readonly frontendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidations']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
@@ -2215,6 +2229,7 @@ declare module '@vue/runtime-core' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
+    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
