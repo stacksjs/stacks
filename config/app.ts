@@ -8,7 +8,7 @@ import { defineApp, env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineApp({
-  name: env.APP_NAME,
+  name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'local',
   key: env.APP_KEY || '',
   debug: env.APP_DEBUG || false,

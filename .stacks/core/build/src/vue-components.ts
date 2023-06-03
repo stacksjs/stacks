@@ -9,7 +9,7 @@ import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('components/vue'),
   envDir: projectPath(),
-  envPrefix: 'APP_',
+  envPrefix: 'FRONTEND_',
 
   server: {
     port: 3333,

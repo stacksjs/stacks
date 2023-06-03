@@ -5,7 +5,7 @@ node_modules
 .temp
 .pnpm-debug.log
 .env
-.env.local
+*.local
 .env.production
 updates
 tests/unit/coverage

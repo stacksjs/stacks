@@ -1,7 +1,5 @@
 import { z as validate, z } from 'zod'
 
-export type ValidationIssue = z.ZodIssue
-
 // TODO: envValidations needs to be auto generated from the .env file
 export const envValidations = validate.object({
   APP_NAME: validate.string().default('Stacks'),
@@ -113,6 +111,8 @@ export const envValidations = validate.object({
 
 export type StacksEnv = validate.infer<typeof envValidations>
 export type StacksEnvKeys = keyof StacksEnv
+
+export type ValidationIssue = z.ZodIssue
 
 export const env = envValidations.parse(process.env)
 
