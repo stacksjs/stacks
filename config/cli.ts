@@ -1,4 +1,4 @@
-import { defineCli, env } from '@stacksjs/utils'
+import { defineCli } from '@stacksjs/utils'
 
 /**
  * **CLI Configuration**
@@ -8,7 +8,7 @@ import { defineCli, env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineCli({
-  name: env('CLI_NAME', 'Stacks CLI'),
-  command: env('CLI_COMMAND', 'stx'),
+  name: 'Stacks CLI',
+  command: 'stx',
   description: 'This is an example command to illustrate how to create your own commands. Check out `../app/cli` for more.',
 })

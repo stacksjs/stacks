@@ -194,7 +194,7 @@ declare global {
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
   const ensureSuffix: typeof import('./core/strings/src/utils')['ensureSuffix']
   const env: typeof import('./core/utils/src/config')['env']
-  const envVariables: typeof import('./core/validation/src/validate')['envVariables']
+  const envValidations: typeof import('./core/validation/src/validate')['envValidations']
   const equal: typeof import('./core/utils/src/currency')['equal']
   const err: typeof import('./core/error-handling/src/index')['err']
   const errAsync: typeof import('./core/error-handling/src/index')['errAsync']
@@ -939,7 +939,7 @@ declare module 'vue' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/utils/src/config')['env']>
-    readonly envVariables: UnwrapRef<typeof import('./core/validation/src/validate')['envVariables']>
+    readonly envValidations: UnwrapRef<typeof import('./core/validation/src/validate')['envValidations']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>
@@ -1677,7 +1677,7 @@ declare module '@vue/runtime-core' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/utils/src/config')['env']>
-    readonly envVariables: UnwrapRef<typeof import('./core/validation/src/validate')['envVariables']>
+    readonly envValidations: UnwrapRef<typeof import('./core/validation/src/validate')['envValidations']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>

@@ -9,7 +9,7 @@ export async function packageManager() {
   return packageManager
 }
 
-export const stacksConfigDefaults = {
+export const configDefaults: ResolvedStacksOptions = {
   app,
   cache,
   cdn,
@@ -29,12 +29,12 @@ export const stacksConfigDefaults = {
   services,
   storage,
   ui,
-} satisfies ResolvedStacksOptions
+}
 
 export async function loadStacksConfig(overrides?: Partial<StacksOptions>, cwd = process.cwd()) {
   const { config } = await loadConfig<StacksOptions>({
     name: 'stacks',
-    defaults: stacksConfigDefaults,
+    defaults: configDefaults,
     overrides: {
       ...(overrides as StacksOptions),
     },

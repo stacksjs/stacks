@@ -17,63 +17,14 @@ import type {
   PaymentOptions,
   SearchEngineOptions,
   ServicesOptions,
-  StacksOptions,
   StorageOptions,
   UiOptions,
   UserCliOptions,
 } from '@stacksjs/types'
-import { stacksConfigDefaults } from '@stacksjs/config'
 
-type Config = StacksOptions
+export { loadStacksConfig as config } from '@stacksjs/config'
 
-type PathImpl<T, K extends keyof T> = K extends string
-  ? T[K] extends Record<string, any>
-    ? T[K] extends ArrayLike<any>
-      ? K | `${K}.${PathImpl<T[K], Exclude<keyof T[K], keyof any[]>>}`
-      : K | `${K}.${PathImpl<T[K], keyof T[K]>}`
-    : K
-  : never
-
-type Path<T> = PathImpl<T, keyof T> | keyof T
-
-type PathValue<T, P extends Path<T>> = P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-    ? Rest extends Path<T[K]>
-      ? PathValue<T[K], Rest>
-      : never
-    : never
-  : P extends keyof T
-    ? T[P]
-    : never
-
-// @ts-expect-error - unsure how to best type this
-function config<P extends Path<Config>>(path: P, fallback?: PathValue<Config, P>): PathValue<Config, P> | undefined {
-  const keys = path.split('.') as string[]
-  let result: any = stacksConfigDefaults
-
-  for (const k of keys) {
-    if (result[k] === undefined)
-      return fallback
-
-    result = result[k]
-  }
-
-  return result
-}
-
-// const url = config('app.url') // url is typed as string
-// const debug = config('app.debug') // debug is typed as boolean
-const driver = config('database.drivers.mysql.port', 5432) // port is typed as number
-
-export function env<T>(key: string, _fallback?: T): T | string | undefined {
-  if (key && import.meta?.env) {
-    const envValue = import.meta.env[key]
-    if (envValue !== undefined)
-      return envValue as any
-  }
-  return _fallback
-}
-
+export { env, getEnvIssues } from '@stacksjs/validation'
 export function defineApp(options: Partial<AppOptions>) {
   return options
 }

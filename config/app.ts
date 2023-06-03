@@ -8,12 +8,11 @@ import { defineApp, env } from '@stacksjs/utils'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineApp({
-  name: env('APP_NAME', 'Stacks'),
-  env: env('APP_ENV', 'local'),
-  key: env('APP_KEY', ''),
-  debug: env('APP_DEBUG', false),
-  url: env('APP_URL', 'https://localhost'),
-  port: env('APP_PORT', 3333),
+  name: env.APP_NAME || 'Stacks',
+  env: env.APP_ENV || 'local',
+  key: env.APP_KEY || '',
+  debug: env.APP_DEBUG || false,
+  url: env.APP_URL || 'https://localhost',
 
   timezone: 'UTC',
   locale: 'en',

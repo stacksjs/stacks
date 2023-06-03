@@ -5,7 +5,10 @@ export interface NotificationOptions {
 
   email: {
     default: 'emailjs' | 'mailgun' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'sendgrid' | 'ses' | string
-    from: string
+    from: {
+      name: string
+      address: string
+    }
     to: string
 
     drivers: {
