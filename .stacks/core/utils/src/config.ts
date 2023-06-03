@@ -24,7 +24,6 @@ import type {
 
 export { loadStacksConfig as config } from '@stacksjs/config'
 
-export { env, getEnvIssues } from '@stacksjs/validation'
 export function defineApp(options: Partial<AppOptions>) {
   return options
 }

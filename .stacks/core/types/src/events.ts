@@ -7,16 +7,24 @@
  *
  * @example To fire an event, you may use any of the following approaches:
  * ```ts
- * useEvent('user:registered', { name: 'Chris'})
- * dispatch('user:registered', { name: 'Chris'})
+ * dispatch('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
+ *
+ * // alternatively, you may use the following:
+ * useEvent('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
+ * events.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
+ * useEvents.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
  * ````
 
  * @example To capture an event, you may use any of the following approaches:
  * ```ts
- * useListen('user:registered', (user) => console.log(user))
- * listen('user:registered', (user) => console.log(user))
+ * listen('user:registered', (user) => sendWelcomeEmail(user))
+ *
+ * // alternatively, you may use the following:
+ * useListen('user:registered', (user) => sendWelcomeEmail(user))
+ * events.on('user:registered', (user) => sendWelcomeEmail(user))
+ * useEvents.on('user:registered', (user) => sendWelcomeEmail(user))
  * ```
  */
 export interface Events {
-  [key: string]: any
+  [key: string]: (...args: any[]) => Function
 }

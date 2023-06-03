@@ -24,7 +24,7 @@ pnpm i -D @stacksjs/signals
 You may now use it in your project:
 
 ```ts
-import { computed, effect, root, signal, tick } from '@stacksjs/signals'
+import { computedSignal, effect, root, signal, tick } from '@stacksjs/signals'
 
 root((dispose) => {
   // Create - all types supported (string, array, object, etc.)
@@ -33,7 +33,7 @@ root((dispose) => {
   const $b = signal(0)
 
   // Compute - only re-computed when `$m`, `$x`, or `$b` changes.
-  const $y = computed(() => $m() * $x() + $b())
+  const $y = computedSignal(() => $m() * $x() + $b())
 
   // Effect - this will run whenever `$y` is updated.
   const stop = effect(() => {

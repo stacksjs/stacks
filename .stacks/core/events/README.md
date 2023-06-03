@@ -35,7 +35,7 @@ listen('foo', onFoo) // listen
 off('foo', onFoo) // unlisten
 ```
 
-For improved type inference, ensure to configure `./config/events.ts`. To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
+To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
 
 ## 🧪 Testing
 

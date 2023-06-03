@@ -70,7 +70,6 @@ function autoImports(options?: AutoImportsOptions) {
       p.cliPath('src'),
       p.cloudPath('src'),
       p.collectionsPath('src'),
-      p.configPath('src'),
       p.databasePath('src'),
       p.datetimePath('src'),
       p.desktopPath('src'),

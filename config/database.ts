@@ -1,4 +1,5 @@
-import { defineDatabase, env } from '@stacksjs/utils'
+import { defineDatabase } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **Database Configuration**

@@ -1,4 +1,4 @@
-import { defineEvents } from '@stacksjs/utils'
+import { defineEvents } from 'stacks/core/utils'
 
 /**
  * **Events Configuration**
@@ -7,6 +7,12 @@ import { defineEvents } from '@stacksjs/utils'
  * first, pick an event name and then define it with its return type. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
+
+interface User {
+  name: string
+  email: string
+}
+
 export default defineEvents({
-  // 'user:registered': User,
+  'user:registered': (user: User) => user,
 })

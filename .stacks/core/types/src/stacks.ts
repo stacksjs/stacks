@@ -7,7 +7,6 @@ import type {
   DnsOptions,
   DocsOptions,
   EmailOptions,
-  EventOptions,
   GitOptions,
   HashingOptions,
   LibraryOptions,
@@ -108,15 +107,6 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   email: Partial<EmailOptions>
-
-  /**
-   * **Event Options**
-   *
-   * This configuration defines all of your Event options. Because Stacks is fully-typed, you
-   * may hover any of the options below and the definitions will be provided. In case you
-   * have any questions, feel free to reach out via Discord or GitHub Discussions.
-   */
-  event: Partial<EventOptions>
 
   /**
    * **Git Options**

@@ -1,4 +1,5 @@
-import { defineNotification, env } from '@stacksjs/utils'
+import { defineNotification } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **Notification Configuration**

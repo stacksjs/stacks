@@ -9,9 +9,8 @@ import { env } from '@stacksjs/validation'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 
-const name = env.APP_NAME || 'Stacks'
 export default defineApp({
-  name,
+  name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'local',
   key: env.APP_KEY || '',
   debug: env.APP_DEBUG || false,

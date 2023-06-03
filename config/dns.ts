@@ -1,4 +1,5 @@
-import { defineDns, env } from '@stacksjs/utils'
+import { defineDns } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **DNS Options**

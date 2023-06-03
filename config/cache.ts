@@ -1,4 +1,5 @@
-import { defineCache, env } from '@stacksjs/utils'
+import { defineCache } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **Cache Configuration**

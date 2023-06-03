@@ -9,6 +9,10 @@ import mitt from 'mitt'
  * ```ts
  * useEvent('user:registered', { name: 'Chris'})
  * dispatch('user:registered', { name: 'Chris'})
+ *
+ * // alternatively, you may use the following:
+ * events.emit('user:registered', { name: 'Chris'})
+ * useEvents.emit('user:registered', { name: 'Chris'})
  * ````
 
  * @example To capture an event, you may use any of the following approaches:
@@ -23,9 +27,10 @@ const events = mitt
 const emitter = events()
 
 const useEvent = emitter.emit
+const useEvents = events()
 const dispatch = emitter.emit
 const listen = emitter.on
 const off = emitter.off
 const all = emitter.all
 
-export { useEvent, dispatch, listen, all, off, events, mitt }
+export { useEvent, useEvents, dispatch, listen, all, off, events, mitt }
