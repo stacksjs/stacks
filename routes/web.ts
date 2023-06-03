@@ -1,6 +1,4 @@
-// import { useRoute } from '@stacksjs/router'
-
-// const route = useRoute()
+// import { route } from '@stacksjs/router'
 
 // route.get('/', () => {
 //   return 'Hello, world!'
