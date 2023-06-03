@@ -9,7 +9,7 @@ const service = notification.email?.drivers.postmark
 
 const provider = new PostmarkEmailProvider({
   apiKey: service?.key || '',
-  from: env?.from || '',
+  from: env?.from.address || '',
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

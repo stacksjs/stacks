@@ -9,7 +9,7 @@ const service = notification.email?.drivers.sendgrid
 
 const driver = new SendgridEmailProvider({
   apiKey: service?.key || '',
-  from: env?.from || '',
+  from: env?.from.address || '',
   senderName: service?.senderName || '',
 })
 

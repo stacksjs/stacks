@@ -8,7 +8,7 @@ const env = notification.email
 const service = notification.email?.drivers.emailjs
 
 const provider = new EmailJsProvider({
-  from: env?.from || '',
+  from: env?.from.address || '',
   host: service?.host || '',
   user: service?.user,
   password: service?.password,

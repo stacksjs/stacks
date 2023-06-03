@@ -11,7 +11,7 @@ const provider = new MailgunEmailProvider({
   apiKey: service?.key || '',
   domain: service?.domain || '',
   username: service?.username || '',
-  from: env?.from || '',
+  from: env?.from.address || '',
 })
 
 async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {
