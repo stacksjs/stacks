@@ -12,12 +12,12 @@ export default defineDatabase({
 
   drivers: {
     mysql: {
-      name: env.DATABASE_NAME || 'stacks',
-      host: env.DATABASE_HOST || '',
-      url: env.DATABASE_URL || 'localhost',
-      port: 3306,
-      username: env.DATABASE_USERNAME || '',
-      password: env.DATABASE_PASSWORD || '',
+      name: env.DB_DATABASE || 'stacks',
+      host: env.DB_HOST || '127.0.0.1',
+      // url: env.DB_URL || 'localhost',
+      port: env.DB_PORT || 3306,
+      username: env.DB_USERNAME || 'root',
+      password: env.DB_PASSWORD || '',
     },
 
     planetscale: {},

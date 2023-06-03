@@ -1,4 +1,4 @@
-import { config, defineDns } from '@stacksjs/utils'
+import { defineDns, env } from '@stacksjs/utils'
 
 /**
  * **DNS Options**
@@ -10,7 +10,7 @@ import { config, defineDns } from '@stacksjs/utils'
 export default defineDns({
   a: [
     {
-      name: config('app.url'), // Hostname (root domain)
+      name: env.APP_URL, // Hostname (root domain)
       address: '10.0.0.1', // IPv4 address
       ttl: 300, // Time-to-live in seconds
     },

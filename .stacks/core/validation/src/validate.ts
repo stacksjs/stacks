@@ -11,6 +11,8 @@ export const envValidations = validate.object({
   APP_DEBUG: validate.boolean().default(true),
 
   DB_CONNECTION: validate.string().default('mysql').optional(),
+  DB_HOST: validate.string().default('127.0.0.1').optional(),
+  DB_PORT: validate.number().default(3306).optional(),
   DB_DATABASE: validate.string().default('stacks').optional(),
   DB_USERNAME: validate.string().default('root').optional(),
   DB_PASSWORD: validate.string().optional(),
@@ -37,6 +39,76 @@ export const envValidations = validate.object({
 
   REDIS_HOST: validate.string().default('127.0.0.1'),
   REDIS_PORT: validate.number().default(6379),
+
+  MAIL_FROM_NAME: validate.string().default('Stacks'),
+  MAIL_FROM_ADDRESS: validate.string().default('no-reply@stacksjs.dev'),
+
+  EMAILJS_HOST: validate.string().default('example.com'),
+  EMAILJS_USERNAME: validate.string().default(''),
+  EMAILJS_PASSWORD: validate.string().default(''),
+  EMAILJS_PORT: validate.number().default(40),
+  EMAILJS_SECURE: validate.boolean().default(true),
+
+  MAILGUN_API_KEY: validate.string().default(''),
+  MAILGUN_DOMAIN: validate.string().default(''),
+  MAILGUN_USERNAME: validate.string().default(''),
+
+  MAILJET_API_KEY: validate.string().default(''),
+  MAILJET_API_SECRET: validate.string().default(''),
+
+  MANDRILL_API_KEY: validate.string().default(''),
+
+  NETCORE_API_KEY: validate.string().default(''),
+
+  NODEMAILER_HOST: validate.string().default(''),
+  NODEMAILER_USERNAME: validate.string().default(''),
+  NODEMAILER_PASSWORD: validate.string().default(''),
+  NODEMAILER_PORT: validate.number().default(587),
+  NODEMAILER_SECURE: validate.boolean().default(true),
+
+  POSTMARK_API_TOKEN: validate.string().default(''),
+  POSTMARK_API_KEY: validate.string().default(''),
+
+  SENDGRID_API_KEY: validate.string().default(''),
+  SENDGRID_SENDER_NAME: validate.string().default(''),
+
+  SES_API_VERSION: validate.string().default(''),
+  SES_ACCESS_KEY_ID: validate.string().default(''),
+  SES_SECRET_ACCESS_KEY: validate.string().default(''),
+  SES_REGION: validate.string().default(''),
+
+  FROM_PHONE_NUMBER: validate.string().default(''),
+  TWILIO_ACCOUNT_SID: validate.string().default(''),
+  TWILIO_AUTH_TOKEN: validate.string().default(''),
+
+  VONAGE_API_KEY: validate.string().default(''),
+  VONAGE_API_SECRET: validate.string().default(''),
+
+  GUPSHUP_USER_ID: validate.string().default(''),
+  GUPSHUP_PASSWORD: validate.string().default(''),
+
+  PLIVO_ACCOUNT_ID: validate.string().default(''),
+  PLIVO_AUTH_TOKEN: validate.string().default(''),
+
+  SMS77_API_KEY: validate.string().default(''),
+
+  SNS_REGION: validate.string().default(''),
+  SNS_ACCESS_KEY_ID: validate.string().default(''),
+  SNS_SECRET_ACCESS_KEY: validate.string().default(''),
+
+  TELNYX_API_KEY: validate.string().default(''),
+  TELNYX_MESSAGE_PROFILE_ID: validate.string().default(''),
+
+  TERMII_API_KEY: validate.string().default(''),
+
+  SLACK_FROM: validate.string().default(''),
+  SLACK_APPLICATION_ID: validate.string().default(''),
+  SLACK_CLIENT_ID: validate.string().default(''),
+  SLACK_SECRET_KEY: validate.string().default(''),
+
+  MICROSOFT_TEAMS_APPLICATION_ID: validate.string().default(''),
+  MICROSOFT_TEAMS_CLIENT_ID: validate.string().default(''),
+  MICROSOFT_TEAMS_SECRET: validate.string().default(''),
 })
 
 export type StacksEnv = validate.infer<typeof envValidations>

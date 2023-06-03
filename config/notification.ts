@@ -29,53 +29,53 @@ export default defineNotification({
       },
 
       emailjs: {
-        host: env.EMAILJS_HOST || 'test-value',
-        user: env.EMAILJS_USERNAME || 'test-value',
-        password: env.EMAILJS_PASSWORD || 'test-value',
+        host: env.EMAILJS_HOST || 'example.com',
+        user: env.EMAILJS_USERNAME || '',
+        password: env.EMAILJS_PASSWORD || '',
         port: env.EMAILJS_PORT || 40,
         secure: env.EMAILJS_SECURE || true,
       },
 
       mailgun: {
-        key: env.MAILGUN_API_KEY || 'test-value',
-        domain: env.MAILGUN_DOMAIN || 'test-value',
-        username: env.MAILGUN_USERNAME || 'test-value',
+        key: env.MAILGUN_API_KEY || '',
+        domain: env.MAILGUN_DOMAIN || '',
+        username: env.MAILGUN_USERNAME || '',
       },
 
       mailjet: {
-        key: env.MAILJET_API_KEY || 'test-value',
-        secret: env.MAILJET_API_SECRET || 'test-value',
+        key: env.MAILJET_API_KEY || '',
+        secret: env.MAILJET_API_SECRET || '',
       },
 
       mandrill: {
-        key: env.MANDRILL_API_KEY || 'test-value',
+        key: env.MANDRILL_API_KEY || '',
       },
 
       netcore: {
-        key: env.NETCORE_API_KEY || 'test-value',
+        key: env.NETCORE_API_KEY || '',
       },
 
       nodemailer: {
-        host: env.NODEMAILER_HOST || 'test-value',
-        user: env.NODEMAILER_USERNAME || 'test-value',
-        password: env.NODEMAILER_PASSWORD || 'test-value',
+        host: env.NODEMAILER_HOST || '',
+        user: env.NODEMAILER_USERNAME || '',
+        password: env.NODEMAILER_PASSWORD || '',
         port: env.NODEMAILER_PORT || 40,
         secure: env.NODEMAILER_SECURE || true,
       },
 
       postmark: {
-        key: env.POSTMARK_API_KEY || 'test-value',
+        key: env.POSTMARK_API_KEY || '',
       },
 
       sendgrid: {
-        key: env.SENDGRID_API_KEY || 'test-value',
-        senderName: env.SENDGRID_SENDER_NAME || 'test-value',
+        key: env.SENDGRID_API_KEY || '',
+        senderName: env.SENDGRID_SENDER_NAME || '',
       },
 
       ses: {
-        region: env.SES_REGION || 'test-value',
-        key: env.SES_ACCESS_KEY_ID || 'test-value',
-        secret: env.SES_SECRET_ACCESS_KEY || 'test-value',
+        region: env.SES_REGION || '',
+        key: env.SES_ACCESS_KEY_ID || '',
+        secret: env.SES_SECRET_ACCESS_KEY || '',
       },
     },
   },
@@ -83,66 +83,64 @@ export default defineNotification({
   sms: {
     default: 'twilio',
     from: env.FROM_PHONE_NUMBER || '',
-    to: env.TO_PHONE_NUMBER || '',
 
     drivers: {
       twilio: {
         sid: env.TWILIO_ACCOUNT_SID || 'ACTEST',
-        authToken: env.TWILIO_AUTH_TOKEN || 'test-value',
+        authToken: env.TWILIO_AUTH_TOKEN || '',
       },
 
       nexmo: {
-        key: env.VONAGE_API_KEY || 'test-value',
-        secret: env.VONAGE_API_SECRET || 'test-value',
+        key: env.VONAGE_API_KEY || '',
+        secret: env.VONAGE_API_SECRET || '',
       },
 
       gupshup: {
-        user: env.GUPSHUP_USER_ID || 'test-value',
-        password: env.GUPSHUP_PASSWORD || 'test-value',
+        user: env.GUPSHUP_USER_ID || '',
+        password: env.GUPSHUP_PASSWORD || '',
       },
 
       plivo: {
-        sid: env.PLIVO_ACCOUNT_ID || 'test-value',
-        authToken: env.PLIVO_AUTH_TOKEN || 'test-value',
+        sid: env.PLIVO_ACCOUNT_ID || '',
+        authToken: env.PLIVO_AUTH_TOKEN || '',
       },
 
       sms77: {
-        key: env.SMS77_API_KEY || 'test-value',
+        key: env.SMS77_API_KEY || '',
       },
 
       sns: {
-        region: env.SNS_REGION || 'test-value',
-        key: env.SNS_ACCESS_KEY_ID || 'test-value',
-        secret: env.SNS_SECRET_ACCESS_KEY || 'test-value',
+        region: env.SNS_REGION || '',
+        key: env.SNS_ACCESS_KEY_ID || '',
+        secret: env.SNS_SECRET_ACCESS_KEY || '',
       },
 
       telnyx: {
-        key: env.TELNYX_API_KEY || 'test-value',
-        messageProfileId: env.TELNYX_MESSAGE_PROFILE_ID || 'test-value',
+        key: env.TELNYX_API_KEY || '',
+        messageProfileId: env.TELNYX_MESSAGE_PROFILE_ID || '',
       },
 
       termii: {
-        key: env.TERMII_API_KEY || 'test-value',
+        key: env.TERMII_API_KEY || '',
       },
     },
   },
 
   chat: {
     default: 'slack',
-    from: env.SLACK_FROM || 'test-value',
-    to: env.SLACK_TO || 'test-value',
+    from: env.SLACK_FROM || '',
 
     drivers: {
       slack: {
-        appId: env.SLACK_APPLICATION_ID || 'test-value',
-        clientId: env.SLACK_CLIENT_ID || 'test-value',
-        secret: env.SLACK_SECRET_KEY || 'test-value',
+        appId: env.SLACK_APPLICATION_ID || '',
+        clientId: env.SLACK_CLIENT_ID || '',
+        secret: env.SLACK_SECRET_KEY || '',
       },
 
       msTeams: {
-        appId: env.MICROSOFT_TEAMS_APPLICATION_ID || 'test-value',
-        clientId: env.MICROSOFT_TEAMS_CLIENT_ID || 'test-value',
-        secret: env.MICROSOFT_TEAMS_SECRET || 'test-value',
+        appId: env.MICROSOFT_TEAMS_APPLICATION_ID || '',
+        clientId: env.MICROSOFT_TEAMS_CLIENT_ID || '',
+        secret: env.MICROSOFT_TEAMS_SECRET || '',
       },
 
       discord: {

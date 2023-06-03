@@ -5,11 +5,11 @@ export interface NotificationOptions {
 
   email: {
     default: 'emailjs' | 'mailgun' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'sendgrid' | 'ses' | string
+
     from: {
       name: string
       address: string
     }
-    to: string
 
     drivers: {
       smtp: {
@@ -77,7 +77,6 @@ export interface NotificationOptions {
   sms: {
     default: 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | string
     from: string
-    to: string
 
     drivers: {
       twilio: {
@@ -124,7 +123,6 @@ export interface NotificationOptions {
   chat: {
     default: 'slack' | 'msTeams' | 'discord' | string
     from: string
-    to: string
 
     drivers: {
       slack?: {

@@ -142,7 +142,7 @@ MANDRILL_EMAIL=from@example.com
 #### EmailJS
 
 ```bash
-EMAILJS_FROM_EMAIL=from@example.com
+MAIL_FROM_ADDRESS=from@example.com
 EMAILJS_HOST=example.com
 EMAILJS_USERNAME=username
 EMAILJS_PASSWORD=password

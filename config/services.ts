@@ -9,8 +9,8 @@ import { defineServices, env } from '@stacksjs/utils'
  */
 export default defineServices({
   aws: {
-    appId: env.AWS_ACCESS_KEY_ID,
-    apiKey: env.AWS_SECRET_ACCESS_KEY,
+    appId: env.AWS_ACCESS_KEY_ID || '',
+    apiKey: env.AWS_SECRET_ACCESS_KEY || '',
   },
 
   algolia: {
