@@ -116,3 +116,5 @@ export class Router {
     return middleware
   }
 }
+
+export const route = new Router()
