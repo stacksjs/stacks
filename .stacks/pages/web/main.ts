@@ -16,7 +16,7 @@
 // // https://github.com/antfu/vite-ssg
 // export const createApp = ViteSSG(
 //   App,
-//   { routes, base: import.meta.env.APP_URL },
+//   { routes, base: process.env.APP_URL },
 //   (ctx) => {
 //     // install all modules under `modules/`
 //     Object.values(import.meta.glob<{ install: UserModule }>(frameworkPath('modules/*.ts'), { eager: true }))
