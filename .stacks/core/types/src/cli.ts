@@ -214,7 +214,7 @@ export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | '
  */
 export const enum NpmScript {
   Build = 'build',
-  BuildComponents = 'build:components',
+  BuildComponents = 'vite build --config ./core/build/src/vue-components.ts',
   BuildWebComponents = 'build:web-components',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
@@ -261,42 +261,42 @@ export const enum NpmScript {
 }
 
 export const enum Action {
-  Bump = 'bump', // wip
-  BuildStacks = 'build/stacks', // wip
-  BuildComponentLibs = 'build-component-libs', // wip
-  BuildVueComponentLib = 'build-vue-component-lib', // wip
-  BuildWebComponentLib = 'build-web-component-lib', // wip
-  BuildCli = 'build-cli', // wip
-  BuildCore = 'build/core', // wip
+  Bump = 'bump',
+  BuildStacks = 'build/stacks',
+  BuildComponentLibs = 'build/component-libs',
+  BuildVueComponentLib = 'build-vue-component-lib',
+  BuildWebComponentLib = 'build-web-component-lib',
+  BuildCli = 'build-cli',
+  BuildCore = 'build/core',
   BuildDocs = 'build-docs',
   BuildFunctionLib = 'build-function-lib',
-  Changelog = 'changelog', // wip
-  Clean = 'clean', // wip
-  DevComponents = 'dev/components', // wip
-  DevDocs = 'dev/docs', // wip
-  Deploy = 'deploy', // wip
-  Fresh = 'fresh', // wip
+  Changelog = 'changelog',
+  Clean = 'clean',
+  DevComponents = 'dev/components', // ✅
+  DevDocs = 'dev/docs',
+  Deploy = 'deploy',
+  Fresh = 'fresh',
   GenerateLibraryEntries = 'generate/lib-entries', // ✅
-  Inspire = 'inspire', // wip
-  KeyGenerate = 'key-generate', // wip
-  MakeNotification = 'make-notification', // wip
-  Migrate = 'migrate', // wip
-  Seed = 'seed', // wip
-  Lint = 'lint/index', // wip
-  LintFix = 'lint/fix', // wip
-  Prepublish = 'prepublish', // wip
+  Inspire = 'inspire',
+  KeyGenerate = 'key-generate',
+  MakeNotification = 'make-notification',
+  Migrate = 'migrate',
+  Seed = 'seed',
+  Lint = 'lint/index',
+  LintFix = 'lint/fix',
+  Prepublish = 'prepublish',
   Release = 'release', // ✅
-  ShowFeatureTestReport = 'show-feature-test-report', // wip
-  Test = 'test', // wip
-  TestUi = 'test-ui', // wip
-  TestUnit = 'test-unit', // wip
-  TestFeature = 'test-feature', // wip
-  TestCoverage = 'test-coverage', // wip
+  ShowFeatureTestReport = 'show-feature-test-report',
+  Test = 'test',
+  TestUi = 'test-ui',
+  TestUnit = 'test-unit',
+  TestFeature = 'test-feature',
+  TestCoverage = 'test-coverage',
   Tinker = 'tinker',
-  Typecheck = 'typecheck', // wip
-  Upgrade = 'upgrade/index', // wip
-  UpgradeNode = 'upgrade/node', // wip
-  UpgradePackageManager = 'upgrade/package-manager', // wip
+  Typecheck = 'typecheck',
+  Upgrade = 'upgrade/index',
+  UpgradeNode = 'upgrade/node',
+  UpgradePackageManager = 'upgrade/package-manager',
 }
 
 export type { CAC as CLI } from 'cac'
