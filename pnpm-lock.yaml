@@ -103,7 +103,7 @@ importers:
         version: link:core/orm
       '@stacksjs/pages':
         specifier: workspace:*
-        version: link:core/pages
+        version: link:core/views
       '@stacksjs/path':
         specifier: workspace:*
         version: link:core/path
@@ -196,7 +196,7 @@ importers:
         version: link:../logging
       '@stacksjs/pages':
         specifier: workspace:*
-        version: link:../pages
+        version: link:../views
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -375,7 +375,7 @@ importers:
         version: link:../orm
       '@stacksjs/pages':
         specifier: workspace:*
-        version: link:../pages
+        version: link:../views
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path

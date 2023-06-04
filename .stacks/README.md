@@ -126,7 +126,7 @@ The following list includes some of the most common ways to interact with the St
 
 ```bash
 buddy install # installs all dependencies
-buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev # starts one of the dev servers (components, functions, views, or docs)
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
@@ -163,10 +163,10 @@ buddy update:all # update Node, package manager, framework, dependencies
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
 
-buddy dev # start one of the dev servers (components, functions, pages, or docs)
+buddy dev # start one of the dev servers (components, functions, views, or docs)
 buddy dev:components # start local playground dev server
 buddy dev:desktop # starts the Desktop playground
-buddy dev:pages # start local playground pages dev server
+buddy dev:views # start local playground views dev server
 buddy dev:functions # stub local the functions
 buddy dev:docs # start local docs dev server
 buddy development # `buddy dev` alias
@@ -174,7 +174,7 @@ buddy development # `buddy dev` alias
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve
 buddy serve:components
-buddy serve:pages
+buddy serve:views
 buddy serve:functions
 buddy serve:docs
 
@@ -184,7 +184,7 @@ buddy build:components # build Vue component library & Web Component library
 buddy build:vue-components # build Vue 2 & 3-ready Component library
 buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:functions # build function library
-buddy build:pages # build SSG pages
+buddy build:views # build SSG views
 buddy build:all # build all your code
 
 # `buddy build` aliases
@@ -193,7 +193,7 @@ buddy prod:components
 buddy prod:vue-components
 buddy prod:web-components
 buddy prod:functions
-buddy prod:pages
+buddy prod:views
 buddy prod:all
 buddy production # `buddy prod` alias
 
@@ -223,7 +223,7 @@ buddy changelog # generates CHANGELOG.md
 buddy deploy
 buddy deploy:docs
 buddy deploy:functions
-buddy deploy:pages
+buddy deploy:views
 buddy deploy:all
 
 # select the example to run (follow CLI prompts)

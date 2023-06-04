@@ -10,7 +10,7 @@ async function setting(buddy: CLI) {
     .command('page:setting', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
-      console.log('Generating setting pages...')
+      console.log('Generating setting views...')
       // const startTime = await intro('buddy page:setting')
       // const result = await runAction(Action.GenerateSettings)
       //

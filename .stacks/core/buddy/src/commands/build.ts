@@ -10,7 +10,7 @@ async function build(buddy: CLI) {
     webComponents: 'Build your framework agnostic web component library',
     elements: 'An alias to the -w flag',
     functions: 'Build your function library',
-    pages: 'Build your SSG pages',
+    pages: 'Build your SSG views',
     docs: 'Build your documentation site',
     stacks: 'Build Stacks framework',
     select: 'What are you trying to build?',
@@ -24,7 +24,7 @@ async function build(buddy: CLI) {
     .option('-w, --web-components', descriptions.webComponents) // these are automatically built with your -c option as well
     .option('-e, --elements', descriptions.elements)
     .option('-f, --functions', descriptions.functions)
-    .option('-p, --pages', descriptions.pages)
+    .option('-p, --views', descriptions.pages)
     .option('-d, --docs', descriptions.docs)
     .option('-s, --stacks', descriptions.stacks, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })

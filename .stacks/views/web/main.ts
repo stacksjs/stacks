@@ -4,7 +4,7 @@
 // import type { UserModule } from '@stacksjs/types'
 // import { ui } from '@stacksjs/config'
 // import App from './App.vue'
-// import generatedRoutes from '~pages'
+// import generatedRoutes from '~views'
 //
 // import './styles/main.css'
 // import 'uno.css'

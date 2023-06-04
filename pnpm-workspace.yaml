@@ -7,7 +7,7 @@ packages:
   - ./.stacks/functions
   - ./.stacks/ide/*
   - ./.stacks/stacks/*
-  - ./.stacks/pages/*
+  - ./.stacks/views/*
   - ./.stacks/vscode
   - ./.stacks
   - ./

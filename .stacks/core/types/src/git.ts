@@ -33,7 +33,7 @@ export interface GitOptions {
    * git: [
    *   scopes: [
    *     '', 'ci', 'deps', 'dx', 'release', 'readme', 'test', 'actions', 'build', 'cli',
-   *     'config', 'examples', 'functions', 'modules', 'pages', 'router', 'scripts',
+   *     'config', 'examples', 'functions', 'modules', 'views', 'router', 'scripts',
    *     'ui', 'utils', 'arrays', 'collections', 'fs', 'objects', 'strings',
    *   ]
    * ]

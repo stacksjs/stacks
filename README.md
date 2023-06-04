@@ -123,7 +123,7 @@ The following list includes some of the most common ways to interact with the St
 
 ```bash
 buddy install # installs all dependencies
-buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev # starts one of the dev servers (components, functions, views, or docs)
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
@@ -161,10 +161,10 @@ buddy upgrade:all # upgrades Node, package manager, framework, dependencies
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
 
-buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev # starts one of the dev servers (components, functions, views, or docs)
 buddy dev:components # starts local playground dev server
 buddy dev:desktop # starts the Desktop playground
-buddy dev:pages # starts local playground pages dev server
+buddy dev:views # starts local playground views dev server
 buddy dev:functions # stubs local the functions
 buddy dev:docs # starts local docs dev server
 buddy development # `buddy dev` alias
@@ -173,13 +173,13 @@ buddy development # `buddy dev` alias
 buddy serve
 buddy serve:components
 buddy serve:desktop
-buddy serve:pages
+buddy serve:views
 buddy serve:functions
 buddy serve:docs
 
 # building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
 buddy build # select a specific build (follow CLI prompts)
-buddy build:pages # builds SSG pages
+buddy build:views # builds SSG views
 buddy build:desktop # builds Desktop application
 buddy build:library # builds any or all libraries
 buddy build:functions # builds function library
@@ -193,7 +193,7 @@ buddy prod
 buddy prod:components
 buddy prod:desktop
 buddy prod:library
-buddy prod:pages
+buddy prod:views
 buddy prod:functions
 buddy prod:vue-components
 buddy prod:web-components
@@ -227,7 +227,7 @@ buddy changelog # generates CHANGELOG.md
 buddy deploy # select a specific deployment (follow CLI prompts)
 buddy deploy:docs # deploys docs to AWS (or other configured provider)
 buddy deploy:functions # deploys functions to AWS (or other configured provider)
-buddy deploy:pages # deploys pages to AWS (or other configured provider)
+buddy deploy:views # deploys views to AWS (or other configured provider)
 buddy deploy:all # deploys all your code
 
 # select the example to run (follow CLI prompts)
@@ -237,7 +237,7 @@ buddy example:web-components # runs the Web Component example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
 buddy generate  # prompts you to select which generator to run
-buddy generate:entries # generates entry files for components, functions, & pages
+buddy generate:entries # generates entry files for components, functions, & views
 buddy generate:vue-compat # generates Vue 2 compatibility layer
 buddy generate:web-types # generates Web Component types
 buddy generate:vscode-custom-data # generates VSCode custom data
@@ -249,8 +249,8 @@ buddy generate:all # runs all generators
 buddy key:generate # generates your application key
 
 # generate your TypeScript declarations
-buddy types:generate # generates types for your components, functions, & pages
-buddy types:fix # auto-fixes types for your components, functions, & pages
+buddy types:generate # generates types for your components, functions, & views
+buddy types:fix # auto-fixes types for your components, functions, & views
 
 # test your stack
 buddy test # runs test suite (unit & e2e)

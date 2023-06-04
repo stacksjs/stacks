@@ -28,7 +28,7 @@
 // const actionable = computed(() => table.actionable)
 // const selectedRows = computed(() => table.selectedRows)
 // const selectedAll = computed(() => table.selectedAll)
-// const pages: Ref<number[]> = ref([])
+// const views: Ref<number[]> = ref([])
 // const indeterminate = computed(() => (table?.selectedRows?.length ?? 0) > 0 && (table?.selectedRows?.length ?? 0) < hits.value.length)
 // const lastColumn = computed(() => {
 //   return table.columns[table.columns.length - 1]
@@ -201,7 +201,7 @@
 //     selectedRows,
 //     selectedAll,
 //     totalPages,
-//     pages,
+//     views,
 //     filterName,
 //   }
 // }

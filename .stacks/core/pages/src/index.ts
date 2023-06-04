@@ -4,7 +4,7 @@
 // const { fs } = filesystem
 //
 // function generateSettings() {
-//   config.settings?.pages.forEach((page: string) => {
+//   config.settings?.views.forEach((page: string) => {
 //     fs.appendFile(
 //       `${config.settings?.path}/${page}.vue`,
 //       '',
@@ -19,7 +19,7 @@
 // }
 //
 // function generateOnboarding() {
-//   config.onboarding?.pages.forEach((page: string) => {
+//   config.onboarding?.views.forEach((page: string) => {
 //     fs.appendFile(
 //       `${config.onboarding?.path}/${page}.vue`,
 //       '',

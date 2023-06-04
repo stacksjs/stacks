@@ -62,7 +62,7 @@ The following list of commands is one of the most common ways to interact with t
 
 ```bash
 buddy install # installs all dependencies
-buddy dev # starts one of the dev servers (components, functions, pages, desktop or docs)
+buddy dev # starts one of the dev servers (components, functions, views, desktop or docs)
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases of the stack & consequently, publishes them (to npm)
@@ -90,17 +90,17 @@ buddy --help # view help menu
 # if you need any more info to any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy command --help`
 
-buddy dev # starts one of the dev servers (components, functions, pages, or docs)
+buddy dev # starts one of the dev servers (components, functions, views, or docs)
 buddy dev:components # starts local playground dev server
 buddy dev:desktop # starts the Desktop playground
-buddy dev:pages # starts local playground pages dev server
+buddy dev:views # starts local playground views dev server
 buddy dev:functions # stubs local the functions
 buddy dev:docs # starts local docs dev server
 
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
-buddy serve # starts one of the dev servers (components, functions, pages, or docs)
+buddy serve # starts one of the dev servers (components, functions, views, or docs)
 buddy serve:components # starts local playground dev server
-buddy serve:pages # starts local playground pages dev server
+buddy serve:views # starts local playground views dev server
 buddy serve:functions # stubs local the functions
 buddy serve:docs # starts local docs dev server
 
@@ -130,12 +130,12 @@ buddy build:components # builds Vue component library & Web Component library
 buddy build:functions # builds function library
 buddy build:vue-components # builds Vue 2 & 3-ready Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-buddy build:pages # builds pages
+buddy build:views # builds views
 
 # when deploying your app/s
 buddy deploy:docs
 buddy deploy:functions
-buddy deploy:pages
+buddy deploy:views
 
 # select the example to run (follow CLI prompts)
 buddy example

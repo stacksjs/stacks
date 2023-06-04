@@ -4,7 +4,7 @@ import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
-// import { components, desktop, functions, pages, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
+// import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 async function dev(buddy: CLI) {
   const descriptions = {
@@ -22,7 +22,7 @@ async function dev(buddy: CLI) {
     .option('-c, --components', descriptions.components)
     .option('-f, --functions', descriptions.functions)
     .option('-d, --docs', descriptions.docs)
-    .option('-p, --pages', descriptions.pages)
+    .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       if (hasNoOptions(options)) {
@@ -127,7 +127,7 @@ async function dev(buddy: CLI) {
     })
 
   buddy
-    .command('dev:pages', descriptions.pages)
+    .command('dev:views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await pages(options)

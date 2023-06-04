@@ -13,7 +13,7 @@ async function create(buddy: CLI) {
     components: 'Are you building UI components?',
     webComponents: 'Automagically built optimized custom elements/web components?',
     vue: 'Automagically built a Vue component library?',
-    pages: 'How about pages?',
+    pages: 'How about views/views?',
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
@@ -26,7 +26,7 @@ async function create(buddy: CLI) {
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
     .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('-v, --vue', descriptions.vue, { default: true })
-    .option('-p, --pages', descriptions.pages, { default: true }) // pages need an HTTP server
+    .option('-p, --views', descriptions.pages, { default: true }) // views need an HTTP server
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })

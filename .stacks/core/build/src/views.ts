@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { functionsPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
-import { autoImports, components, cssEngine, inspect, layouts, markdown, pages, pwa, uiEngine } from '.'
+import { autoImports, components, cssEngine, inspect, layouts, pages, pwa, uiEngine } from '.'
 
 export const pagesConfig: ViteConfig = {
   root: functionsPath(),
@@ -23,7 +23,6 @@ export const pagesConfig: ViteConfig = {
     components(),
     layouts(),
     // i18n(),
-    markdown(),
     autoImports(),
     pwa(),
     inspect(),

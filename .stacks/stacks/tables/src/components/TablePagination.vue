@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // const emit = defineEmits(['paginateToNextPage', 'paginateToPreviousPage', 'paginateToPage'])
 
-// const { goToNextPage, goToPrevPage, goToPage, table, lastPageNumber, pages } = await useTable()
+// const { goToNextPage, goToPrevPage, goToPage, table, lastPageNumber, views } = await useTable()
 
 // watch(totalPages, (newValue, oldValue) => {
 //   // eslint-disable-next-line no-console
@@ -28,7 +28,7 @@
 //   return false
 // })
 
-// console.log('pages', pages.value)
+// console.log('views', views.value)
 
 // function next() {
 //   goToNextPage()
@@ -101,7 +101,7 @@
           </a> -->
 
           <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
-          <!-- <a v-for="page in pages" :key="page" href="#" aria-current="page"
+          <!-- <a v-for="page in views" :key="page" href="#" aria-current="page"
             :class="[table.currentPage === page && 'border bg-yellow-500 border-yellow-500 text-gray-900 z-10']"
             class="border border-gray-300 text-gray-500 font-medium text-sm py-2 px-4 relative inline-flex items-center underline-transparent"
             @click.prevent="paginateTo(page)">
