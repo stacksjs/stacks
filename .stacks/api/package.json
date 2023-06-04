@@ -31,7 +31,7 @@
     "dev": "npx nitro dev",
     "build": "npx nitro build",
     "preview": "",
-    "deploy": "buddy deploy"
+    "deploy": "wip"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
