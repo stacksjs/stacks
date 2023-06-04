@@ -72,7 +72,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS)_
-- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mail_
+- 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🚜 **Maintenance** _handles your cloud infrastructure via the Stacks & Serverless framework_
 - 🤖 **Infrastructure as Code** _create & maintain your cloud infrastructure with ease_
@@ -94,7 +94,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
-- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you [Sarah Drasner](https://github.com/sdras/vue-vscode-snippets)_
+- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
 - 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
@@ -110,15 +110,12 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-sh <(curl stacksjs.dev)
+sh <(curl stacksjs.dev) my-project
 
-# alternatively, if Node.js >= v18.12 is installed already,
+# alternatively, if Node.js >= v18.16 is installed already,
 # you may also get started via:
 npx stacks new my-project
 ```
-
-> **Note**
-> pnpm 8 required. _Run the setup script & 🐶 Buddy will set you up. He barks otherwise._
 
 ## 🤖 Usage
 
@@ -130,7 +127,7 @@ buddy dev # starts one of the dev servers (components, functions, views, or docs
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
-buddy upgrade # auto-update deps & the Stacks framework
+buddy upgrade # auto-update all deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
@@ -148,69 +145,76 @@ buddy --help # view help menu
 # please note: you may suffix any command with the
 # `command --help` flag to review the help menu
 
-buddy install # installs your dependencies
+buddy install # installs dependencies
+buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
-buddy clean # removes all your deps
+buddy clean # removes all deps
 
-buddy update # auto-update deps & the Stacks framework
-buddy update:dependencies # auto-update deps & the Stacks framework
-buddy update:framework # auto-update deps & the Stacks framework
-buddy update:package-manager # auto-update deps & the Stacks framework
-buddy update:search-engine # auto-updates Meilisearch
-buddy update:node # update to latest project-defined node version
-buddy update:all # update Node, package manager, framework, dependencies
+buddy upgrade # auto-upgrades deps, framework, node.js, and/or pnpm
+buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
+buddy upgrade:framework # auto-upgrades deps & the Stacks framework
+buddy upgrade:package-manager # auto-upgrades deps & the Stacks framework
+buddy upgrade:search-engine # auto-upgrades configured search engine
+buddy upgrade:node # upgrades to latest project-defined node version
+buddy upgrade:all # upgrades Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
 
-buddy dev # start one of the dev servers (components, functions, views, or docs)
-buddy dev:components # start local playground dev server
+buddy dev # starts one of the dev servers (components, functions, views, or docs)
+buddy dev:components # starts local playground dev server
 buddy dev:desktop # starts the Desktop playground
-buddy dev:views # start local playground views dev server
-buddy dev:functions # stub local the functions
-buddy dev:docs # start local docs dev server
+buddy dev:views # starts local playground views dev server
+buddy dev:functions # stubs local the functions
+buddy dev:docs # starts local docs dev server
 buddy development # `buddy dev` alias
 
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve
 buddy serve:components
+buddy serve:desktop
 buddy serve:views
 buddy serve:functions
 buddy serve:docs
 
 # building for production (e.g. AWS, Google Cloud, npm, Vercel, Netlify, et al.)
 buddy build # select a specific build (follow CLI prompts)
-buddy build:components # build Vue component library & Web Component library
-buddy build:vue-components # build Vue 2 & 3-ready Component library
-buddy build:web-components # build framework agnostic Web Component library (i.e. Custom Elements)
-buddy build:functions # build function library
-buddy build:views # build SSG views
-buddy build:all # build all your code
+buddy build:views # builds SSG views
+buddy build:desktop # builds Desktop application
+buddy build:library # builds any or all libraries
+buddy build:functions # builds function library
+buddy build:components # builds Vue component library & Web Component library
+buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
+buddy build:vue-components # builds Vue 2 & 3-ready Component library
+buddy build:all # builds all your code
 
 # `buddy build` aliases
 buddy prod
 buddy prod:components
+buddy prod:desktop
+buddy prod:library
+buddy prod:views
+buddy prod:functions
 buddy prod:vue-components
 buddy prod:web-components
-buddy prod:functions
-buddy prod:views
 buddy prod:all
 buddy production # `buddy prod` alias
 
 # sets your application key
 buddy key:generate
 
-buddy make:stack project
-buddy make:component HelloWorld
-buddy make:function hello-world
-buddy make:page hello-world
-buddy make:lang de
-buddy make:notification welcome-email
-buddy make:database cars
-buddy make:table brands
-buddy make:migration create_cars_table
-buddy make:factory cars
-buddy make:seed cars
+buddy make:component HelloWorld # bootstraps a HelloWorld component
+buddy make:function hello-world # bootstraps a hello-world function
+buddy make:page hello-world # bootstraps a hello-word page
+buddy make:model Car # bootstraps a Car model
+buddy make:database cars # creates a cars database
+buddy make:migration create_cars_table # creates a cars migration file
+buddy make:factory cars # creates a Car factory file
+buddy make:seed cars # creates a Car seed file
+buddy make:table cars # boostraps a cars data table
+buddy make:notification welcome-email # bootstraps a welcome-email notification
+buddy make:lang de # bootstraps a lang/de.yml language file
+buddy make:stack my-project # shares logic with `npx stacks new my-project`
 
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues
@@ -220,33 +224,33 @@ buddy release # creates the releases for the stack & triggers the Release Action
 buddy changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
-buddy deploy
-buddy deploy:docs
-buddy deploy:functions
-buddy deploy:views
-buddy deploy:all
+buddy deploy # select a specific deployment (follow CLI prompts)
+buddy deploy:docs # deploys docs to AWS (or other configured provider)
+buddy deploy:functions # deploys functions to AWS (or other configured provider)
+buddy deploy:views # deploys views to AWS (or other configured provider)
+buddy deploy:all # deploys all your code
 
 # select the example to run (follow CLI prompts)
-buddy example
-buddy example:vue
-buddy example:web-components
+buddy example # prompts you to select which example to run
+buddy example:vue # runs the Vue example
+buddy example:web-components # runs the Web Component example
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
-buddy generate
-buddy generate:entries
-buddy generate:vue-compat
-buddy generate:web-types
-buddy generate:vscode-custom-data
-buddy generate:ide-helpers
-buddy generate:component-meta
-buddy generate:all
+buddy generate  # prompts you to select which generator to run
+buddy generate:entries # generates entry files for components, functions, & views
+buddy generate:vue-compat # generates Vue 2 compatibility layer
+buddy generate:web-types # generates Web Component types
+buddy generate:vscode-custom-data # generates VSCode custom data
+buddy generate:ide-helpers # generates IDE helpers
+buddy generate:component-meta # generates component meta
+buddy generate:all # runs all generators
 
 # generates your application key
-buddy key:generate
+buddy key:generate # generates your application key
 
 # generate your TypeScript declarations
-buddy types:generate
-buddy types:fix
+buddy types:generate # generates types for your components, functions, & views
+buddy types:fix # auto-fixes types for your components, functions, & views
 
 # test your stack
 buddy test # runs test suite (unit & e2e)
@@ -259,12 +263,6 @@ stx fresh
 buddy fresh
 bud fresh
 buddy fresh
-pnpm stx fresh
-pnpm buddy fresh
-pnpm buddy fresh
-pnpm fresh
-pnpm run fresh
-pnpm run buddy fresh
 ```
 
 </details>
@@ -275,7 +273,7 @@ Read more here about the Stacks CLI in the documentation.
 
 Because Stacks optimizes the development of easily reusable & composable component & function libraries, the primary intention is to always _keep it simple, yet configurable._
 
-By default, Stacks realizes whether your Stack includes components, functions, and/or pages. Based on that determination, Stacks builds your outputs.
+By default, Stacks realizes whether your Stack includes components, functions, and/or views. Based on that determination, Stacks builds your outputs.
 
 The UI libraries that automatically get built are: a Web Component (Custom Elements) & Vue Component library.
 
@@ -347,7 +345,7 @@ You may view this framework as an incredibly “useful set of frames” to assis
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/stacksjs/table) (Data tables with ease)
+- [Table](https://github.com/stacksjs/stacks/tree/main/.stacks/stacks/tables) (Data tables with ease)
 - [Calendar](https://github.com/stacksjs/calendar) (Add to Calendar utilities—iCal, Google, and more)
 - [Command Palette](https://github.com/stacksjs/command-palette) (`⌘ + k` for the web)
 - [Date Picker](https://github.com/stacksjs/date-picker) (Beautiful, modern date picker)
@@ -355,11 +353,10 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Image](https://github.com/stacksjs/image) (Modern image experience)
 - [Video](https://github.com/stacksjs/video) (Modern video experience)
 - [Audio](https://github.com/stacksjs/audio) (Modern audio experience)
-- [Web3](https://github.com/stacksjs/web3) (Solana support, cross-chain core. _Ethereum & Cardano drivers coming._)
-  - [Wallets](https://github.com/stacksjs/wallets) (Wallet Authentication)
-  - [NFT](https://github.com/stacksjs/nft) (NFTs, Candy Machine mechanisms, and more.)
-  - [DeFi](https://github.com/stacksjs/defi) (Cross-chain DeFi engine, including staking support)
-  - [DAO](https://github.com/stacksjs/dao) (Powerful toolkit for DAO governance, including a Reddit-type of voting system)
+- [Identity](https://github.com/stacksjs/identity) (Identity providers & wallet integrations)
+- [Digital Ownership](https://github.com/stacksjs/ownership) (decentralized, public ownership protocol integrations)
+- [Payments](https://github.com/stacksjs/payments) (Unified payment APIs)
+- [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
 
 View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
 

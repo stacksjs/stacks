@@ -273,7 +273,7 @@ Read more here about the Stacks CLI in the documentation.
 
 Because Stacks optimizes the development of easily reusable & composable component & function libraries, the primary intention is to always _keep it simple, yet configurable._
 
-By default, Stacks realizes whether your Stack includes components, functions, and/or pages. Based on that determination, Stacks builds your outputs.
+By default, Stacks realizes whether your Stack includes components, functions, and/or views. Based on that determination, Stacks builds your outputs.
 
 The UI libraries that automatically get built are: a Web Component (Custom Elements) & Vue Component library.
 
@@ -345,7 +345,7 @@ You may view this framework as an incredibly “useful set of frames” to assis
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/stacksjs/table) (Data tables with ease)
+- [Table](https://github.com/stacksjs/stacks/tree/main/.stacks/stacks/tables) (Data tables with ease)
 - [Calendar](https://github.com/stacksjs/calendar) (Add to Calendar utilities—iCal, Google, and more)
 - [Command Palette](https://github.com/stacksjs/command-palette) (`⌘ + k` for the web)
 - [Date Picker](https://github.com/stacksjs/date-picker) (Beautiful, modern date picker)
@@ -353,11 +353,10 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Image](https://github.com/stacksjs/image) (Modern image experience)
 - [Video](https://github.com/stacksjs/video) (Modern video experience)
 - [Audio](https://github.com/stacksjs/audio) (Modern audio experience)
-- [Web3](https://github.com/stacksjs/web3) (Solana support, cross-chain core. _Ethereum & Cardano drivers coming._)
-  - [Wallets](https://github.com/stacksjs/wallets) (Wallet Authentication)
-  - [NFT](https://github.com/stacksjs/nft) (NFTs, Candy Machine mechanisms, and more.)
-  - [DeFi](https://github.com/stacksjs/defi) (Cross-chain DeFi engine, including staking support)
-  - [DAO](https://github.com/stacksjs/dao) (Powerful toolkit for DAO governance, including a Reddit-type of voting system)
+- [Identity](https://github.com/stacksjs/identity) (Identity providers & wallet integrations)
+- [Digital Ownership](https://github.com/stacksjs/ownership) (decentralized, public ownership protocol integrations)
+- [Payments](https://github.com/stacksjs/payments) (Unified payment APIs)
+- [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
 
 View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
 
