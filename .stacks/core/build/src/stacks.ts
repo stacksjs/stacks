@@ -55,6 +55,7 @@ function autoImports(options?: AutoImportsOptions) {
     imports: [
       'vue', 'vue-router', 'vue/macros', 'vitest',
       { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
+      { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
     ],
     dirs: [
       p.resourcesPath('functions'),
@@ -69,7 +70,6 @@ function autoImports(options?: AutoImportsOptions) {
       p.chatPath('src'),
       p.cliPath('src'),
       p.cloudPath('src'),
-      p.collectionsPath('src'),
       p.databasePath('src'),
       p.datetimePath('src'),
       p.desktopPath('src'),
@@ -78,7 +78,6 @@ function autoImports(options?: AutoImportsOptions) {
       p.fakerPath('src'),
       p.healthPath('src'),
       p.lintPath('src'),
-      p.loggingPath('src'),
       p.notificationsPath('src'),
       p.objectsPath('src'),
       p.ormPath('src'),

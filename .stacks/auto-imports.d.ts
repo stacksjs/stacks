@@ -165,7 +165,7 @@ declare global {
   const databasePath: typeof import('./core/path/src/index')['databasePath']
   const dateFormat: typeof import('./core/datetime/src/index')['dateFormat']
   const datetimePath: typeof import('./core/path/src/index')['datetimePath']
-  const dd: typeof import('./core/logging/src/index')['dd']
+  const dd: typeof import('@stacksjs/logging')['dd']
   const debounce: typeof import('./core/utils/src/debounce')['debounce']
   const debouncedRef: typeof import('./core/utils/src/vendors')['debouncedRef']
   const debouncedWatch: typeof import('./core/utils/src/vendors')['debouncedWatch']
@@ -225,7 +225,7 @@ declare global {
   const doesFolderExist: typeof import('./core/storage/src/index')['doesFolderExist']
   const doesNotContain: typeof import('./core/arrays/src/index')['doesNotContain']
   const dotCase: typeof import('./core/strings/src/case')['dotCase']
-  const dump: typeof import('./core/logging/src/index')['dump']
+  const dump: typeof import('@stacksjs/logging')['dump']
   const dynamodb: typeof import('./core/cache/src/index')['dynamodb']
   const eagerComputed: typeof import('./core/utils/src/vendors')['eagerComputed']
   const effect: typeof import('./core/signals/src/index')['effect']
@@ -423,7 +423,7 @@ declare global {
   const listen: typeof import('./core/events/src/index')['listen']
   const loadConfig: typeof import('./core/config/src/index')['loadConfig']
   const loadStacksConfig: typeof import('./core/config/src/stacks')['loadStacksConfig']
-  const log: typeof import('./core/logging/src/index')['log']
+  const log: typeof import('./core/cli/src/console')['log']
   const loggingPath: typeof import('./core/path/src/index')['loggingPath']
   const logicNot: typeof import('./core/utils/src/math')['logicNot']
   const logicOr: typeof import('./core/utils/src/math')['logicOr']
@@ -1013,7 +1013,7 @@ declare module 'vue' {
     readonly databasePath: UnwrapRef<typeof import('./core/path/src/index')['databasePath']>
     readonly dateFormat: UnwrapRef<typeof import('./core/datetime/src/index')['dateFormat']>
     readonly datetimePath: UnwrapRef<typeof import('./core/path/src/index')['datetimePath']>
-    readonly dd: UnwrapRef<typeof import('./core/logging/src/index')['dd']>
+    readonly dd: UnwrapRef<typeof import('@stacksjs/logging')['dd']>
     readonly debounce: UnwrapRef<typeof import('./core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('./core/utils/src/vendors')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('./core/utils/src/vendors')['debouncedWatch']>
@@ -1072,7 +1072,7 @@ declare module 'vue' {
     readonly doesFolderExist: UnwrapRef<typeof import('./core/storage/src/index')['doesFolderExist']>
     readonly doesNotContain: UnwrapRef<typeof import('./core/arrays/src/index')['doesNotContain']>
     readonly dotCase: UnwrapRef<typeof import('./core/strings/src/case')['dotCase']>
-    readonly dump: UnwrapRef<typeof import('./core/logging/src/index')['dump']>
+    readonly dump: UnwrapRef<typeof import('@stacksjs/logging')['dump']>
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>
     readonly eagerComputed: UnwrapRef<typeof import('./core/utils/src/vendors')['eagerComputed']>
     readonly effect: UnwrapRef<typeof import('./core/signals/src/index')['effect']>
@@ -1268,7 +1268,7 @@ declare module 'vue' {
     readonly link: UnwrapRef<typeof import('./core/cli/src/utilities')['link']>
     readonly lintPath: UnwrapRef<typeof import('./core/path/src/index')['lintPath']>
     readonly listen: UnwrapRef<typeof import('./core/events/src/index')['listen']>
-    readonly log: UnwrapRef<typeof import('./core/logging/src/index')['log']>
+    readonly log: UnwrapRef<typeof import('./core/cli/src/console')['log']>
     readonly loggingPath: UnwrapRef<typeof import('./core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('./core/utils/src/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('./core/utils/src/math')['logicOr']>
@@ -1848,7 +1848,7 @@ declare module '@vue/runtime-core' {
     readonly databasePath: UnwrapRef<typeof import('./core/path/src/index')['databasePath']>
     readonly dateFormat: UnwrapRef<typeof import('./core/datetime/src/index')['dateFormat']>
     readonly datetimePath: UnwrapRef<typeof import('./core/path/src/index')['datetimePath']>
-    readonly dd: UnwrapRef<typeof import('./core/logging/src/index')['dd']>
+    readonly dd: UnwrapRef<typeof import('@stacksjs/logging')['dd']>
     readonly debounce: UnwrapRef<typeof import('./core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('./core/utils/src/vendors')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('./core/utils/src/vendors')['debouncedWatch']>
@@ -1907,7 +1907,7 @@ declare module '@vue/runtime-core' {
     readonly doesFolderExist: UnwrapRef<typeof import('./core/storage/src/index')['doesFolderExist']>
     readonly doesNotContain: UnwrapRef<typeof import('./core/arrays/src/index')['doesNotContain']>
     readonly dotCase: UnwrapRef<typeof import('./core/strings/src/case')['dotCase']>
-    readonly dump: UnwrapRef<typeof import('./core/logging/src/index')['dump']>
+    readonly dump: UnwrapRef<typeof import('@stacksjs/logging')['dump']>
     readonly dynamodb: UnwrapRef<typeof import('./core/cache/src/index')['dynamodb']>
     readonly eagerComputed: UnwrapRef<typeof import('./core/utils/src/vendors')['eagerComputed']>
     readonly effect: UnwrapRef<typeof import('./core/signals/src/index')['effect']>
@@ -2103,7 +2103,7 @@ declare module '@vue/runtime-core' {
     readonly link: UnwrapRef<typeof import('./core/cli/src/utilities')['link']>
     readonly lintPath: UnwrapRef<typeof import('./core/path/src/index')['lintPath']>
     readonly listen: UnwrapRef<typeof import('./core/events/src/index')['listen']>
-    readonly log: UnwrapRef<typeof import('./core/logging/src/index')['log']>
+    readonly log: UnwrapRef<typeof import('./core/cli/src/console')['log']>
     readonly loggingPath: UnwrapRef<typeof import('./core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('./core/utils/src/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('./core/utils/src/math')['logicOr']>
