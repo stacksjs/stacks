@@ -9,7 +9,7 @@ import { autoImports, components, cssEngine, inspect, layouts, pages, pwa, uiEng
 export const pagesConfig: ViteConfig = {
   root: functionsPath(),
   envDir: projectPath(),
-  envPrefix: 'APP_',
+  envPrefix: 'FRONTEND_',
 
   resolve: {
     alias,
