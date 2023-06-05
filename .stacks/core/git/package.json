@@ -2,7 +2,7 @@
   "name": "@stacksjs/git",
   "type": "module",
   "version": "0.53.1",
-  "packageManager": "pnpm@8.6.0",
+  "packageManager": "pnpm@8.6.1",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "bumpp": "^9.1.0",
+    "bumpp": "^9.1.1",
     "changelogen": "^0.5.3",
     "commitizen": "^4.3.0",
     "cz-git": "^1.6.1",
