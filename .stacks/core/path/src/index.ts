@@ -78,8 +78,12 @@ export function buildEnginePath(path?: string) {
   return buildPath(`${path || ''}`)
 }
 
-export function buildEntriesPath(path?: string) {
-  return buildPath(`entries/${path || ''}`)
+export function libsPath(path?: string) {
+  return frameworkPath(`libs/${path || ''}`)
+}
+
+export function libsEntriesPath(path?: string) {
+  return libsPath(`entries/${path || ''}`)
 }
 
 export function cachePath(path?: string) {
@@ -186,8 +190,9 @@ export function langPath(path?: string) {
   return resourcesPath(`lang/${path || ''}`)
 }
 
-export function libraryEntryPath(type: 'vue-components' | 'web-components' | 'functions') {
-  return buildEntriesPath(`${type}.ts`)
+export type LibraryType = 'vue-components' | 'web-components' | 'functions'
+export function libraryEntryPath(type: LibraryType) {
+  return libsEntriesPath(`${type}.ts`)
 }
 
 export function lintPath(path?: string) {
@@ -389,7 +394,7 @@ const path = {
   appPath,
   authPath,
   buildEnginePath,
-  buildEntriesPath,
+  libsEntriesPath,
   buildPath,
   cachePath,
   chatPath,
@@ -419,6 +424,7 @@ const path = {
   functionsPath,
   gitPath,
   langPath,
+  libsPath,
   libraryEntryPath,
   lintPath,
   loggingPath,

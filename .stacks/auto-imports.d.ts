@@ -91,7 +91,6 @@ declare global {
   const breakpointsTailwind: typeof import('./core/utils/src/vendors')['breakpointsTailwind']
   const breakpointsVuetify: typeof import('./core/utils/src/vendors')['breakpointsVuetify']
   const buildEnginePath: typeof import('./core/path/src/index')['buildEnginePath']
-  const buildEntriesPath: typeof import('./core/path/src/index')['buildEntriesPath']
   const buildPath: typeof import('./core/path/src/index')['buildPath']
   const cache: typeof import('../config/cache')['default']
   const cachePath: typeof import('./core/path/src/index')['cachePath']
@@ -411,6 +410,8 @@ declare global {
   const lessThanOrEqual: typeof import('./core/utils/src/currency')['lessThanOrEqual']
   const library: typeof import('../config/library')['default']
   const libraryEntryPath: typeof import('./core/path/src/index')['libraryEntryPath']
+  const libsEntriesPath: typeof import('./core/path/src/index')['libsEntriesPath']
+  const libsPath: typeof import('./core/path/src/index')['libsPath']
   const lightBlue: typeof import('./core/cli/src/utilities')['lightBlue']
   const lightCyan: typeof import('./core/cli/src/utilities')['lightCyan']
   const lightGray: typeof import('./core/cli/src/utilities')['lightGray']
@@ -941,7 +942,6 @@ declare module 'vue' {
     readonly breakpointsTailwind: UnwrapRef<typeof import('./core/utils/src/vendors')['breakpointsTailwind']>
     readonly breakpointsVuetify: UnwrapRef<typeof import('./core/utils/src/vendors')['breakpointsVuetify']>
     readonly buildEnginePath: UnwrapRef<typeof import('./core/path/src/index')['buildEnginePath']>
-    readonly buildEntriesPath: UnwrapRef<typeof import('./core/path/src/index')['buildEntriesPath']>
     readonly buildPath: UnwrapRef<typeof import('./core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../config/cache')['default']>
     readonly cachePath: UnwrapRef<typeof import('./core/path/src/index')['cachePath']>
@@ -1258,6 +1258,8 @@ declare module 'vue' {
     readonly lessThanOrEqual: UnwrapRef<typeof import('./core/utils/src/currency')['lessThanOrEqual']>
     readonly library: UnwrapRef<typeof import('../config/library')['default']>
     readonly libraryEntryPath: UnwrapRef<typeof import('./core/path/src/index')['libraryEntryPath']>
+    readonly libsEntriesPath: UnwrapRef<typeof import('./core/path/src/index')['libsEntriesPath']>
+    readonly libsPath: UnwrapRef<typeof import('./core/path/src/index')['libsPath']>
     readonly lightBlue: UnwrapRef<typeof import('./core/cli/src/utilities')['lightBlue']>
     readonly lightCyan: UnwrapRef<typeof import('./core/cli/src/utilities')['lightCyan']>
     readonly lightGray: UnwrapRef<typeof import('./core/cli/src/utilities')['lightGray']>
@@ -1776,7 +1778,6 @@ declare module '@vue/runtime-core' {
     readonly breakpointsTailwind: UnwrapRef<typeof import('./core/utils/src/vendors')['breakpointsTailwind']>
     readonly breakpointsVuetify: UnwrapRef<typeof import('./core/utils/src/vendors')['breakpointsVuetify']>
     readonly buildEnginePath: UnwrapRef<typeof import('./core/path/src/index')['buildEnginePath']>
-    readonly buildEntriesPath: UnwrapRef<typeof import('./core/path/src/index')['buildEntriesPath']>
     readonly buildPath: UnwrapRef<typeof import('./core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../config/cache')['default']>
     readonly cachePath: UnwrapRef<typeof import('./core/path/src/index')['cachePath']>
@@ -2093,6 +2094,8 @@ declare module '@vue/runtime-core' {
     readonly lessThanOrEqual: UnwrapRef<typeof import('./core/utils/src/currency')['lessThanOrEqual']>
     readonly library: UnwrapRef<typeof import('../config/library')['default']>
     readonly libraryEntryPath: UnwrapRef<typeof import('./core/path/src/index')['libraryEntryPath']>
+    readonly libsEntriesPath: UnwrapRef<typeof import('./core/path/src/index')['libsEntriesPath']>
+    readonly libsPath: UnwrapRef<typeof import('./core/path/src/index')['libsPath']>
     readonly lightBlue: UnwrapRef<typeof import('./core/cli/src/utilities')['lightBlue']>
     readonly lightCyan: UnwrapRef<typeof import('./core/cli/src/utilities')['lightCyan']>
     readonly lightGray: UnwrapRef<typeof import('./core/cli/src/utilities')['lightGray']>

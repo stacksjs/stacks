@@ -1,68 +1,76 @@
 import { log } from '@stacksjs/logging'
 import { kebabCase } from '@stacksjs/strings'
+import type { LibraryType } from '@stacksjs/path'
 import { libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
-import type { LibEntryType } from '@stacksjs/types'
 import { library } from '@stacksjs/config'
+import { ExitCode } from '@stacksjs/types'
 
 /**
  * Based on the config values, this method
  * will generate the library entry points.
  *
- * @param type string
+ * @param type LibraryType
  */
-export async function generateLibEntry(type: LibEntryType) {
-  try {
-    if (type === 'vue-components')
-      await createVueLibraryEntryPoint()
-
-    if (type === 'web-components')
-      await createWebComponentLibraryEntryPoint()
-
-    if (type === 'functions')
-      await createFunctionLibraryEntryPoint()
-  }
-  catch (err) {
-    log.error('There was an error generating the library entry point', err)
-    process.exit()
-  }
+export async function generateLibEntry(type: LibraryType) {
+  await createLibraryEntryPoint(type)
 }
 
-export async function createVueLibraryEntryPoint() {
+export async function createLibraryEntryPoint(type: LibraryType) {
+  if (type === 'vue-components')
+    await createVueLibraryEntryPoint()
+
+  if (type === 'web-components')
+    await createWebComponentLibraryEntryPoint()
+
+  if (type === 'functions')
+    await createFunctionLibraryEntryPoint()
+}
+
+export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
   log.info('Creating the Vue component library entry point...')
 
   await writeTextFile({
-    path: libraryEntryPath('vue-components'),
-    data: generateEntryPointData('vue-components'),
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating the Vue component library entry point', err)
+    process.exit(ExitCode.FatalError)
   })
 
   log.success('Created the Vue component library entry point')
 }
 
-export async function createWebComponentLibraryEntryPoint() {
+export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
   log.info('Creating the Web Component library entry point...')
 
   await writeTextFile({
-    path: libraryEntryPath('web-components'),
-    data: generateEntryPointData('web-components'),
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating the Web Component library entry point', err)
+    process.exit(ExitCode.FatalError)
   })
 
   log.success('Created Web Component library entry point')
 }
 
-export async function createFunctionLibraryEntryPoint() {
+export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
   log.info('Creating the Function library entry point...')
 
   await writeTextFile({
-    path: libraryEntryPath('functions'),
-    data: generateEntryPointData('functions'),
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating the Function library entry point', err)
+    process.exit(ExitCode.FatalError)
   })
 
   log.success('Created Functions library entry point')
 }
 
-export function generateEntryPointData(type: 'vue-components' | 'web-components' | 'functions'): string {
+export function generateEntryPointData(type: LibraryType): string {
   let arr = []
 
   if (type === 'functions') {

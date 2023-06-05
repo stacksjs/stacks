@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { buildEntriesPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { frameworkPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
 import { library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
@@ -22,7 +22,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', 'fsevents', '@novu/mandrill', '@maizzle/framework', 'browser-sync-ui'],
+    exclude: ['vue', 'fsevents'],
   },
 
   plugins: [
@@ -42,7 +42,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     outDir: frameworkPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
-      entry: buildEntriesPath('vue-components.ts'),
+      entry: libraryEntryPath('vue-components'),
       name: library.vueComponents?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
