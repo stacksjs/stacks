@@ -7,7 +7,7 @@ import { alias } from '@stacksjs/alias'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
-  root: frameworkPath('components/vue'),
+  root: frameworkPath('libs/components/vue'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
 

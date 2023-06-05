@@ -205,10 +205,9 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
   })
 }
 
-export { fs }
-
 export const storage = {
   _dirname,
+  fs,
   readJsonFile,
   readPackageJson,
   writeJsonFile,
@@ -225,5 +224,6 @@ export const storage = {
   deleteEmptyFolders,
   doesFolderExist,
   updateConfigFile,
-  fs,
 }
+
+export { fs }

@@ -35,7 +35,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error('There was an error generating the Vue component library entry point', err)
+    log.error(new Error('There was an error generating the Vue component library entry point.', err))
     process.exit(ExitCode.FatalError)
   })
 
@@ -49,7 +49,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error('There was an error generating the Web Component library entry point', err)
+    log.error(new Error('There was an error generating the Web Component library entry point', err))
     process.exit(ExitCode.FatalError)
   })
 
@@ -63,7 +63,7 @@ export async function createFunctionLibraryEntryPoint(type: LibraryType = 'funct
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error('There was an error generating the Function library entry point', err)
+    log.error(new Error('There was an error generating Function library entry point', err))
     process.exit(ExitCode.FatalError)
   })
 
@@ -75,15 +75,15 @@ export function generateEntryPointData(type: LibraryType): string {
 
   if (type === 'functions') {
     if (!library.functions?.functions) {
-      log.error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments.')
+      log.error(new Error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments'))
       process.exit()
     }
 
     for (const fx of library.functions?.functions) {
       if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '../../../../resources/functions/${fx[0]}'`)
+        arr.push(`export * as ${fx[1]} from '../../../../../resources/functions/${fx[0]}'`)
       else
-        arr.push(`export * from '../../../../resources/functions/${fx}'`)
+        arr.push(`export * from '../../../../../resources/functions/${fx}'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -92,7 +92,7 @@ export function generateEntryPointData(type: LibraryType): string {
 
   if (type === 'vue-components') {
     if (!library.vueComponents?.tags) {
-      log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+      log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
       process.exit()
     }
 
@@ -100,9 +100,9 @@ export function generateEntryPointData(type: LibraryType): string {
 
     for (const component of library.vueComponents?.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '../../../../resources/components/${component[0]}.vue'`)
+        arr.push(`export { default as ${component[1]} } from '../../../../../resources/components/${component[0]}.vue'`)
       else
-        arr.push(`export { default as ${component} } from '../../../../resources/components/${component}.vue'`)
+        arr.push(`export { default as ${component} } from '../../../../../resources/components/${component}.vue'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -116,18 +116,18 @@ export function generateEntryPointData(type: LibraryType): string {
   const definitions = []
 
   if (!library.webComponents?.tags) {
-    log.error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments.')
+    log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
     process.exit()
   }
 
   for (const component of library.webComponents?.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '../../../../resources/components/${component[0]}.vue'`)
+      imports.push(`import ${component[1]} from '../../../../../resources/components/${component[0]}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
     }
     else {
-      imports.push(`import ${component} from '../../../../resources/components/${component}.vue'`)
+      imports.push(`import ${component} from '../../../../../resources/components/${component}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }
