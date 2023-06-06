@@ -30,7 +30,7 @@ export async function intro(command: string, options?: IntroOptions) {
 export function outro(text: string, options: OutroOptions, error?: Error | string) {
   if (options.isError) {
     if (error)
-      log.error(error)
+      log.error(isString(error) ? new Error(error) : error)
   }
   else {
     if (options?.type === 'info')

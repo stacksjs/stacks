@@ -66,17 +66,8 @@ async function dev(buddy: CLI) {
       if (options.verbose)
         log.info('The result object is', result)
 
-      // check if result is an array
-      if (Array.isArray(result)) {
-        // check if any of the items in the array is an error
-        // if (result.some(item => item.isErr())) {
-        //   outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
-        //   process.exit()
-        // }
-      }
-
       // check if result is an error
-      else if (result.isErr()) {
+      if (result.isErr()) {
         outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
       }
