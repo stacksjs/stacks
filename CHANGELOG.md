@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.54.0...v0.54.0-1-gdb4b714a
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.54.0...v0.54.0-1-gdb4b714a)
+
+
+### 🏡 Chore
+
+  - Wip ([db4b714a](https://github.com/stacksjs/stacks/commit/db4b714a))
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.53.1...v0.53.1-48-g5d339349
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.53.1...v0.53.1-48-g5d339349)
