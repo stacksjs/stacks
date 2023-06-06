@@ -165,18 +165,6 @@ importers:
         specifier: workspace:*
         version: link:../core/server
 
-  .stacks/components/vue:
-    devDependencies:
-      stacks:
-        specifier: workspace:*
-        version: link:../..
-
-  .stacks/components/web:
-    devDependencies:
-      stacks:
-        specifier: workspace:*
-        version: link:../..
-
   .stacks/core/actions:
     dependencies:
       '@stacksjs/cli':
@@ -1714,17 +1702,17 @@ importers:
 
   .stacks/fonts/mona-sans: {}
 
-  .stacks/functions:
-    devDependencies:
-      stacks:
-        specifier: workspace:*
-        version: link:..
-
   .stacks/ide/vscode:
     devDependencies:
       '@vscode/vsce':
         specifier: ^2.19.0
         version: 2.19.0
+
+  .stacks/libs/functions:
+    devDependencies:
+      stacks:
+        specifier: workspace:*
+        version: link:../..
 
   .stacks/stacks/dashboard:
     devDependencies:

@@ -1,13 +1,12 @@
 packages:
   - ./.stacks/api
-  - ./.stacks/components/*
   - ./.stacks/core/*
   - ./.stacks/docs
   - ./.stacks/fonts/*
-  - ./.stacks/functions
   - ./.stacks/ide/*
+  - ./.stacks/libs/*
   - ./.stacks/stacks/*
+  - ./.stacks/vcs/*
   - ./.stacks/views/*
-  - ./.stacks/vscode
   - ./.stacks
   - ./
