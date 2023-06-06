@@ -93,7 +93,7 @@ function autoImports(options?: AutoImportsOptions) {
       p.signalsPath('src'),
       p.smsPath('src'),
       p.slugPath('src'),
-      // p.storagePath('src'),
+      p.storagePath('src'),
       p.stringsPath('src'),
       p.testingPath('src'),
       p.utilsPath('src'),
