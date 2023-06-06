@@ -37,17 +37,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish framework to npm
-        run: pnpm --filter './.stacks' --filter './.stacks/config' --filter './.stacks/core/**' --filter './.stacks/vscode' publish --access public --no-git-checks
+        run: pnpm --filter './.stacks' --filter './.stacks/core/**' --filter './.stacks/ide/vscode' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries to npm
-        run: pnpm run generate:entries && pnpm --filter './.stacks/components/vue' --filter './.stacks/components/web' --filter './.stacks/functions' publish --access public --no-git-checks
+        run: pnpm run generate:entries && pnpm --filter './.stacks/libs/components/vue' --filter './.stacks/libs/components/web' --filter './.stacks/libs/functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './.stacks/vscode' release
+        run: pnpm --filter './.stacks/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
