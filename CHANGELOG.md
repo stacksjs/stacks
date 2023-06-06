@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.54.2...v0.54.2-1-ga0455f01
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.54.2...v0.54.2-1-ga0455f01)
+
+
+### 🏡 Chore
+
+  - Wip ([a0455f01](https://github.com/stacksjs/stacks/commit/a0455f01))
+
+### ❤️  Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.54.1...v0.54.1-3-gde50ba2d
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.54.1...v0.54.1-3-gde50ba2d)
