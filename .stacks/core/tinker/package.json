@@ -36,6 +36,9 @@
     "dist",
     "README.md"
   ],
+  "scripts": {
+    "build": "echo 'Nothing to build.'"
+  },
   "dependencies": {
     "tsx": "^3.12.7"
   },
