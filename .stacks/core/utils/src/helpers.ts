@@ -1,5 +1,4 @@
 import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
-import detectIndent from 'detect-indent'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
@@ -159,5 +158,5 @@ export function determineDebugLevel(options?: CliOptions) {
 
 // export { SemVer } from 'semver'
 
-export { detectIndent }
+export { default as detectIndent } from 'detect-indent'
 export { detectNewline } from 'detect-newline'
