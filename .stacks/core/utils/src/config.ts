@@ -24,90 +24,90 @@ import type {
 
 export { loadStacksConfig as config } from '@stacksjs/config'
 
-export function defineApp(options: Partial<AppOptions>) {
-  return options
+export function defineApp(config: Partial<AppOptions>) {
+  return config
 }
 
-export function defineCache(options: Partial<CacheOptions>) {
-  return options
+export function defineCache(config: Partial<CacheOptions>) {
+  return config
 }
 
-export function defineCdn(options: Partial<CdnOptions>) {
-  return options
+export function defineCdn(config: Partial<CdnOptions>) {
+  return config
 }
 
-export function defineCli(options: Partial<UserCliOptions>) {
-  return options
+export function defineCli(config: Partial<UserCliOptions>) {
+  return config
 }
 
-export function defineCronJobsConfig(options: Partial<CronJobOptions>[]) {
-  return options
+export function defineCronJobsConfig(config: Partial<CronJobOptions>[]) {
+  return config
 }
 
-export function defineDatabase(options: Partial<DatabaseOptions>) {
-  return options
+export function defineDatabase(config: Partial<DatabaseOptions>) {
+  return config
 }
 
-export function defineDebugConfig(options: Partial<DebugOptions>) {
-  return options
+export function defineDebugConfig(config: Partial<DebugOptions>) {
+  return config
 }
 
-// export function defineCloudConfig(options: Partial<CloudOptions>) {
-//   return options
+// export function defineCloudConfig(config: Partial<CloudOptions>) {
+//   return config
 // }
 
-export function defineDns(options: Partial<DnsOptions>) {
-  return options
+export function defineDns(config: Partial<DnsOptions>) {
+  return config
 }
 
-export function defineEmailConfig(options: Partial<EmailOptions>) {
-  return options
+export function defineEmailConfig(config: Partial<EmailOptions>) {
+  return config
 }
 
-export function defineEvents(options: Partial<Events>) {
-  return options
+export function defineEvents(config: Partial<Events>) {
+  return config
 }
 
-export function defineGit(options: Partial<GitOptions>) {
-  return options
+export function defineGit(config: Partial<GitOptions>) {
+  return config
 }
 
-export function defineHashing(options: Partial<HashingOptions>) {
-  return options
+export function defineHashing(config: Partial<HashingOptions>) {
+  return config
 }
 
-export function defineLibrary(options: Partial<LibraryOptions>) {
-  return options
+export function defineLibrary(config: Partial<LibraryOptions>) {
+  return config
 }
 
-export function defineModel(options: Partial<Model>) {
-  return options
+export function defineModel(config: Partial<Model>) {
+  return config
 }
 
-export function defineNotification(options: Partial<NotificationOptions>) {
-  return options
+export function defineNotification(config: Partial<NotificationOptions>) {
+  return config
 }
 
-export function definePage(options: Partial<PagesOption>) {
-  return options
+export function definePage(config: Partial<PagesOption>) {
+  return config
 }
 
-export function definePayment(options: Partial<PaymentOptions>) {
-  return options
+export function definePayment(config: Partial<PaymentOptions>) {
+  return config
 }
 
-export function defineSearchEngine(options: Partial<SearchEngineOptions>) {
-  return options
+export function defineSearchEngine(config: Partial<SearchEngineOptions>) {
+  return config
 }
 
-export function defineServices(options: Partial<ServicesOptions>) {
-  return options
+export function defineServices(config: Partial<ServicesOptions>) {
+  return config
 }
 
-export function defineStorage(options: Partial<StorageOptions>) {
-  return options
+export function defineStorage(config: Partial<StorageOptions>) {
+  return config
 }
 
-export function defineUi(options: Partial<UiOptions>) {
-  return options
+export function defineUi(config: Partial<UiOptions>) {
+  return config
 }

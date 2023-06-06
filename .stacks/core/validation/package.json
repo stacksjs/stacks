@@ -47,11 +47,11 @@
   "peerDependencies": {
     "zod": "^3.21.4"
   },
+  "dependencies": {
+    "zod-error": "^1.5.0"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*"
-  },
-  "dependencies": {
-    "zod-error": "^1.5.0"
   }
 }

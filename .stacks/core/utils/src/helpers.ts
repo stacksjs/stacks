@@ -4,7 +4,7 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
-import { storage } from '@stacksjs/storage'
+import * as storage from '@stacksjs/storage'
 import { semver } from './versions'
 
 export async function isProjectCreated() {

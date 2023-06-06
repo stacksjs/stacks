@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import { bold, dim, green, intro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { storage } from '@stacksjs/storage'
+import * as storage from '@stacksjs/storage'
 
 async function version(buddy: CLI) {
   const descriptions = {

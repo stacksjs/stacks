@@ -1,4 +1,4 @@
-import { storage } from '@stacksjs/storage'
+import * as storage from '@stacksjs/storage'
 
 const { fs } = storage
 

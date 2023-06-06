@@ -1,5 +1,5 @@
 // import { log, outro } from '@stacksjs/cli'
-// import { storage } from '@stacksjs/storage'
+// import * as storage from '@stacksjs/storage'
 // import { determineDebugLevel, loop } from '@stacksjs/utils'
 // import { frameworkPath, projectPath } from '@stacksjs/path'
 //

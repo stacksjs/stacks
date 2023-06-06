@@ -252,7 +252,7 @@ onMounted(() => {
           </div>
 
           <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Alpha (Node v18.12)
+            Stacks Alpha (Node v18.16)
           </div>
         </div>
       </div>
