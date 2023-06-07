@@ -1,0 +1,273 @@
+# TODO: create generator for this file for the end user
+api:
+  - .stacks/api/**/*
+
+art:
+  - .stacks/art/**/*
+
+core:
+  - .stacks/**/*
+
+docs:
+  - .stacks/docs/**/*
+  - .stacks/core/docs/**/*
+  - resources/docs/**/*
+  - config/docs.ts
+
+fonts:
+  - .stacks/fonts/**/*
+
+ide:
+  - .stacks/ide/**/*
+
+jetbrains:
+  - .stacks/ide/jetbrains/**/*
+
+vscode:
+  - .stacks/ide/vscode/**/*
+
+libs:
+  - .stacks/libs/**/*
+
+components:
+  - .stacks/libs/components/**/*
+  - resources/components/**/*
+
+entries:
+  - .stacks/libs/entries/**/*
+
+examples:
+  - .stacks/libs/examples/**/*
+
+functions:
+  - .stacks/libs/functions/**/*
+  - resources/functions/**/*
+
+scripts:
+  - .stacks/scripts/**/*
+
+stack:
+  - .stacks/stacks/**/*
+
+vcs:
+  - .stacks/vcs/**/*
+
+github:
+  - .stacks/vcs/github/**/*
+
+views:
+  - .stacks/views/**/*
+  - resources/views/**/*
+
+web:
+  - .stacks/views/web/**/*
+
+desktop:
+  - .stacks/views/desktop/**/*
+
+security:
+  - .stacks/core/security/**/*
+
+"@stacksjs/actions":
+  - .stacks/core/actions/**/*
+
+"@stacksjs/ai":
+  - .stacks/core/ai/**/*
+
+"@stacksjs/alias":
+  - .stacks/core/alias/**/*
+
+"@stacksjs/analytics":
+  - .stacks/core/analytics/**/*
+
+"@stacksjs/arrays":
+    - .stacks/core/arrays/**/*
+
+"@stacksjs/auth":
+  - .stacks/core/auth/**/*
+
+"@stacksjs/buddy":
+  - .stacks/core/buddy/**/*
+
+"@stacksjs/build":
+  - .stacks/core/build/**/*
+
+"@stacksjs/cache":
+  - .stacks/core/cache/**/*
+
+"@stacksjs/chat":
+  - .stacks/core/chat/**/*
+
+"@stacksjs/cli":
+  - .stacks/core/cli/**/*
+
+"@stacksjs/cloud":
+  - .stacks/core/cloud/**/*
+
+"@stacksjs/collections":
+  - .stacks/core/collections/**/*
+
+"@stacksjs/config":
+  - .stacks/core/config/**/*
+
+"@stacksjs/database":
+  - .stacks/core/database/**/*
+
+"@stacksjs/datetime":
+  - .stacks/core/datetime/**/*
+
+"@stacksjs/desktop":
+  - .stacks/core/desktop/**/*
+
+"@stacksjs/development":
+  - .stacks/core/development/**/*
+
+"@stacksjs/dns":
+  - .stacks/core/dns/**/*
+
+"@stacksjs/docs":
+  - .stacks/core/docs/**/*
+
+"@stacksjs/email":
+  - .stacks/core/email/**/*
+
+"@stacksjs/error-handling":
+  - .stacks/core/error-handling/**/*
+
+"@stacksjs/events":
+  - .stacks/core/events/**/*
+
+"@stacksjs/faker":
+  - .stacks/core/faker/**/*
+
+"@stacksjs/git":
+  - .stacks/core/git/**/*
+
+"@stacksjs/health":
+  - .stacks/core/health/**/*
+
+"@stacksjs/lint":
+  - .stacks/core/lint/**/*
+
+"@stacksjs/logging":
+  - .stacks/core/logging/**/*
+
+"@stacksjs/modules":
+  - .stacks/core/modules/**/*
+
+"@stacksjs/notifications":
+  - .stacks/core/notifications/**/*
+
+"@stacksjs/objects":
+  - .stacks/core/objects/**/*
+
+"@stacksjs/orm":
+  - .stacks/core/orm/**/*
+
+"@stacksjs/pages":
+  - .stacks/core/pages/**/*
+
+"@stacksjs/path":
+  - .stacks/core/path/**/*
+
+"@stacksjs/payments":
+  - .stacks/core/payments/**/*
+
+"@stacksjs/push":
+  - .stacks/core/push/**/*
+
+"@stacksjs/query-builder":
+  - .stacks/core/query-builder/**/*
+
+"@stacksjs/queue":
+  - .stacks/core/queue/**/*
+
+"@stacksjs/real-time":
+  - .stacks/core/real-time/**/*
+
+"@stacksjs/router":
+  - .stacks/core/router/**/*
+
+"@stacksjs/scheduler":
+  - .stacks/core/scheduler/**/*
+
+"@stacksjs/search-engine":
+  - .stacks/core/search-engine/**/*
+
+"@stacksjs/security":
+  - .stacks/core/security/**/*
+
+"@stacksjs/server":
+  - .stacks/core/server/**/*
+
+"@stacksjs/signals":
+  - .stacks/core/signals/**/*
+
+"@stacksjs/slug":
+  - .stacks/core/slug/**/*
+
+"@stacksjs/sms":
+  - .stacks/core/sms/**/*
+
+"@stacksjs/storage":
+  - .stacks/core/storage/**/*
+
+"@stacksjs/strings":
+  - .stacks/core/strings/**/*
+
+"@stacksjs/testing":
+  - .stacks/core/testing/**/*
+
+"@stacksjs/tinker":
+  - .stacks/core/tinker/**/*
+
+"@stacksjs/types":
+  - .stacks/core/types/**/*
+
+"@stacksjs/ui":
+  - .stacks/core/ui/**/*
+
+"@stacksjs/utils":
+  - .stacks/core/utils/**/*
+
+"@stacksjs/validation":
+  - .stacks/core/validation/**/*
+
+app:
+  - app/**/*
+
+cli:
+  - app/cli/**/*
+
+events:
+  - app/events/**/*
+
+jobs:
+  - app/jobs/**/*
+
+models:
+  - app/models/**/*
+
+notifications:
+  - app/notifications/**/*
+
+config:
+  - config/**/*
+
+resources:
+  - resources/**/*
+
+lang:
+  - resources/lang/**/*
+
+stores:
+  - resources/stores/**/*
+
+routes:
+  - routes/**/*
+
+storage:
+  - storage/**/*
+
+tests:
+  - tests/**/*
