@@ -6,10 +6,10 @@ import { NpmScript } from '@stacksjs/types'
 log.info('Running prepublish command...')
 
 // right before we publish, we need to build Stacks
-const result = await runNpmScript(NpmScript.BuildStacks, { verbose: true, cwd: runtimePath() }) // TODO: add flag for debug mode
+const result = await runNpmScript(NpmScript.BuildStacks, { verbose: true, cwd: runtimePath() })
 
 if (result.isErr()) {
-  log.error('There was an error while prepublishing your stack, during the process of building Stacks.', result.error)
+  log.error(new Error('There was an error while prepublishing your stack'), result.error)
   process.exit()
 }
 

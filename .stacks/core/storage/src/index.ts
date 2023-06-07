@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { detectIndent, detectNewline } from '@stacksjs/utils'
+import { detectIndent, detectNewline } from '@stacksjs/strings'
 import type { JsonFile, TextFile, PackageJson } from '@stacksjs/types'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'

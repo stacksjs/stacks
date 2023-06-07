@@ -52,12 +52,9 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.6.1"
-  },
-  "dependencies": {
-    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

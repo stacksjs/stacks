@@ -157,6 +157,3 @@ export function determineDebugLevel(options?: CliOptions) {
 }
 
 // export { SemVer } from 'semver'
-
-export { default as detectIndent } from 'detect-indent'
-export { detectNewline } from 'detect-newline'

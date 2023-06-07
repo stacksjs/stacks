@@ -120,3 +120,6 @@ export function slug(str: string, options?: SlugOptions): string {
     strict: true,
   })
 }
+
+export { default as detectIndent } from 'detect-indent'
+export { detectNewline } from 'detect-newline'
