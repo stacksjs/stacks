@@ -62,7 +62,7 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.4.5"
+    "@maizzle/framework": "^4.4.6"
   },
   "optionalDependencies": {
     "@novu/discord": "^0.15.0",
