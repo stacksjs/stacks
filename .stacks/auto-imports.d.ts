@@ -202,8 +202,8 @@ declare global {
   const delimiter: typeof import('./core/path/src/index')['delimiter']
   const describe: typeof import('vitest')['describe']
   const desktopPath: typeof import('./core/path/src/index')['desktopPath']
-  const detectIndent: typeof import('./core/utils/src/helpers')['detectIndent']
-  const detectNewline: typeof import('./core/utils/src/helpers')['detectNewline']
+  const detectIndent: typeof import('./core/strings/src/utils')['detectIndent']
+  const detectNewline: typeof import('./core/strings/src/utils')['detectNewline']
   const determineDebugLevel: typeof import('./core/utils/src/helpers')['determineDebugLevel']
   const determineResetPreset: typeof import('./core/utils/src/helpers')['determineResetPreset']
   const determineState: typeof import('./core/search-engine/src/helpers')['determineState']
@@ -1044,8 +1044,8 @@ declare module 'vue' {
     readonly delimiter: UnwrapRef<typeof import('./core/path/src/index')['delimiter']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('./core/path/src/index')['desktopPath']>
-    readonly detectIndent: UnwrapRef<typeof import('./core/utils/src/helpers')['detectIndent']>
-    readonly detectNewline: UnwrapRef<typeof import('./core/utils/src/helpers')['detectNewline']>
+    readonly detectIndent: UnwrapRef<typeof import('./core/strings/src/utils')['detectIndent']>
+    readonly detectNewline: UnwrapRef<typeof import('./core/strings/src/utils')['detectNewline']>
     readonly determineDebugLevel: UnwrapRef<typeof import('./core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/src/helpers')['determineResetPreset']>
     readonly determineState: UnwrapRef<typeof import('./core/search-engine/src/helpers')['determineState']>
@@ -1880,8 +1880,8 @@ declare module '@vue/runtime-core' {
     readonly delimiter: UnwrapRef<typeof import('./core/path/src/index')['delimiter']>
     readonly describe: UnwrapRef<typeof import('vitest')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('./core/path/src/index')['desktopPath']>
-    readonly detectIndent: UnwrapRef<typeof import('./core/utils/src/helpers')['detectIndent']>
-    readonly detectNewline: UnwrapRef<typeof import('./core/utils/src/helpers')['detectNewline']>
+    readonly detectIndent: UnwrapRef<typeof import('./core/strings/src/utils')['detectIndent']>
+    readonly detectNewline: UnwrapRef<typeof import('./core/strings/src/utils')['detectNewline']>
     readonly determineDebugLevel: UnwrapRef<typeof import('./core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('./core/utils/src/helpers')['determineResetPreset']>
     readonly determineState: UnwrapRef<typeof import('./core/search-engine/src/helpers')['determineState']>

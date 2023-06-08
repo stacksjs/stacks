@@ -54,6 +54,15 @@ async function dev(buddy: CLI) {
       }
 
       // await startDevelopmentServer(options)
+
+      if (options.components)
+        await components(options)
+      else if (options.functions)
+        await functions(options)
+      else if (options.pages)
+        await pages(options)
+      // else if (options.docs)
+
       process.exit(ExitCode.Success)
     })
 
