@@ -273,6 +273,7 @@ export const enum Action {
   Changelog = 'changelog',
   Clean = 'clean',
   DevComponents = 'dev/components', // ✅
+  Dev = 'dev/index',
   DevDocs = 'dev/docs',
   Deploy = 'deploy',
   Fresh = 'fresh',

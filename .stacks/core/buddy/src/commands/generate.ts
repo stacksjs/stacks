@@ -29,22 +29,24 @@ async function generate(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompt(descriptions.select, {
-          type: 'multiselect',
-          required: true,
-          options: [
-            { label: '1.) TypeScript Types', value: 'types' },
-            { label: '2.) Library Entry Points', value: 'entries' },
-            { label: '3.) Web Types', value: 'web-types' },
-            { label: '4.) VS Code Custom Data', value: 'custom-data' },
-            { label: '5.) IDE Helpers', value: 'ide-helpers' },
-            { label: '6.) Vue 2 & 3 Compatibility', value: 'vue-compatibility' },
-            { label: '7.) Component Meta', value: 'component-meta' },
-          ],
-        })
+        let answers = await prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { label: '1.) TypeScript Types', value: 'types' },
+              { label: '2.) Library Entry Points', value: 'entries' },
+              { label: '3.) Web Types', value: 'web-types' },
+              { label: '4.) VS Code Custom Data', value: 'custom-data' },
+              { label: '5.) IDE Helpers', value: 'ide-helpers' },
+              { label: '6.) Vue 2 & 3 Compatibility', value: 'vue-compatibility' },
+              { label: '7.) Component Meta', value: 'component-meta' },
+            ],
+          })
+
+        if (isString(answers))
+          answers = [answers]
 
         // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        options = (answers as Array<any>).reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
       await startGenerationProcess(options)

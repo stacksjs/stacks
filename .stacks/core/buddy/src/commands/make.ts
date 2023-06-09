@@ -53,21 +53,26 @@ async function make(buddy: CLI) {
       }
 
       if (hasNoOptions(options)) {
-        const answers = await prompt(descriptions.select, {
-          type: 'multiselect',
-          required: true,
-          options: [
-            { label: 'Page', value: 'page' },
-            { label: 'Function', value: 'function' },
-            { label: 'Component', value: 'component' },
-            { label: 'Notification', value: 'notification' },
-            { label: 'Language', value: 'language' },
-            { label: 'Database', value: 'database' },
-            { label: 'Migration', value: 'migration' },
-            { label: 'Factory', value: 'factory' },
-            { label: 'Stack', value: 'stack' },
-          ],
-        })
+        let answers = await prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { label: 'Page', value: 'page' },
+              { label: 'Function', value: 'function' },
+              { label: 'Component', value: 'component' },
+              { label: 'Notification', value: 'notification' },
+              { label: 'Language', value: 'language' },
+              { label: 'Database', value: 'database' },
+              { label: 'Migration', value: 'migration' },
+              { label: 'Factory', value: 'factory' },
+              { label: 'Stack', value: 'stack' },
+            ],
+          })
+
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
+
+        if (isString(answers))
+          answers = [answers]
 
         // creates an object out of array and sets answers to true
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})

@@ -1,3 +1,4 @@
+import type { AddressInfo } from 'node:net'
 import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
@@ -154,6 +155,15 @@ export function determineDebugLevel(options?: CliOptions) {
     return true
 
   return app.debug === true
+}
+
+export function isIpv6(address: AddressInfo): boolean {
+  return address.family === 'IPv6'
+  // in node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
+  // See: https://github.com/laravel/vite-plugin/issues/103
+
+    // @ts-expect-error-next-line
+    || address.family === 6
 }
 
 // export { SemVer } from 'semver'

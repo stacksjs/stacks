@@ -11,15 +11,17 @@ import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
 
-function inspect(options?: InspectOptions) {
+export { resolve }
+
+export function inspect(options?: InspectOptions) {
   return Inspect(options)
 }
 
-function layouts(options?: LayoutOptions) {
+export function layouts(options?: LayoutOptions) {
   return Layouts(options)
 }
 
-function components(options?: ComponentOptions): PluginOption {
+export function components(options?: ComponentOptions): PluginOption {
   const defaultOptions = {
     // also allow auto-loading markdown components
     extensions: ['vue', 'md'],
@@ -37,7 +39,7 @@ function components(options?: ComponentOptions): PluginOption {
 }
 
 // https://github.com/hannoeru/vite-plugin-pages
-function pages(options?: PagesOption) {
+export function pages(options?: PagesOption) {
   const defaultOptions = {
     extensions: ['vue', 'md'],
     dirs: [
@@ -50,7 +52,7 @@ function pages(options?: PagesOption) {
   return Pages(newOptions)
 }
 
-function autoImports(options?: AutoImportsOptions) {
+export function autoImports(options?: AutoImportsOptions) {
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', 'vitest',
@@ -112,14 +114,14 @@ function autoImports(options?: AutoImportsOptions) {
   return AutoImport(newOptions)
 }
 
-function cssEngine(isWebComponent = false) {
+export function cssEngine(isWebComponent = false) {
   return Unocss({
     configFile: p.uiPath('src/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
   })
 }
 
-function pwa() {
+export function pwa() {
   return VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
@@ -149,7 +151,7 @@ function pwa() {
   })
 }
 
-// function i18n(options?: i18nOptions) {
+// export function i18n(options?: i18nOptions) {
 //   const defaultOptions: i18nOptions = {
 //     runtimeOnly: true,
 //     compositionOnly: true,
@@ -161,7 +163,7 @@ function pwa() {
 //   return VueI18n(newOptions)
 // }
 
-function uiEngine(isWebComponent = false) {
+export function uiEngine(isWebComponent = false) {
   if (isWebComponent) {
     return Vue({
       include: [/\.vue$/, /\.md$/],
@@ -178,7 +180,7 @@ function uiEngine(isWebComponent = false) {
   })
 }
 
-function componentPreset(isWebComponent = false) {
+export function componentPreset(isWebComponent = false) {
   return <PluginOption>[
     inspect,
     uiEngine(isWebComponent),
@@ -195,5 +197,3 @@ function componentPreset(isWebComponent = false) {
 // const functionsPreset = () => <PluginOption>[
 //   //
 // ]
-
-export { resolve, componentPreset, uiEngine, autoImports, cssEngine, components, inspect, pages, pwa, layouts }

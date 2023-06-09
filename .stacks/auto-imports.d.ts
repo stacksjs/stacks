@@ -22,6 +22,7 @@ declare global {
   const MysqlDialect: typeof import('./core/query-builder/src/kysely')['MysqlDialect']
   const Ok: typeof import('./core/error-handling/src/index')['Ok']
   const PostgresDialect: typeof import('./core/query-builder/src/kysely')['PostgresDialect']
+  const Prompt: typeof import('./core/cli/src/console')['Prompt']
   const QueryBuilder: typeof import('./core/query-builder/src/kysely')['QueryBuilder']
   const Result: typeof import('./core/error-handling/src/index')['Result']
   const ResultAsync: typeof import('./core/error-handling/src/index')['ResultAsync']
@@ -864,6 +865,7 @@ declare module 'vue' {
     readonly MysqlDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('./core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['PostgresDialect']>
+    readonly Prompt: UnwrapRef<typeof import('./core/cli/src/console')['Prompt']>
     readonly QueryBuilder: UnwrapRef<typeof import('./core/query-builder/src/kysely')['QueryBuilder']>
     readonly Result: UnwrapRef<typeof import('./core/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['ResultAsync']>
@@ -1700,6 +1702,7 @@ declare module '@vue/runtime-core' {
     readonly MysqlDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('./core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['PostgresDialect']>
+    readonly Prompt: UnwrapRef<typeof import('./core/cli/src/console')['Prompt']>
     readonly QueryBuilder: UnwrapRef<typeof import('./core/query-builder/src/kysely')['QueryBuilder']>
     readonly Result: UnwrapRef<typeof import('./core/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['ResultAsync']>

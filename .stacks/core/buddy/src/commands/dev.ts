@@ -25,21 +25,22 @@ async function dev(buddy: CLI) {
     .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      if (hasNoOptions(options)) {
-        const answer = await prompt(descriptions.select, {
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'pages', label: 'Pages' },
-            { value: 'desktop', label: 'Desktop' },
-            { value: 'components', label: 'Components' },
-            { value: 'functions', label: 'Functions' },
-            { value: 'docs', label: 'Documentation' },
-          ],
-        })
+      const perf = await intro('buddy dev')
+      const result = await runAction(Action.Dev, { ...options, verbose: true })
 
-        if (answer !== null)
-          process.exit(ExitCode.InvalidArgument)
+      if (hasNoOptions(options)) {
+        const answer = await prompt.require()
+          .select(descriptions.select, {
+            options: [
+              { value: 'all', label: 'All' },
+              { value: 'pages', label: 'Frontend' },
+              { value: 'api', label: 'Backend' },
+              { value: 'desktop', label: 'Desktop' },
+              { value: 'components', label: 'Components' },
+              { value: 'functions', label: 'Functions' },
+              { value: 'docs', label: 'Documentation' },
+            ],
+          })
 
         if (answer === 'components')
           await components(options)
@@ -48,20 +49,20 @@ async function dev(buddy: CLI) {
         else if (answer === 'pages')
           await pages(options)
         // else if (answer === 'docs')
-          // await docs(options)
+        //   await docs(options)
 
         else process.exit(ExitCode.InvalidArgument)
       }
-
+      else {
+        if (options.components)
+          await components(options)
+        else if (options.functions)
+          await functions(options)
+        else if (options.pages)
+          await pages(options)
+        // else if (options.docs)
+      }
       // await startDevelopmentServer(options)
-
-      if (options.components)
-        await components(options)
-      else if (options.functions)
-        await functions(options)
-      else if (options.pages)
-        await pages(options)
-      // else if (options.docs)
 
       process.exit(ExitCode.Success)
     })
@@ -73,7 +74,7 @@ async function dev(buddy: CLI) {
       const result = await runAction(Action.DevComponents, { ...options, verbose: true })
 
       if (options.verbose)
-        log.info('The result object is', result)
+        log.info('runAction result is', result)
 
       // check if result is an error
       if (result.isErr()) {

@@ -31,28 +31,24 @@ async function upgrade(buddy: CLI) {
       const perf = await intro('buddy upgrade')
 
       if (hasNoOptions(options)) {
-        const answers = await prompt(descriptions.select, {
-          type: 'multiselect',
-          required: true,
-          options: [
-            { value: 'dependencies', label: 'Dependencies' },
-            { value: 'framework', label: 'Framework' },
-            { value: 'node', label: 'Node.js' },
-            { value: 'package-manager', label: 'Package Manager' },
-          ],
-        })
+        let answers = await prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { value: 'dependencies', label: 'Dependencies' },
+              { value: 'framework', label: 'Framework' },
+              { value: 'node', label: 'Node.js' },
+              { value: 'package-manager', label: 'Package Manager' },
+            ],
+          })
 
-        if (answers.includes('dependencies'))
-          options.dependencies = true
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
 
-        if (answers.includes('framework'))
-          options.framework = true
+        if (isString(answers))
+          answers = [answers]
 
-        if (answers.includes('node'))
-          options.node = true
-
-        if (answers.includes('package-manager'))
-          options.packageManager = true
+        // creates an object out of array and sets answers to true
+        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
       const result = await runAction(Action.Upgrade, { ...options, shell: true })

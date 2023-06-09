@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ExamplesOptions } from '@stacksjs/types'
-import { italic, log, prompt } from '@stacksjs/cli'
+import { prompt } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
 
 async function example(buddy: CLI) {
@@ -20,19 +20,13 @@ async function example(buddy: CLI) {
     .option('-w, --web-components', descriptions.webComponents)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
-      const answer = await prompt(descriptions.select, {
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'components', label: 'Vue Components' },
-          { value: 'web-components', label: 'Web Components' },
-        ],
-      })
-
-      if (answer !== null) {
-        log.error(`You did not provide an answer. Please try again, ${italic('or report the issue')}`)
-        process.exit()
-      }
+      const answer = await prompt.require()
+        .select(descriptions.select, {
+          options: [
+            { value: 'components', label: 'Vue Components' },
+            { value: 'web-components', label: 'Web Components' },
+          ],
+        })
 
       if (answer === 'components')
         await componentExample(options)

@@ -30,22 +30,29 @@ async function build(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompt(descriptions.select, {
-          type: 'multiselect',
-          required: true,
-          options: [
-            { label: 'Components', value: 'components' },
-            // { label: 'Vue Components', value: 'vue-components' },
-            // { label: 'Web Components', value: 'web-components' },
-            { label: 'Functions', value: 'functions' },
-            { label: 'Pages', value: 'pages' },
-            { label: 'Documentation', value: 'docs' },
-          ],
-        })
+        let answers = await prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { label: 'Components', value: 'components' },
+              // { label: 'Vue Components', value: 'vue-components' },
+              // { label: 'Web Components', value: 'web-components' },
+              { label: 'Functions', value: 'functions' },
+              { label: 'Pages', value: 'pages' },
+              { label: 'Documentation', value: 'docs' },
+            ],
+          })
+
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
+
+        if (isString(answers))
+          answers = [answers]
 
         // creates an object out of array and sets answers to true
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
+
+      console.log('options', options)
 
       await runAction(Action.BuildStacks, options)
 
