@@ -5,6 +5,8 @@ import mitt from 'mitt'
 /**
  * This module provides a simple, yet powerful, event bus for the application.
  *
+ * TODO: https://vitejs.dev/guide/api-plugin.html#typescript-for-custom-events
+ *
  * @example To fire an event, you may use any of the following approaches:
  * ```ts
  * useEvent('user:registered', { name: 'Chris'})

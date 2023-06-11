@@ -35,10 +35,10 @@ export interface AppOptions {
    * the Buddy command line tool. You should set this to the root of
    * your application so that it is used when running Buddy tasks.
    *
-   * @default string "https://localhost"
-   * @example "https://hello-world.test"
+   * @default string "https://stacks.test"
+   * @example "https://my-project.test"
    */
-  url?: string
+  url: string
 
   /**
    * **Application Debug Mode**

@@ -353,6 +353,7 @@ declare global {
   const isIdentityCard: typeof import('./core/validation/src/is')['isIdentityCard']
   const isInteger: typeof import('./core/validation/src/is')['isInteger']
   const isIntegerOrFloat: typeof import('./core/validation/src/is')['isIntegerOrFloat']
+  const isIpv6: typeof import('./core/utils/src/helpers')['isIpv6']
   const isJSON: typeof import('./core/validation/src/is')['isJSON']
   const isJWT: typeof import('./core/validation/src/is')['isJWT']
   const isKeyOf: typeof import('./core/objects/src/index')['isKeyOf']
@@ -1196,6 +1197,7 @@ declare module 'vue' {
     readonly isIdentityCard: UnwrapRef<typeof import('./core/validation/src/is')['isIdentityCard']>
     readonly isInteger: UnwrapRef<typeof import('./core/validation/src/is')['isInteger']>
     readonly isIntegerOrFloat: UnwrapRef<typeof import('./core/validation/src/is')['isIntegerOrFloat']>
+    readonly isIpv6: UnwrapRef<typeof import('./core/utils/src/helpers')['isIpv6']>
     readonly isJSON: UnwrapRef<typeof import('./core/validation/src/is')['isJSON']>
     readonly isJWT: UnwrapRef<typeof import('./core/validation/src/is')['isJWT']>
     readonly isKeyOf: UnwrapRef<typeof import('./core/objects/src/index')['isKeyOf']>
@@ -2033,6 +2035,7 @@ declare module '@vue/runtime-core' {
     readonly isIdentityCard: UnwrapRef<typeof import('./core/validation/src/is')['isIdentityCard']>
     readonly isInteger: UnwrapRef<typeof import('./core/validation/src/is')['isInteger']>
     readonly isIntegerOrFloat: UnwrapRef<typeof import('./core/validation/src/is')['isIntegerOrFloat']>
+    readonly isIpv6: UnwrapRef<typeof import('./core/utils/src/helpers')['isIpv6']>
     readonly isJSON: UnwrapRef<typeof import('./core/validation/src/is')['isJSON']>
     readonly isJWT: UnwrapRef<typeof import('./core/validation/src/is')['isJWT']>
     readonly isKeyOf: UnwrapRef<typeof import('./core/objects/src/index')['isKeyOf']>

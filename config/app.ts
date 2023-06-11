@@ -12,9 +12,9 @@ import { env } from '@stacksjs/validation'
 export default defineApp({
   name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'local',
-  key: env.APP_KEY || '',
+  url: env.APP_URL || 'stacks.test',
   debug: env.APP_DEBUG || false,
-  url: env.APP_URL || 'https://localhost',
+  key: env.APP_KEY,
 
   timezone: 'UTC',
   locale: 'en',

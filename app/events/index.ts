@@ -14,5 +14,5 @@ interface User {
 }
 
 export default defineEvents({
-  'user:registered': (user: User) => user,
+  // 'user:registered': (user: User) => user,
 })

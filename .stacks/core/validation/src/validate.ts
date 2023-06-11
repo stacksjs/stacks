@@ -6,7 +6,7 @@ export const backendEnvValidations = validate.object({
   APP_NAME: validate.string().default('Stacks'),
   APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local'),
   APP_KEY: validate.string().optional(),
-  APP_URL: validate.string().url().default('https://127.0.0.1:3333'),
+  APP_URL: validate.string().url().default('stacks.test'),
   APP_DEBUG: validate.boolean().default(true),
 
   DB_CONNECTION: validate.string().default('mysql').optional(),
