@@ -2,7 +2,7 @@
   "name": "@stacksjs/pages",
   "type": "module",
   "version": "0.54.5",
-  "packageManager": "pnpm@8.6.1",
+  "packageManager": "pnpm@8.6.2",
   "description": "The Stacks Pages engine.",
   "author": "Chris Breuer",
   "license": "MIT",

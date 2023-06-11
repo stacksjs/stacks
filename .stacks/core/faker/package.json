@@ -2,7 +2,7 @@
   "name": "@stacksjs/faker",
   "type": "module",
   "version": "0.54.5",
-  "packageManager": "pnpm@8.6.1",
+  "packageManager": "pnpm@8.6.2",
   "description": "Faker functions.",
   "author": "Chris Breuer",
   "license": "MIT",
