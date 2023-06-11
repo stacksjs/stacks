@@ -25,8 +25,8 @@ async function dev(buddy: CLI) {
     .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      const perf = await intro('buddy dev')
-      const result = await runAction(Action.Dev, { ...options, verbose: true })
+      // const perf = await intro('buddy dev')
+      // const result = await runAction(Action.Dev, { ...options, verbose: true })
 
       if (hasNoOptions(options)) {
         const answer = await prompt.require()
