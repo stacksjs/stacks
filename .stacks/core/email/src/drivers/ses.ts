@@ -7,10 +7,10 @@
 // const env = notification.email.ses
 
 // const provider = new SESEmailProvider({
-//   region: env.region,
-//   accessKeyId: env.key,
-//   secretAccessKey: env.secret,
-//   from: env.from,
+//   region: env().region,
+//   accessKeyId: env().key,
+//   secretAccessKey: env().secret,
+//   from: env().from,
 // })
 
 // async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {

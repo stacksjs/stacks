@@ -1,7 +1,30 @@
+import * as process from 'node:process'
 import type { ZodIssue } from 'zod'
 import { z as validate, z } from 'zod'
+import { log } from '@stacksjs/logging'
+import { generateError, parse, safeParse } from 'zod-error'
+import type { ErrorMessageOptions } from 'zod-error'
 
-// TODO: envValidations needs to be auto generated from the .env file
+export const errorMessageOptions: ErrorMessageOptions = {
+  maxErrors: 2,
+  delimiter: {
+    component: ' - ',
+  },
+  path: {
+    enabled: true,
+    type: 'zodPathArray',
+    label: 'Stacks Path: ',
+  },
+  code: {
+    enabled: false,
+  },
+  message: {
+    enabled: true,
+    label: '',
+  },
+}
+
+// TODO: envValidation needs to be auto generated from the .env file
 export const backendEnvValidations = validate.object({
   APP_NAME: validate.string().default('Stacks'),
   APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local'),
@@ -109,36 +132,49 @@ export const backendEnvValidations = validate.object({
   MICROSOFT_TEAMS_CLIENT_ID: validate.string().default(''),
   MICROSOFT_TEAMS_SECRET: validate.string().default(''),
 })
-export const frontendEnvValidations = validate.object({
-  FRONTEND_APP_ENV: z.string().default('local').optional(),
-  FRONTEND_APP_URL: z.string().default('localhost').optional(),
+
+export const frontendEnvValidation = validate.object({
+  FRONTEND_APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local'),
+  FRONTEND_APP_URL: validate.string().url().default('stacks.test'),
 })
-export const envValidations = backendEnvValidations.merge(frontendEnvValidations)
+
+export const envValidation = backendEnvValidations.merge(frontendEnvValidation)
 
 export type BackendEnv = validate.infer<typeof backendEnvValidations>
 export type BackendEnvKeys = keyof BackendEnv
 
-export type FrontendEnv = validate.infer<typeof frontendEnvValidations>
+export type FrontendEnv = validate.infer<typeof frontendEnvValidation>
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export type Env = validate.infer<typeof envValidations>
+export type Env = validate.infer<typeof envValidation>
 export type EnvKeys = keyof Env
 
 export type ValidationIssue = ZodIssue
 
-export const env = envValidations.parse(process.env)
-export const safeEnv = envValidations.safeParse(process.env)
-export const frontendEnv = frontendEnvValidations.parse(process.env)
-export const backendEnv = backendEnvValidations.parse(process.env)
-
-export function getEnvIssues(): ValidationIssue[] | void {
-  const result = safeEnv
-
-  if (!result.success)
-    return result.error.issues
+export function env(env?: any, options = errorMessageOptions) {
+  try {
+    return parse(envValidation, env ?? process.env, options)
+  }
+  catch (error) {
+    throw generateError(error, options)
+  }
 }
 
-// export const config = configUser
+export function safeEnv(env?: any, options = errorMessageOptions) {
+  return safeParse(envValidation, env ?? process.env, options)
+}
+
+export const frontendEnv = frontendEnvValidation.parse(process.env)
+export const backendEnv = backendEnvValidations.parse(process.env)
+
+export function getEnvIssues(env?: any): ValidationIssue[] | void {
+  const result = safeEnv(env ?? process.env, errorMessageOptions)
+
+  if (!result.success) {
+    const message = result.error.message
+    log.error(message)
+  }
+}
 
 export enum Type {
   String = 'String',

@@ -8,7 +8,7 @@
 // function generatePrismaSchema(models: Model[], path: string, options: SchemaOptions): void {
 //   let schema = `datasource db {
 //   provider = "${options.database}"
-//   url = env.DATABASE_URL
+//   url = env().DATABASE_URL
 // }
 
 // generator client {

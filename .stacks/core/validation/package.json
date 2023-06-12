@@ -45,7 +45,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "zod-error": "^1.5.0"
   },
   "dependencies": {
     "zod-error": "^1.5.0"
