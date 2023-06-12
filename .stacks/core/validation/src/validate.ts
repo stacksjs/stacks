@@ -29,7 +29,7 @@ export const backendEnvValidations = validate.object({
   APP_NAME: validate.string().default('Stacks'),
   APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local'),
   APP_KEY: validate.string().optional(),
-  APP_URL: validate.string().url().default('stacks.test'),
+  APP_URL: validate.string().default('stacks.test'),
   APP_DEBUG: validate.boolean().default(true),
 
   DB_CONNECTION: validate.string().default('mysql').optional(),
@@ -135,7 +135,7 @@ export const backendEnvValidations = validate.object({
 
 export const frontendEnvValidation = validate.object({
   FRONTEND_APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local'),
-  FRONTEND_APP_URL: validate.string().url().default('stacks.test'),
+  FRONTEND_APP_URL: validate.string().default('stacks.test'),
 })
 
 export const envValidation = backendEnvValidations.merge(frontendEnvValidation)

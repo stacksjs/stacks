@@ -38,8 +38,8 @@ export const vueComponentsConfig: ViteConfig = {
     mkcert({
       autoUpgrade: true,
       savePath: libsPath('components/certs'),
-      keyFileName: library.name ? `${library.name}-key.pem` : 'library-key.pem',
-      certFileName: library.name ? `${library.name}-cert.pem` : 'library-cert.pem',
+      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
     }),
     {
       // ...
