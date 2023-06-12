@@ -64,11 +64,11 @@ export const vueComponentsConfig: ViteConfig = {
           // }
 
           const appUrl = app.url
-          const frontendUrl = appUrl
-          const backendUrl = `api.${appUrl}/`
-          const libraryUrl = `library.${appUrl}/`
-          const docsUrl = `docs.${appUrl}/`
-          const inspectUrl = `${appUrl}/__inspect/`
+          const frontendUrl = `https://${appUrl}`
+          const backendUrl = `https://api.${appUrl}`
+          const libraryUrl = `https://libs.${appUrl}`
+          const docsUrl = `https://docs.${appUrl}`
+          const inspectUrl = `https://${appUrl}/__inspect/`
 
           // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
