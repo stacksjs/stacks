@@ -6,8 +6,8 @@
 //   it('should not send email', async () => {
 //     const notification = email.mailgun
 //     const test = await notification.send({
-//       from: 'repuestobrian2@gmail.com',
-//       to: 'repuestobrian@gmail',
+//       from: 'chris@stacksjs.dev',
+//       to: 'avery@stacksjs.dev',
 //       subject: 'Test Email',
 //       html: '<p> Test </p>',
 //     })
@@ -18,8 +18,8 @@
 //   it('should send email using useEmail', async () => {
 //     const notification = useEmail('mailgun')
 //     const test = await notification.send({
-//       from: 'repuestobrian2@gmail.com',
-//       to: 'repuestobrian@gmail',
+//       from: 'chris@stacksjs.dev',
+//       to: 'avery@stacksjs.dev',
 //       subject: 'Test Email',
 //       html: '<p> Test </p>',
 //     })
