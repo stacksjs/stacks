@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maverick-js/signals": "^5.10.3",
+    "@maverick-js/signals": "^5.10.4",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*"
