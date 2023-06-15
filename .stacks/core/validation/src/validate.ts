@@ -32,6 +32,10 @@ export const backendEnvValidation = validate.object({
   APP_KEY: validate.string().optional(),
   APP_URL: validate.string().default('stacks.test'),
   APP_DEBUG: validate.enum(['true', 'false']).default('true').transform(Boolean).optional(),
+  APP_SUBDOMAIN_API: validate.string().default('api').optional(),
+  APP_SUBDOMAIN_DOCS: validate.string().default('docs').optional(),
+  APP_SUBDOMAIN_LIBRARY: validate.string().default('library').optional(),
+  APP_BUCKET: validate.string().optional(),
 
   DB_CONNECTION: validate.string().default('mysql').optional(),
   DB_HOST: validate.string().default('127.0.0.1').optional(),
