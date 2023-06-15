@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { runAction } from '@stacksjs/actions'
-import { errorHandler } from '@stacksjs/error-handling'
+import { handleError } from '@stacksjs/error-handling'
 import { command, log } from '@stacksjs/cli'
 import { frontendEnv } from '@stacksjs/validation'
 import { frameworkVersion, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
@@ -11,8 +11,8 @@ import { build, changelog, clean, commit, create, dev, example, fresh, generate,
 const cli = command('buddy')
 
 // setup global error handlers
-process.on('uncaughtException', errorHandler)
-process.on('unhandledRejection', errorHandler)
+process.on('uncaughtException', handleError)
+process.on('unhandledRejection', handleError)
 
 async function main() {
   // the following commands are not dependent on the project being initialized
@@ -25,12 +25,12 @@ async function main() {
     if (frontendEnv.FRONTEND_APP_ENV !== 'production')
       log.info('Project not yet initialized, generating application key...')
     else
-      errorHandler(new Error('Please run `buddy key:generate` to generate an application key'))
+      handleError(new Error('Please run `buddy key:generate` to generate an application key'))
 
     const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
     if (result.isErr())
-      errorHandler(result.error as Error)
+      handleError(result.error as Error)
 
     log.info('Application key generated.')
 

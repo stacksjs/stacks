@@ -55,6 +55,7 @@ declare global {
   const authPath: typeof import('./core/path/src/index')['authPath']
   const autoResetRef: typeof import('./core/utils/src/vendors')['autoResetRef']
   const backendEnv: typeof import('./core/validation/src/validate')['backendEnv']
+  const backendEnvValidation: typeof import('./core/validation/src/validate')['backendEnvValidation']
   const backendEnvValidations: typeof import('./core/validation/src/validate')['backendEnvValidations']
   const base64Encode: typeof import('./core/security/src/hash')['base64Encode']
   const base64Verify: typeof import('./core/security/src/hash')['base64Verify']
@@ -232,12 +233,14 @@ declare global {
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
   const ensureSuffix: typeof import('./core/strings/src/utils')['ensureSuffix']
   const env: typeof import('./core/validation/src/validate')['env']
+  const envValidation: typeof import('./core/validation/src/validate')['envValidation']
   const envValidations: typeof import('./core/validation/src/validate')['envValidations']
   const equal: typeof import('./core/utils/src/currency')['equal']
   const err: typeof import('./core/error-handling/src/index')['err']
   const errAsync: typeof import('./core/error-handling/src/index')['errAsync']
   const errorHandler: typeof import('./core/error-handling/src/index')['errorHandler']
   const errorHandlingPath: typeof import('./core/path/src/index')['errorHandlingPath']
+  const errorMessageOptions: typeof import('./core/validation/src/validate')['errorMessageOptions']
   const eslint: typeof import('./core/lint/src/index')['eslint']
   const events: typeof import('./core/events/src/index')['events']
   const eventsPath: typeof import('./core/path/src/index')['eventsPath']
@@ -264,6 +267,7 @@ declare global {
   const fromSafePromise: typeof import('./core/error-handling/src/index')['fromSafePromise']
   const fromThrowable: typeof import('./core/error-handling/src/index')['fromThrowable']
   const frontendEnv: typeof import('./core/validation/src/validate')['frontendEnv']
+  const frontendEnvValidation: typeof import('./core/validation/src/validate')['frontendEnvValidation']
   const frontendEnvValidations: typeof import('./core/validation/src/validate')['frontendEnvValidations']
   const fs: typeof import('./core/storage/src/index')['fs']
   const functionsPath: typeof import('./core/path/src/index')['functionsPath']
@@ -285,6 +289,7 @@ declare global {
   const green: typeof import('./core/cli/src/utilities')['green']
   const gupshup: typeof import('./core/sms/src/index')['gupshup']
   const h: typeof import('vue')['h']
+  const handleError: typeof import('./core/error-handling/src/index')['handleError']
   const hasComponents: typeof import('./core/storage/src/index')['hasComponents']
   const hasFiles: typeof import('./core/storage/src/index')['hasFiles']
   const hasFunctions: typeof import('./core/storage/src/index')['hasFunctions']
@@ -693,6 +698,7 @@ declare global {
   const useElementSize: typeof import('./core/utils/src/vendors')['useElementSize']
   const useElementVisibility: typeof import('./core/utils/src/vendors')['useElementVisibility']
   const useEmail: typeof import('./core/notifications/src/index')['useEmail']
+  const useEnv: typeof import('./core/validation/src/validate')['useEnv']
   const useEvent: typeof import('./core/events/src/index')['useEvent']
   const useEventBus: typeof import('./core/utils/src/vendors')['useEventBus']
   const useEventListener: typeof import('./core/utils/src/vendors')['useEventListener']
@@ -899,7 +905,7 @@ declare module 'vue' {
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
     readonly backendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnv']>
-    readonly backendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidations']>
+    readonly backendEnvValidation: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidation']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -1076,12 +1082,12 @@ declare module 'vue' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
-    readonly envValidations: UnwrapRef<typeof import('./core/validation/src/validate')['envValidations']>
+    readonly envValidation: UnwrapRef<typeof import('./core/validation/src/validate')['envValidation']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>
-    readonly errorHandler: UnwrapRef<typeof import('./core/error-handling/src/index')['errorHandler']>
     readonly errorHandlingPath: UnwrapRef<typeof import('./core/path/src/index')['errorHandlingPath']>
+    readonly errorMessageOptions: UnwrapRef<typeof import('./core/validation/src/validate')['errorMessageOptions']>
     readonly eslint: UnwrapRef<typeof import('./core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('./core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('./core/path/src/index')['eventsPath']>
@@ -1108,7 +1114,7 @@ declare module 'vue' {
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
     readonly frontendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnv']>
-    readonly frontendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidations']>
+    readonly frontendEnvValidation: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidation']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
@@ -1129,6 +1135,7 @@ declare module 'vue' {
     readonly green: UnwrapRef<typeof import('./core/cli/src/utilities')['green']>
     readonly gupshup: UnwrapRef<typeof import('./core/sms/src/index')['gupshup']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly handleError: UnwrapRef<typeof import('./core/error-handling/src/index')['handleError']>
     readonly hasComponents: UnwrapRef<typeof import('./core/storage/src/index')['hasComponents']>
     readonly hasFiles: UnwrapRef<typeof import('./core/storage/src/index')['hasFiles']>
     readonly hasFunctions: UnwrapRef<typeof import('./core/storage/src/index')['hasFunctions']>
@@ -1537,6 +1544,7 @@ declare module 'vue' {
     readonly useElementSize: UnwrapRef<typeof import('./core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('./core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('./core/notifications/src/index')['useEmail']>
+    readonly useEnv: UnwrapRef<typeof import('./core/validation/src/validate')['useEnv']>
     readonly useEvent: UnwrapRef<typeof import('./core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('./core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('./core/utils/src/vendors')['useEventListener']>
@@ -1737,7 +1745,7 @@ declare module '@vue/runtime-core' {
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
     readonly backendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnv']>
-    readonly backendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidations']>
+    readonly backendEnvValidation: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvValidation']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -1914,12 +1922,12 @@ declare module '@vue/runtime-core' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
-    readonly envValidations: UnwrapRef<typeof import('./core/validation/src/validate')['envValidations']>
+    readonly envValidation: UnwrapRef<typeof import('./core/validation/src/validate')['envValidation']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>
-    readonly errorHandler: UnwrapRef<typeof import('./core/error-handling/src/index')['errorHandler']>
     readonly errorHandlingPath: UnwrapRef<typeof import('./core/path/src/index')['errorHandlingPath']>
+    readonly errorMessageOptions: UnwrapRef<typeof import('./core/validation/src/validate')['errorMessageOptions']>
     readonly eslint: UnwrapRef<typeof import('./core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('./core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('./core/path/src/index')['eventsPath']>
@@ -1946,7 +1954,7 @@ declare module '@vue/runtime-core' {
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
     readonly frontendEnv: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnv']>
-    readonly frontendEnvValidations: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidations']>
+    readonly frontendEnvValidation: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvValidation']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
@@ -1967,6 +1975,7 @@ declare module '@vue/runtime-core' {
     readonly green: UnwrapRef<typeof import('./core/cli/src/utilities')['green']>
     readonly gupshup: UnwrapRef<typeof import('./core/sms/src/index')['gupshup']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly handleError: UnwrapRef<typeof import('./core/error-handling/src/index')['handleError']>
     readonly hasComponents: UnwrapRef<typeof import('./core/storage/src/index')['hasComponents']>
     readonly hasFiles: UnwrapRef<typeof import('./core/storage/src/index')['hasFiles']>
     readonly hasFunctions: UnwrapRef<typeof import('./core/storage/src/index')['hasFunctions']>
@@ -2375,6 +2384,7 @@ declare module '@vue/runtime-core' {
     readonly useElementSize: UnwrapRef<typeof import('./core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('./core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('./core/notifications/src/index')['useEmail']>
+    readonly useEnv: UnwrapRef<typeof import('./core/validation/src/validate')['useEnv']>
     readonly useEvent: UnwrapRef<typeof import('./core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('./core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('./core/utils/src/vendors')['useEventListener']>

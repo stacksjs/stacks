@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath } from '@stacksjs/path'
 import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
@@ -8,10 +8,12 @@ import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
+const envPrefix = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
+
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
   envDir: projectPath(),
-  envPrefix: 'FRONTEND_',
+  envPrefix,
 
   server: {
     https: true,
@@ -46,8 +48,6 @@ export const vueComponentsConfig: ViteConfig = {
       configureServer(server: DevServer) {
         // const base = server.config.base || '/'
         // const _print = server.printUrls
-
-        // Example: wait for a client to connect before sending a message
         server.printUrls = () => {
           // const url = server.resolvedUrls?.local[0]
           //
@@ -66,30 +66,29 @@ export const vueComponentsConfig: ViteConfig = {
           const appUrl = app.url
           const frontendUrl = `https://${appUrl}`
           const backendUrl = `https://api.${appUrl}`
+          const dashboardUrl = `https://admin.${appUrl}`
           const libraryUrl = `https://libs.${appUrl}`
           const docsUrl = `https://docs.${appUrl}`
           const inspectUrl = `https://${appUrl}/__inspect/`
 
+          // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
+          const stacksVersion = 'alpha-0.x.x'
+
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
           // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
           // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.green(backendUrl)}`)
           // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
+          // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
           // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
           // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Inspect')}: ${c.green(inspectUrl)}`)
-
-          // if (_open && !isCI) {
-          //   // a delay is added to ensure the app page is opened first
-          //   setTimeout(() => {
-          //     openBrowser(`${host}${base}__inspect/`)
-          //   }, 500)
-          // }
+          console.log(`  ${c.green('➜')}  ${c.dim('Inspect')}: ${c.green(inspectUrl)}`)
         }
-
-        // return rpcFunctions
       },
     },
   ],
@@ -127,7 +126,9 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
+  process.env = { ...process.env, ...loadEnv(mode, projectPath(), envPrefix) }
+
   if (command === 'serve')
     return vueComponentsConfig
 

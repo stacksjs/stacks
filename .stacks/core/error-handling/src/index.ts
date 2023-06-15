@@ -21,6 +21,8 @@ class ErrorHandler {
 
   static handleError(err: Error, options?: any) {
     // todo: options is currently not used
+    // eslint-disable-next-line no-console
+    console.log('here')
     log.error(err, options)
     this.writeErrorToFile(err, options)
   }
@@ -34,6 +36,6 @@ class ErrorHandler {
   }
 }
 
-export function errorHandler(err: Error, options?: any): void {
+export function handleError(err: Error, options?: any): void {
   ErrorHandler.handleError(err, options)
 }

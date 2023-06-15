@@ -30,7 +30,7 @@ export const configDefaults: ResolvedStacksOptions = {
   ui,
 }
 
-export async function loadStacksConfig(overrides?: Partial<StacksConfig>, cwd = process.cwd()) {
+export async function loadStacksConfig(overrides?: Partial<StacksConfig>, cwd = frameworkPath()) {
   const { config } = await loadConfig<StacksConfig>({
     name: 'stacks',
     defaults: configDefaults,
