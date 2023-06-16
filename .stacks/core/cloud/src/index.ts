@@ -1,1 +1,1 @@
-export { DnsStack } from './aws/stack'
+// export { DnsStack } from '@stacksjs/dns'

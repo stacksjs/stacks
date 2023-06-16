@@ -41,6 +41,9 @@
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@stacksjs/build": "workspace:*"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "vite-plugin-full-reload": "^1.0.5"

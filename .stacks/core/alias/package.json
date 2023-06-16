@@ -43,8 +43,5 @@
   },
   "peerDependencies": {
     "@stacksjs/path": "workspace:*"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

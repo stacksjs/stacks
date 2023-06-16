@@ -4,7 +4,8 @@ import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
-import { autoImports } from '.'
+
+// import { autoImports } from '.'
 
 export const functionsConfig: ViteConfig = {
   root: functionsPath(),
@@ -15,9 +16,9 @@ export const functionsConfig: ViteConfig = {
     alias,
   },
 
-  plugins: [
-    autoImports(),
-  ],
+  // plugins: [
+  //   autoImports(),
+  // ],
 
   build: functionsBuildOptions(),
 }

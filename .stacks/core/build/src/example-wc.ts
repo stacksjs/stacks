@@ -3,7 +3,8 @@ import type { ViteConfig } from '@stacksjs/types'
 import { examplesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import { uiEngine } from '.'
+
+// import { uiEngine } from '.'
 
 export const webComponentsExampleConfig: ViteConfig = {
   root: examplesPath('web-components'),
@@ -14,9 +15,9 @@ export const webComponentsExampleConfig: ViteConfig = {
 
   server,
 
-  plugins: [
-    uiEngine(true),
-  ],
+  // plugins: [
+  //   uiEngine(true),
+  // ],
 }
 
 export default defineConfig(() => {

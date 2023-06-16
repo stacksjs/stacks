@@ -1,4 +1,4 @@
-import { defineBuildConfig } from 'unbuild'
+import { defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
   entries: [

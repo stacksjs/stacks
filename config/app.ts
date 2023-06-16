@@ -1,6 +1,3 @@
-import { defineApp } from '@stacksjs/utils'
-import { env } from '@stacksjs/validation'
-
 /**
  * **Application Configuration**
  *

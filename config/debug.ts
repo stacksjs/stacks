@@ -1,4 +1,4 @@
-import { defineDebugConfig } from '@stacksjs/utils'
+import { defineDebugConfig } from 'stacks/core/utils/src'
 
 /**
  * **Debug Configuration**

@@ -4,7 +4,6 @@ import { z as validate, z } from 'zod'
 import { log } from '@stacksjs/logging'
 import { generateError, safeParse } from 'zod-error'
 import type { ErrorMessageOptions } from 'zod-error'
-import { handleError } from '@stacksjs/error-handling'
 
 export const errorMessageOptions: ErrorMessageOptions = {
   maxErrors: 2,
@@ -14,7 +13,7 @@ export const errorMessageOptions: ErrorMessageOptions = {
   path: {
     enabled: true,
     type: 'zodPathArray',
-    label: 'Env Variable Name: ',
+    label: 'Env Variable: ',
   },
   code: {
     enabled: false,
@@ -25,8 +24,8 @@ export const errorMessageOptions: ErrorMessageOptions = {
   },
 }
 
-// TODO: envValidation needs to be auto generated from the .env file
-export const backendEnvValidation = validate.object({
+// TODO: envSchema needs to be auto generated from the .env file
+export const backendEnvSchema = validate.object({
   APP_NAME: validate.string().default('Stacks').optional(),
   APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local').optional(),
   APP_KEY: validate.string().optional(),
@@ -39,7 +38,7 @@ export const backendEnvValidation = validate.object({
 
   DB_CONNECTION: validate.string().default('mysql').optional(),
   DB_HOST: validate.string().default('127.0.0.1').optional(),
-  DB_PORT: validate.string().regex(/^\d*$/).default('3306').optional().transform(Number),
+  DB_PORT: validate.string().regex(/^\d*$/).default('3306').transform(Number).optional(),
   DB_DATABASE: validate.string().default('stacks').optional(),
   DB_USERNAME: validate.string().default('root').optional(),
   DB_PASSWORD: validate.string().optional(),
@@ -138,51 +137,41 @@ export const backendEnvValidation = validate.object({
   MICROSOFT_TEAMS_SECRET: validate.string().default('').optional(),
 })
 
-export const frontendEnvValidation = validate.object({
+export const frontendEnvSchema = validate.object({
   FRONTEND_APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local').optional(),
   FRONTEND_APP_URL: validate.string().default('stacks.test').optional(),
 })
 
-export const envValidation = backendEnvValidation.merge(frontendEnvValidation)
+export const envSchema = backendEnvSchema.merge(frontendEnvSchema)
 
-export type BackendEnv = validate.infer<typeof backendEnvValidation>
+export type BackendEnv = validate.infer<typeof backendEnvSchema>
 export type BackendEnvKeys = keyof BackendEnv
 
-export type FrontendEnv = validate.infer<typeof frontendEnvValidation>
+export type FrontendEnv = validate.infer<typeof frontendEnvSchema>
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export type Env = validate.infer<typeof envValidation>
+export type Env = validate.infer<typeof envSchema>
 export type EnvKeys = keyof Env
 
 export type ValidationIssue = ZodIssue
 
 export function env(options?: ErrorMessageOptions) {
-  const errorMessageOptions = options
-  const result = safeParse(envValidation, process.env, errorMessageOptions)
+  if (!options)
+    options = errorMessageOptions
 
-  if (result.success)
-    return result.data
-
-  const error = generateError(result.error, errorMessageOptions)
-  handleError(error)
-  throw new Error(error.message)
+  try {
+    return envSchema.parse(process.env)
+  }
+  catch (error) {
+    const genericError = generateError(error, options)
+    handleError(genericError)
+    throw new Error('Invalid environment variables')
+  }
 }
-
-// export function config() {
-//   try {
-//     return parse(envValidation, process.env, errorMessageOptions)
-//   }
-//   catch (error) {
-//     throw generateError(error, errorMessageOptions)
-//   }
-// }
 
 export function safeEnv(env?: any, options = errorMessageOptions) {
-  return safeParse(envValidation, env ?? process.env, options)
+  return safeParse(envSchema, env ?? process.env, options)
 }
-
-export const frontendEnv = frontendEnvValidation.parse(process.env)
-export const backendEnv = backendEnvValidation.parse(process.env)
 
 export function getEnvIssues(env?: any): ValidationIssue[] | void {
   const result = safeEnv(env ?? process.env, errorMessageOptions)

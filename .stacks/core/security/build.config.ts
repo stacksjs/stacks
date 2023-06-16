@@ -1,7 +1,10 @@
-import { defineBuildConfig } from 'unbuild'
+import { alias, defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
+  alias,
+
   entries: [
+    './src/index',
     {
       builder: 'mkdist',
       input: './src/',
@@ -9,6 +12,18 @@ export default defineBuildConfig({
       format: 'esm',
     },
   ],
+
+  externals: [
+    '@stacksjs/config',
+    '@stacksjs/types',
+    'bcryptjs',
+    'crypto-js',
+    'js-base64',
+  ],
+
+  rollup: {
+    inlineDependencies: true,
+  },
 
   clean: true,
   declaration: true,

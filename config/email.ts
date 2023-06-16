@@ -1,4 +1,4 @@
-import { defineEmailConfig } from '@stacksjs/utils'
+import { defineEmailConfig } from 'stacks/core/utils/src'
 import app from './app'
 
 /**

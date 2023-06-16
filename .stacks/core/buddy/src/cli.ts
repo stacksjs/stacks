@@ -2,7 +2,7 @@
 import { runAction } from '@stacksjs/actions'
 import { handleError } from '@stacksjs/error-handling'
 import { command, log } from '@stacksjs/cli'
-import { frontendEnv } from '@stacksjs/validation'
+import { env } from '@stacksjs/validation'
 import { frameworkVersion, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
@@ -22,7 +22,7 @@ async function main() {
 
   // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
-    if (frontendEnv.FRONTEND_APP_ENV !== 'production')
+    if (env().APP_ENV !== 'production')
       log.info('Project not yet initialized, generating application key...')
     else
       handleError(new Error('Please run `buddy key:generate` to generate an application key'))

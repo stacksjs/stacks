@@ -5,9 +5,10 @@ import { frameworkPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
-const isWebComponent = true
+// import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
+
+// const isWebComponent = true
 
 export const webComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/web'),
@@ -21,11 +22,11 @@ export const webComponentsConfig: ViteConfig = {
   },
 
   plugins: [
-    inspect(),
-    uiEngine(isWebComponent),
-    cssEngine(isWebComponent),
-    autoImports(),
-    components(),
+    // inspect(),
+    // uiEngine(isWebComponent),
+    // cssEngine(isWebComponent),
+    // autoImports(),
+    // components(),
   ],
 
   build: webComponentsBuildOptions(),

@@ -20,11 +20,14 @@ class ErrorHandler {
   static logFile = logsPath('errors.log')
 
   static handleError(err: Error, options?: any) {
-    // todo: options is currently not used
-    // eslint-disable-next-line no-console
-    console.log('here')
     log.error(err, options)
-    this.writeErrorToFile(err, options)
+
+    try {
+      this.writeErrorToFile(err, options)
+    }
+    catch (err) {
+      log.error('Failed to write error to log file', options)
+    }
   }
 
   static writeErrorToFile(err: Error, options?: any) {

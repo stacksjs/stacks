@@ -1,13 +1,16 @@
-import { defineBuildConfig } from 'unbuild'
+import { alias, defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
+  alias,
+
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-      format: 'esm',
-    },
+    './src/i18n',
+    './src/nprogress',
+    './src/pwa',
+  ],
+
+  externals: [
+    'virtual:pwa-register',
   ],
 
   clean: true,

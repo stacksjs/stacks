@@ -46,6 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
     "tsx": "^3.12.7",
@@ -53,6 +54,7 @@
     "unbuild": "^1.2.1"
   },
   "dependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "unbuild": "^1.2.1"
   },

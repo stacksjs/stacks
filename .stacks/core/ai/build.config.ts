@@ -1,7 +1,10 @@
-import { defineBuildConfig } from '@stacksjs/development'
+import { alias, defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
+  alias,
+
   entries: [
+    './src/index',
     {
       builder: 'mkdist',
       input: './src/',

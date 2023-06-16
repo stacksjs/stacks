@@ -181,13 +181,13 @@ export function uiEngine(isWebComponent = false) {
 }
 
 export function componentPreset(isWebComponent = false) {
-  return <PluginOption>[
-    inspect,
+  return [
+    // inspect,
     uiEngine(isWebComponent),
     cssEngine(isWebComponent),
-    autoImports,
-    components,
-  ]
+    // autoImports,
+    // components,
+  ] satisfies PluginOption
 }
 
 // const pagesPreset = (isWebComponent = false) => <PluginOption>[

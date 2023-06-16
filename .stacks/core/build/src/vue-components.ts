@@ -116,7 +116,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@stacksjs/alias'],
       output: {
         globals: {
           vue: 'Vue',

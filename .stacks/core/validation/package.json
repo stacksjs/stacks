@@ -45,6 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/utils": "workspace:*",
     "zod": "^3.21.4",
     "zod-error": "^1.5.0"
   },
