@@ -46,9 +46,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.44.1"
+    "@ow3/eslint-config": "^0.44.1",
+    "@stacksjs/cli": "workspace:*"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "neverthrow": "^6.0.0"
   },
   "devDependencies": {

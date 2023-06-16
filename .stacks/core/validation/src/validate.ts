@@ -5,6 +5,10 @@ import { log } from '@stacksjs/logging'
 import { handleError } from '@stacksjs/error-handling'
 import { generateError, safeParse } from 'zod-error'
 import type { ErrorMessageOptions } from 'zod-error'
+import { loadEnv } from 'vite'
+import { projectPath } from '@stacksjs/path'
+
+export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
 
 export const errorMessageOptions: ErrorMessageOptions = {
   maxErrors: 2,
@@ -157,11 +161,13 @@ export type EnvKeys = keyof Env
 export type ValidationIssue = ZodIssue
 
 export function env(options?: ErrorMessageOptions) {
+  const mode = process.env.NODE_ENV ?? 'development'
+
   if (!options)
     options = errorMessageOptions
 
   try {
-    return envSchema.parse(process.env)
+    return envSchema.parse(loadEnv(mode, projectPath(), envPrefix))
   }
   catch (error) {
     const genericError = generateError(error, options)

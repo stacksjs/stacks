@@ -1,5 +1,5 @@
 import { fs } from '@stacksjs/storage'
-import { log } from '@stacksjs/logging'
+import { italic, log } from '@stacksjs/cli'
 import { logsPath } from '@stacksjs/path'
 
 export {
@@ -19,26 +19,34 @@ export {
 class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static handleError(err: Error, options?: any) {
-    log.error(err, options)
+  static handle(err: Error, options?: any) {
+    this.writeErrorToConsole(err, options)
+    this.writeErrorToFile(err, options)
+  }
 
-    try {
-      this.writeErrorToFile(err, options)
-    }
-    catch (err) {
-      log.error('Failed to write error to log file', options)
-    }
+  static handleError(err: Error, options?: any) {
+    this.handle(err, options)
   }
 
   static writeErrorToFile(err: Error, options?: any) {
-    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-    fs.appendFile(this.logFile, formattedError, (err: any) => {
-      if (err)
-        log.error('Failed to write error to log file', options)
-    })
+    try {
+      const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
+
+      fs.appendFile(this.logFile, formattedError, (err: any) => {
+        if (err)
+          log.error(`Failed to write error to log file: ${italic(err.message)}`, err)
+      })
+    }
+    catch (err: any) {
+      log.error(`Failed to write error to log file: ${italic(err.message)}`, err)
+    }
+  }
+
+  static writeErrorToConsole(err: Error, options?: any) {
+    log.error(err, options)
   }
 }
 
 export function handleError(err: Error, options?: any): void {
-  ErrorHandler.handleError(err, options)
+  ErrorHandler.handle(err, options)
 }

@@ -8,7 +8,7 @@ import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
-const envPrefix = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
+export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
@@ -127,6 +127,8 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command, mode }) => {
+  // eslint-disable-next-line no-console
+  console.log('here??')
   process.env = { ...process.env, ...loadEnv(mode, projectPath(), envPrefix) }
 
   if (command === 'serve')

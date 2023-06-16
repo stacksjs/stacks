@@ -4,12 +4,6 @@ export default defineBuildConfig({
   alias,
 
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-      format: 'esm',
-    },
     './src/index',
   ],
 

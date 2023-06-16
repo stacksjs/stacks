@@ -230,6 +230,7 @@ declare global {
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
   const ensureSuffix: typeof import('./core/strings/src/utils')['ensureSuffix']
   const env: typeof import('./core/validation/src/validate')['env']
+  const envPrefix: typeof import('./core/validation/src/validate')['envPrefix']
   const envSchema: typeof import('./core/validation/src/validate')['envSchema']
   const equal: typeof import('./core/utils/src/currency')['equal']
   const err: typeof import('./core/error-handling/src/index')['err']
@@ -1072,6 +1073,7 @@ declare module 'vue' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
+    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/validate')['envPrefix']>
     readonly envSchema: UnwrapRef<typeof import('./core/validation/src/validate')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
@@ -1908,6 +1910,7 @@ declare module '@vue/runtime-core' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
+    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/validate')['envPrefix']>
     readonly envSchema: UnwrapRef<typeof import('./core/validation/src/validate')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
