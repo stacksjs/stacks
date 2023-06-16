@@ -546,6 +546,7 @@ declare global {
   const runCommands: typeof import('./core/cli/src/run')['runCommands']
   const runNpmScript: typeof import('./core/utils/src/helpers')['runNpmScript']
   const runtimePath: typeof import('./core/path/src/index')['runtimePath']
+  const safeEnv: typeof import('./core/validation/src/validate')['safeEnv']
   const sample: typeof import('./core/arrays/src/index')['sample']
   const schedulerPath: typeof import('./core/path/src/index')['schedulerPath']
   const scriptsPath: typeof import('./core/path/src/index')['scriptsPath']
@@ -1387,6 +1388,7 @@ declare module 'vue' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
+    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
@@ -2222,6 +2224,7 @@ declare module '@vue/runtime-core' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
+    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>

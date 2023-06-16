@@ -2,6 +2,7 @@ import * as process from 'node:process'
 import type { ZodIssue } from 'zod'
 import { z as validate, z } from 'zod'
 import { log } from '@stacksjs/logging'
+import { handleError } from '@stacksjs/error-handling'
 import { generateError, safeParse } from 'zod-error'
 import type { ErrorMessageOptions } from 'zod-error'
 
