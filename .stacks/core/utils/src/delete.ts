@@ -1,3 +1,1 @@
-import { rimraf } from 'rimraf'
-
-export { rimraf, rimraf as del }
+export { rimraf, rimraf as del } from 'rimraf'

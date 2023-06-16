@@ -4,12 +4,6 @@ export default defineBuildConfig({
   alias,
 
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-      format: 'esm',
-    },
     './src/index',
   ],
 
@@ -18,6 +12,10 @@ export default defineBuildConfig({
     '@stacksjs/logging',
     'unbuild',
   ],
+
+  rollup: {
+    inlineDependencies: true,
+  },
 
   clean: true,
   declaration: true,
