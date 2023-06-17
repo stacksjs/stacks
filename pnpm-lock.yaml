@@ -1684,12 +1684,9 @@ importers:
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
-      zod:
-        specifier: ^3.21.4
-        version: 3.21.4
-      zod-error:
-        specifier: ^1.5.0
-        version: 1.5.0
+      '@vinejs/vine':
+        specifier: ^1.4.1
+        version: 1.4.1
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -7125,6 +7122,10 @@ packages:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
     dev: false
 
+  /@poppinss/macroable@1.0.0-6:
+    resolution: {integrity: sha512-1m8apl4RdSIsoj/y86DPUpbnlmI7oroW1LP1HDRDhsclChNpsp1AfqycJ463/uOaTzet1VZEOt2YQRZ7f3G7DQ==}
+    dev: false
+
   /@redis/bloom@1.2.0(@redis/client@1.5.8):
     resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
     peerDependencies:
@@ -8326,6 +8327,23 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: false
+
+  /@vinejs/compiler@2.0.1:
+    resolution: {integrity: sha512-qCGjknV0owgM5ph/f9Rw3o4YG7F0LRfuirr6ll3oAG8TvkjYNBPBH77kMbGLkI1jUxpn3cR01UonjIotMJtJ1g==}
+    engines: {node: '>=18.0.0'}
+    dev: false
+
+  /@vinejs/vine@1.4.1:
+    resolution: {integrity: sha512-mBpPFGyz56iNheJDzUyr14vOlXUfOoopSX/AP86Lov/bglyOMrR22ixPIy+pRYMsZWIgymbq9ucNOB5cWk1eGQ==}
+    engines: {node: '>=18.16.0'}
+    dependencies:
+      '@poppinss/macroable': 1.0.0-6
+      '@types/validator': 13.7.17
+      '@vinejs/compiler': 2.0.1
+      camelcase: 7.0.1
+      normalize-url: 8.0.0
+      validator: 13.9.0
     dev: false
 
   /@vitejs/plugin-vue@4.2.3(vite@4.3.9)(vue@3.3.4):
@@ -9682,6 +9700,11 @@ packages:
   /camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
+    dev: false
+
+  /camelcase@7.0.1:
+    resolution: {integrity: sha512-xlx1yCK2Oc1APsPXDL2LdlNP6+uu8OCDdhOBSVT279M/S+y75O30C2VuD8T2ogdePBBl7PfPF4504tnLgX3zfw==}
+    engines: {node: '>=14.16'}
     dev: false
 
   /caniuse-lite@1.0.30001491:
@@ -15171,6 +15194,11 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
+  /normalize-url@8.0.0:
+    resolution: {integrity: sha512-uVFpKhj5MheNBJRTiMZ9pE/7hD1QTeEvugSJW/OmLzAp78PB5O6adfMNTvmfKhXBkvCzC+rqifWcVYpGFwTjnw==}
+    engines: {node: '>=14.16'}
+    dev: false
+
   /np@7.7.0:
     resolution: {integrity: sha512-G4HfO6JUl7iKOX1qfYHM/kG5ApqqZ4ma8YjtVAJoyS5VdKkGE/OdSG3cOE9Lwr71klNz9n6KIZmPRnh0L7qM1Q==}
     engines: {git: '>=2.11.0', node: '>=10', npm: '>=6.8.0', yarn: '>=1.7.0'}
@@ -20475,12 +20503,6 @@ packages:
       archiver-utils: 2.1.0
       compress-commons: 4.1.1
       readable-stream: 3.6.2
-    dev: false
-
-  /zod-error@1.5.0:
-    resolution: {integrity: sha512-zzopKZ/skI9iXpqCEPj+iLCKl9b88E43ehcU+sbRoHuwGd9F1IDVGQ70TyO6kmfiRL1g4IXkjsXK+g1gLYl4WQ==}
-    dependencies:
-      zod: 3.21.4
     dev: false
 
   /zod@3.21.4:

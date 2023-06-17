@@ -1,5 +1,5 @@
 import { fs } from '@stacksjs/storage'
-import { italic, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { logsPath } from '@stacksjs/path'
 
 export {
@@ -29,17 +29,13 @@ class ErrorHandler {
   }
 
   static writeErrorToFile(err: Error, options?: any) {
-    try {
-      const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
+    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
 
-      fs.appendFile(this.logFile, formattedError, (err: any) => {
-        if (err)
-          log.error(`Failed to write error to log file: ${italic(err.message)}`, err)
+    fs.appendFile(this.logFile, formattedError, 'utf8')
+      .then(() => {})
+      .catch((err) => {
+        log.error(`Failed to write error to ./storage/logs/errors.log: ${italic(err.message)}`, err)
       })
-    }
-    catch (err: any) {
-      log.error(`Failed to write error to log file: ${italic(err.message)}`, err)
-    }
   }
 
   static writeErrorToConsole(err: Error, options?: any) {

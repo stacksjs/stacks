@@ -1,192 +1,167 @@
 import * as process from 'node:process'
-import type { ZodIssue } from 'zod'
-import { z as validate, z } from 'zod'
 import { log } from '@stacksjs/logging'
 import { handleError } from '@stacksjs/error-handling'
-import { generateError, safeParse } from 'zod-error'
-import type { ErrorMessageOptions } from 'zod-error'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
+import validator from '@vinejs/vine'
+import type { Infer } from '@vinejs/vine/build/src/types'
 
 export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
 
-export const errorMessageOptions: ErrorMessageOptions = {
-  maxErrors: 2,
-  delimiter: {
-    component: ' - ',
-  },
-  path: {
-    enabled: true,
-    type: 'zodPathArray',
-    label: 'Env Variable: ',
-  },
-  code: {
-    enabled: false,
-  },
-  message: {
-    enabled: true,
-    label: '',
-  },
-}
-
 // TODO: envSchema needs to be auto generated from the .env file
-export const backendEnvSchema = validate.object({
-  APP_NAME: validate.string().default('Stacks').optional(),
-  APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local').optional(),
-  APP_KEY: validate.string().optional(),
-  APP_URL: validate.string().default('stacks.test'),
-  APP_DEBUG: validate.enum(['true', 'false']).default('true').transform(Boolean).optional(),
-  APP_SUBDOMAIN_API: validate.string().default('api').optional(),
-  APP_SUBDOMAIN_DOCS: validate.string().default('docs').optional(),
-  APP_SUBDOMAIN_LIBRARY: validate.string().default('library').optional(),
-  APP_BUCKET: validate.string().optional(),
+// envSchema could also be named "backendEnvSchema"
+export const envSchema = validator.object({
+  APP_NAME: validator.string().optional(),
+  APP_ENV: validator.enum(['local', 'development', 'staging', 'production']).optional(),
+  APP_KEY: validator.string().optional(),
+  APP_URL: validator.string(),
+  APP_DEBUG: validator.enum(['true', 'false']).transform(Boolean).optional(),
+  APP_SUBDOMAIN_API: validator.string().optional(),
+  APP_SUBDOMAIN_DOCS: validator.string().optional(),
+  APP_SUBDOMAIN_LIBRARY: validator.string().optional(),
+  APP_BUCKET: validator.string().optional(),
 
-  DB_CONNECTION: validate.string().default('mysql').optional(),
-  DB_HOST: validate.string().default('127.0.0.1').optional(),
-  DB_PORT: validate.string().regex(/^\d*$/).default('3306').transform(Number).optional(),
-  DB_DATABASE: validate.string().default('stacks').optional(),
-  DB_USERNAME: validate.string().default('root').optional(),
-  DB_PASSWORD: validate.string().optional(),
+  DB_CONNECTION: validator.string().optional(),
+  DB_HOST: validator.string().optional(),
+  DB_PORT: validator.string().regex(/^\d*$/).transform(Number).optional(),
+  DB_DATABASE: validator.string().optional(),
+  DB_USERNAME: validator.string().optional(),
+  DB_PASSWORD: validator.string().optional(),
 
-  SEARCH_ENGINE_DRIVER: validate.string().default('meilisearch').optional(),
-  MEILISEARCH_HOST: validate.string().default('https://127.0.0.1:7700').optional(),
-  MEILISEARCH_KEY: validate.string().optional(),
+  SEARCH_ENGINE_DRIVER: validator.string().optional(),
+  MEILISEARCH_HOST: validator.string().optional(),
+  MEILISEARCH_KEY: validator.string().optional(),
 
-  CACHE_DRIVER: validate.enum(['dynamodb', 'memcached', 'redis']).default('redis').optional(),
-  CACHE_PREFIX: validate.string().default('stacks').optional(),
-  CACHE_TTL: validate.string().regex(/^\d*$/).default('3600').transform(Number).optional(),
+  CACHE_DRIVER: validator.enum(['dynamodb', 'memcached', 'redis']).optional(),
+  CACHE_PREFIX: validator.string().optional(),
+  CACHE_TTL: validator.string().regex(/^\d*$/).transform(Number).optional(),
 
-  AWS_ACCESS_KEY_ID: validate.string().optional(),
-  AWS_SECRET_ACCESS_KEY: validate.string().optional(),
-  AWS_DEFAULT_REGION: validate.string().default('us-east-1').optional(),
-  DYNAMODB_CACHE_TABLE: validate.string().default('cache').optional(),
-  DYNAMODB_ENDPOINT: validate.string().optional(),
+  AWS_ACCESS_KEY_ID: validator.string().optional(),
+  AWS_SECRET_ACCESS_KEY: validator.string().optional(),
+  AWS_DEFAULT_REGION: validator.string().optional(),
+  DYNAMODB_CACHE_TABLE: validator.string().optional(),
+  DYNAMODB_ENDPOINT: validator.string().optional(),
 
-  MEMCACHED_PERSISTENT_ID: validate.string().optional(),
-  MEMCACHED_USERNAME: validate.string().optional(),
-  MEMCACHED_PASSWORD: validate.string().optional(),
-  MEMCACHED_HOST: validate.string().default('127.0.0.1').optional(),
-  MEMCACHED_PORT: validate.string().regex(/^\d*$/).default('11211').transform(Number).optional(),
+  MEMCACHED_PERSISTENT_ID: validator.string().optional(),
+  MEMCACHED_USERNAME: validator.string().optional(),
+  MEMCACHED_PASSWORD: validator.string().optional(),
+  MEMCACHED_HOST: validator.string().optional(),
+  MEMCACHED_PORT: validator.string().regex(/^\d*$/).transform(Number).optional(),
 
-  REDIS_HOST: validate.string().default('127.0.0.1').optional(),
-  REDIS_PORT: validate.string().regex(/^\d*$/).default('6379').transform(Number).optional(),
+  REDIS_HOST: validator.string().optional(),
+  REDIS_PORT: validator.string().regex(/^\d*$/).transform(Number).optional(),
 
-  MAIL_FROM_NAME: validate.string().default('Stacks').optional(),
-  MAIL_FROM_ADDRESS: validate.string().default('no-reply@stacksjs.dev').optional(),
+  MAIL_FROM_NAME: validator.string().optional(),
+  MAIL_FROM_ADDRESS: validator.string().optional(),
 
-  EMAILJS_HOST: validate.string().default('example.com').optional(),
-  EMAILJS_USERNAME: validate.string().default('').optional(),
-  EMAILJS_PASSWORD: validate.string().default('').optional(),
-  EMAILJS_PORT: validate.string().regex(/^\d*$/).default('40').transform(Number).optional(),
-  EMAILJS_SECURE: validate.enum(['true', 'false']).default('true').transform(Boolean).optional(),
+  EMAILJS_HOST: validator.string().optional(),
+  EMAILJS_USERNAME: validator.string().optional(),
+  EMAILJS_PASSWORD: validator.string().optional(),
+  EMAILJS_PORT: validator.string().regex(/^\d*$/).transform(Number).optional(),
+  EMAILJS_SECURE: validator.enum(['true', 'false']).transform(Boolean).optional(),
 
-  MAILGUN_API_KEY: validate.string().default('').optional(),
-  MAILGUN_DOMAIN: validate.string().default('').optional(),
-  MAILGUN_USERNAME: validate.string().default('').optional(),
+  MAILGUN_API_KEY: validator.string().optional(),
+  MAILGUN_DOMAIN: validator.string().optional(),
+  MAILGUN_USERNAME: validator.string().optional(),
 
-  MAILJET_API_KEY: validate.string().default('').optional(),
-  MAILJET_API_SECRET: validate.string().default('').optional(),
+  MAILJET_API_KEY: validator.string().optional(),
+  MAILJET_API_SECRET: validator.string().optional(),
 
-  MANDRILL_API_KEY: validate.string().default('').optional(),
+  MANDRILL_API_KEY: validator.string().optional(),
 
-  NETCORE_API_KEY: validate.string().default('').optional(),
+  NETCORE_API_KEY: validator.string().optional(),
 
-  NODEMAILER_HOST: validate.string().default('').optional(),
-  NODEMAILER_USERNAME: validate.string().default('').optional(),
-  NODEMAILER_PASSWORD: validate.string().default('').optional(),
-  NODEMAILER_PORT: validate.string().regex(/^\d*$/).default('587').transform(Number).optional(),
-  NODEMAILER_SECURE: validate.enum(['true', 'false']).default('true').transform(Boolean).optional(),
+  NODEMAILER_HOST: validator.string().optional(),
+  NODEMAILER_USERNAME: validator.string().optional(),
+  NODEMAILER_PASSWORD: validator.string().optional(),
+  NODEMAILER_PORT: validator.string().regex(/^\d*$/).transform(Number).optional(),
+  NODEMAILER_SECURE: validator.enum(['true', 'false']).transform(Boolean).optional(),
 
-  POSTMARK_API_TOKEN: validate.string().default('').optional(),
-  POSTMARK_API_KEY: validate.string().default('').optional(),
+  POSTMARK_API_TOKEN: validator.string().optional(),
+  POSTMARK_API_KEY: validator.string().optional(),
 
-  SENDGRID_API_KEY: validate.string().default('').optional(),
-  SENDGRID_SENDER_NAME: validate.string().default('').optional(),
+  SENDGRID_API_KEY: validator.string().optional(),
+  SENDGRID_SENDER_NAME: validator.string().optional(),
 
-  SES_API_VERSION: validate.string().default('').optional(),
-  SES_ACCESS_KEY_ID: validate.string().default('').optional(),
-  SES_SECRET_ACCESS_KEY: validate.string().default('').optional(),
-  SES_REGION: validate.string().default('').optional(),
+  SES_API_VERSION: validator.string().optional(),
+  SES_ACCESS_KEY_ID: validator.string().optional(),
+  SES_SECRET_ACCESS_KEY: validator.string().optional(),
+  SES_REGION: validator.string().optional(),
 
-  FROM_PHONE_NUMBER: validate.string().default('').optional(),
-  TWILIO_ACCOUNT_SID: validate.string().default('').optional(),
-  TWILIO_AUTH_TOKEN: validate.string().default('').optional(),
+  FROM_PHONE_NUMBER: validator.string().optional(),
+  TWILIO_ACCOUNT_SID: validator.string().optional(),
+  TWILIO_AUTH_TOKEN: validator.string().optional(),
 
-  VONAGE_API_KEY: validate.string().default('').optional(),
-  VONAGE_API_SECRET: validate.string().default('').optional(),
+  VONAGE_API_KEY: validator.string().optional(),
+  VONAGE_API_SECRET: validator.string().optional(),
 
-  GUPSHUP_USER_ID: validate.string().default('').optional(),
-  GUPSHUP_PASSWORD: validate.string().default('').optional(),
+  GUPSHUP_USER_ID: validator.string().optional(),
+  GUPSHUP_PASSWORD: validator.string().optional(),
 
-  PLIVO_ACCOUNT_ID: validate.string().default('').optional(),
-  PLIVO_AUTH_TOKEN: validate.string().default('').optional(),
+  PLIVO_ACCOUNT_ID: validator.string().optional(),
+  PLIVO_AUTH_TOKEN: validator.string().optional(),
 
-  SMS77_API_KEY: validate.string().default('').optional(),
+  SMS77_API_KEY: validator.string().optional(),
 
-  SNS_REGION: validate.string().default('').optional(),
-  SNS_ACCESS_KEY_ID: validate.string().default('').optional(),
-  SNS_SECRET_ACCESS_KEY: validate.string().default('').optional(),
+  SNS_REGION: validator.string().optional(),
+  SNS_ACCESS_KEY_ID: validator.string().optional(),
+  SNS_SECRET_ACCESS_KEY: validator.string().optional(),
 
-  TELNYX_API_KEY: validate.string().default('').optional(),
-  TELNYX_MESSAGE_PROFILE_ID: validate.string().default('').optional(),
+  TELNYX_API_KEY: validator.string().optional(),
+  TELNYX_MESSAGE_PROFILE_ID: validator.string().optional(),
 
-  TERMII_API_KEY: validate.string().default('').optional(),
+  TERMII_API_KEY: validator.string().optional(),
 
-  SLACK_FROM: validate.string().default('').optional(),
-  SLACK_APPLICATION_ID: validate.string().default('').optional(),
-  SLACK_CLIENT_ID: validate.string().default('').optional(),
-  SLACK_SECRET_KEY: validate.string().default('').optional(),
+  SLACK_FROM: validator.string().optional(),
+  SLACK_APPLICATION_ID: validator.string().optional(),
+  SLACK_CLIENT_ID: validator.string().optional(),
+  SLACK_SECRET_KEY: validator.string().optional(),
 
-  MICROSOFT_TEAMS_APPLICATION_ID: validate.string().default('').optional(),
-  MICROSOFT_TEAMS_CLIENT_ID: validate.string().default('').optional(),
-  MICROSOFT_TEAMS_SECRET: validate.string().default('').optional(),
+  MICROSOFT_TEAMS_APPLICATION_ID: validator.string().optional(),
+  MICROSOFT_TEAMS_CLIENT_ID: validator.string().optional(),
+  MICROSOFT_TEAMS_SECRET: validator.string().optional(),
 })
 
-export const frontendEnvSchema = validate.object({
-  FRONTEND_APP_ENV: validate.enum(['local', 'development', 'staging', 'production']).default('local').optional(),
-  FRONTEND_APP_URL: validate.string().default('stacks.test').optional(),
+export const frontendEnvSchema = validator.object({
+  FRONTEND_APP_ENV: validator.enum(['local', 'development', 'staging', 'production']).optional(),
+  FRONTEND_APP_URL: validator.string().optional(),
 })
 
-export const envSchema = backendEnvSchema.merge(frontendEnvSchema)
-
-export type BackendEnv = validate.infer<typeof backendEnvSchema>
+export type BackendEnv = Infer<typeof backendEnvSchema>
 export type BackendEnvKeys = keyof BackendEnv
 
-export type FrontendEnv = validate.infer<typeof frontendEnvSchema>
+export type FrontendEnv = Infer<typeof frontendEnvSchema>
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export type Env = validate.infer<typeof envSchema>
+export type Env = Infer<typeof envSchema>
 export type EnvKeys = keyof Env
 
-export type ValidationIssue = ZodIssue
-
-export function env(options?: ErrorMessageOptions) {
-  const mode = process.env.NODE_ENV ?? 'development'
-
-  if (!options)
-    options = errorMessageOptions
-
+export async function env() {
   try {
-    return envSchema.parse(loadEnv(mode, projectPath(), envPrefix))
+    const mode = process.env.NODE_ENV ?? 'development'
+    const data = loadEnv(mode, projectPath(), envPrefix)
+    const v = validator.compile(envSchema)
+
+    return await v.validate(data)
   }
-  catch (error) {
-    const genericError = generateError(error, options)
-    handleError(genericError)
-    throw new Error('Invalid environment variables')
+  catch (error: any) {
+    // if (error instanceof errors.E_VALIDATION_ERROR)
+    //   console.log(error.messages)
+    handleError(error)
+    return { success: false, error }
   }
 }
 
-export function safeEnv(env?: any, options = errorMessageOptions) {
-  return safeParse(envSchema, env ?? process.env, options)
-}
-
-export function getEnvIssues(env?: any): ValidationIssue[] | void {
-  const result = safeEnv(env ?? process.env, errorMessageOptions)
+export function getEnvIssues(env?: any): void {
+  const result = env()
 
   if (!result.success) {
     const message = result.error.message
     log.error(message)
+    return
   }
+
+  return result
 }
 
 export enum Type {
@@ -198,4 +173,5 @@ export enum Type {
   Array = 'Array',
 }
 
-export { validate, z }
+export const validate = validator.validate
+export { validator }

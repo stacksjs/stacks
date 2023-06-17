@@ -23,4 +23,5 @@ export {
   trimScale,
   haveSameCurrency,
   haveSameAmount,
+  dinero as currency,
 } from 'dinero.js'

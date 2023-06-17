@@ -46,11 +46,10 @@
   },
   "peerDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "zod": "^3.21.4",
-    "zod-error": "^1.5.0"
+    "@vinejs/vine": "^1.4.1"
   },
   "dependencies": {
-    "zod-error": "^1.5.0"
+    "@vinejs/vine": "^1.4.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
