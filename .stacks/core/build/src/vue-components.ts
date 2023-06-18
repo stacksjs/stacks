@@ -8,12 +8,10 @@ import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
-export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
-
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
   envDir: projectPath(),
-  envPrefix,
+  envPrefix: 'FRONTEND_',
 
   server: {
     https: true,
@@ -128,7 +126,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, projectPath(), envPrefix) }
+  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
 
   if (command === 'serve')
     return vueComponentsConfig

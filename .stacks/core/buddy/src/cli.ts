@@ -22,7 +22,7 @@ async function main() {
 
   // before running any commands, check if the project is already initialized
   if (!await isProjectCreated()) {
-    if (env().APP_ENV !== 'production')
+    if (env.APP_ENV !== 'production')
       log.info('Project not yet initialized, generating application key...')
     else
       handleError(new Error('Please run `buddy key:generate` to generate an application key'))

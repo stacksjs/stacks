@@ -10,11 +10,11 @@ import { env } from 'stacks/core/validation/src'
  */
 
 export default defineApp({
-  name: env().APP_NAME || 'Stacks',
-  env: env().APP_ENV || 'local',
-  url: env().APP_URL || 'stacks.test',
-  debug: env().APP_DEBUG || false,
-  key: env().APP_KEY,
+  name: env.APP_NAME || 'Stacks',
+  env: env.APP_ENV || 'local',
+  url: env.APP_URL || 'stacks.test',
+  debug: env.APP_DEBUG || false,
+  key: env.APP_KEY,
 
   timezone: 'UTC',
   locale: 'en',

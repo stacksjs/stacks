@@ -10,7 +10,7 @@ import { alias } from '@stacksjs/alias'
 export const functionsConfig: ViteConfig = {
   root: functionsPath(),
   envDir: projectPath(),
-  envPrefix: 'APP_',
+  envPrefix: '',
 
   resolve: {
     alias,

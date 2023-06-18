@@ -3,7 +3,7 @@ import utf8 from 'crypto-js/enc-utf8'
 import { env } from '@stacksjs/validation'
 
 function encrypt(message: string): string {
-  const passphrase = env().APP_KEY
+  const passphrase = env.APP_KEY
 
   if (!passphrase)
     throw new Error('APP_KEY is not defined')
@@ -12,7 +12,7 @@ function encrypt(message: string): string {
 }
 
 function decrypt(encrypted: string): string {
-  const passphrase = env().APP_KEY
+  const passphrase = env.APP_KEY
 
   if (!passphrase)
     throw new Error('APP_KEY is not defined')

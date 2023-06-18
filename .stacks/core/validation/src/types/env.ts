@@ -4,8 +4,6 @@ import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
 
-export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
-
 // TODO: envSchema needs to be auto generated from the .env file
 // envSchema could also be named "backendEnvSchema"
 export const envSchema = validator.object({
@@ -134,23 +132,22 @@ export type FrontendEnvKeys = keyof FrontendEnv
 export type Env = Infer<typeof envSchema>
 export type EnvKeys = keyof Env
 
-export const env = async () => await getEnv()
+export const env = process.env as Env
 export async function getEnv() {
   try {
     const mode = process.env.NODE_ENV ?? 'development'
-    const data = loadEnv(mode, projectPath(), envPrefix)
+    const data = loadEnv(mode, projectPath(), '')
     const v = validator.compile(envSchema)
 
     return v.validate(data)
   }
   catch (error: any) {
     handleError(error)
-    throw new Error(error)
   }
 }
 
 // export async function getEnvIssues(env?: any): void {
-//   const result = await getEnv()
+//   const result = await getenv
 //
 //   if (!result.success) {
 //     const message = result.error.message

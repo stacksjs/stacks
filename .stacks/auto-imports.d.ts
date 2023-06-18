@@ -234,9 +234,7 @@ declare global {
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
   const ensureSuffix: typeof import('./core/strings/src/utils')['ensureSuffix']
   const env: typeof import('./core/validation/src/types/env')['env']
-  const envPrefix: typeof import('./core/validation/src/types/env')['envPrefix']
   const envSchema: typeof import('./core/validation/src/types/env')['envSchema']
-  const envv: typeof import('./core/validation/src/types/env')['envv']
   const equal: typeof import('./core/utils/src/currency')['equal']
   const err: typeof import('./core/error-handling/src/index')['err']
   const errAsync: typeof import('./core/error-handling/src/index')['errAsync']
@@ -1083,7 +1081,6 @@ declare module 'vue' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/types/env')['env']>
-    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/types/env')['envPrefix']>
     readonly envSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
@@ -1920,7 +1917,6 @@ declare module '@vue/runtime-core' {
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
     readonly env: UnwrapRef<typeof import('./core/validation/src/types/env')['env']>
-    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/types/env')['envPrefix']>
     readonly envSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>

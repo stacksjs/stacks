@@ -24,7 +24,7 @@ export default defineConfig({
     port: 3333,
     strictPort: true,
   },
-  envPrefix: ['VITE_', 'TAURI_'],
+  envPrefix: [''],
   plugins: [
 
     Vue({
