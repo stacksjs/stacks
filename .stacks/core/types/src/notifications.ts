@@ -198,7 +198,8 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
   domain?: string
 
   mailboxes?: {
-    'username': string
-    'forwardTo': string
-  }[]
+    [key: string]: string
+    // 'username': string
+    // 'forwardTo': string
+  }
 }

@@ -8,9 +8,12 @@ export default defineBuildConfig({
   ],
 
   externals: [
-    'zod',
-    'zod-error',
+    '@vinejs/vine',
+    '@vinejs/vine/build/src/types',
+    'vite',
     'validator',
+    '@stacksjs/path',
+    '@stacksjs/utils',
     '@stacksjs/types',
   ],
 

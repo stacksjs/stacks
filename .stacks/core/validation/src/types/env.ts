@@ -6,7 +6,7 @@ import { projectPath } from '@stacksjs/path'
 
 // TODO: envSchema needs to be auto generated from the .env file
 // envSchema could also be named "backendEnvSchema"
-export const envSchema = validator.object({
+const envSchema = validator.object({
   APP_NAME: validator.string().optional(),
   APP_ENV: validator.enum(['local', 'development', 'staging', 'production']).optional(),
   APP_KEY: validator.string().optional(),
@@ -118,7 +118,7 @@ export const envSchema = validator.object({
   MICROSOFT_TEAMS_SECRET: validator.string().optional(),
 })
 
-export const frontendEnvSchema = validator.object({
+const frontendEnvSchema = validator.object({
   FRONTEND_APP_ENV: validator.enum(['local', 'development', 'staging', 'production']).optional(),
   FRONTEND_APP_URL: validator.string().optional(),
 })
@@ -145,6 +145,8 @@ export async function getEnv() {
     handleError(error)
   }
 }
+
+export { loadEnv }
 
 // export async function getEnvIssues(env?: any): void {
 //   const result = await getenv

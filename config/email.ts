@@ -1,4 +1,5 @@
 import { defineEmailConfig } from 'stacks/core/utils/src'
+import { env } from '@stacksjs/validation'
 import app from './app'
 
 /**
@@ -9,17 +10,14 @@ import app from './app'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineEmailConfig({
-  from: {
-    name: 'My App',
-    address: '',
-  },
-
   domain: app.url,
 
-  mailboxes: [
-    {
-      username: 'hi', // enables hi@domain.com
-      forwardTo: 'your@mailbox.com', // forwards all emails from hi@domain.com to your@mailbox.com (e.g. stacksjs@gmail.com)
-    },
-  ],
+  from: {
+    name: env.MAIL_FROM_NAME || 'Stacks',
+    address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.dev',
+  },
+
+  mailboxes: {
+    hi: 'your@mailbox.com', // enables hi@domain and forwards incoming mail to your mailbox
+  },
 })

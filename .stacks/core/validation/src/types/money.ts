@@ -1,7 +1,7 @@
 import type { FieldOptions, Validation } from '@vinejs/vine/build/src/types'
 import type { Money } from '@stacksjs/types'
 import { BaseLiteralType } from '@vinejs/vine'
-import { isMoney } from '../is'
+import { isMoney } from '../rules'
 
 export class MoneyValidator extends BaseLiteralType<Money, Money> {
   constructor(options?: FieldOptions, validations?: Validation<any>[]) {

@@ -13,6 +13,7 @@ export default defineNotification({
 
   email: {
     default: 'smtp',
+
     from: {
       name: env.MAIL_FROM_NAME || 'Stacks',
       address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.dev',
