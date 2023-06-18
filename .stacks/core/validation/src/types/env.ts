@@ -4,6 +4,8 @@ import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
 
+export * from '@vinejs/vine/build/src/symbols'
+
 // TODO: envSchema needs to be auto generated from the .env file
 // envSchema could also be named "backendEnvSchema"
 const envSchema = validator.object({
@@ -123,14 +125,11 @@ const frontendEnvSchema = validator.object({
   FRONTEND_APP_URL: validator.string().optional(),
 })
 
-export type BackendEnv = Infer<typeof envSchema>
-export type BackendEnvKeys = keyof BackendEnv
+export type Env = Infer<typeof envSchema>
+export type EnvKeys = keyof Env
 
 export type FrontendEnv = Infer<typeof frontendEnvSchema>
 export type FrontendEnvKeys = keyof FrontendEnv
-
-export type Env = Infer<typeof envSchema>
-export type EnvKeys = keyof Env
 
 export const env = process.env as Env
 export async function getEnv() {
@@ -147,15 +146,3 @@ export async function getEnv() {
 }
 
 export { loadEnv }
-
-// export async function getEnvIssues(env?: any): void {
-//   const result = await getenv
-//
-//   if (!result.success) {
-//     const message = result.error.message
-//     log.error(message)
-//     return
-//   }
-//
-//   return result
-// }
