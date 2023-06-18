@@ -61,7 +61,7 @@
     "pinia": "^2.1.4",
     "unocss": "^0.53.1",
     "vue": "^3.3.4",
-    "vue-tsc": "^1.6.5"
+    "vue-tsc": "^1.8.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
