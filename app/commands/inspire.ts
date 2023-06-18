@@ -1,4 +1,4 @@
-// triggered via `your-cli inspire`
+// triggered via `$your-commands $command`
 //
 // export default defineCommand({
 //   name: 'inspire',

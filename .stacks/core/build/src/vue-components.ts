@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath } from '@stacksjs/path'
+import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
 import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
@@ -10,8 +10,10 @@ import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
+  base: frameworkPath(),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
+  publicDir: storagePath('public'),
 
   server: {
     https: true,

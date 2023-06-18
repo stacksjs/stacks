@@ -1,8 +1,8 @@
 import validator, { Vine as Validator } from '@vinejs/vine'
-import { ValidatorMoney } from './types/money'
+import { MoneyValidator } from './types/money'
 
 Validator.macro('money', () => {
-  return new ValidatorMoney()
+  return new MoneyValidator()
 })
 
 /**
@@ -10,7 +10,7 @@ Validator.macro('money', () => {
  */
 declare module '@stacksjs/validation' {
   interface Validator {
-    money(): ValidatorMoney
+    money(): MoneyValidator
   }
 }
 

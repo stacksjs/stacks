@@ -18,6 +18,7 @@ declare global {
   const ExitCode: typeof import('./core/cli/src/index')['ExitCode']
   const Head: typeof import('./core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('./core/utils/src/vendors')['HeadVuePlugin']
+  const MoneyValidator: typeof import('./core/validation/src/types/money')['MoneyValidator']
   const MysqlDialect: typeof import('./core/query-builder/src/kysely')['MysqlDialect']
   const Ok: typeof import('./core/error-handling/src/index')['Ok']
   const PostgresDialect: typeof import('./core/query-builder/src/kysely')['PostgresDialect']
@@ -867,6 +868,7 @@ declare module 'vue' {
     readonly ExitCode: UnwrapRef<typeof import('./core/cli/src/index')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('./core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('./core/utils/src/vendors')['HeadVuePlugin']>
+    readonly MoneyValidator: UnwrapRef<typeof import('./core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('./core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['PostgresDialect']>
@@ -879,7 +881,6 @@ declare module 'vue' {
     readonly USD: UnwrapRef<typeof import('./core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('@stacksjs/ui')['UiEngine']>
     readonly Validator: UnwrapRef<typeof import('./core/validation/src/validate')['Validator']>
-    readonly ValidatorMoney: UnwrapRef<typeof import('./core/validation/src/types/money')['ValidatorMoney']>
     readonly _dirname: UnwrapRef<typeof import('./core/storage/src/index')['_dirname']>
     readonly actionsPath: UnwrapRef<typeof import('./core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('./core/utils/src/currency')['add']>
@@ -1703,6 +1704,7 @@ declare module '@vue/runtime-core' {
     readonly ExitCode: UnwrapRef<typeof import('./core/cli/src/index')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('./core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('./core/utils/src/vendors')['HeadVuePlugin']>
+    readonly MoneyValidator: UnwrapRef<typeof import('./core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('./core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('./core/query-builder/src/kysely')['PostgresDialect']>
@@ -1715,7 +1717,6 @@ declare module '@vue/runtime-core' {
     readonly USD: UnwrapRef<typeof import('./core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('@stacksjs/ui')['UiEngine']>
     readonly Validator: UnwrapRef<typeof import('./core/validation/src/validate')['Validator']>
-    readonly ValidatorMoney: UnwrapRef<typeof import('./core/validation/src/types/money')['ValidatorMoney']>
     readonly _dirname: UnwrapRef<typeof import('./core/storage/src/index')['_dirname']>
     readonly actionsPath: UnwrapRef<typeof import('./core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('./core/utils/src/currency')['add']>

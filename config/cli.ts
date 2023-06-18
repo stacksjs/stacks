@@ -10,5 +10,5 @@ import { defineCli } from 'stacks/core/utils/src'
 export default defineCli({
   name: 'Stacks CLI',
   command: 'stx',
-  description: 'This is an example command to illustrate how to create your own commands. Check out `../app/cli` for more.',
+  description: 'This is an example command to illustrate how to create your own commands. Check out `../app/commands` for more.',
 })
