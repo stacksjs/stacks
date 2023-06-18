@@ -5,15 +5,6 @@ Validator.macro('money', () => {
   return new MoneyValidator()
 })
 
-/**
- * Informing TypeScript about the newly added method
- */
-declare module '@stacksjs/validation' {
-  interface Validator {
-    money(): MoneyValidator
-  }
-}
-
 const validate = validator.validate
 const string = validator.string
 const number = validator.number

@@ -123,7 +123,7 @@ export const frontendEnvSchema = validator.object({
   FRONTEND_APP_URL: validator.string().optional(),
 })
 
-export type BackendEnv = Infer<typeof backendEnvSchema>
+export type BackendEnv = Infer<typeof envSchema>
 export type BackendEnvKeys = keyof BackendEnv
 
 export type FrontendEnv = Infer<typeof frontendEnvSchema>

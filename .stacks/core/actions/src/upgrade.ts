@@ -1,4 +1,4 @@
-import { intro, log, outro, prompt, runCommand, spawn } from '@stacksjs/cli'
+import { intro, log, outro, runCommand, spawn } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
@@ -20,7 +20,7 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
       // the user knows what they are doing. There is also a change that simply the deps within .stacks
       // folder have been updated and that could produce a diff.
       if (!options?.force) {
-        const confirmed = await prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
+        const confirmed = await log.prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
           type: 'confirm',
         })
 

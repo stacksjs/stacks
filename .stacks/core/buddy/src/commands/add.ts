@@ -1,6 +1,6 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { prompt } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { invoke } from '@stacksjs/actions/add'
 
 async function add(buddy: CLI) {
@@ -21,7 +21,7 @@ async function add(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await prompt(descriptions.select, {
+        const answers = await log.prompt(descriptions.select, {
           type: 'multiselect',
           options: [
             { label: 'Calendar', value: 'calendar' },
