@@ -2,7 +2,7 @@ import type { Arrayable, Nullable } from '@stacksjs/types'
 import { clamp } from '@stacksjs/utils'
 import { Macroable } from 'macroable'
 
-class Arr extends Macroable {
+export class Arr extends Macroable {
   contains(needle: string, haystack: string[]) {
     return contains(needle, haystack)
   }
@@ -126,10 +126,7 @@ class Arr extends Macroable {
   }
 }
 
-Arr.macros = {}
-Arr.getters = {}
-
-export default Arr
+export const arr = new Arr()
 
 export function average(arr: number[]): number {
   return sum(arr) / arr.length
@@ -374,3 +371,5 @@ export function shuffle<T>(array: T[]): T[] {
   }
   return array
 }
+
+export default Arr

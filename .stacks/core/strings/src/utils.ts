@@ -78,6 +78,13 @@ export function template(str: string, ...args: any[]): string {
   })
 }
 
+export function truncate(str: string, length: number, end = '...') {
+  if (str.length <= length)
+    return str
+
+  return str.slice(0, length - end.length) + end
+}
+
 /**
  * Generate a random string
  * @category String
