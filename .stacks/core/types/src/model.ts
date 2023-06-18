@@ -50,6 +50,10 @@ export interface Fields {
     unique?: boolean
     required?: boolean
     factory?: () => any
-    validation?: String | Number | Boolean | Date
+    validator?: {
+      rule: String | Number | Boolean | Date
+      message: string
+    }
+    // validation?: String | Number | Boolean | Date
   }
 }

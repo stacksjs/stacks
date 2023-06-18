@@ -15,4 +15,12 @@ declare module '@stacksjs/validation' {
 }
 
 const validate = validator.validate
-export { validate, validator, Validator }
+const string = validator.string
+const number = validator.number
+const boolean = validator.boolean
+const array = validator.array
+const object = validator.object
+const any = validator.any
+const email = () => validator.string().email()
+
+export { validate, validator, Validator, string, number, boolean, array, object, any, email }

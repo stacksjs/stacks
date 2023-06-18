@@ -30,4 +30,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           paths: .stacks/core/actions,.stacks/core/arrays,.stacks/core/auth,.stacks/core/build,.stacks/core/cache,.stacks/core/cli,.stacks/core/cloud,.stacks/core/config,.stacks/core/collections,.stacks/core/database,.stacks/core/datetime,.stacks/core/docs,.stacks/core/error-handling,.stacks/core/git,.stacks/core/lint,.stacks/core/modules,.stacks/core/notifications,.stacks/core/objects,.stacks/core/path,.stacks/core/realtime,.stacks/core/router,.stacks/core/security,.stacks/core/server,.stacks/core/storage,.stacks/core/strings,.stacks/core/testing,.stacks/core/types,.stacks/core/ui,.stacks/core/utils,.stacks/core/x-ray
-  commands
