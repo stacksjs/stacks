@@ -47,7 +47,11 @@
   },
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "macroable": "^7.0.2"
+  },
+  "dependencies": {
+    "macroable": "^7.0.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
