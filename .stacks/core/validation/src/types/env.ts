@@ -3,7 +3,6 @@ import validator from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
-import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 
 export const envPrefix: string | string[] = ['FRONTEND_', 'APP_', 'DB_', 'REDIS_', 'AWS_', 'MAIL_', 'SEARCH_ENGINE_', 'MEILISEARCH_']
@@ -136,20 +135,19 @@ export type FrontendEnvKeys = keyof FrontendEnv
 export type Env = Infer<typeof envSchema>
 export type EnvKeys = keyof Env
 
-export async function env() {
-  try {
-    const mode = process.env.NODE_ENV ?? 'development'
-    const data = loadEnv(mode, projectPath(), envPrefix)
-    const v = validator.compile(envSchema)
+export function env() {
+  const mode = process.env.NODE_ENV ?? 'development'
+  const data = loadEnv(mode, projectPath(), envPrefix)
+  const v = validator.compile(envSchema)
 
-    return await v.validate(data)
-  }
-  catch (error: any) {
-    // if (error instanceof errors.E_VALIDATION_ERROR)
-    //   console.log(error.messages)
-    handleError(error)
-    return { success: false, error }
-  }
+  return v.validate(data)
+
+  // catch (error: any) {
+  //   // if (error instanceof errors.E_VALIDATION_ERROR)
+  //   //   console.log(error.messages)
+  //   handleError(error)
+  //   return { success: false, error }
+  // }
 }
 
 export function getEnvIssues(env?: any): void {

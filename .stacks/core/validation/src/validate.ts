@@ -14,5 +14,5 @@ declare module '@stacksjs/validation' {
   }
 }
 
-export const validate = validator.validate
-export { validator, Validator, ValidatorMoney }
+const validate = validator.validate
+export { validate, validator, Validator, ValidatorMoney }
