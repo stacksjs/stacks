@@ -20,8 +20,8 @@ function parseValue(value: string): string | boolean | number {
   if (value === 'false')
     return false
 
-  const numberValue = parseFloat(value)
-  if (!isNaN(numberValue))
+  const numberValue = Number.parseFloat(value)
+  if (!Number.isNaN(numberValue))
     return numberValue
 
   return value.replace(/"/g, '')

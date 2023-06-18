@@ -8,10 +8,10 @@ import { defineEvents } from 'stacks/core/utils'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 
-interface User {
-  name: string
-  email: string
-}
+// interface User {
+//   name: string
+//   email: string
+// }
 
 export default defineEvents({
   // 'user:registered': (user: User) => user,

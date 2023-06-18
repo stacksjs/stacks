@@ -30,7 +30,7 @@ class ErrorHandler {
     this.handle(err, options)
   }
 
-  static writeErrorToFile(err: StacksError, options?: any) {
+  static writeErrorToFile(err: StacksError) {
     let formattedError: string
 
     if (err instanceof ValidationError)

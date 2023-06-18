@@ -3,7 +3,7 @@ import { componentsPath, frameworkPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { frameworkVersion } from '@stacksjs/utils'
 
-export default <WebTypesBuilderConfig> {
+export default {
   cwd: process.cwd(),
   componentsRoot: componentsPath(),
   components: '**\/[a-zA-Z]*.vue',
@@ -11,4 +11,4 @@ export default <WebTypesBuilderConfig> {
   packageName: library.name,
   packageVersion: await frameworkVersion(),
   watch: false,
-}
+} satisfies WebTypesBuilderConfig

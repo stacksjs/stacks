@@ -11,6 +11,7 @@ export interface CronJobOptions {
   description?: string
   enabled?: boolean
   timezone?: string
+  active?: boolean
 }
 
 export type CronJob = CronJobOptions
