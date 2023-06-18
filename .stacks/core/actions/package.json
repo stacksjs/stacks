@@ -252,7 +252,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.6.5"
+    "vue-component-meta": "^1.8.0"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -269,7 +269,7 @@
     "fast-glob": "^3.2.12",
     "fs-extra": "^11.1.1",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.6.5"
+    "vue-component-meta": "^1.8.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
