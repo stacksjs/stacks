@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@dinero.js/currencies": "2.0.0-alpha.14",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -72,6 +73,7 @@
     "yaml": "^2.3.1"
   },
   "dependencies": {
+    "@dinero.js/currencies": "2.0.0-alpha.14",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

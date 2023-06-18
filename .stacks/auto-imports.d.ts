@@ -28,7 +28,10 @@ declare global {
   const Router: typeof import('./core/router/src/index')['Router']
   const Store: typeof import('@stacksjs/ui')['Store']
   const Type: typeof import('./core/validation/src/validate')['Type']
+  const USD: typeof import('./core/utils/src/currency')['USD']
   const UiEngine: typeof import('@stacksjs/ui')['UiEngine']
+  const Validator: typeof import('./core/validation/src/validate')['Validator']
+  const ValidatorMoney: typeof import('./core/validation/src/types/money')['ValidatorMoney']
   const _dirname: typeof import('./core/storage/src/index')['_dirname']
   const actionsPath: typeof import('./core/path/src/index')['actionsPath']
   const add: typeof import('./core/utils/src/currency')['add']
@@ -150,6 +153,7 @@ declare global {
   const createSingletonPromise: typeof import('./core/utils/src/promise')['createSingletonPromise']
   const createTemplatePromise: typeof import('./core/utils/src/vendors')['createTemplatePromise']
   const createUnrefFn: typeof import('./core/utils/src/vendors')['createUnrefFn']
+  const currency: typeof import('./core/utils/src/currency')['currency']
   const currentPage: typeof import('./core/search-engine/src/index')['currentPage']
   const customElementsDataPath: typeof import('./core/path/src/index')['customElementsDataPath']
   const customRef: typeof import('vue')['customRef']
@@ -229,9 +233,10 @@ declare global {
   const encrypt: typeof import('./core/security/src/crypt')['encrypt']
   const ensurePrefix: typeof import('./core/strings/src/utils')['ensurePrefix']
   const ensureSuffix: typeof import('./core/strings/src/utils')['ensureSuffix']
-  const env: typeof import('./core/validation/src/validate')['env']
-  const envPrefix: typeof import('./core/validation/src/validate')['envPrefix']
-  const envSchema: typeof import('./core/validation/src/validate')['envSchema']
+  const env: typeof import('./core/validation/src/types/env')['env']
+  const envPrefix: typeof import('./core/validation/src/types/env')['envPrefix']
+  const envSchema: typeof import('./core/validation/src/types/env')['envSchema']
+  const envv: typeof import('./core/validation/src/types/env')['envv']
   const equal: typeof import('./core/utils/src/currency')['equal']
   const err: typeof import('./core/error-handling/src/index')['err']
   const errAsync: typeof import('./core/error-handling/src/index')['errAsync']
@@ -262,14 +267,15 @@ declare global {
   const fromPromise: typeof import('./core/error-handling/src/index')['fromPromise']
   const fromSafePromise: typeof import('./core/error-handling/src/index')['fromSafePromise']
   const fromThrowable: typeof import('./core/error-handling/src/index')['fromThrowable']
-  const frontendEnvSchema: typeof import('./core/validation/src/validate')['frontendEnvSchema']
+  const frontendEnvSchema: typeof import('./core/validation/src/types/env')['frontendEnvSchema']
   const fs: typeof import('./core/storage/src/index')['fs']
   const functionsPath: typeof import('./core/path/src/index')['functionsPath']
   const generateAppKey: typeof import('./core/security/src/key')['generateAppKey']
   const generateFactoryFile: typeof import('./core/database/src/factory/index')['generateFactoryFile']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
-  const getEnvIssues: typeof import('./core/validation/src/validate')['getEnvIssues']
+  const getEnv: typeof import('./core/validation/src/types/env')['getEnv']
+  const getEnvIssues: typeof import('./core/validation/src/types/env')['getEnvIssues']
   const getSSRHandler: typeof import('./core/utils/src/vendors')['getSSRHandler']
   const getTypeName: typeof import('./core/utils/src/base')['getTypeName']
   const git: typeof import('../config/git')['default']
@@ -364,6 +370,7 @@ declare global {
   const isMap: typeof import('./core/validation/src/is')['isMap']
   const isMimeType: typeof import('./core/validation/src/is')['isMimeType']
   const isMobilePhone: typeof import('./core/validation/src/is')['isMobilePhone']
+  const isMoney: typeof import('./core/validation/src/is')['isMoney']
   const isMongoId: typeof import('./core/validation/src/is')['isMongoId']
   const isNegative: typeof import('./core/validation/src/is')['isNegative']
   const isNull: typeof import('./core/validation/src/is')['isNull']
@@ -809,6 +816,7 @@ declare global {
   const validate: typeof import('./core/validation/src/validate')['validate']
   const validateUsername: typeof import('./core/validation/src/is')['validateUsername']
   const validationPath: typeof import('./core/path/src/index')['validationPath']
+  const validator: typeof import('./core/validation/src/validate')['validator']
   const verifyHash: typeof import('./core/security/src/hash')['verifyHash']
   const vi: typeof import('vitest')['vi']
   const vitest: typeof import('vitest')['vitest']
@@ -870,8 +878,10 @@ declare module 'vue' {
     readonly ResultAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['ResultAsync']>
     readonly Router: UnwrapRef<typeof import('./core/router/src/index')['Router']>
     readonly Store: UnwrapRef<typeof import('@stacksjs/ui')['Store']>
-    readonly Type: UnwrapRef<typeof import('./core/validation/src/validate')['Type']>
+    readonly USD: UnwrapRef<typeof import('./core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('@stacksjs/ui')['UiEngine']>
+    readonly Validator: UnwrapRef<typeof import('./core/validation/src/validate')['Validator']>
+    readonly ValidatorMoney: UnwrapRef<typeof import('./core/validation/src/types/money')['ValidatorMoney']>
     readonly _dirname: UnwrapRef<typeof import('./core/storage/src/index')['_dirname']>
     readonly actionsPath: UnwrapRef<typeof import('./core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('./core/utils/src/currency')['add']>
@@ -896,7 +906,6 @@ declare module 'vue' {
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
-    readonly backendEnvSchema: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvSchema']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -993,6 +1002,7 @@ declare module 'vue' {
     readonly createSingletonPromise: UnwrapRef<typeof import('./core/utils/src/promise')['createSingletonPromise']>
     readonly createTemplatePromise: UnwrapRef<typeof import('./core/utils/src/vendors')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('./core/utils/src/vendors')['createUnrefFn']>
+    readonly currency: UnwrapRef<typeof import('./core/utils/src/currency')['currency']>
     readonly currentPage: UnwrapRef<typeof import('./core/search-engine/src/index')['currentPage']>
     readonly customElementsDataPath: UnwrapRef<typeof import('./core/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
@@ -1072,14 +1082,13 @@ declare module 'vue' {
     readonly encrypt: UnwrapRef<typeof import('./core/security/src/crypt')['encrypt']>
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
-    readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
-    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/validate')['envPrefix']>
-    readonly envSchema: UnwrapRef<typeof import('./core/validation/src/validate')['envSchema']>
+    readonly env: UnwrapRef<typeof import('./core/validation/src/types/env')['env']>
+    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/types/env')['envPrefix']>
+    readonly envSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('./core/path/src/index')['errorHandlingPath']>
-    readonly errorMessageOptions: UnwrapRef<typeof import('./core/validation/src/validate')['errorMessageOptions']>
     readonly eslint: UnwrapRef<typeof import('./core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('./core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('./core/path/src/index')['eventsPath']>
@@ -1105,14 +1114,14 @@ declare module 'vue' {
     readonly fromPromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
-    readonly frontendEnvSchema: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvSchema']>
+    readonly frontendEnvSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['frontendEnvSchema']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
     readonly generateFactoryFile: UnwrapRef<typeof import('./core/database/src/factory/index')['generateFactoryFile']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getEnvIssues: UnwrapRef<typeof import('./core/validation/src/validate')['getEnvIssues']>
+    readonly getEnv: UnwrapRef<typeof import('./core/validation/src/types/env')['getEnv']>
     readonly getSSRHandler: UnwrapRef<typeof import('./core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('./core/utils/src/base')['getTypeName']>
     readonly git: UnwrapRef<typeof import('../config/git')['default']>
@@ -1207,7 +1216,7 @@ declare module 'vue' {
     readonly isMap: UnwrapRef<typeof import('./core/validation/src/is')['isMap']>
     readonly isMimeType: UnwrapRef<typeof import('./core/validation/src/is')['isMimeType']>
     readonly isMobilePhone: UnwrapRef<typeof import('./core/validation/src/is')['isMobilePhone']>
-    readonly isMongoId: UnwrapRef<typeof import('./core/validation/src/is')['isMongoId']>
+    readonly isMoney: UnwrapRef<typeof import('./core/validation/src/is')['isMoney']>
     readonly isNegative: UnwrapRef<typeof import('./core/validation/src/is')['isNegative']>
     readonly isNull: UnwrapRef<typeof import('./core/validation/src/is')['isNull']>
     readonly isNumber: UnwrapRef<typeof import('./core/validation/src/is')['isNumber']>
@@ -1390,7 +1399,6 @@ declare module 'vue' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
-    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
@@ -1652,6 +1660,7 @@ declare module 'vue' {
     readonly validate: UnwrapRef<typeof import('./core/validation/src/validate')['validate']>
     readonly validateUsername: UnwrapRef<typeof import('./core/validation/src/is')['validateUsername']>
     readonly validationPath: UnwrapRef<typeof import('./core/path/src/index')['validationPath']>
+    readonly validator: UnwrapRef<typeof import('./core/validation/src/validate')['validator']>
     readonly verifyHash: UnwrapRef<typeof import('./core/security/src/hash')['verifyHash']>
     readonly vi: UnwrapRef<typeof import('vitest')['vi']>
     readonly vitest: UnwrapRef<typeof import('vitest')['vitest']>
@@ -1678,7 +1687,6 @@ declare module 'vue' {
     readonly writeTextFile: UnwrapRef<typeof import('./core/storage/src/index')['writeTextFile']>
     readonly xRayPath: UnwrapRef<typeof import('./core/path/src/index')['xRayPath']>
     readonly yellow: UnwrapRef<typeof import('./core/cli/src/utilities')['yellow']>
-    readonly z: UnwrapRef<typeof import('./core/validation/src/validate')['z']>
   }
 }
 declare module '@vue/runtime-core' {
@@ -1707,8 +1715,10 @@ declare module '@vue/runtime-core' {
     readonly ResultAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['ResultAsync']>
     readonly Router: UnwrapRef<typeof import('./core/router/src/index')['Router']>
     readonly Store: UnwrapRef<typeof import('@stacksjs/ui')['Store']>
-    readonly Type: UnwrapRef<typeof import('./core/validation/src/validate')['Type']>
+    readonly USD: UnwrapRef<typeof import('./core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('@stacksjs/ui')['UiEngine']>
+    readonly Validator: UnwrapRef<typeof import('./core/validation/src/validate')['Validator']>
+    readonly ValidatorMoney: UnwrapRef<typeof import('./core/validation/src/types/money')['ValidatorMoney']>
     readonly _dirname: UnwrapRef<typeof import('./core/storage/src/index')['_dirname']>
     readonly actionsPath: UnwrapRef<typeof import('./core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('./core/utils/src/currency')['add']>
@@ -1733,7 +1743,6 @@ declare module '@vue/runtime-core' {
     readonly auth: UnwrapRef<typeof import('./core/auth/src/index')['auth']>
     readonly authPath: UnwrapRef<typeof import('./core/path/src/index')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('./core/utils/src/vendors')['autoResetRef']>
-    readonly backendEnvSchema: UnwrapRef<typeof import('./core/validation/src/validate')['backendEnvSchema']>
     readonly base64Encode: UnwrapRef<typeof import('./core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('./core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('./core/path/src/index')['basename']>
@@ -1830,6 +1839,7 @@ declare module '@vue/runtime-core' {
     readonly createSingletonPromise: UnwrapRef<typeof import('./core/utils/src/promise')['createSingletonPromise']>
     readonly createTemplatePromise: UnwrapRef<typeof import('./core/utils/src/vendors')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('./core/utils/src/vendors')['createUnrefFn']>
+    readonly currency: UnwrapRef<typeof import('./core/utils/src/currency')['currency']>
     readonly currentPage: UnwrapRef<typeof import('./core/search-engine/src/index')['currentPage']>
     readonly customElementsDataPath: UnwrapRef<typeof import('./core/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
@@ -1909,14 +1919,13 @@ declare module '@vue/runtime-core' {
     readonly encrypt: UnwrapRef<typeof import('./core/security/src/crypt')['encrypt']>
     readonly ensurePrefix: UnwrapRef<typeof import('./core/strings/src/utils')['ensurePrefix']>
     readonly ensureSuffix: UnwrapRef<typeof import('./core/strings/src/utils')['ensureSuffix']>
-    readonly env: UnwrapRef<typeof import('./core/validation/src/validate')['env']>
-    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/validate')['envPrefix']>
-    readonly envSchema: UnwrapRef<typeof import('./core/validation/src/validate')['envSchema']>
+    readonly env: UnwrapRef<typeof import('./core/validation/src/types/env')['env']>
+    readonly envPrefix: UnwrapRef<typeof import('./core/validation/src/types/env')['envPrefix']>
+    readonly envSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['envSchema']>
     readonly equal: UnwrapRef<typeof import('./core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('./core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('./core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('./core/path/src/index')['errorHandlingPath']>
-    readonly errorMessageOptions: UnwrapRef<typeof import('./core/validation/src/validate')['errorMessageOptions']>
     readonly eslint: UnwrapRef<typeof import('./core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('./core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('./core/path/src/index')['eventsPath']>
@@ -1942,14 +1951,14 @@ declare module '@vue/runtime-core' {
     readonly fromPromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('./core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('./core/error-handling/src/index')['fromThrowable']>
-    readonly frontendEnvSchema: UnwrapRef<typeof import('./core/validation/src/validate')['frontendEnvSchema']>
+    readonly frontendEnvSchema: UnwrapRef<typeof import('./core/validation/src/types/env')['frontendEnvSchema']>
     readonly fs: UnwrapRef<typeof import('./core/storage/src/index')['fs']>
     readonly functionsPath: UnwrapRef<typeof import('./core/path/src/index')['functionsPath']>
     readonly generateAppKey: UnwrapRef<typeof import('./core/security/src/key')['generateAppKey']>
     readonly generateFactoryFile: UnwrapRef<typeof import('./core/database/src/factory/index')['generateFactoryFile']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getEnvIssues: UnwrapRef<typeof import('./core/validation/src/validate')['getEnvIssues']>
+    readonly getEnv: UnwrapRef<typeof import('./core/validation/src/types/env')['getEnv']>
     readonly getSSRHandler: UnwrapRef<typeof import('./core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('./core/utils/src/base')['getTypeName']>
     readonly git: UnwrapRef<typeof import('../config/git')['default']>
@@ -2044,7 +2053,7 @@ declare module '@vue/runtime-core' {
     readonly isMap: UnwrapRef<typeof import('./core/validation/src/is')['isMap']>
     readonly isMimeType: UnwrapRef<typeof import('./core/validation/src/is')['isMimeType']>
     readonly isMobilePhone: UnwrapRef<typeof import('./core/validation/src/is')['isMobilePhone']>
-    readonly isMongoId: UnwrapRef<typeof import('./core/validation/src/is')['isMongoId']>
+    readonly isMoney: UnwrapRef<typeof import('./core/validation/src/is')['isMoney']>
     readonly isNegative: UnwrapRef<typeof import('./core/validation/src/is')['isNegative']>
     readonly isNull: UnwrapRef<typeof import('./core/validation/src/is')['isNull']>
     readonly isNumber: UnwrapRef<typeof import('./core/validation/src/is')['isNumber']>
@@ -2227,7 +2236,6 @@ declare module '@vue/runtime-core' {
     readonly runCommands: UnwrapRef<typeof import('./core/cli/src/run')['runCommands']>
     readonly runNpmScript: UnwrapRef<typeof import('./core/utils/src/helpers')['runNpmScript']>
     readonly runtimePath: UnwrapRef<typeof import('./core/path/src/index')['runtimePath']>
-    readonly safeEnv: UnwrapRef<typeof import('./core/validation/src/validate')['safeEnv']>
     readonly sample: UnwrapRef<typeof import('./core/arrays/src/index')['sample']>
     readonly schedulerPath: UnwrapRef<typeof import('./core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('./core/path/src/index')['scriptsPath']>
@@ -2489,6 +2497,7 @@ declare module '@vue/runtime-core' {
     readonly validate: UnwrapRef<typeof import('./core/validation/src/validate')['validate']>
     readonly validateUsername: UnwrapRef<typeof import('./core/validation/src/is')['validateUsername']>
     readonly validationPath: UnwrapRef<typeof import('./core/path/src/index')['validationPath']>
+    readonly validator: UnwrapRef<typeof import('./core/validation/src/validate')['validator']>
     readonly verifyHash: UnwrapRef<typeof import('./core/security/src/hash')['verifyHash']>
     readonly vi: UnwrapRef<typeof import('vitest')['vi']>
     readonly vitest: UnwrapRef<typeof import('vitest')['vitest']>
@@ -2515,6 +2524,5 @@ declare module '@vue/runtime-core' {
     readonly writeTextFile: UnwrapRef<typeof import('./core/storage/src/index')['writeTextFile']>
     readonly xRayPath: UnwrapRef<typeof import('./core/path/src/index')['xRayPath']>
     readonly yellow: UnwrapRef<typeof import('./core/cli/src/utilities')['yellow']>
-    readonly z: UnwrapRef<typeof import('./core/validation/src/validate')['z']>
   }
 }

@@ -98,6 +98,7 @@ export const vueComponentsConfig: ViteConfig = {
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
+    target: 'esnext',
     outDir: libsPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
@@ -127,8 +128,6 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command, mode }) => {
-  // eslint-disable-next-line no-console
-  console.log('here??')
   process.env = { ...process.env, ...loadEnv(mode, projectPath(), envPrefix) }
 
   if (command === 'serve')

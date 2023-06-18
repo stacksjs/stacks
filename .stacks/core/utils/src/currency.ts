@@ -25,5 +25,5 @@ export {
   haveSameAmount,
   dinero as currency,
 } from 'dinero.js'
-export * from '@dinero.js/currencies'
+export { USD } from '@dinero.js/currencies'
 export type { Dinero, Currency } from 'dinero.js'
