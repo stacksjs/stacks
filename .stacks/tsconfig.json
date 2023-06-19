@@ -133,9 +133,11 @@
   "include": [
     "./**.d.ts",
     "./**/*",
-    "../components/**/*",
-    "../functions/**/*",
-    "../views/**/*"
+    "../app/models/*",
+    "../app/models/**/*",
+    "../resources/components/**/*",
+    "../resources/functions/**/*",
+    "../resources/views/**/*"
   ],
   "exclude": [
     "./vitest.config.ts",
