@@ -2,7 +2,7 @@
   "name": "@stacksjs/signals",
   "type": "module",
   "version": "0.54.5",
-  "packageManager": "pnpm@8.6.2",
+  "packageManager": "pnpm@8.6.3",
   "description": "The Stacks signals integration, based on Maverick.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maverick-js/signals": "^5.11.0",
+    "@maverick-js/signals": "^5.11.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*"

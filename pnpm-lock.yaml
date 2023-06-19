@@ -1175,8 +1175,8 @@ importers:
         specifier: ^0.25.0
         version: 0.25.0
       mysql2:
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.4.0
+        version: 3.4.0
       pg:
         specifier: ^8.11.0
         version: 8.11.0
@@ -1295,8 +1295,8 @@ importers:
   .stacks/core/signals:
     dependencies:
       '@maverick-js/signals':
-        specifier: ^5.11.0
-        version: 5.11.0
+        specifier: ^5.11.1
+        version: 5.11.1
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
@@ -6437,8 +6437,8 @@ packages:
       - supports-color
     dev: false
 
-  /@maverick-js/signals@5.11.0:
-    resolution: {integrity: sha512-SpV3TAt8/ugELL2cI4mF70paHL3dnJbM69xSq7+z2BlsKeDwMK+oVXSq+WLgYANlfwkiOhZvvfQHo6Zo0muQVw==}
+  /@maverick-js/signals@5.11.1:
+    resolution: {integrity: sha512-yr6ZIpQxupgbDl6364t1L7bOSJqK2xiwjf8hoxJ632SL+0nBL0bLNCQaiK4GFRQEhYhBwX2yYyA+eKgZLEJ6mg==}
     dev: false
 
   /@mdit-vue/plugin-component@0.12.0:
@@ -14675,8 +14675,8 @@ packages:
   /mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
-  /mysql2@3.3.5:
-    resolution: {integrity: sha512-ZTQGAzxGeaX1PyeSiZFCgQ34uiXguaEpn3aTFN9Enm9JDnbwWo+4/CJnDdQZ3n0NaMeysi8vwtW/jNUb9VqVDw==}
+  /mysql2@3.4.0:
+    resolution: {integrity: sha512-l952dVcdWVfEIIxMQ1PNSPHYY2htylG7H9ahrQe9lIgDpEMg3hB0S88OhC/loNSZpV8OcywSjgOzjSjEUiuwiQ==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
