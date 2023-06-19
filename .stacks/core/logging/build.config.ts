@@ -7,7 +7,10 @@ export default defineBuildConfig({
   ],
   declaration: true,
   clean: true,
-  externals: ['vue-ray', 'node-ray'],
+  externals: [
+    'vue-ray',
+    'node-ray',
+  ],
   rollup: {
     inlineDependencies: true,
   },

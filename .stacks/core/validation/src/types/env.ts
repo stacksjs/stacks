@@ -4,8 +4,6 @@ import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
 
-export * from '@vinejs/vine/build/src/symbols'
-
 // TODO: envSchema needs to be auto generated from the .env file
 // envSchema could also be named "backendEnvSchema"
 const envSchema = validator.object({

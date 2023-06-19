@@ -88,6 +88,18 @@ export function defineNotification(config: Partial<NotificationOptions>) {
   return config
 }
 
+export function defineSms(config: Partial<NotificationOptions['sms']>) {
+  return config
+}
+
+export function defineEmail(config: Partial<NotificationOptions['email']>) {
+  return config
+}
+
+export function defineChat(config: Partial<NotificationOptions['chat']>) {
+  return config
+}
+
 export function definePage(config: Partial<PagesOption>) {
   return config
 }
