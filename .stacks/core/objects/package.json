@@ -46,7 +46,8 @@
   "dependencies": {
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

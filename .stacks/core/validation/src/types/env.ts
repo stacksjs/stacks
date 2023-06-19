@@ -1,4 +1,5 @@
 import process from 'node:process'
+import type { VineObject } from '@vinejs/vine'
 import validator from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
@@ -116,12 +117,12 @@ const envSchema = validator.object({
   MICROSOFT_TEAMS_APPLICATION_ID: validator.string().optional(),
   MICROSOFT_TEAMS_CLIENT_ID: validator.string().optional(),
   MICROSOFT_TEAMS_SECRET: validator.string().optional(),
-})
+}) as VineObject<any, any, any>
 
 const frontendEnvSchema = validator.object({
   FRONTEND_APP_ENV: validator.enum(['local', 'development', 'staging', 'production']).optional(),
   FRONTEND_APP_URL: validator.string().optional(),
-})
+}) as VineObject<any, any, any>
 
 export type Env = Infer<typeof envSchema>
 export type EnvKeys = keyof Env

@@ -29,8 +29,8 @@
       "import": "./dist/index.mjs"
     },
     "./openai": {
-      "types": "./dist/drivers/openai.d.ts",
-      "import": "./dist/drivers/openai.mjs"
+      "types": "./dist/openai.d.ts",
+      "import": "./dist/openai.mjs"
     }
   },
   "module": "dist/index.mjs",

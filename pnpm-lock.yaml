@@ -738,7 +738,7 @@ importers:
     dependencies:
       vitepress:
         specifier: 1.0.0-beta.2
-        version: 1.0.0-beta.2(@algolia/client-search@4.17.2)(search-insights@2.6.0)
+        version: 1.0.0-beta.2(@algolia/client-search@4.17.2)(@types/node@18.16.18)(search-insights@2.6.0)
     devDependencies:
       '@stacksjs/alias':
         specifier: workspace:*
@@ -1063,6 +1063,9 @@ importers:
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../utils
+      '@stacksjs/validation':
+        specifier: workspace:*
+        version: link:../validation
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1730,7 +1733,7 @@ importers:
         version: 5.0.1
       vitepress:
         specifier: ^1.0.0-beta.2
-        version: 1.0.0-beta.2(@algolia/client-search@4.17.2)(search-insights@2.6.0)
+        version: 1.0.0-beta.2(@algolia/client-search@4.17.2)(@types/node@18.16.18)(search-insights@2.6.0)
 
   .stacks/fonts/hubot-sans: {}
 
@@ -19295,49 +19298,6 @@ packages:
       fsevents: 2.3.2
 
   /vitepress@1.0.0-beta.2(@algolia/client-search@4.17.2)(@types/node@18.16.18)(search-insights@2.6.0):
-    resolution: {integrity: sha512-DBXYjtYbm3W1IPPJ2TiCaK/XK+o/2XmL2+jslOGKm+txcbmG0kbeB+vadC5tCUZA9NdA+9Ywj3M4548c7t/SDg==}
-    hasBin: true
-    dependencies:
-      '@docsearch/css': 3.5.0
-      '@docsearch/js': 3.5.0(@algolia/client-search@4.17.2)(search-insights@2.6.0)
-      '@vitejs/plugin-vue': 4.2.3(vite@4.3.9)(vue@3.3.4)
-      '@vue/devtools-api': 6.5.0
-      '@vueuse/core': 10.2.0(vue@3.3.4)
-      '@vueuse/integrations': 10.1.2(focus-trap@7.4.3)(vue@3.3.4)
-      body-scroll-lock: 4.0.0-beta.0
-      focus-trap: 7.4.3
-      mark.js: 8.11.1
-      minisearch: 6.1.0
-      shiki: 0.14.2
-      vite: 4.3.9(@types/node@18.16.18)
-      vue: 3.3.4
-    transitivePeerDependencies:
-      - '@algolia/client-search'
-      - '@types/node'
-      - '@types/react'
-      - '@vue/composition-api'
-      - async-validator
-      - axios
-      - change-case
-      - drauu
-      - fuse.js
-      - idb-keyval
-      - jwt-decode
-      - less
-      - nprogress
-      - qrcode
-      - react
-      - react-dom
-      - sass
-      - search-insights
-      - sortablejs
-      - stylus
-      - sugarss
-      - terser
-      - universal-cookie
-    dev: false
-
-  /vitepress@1.0.0-beta.2(@algolia/client-search@4.17.2)(search-insights@2.6.0):
     resolution: {integrity: sha512-DBXYjtYbm3W1IPPJ2TiCaK/XK+o/2XmL2+jslOGKm+txcbmG0kbeB+vadC5tCUZA9NdA+9Ywj3M4548c7t/SDg==}
     hasBin: true
     dependencies:

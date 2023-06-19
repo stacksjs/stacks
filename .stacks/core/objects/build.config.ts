@@ -4,13 +4,19 @@ export default defineBuildConfig({
   alias,
 
   entries: [
-    {
-      builder: 'mkdist',
-      input: './src/',
-      outDir: './dist/',
-      format: 'esm',
-    },
+    './src/index',
   ],
+
+  externals: [
+    '@stacksjs/collections',
+    '@stacksjs/types',
+    '@stacksjs/utils',
+    '@stacksjs/validation',
+  ],
+
+  rollup: {
+    inlineDependencies: true,
+  },
 
   clean: true,
   declaration: true,
