@@ -4,6 +4,7 @@ export default defineBuildConfig({
   alias,
 
   entries: [
+    './src/drivers/fathom',
     './src/index',
   ],
 

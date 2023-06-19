@@ -10,6 +10,7 @@ export default defineBuildConfig({
   externals: [
     '@stacksjs/config',
     '@stacksjs/types',
+    '@stacksjs/validation',
     'bcryptjs',
     'crypto-js',
     'js-base64',

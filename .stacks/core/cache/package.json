@@ -31,21 +31,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./drivers/dynamodb": {
-      "types": "./dist/drivers/dynamodb.d.ts",
-      "import": "./dist/drivers/dynamodb.mjs"
+    "./dynamodb": {
+      "types": "./dist/dynamodb.d.ts",
+      "import": "./dist/dynamodb.mjs"
     },
-    "./drivers/memcached": {
-      "types": "./dist/drivers/dynamodb.d.ts",
-      "import": "./dist/drivers/dynamodb.mjs"
+    "./memcached": {
+      "types": "./dist/dynamodb.d.ts",
+      "import": "./dist/dynamodb.mjs"
     },
-    "./drivers/redis": {
-      "types": "./dist/drivers/dynamodb.d.ts",
-      "import": "./dist/drivers/dynamodb.mjs"
+    "./redis": {
+      "types": "./dist/dynamodb.d.ts",
+      "import": "./dist/dynamodb.mjs"
     },
-    "./drivers/upstash": {
-      "types": "./dist/drivers/dynamodb.d.ts",
-      "import": "./dist/drivers/dynamodb.mjs"
+    "./upstash": {
+      "types": "./dist/dynamodb.d.ts",
+      "import": "./dist/dynamodb.mjs"
     }
   },
   "module": "dist/index.mjs",

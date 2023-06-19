@@ -46,6 +46,7 @@
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
     "js-base64": "^3.7.5"

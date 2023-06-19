@@ -1253,6 +1253,9 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
+      '@stacksjs/validation':
+        specifier: workspace:*
+        version: link:../validation
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
