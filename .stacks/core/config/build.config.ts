@@ -2,31 +2,31 @@ import { alias, defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-  entries: ['src/index'],
-  declaration: true,
-  clean: true,
+
+  entries: [
+    'src/index',
+  ],
 
   externals: [
     '@novu/stateless',
-    'axios',
+    '@stacksjs/storage',
+    '@stacksjs/path',
+    '@stacksjs/types',
+    '@stacksjs/utils',
+    '@vinejs/vine',
     'c12',
+    'macroable',
     'cac',
     'consola',
-    'detect-indent',
-    'detect-newline',
     'execa',
-    'fs-extra',
     'kolorist',
     'meilisearch',
-    'mime-db',
     'neverthrow',
     'node-ray',
     'ora',
     'pathe',
-    'pluralize',
     'rimraf',
     'semver',
-    'slugify',
     'vite',
     'vite-plugin-inspect',
     'vite-plugin-pwa',
@@ -38,11 +38,12 @@ export default defineBuildConfig({
     'unplugin-auto-import',
     'unplugin-vue-components',
     'yaml',
-    'zod',
-    'zod-error',
   ],
 
   rollup: {
     inlineDependencies: true,
   },
+
+  declaration: true,
+  clean: true,
 })
