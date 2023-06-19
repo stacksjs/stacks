@@ -23,7 +23,7 @@ class ErrorHandler {
 
   static handle(err: StacksError, options?: any) {
     this.writeErrorToConsole(err, options)
-    this.writeErrorToFile(err, options)
+    this.writeErrorToFile(err)
   }
 
   static handleError(err: Error, options?: any) {

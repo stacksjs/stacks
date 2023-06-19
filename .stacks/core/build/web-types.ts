@@ -8,7 +8,7 @@ export default {
   componentsRoot: componentsPath(),
   components: '**\/[a-zA-Z]*.vue',
   outFile: frameworkPath('web-types.json'),
-  packageName: library.name,
+  packageName: library.name || 'stacks',
   packageVersion: await frameworkVersion(),
   watch: false,
 } satisfies WebTypesBuilderConfig
