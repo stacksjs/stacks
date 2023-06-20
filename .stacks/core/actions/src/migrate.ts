@@ -1,3 +1,3 @@
-import { migrations } from '@stacksjs/actions/generate'
+import { migrations as generateMigrations } from './generate'
 
-await migrations()
+await generateMigrations()

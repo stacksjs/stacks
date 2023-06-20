@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { frameworkPath } from '@stacksjs/path'
-import { runActions } from '@stacksjs/actions'
 import { Action } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
+import { runActions } from './'
 
 await runActions([
   Action.GenerateLibraryEntries, // generates the package/library entry points

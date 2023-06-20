@@ -1,3 +1,3 @@
-import { seeder } from '@stacksjs/actions/generate'
+import { seeder } from './generate'
 
 await seeder()
