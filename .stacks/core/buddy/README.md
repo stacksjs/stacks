@@ -354,7 +354,7 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Video](https://github.com/stacksjs/video) (Modern video experience)
 - [Audio](https://github.com/stacksjs/audio) (Modern audio experience)
 - [Identity](https://github.com/stacksjs/identity) (Identity providers & wallet integrations)
-- [Digital Ownership](https://github.com/stacksjs/ownership) (decentralized, public ownership protocol integrations)
+- [Digital Ownership](https://github.com/stacksjs/ownership) (Public ownership protocol integrations)
 - [Payments](https://github.com/stacksjs/payments) (Unified payment APIs)
 - [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
 
