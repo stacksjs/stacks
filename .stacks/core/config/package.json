@@ -42,10 +42,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "c12": "^1.4.1"
+    "c12": "^1.4.2"
   },
   "dependencies": {
-    "c12": "^1.4.1"
+    "c12": "^1.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
