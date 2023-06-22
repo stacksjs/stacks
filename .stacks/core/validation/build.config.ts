@@ -22,5 +22,5 @@ export default defineBuildConfig({
   },
 
   clean: true,
-  declaration: true,
+  declaration: false, // todo: this should be set to true
 })

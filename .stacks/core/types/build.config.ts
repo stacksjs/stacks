@@ -7,9 +7,7 @@ const devEntries: Entries = [{
   input: './src/',
   outDir: './dist/',
 }]
-const buildEntries: Entries = [
-  './src/index',
-]
+const buildEntries = devEntries
 const command = process.env.npm_lifecycle_script
 const entries: Entries = command?.includes('--stub') ? devEntries : buildEntries
 
@@ -18,14 +16,13 @@ export default defineBuildConfig({
 
   entries,
 
-  externals: [
-    '@vinejs/vine',
-    '@stacksjs/utils',
-  ],
+  // externals: [
+  //   '@vinejs/vine',
+  // ],
   //
-  // rollup: {
-  //   inlineDependencies: true,
-  // },
+  rollup: {
+    inlineDependencies: true,
+  },
 
   clean: true,
   declaration: true,

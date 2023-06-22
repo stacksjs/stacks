@@ -1496,9 +1496,9 @@ importers:
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@2.79.1)
-      '@stacksjs/utils':
+      '@stacksjs/development':
         specifier: workspace:*
-        version: link:../utils
+        version: link:../development
       '@types/bcryptjs':
         specifier: ^2.4.2
         version: 2.4.2
