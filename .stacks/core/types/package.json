@@ -26,7 +26,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    }
+    },
+    "./*": "./*"
   },
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -53,7 +54,7 @@
     "@mdit-vue/types": "^0.12.0",
     "@novu/stateless": "^0.16.0",
     "@rollup/pluginutils": "^5.0.2",
-    "@stacksjs/development": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
     "@types/eslint": "^8.40.2",
@@ -63,6 +64,7 @@
     "@types/node": "^18.16.18",
     "@types/nprogress": "^0.2.0",
     "@types/pluralize": "^0.0.29",
+    "@vinejs/vine": "^1.4.1",
     "cac": "^6.7.14",
     "execa": "^7.1.1",
     "markdown-it": "^13.0.1",

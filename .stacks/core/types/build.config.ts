@@ -1,21 +1,31 @@
+import type { BuildConfig } from '@stacksjs/development'
 import { alias, defineBuildConfig } from '@stacksjs/development'
+
+type Entries = BuildConfig['entries']
+const devEntries: Entries = [{
+  builder: 'mkdist',
+  input: './src/',
+  outDir: './dist/',
+}]
+const buildEntries: Entries = [
+  './src/index',
+]
+const command = process.env.npm_lifecycle_script
+const entries: Entries = command?.includes('--stub') ? devEntries : buildEntries
 
 export default defineBuildConfig({
   alias,
 
-  entries: [
-    './src/index',
-  ],
+  entries,
 
   externals: [
     '@vinejs/vine',
     '@stacksjs/utils',
-    '@stacksjs/config',
   ],
-
-  rollup: {
-    inlineDependencies: true,
-  },
+  //
+  // rollup: {
+  //   inlineDependencies: true,
+  // },
 
   clean: true,
   declaration: true,
