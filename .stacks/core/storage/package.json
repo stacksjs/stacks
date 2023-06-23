@@ -54,7 +54,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "fs-extra": "^11.1.1",
-    "unstorage": "^1.6.1"
+    "unstorage": "^1.7.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
