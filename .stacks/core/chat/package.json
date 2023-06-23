@@ -44,11 +44,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@novu/discord": "^0.16.0",
-    "@novu/ms-teams": "^0.16.0",
-    "@novu/node": "^0.16.0",
-    "@novu/slack": "^0.16.0",
-    "@novu/stateless": "^0.16.0",
+    "@novu/discord": "^0.16.1",
+    "@novu/ms-teams": "^0.16.1",
+    "@novu/node": "^0.16.1",
+    "@novu/slack": "^0.16.1",
+    "@novu/stateless": "^0.16.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
