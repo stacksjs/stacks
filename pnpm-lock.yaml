@@ -489,8 +489,8 @@ importers:
   .stacks/core/cache:
     dependencies:
       '@aws-sdk/client-dynamodb':
-        specifier: ^3.358.0
-        version: 3.358.0
+        specifier: ^3.359.0
+        version: 3.359.0
       '@stacksjs/config':
         specifier: workspace:*
         version: link:../config
@@ -2627,13 +2627,13 @@ packages:
       tslib: 2.5.2
     dev: false
 
-  /@aws-sdk/client-dynamodb@3.358.0:
-    resolution: {integrity: sha512-gtZoJomJY8bRLm/8TQq2onvf0aFcdZSBfW//txlsGsC4gUwps7cGVcc9fDVbSyoFsOcFNVdE/7iADo85u9KUDA==}
+  /@aws-sdk/client-dynamodb@3.359.0:
+    resolution: {integrity: sha512-SX0g9RkgdYGZFlbnSZIscdQliTWeGoiWWeuLY2jOnlz90KGc31jXHpzFilbFY0w+gdUVSKFF3wAxS0bbN2jDSQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.358.0
+      '@aws-sdk/client-sts': 3.359.0
       '@aws-sdk/config-resolver': 3.357.0
       '@aws-sdk/credential-provider-node': 3.358.0
       '@aws-sdk/fetch-http-handler': 3.357.0
@@ -3097,8 +3097,8 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sts@3.358.0:
-    resolution: {integrity: sha512-lBtle7UMBXXxp9LHcmNDwsQZoz1B0sE4F6F63sTv+U4fT/Uo8m0AcxUE0WFxAP687w8rg7dSqxJCbMCKrfVQPA==}
+  /@aws-sdk/client-sts@3.359.0:
+    resolution: {integrity: sha512-zpyui8hXvEUvq8MwzZsm51ni0intvPjtV8dgx10nVJnm605nqrLlAMGqQ1S/UxO7CVmhqWbh5dnGHEc//UJlsw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
@@ -3136,7 +3136,7 @@ packages:
       '@aws-sdk/util-utf8': 3.310.0
       '@smithy/protocol-http': 1.0.1
       '@smithy/types': 1.0.0
-      fast-xml-parser: 4.2.4
+      fast-xml-parser: 4.2.5
       tslib: 2.5.2
     transitivePeerDependencies:
       - aws-crt
@@ -11959,8 +11959,8 @@ packages:
       strnum: 1.0.5
     dev: false
 
-  /fast-xml-parser@4.2.4:
-    resolution: {integrity: sha512-fbfMDvgBNIdDJLdLOwacjFAPYt67tr31H9ZhWSm45CDAxvd0I6WTlSOUo7K2P/K5sA5JgMKG64PI3DMcaFdWpQ==}
+  /fast-xml-parser@4.2.5:
+    resolution: {integrity: sha512-B9/wizE4WngqQftFPmdaMYlXoJlJOYxGQOanC77fq9k8+Z0v5dDSVh+3glErdIROP//s/jgb7ZuxKfB8nVyo0g==}
     hasBin: true
     dependencies:
       strnum: 1.0.5
