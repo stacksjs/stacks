@@ -9,7 +9,6 @@ export default defineBuildConfig({
 
   externals: [
     '@vinejs/vine',
-    '@vinejs/vine/build/src/types',
     'vite',
     'validator',
     '@stacksjs/path',
