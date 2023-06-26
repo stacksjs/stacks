@@ -24,14 +24,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "types": "./dist/index.ts",
+      "import": "./dist/index.ts"
     },
     "./*": "./*"
   },
-  "main": "dist/index.mjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.ts",
+  "module": "dist/index.ts",
+  "types": "dist/index.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -40,7 +40,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "unbuild --stub",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
