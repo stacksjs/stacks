@@ -5,11 +5,14 @@ api:
 art:
   - .stacks/art/**
 
+deps:
+  - any: ['./package.json', './pnpm-lock.yaml', './**/package.json']
+
 core:
-  - .stacks/**
+  - any: [ '.stacks/**', '!.stacks/**/package.json' ]
 
 fonts:
-  - any: ['.stacks/fonts/**', '!.stacks/fonts/package.json']
+  - any: ['.stacks/fonts/**', '!.stacks/fonts/**/package.json']
 
 ide:
   - any: ['.stacks/ide/**', '!.stacks/ide/package.json']
@@ -24,7 +27,7 @@ libs:
   - any: ['.stacks/libs/**', '!.stacks/libs/**/package.json']
 
 components:
-  - .stacks/libs/components/**
+  - - any: ['.stacks/libs/components/**', '!.stacks/libs/components/**/package.json']
   - resources/components/**
 
 entries:
@@ -117,8 +120,8 @@ dns:
   - any: ['.stacks/core/dns/**', '!.stacks/core/dns/package.json']
 
 docs:
-  - .stacks/docs/**
   - any: ['.stacks/core/docs/**', '!.stacks/core/docs/package.json']
+  - any: ['.stacks/docs/**', '!.stacks/docs/package.json']
   - resources/docs/**
   - config/docs.ts
 
