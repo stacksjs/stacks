@@ -4,11 +4,11 @@ import { defineModel } from '@stacksjs/utils'
 
 export default defineModel({
   name: 'User', // defaults to the sanitized file name
-  table: 'users',
+  table: 'users', // defaults to the lowercase, plural name of the model
 
-  authenticatable: true, // boolean | AuthSettings (including TokenSettings)
-  searchable: true, // boolean | IndexSettings,
-  seedable: { // boolean | SeedSettings,
+  authenticatable: true, // defaults to false, also accepts AuthSettings or TokenSettings
+  searchable: true, // defaults to false, also accepts SearchEngineSettings
+  seedable: { // defaults to true & count of ten
     count: 10,
   },
 

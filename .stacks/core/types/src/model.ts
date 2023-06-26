@@ -3,7 +3,7 @@ import type {
   VineNumber as Number,
   VineString as String,
 } from '@vinejs/vine'
-import type { Nullable, SearchIndexSettings } from './'
+import type { Nullable, SearchEngineSettings } from './'
 
 export interface AuthOptions {}
 
@@ -36,10 +36,10 @@ export interface Model extends Base {
   }
   authenticatable?: boolean | AuthOptions
   seedable?: boolean | SeedOptions
-  searchable?: boolean | SearchIndexSettings
+  searchable?: boolean | SearchEngineSettings
   useSeed?: boolean | SeedOptions
-  useSearch?: boolean | SearchIndexSettings
-  useSearchEngine?: boolean | SearchIndexSettings
+  useSearch?: boolean | SearchEngineSettings
+  useSearchEngine?: boolean | SearchEngineSettings
   useTimestamps?: boolean | TimestampOptions
   // useSoftDeletes?: boolean | SoftDeleteOptions
 }
