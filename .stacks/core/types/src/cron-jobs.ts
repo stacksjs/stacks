@@ -13,6 +13,8 @@ export interface JobOptions {
   enabled?: boolean
   timezone?: string
   active?: boolean
+  tries?: number
+  backoff?: number | number[]
 }
 export type Job = JobOptions
 export type Jobs = Job[]

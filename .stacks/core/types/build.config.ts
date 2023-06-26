@@ -3,15 +3,10 @@ import { alias, defineBuildConfig } from '@stacksjs/development'
 
 type Entries = BuildConfig['entries']
 const devEntries: Entries = [{
-  builder: 'mkdist',
-  input: './src/',
+  input: './src/index',
   outDir: './dist/',
 }]
-const buildEntries = [{
-  builder: 'mkdist',
-  input: './src/',
-  outDir: './dist/',
-}]
+const buildEntries = devEntries
 const command = process.env.npm_lifecycle_script
 const entries: Entries = command?.includes('--stub') ? devEntries : buildEntries
 
@@ -20,15 +15,10 @@ export default defineBuildConfig({
 
   entries,
 
-  // externals: [
-  //   // '@vinejs/vine',
-  //   '@stacksjs/utils',
-  // ],
-  //
-  // rollup: {
-  //   inlineDependencies: true,
-  // },
+  externals: [
+    '@stacksjs/utils',
+  ],
 
   clean: true,
-  // declaration: true,
+  declaration: true,
 })

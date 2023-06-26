@@ -1,5 +1,5 @@
-import { defineDatabase } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineDatabase } from '@stacksjs/utils'
+import { env } from '@stacksjs/validation'
 
 /**
  * **Database Configuration**
@@ -9,20 +9,29 @@ import { env } from 'stacks/core/validation/src'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default defineDatabase({
-  driver: 'mysql',
+  default: env.DB_CONNECTION || 'mysql',
 
-  drivers: {
+  connections: {
     mysql: {
+      url: env.DB_URL,
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',
-      // url: env.DB_URL || 'localhost',
       port: env.DB_PORT || 3306,
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
+      prefix: '',
+    },
+
+    sqlite: {
+      url: env.DB_URL,
+      database: env.DB_DATABASE || 'stacks',
+      prefix: '',
     },
 
     planetscale: {},
 
     postgres: {},
   },
+
+  migrations: 'migrations',
 })

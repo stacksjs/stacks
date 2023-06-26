@@ -1,7 +1,6 @@
 export { default as app } from '../../../../config/app'
 export { default as cache } from '../../../../config/cache'
 export { default as cdn } from '../../../../config/cdn'
-export { default as cronJobs } from '../../../../app/jobs'
 export { default as cli } from '../../../../config/cli'
 export { default as database } from '../../../../config/database'
 export { default as debug } from '../../../../config/debug'

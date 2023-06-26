@@ -2,6 +2,7 @@ import type {
   AppOptions,
   CacheOptions,
   CdnOptions,
+  CronJobOptions,
   DatabaseOptions,
   DebugOptions,
   DnsOptions,
@@ -15,6 +16,7 @@ import type {
   NotificationOptions,
   PagesOption,
   PaymentOptions,
+  QueueOptions,
   SearchEngineOptions,
   ServicesOptions,
   StorageOptions,
@@ -40,7 +42,11 @@ export function defineCli(config: Partial<UserCliOptions>) {
   return config
 }
 
-export function defineCronJobsConfig(config: Partial<JobOptions>[]) {
+export function defineCronJobsConfig(config: Partial<CronJobOptions>[]) {
+  return config
+}
+
+export function defineJobsConfig(config: Partial<JobOptions>[]) {
   return config
 }
 
@@ -105,6 +111,10 @@ export function definePage(config: Partial<PagesOption>) {
 }
 
 export function definePayment(config: Partial<PaymentOptions>) {
+  return config
+}
+
+export function defineQueue(config: Partial<QueueOptions>) {
   return config
 }
 

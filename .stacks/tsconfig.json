@@ -121,30 +121,38 @@
       "@stacksjs/x-ray": ["./stacks/x-ray/src/index.ts"],
       "@stacksjs/x-ray/*": ["./stacks/x-ray/src/*"],
       "stacks/*": ["./.stacks/*"],
-      "buddy": ["core/buddy/src/index.ts"],
-      "buddy/*": ["core/buddy/src/*"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
       "framework/*": ["./*"],
       "app/*": ["../app/*"],
       "config/*": ["../config/*"],
-      "functions/*": ["../functions/*"],
-      "components/*": ["../components/*"]
+      "resources/*": ["../resources/*"],
+      "functions/*": ["../resources/functions/*"],
+      "components/*": ["../resources/components/*"],
+      "views/*": ["../resources/views/*"],
+      "models/*": ["../app/models/*"]
     }
   },
   "include": [
     "./**.d.ts",
     "./**/*",
-    "../app/models/*",
-    "../app/models/**/*",
-    "../resources/components/**/*",
-    "../resources/functions/**/*",
-    "../resources/views/**/*"
+    "../app/*",
+    "../app/**/*",
+    "../resources/*",
+    "../resources/**/*",
+    "../router/*",
+    "../router/**/*",
+    "../storage/*",
+    "../storage/**/*",
+    "../tests/*",
+    "../tests/**/*"
   ],
   "exclude": [
     "./vitest.config.ts",
     "./examples/**",
     "../commitlint.config.cjs",
     "../**/README.md",
-    "../**/dist/**",
+    "../**/dist",
     "../**/node_modules/**"
   ]
   // "extends": "./api/.nitro/types/tsconfig.json"

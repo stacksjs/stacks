@@ -295,23 +295,26 @@ export async function createModel(options: MakeOptions) {
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `import { faker } from '../../.stacks/core/faker/src' // stacks/faker or
-import { validate } from '../../.stacks/core/validation/src' // stacks/validate or @stacksjs/validate
-import type { Model } from '../../.stacks/core/types/src' // stacks/types or @stacksjs/types
+      data: `import { faker } from '@stacksjs/faker'
+import { validate } from '@stacksjs/validation'
+import type { Model } from '@stacksjs/types'
 
 export default <Model> {
   name: '${name}',
+
   searchable: true, // boolean | IndexSettings,
   authenticatable: true, // boolean | AuthSettings,
+
   seeder: {
     count: 10,
   },
+
   fields: {
     name: {
-      type: 'String',
       validation: validate.string().min(3).max(255),
       factory: () => faker.person,
     },
+
     // more fields here
   },
 }`,

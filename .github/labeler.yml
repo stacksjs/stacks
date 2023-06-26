@@ -136,7 +136,7 @@ faker:
   - any: ['.stacks/core/faker/**', '!.stacks/core/faker/package.json']
 
 git:
-  - any: ['.stacks/core/git/**', '!.stacks/core/git/package.json']:
+  - any: ['.stacks/core/git/**', '!.stacks/core/git/package.json']
 
 health:
   - any: ['.stacks/core/health/**', '!.stacks/core/health/package.json']

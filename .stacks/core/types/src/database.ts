@@ -3,9 +3,9 @@ import type { Model } from './model'
 export type DatabaseClient = any
 
 export interface DatabaseOptions {
-  driver: string
+  default: string
 
-  drivers: {
+  connections: {
     mysql: {
       url?: string
       host?: string
@@ -14,11 +14,20 @@ export interface DatabaseOptions {
       name?: string
       username?: string
       password?: string
+      prefix?: string
+    }
+
+    sqlite: {
+      url?: string
+      database?: string
+      prefix?: string
     }
 
     planetscale: {}
     postgres: {}
   }
+
+  migrations: string
 }
 
 export interface FactoryOptions {

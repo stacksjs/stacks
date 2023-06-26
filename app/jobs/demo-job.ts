@@ -10,4 +10,6 @@ export default {
     log.info('This cron job runs at every 5th minute')
   },
   // `run: 'demo-job'` is another option where `demo-job` refers to ./resources/functions/demo-job.ts
+  tries: 3, // defaults to 3, in case of failures
+  backoff: 3, // defaults to 3-second delays between retries
 } satisfies Job
