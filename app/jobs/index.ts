@@ -1,11 +1,14 @@
 import type { CronJob } from '@stacksjs/types'
 
-// easily monitor and manage your cron jobs
-export default { // or <CronJobs>
-  function: '/demo', // ./resources/functions/demo.ts
+export default {
+  // required
   schedule: '*/5 * * * *', // at every 5th minute
-  name: 'Demo Cron Job', // optional
-  description: 'A demo cron job that runs at every 5th minute', // optional
-  timezone: 'America/New_York', // optional, defaults to APP_TIMEZONE
-  active: true, // optional, defaults to true
+  action: () => {
+    // eslint-disable-next-line no-console
+    console.log('This cron job runs every 5th minute')
+  },
+
+  // optional
+  name: 'Demo Job',
+  description: 'A demo cron job that runs every 5th minute',
 } satisfies CronJob

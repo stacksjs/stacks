@@ -6,7 +6,7 @@ export interface CronJobOptions {
    * The name of the cron job.
    */
   name?: string
-  function: string
+  action: string | Function
   schedule: string
   description?: string
   enabled?: boolean
