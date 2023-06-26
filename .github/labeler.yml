@@ -9,7 +9,7 @@ deps:
   - any: ['./package.json', './pnpm-lock.yaml', './**/package.json']
 
 core:
-  - any: [ '.stacks/**', '!.stacks/**/package.json' ]
+  - any: ['.stacks/**', '!.stacks/**/package.json']
 
 fonts:
   - any: ['.stacks/fonts/**', '!.stacks/fonts/**/package.json']
@@ -27,7 +27,7 @@ libs:
   - any: ['.stacks/libs/**', '!.stacks/libs/**/package.json']
 
 components:
-  - - any: ['.stacks/libs/components/**', '!.stacks/libs/components/**/package.json']
+  - any: ['.stacks/libs/components/**', '!.stacks/libs/components/**/package.json']
   - resources/components/**
 
 entries:
