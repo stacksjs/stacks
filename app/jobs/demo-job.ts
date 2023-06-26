@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { Every } from '@stacksjs/types'
-import type { CronJob } from '@stacksjs/types'
+import type { Job } from '@stacksjs/types'
 
 export default {
   name: 'Demo Job', // defaults to the file name
@@ -10,4 +10,4 @@ export default {
     log.info('This cron job runs at every 5th minute')
   },
   // `run: 'demo-job'` is another option where `demo-job` refers to ./resources/functions/demo-job.ts
-} satisfies CronJob
+} satisfies Job

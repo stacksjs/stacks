@@ -2,7 +2,6 @@ import type {
   AppOptions,
   CacheOptions,
   CdnOptions,
-  CronJobOptions,
   DatabaseOptions,
   DebugOptions,
   DnsOptions,
@@ -10,6 +9,7 @@ import type {
   Events,
   GitOptions,
   HashingOptions,
+  JobOptions,
   LibraryOptions,
   Model,
   NotificationOptions,
@@ -40,7 +40,7 @@ export function defineCli(config: Partial<UserCliOptions>) {
   return config
 }
 
-export function defineCronJobsConfig(config: Partial<CronJobOptions>[]) {
+export function defineCronJobsConfig(config: Partial<JobOptions>[]) {
   return config
 }
 

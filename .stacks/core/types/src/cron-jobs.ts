@@ -1,9 +1,9 @@
 /**
  * Cron Job Options.
  */
-export interface CronJobOptions {
+export interface JobOptions {
   /**
-   * The name of the cron job.
+   * The name of the job.
    */
   name?: string
   action?: string | Function
@@ -14,7 +14,12 @@ export interface CronJobOptions {
   timezone?: string
   active?: boolean
 }
+export type Job = JobOptions
+export type Jobs = Job[]
 
+export interface CronJobOptions extends Omit<JobOptions, 'schedule'> {
+  schedule: string
+}
 export type CronJob = CronJobOptions
 export type CronJobs = CronJob[]
 
