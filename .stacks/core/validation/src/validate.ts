@@ -6,8 +6,7 @@ Validator.macro('money', () => {
   return new MoneyValidator()
 })
 
-const validate: Validator['validate'] = () => validator.validate()
-
+const validate: Validator = validator
 const string: ValidationString = validator.string()
 const number: Validator['number'] = validator.number
 const boolean: Validator['boolean'] = validator.boolean

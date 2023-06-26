@@ -3,7 +3,7 @@ import type {
   VineNumber as Number,
   VineString as String,
 } from '@vinejs/vine'
-import type { SearchIndexSettings } from './search-engine'
+import type { Nullable, SearchIndexSettings } from './'
 
 export interface AuthOptions {}
 
@@ -51,7 +51,7 @@ export interface Fields {
     required?: boolean
     factory?: () => any
     validator?: {
-      rule: String | Number | Boolean | Date
+      rule: String | Number | Boolean | Date | Nullable<any>
       message: string
     }
     // validation?: String | Number | Boolean | Date

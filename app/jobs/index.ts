@@ -1,12 +1,13 @@
+import { log } from '@stacksjs/cli'
 import { Every } from '@stacksjs/types'
 import type { CronJob } from '@stacksjs/types'
 
+// TODO: create `job` shortcut (snippet)
 export default {
   // required
   schedule: Every.FifthMinute, // or '*/5 * * * *'
   action: () => {
-    // eslint-disable-next-line no-console
-    console.log('This cron job runs every 5th minute')
+    log.info('This cron job runs at every 5th minute')
   },
 
   // optional
