@@ -455,8 +455,8 @@ importers:
         specifier: ^4.3.9
         version: 4.3.9
       vite-plugin-inspect:
-        specifier: ^0.7.28
-        version: 0.7.28(rollup@2.79.1)(vite@4.3.9)
+        specifier: ^0.7.29
+        version: 0.7.29(rollup@2.79.1)(vite@4.3.9)
       vite-plugin-pages:
         specifier: ^0.31.0
         version: 0.31.0(vite@4.3.9)
@@ -1175,8 +1175,8 @@ importers:
         specifier: ^0.25.0
         version: 0.25.0
       mysql2:
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       pg:
         specifier: ^8.11.0
         version: 8.11.0
@@ -1220,8 +1220,8 @@ importers:
         specifier: workspace:*
         version: link:../development
       '@types/node-cron':
-        specifier: ^3.0.7
-        version: 3.0.7
+        specifier: ^3.0.8
+        version: 3.0.8
 
   .stacks/core/search-engine:
     dependencies:
@@ -1560,8 +1560,8 @@ importers:
         specifier: ^4.3.9
         version: 4.3.9(@types/node@18.16.18)
       vite-plugin-inspect:
-        specifier: ^0.7.28
-        version: 0.7.28(rollup@2.79.1)(vite@4.3.9)
+        specifier: ^0.7.29
+        version: 0.7.29(rollup@2.79.1)(vite@4.3.9)
       vite-plugin-pwa:
         specifier: ^0.16.4
         version: 0.16.4(vite@4.3.9)(workbox-build@7.0.0)(workbox-window@7.0.0)
@@ -7897,8 +7897,8 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: false
 
-  /@types/node-cron@3.0.7:
-    resolution: {integrity: sha512-9PuLtBboc/+JJ7FshmJWv769gDonTpItN0Ol5TMwclpSQNjVyB2SRxSKBcTtbSysSL5R7Oea06kTTFNciCoYwA==}
+  /@types/node-cron@3.0.8:
+    resolution: {integrity: sha512-+z5VrCvLwiJUohbRSgHdyZnHzAaLuD/E2bBANw+NQ1l05Crj8dIxb/kKK+OEqRitV2Wr/LYLuEBenGDsHZVV5Q==}
     dev: true
 
   /@types/node@14.18.47:
@@ -7911,10 +7911,6 @@ packages:
 
   /@types/node@18.16.18:
     resolution: {integrity: sha512-/aNaQZD0+iSBAGnvvN2Cx92HqE5sZCPZtx2TsK+4nvV23fFe09jVDvpArXr2j9DnYlzuU9WuoykDDc6wqvpNcw==}
-    dev: false
-
-  /@types/node@20.3.1:
-    resolution: {integrity: sha512-EhcH/wvidPy1WeML3TtYFGR83UzjxeWRen9V402T8aUGYsCHOmfoisV3ZSg03gAFIbLq8TnWOJ0f4cALtnSEUg==}
     dev: false
 
   /@types/normalize-package-data@2.4.1:
@@ -7936,7 +7932,7 @@ packages:
   /@types/resolve@1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 20.3.1
+      '@types/node': 18.16.18
     dev: false
 
   /@types/resolve@1.20.2:
@@ -13822,7 +13818,7 @@ packages:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.3.1
+      '@types/node': 18.16.18
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: false
@@ -15021,8 +15017,8 @@ packages:
   /mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
-  /mysql2@3.4.0:
-    resolution: {integrity: sha512-l952dVcdWVfEIIxMQ1PNSPHYY2htylG7H9ahrQe9lIgDpEMg3hB0S88OhC/loNSZpV8OcywSjgOzjSjEUiuwiQ==}
+  /mysql2@3.4.1:
+    resolution: {integrity: sha512-1VBrTIjDacTgcQ3/jUnMlix7twU3VfQtlAcBFPn5524AnBZcENRnpmdFt6oZaiYu4yGkAWXu0InNMg/LQs4daQ==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -19500,13 +19496,13 @@ packages:
       vite: 4.3.9
     dev: true
 
-  /vite-plugin-inspect@0.7.28(rollup@2.79.1)(vite@4.3.9):
-    resolution: {integrity: sha512-XRdQGdf+PU6eT0EoL8beUyFQfcCrHr06OyRM71IT8t7rEC9JywdsscehGHEAyFZryfaVBWAI280N63BI2N+1BA==}
+  /vite-plugin-inspect@0.7.29(rollup@2.79.1)(vite@4.3.9):
+    resolution: {integrity: sha512-vPbwChmLaHXu2ZXAtRlqXS7BTJoTNIhEjwLv55XGoPOtDOCMkh4X+ziy3/Y6ZhFRDvg0AggHLumn8YqEaIlMJg==}
     engines: {node: '>=14'}
     peerDependencies:
       vite: ^3.1.0 || ^4.0.0
     dependencies:
-      '@antfu/utils': 0.7.2
+      '@antfu/utils': 0.7.4
       '@rollup/pluginutils': 5.0.2(rollup@2.79.1)
       debug: 4.3.4
       fs-extra: 11.1.1
