@@ -2,7 +2,7 @@
   "name": "@stacksjs/scheduler",
   "type": "module",
   "version": "0.55.0",
-  "packageManager": "pnpm@8.6.3",
+  "packageManager": "pnpm@8.6.4",
   "description": "The Stacks scheduler.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -46,6 +46,6 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@types/node-cron": "^3.0.7"
+    "@types/node-cron": "^3.0.8"
   }
 }

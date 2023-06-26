@@ -2,7 +2,7 @@
   "name": "@stacksjs/router",
   "type": "module",
   "version": "0.55.0",
-  "packageManager": "pnpm@8.6.3",
+  "packageManager": "pnpm@8.6.4",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "license": "MIT",

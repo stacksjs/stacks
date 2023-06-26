@@ -2,7 +2,7 @@
   "name": "@stacksjs/query-builder",
   "type": "module",
   "version": "0.55.0",
-  "packageManager": "pnpm@8.6.3",
+  "packageManager": "pnpm@8.6.4",
   "description": "The Stacks Query Builder integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,7 +44,7 @@
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.25.0",
-    "mysql2": "^3.4.0",
+    "mysql2": "^3.4.1",
     "pg": "^8.11.0"
   },
   "dependencies": {
