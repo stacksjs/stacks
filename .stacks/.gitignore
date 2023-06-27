@@ -12,6 +12,7 @@ libs/entries/*.ts
 **/dist/**/*.d.cts
 **/dist/**/*.d.mts
 node_modules/
+**/node_modules
 /test-results/
 /playwright-report/
 /playwright/.cache/

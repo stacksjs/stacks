@@ -37,7 +37,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish framework to npm
-        run: pnpm --filter './.stacks' --filter './.stacks/config' --filter './.stacks/core/**' --filter './.stacks/vscode' publish --access public --no-git-checks
+        run: pnpm -r publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
