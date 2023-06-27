@@ -184,6 +184,9 @@ queue:
 real-time:
   - any: ['.stacks/core/real-time/**', '!.stacks/core/real-time/package.json']
 
+repl:
+  - any: ['.stacks/core/repl/**', '!.stacks/core/repl/package.json']
+
 router:
   - any: ['.stacks/core/router/**', '!.stacks/core/router/package.json']
 
