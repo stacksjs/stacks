@@ -1803,7 +1803,18 @@ importers:
         specifier: workspace:*
         version: link:../../core/development
 
-  .stacks/stacks/tinker: {}
+  .stacks/stacks/tinker:
+    dependencies:
+      '@stacksjs/desktop':
+        specifier: workspace:*
+        version: link:../../core/desktop
+      '@stacksjs/repl':
+        specifier: workspace:*
+        version: link:../../core/repl
+    devDependencies:
+      '@stacksjs/development':
+        specifier: workspace:*
+        version: link:../../core/development
 
   .stacks/stacks/x-ray:
     dependencies:
