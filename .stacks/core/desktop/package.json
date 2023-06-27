@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/desktop",
   "type": "module",
-  "version": "0.56.4",
+  "version": "0.56.5",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
