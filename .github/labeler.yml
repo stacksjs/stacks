@@ -6,7 +6,7 @@ art:
   - .stacks/art/**
 
 deps:
-  - any: ['./package.json', './pnpm-lock.yaml', './**/package.json']
+  - any: [./package.json, ./pnpm-lock.yaml, './**/package.json']
 
 core:
   - any: ['.stacks/**', '!.stacks/**/package.json']
