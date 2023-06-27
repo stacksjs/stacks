@@ -37,9 +37,17 @@
     "README.md"
   ],
   "scripts": {
-    "build": "echo 'Nothing to build.'"
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@vue/repl": "^2.3.0",
+    "tsx": "^3.12.7"
   },
   "dependencies": {
+    "@vue/repl": "^2.3.0",
     "tsx": "^3.12.7"
   },
   "devDependencies": {

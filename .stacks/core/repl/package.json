@@ -45,12 +45,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vue/repl": "workspace:*",
-    "tsx": "workspace:*"
+    "@stacksjs/tinker": "workspace:*"
   },
   "dependencies": {
-    "@vue/repl": "^2.3.0",
-    "tsx": "^3.12.7"
+    "@stacksjs/tinker": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

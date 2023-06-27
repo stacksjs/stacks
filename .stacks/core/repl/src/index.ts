@@ -1,1 +1,1 @@
-export * from '@vue/repl'
+export * from '@stacksjs/tinker'
