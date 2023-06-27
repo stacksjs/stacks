@@ -17,6 +17,6 @@ export default defineBuildConfig({
     inlineDependencies: true,
   },
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

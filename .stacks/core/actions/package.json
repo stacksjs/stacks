@@ -272,8 +272,6 @@
     "vue-component-meta": "^1.8.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "unbuild": "^1.2.1"
+    "@stacksjs/development": "workspace:*"
   }
 }

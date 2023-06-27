@@ -49,13 +49,17 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
-    "tsx": "^3.12.7",
+    "@stacksjs/tinker": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "typescript": "^5.1.3",
     "unbuild": "^1.2.1"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
+    "@stacksjs/tinker": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "unbuild": "^1.2.1"
   },
   "devDependencies": {

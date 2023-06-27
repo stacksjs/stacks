@@ -51,6 +51,7 @@
     "tsx": "^3.12.7"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "typescript": "^5.1.3",
+    "unbuild": "^1.2.1"
   }
 }
