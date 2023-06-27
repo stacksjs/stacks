@@ -7,19 +7,6 @@ export default defineBuildConfig({
     './src/index',
   ],
 
-  // externals: [
-  //   '@vinejs/vine',
-  //   'vite',
-  //   'validator',
-  //   '@stacksjs/path',
-  //   '@stacksjs/utils',
-  //   '@stacksjs/types',
-  // ],
-
-  // rollup: {
-  //   inlineDependencies: true,
-  // },
-
   clean: true,
   declaration: true,
 })
