@@ -504,20 +504,20 @@ importers:
   .stacks/core/chat:
     dependencies:
       '@novu/discord':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/ms-teams':
         specifier: ^0.16.1
         version: 0.16.1
       '@novu/node':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/slack':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
@@ -749,38 +749,38 @@ importers:
         specifier: ^4.4.6
         version: 4.4.6(glob@7.2.3)
       '@novu/emailjs':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mailgun':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mailjet':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mandrill':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/netcore':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/node':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/nodemailer':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/postmark':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sendgrid':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/ses':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
@@ -906,8 +906,8 @@ importers:
   .stacks/core/logging:
     dependencies:
       consola:
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^3.2.1
+        version: 3.2.1
       node-ray:
         specifier: 1.21.0
         version: 1.21.0
@@ -978,68 +978,68 @@ importers:
         version: link:../types
     optionalDependencies:
       '@novu/discord':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/emailjs':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/gupshup':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mailgun':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mailjet':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/mandrill':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/netcore':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/nexmo':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/node':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/nodemailer':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/plivo':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/postmark':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sendgrid':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/ses':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/slack':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sms77':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sns':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/telnyx':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/termii':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/twilio':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1134,11 +1134,11 @@ importers:
   .stacks/core/push:
     dependencies:
       '@novu/node':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
@@ -1333,35 +1333,35 @@ importers:
   .stacks/core/sms:
     dependencies:
       '@novu/gupshup':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/nexmo':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/node':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/plivo':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sms77':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/sns':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/telnyx':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/termii':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@novu/twilio':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@stacksjs/cli':
         specifier: workspace:*
         version: link:../cli
@@ -1497,8 +1497,8 @@ importers:
         specifier: ^0.12.0
         version: 0.12.0
       '@novu/stateless':
-        specifier: ^0.16.1
-        version: 0.16.1
+        specifier: ^0.16.2
+        version: 0.16.2
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@2.79.1)
@@ -6718,39 +6718,39 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  /@novu/discord@0.16.1:
-    resolution: {integrity: sha512-BImt/jm2uTIZ0jD/Q26DbhWPLBjs0UCyYr6dZ9OfZg7rpFEY3XcPe4CapBtmY68ubjslYvo+J0jTd5/1gSnJnw==}
+  /@novu/discord@0.16.2:
+    resolution: {integrity: sha512-da1K0xLZqeNSgbra9fq0lFeShJDVXe4CXFz1+GBvbVm16oYTRyi22ybsRsJoTClcBuvBtBQi9HmJj7JhmKSFPA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       axios: 1.4.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/emailjs@0.16.1:
-    resolution: {integrity: sha512-GrBX51YhJCIDN1RO4epo9ckQ9oCmry4moP77LxN4kgCRJtHRgRdd5ZW/M0sVSe994BXghIM90onW0ho/Yl0EAg==}
+  /@novu/emailjs@0.16.2:
+    resolution: {integrity: sha512-C0I0Ggxew206nS1hf1yJTjOKUoVaQPwDdpfEZRuHxiYospB9+VcsxK1/SIvbsa1G2bIc0OKfaq74LXd+4VoRYA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       emailjs: 3.8.1
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@novu/gupshup@0.16.1:
-    resolution: {integrity: sha512-B1KtCCZwQm3tX7wjRAw3SlQak0hiri53OzUwwhux2ctFRO1xw5UYPgITbsmm4Ueo6ayxp4tcmKa/tPuo8QRXGg==}
+  /@novu/gupshup@0.16.2:
+    resolution: {integrity: sha512-a0ewxmlVgdyHa7cHql+wLmwTNp0PDckxpi2eJWrnbOq7XKuxq4P9dP3NBJXi/5nGP9FadS/TZJYjJawKdStJ9w==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       node-fetch: 3.3.1
     dev: false
 
-  /@novu/mailgun@0.16.1:
-    resolution: {integrity: sha512-HGzSNj0AvehSMvgWNJrLUUorXl9f3RUiQnkzpPgiQ8oyQWHq55NGP6/ui7dGWzBSyFk0n3sFwNPVY/IowW0uOA==}
+  /@novu/mailgun@0.16.2:
+    resolution: {integrity: sha512-Xob+8sL1+CUdQp0FQJ/L7F1iCsyVImo1vzjZSZJXGIyqNoyq7vRXLBGtKF31a/gyFbJVn+XJkHCh5lZwKi+Kjg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       form-data: 4.0.0
       mailgun.js: 8.2.1
       nock: 13.3.1
@@ -6759,22 +6759,22 @@ packages:
       - supports-color
     dev: false
 
-  /@novu/mailjet@0.16.1:
-    resolution: {integrity: sha512-arbefXUflsOV2qRBrAyO0AF9Kvn937nFkLQVQS7l09znuUZsunRBrTTliC5I6S1DRvRWtU6yPgrAd2ITol/JSA==}
+  /@novu/mailjet@0.16.2:
+    resolution: {integrity: sha512-qMqFYXGUegiM0HlmCHeztBdU3WzGY7CieO0kdFNvWGzwzwNps8W6Gqj00sjsxKVyQSnymPd+pNywRDG3g/JkEA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       node-mailjet: 3.4.1
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@novu/mandrill@0.16.1:
-    resolution: {integrity: sha512-Z5IWkwB8xXaRZSHwrxoIrEQFxMl5/tvErIPTt5qkDyC49H6S7uHOmjOK6BhC+oT0HnZjK778KL854i1EGSyPZw==}
+  /@novu/mandrill@0.16.2:
+    resolution: {integrity: sha512-BdlQyGrdXE37c5e2lBxUBcbZ/2+wGOeuW3iI6/l8V7od1/Wq8eWJ5nZ8r3pC0dQnLFujCEQudO6uDeuCKKdg+A==}
     engines: {node: '>=10'}
     dependencies:
       '@mailchimp/mailchimp_transactional': 1.0.50
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
     transitivePeerDependencies:
       - debug
     dev: false
@@ -6789,27 +6789,27 @@ packages:
       - debug
     dev: false
 
-  /@novu/netcore@0.16.1:
-    resolution: {integrity: sha512-j9Ks75XoUddpViuSU++Fx967X17RPLEgoEGIHas5q+7USENrWt6kGRP3161s6FvwY4vsxoJMrDKakish/UqL/Q==}
+  /@novu/netcore@0.16.2:
+    resolution: {integrity: sha512-uaUJA+/Ogd2MMap2hmDwdqFov1dQmLc2v/Tqvvomi30YXZk55EQjkq1jSQo6KRUwUuSUE+0lHIfk7ZH638sntQ==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       pepipost: 5.0.0
     dev: false
 
-  /@novu/nexmo@0.16.1:
-    resolution: {integrity: sha512-+iJe+7FPCMokzDcToJT96SJMkIYi8zPKmh/pKWLrk5rikZvFEbbx5//nGkkO+3o1/HUigivnpu3+mVLAoXsB+w==}
+  /@novu/nexmo@0.16.2:
+    resolution: {integrity: sha512-uD+zdOt77HcMFBbvqAyZQitbGRG0uh5hSo8c3QnWOtPVBQEqa5nUbxgflX1ktX7ipGqElXTDOwFYru8ZtEYkkw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       '@vonage/server-sdk': 2.11.3
     dev: false
 
-  /@novu/node@0.16.1:
-    resolution: {integrity: sha512-O37ZA7Kc3T81vF1C1dGDw57sAWFKbAkEC3Ge8zw0rZxuOiT0KwxwUFCNOAupebOuVzO2+b/v/OaiSWQ4958Hlg==}
+  /@novu/node@0.16.2:
+    resolution: {integrity: sha512-iUQOya5q+OzDLUn9GBVqqtXza8tSmksG38xaC5QGZ1jAvAddcFIGBK5IKFOCF6OnPComBrUIeM0z4CjTkweRqg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/shared': 0.16.1
+      '@novu/shared': 0.16.2
       handlebars: 4.7.7
       lodash.get: 4.4.2
       lodash.merge: 4.6.2
@@ -6817,59 +6817,59 @@ packages:
       - debug
     dev: false
 
-  /@novu/nodemailer@0.16.1:
-    resolution: {integrity: sha512-NjA2Zx/amnJXU8sVUkxqTkH+/330ZrWdojhHh7bKDAAqTOw/yROMJ/i86ivE+gDoP0ZdT7O499h3vFqCQXBkqg==}
+  /@novu/nodemailer@0.16.2:
+    resolution: {integrity: sha512-abwnCj/K43dlEeXAOJLAICbYmcD7oMLd5zcHxkbibwprbMwbxeUifkV7YLEiI+Qc8GX9SkI8xd8FLLQkobvICQ==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       nodemailer: 6.9.2
     dev: false
 
-  /@novu/plivo@0.16.1:
-    resolution: {integrity: sha512-Z7XjLaWc37xaUoj03dwxi5XKsAEZzm5lnI7Ue7YgzzjdQJq8XKNCzT6Z6DTQOqLrb97L2DEnzNFJQRxQFUYGbw==}
+  /@novu/plivo@0.16.2:
+    resolution: {integrity: sha512-trvyB52qr4BTnumtHC+j42oGKJmCPvTk5xdDNqqThcnhVq7slA2hbbHhma8w+dH6mKYq76ACUYF2ig6B2KIreA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       plivo: 4.46.1
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@novu/postmark@0.16.1:
-    resolution: {integrity: sha512-/fQnH43vTN04j97krSQPpIaId8D41Q80a7oni+m9WcJrtrSKMA1Ih/Jhp0NrOT0Sy1ODQGOsRbw5LrJQ13caXQ==}
+  /@novu/postmark@0.16.2:
+    resolution: {integrity: sha512-Ccx5bcPcBop+SU5PaATMimFllEoLikp1zgcdAvRoejncsEmkLike//uNfmgS46r/0rbrGD14KZgdXL3l7Q1q1Q==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       axios: 1.4.0
       postmark: 2.9.5
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/sendgrid@0.16.1:
-    resolution: {integrity: sha512-DBOj4FaUSTaJDMdsbP5kdiGkidBnM6JIxLybQrZ+e6dvjA9kWnmOVpLGoJGgTKz9smvTNSDiixSXhUuZtcOJ1A==}
+  /@novu/sendgrid@0.16.2:
+    resolution: {integrity: sha512-v5AdXZ/IrYVhB84p0l9tESc1igp80xVNCKkFbQ9j014Uwm33JlVuARcWfhElVGzCEiaxzT/2j/h0L2+R00u0Cw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       '@sendgrid/mail': 7.7.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/ses@0.16.1:
-    resolution: {integrity: sha512-xt/HBKE10qDB83J38jJPF4hTMmxurILyuOoK6BErMMzMrG56AFa7/PKkw6jkFFwrsnbKuodwgz1/rD5i/wbjzw==}
+  /@novu/ses@0.16.2:
+    resolution: {integrity: sha512-lemLDhafDD9CcxxH7xvZFf5gsnh0LndYRmginNmnXjWqHwGmEbNlZHvtwGWsF+UMSyh5QCoDpFEKUpsoxfEuQA==}
     engines: {node: '>=10'}
     dependencies:
       '@aws-sdk/client-ses': 3.282.0
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       nodemailer: 6.9.2
     transitivePeerDependencies:
       - aws-crt
     dev: false
 
-  /@novu/shared@0.16.1:
-    resolution: {integrity: sha512-uM/Nuf+zXTDeX0om+53WXRDeVzwpRItBwLSdoAY46FIrUtsxZW4kVKB0XMRAUh5LbbWEb3mowrsG609ae07b1g==}
+  /@novu/shared@0.16.2:
+    resolution: {integrity: sha512-VTv6XlAERD2LXRv3OmJLnT365XdNCx9M2ZT57pplp9Dbu04hjcHJb8BRHECLHC0qhRpXnDyAO9TLbIunh7osxA==}
     dependencies:
       axios: 1.2.0
       class-transformer: 0.5.1
@@ -6878,39 +6878,39 @@ packages:
       - debug
     dev: false
 
-  /@novu/slack@0.16.1:
-    resolution: {integrity: sha512-4nFQptyiCPESM7MNqZBB0mdoVG9Rohp+wH4A7Scsp4l+NPmZKDgySgCRqzwZXIuC/IAN6VYPWl3joj/6CZD23g==}
+  /@novu/slack@0.16.2:
+    resolution: {integrity: sha512-nBHIZyux1KCIYDw4S7enzMUIKOTA9u/86yG/tKfcQkItDdl8u2gwUgDFiTl9WVuw4csnLywjnV7p5F808bwr5w==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       axios: 1.4.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@novu/sms77@0.16.1:
-    resolution: {integrity: sha512-XEtNhRGwgtLqptYPAL2eALjZHB58TK53ABtKlyiTouVAKlVNA13/+DKiAodml0euXw8YnzTdFTZAxSUPpRq3bw==}
+  /@novu/sms77@0.16.2:
+    resolution: {integrity: sha512-9xgxAW7ec77//zbAytQ9pyaiudBLQZg90zt+rC2yJ7LVl77c2dL/G/iXMTspsprI0+pCUosMZTjY6+RsigbNtQ==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       node-fetch: 2.6.11
       sms77-client: 2.25.0(node-fetch@2.6.11)
     transitivePeerDependencies:
       - encoding
     dev: false
 
-  /@novu/sns@0.16.1:
-    resolution: {integrity: sha512-phyFLRHrXvakOymqfVK07gEPPThAvtaBO4Y+BiQbwNw01YAYIdvTLKCKYdeKbOszbq1DkR1csveM0PJmAbDj0w==}
+  /@novu/sns@0.16.2:
+    resolution: {integrity: sha512-u/4HhMwwtc/PSqG0zaZv66qxwcN2Sgmcr9mU5mFC7MNWbQLoE1mVun/qvhJihB3kWIFLgEhBB81sPepCeFtF2Q==}
     engines: {node: '>=10'}
     dependencies:
       '@aws-sdk/client-sns': 3.338.0
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
     transitivePeerDependencies:
       - aws-crt
     dev: false
 
-  /@novu/stateless@0.16.1:
-    resolution: {integrity: sha512-ADWOTEBmBvSwuiLW6rBbJWglTaxECFlyITIao9UCn4pu3aLG1NNQbDM2Wu6tDO3kQAe88LqnzR15XBPK36Ge7A==}
+  /@novu/stateless@0.16.2:
+    resolution: {integrity: sha512-excyZjrFYcJ66Vz+eGEE/k//qhGoIMWhd2sdLlzsk7dsjU2jeWcfEN1rjl0+g/TmA9TbAqbQ1bhd5NA6CCUeKA==}
     engines: {node: '>=10'}
     dependencies:
       handlebars: 4.7.7
@@ -6930,27 +6930,27 @@ packages:
       - debug
     dev: false
 
-  /@novu/telnyx@0.16.1:
-    resolution: {integrity: sha512-7++Mx/K4TiISjok14dy3WA6xIMRvTfepwaN/gpnXXTCCpdRfd8oiFtEYa73UIEGyzEJvgmbVJ52NOqI/QN1NIg==}
+  /@novu/telnyx@0.16.2:
+    resolution: {integrity: sha512-9Z/BHSLis3fDg17WDhERFGO/L3LXA6XY7h63hRqCbQA62MddbPgGJ2uQiVfOtOqze5Gn6s/a1BoDpX1KRNEQsg==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       telnyx: 1.23.0
     dev: false
 
-  /@novu/termii@0.16.1:
-    resolution: {integrity: sha512-x7oLiMaZRliw6MD7yGZtj9gR3kmGUwPEgeQhSrHKOeV5Wtb3TUlX75ZZugiuGeIxjmuOn4s1/W7kpYB000NByQ==}
+  /@novu/termii@0.16.2:
+    resolution: {integrity: sha512-KRbAS/1NyuSjEfMHX6CJFwsHWelkh60pFEwBC9vuTzglvYVjBqSwKr97B85Nmu20ImZnr7r/EjZJ3xgK6neRXw==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       node-fetch: 3.3.1
     dev: false
 
-  /@novu/twilio@0.16.1:
-    resolution: {integrity: sha512-rho95VNFBJXhprADHxqo0RYHTWkd91SsZYJE4YutDXgn6XJk74i9k2PZKeA8cAvuIe8nXY/9xUhNWfuWhOsk7w==}
+  /@novu/twilio@0.16.2:
+    resolution: {integrity: sha512-PqbxI+f9iokOgPgl0F32n2u4+p6Ixh6//2xSrIEXBO5JpmUvqQOGE9DNxRW0mUzpo8gnE5EyBd5jI8KohXqjsA==}
     engines: {node: '>=10'}
     dependencies:
-      '@novu/stateless': 0.16.1
+      '@novu/stateless': 0.16.2
       twilio: 3.84.1
     transitivePeerDependencies:
       - debug
@@ -8165,7 +8165,7 @@ packages:
       cac: 6.7.14
       chokidar: 3.5.3
       colorette: 2.0.20
-      consola: 3.1.0
+      consola: 3.2.1
       fast-glob: 3.2.12
       magic-string: 0.30.0
       pathe: 1.1.1
@@ -10280,6 +10280,10 @@ packages:
 
   /consola@3.1.0:
     resolution: {integrity: sha512-rrrJE6rP0qzl/Srg+C9x/AE5Kxfux7reVm1Wh0wCjuXvih6DqZgqDZe8auTD28fzJ9TF0mHlSDrPpWlujQRo1Q==}
+
+  /consola@3.2.1:
+    resolution: {integrity: sha512-p4cjcr/NHr2pbmXcTBcdNwIWEyQIzavKkZt6d0rDPQXta+oilM9j9Folao2REulksBZhYX39vF+HlIm7QRTeWA==}
+    dev: false
 
   /console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
@@ -15058,7 +15062,7 @@ packages:
       chalk: 5.2.0
       chokidar: 3.5.3
       citty: 0.1.1
-      consola: 3.1.0
+      consola: 3.2.1
       cookie-es: 1.0.0
       defu: 6.1.2
       destr: 2.0.0
@@ -18929,7 +18933,7 @@ packages:
   /unenv@1.5.1:
     resolution: {integrity: sha512-tQHlmQUPyIoyGc2bF8phugmQd6wVatkVe5FqxxhM1vHfmPKWTiogSVTHA0mO8gNztDKZLpBEJx3M3CJrTZyExg==}
     dependencies:
-      consola: 3.1.0
+      consola: 3.2.1
       defu: 6.1.2
       mime: 3.0.0
       node-fetch-native: 1.2.0
