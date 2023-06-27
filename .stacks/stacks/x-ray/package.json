@@ -41,7 +41,7 @@
     "serve": "vite --config ../build/src/desktop.ts",
     "dev": "echo 'wip'",
     "serve:tauri": "vite",
-    "prepublishOnly": "pnpm run build",
+    "prepublishOnly": "unbuild",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

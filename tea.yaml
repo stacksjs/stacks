@@ -2,7 +2,7 @@
 # updates will be applied to this file
 dependencies:
   nodejs.org: ^18.16.1
-  pnpm.io: ^8.6.4
+  pnpm.io: ^8.6.5
   sqlite.org: ^3.42.0
   # mysql.org: ^8.0.33
   redis.io: ^7.0.11

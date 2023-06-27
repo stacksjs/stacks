@@ -42,7 +42,7 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
-    "prepublishOnly": "pnpm run build",
+    "prepublishOnly": "unbuild",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

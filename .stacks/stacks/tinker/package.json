@@ -35,7 +35,7 @@
   "scripts": {
     "build": "echo 'wip'",
     "dev": "echo 'wip'",
-    "prepublishOnly": "pnpm run build",
+    "prepublishOnly": "unbuild",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
