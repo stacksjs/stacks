@@ -33,6 +33,7 @@
     "tinker": "tinker.js"
   },
   "files": [
+    "tinker.js",
     "dist",
     "README.md"
   ],
