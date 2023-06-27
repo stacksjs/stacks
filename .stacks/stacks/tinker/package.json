@@ -1,1 +1,48 @@
-{}
+{
+  "name": "@stacksjs/tinker-app",
+  "type": "module",
+  "version": "0.51.0",
+  "packageManager": "pnpm@8.6.5",
+  "description": "All you need to tinker.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/stacks/tinker-app#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/stacks/tinker-app"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "tinker-stack",
+    "repl",
+    "ts",
+    "vue",
+    "stacks"
+  ],
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'wip'",
+    "dev": "echo 'wip'",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stacksjs/desktop": "workspace:*",
+    "@stacksjs/repl": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}
