@@ -2,7 +2,7 @@
   "name": "@stacksjs/utils",
   "type": "module",
   "version": "0.56.0",
-  "packageManager": "pnpm@8.6.4",
+  "packageManager": "pnpm@8.6.5",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
