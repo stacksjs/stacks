@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/auth",
   "type": "module",
-  "version": "0.56.3",
+  "version": "0.56.4",
   "packageManager": "pnpm@8.6.5",
   "description": "A more simplistic way to authenticate.",
   "author": "Chris Breuer",
