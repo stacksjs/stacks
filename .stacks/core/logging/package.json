@@ -46,7 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "consola": "^3.1.0",
+    "consola": "^3.2.1",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },
