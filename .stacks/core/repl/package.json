@@ -1,0 +1,58 @@
+{
+  "name": "@stacksjs/repl",
+  "type": "module",
+  "version": "0.56.0",
+  "packageManager": "pnpm@8.6.5",
+  "description": "A Stacks optimized TS & Vue REPL.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/repl#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/repl"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "ts",
+    "repl",
+    "tsx",
+    "vue",
+    "sfc",
+    "functions",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs"
+    }
+  },
+  "module": "dist/index.mjs",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@vue/repl": "workspace:*",
+    "tsx": "workspace:*"
+  },
+  "dependencies": {
+    "@vue/repl": "^2.3.0",
+    "tsx": "^3.12.7"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}
