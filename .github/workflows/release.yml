@@ -31,17 +31,12 @@ jobs:
       - name: Set Application Key
         run: pnpm buddy key:generate
 
-      - name: Publish fonts to npm
-        run: pnpm --filter './.stacks/fonts/**' publish --access public --no-git-checks
+      - name: Publish Stacks
+        run: pnpm -r publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish framework to npm
-        run: pnpm --filter './.stacks' --filter './.stacks/core/**' --filter './.stacks/ide/vscode' publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      - name: Publish dummy libraries to npm
+      - name: Publish dummy libraries
         run: pnpm run generate:entries && pnpm --filter './.stacks/libs/components/vue' --filter './.stacks/libs/components/web' --filter './.stacks/libs/functions' publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
