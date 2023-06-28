@@ -61,7 +61,7 @@
     "unplugin-auto-import": "^0.16.4",
     "unplugin-vue-components": "^0.25.1",
     "vite": "^4.3.9",
-    "vite-plugin-inspect": "^0.7.29",
+    "vite-plugin-inspect": "^0.7.30",
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.4",
     "vite-plugin-vue-layouts": "^0.8.0",
@@ -72,6 +72,6 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "vite-plugin-mkcert": "^1.15.0"
+    "vite-plugin-mkcert": "^1.16.0"
   }
 }
