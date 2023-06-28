@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/logging",
   "type": "module",
-  "version": "0.56.6",
+  "version": "0.56.7",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
