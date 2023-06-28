@@ -31,7 +31,7 @@ jobs:
       - name: Set Application Key
         run: pnpm buddy key:generate
 
-      - name: Publish Stacks
+      - name: Publish framework
         run: pnpm -r publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

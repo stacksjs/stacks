@@ -21,6 +21,7 @@
     "repl",
     "typescript",
     "tsx",
+    "esno",
     "zero-config",
     "stacks"
   ],
