@@ -1,1 +1,1 @@
-export * from '@vue/repl'
+export * as repl from '@vue/repl'
