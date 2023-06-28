@@ -32,7 +32,7 @@ jobs:
         run: pnpm buddy key:generate
 
       - name: Prepublish
-        run: pnpm -r --filter='./core/**' build
+        run: pnpm -r --filter='./.stacks/core/**' build
 
       - name: Publish framework
         run: pnpm --filter './.stacks' --filter './.stacks/core/**' --filter './.stacks/fonts/**' --filter './.stacks/ide/vscode' publish --access public --no-git-checks
