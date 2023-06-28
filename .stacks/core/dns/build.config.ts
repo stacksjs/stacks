@@ -13,10 +13,6 @@ export default defineBuildConfig({
     '@stacksjs/config',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

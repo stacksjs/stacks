@@ -42,9 +42,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "npx unbuild",
     "dev": "unbuild --stub",
-    "prepublishOnly": "unbuild",
+    "prepublishOnly": "npx unbuild",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
