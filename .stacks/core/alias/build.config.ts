@@ -11,10 +11,6 @@ export default defineBuildConfig({
     '@stacksjs/development',
   ],
 
-  rollup: {
-    emitCJS: true,
-  },
-
   outDir: './dist/',
   clean: true,
   declaration: true,
