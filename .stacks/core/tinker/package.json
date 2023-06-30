@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.56.15",
+  "version": "0.56.16",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks way to tinker.",
   "author": "Chris Breuer",
