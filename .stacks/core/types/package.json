@@ -40,9 +40,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "mkdist",
     "dev": "unbuild --stub",
-    "prepublishOnly": "unbuild",
+    "prepublishOnly": "mkdist",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
