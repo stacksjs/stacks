@@ -32,10 +32,10 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "bin": {
-    "tinker": "tinker.js"
+    "tinker": "bin/tinker.js"
   },
   "files": [
-    "tinker.js",
+    "bin",
     "dist",
     "README.md"
   ],
