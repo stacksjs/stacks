@@ -45,7 +45,6 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
-    "prepublishOnly": "unbuild",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
