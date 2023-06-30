@@ -16,6 +16,7 @@ export default defineBuildConfig({
     '@stacksjs/utils',
     '@stacksjs/development',
     'unocss',
+    'unocss/vite',
     'defu',
     'vite-plugin-mkcert',
     'picocolors',
