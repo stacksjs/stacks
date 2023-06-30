@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/development",
   "type": "module",
-  "version": "0.56.20",
+  "version": "0.56.21",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
