@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import('tsx/cli')
+import 'tsx/cli'

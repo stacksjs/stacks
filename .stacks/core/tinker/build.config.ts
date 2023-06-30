@@ -5,6 +5,7 @@ export default defineBuildConfig({
 
   entries: [
     './src/index',
+    './src/tinker',
   ],
 
   clean: true,
