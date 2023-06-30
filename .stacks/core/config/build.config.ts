@@ -13,6 +13,7 @@ export default defineBuildConfig({
     '@stacksjs/path',
     '@stacksjs/types',
     '@stacksjs/utils',
+    '@stacksjs/validation',
     '@vinejs/vine',
     'c12',
     'macroable',
