@@ -7,6 +7,6 @@ export default defineBuildConfig({
     './src/index',
   ],
 
-  clean: false, // logging, alias, development, storage, and path are all prerequisites for other packages—needed for the release process
+  clean: false, // logging, alias, development, storage, tinker, and path are all prerequisites for other packages—needed for the release process
   declaration: true,
 })

@@ -32,7 +32,7 @@ jobs:
         run: pnpm buddy key:generate
 
       - name: Prepublish
-        run: pnpm --filter='./.stacks/core/alias' build && pnpm --filter='./.stacks/core/logging' build && pnpm --filter='./.stacks/core/development' build && pnpm --filter='./.stacks/core/utils' build && pnpm --filter='./.stacks/core/storage' build && pnpm --filter='./.stacks/core/path' build && pnpm --filter='./.stacks/core/**' build
+        run: pnpm --filter='./.stacks/core/alias' build && pnpm --filter='./.stacks/core/logging' build && pnpm --filter='./.stacks/core/development' build && pnpm --filter='./.stacks/core/utils' build && pnpm --filter='./.stacks/core/storage' build && pnpm --filter='./.stacks/core/path' build && pnpm --filter='./.stacks/core/tinker' build && pnpm --filter='./.stacks/core/**' build
 
       - name: Publish framework
         run: pnpm --filter './.stacks' --filter './.stacks/core/**' --filter './.stacks/fonts/**' --filter './.stacks/ide/vscode' publish --access public --no-git-checks
