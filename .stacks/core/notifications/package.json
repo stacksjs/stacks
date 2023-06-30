@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/notifications",
   "type": "module",
-  "version": "0.56.12",
+  "version": "0.56.13",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks notifications integration.",
   "author": "Chris Breuer",
