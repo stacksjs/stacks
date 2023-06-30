@@ -20,6 +20,6 @@ export default defineBuildConfig({
     inlineDependencies: true,
   },
 
-  clean: true,
+  clean: false, // logging, alias, and development are all prerequisites for other packages—needed for the release process
   declaration: true,
 })

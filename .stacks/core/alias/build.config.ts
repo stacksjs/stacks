@@ -8,11 +8,6 @@ export default defineBuildConfig({
     './src/index',
   ],
 
-  externals: [
-    '@stacksjs/development',
-  ],
-
-  outDir: './dist/',
-  clean: true,
+  clean: false, // logging, alias, and development are all prerequisites for other packages—needed for the release process
   declaration: true,
 })
