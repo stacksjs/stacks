@@ -21,10 +21,6 @@ export default defineBuildConfig({
     'picocolors',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

@@ -12,10 +12,6 @@ export default defineBuildConfig({
     'vue-router',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

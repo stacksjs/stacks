@@ -6,10 +6,11 @@ export default defineBuildConfig({
     './src/utils/config',
     './src/index',
   ],
-  declaration: true,
-  clean: true,
+
   rollup: {
     emitCJS: true,
-    inlineDependencies: true,
   },
+  declaration: true,
+  clean: true,
+
 })

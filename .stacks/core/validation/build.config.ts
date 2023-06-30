@@ -16,10 +16,6 @@ export default defineBuildConfig({
     '@stacksjs/types',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: false, // todo: this should be set to true
 })

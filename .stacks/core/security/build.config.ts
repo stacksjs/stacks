@@ -16,10 +16,6 @@ export default defineBuildConfig({
     'js-base64',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

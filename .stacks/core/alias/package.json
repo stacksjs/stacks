@@ -44,5 +44,9 @@
   },
   "peerDependencies": {
     "@stacksjs/path": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.5",
+    "unbuild": "^1.2.1"
   }
 }

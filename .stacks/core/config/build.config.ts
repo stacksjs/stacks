@@ -40,10 +40,6 @@ export default defineBuildConfig({
     'yaml',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   declaration: true,
   clean: true,
 })

@@ -14,10 +14,6 @@ export default defineBuildConfig({
     '@stacksjs/validation',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

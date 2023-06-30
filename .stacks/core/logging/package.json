@@ -51,12 +51,11 @@
     "vue-ray": "^1.17.4"
   },
   "dependencies": {
+    "consola": "^3.2.2",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },
   "devDependencies": {
-    "@stacksjs/testing": "workspace:*",
-    "tsx": "^3.12.7",
     "typescript": "^5.1.5",
     "unbuild": "^1.2.1"
   }

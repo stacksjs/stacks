@@ -15,10 +15,6 @@ export default defineBuildConfig({
     'meilisearch',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   declaration: true,
   clean: true,
 })

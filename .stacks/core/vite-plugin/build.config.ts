@@ -12,10 +12,6 @@ export default defineBuildConfig({
     'vitepress',
   ],
 
-  rollup: {
-    inlineDependencies: true,
-  },
-
   clean: true,
   declaration: true,
 })

@@ -1,16 +1,14 @@
-import { defineBuildConfig } from '@stacksjs/development'
-import { alias } from '@stacksjs/alias'
+import { alias, defineBuildConfig } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
+
   entries: [
     './src/index',
   ],
-  declaration: false,
-  clean: false,
+
   externals: ['chalk'],
-  rollup: {
-    emitCJS: true,
-    inlineDependencies: true,
-  },
+
+  declaration: true,
+  clean: true,
 })
