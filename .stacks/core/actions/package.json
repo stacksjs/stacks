@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.56.33",
+  "version": "0.56.34",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
