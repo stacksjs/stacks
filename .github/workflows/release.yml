@@ -35,7 +35,7 @@ jobs:
         run: pnpm --filter='./.stacks' build
 
       - name: Publish framework
-        run: pnpm --filter='./.stacks' release
+        run: pnpm --filter='./.stacks' release:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
