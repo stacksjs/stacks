@@ -6,7 +6,7 @@ import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
 // import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
-async function dev(buddy: CLI) {
+export async function dev(buddy: CLI) {
   const descriptions = {
     components: 'Start the Components development server',
     desktop: 'Start the Desktop development server',
@@ -138,5 +138,3 @@ async function dev(buddy: CLI) {
 function hasNoOptions(options: DevOptions) {
   return !options.components && !options.all && !options.docs && !options.functions && !options.pages
 }
-
-export { dev }

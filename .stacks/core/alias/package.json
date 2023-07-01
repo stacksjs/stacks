@@ -26,7 +26,6 @@
       "import": "./dist/index.mjs"
     }
   },
-  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -45,7 +44,7 @@
     "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.1.5",
+    "typescript": "^5.1.6",
     "unbuild": "^1.2.1"
   }
 }

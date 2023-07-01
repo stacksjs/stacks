@@ -3,7 +3,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-async function key(buddy: CLI) {
+export async function key(buddy: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
     verbose: 'Enable verbose output',
@@ -24,5 +24,3 @@ async function key(buddy: CLI) {
       outro('Set random application key.', { startTime })
     })
 }
-
-export { key }

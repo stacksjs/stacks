@@ -25,6 +25,7 @@ interface Base {}
 export interface Model extends Base {
   name?: string // defaults to the file name of the model
   table?: string // defaults to the lowercase, plural name of the model
+  useUuid?: boolean
   fields: Fields
   hasOne?: string
   hasMany?: string

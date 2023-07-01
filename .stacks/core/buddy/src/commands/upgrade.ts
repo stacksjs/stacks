@@ -3,7 +3,7 @@ import { Action, ExitCode } from '@stacksjs/types'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
-async function upgrade(buddy: CLI) {
+export async function upgrade(buddy: CLI) {
   const descriptions = {
     command: 'Upgrade dependencies, framework, package manager, and/or Node.js',
     framework: 'Upgrade the Stacks framework',
@@ -130,5 +130,3 @@ async function upgrade(buddy: CLI) {
 function hasNoOptions(options: UpgradeOptions) {
   return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
 }
-
-export { upgrade }

@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function migrate(buddy: CLI) {
+export async function migrate(buddy: CLI) {
   const descriptions = {
     migrate: 'Migrates your database',
     verbose: 'Enable verbose output',
@@ -27,5 +27,3 @@ async function migrate(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { migrate }

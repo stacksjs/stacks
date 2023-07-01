@@ -3,7 +3,7 @@ import { ExitCode } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
 import { componentMeta, ideHelpers, libEntries, migrations, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
 
-async function generate(buddy: CLI) {
+export async function generate(buddy: CLI) {
   const descriptions = {
     command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
     types: 'Generate your TypeScript types',
@@ -114,5 +114,3 @@ async function generate(buddy: CLI) {
 function hasNoOptions(options: GeneratorOptions) {
   return !options.types && !options.entries && !options.webTypes && !options.customData && !options.ideHelpers && !options.vueCompatibility && !options.componentMeta
 }
-
-export { generate }

@@ -6,7 +6,7 @@ import { resolve } from '@stacksjs/path'
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-async function create(buddy: CLI) {
+export async function create(buddy: CLI) {
   const descriptions = {
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
@@ -122,5 +122,3 @@ async function install(path: string, options: CreateOptions) {
 
   log.success('Installed & set-up 🚀')
 }
-
-export { create }

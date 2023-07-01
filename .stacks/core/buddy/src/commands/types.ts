@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import { types as generateTypes } from '@stacksjs/actions/generate'
 
-async function types(buddy: CLI) {
+export async function types(buddy: CLI) {
   const descriptions = {
     generate: 'Generate the types of & for your library/libraries',
     fix: 'wip',
@@ -22,5 +22,3 @@ async function types(buddy: CLI) {
       // await fixTypes()
     })
 }
-
-export { types }

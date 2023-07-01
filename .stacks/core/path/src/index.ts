@@ -294,6 +294,10 @@ export function resourcesPath(path?: string) {
   return projectPath(`resources/${path || ''}`)
 }
 
+export function replPath(path?: string) {
+  return corePath(`repl/${path || ''}`)
+}
+
 export function routerPath(path?: string) {
   return corePath(`router/${path || ''}`)
 }
@@ -362,6 +366,10 @@ export function testingPath(path?: string) {
   return corePath(`testing/${path || ''}`)
 }
 
+export function tinkerPath(path?: string) {
+  return corePath(`tinker/${path || ''}`)
+}
+
 export function testsPath(path?: string) {
   return frameworkPath(`tests/${path || ''}`)
 }
@@ -386,7 +394,7 @@ export function xRayPath(path?: string) {
   return corePath(`x-ray/${path || ''}`)
 }
 
-const path = {
+export const path = {
   aiPath,
   actionsPath,
   aliasPath,
@@ -443,6 +451,7 @@ const path = {
   queuePath,
   realtimePath,
   resourcesPath,
+  replPath,
   routerPath,
   routesPath,
   searchEnginePath,
@@ -460,6 +469,7 @@ const path = {
   storesPath,
   testingPath,
   testsPath,
+  tinkerPath,
   typesPath,
   uiPath,
   utilsPath,
@@ -483,4 +493,4 @@ const path = {
   toNamespacedPath,
 }
 
-export { path, basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
+export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }

@@ -139,7 +139,6 @@ const entries: BuildConfig['entries'] = process.env.npm_lifecycle_script?.includ
       './src/clean',
       './src/commit',
       './src/copy-types',
-      './src/deploy.ts',
       './src/examples',
       './src/fresh',
       './src/key-generate',

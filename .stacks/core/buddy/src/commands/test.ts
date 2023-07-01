@@ -4,7 +4,7 @@ import { intro, outro } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 
-async function test(buddy: CLI) {
+export async function test(buddy: CLI) {
   const descriptions = {
     command: 'Runs your test suite',
     types: 'Typechecks your codebase',
@@ -114,5 +114,3 @@ async function test(buddy: CLI) {
       process.exit()
     })
 }
-
-export { test }

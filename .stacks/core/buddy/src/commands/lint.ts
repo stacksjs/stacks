@@ -3,7 +3,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-async function lint(buddy: CLI) {
+export async function lint(buddy: CLI) {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
@@ -41,5 +41,3 @@ async function lint(buddy: CLI) {
       log.success('Fixed lint errors')
     })
 }
-
-export { lint }

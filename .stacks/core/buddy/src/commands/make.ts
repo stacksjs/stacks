@@ -16,7 +16,7 @@ import {
 
 } from '@stacksjs/actions/make'
 
-async function make(buddy: CLI) {
+export async function make(buddy: CLI) {
   const descriptions = {
     model: 'Create a new model',
     component: 'Create a new component',
@@ -253,5 +253,3 @@ async function make(buddy: CLI) {
 function hasNoOptions(options: MakeOptions) {
   return !options.component && !options.page && !options.function && !options.language && !options.database && !options.migration && !options.factory && !options.notification && !options.stack
 }
-
-export { make }

@@ -3,7 +3,7 @@ import { Action, ExitCode } from '@stacksjs/types'
 import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
-async function build(buddy: CLI) {
+export async function build(buddy: CLI) {
   const descriptions = {
     components: 'Build your component library',
     vueComponents: 'Build your Vue component library',
@@ -145,5 +145,3 @@ async function build(buddy: CLI) {
 function hasNoOptions(options: BuildOptions) {
   return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.pages && !options.docs && !options.stacks
 }
-
-export { build }

@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function tinker(buddy: CLI) {
+export async function tinker(buddy: CLI) {
   const descriptions = {
     tinker: 'Tinker with your code',
     verbose: 'Enable verbose output',
@@ -25,5 +25,3 @@ async function tinker(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { tinker }

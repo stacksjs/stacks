@@ -3,7 +3,7 @@ import type { CLI, ExamplesOptions } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
 import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
 
-async function example(buddy: CLI) {
+export async function example(buddy: CLI) {
   const descriptions = {
     example: 'Which example do you want to see?',
     components: 'Test your libraries against your built bundle',
@@ -55,5 +55,3 @@ async function example(buddy: CLI) {
       await runExample(options)
     })
 }
-
-export { example }

@@ -166,8 +166,8 @@
       "import": "./dist/copy-types.mjs"
     },
     "./deploy": {
-      "types": "./dist/deploy.d.ts",
-      "import": "./dist/deploy.mjs"
+      "types": "./dist/deploy/index.d.ts",
+      "import": "./dist/deploy/index.mjs"
     },
     "./examples": {
       "types": "./dist/examples.d.ts",
@@ -223,7 +223,6 @@
     },
     "./*": "./*"
   },
-  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [

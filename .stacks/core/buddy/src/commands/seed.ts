@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function seed(buddy: CLI) {
+export async function seed(buddy: CLI) {
   const descriptions = {
     seed: 'Seed your database',
     verbose: 'Enable verbose output',
@@ -27,5 +27,3 @@ async function seed(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { seed }

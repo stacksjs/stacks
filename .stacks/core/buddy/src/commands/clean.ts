@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function clean(buddy: CLI) {
+export async function clean(buddy: CLI) {
   const descriptions = {
     clean: 'Removes all node_modules & lock files',
     verbose: 'Enable verbose output',
@@ -25,5 +25,3 @@ async function clean(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { clean }

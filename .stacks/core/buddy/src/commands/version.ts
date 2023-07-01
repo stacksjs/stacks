@@ -3,7 +3,7 @@ import { bold, dim, green, intro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as storage from '@stacksjs/storage'
 
-async function version(buddy: CLI) {
+export async function version(buddy: CLI) {
   const descriptions = {
     version: 'Retrieving Stacks build version',
   }
@@ -21,8 +21,7 @@ async function version(buddy: CLI) {
       log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion}`))
       log.info(green(bold('node: ')) + dim(`   ${nodeVersion}`))
       log.info(green(bold('pnpm: ')) + dim(`   ${pnpmVersion}`))
+
       // redis (or other cache/s), mysql (or other database/s),
     })
 }
-
-export { version }

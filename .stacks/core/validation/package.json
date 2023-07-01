@@ -28,7 +28,6 @@
       "import": "./dist/index.mjs"
     }
   },
-  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"

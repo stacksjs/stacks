@@ -125,7 +125,8 @@ export interface CliOptions {
 
 export type { Ora as SpinnerOptions } from 'ora'
 
-export type ActionOption = 'types'
+// the `domains` option is only available for the `deploy` command
+export type ActionOption = 'types' | 'domains'
 
 /**
  * The options to pass to the Action.

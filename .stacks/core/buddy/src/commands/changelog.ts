@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function changelog(buddy: CLI) {
+export async function changelog(buddy: CLI) {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
     quiet: 'Minimal output',
@@ -27,5 +27,3 @@ async function changelog(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { changelog }

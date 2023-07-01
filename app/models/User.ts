@@ -6,11 +6,12 @@ export default defineModel({
   name: 'User', // defaults to the sanitized file name
   table: 'users', // defaults to the lowercase, plural name of the model
 
-  authenticatable: true, // defaults to false, also accepts AuthSettings or TokenSettings
+  useUuid: true, // instead of `auto-incrementing id`, defaults to false
   searchable: true, // defaults to false, also accepts SearchEngineSettings
-  seedable: { // defaults to true & count of ten
+  seedable: { // defaults to a count of 10
     count: 10,
   },
+  // authenticatable: true, // defaults to false, also accepts AuthSettings or TokenSettings
 
   fields: {
     name: {

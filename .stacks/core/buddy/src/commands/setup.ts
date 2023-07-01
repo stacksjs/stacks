@@ -1,7 +1,7 @@
 import { runCommand } from '@stacksjs/cli'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
-async function setup(buddy: CLI) {
+export async function setup(buddy: CLI) {
   const descriptions = {
     ensure: 'This command checks whether Node is installed. pnpm is checked via `only-allow` preinstall hook',
     setup: 'This command installs Node & pnpm',
@@ -22,5 +22,3 @@ async function setup(buddy: CLI) {
       await runCommand('pnpm env use', options)
     })
 }
-
-export { setup }

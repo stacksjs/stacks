@@ -8,7 +8,7 @@ const descriptions = {
   verbose: 'Enable verbose output',
 }
 
-async function release(buddy: CLI) {
+export async function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
     .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
@@ -24,5 +24,3 @@ async function release(buddy: CLI) {
       outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
     })
 }
-
-export { release }

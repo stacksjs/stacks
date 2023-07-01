@@ -6,7 +6,7 @@ import { env } from '@stacksjs/validation'
 import { frameworkVersion, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
-import { build, changelog, clean, commit, create, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
+import { build, changelog, clean, commit, create, deploy, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
 const cli = command('buddy')
 
@@ -21,21 +21,8 @@ async function main() {
   await key(cli)
 
   // before running any commands, check if the project is already initialized
-  if (!await isProjectCreated()) {
-    if (env.APP_ENV !== 'production')
-      log.info('Project not yet initialized, generating application key...')
-    else
-      handleError(new Error('Please run `buddy key:generate` to generate an application key'))
-
-    const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
-
-    if (result.isErr())
-      handleError(result.error as Error)
-
-    log.info('Application key generated.')
-
-    await create(cli)
-  }
+  if (!await isProjectCreated())
+    await initProject()
 
   await preinstall(cli)
   await prepublish(cli)
@@ -46,6 +33,7 @@ async function main() {
   await changelog(cli)
   await clean(cli)
   await commit(cli)
+  await deploy(cli)
   await fresh(cli)
   await lint(cli)
   await release(cli)
@@ -60,6 +48,25 @@ async function main() {
   cli.version(await frameworkVersion())
 
   cli.parse()
+}
+
+async function initProject() {
+  console.log('env.APP_ENV?')
+  console.log('env.APP_ENV', env.APP_ENV)
+
+  if (env.APP_ENV !== 'production')
+    log.info('Project not yet initialized, generating application key...')
+  else
+    handleError(new Error('Please run `buddy key:generate` to generate an application key'))
+
+  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
+
+  if (result.isErr())
+    handleError(result.error as Error)
+
+  log.info('Application key generated.')
+
+  await create(cli)
 }
 
 main()

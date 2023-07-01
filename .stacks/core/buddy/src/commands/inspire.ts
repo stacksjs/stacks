@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function inspire(buddy: CLI) {
+export async function inspire(buddy: CLI) {
   buddy
     .command('inspire', 'Inspire yourself with a random quote')
     .option('--two', 'Show two quotes', { default: false })
@@ -20,5 +20,3 @@ async function inspire(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { inspire }

@@ -3,7 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-async function fresh(buddy: CLI) {
+export async function fresh(buddy: CLI) {
   const descriptions = {
     fresh: 'Reinstalls your npm dependencies',
     verbose: 'Enable verbose output',
@@ -25,5 +25,3 @@ async function fresh(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 }
-
-export { fresh }
