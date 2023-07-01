@@ -8,19 +8,6 @@ export default defineBuildConfig({
     './src/index',
   ],
 
-  // externals: [
-  //   '@stacksjs/development',
-  //   '@stacksjs/alias',
-  //   'consola',
-  //   'vue-ray',
-  //   'node-ray',
-  // ],
-
-  rollup: {
-    alias,
-    inlineDependencies: true,
-  },
-
   declaration: true,
   clean: false, // logging, alias, development, storage, tinker, and path are all prerequisites for other packages—needed for the release process
 })
