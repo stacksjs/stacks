@@ -68,7 +68,7 @@
   ],
   "scripts": {
     "buddy": "tsx ./core/buddy/src/cli.ts",
-    "build": "pnpm --filter='./core/path' build && pnpm --filter='./core/alias' build && pnpm --filter='./core/logging' build && pnpm --filter='./core/development' build && pnpm --filter='./core/utils' build && pnpm --filter='./core/storage' build && pnpm --filter='./core/tinker' build && pnpm install && pnpm --filter='./core/**' build",
+    "build": "pnpm --filter='./core/path' build && pnpm install && pnpm --filter='./core/alias' build && pnpm install && pnpm --filter='./core/logging' build && pnpm install && pnpm --filter='./core/development' build && pnpm install && pnpm --filter='./core/utils' build && pnpm install && pnpm --filter='./core/storage' build && pnpm install && pnpm --filter='./core/tinker' build && pnpm install && pnpm --filter='./core/**' build",
     "dev": "pnpm --filter='./core/path' dev && pnpm --filter='./core/alias' dev && pnpm --filter='./core/logging' dev && pnpm --filter='./core/development' dev && pnpm --filter='./core/utils' dev && pnpm --filter='./core/storage' dev && pnpm --filter='./core/tinker' dev && pnpm --filter='./core/**' dev",
     "release:framework": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
     "release:dummy-libs": "pnpm run generate:entries && pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
