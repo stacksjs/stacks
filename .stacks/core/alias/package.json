@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/alias",
   "type": "module",
-  "version": "0.56.31",
+  "version": "0.56.32",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks aliases.",
   "author": "Chris Breuer",
