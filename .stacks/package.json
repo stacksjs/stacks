@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.56.25",
+  "version": "0.56.26",
   "packageManager": "pnpm@8.6.5",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
@@ -70,7 +70,7 @@
     "buddy": "tsx ./core/buddy/src/cli.ts",
     "build": "pnpm --filter='./core/path' build && pnpm --filter='./core/alias' build && pnpm --filter='./core/logging' build && pnpm --filter='./core/development' build && pnpm --filter='./core/utils' build && pnpm --filter='./core/storage' build && pnpm --filter='./core/tinker' build && pnpm --filter='./core/**' build",
     "dev": "pnpm --filter='./core/path' dev && pnpm --filter='./core/alias' dev && pnpm --filter='./core/logging' dev && pnpm --filter='./core/development' dev && pnpm --filter='./core/utils' dev && pnpm --filter='./core/storage' dev && pnpm --filter='./core/tinker' dev && pnpm --filter='./core/**' dev",
-    "release": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
+    "release:framework": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
     "release:dummy-libs": "pnpm run generate:entries && pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "pnpm buddy fresh",
     "clean": "pnpm buddy clean",
