@@ -4,11 +4,12 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
-import Layouts from 'vite-plugin-vue-layouts'
+
+// import Layouts from 'vite-plugin-vue-layouts'
 import type { PluginOption } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, LayoutOptions, PagesOption } from '@stacksjs/types'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
 
 export { resolve }
@@ -17,9 +18,9 @@ export function inspect(options?: InspectOptions) {
   return Inspect(options)
 }
 
-export function layouts(options?: LayoutOptions) {
-  return Layouts(options)
-}
+// export function layouts(options?: LayoutOptions) {
+//   return Layouts(options)
+// }
 
 export function components(options?: ComponentOptions): PluginOption {
   const defaultOptions = {
