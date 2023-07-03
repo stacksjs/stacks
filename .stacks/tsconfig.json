@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
     "jsx": "preserve",
@@ -27,7 +27,7 @@
       "vite/client",
       "vue/ref-macros",
       "vite-plugin-pages/client",
-      "vite-plugin-vue-layouts/client",
+      //      "vite-plugin-vue-layouts/client",
       "vite-plugin-pwa/client"
     ],
     "paths": {
