@@ -1,1 +1,1 @@
-export const wip = 1
+export const tauriWip = 1
