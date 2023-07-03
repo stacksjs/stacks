@@ -27,10 +27,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    },
-    "./openai": {
-      "types": "./dist/openai.d.ts",
-      "import": "./dist/openai.mjs"
     }
   },
   "module": "dist/index.mjs",

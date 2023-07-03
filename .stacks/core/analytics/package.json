@@ -33,10 +33,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    },
-    "./fathom": {
-      "types": "./dist/fathom.d.ts",
-      "import": "./dist/fathom.mjs"
     }
   },
   "module": "dist/index.mjs",
