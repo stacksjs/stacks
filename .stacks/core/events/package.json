@@ -44,8 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "mitt": "^3.0.0"
+    "@stacksjs/alias": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
