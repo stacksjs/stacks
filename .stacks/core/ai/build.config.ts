@@ -1,13 +1,8 @@
-import { alias, defineBuildConfig } from '@stacksjs/development'
+import { alias, defineBuildConfig, entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-
-  entries: [
-    './src/drivers/openai',
-    './src/index',
-  ],
-
+  entries,
   clean: false,
   declaration: true,
 })

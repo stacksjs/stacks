@@ -1,15 +1,8 @@
-import { alias, defineBuildConfig } from '@stacksjs/development'
+import { alias, defineBuildConfig, entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-  entries: [
-    './src/index',
-    './src/drivers/dynamodb',
-    './src/drivers/memcached',
-    './src/drivers/redis',
-    './src/drivers/upstash',
-  ],
-
+  entries,
   clean: false,
   declaration: true,
 })

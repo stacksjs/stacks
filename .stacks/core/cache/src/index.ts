@@ -1,4 +1,1 @@
-export * as redis from './drivers/redis'
-export * as memcached from './drivers/memcached'
-export * as dynamodb from './drivers/dynamodb'
-export * as upstash from './drivers/upstash'
+export * from './drivers'

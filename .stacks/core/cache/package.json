@@ -31,22 +31,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./dynamodb": {
-      "types": "./dist/dynamodb.d.ts",
-      "import": "./dist/dynamodb.mjs"
-    },
-    "./memcached": {
-      "types": "./dist/dynamodb.d.ts",
-      "import": "./dist/dynamodb.mjs"
-    },
-    "./redis": {
-      "types": "./dist/dynamodb.d.ts",
-      "import": "./dist/dynamodb.mjs"
-    },
-    "./upstash": {
-      "types": "./dist/dynamodb.d.ts",
-      "import": "./dist/dynamodb.mjs"
-    }
   },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

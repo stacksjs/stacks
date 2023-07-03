@@ -1,16 +1,18 @@
 import { alias, defineBuildConfig } from '@stacksjs/development'
 
+// eslint-disable-next-line no-console
+console.log('here')
 export default defineBuildConfig({
   alias,
+
   entries: [
-    './src/utils/config',
-    './src/index',
+    {
+      input: './src/utils/config',
+      format: 'cjs',
+    },
+    // './src/index',
   ],
 
-  rollup: {
-    emitCJS: true,
-  },
   declaration: true,
   clean: false,
-
 })

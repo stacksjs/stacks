@@ -1,11 +1,8 @@
-import { alias, defineBuildConfig } from '@stacksjs/development'
+import { alias, defineBuildConfig, entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-
-  entries: [
-    './src/index',
-  ],
+  entries,
 
   externals: [
     '@stacksjs/storage',
