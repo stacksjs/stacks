@@ -1,23 +1,8 @@
-import { alias, defineBuildConfig } from '@stacksjs/development'
-
-// type Entries = BuildConfig['entries']
-// const entries: Entries = [{
-//   builder: 'mkdist',
-//   input: './src/index',
-//   outDir: './dist/',
-// }]
-// const buildEntries = devEntries
-// const command = process.env.npm_lifecycle_script
-// const entries: Entries = command?.includes('--stub') ? devEntries : buildEntries
+import { alias, defineBuildConfig, entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-
-  entries: [{
-    builder: 'mkdist',
-    input: './src/',
-    outDir: './dist/',
-  }],
+  entries,
 
   externals: [
     '@dinero.js/core',
