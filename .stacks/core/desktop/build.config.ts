@@ -10,7 +10,6 @@ const buildEntries = [{
   input: './src',
   outDir: './dist',
 }]
-
 const entries: BuildConfig['entries'] = process.env.npm_lifecycle_script?.includes('--stub')
   ? devEntries
   : buildEntries
@@ -18,7 +17,6 @@ const entries: BuildConfig['entries'] = process.env.npm_lifecycle_script?.includ
 export default defineBuildConfig({
   alias,
   entries,
-
   clean: false,
   declaration: true,
 })
