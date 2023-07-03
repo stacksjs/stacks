@@ -2,7 +2,7 @@
   "name": "@stacksjs/tinker",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks way to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -52,7 +52,7 @@
     "tsx": "^3.12.7"
   },
   "devDependencies": {
-    "typescript": "^5.1.5",
+    "typescript": "^5.1.6",
     "unbuild": "^1.2.1"
   }
 }

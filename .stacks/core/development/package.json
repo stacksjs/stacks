@@ -2,7 +2,7 @@
   "name": "@stacksjs/development",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "typescript": "^5.1.5",
+    "typescript": "^5.1.6",
     "unbuild": "^1.2.1"
   },
   "dependencies": {

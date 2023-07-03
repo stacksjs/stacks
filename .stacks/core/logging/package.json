@@ -2,7 +2,7 @@
   "name": "@stacksjs/logging",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -54,7 +54,7 @@
     "vue-ray": "^1.17.4"
   },
   "devDependencies": {
-    "typescript": "^5.1.5",
+    "typescript": "^5.1.6",
     "unbuild": "^1.2.1"
   }
 }
