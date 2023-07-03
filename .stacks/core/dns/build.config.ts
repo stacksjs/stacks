@@ -13,6 +13,6 @@ export default defineBuildConfig({
     '@stacksjs/config',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

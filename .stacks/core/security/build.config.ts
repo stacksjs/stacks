@@ -16,6 +16,6 @@ export default defineBuildConfig({
     'js-base64',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

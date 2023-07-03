@@ -11,6 +11,6 @@ export default defineBuildConfig({
     emitCJS: true,
   },
   declaration: true,
-  clean: true,
+  clean: false,
 
 })

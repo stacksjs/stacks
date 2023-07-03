@@ -16,6 +16,6 @@ export default defineBuildConfig({
     '@stacksjs/types',
   ],
 
-  clean: true,
+  clean: false,
   declaration: false, // todo: this should be set to true
 })

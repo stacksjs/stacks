@@ -12,6 +12,6 @@ export default defineBuildConfig({
     'vitepress',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

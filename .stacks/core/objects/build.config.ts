@@ -14,6 +14,6 @@ export default defineBuildConfig({
     '@stacksjs/validation',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

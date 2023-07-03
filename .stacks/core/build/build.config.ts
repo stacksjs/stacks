@@ -22,6 +22,6 @@ export default defineBuildConfig({
     'picocolors',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

@@ -8,6 +8,6 @@ export default defineBuildConfig({
     './src/unocss',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

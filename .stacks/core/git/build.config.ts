@@ -12,6 +12,6 @@ export default defineBuildConfig({
     },
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

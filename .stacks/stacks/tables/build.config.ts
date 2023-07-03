@@ -10,5 +10,5 @@ export default defineBuildConfig({
   externals: ['chalk'],
 
   declaration: true,
-  clean: true,
+  clean: false,
 })

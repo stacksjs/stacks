@@ -12,6 +12,6 @@ export default defineBuildConfig({
     'vue-router',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

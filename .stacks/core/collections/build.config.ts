@@ -6,6 +6,6 @@ export default defineBuildConfig({
     './src/index',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

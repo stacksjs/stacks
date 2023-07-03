@@ -13,6 +13,6 @@ export default defineBuildConfig({
     'virtual:pwa-register',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })

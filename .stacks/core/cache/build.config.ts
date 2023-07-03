@@ -10,6 +10,6 @@ export default defineBuildConfig({
     './src/drivers/upstash',
   ],
 
-  clean: true,
+  clean: false,
   declaration: true,
 })
