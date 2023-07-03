@@ -2,7 +2,7 @@
   "name": "@stacksjs/cache",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks way of caching.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,7 +47,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.360.0",
+    "@aws-sdk/client-dynamodb": "^3.363.0",
     "@stacksjs/config": "workspace:*",
     "@types/memjs": "^1.3.0",
     "memcached": "^2.2.2",

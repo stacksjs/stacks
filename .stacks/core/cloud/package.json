@@ -2,7 +2,7 @@
   "name": "@stacksjs/cloud",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,16 +47,16 @@
   },
   "peerDependencies": {
     "@aws-cdk/core": "^1.203.0",
-    "@aws-lambda-powertools/logger": "^1.10.0",
-    "@aws-lambda-powertools/metrics": "^1.10.0",
-    "@aws-lambda-powertools/tracer": "^1.10.0",
+    "@aws-lambda-powertools/logger": "^1.11.0",
+    "@aws-lambda-powertools/metrics": "^1.11.0",
+    "@aws-lambda-powertools/tracer": "^1.11.0",
     "@stacksjs/dns": "workspace:*"
   },
   "dependencies": {
     "@aws-cdk/core": "^1.203.0",
-    "@aws-lambda-powertools/logger": "^1.10.0",
-    "@aws-lambda-powertools/metrics": "^1.10.0",
-    "@aws-lambda-powertools/tracer": "^1.10.0",
+    "@aws-lambda-powertools/logger": "^1.11.0",
+    "@aws-lambda-powertools/metrics": "^1.11.0",
+    "@aws-lambda-powertools/tracer": "^1.11.0",
     "@stacksjs/dns": "workspace:*"
   },
   "devDependencies": {

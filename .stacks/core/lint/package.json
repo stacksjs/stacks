@@ -2,7 +2,7 @@
   "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,11 +45,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.44.1",
+    "@ow3/eslint-config": "^0.44.2",
     "@types/eslint": "^8.40.2",
-    "eslint": "^8.43.0",
+    "eslint": "^8.44.0",
     "lint-staged": "^13.2.3",
-    "publint": "^0.1.12"
+    "publint": "^0.1.15"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

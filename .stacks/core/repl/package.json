@@ -2,7 +2,7 @@
   "name": "@stacksjs/repl",
   "type": "module",
   "version": "0.57.2",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "A Stacks optimized TS & Vue REPL.",
   "author": "Chris Breuer",
   "license": "MIT",

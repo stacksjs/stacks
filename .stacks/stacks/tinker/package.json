@@ -2,7 +2,7 @@
   "name": "@stacksjs/tinker-app",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "description": "All you need to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
