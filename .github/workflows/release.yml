@@ -35,12 +35,12 @@ jobs:
         run: pnpm --filter='./.stacks' build
 
       - name: Publish framework
-        run: pnpm --filter='./.stacks' release:framework
+        run: pnpm --filter='./.stacks' publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries
-        run: pnpm --filter='./.stacks' release:dummy-libs
+        run: pnpm --filter='./.stacks' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
