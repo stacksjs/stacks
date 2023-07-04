@@ -1,5 +1,6 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { frameworkVersion } from '@stacksjs/utils'
+import { isString } from '@stacksjs/validation'
 import { log } from './console'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'

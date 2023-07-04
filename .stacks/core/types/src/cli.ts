@@ -273,12 +273,12 @@ export const enum Action {
   BuildFunctionLib = 'build-function-lib',
   Changelog = 'changelog',
   Clean = 'clean',
-  DevComponents = 'dev/components', // ✅
+  DevComponents = 'dev/components',
   Dev = 'dev/index',
   DevDocs = 'dev/docs',
-  Deploy = 'deploy',
+  Deploy = 'deploy/index',
   Fresh = 'fresh',
-  GenerateLibraryEntries = 'generate/lib-entries', // ✅
+  GenerateLibraryEntries = 'generate/lib-entries',
   Inspire = 'inspire',
   KeyGenerate = 'key-generate',
   MakeNotification = 'make-notification',
