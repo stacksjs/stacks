@@ -1,11 +1,8 @@
-import { parseOptions } from '@stacksjs/cli'
+import { parseArgs } from '@stacksjs/cli'
 
-const options = parseOptions()
+const args = parseArgs()
 
 // eslint-disable-next-line no-console
-console.log('options', options)
+console.log('args', args)
+
 // TODO: create this action
-// await runCommands([
-//   'pnpm buddy clean',
-//   'pnpm install',
-// ], { cwd: frameworkPath(), verbose: true })

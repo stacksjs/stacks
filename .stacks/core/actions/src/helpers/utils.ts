@@ -37,6 +37,8 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
+  // eslint-disable-next-line no-console
+  console.log('opts', opts, options)
   const cmd = `npx tsx ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
