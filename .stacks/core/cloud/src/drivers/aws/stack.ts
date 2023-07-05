@@ -1,8 +1,11 @@
-import type { Construct, StackProps } from '@aws-cdk/core'
-import { Stack } from '@aws-cdk/core'
+import type { StackProps } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import { Stack } from 'aws-cdk-lib'
 import { DnsStack } from '@stacksjs/dns'
 
-export class ParentStack extends Stack {
+// import { Stack } from '@aws-cdk/core'
+
+export class CloudStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 

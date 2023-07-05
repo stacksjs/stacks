@@ -46,10 +46,13 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@aws-cdk/aws-route53": "^1.203.0"
+  "peerDependencies": {
+    "aws-cdk-lib": "^2.86.0",
+    "constructs": "^10.2.69"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "aws-cdk-lib": "^2.86.0",
+    "constructs": "^10.2.69"
   }
 }

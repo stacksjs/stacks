@@ -1,8 +1,11 @@
-import { parseArgs } from '@stacksjs/cli'
+import type { DeployOptions } from '@stacksjs/types'
+import { parseOptions } from '@stacksjs/cli'
 
-const args = parseArgs()
+const options: DeployOptions = parseOptions()
 
-// eslint-disable-next-line no-console
-console.log('args', args)
+if (options.domains) {
+  // deploy the config APP_URL to AWS
+
+}
 
 // TODO: create this action
