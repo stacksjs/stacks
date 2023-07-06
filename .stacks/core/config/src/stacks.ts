@@ -2,7 +2,7 @@ import { loadConfig } from 'c12'
 import { readPackageJson } from '@stacksjs/storage'
 import { frameworkPath } from '@stacksjs/path'
 import type { ResolvedStacksOptions, StacksOptions as StacksConfig } from '@stacksjs/types'
-import { app, cache, cdn, cli, database, debug, dns, docs, email, git, hashing, library, notification, payment, searchEngine, services, ui } from './defaults'
+import { app, cache, cdn, cli, database, dependencies, dns, docs, email, git, hashing, library, notification, payment, searchEngine, services, storage, ui } from './defaults'
 
 export async function packageManager() {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
@@ -15,7 +15,7 @@ export const configDefaults: ResolvedStacksOptions = {
   cdn,
   cli,
   database,
-  debug,
+  dependencies,
   dns,
   docs,
   email,
@@ -26,7 +26,7 @@ export const configDefaults: ResolvedStacksOptions = {
   payment,
   searchEngine,
   services,
-  // storage,
+  storage,
   ui,
 }
 

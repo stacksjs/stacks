@@ -1,33 +1,34 @@
 import { log } from '@stacksjs/logging'
-import { seed } from '@stacksjs/database'
 import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
-import { runNpmScript } from '@stacksjs/utils'
+import { dumpYaml, runNpmScript } from '@stacksjs/utils'
+import { files } from '@stacksjs/storage'
 import { runCommand } from '@stacksjs/cli'
 import { frameworkPath, projectPath } from '@stacksjs/path'
+import { dependencies } from '@stacksjs/config'
 import { runAction } from '../helpers'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)
-    await types(options)
+    await generateTypes(options)
 
   else if (options?.entries)
-    await libEntries(options)
+    await generateLibEntries(options)
 
   else if (options?.webTypes)
-    await webTypes(options)
+    await generateWebTypes(options)
 
   else if (options?.customData)
-    await vsCodeCustomData(options)
+    await generateVsCodeCustomData(options)
 
   else if (options?.ideHelpers)
-    await ideHelpers(options)
+    await generateIdeHelpers(options)
 
   else if (options?.vueCompatibility)
-    await vueCompat(options)
+    await generateVueCompat(options)
 
   else if (options?.componentMeta)
-    await componentMeta(options)
+    await generateComponentMeta(options)
 }
 
 /**
@@ -39,7 +40,7 @@ export async function generate(options: GeneratorOptions) {
   return invoke(options)
 }
 
-export async function libEntries(options: GeneratorOptions) {
+export async function generateLibEntries(options: GeneratorOptions) {
   const result = await runAction(Action.GenerateLibraryEntries, { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
@@ -50,7 +51,7 @@ export async function libEntries(options: GeneratorOptions) {
   log.success('Library entry points generated successfully')
 }
 
-export async function vueCompat(options?: GeneratorOptions) {
+export async function generateVueCompat(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateVueCompat, options)
 
   if (result.isErr()) {
@@ -61,7 +62,7 @@ export async function vueCompat(options?: GeneratorOptions) {
   log.success('Libraries are now Vue 2 & 3 compatible')
 }
 
-export async function webTypes(options?: GeneratorOptions) {
+export async function generateWebTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
 
   if (result.isErr()) {
@@ -72,7 +73,7 @@ export async function webTypes(options?: GeneratorOptions) {
   log.success('Successfully generated the web-types.json file')
 }
 
-export async function vsCodeCustomData(options?: GeneratorOptions) {
+export async function generateVsCodeCustomData(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
 
   if (result.isErr()) {
@@ -84,7 +85,7 @@ export async function vsCodeCustomData(options?: GeneratorOptions) {
   log.success('Successfully generated the custom-elements.json file')
 }
 
-export async function ideHelpers(options?: GeneratorOptions) {
+export async function generateIdeHelpers(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateIdeHelpers, options)
 
   if (result.isErr()) {
@@ -96,7 +97,7 @@ export async function ideHelpers(options?: GeneratorOptions) {
   log.success('Successfully generated IDE helpers')
 }
 
-export async function componentMeta(options?: GeneratorOptions) {
+export async function generateComponentMeta(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
 
   if (result.isErr()) {
@@ -108,7 +109,7 @@ export async function componentMeta(options?: GeneratorOptions) {
   log.success('Successfully generated component meta information')
 }
 
-export async function types(options?: GeneratorOptions) {
+export async function generateTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateTypes, options)
 
   if (result.isErr()) {
@@ -119,7 +120,7 @@ export async function types(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export async function migrations() {
+export async function generateMigrations() {
   const path = frameworkPath('database/schema.prisma')
 
   // await migrate(path, { database: database.driver })
@@ -129,6 +130,19 @@ export async function migrations() {
   log.success('Successfully updated migrations')
 }
 
-export async function seeder() {
-  await seed()
+export async function generateTeaConfig() {
+  // define your dependencies
+  const deps = dependencies
+
+  // convert the object to yaml
+  const yamlStr = dumpYaml({ deps })
+
+  // write the yaml string to a file in your project root
+  files.put(projectPath('./tea.yaml'), yamlStr)
+
+  log.success('Successfully generated ./tea.yaml')
+}
+
+export async function generateSeeder() {
+  // await seed()
 }

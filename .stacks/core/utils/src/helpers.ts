@@ -2,8 +2,8 @@ import type { AddressInfo } from 'node:net'
 import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
-import { app, ui } from '@stacksjs/config'
+import { log, runCommand, spawn } from '@stacksjs/cli'
+import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
 import { semver } from './versions'
 
@@ -19,14 +19,17 @@ export async function isProjectCreated() {
 }
 
 export async function installIfVersionMismatch() {
-  const dependenciesYaml = storage.fs.readFileSync(projectPath('tea.yaml'), 'utf8')
-  const dependencies = parseYaml(dependenciesYaml).dependencies
+  const deps = dependencies
 
-  const requiredNodeVersion = dependencies['nodejs.org']
-  const requiredPnpmVersion = dependencies['pnpm.io']
-
+  const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
+  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.5'
   const installedNodeVersion = process.version
-  const installedPnpmVersion = execSync('pnpm -v').trim()
+  const result = await runCommand('pnpm -v')
+
+  if (result.isErr())
+    throw new Error('pnpm is not installed')
+
+  const installedPnpmVersion = result.value
 
   if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
     log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). One moment...`)
@@ -167,3 +170,4 @@ export function isIpv6(address: AddressInfo): boolean {
 }
 
 // export { SemVer } from 'semver'
+export { dump as dumpYaml, load as loadYaml } from 'js-yaml'

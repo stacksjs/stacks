@@ -1,5 +1,6 @@
 import { type DocsConfig } from '@stacksjs/types'
-import type { PluginOption } from 'vite'
+
+// import type { PluginOption } from 'vite'
 import { frameworkPath } from '@stacksjs/path'
 import services from './services'
 
@@ -16,9 +17,9 @@ export default {
       port: 3335,
     },
     root: frameworkPath('docs'),
-    plugins: [
-      CustomHmr(),
-    ],
+    // plugins: [
+    //   CustomHmr(),
+    // ],
   },
   outDir: frameworkPath('docs/dist'),
   lang: 'en-US',
@@ -58,26 +59,26 @@ export default {
   },
 } satisfies DocsConfig
 
-function CustomHmr(): PluginOption {
-  return {
-    name: 'custom-hmr',
-    enforce: 'post',
-    // HMR
-    handleHotUpdate({ file, server }) {
-      // eslint-disable-next-line no-console
-      console.log('file', file)
-      // eslint-disable-next-line no-console
-      console.log('server', server)
-
-      // console.log('reloading json file...')
-
-      server.ws.send({
-        type: 'full-reload',
-        path: '*',
-      })
-    },
-  }
-}
+// function CustomHmr(): PluginOption {
+//   return {
+//     name: 'custom-hmr',
+//     enforce: 'post',
+//     // HMR
+//     handleHotUpdate({ file, server }) {
+//       // eslint-disable-next-line no-console
+//       console.log('file', file)
+//       // eslint-disable-next-line no-console
+//       console.log('server', server)
+//
+//       // console.log('reloading json file...')
+//
+//       server.ws.send({
+//         type: 'full-reload',
+//         path: '*',
+//       })
+//     },
+//   }
+// }
 
 function nav() {
   return [

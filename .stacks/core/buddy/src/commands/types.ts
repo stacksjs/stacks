@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { types as generateTypes } from '@stacksjs/actions/generate'
+import { generateTypes } from '@stacksjs/actions/generate'
 
 export async function types(buddy: CLI) {
   const descriptions = {

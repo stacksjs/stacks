@@ -3,7 +3,7 @@ import type {
   CacheOptions,
   CdnOptions,
   DatabaseOptions,
-  DebugOptions,
+  DependenciesOptions,
   DnsOptions,
   DocsOptions,
   EmailOptions,
@@ -14,6 +14,7 @@ import type {
   PaymentOptions,
   SearchEngineOptions,
   ServicesOptions,
+  StorageOptions,
   UiOptions,
   UserCliOptions,
 } from './'
@@ -72,13 +73,13 @@ export interface StacksOptions {
   database: Partial<DatabaseOptions>
 
   /**
-   * **Debug Options**
+   * **Database Options**
    *
-   * This configuration defines all of your Debug options. Because Stacks is fully-typed, you
+   * This configuration defines all of your Database options. Because Stacks is fully-typed, you
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  debug: Partial<DebugOptions>
+  dependencies: Partial<DependenciesOptions>
 
   /**
    * **DNS Options**
@@ -177,7 +178,7 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  // storage: Partial<StorageOptions>
+  storage: Partial<StorageOptions>
 
   /**
    * **UI Options**

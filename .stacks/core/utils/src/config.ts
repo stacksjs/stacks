@@ -4,7 +4,7 @@ import type {
   CdnOptions,
   CronJobOptions,
   DatabaseOptions,
-  DebugOptions,
+  DependenciesOptions,
   DnsOptions,
   EmailOptions,
   Events,
@@ -50,11 +50,15 @@ export function defineJobsConfig(config: Partial<JobOptions>[]) {
   return config
 }
 
-export function defineDatabase(config: Partial<DatabaseOptions>) {
+export function defineDeps(config: Partial<DependenciesOptions>) {
   return config
 }
 
-export function defineDebugConfig(config: Partial<DebugOptions>) {
+export function defineDependencies(config: Partial<DependenciesOptions>) {
+  return config
+}
+
+export function defineDatabase(config: Partial<DatabaseOptions>) {
   return config
 }
 

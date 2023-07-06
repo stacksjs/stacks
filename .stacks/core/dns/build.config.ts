@@ -5,8 +5,6 @@ export default defineBuildConfig({
   entries,
 
   externals: [
-    '@aws-cdk/core',
-    '@aws-cdk/aws-route53',
     '@stacksjs/config',
   ],
 

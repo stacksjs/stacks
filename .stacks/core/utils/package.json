@@ -29,9 +29,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     }
   },
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -64,6 +66,7 @@
     "defu": "^6.1.2",
     "dinero.js": "2.0.0-alpha.14",
     "fast-glob": "^3.3.0",
+    "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "p-limit": "^4.0.0",
     "rimraf": "^5.0.1",
@@ -88,6 +91,7 @@
     "detect-newline": "^4.0.0",
     "dinero.js": "2.0.0-alpha.14",
     "fast-glob": "^3.3.0",
+    "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "p-limit": "^4.0.0",
     "perfect-debounce": "^1.0.0",

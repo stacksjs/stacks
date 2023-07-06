@@ -189,7 +189,6 @@ declare global {
   const defineComponent: typeof import('vue')['defineComponent']
   const defineCronJobsConfig: typeof import('./core/utils/src/config')['defineCronJobsConfig']
   const defineDatabase: typeof import('./core/utils/src/config')['defineDatabase']
-  const defineDebugConfig: typeof import('./core/utils/src/config')['defineDebugConfig']
   const defineDns: typeof import('./core/utils/src/config')['defineDns']
   const defineEmailConfig: typeof import('./core/utils/src/config')['defineEmailConfig']
   const defineEvents: typeof import('./core/utils/src/config')['defineEvents']
@@ -1052,7 +1051,6 @@ declare module 'vue' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineCronJobsConfig: UnwrapRef<typeof import('./core/utils/src/config')['defineCronJobsConfig']>
     readonly defineDatabase: UnwrapRef<typeof import('./core/utils/src/config')['defineDatabase']>
-    readonly defineDebugConfig: UnwrapRef<typeof import('./core/utils/src/config')['defineDebugConfig']>
     readonly defineDns: UnwrapRef<typeof import('./core/utils/src/config')['defineDns']>
     readonly defineEmailConfig: UnwrapRef<typeof import('./core/utils/src/config')['defineEmailConfig']>
     readonly defineEvents: UnwrapRef<typeof import('./core/utils/src/config')['defineEvents']>

@@ -3,8 +3,6 @@ import type { Construct } from 'constructs'
 import { Stack } from 'aws-cdk-lib'
 import { DnsStack } from '@stacksjs/dns'
 
-// import { Stack } from '@aws-cdk/core'
-
 export class CloudStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)

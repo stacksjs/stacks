@@ -17,4 +17,9 @@ export const entries: BuildConfig['entries'] = process.env.npm_lifecycle_script?
   ? devEntries
   : buildEntries
 
+export const withCjsEntries = [{
+  input: './src/index',
+  outDir: './dist',
+}]
+
 export type { BuildConfig }

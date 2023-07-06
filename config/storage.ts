@@ -1,4 +1,5 @@
 import { defineStorage } from '@stacksjs/utils'
+import app from './app'
 
 /**
  * **Storage Options**
@@ -9,4 +10,5 @@ import { defineStorage } from '@stacksjs/utils'
  */
 export default defineStorage({
   driver: 's3',
+  name: app.name || 'my-custom-bucket-name',
 })

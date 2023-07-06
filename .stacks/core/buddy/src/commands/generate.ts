@@ -1,7 +1,18 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
-import { componentMeta, ideHelpers, libEntries, migrations, invoke as startGenerationProcess, types, vsCodeCustomData, vueCompat, webTypes } from '@stacksjs/actions/generate'
+import {
+  generateComponentMeta,
+  generateIdeHelpers,
+  generateLibEntries,
+  generateMigrations,
+  generateTeaConfig,
+  generateTypes,
+  generateVsCodeCustomData,
+  generateVueCompat,
+  generateWebTypes,
+  invoke as startGenerationProcess,
+} from '@stacksjs/actions/generate'
 
 export async function generate(buddy: CLI) {
   const descriptions = {
@@ -13,6 +24,7 @@ export async function generate(buddy: CLI) {
     ideHelpers: 'Generate IDE helpers',
     vueCompat: 'Generate Vue 2 & 3 compatibility',
     componentMeta: 'Generate component meta information',
+    tea: 'Generate the Tea configuration file',
     select: 'What are you trying to generate?',
     verbose: 'Enable verbose output',
   }
@@ -26,6 +38,7 @@ export async function generate(buddy: CLI) {
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-v, --vue-compatibility', descriptions.vueCompat)
     .option('-c, --component-meta', descriptions.componentMeta)
+    .option('-tc, --tea-config', descriptions.tea)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       if (hasNoOptions(options)) {
@@ -59,55 +72,62 @@ export async function generate(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
-      await types(options)
+      await generateTypes(options)
     })
 
   buddy
     .command('generate:entries', descriptions.entries)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await libEntries(options)
+      await generateLibEntries(options)
     })
 
   buddy
     .command('generate:vue-compatibility', descriptions.vueCompat)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await vueCompat(options)
+      await generateVueCompat(options)
     })
 
   buddy
     .command('generate:web-types', descriptions.webTypes)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await webTypes(options)
+      await generateWebTypes(options)
     })
 
   buddy
     .command('generate:vscode-custom-data', descriptions.customData)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await vsCodeCustomData(options)
+      await generateVsCodeCustomData(options)
     })
 
   buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await ideHelpers(options)
+      await generateIdeHelpers(options)
     })
 
   buddy
     .command('generate:component-meta', descriptions.componentMeta)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      await componentMeta(options)
+      await generateComponentMeta(options)
+    })
+
+  buddy
+    .command('generate:tea-config', descriptions.tea)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async () => {
+      await generateTeaConfig()
     })
 
   buddy
     .command('generate:migrations', 'Generate Migrations')
     .action(async () => {
-      await migrations()
+      await generateMigrations()
     })
 }
 
