@@ -1,6 +1,6 @@
-import {dirname} from "@stacksjs/path";
-import {fileURLToPath} from "node:url";
-import {fs} from "@stacksjs/storage/index";
+import { fileURLToPath } from 'node:url'
+import { dirname } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
@@ -8,14 +8,17 @@ export const _dirname = typeof __dirname !== 'undefined'
 
 export function updateConfigFile(filePath: string, newConfig: Record<string, unknown>): Promise<void> {
   return new Promise((resolve, reject) => {
-    const config = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, unknown>;
+    const config = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, unknown>
 
-    for (const key in newConfig) {
-      config[key] = newConfig[key];
+    for (const key in newConfig)
+      config[key] = newConfig[key]
+
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(config, null, 2))
+      resolve()
     }
-
-    fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
-
-    resolve();
+    catch (error) {
+      reject(error)
+    }
   })
 }

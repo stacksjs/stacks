@@ -1,8 +1,8 @@
-import { alias, defineBuildConfig, entries } from '@stacksjs/development'
+import { alias, defineBuildConfig, withCjsEntries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-  entries,
+  entries: withCjsEntries,
 
   externals: [
     '@novu/stateless',
@@ -37,6 +37,11 @@ export default defineBuildConfig({
     'unplugin-vue-components',
     'yaml',
   ],
+
+  rollup: {
+    alias,
+    inlineDependencies: true,
+  },
 
   declaration: true,
   clean: false,

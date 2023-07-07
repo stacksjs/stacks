@@ -69,10 +69,8 @@ export interface CacheOptions {
       port: number
     }
 
-    memcached?: {
-    }
+    memcached?: object
 
-    dynamodb?: {
-    }
+    dynamodb?: object
   }
 }

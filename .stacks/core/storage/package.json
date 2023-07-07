@@ -6,12 +6,6 @@
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "license": "MIT",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
-  },
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/storage#readme",
   "repository": {
@@ -32,6 +26,13 @@
     "functions",
     "stacks"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./*": "./*"
+  },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -49,8 +50,8 @@
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
     "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.7.0"
   },

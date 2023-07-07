@@ -1,5 +1,5 @@
-import fs from "fs-extra"
-import { contains } from "@stacksjs/arrays"
+import fs from 'fs-extra'
+import { contains } from '@stacksjs/arrays'
 import { join } from '@stacksjs/path'
 
 /**

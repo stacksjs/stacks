@@ -1,8 +1,8 @@
-import type { JsonFile, TextFile, PackageJson } from '@stacksjs/types'
-import { fs } from "./fs";
+import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
-import { componentsPath, functionsPath, projectPath, join, dirname } from '@stacksjs/path'
+import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
+import { fs } from './fs'
 
 /**
  * Reads a JSON file and returns the parsed data.
@@ -113,6 +113,7 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
           deleteFiles(p, exclude)
       }
 
+      // eslint-disable-next-line max-statements-per-line
       else if (!contains(p, exclude)) { fs.rmSync(p) }
     })
   }
@@ -137,7 +138,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
 }
 
 export function put(path: string, contents: string) {
-  const dirPath = dirname(path);
+  const dirPath = dirname(path)
 
   if (!fs.existsSync(dirPath))
     fs.mkdirSync(dirPath, { recursive: true })

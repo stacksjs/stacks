@@ -50,7 +50,7 @@ export interface DependenciesOptions {
    * @default '^8.0.33'
    * @link https://mysql.org
    */
-  'mysql.org'?: string | '^8.0.33'
+  'mysql.com'?: string | '^8.0.33'
 
   /**
    * **MariaDB**

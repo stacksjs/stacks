@@ -6,4 +6,4 @@ dependencies:
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.12.7
-  mysql.org: ^8.0.33
+#  mysql.com: ^8.0.33

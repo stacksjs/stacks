@@ -20,22 +20,22 @@ Now, you can use it in your project:
 ```js
 import {
   _dirname,
-  readJsonFile,
-  writeJsonFile,
-  readTextFile,
-  writeTextFile,
-  isFolder,
-  isFile,
-  hasFiles,
-  hasComponents,
-  hasFunctions,
   copyFolder,
-  deleteFolder,
-  deleteFiles,
   deleteEmptyFolders,
+  deleteFiles,
+  deleteFolder,
   doesFolderExist,
-  fs, // fs-extra Node module
   fileURLToPath,
+  fs, // fs-extra Node module
+  hasComponents,
+  hasFiles,
+  hasFunctions,
+  isFile,
+  isFolder,
+  readJsonFile,
+  readTextFile,
+  writeJsonFile,
+  writeTextFile,
 } from '@stacksjs/storage'
 
 // wip

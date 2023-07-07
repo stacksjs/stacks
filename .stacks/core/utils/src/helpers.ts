@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net'
 import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { log, runCommand, spawn } from '@stacksjs/cli'
+import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
 import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
 import { semver } from './versions'
@@ -24,12 +24,12 @@ export async function installIfVersionMismatch() {
   const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
   const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.5'
   const installedNodeVersion = process.version
-  const result = await runCommand('pnpm -v')
+  const installedPnpmVersion = execSync('pnpm --version').trim()
 
-  if (result.isErr())
-    throw new Error('pnpm is not installed')
+  // if (result.isErr())
+  //   throw new Error('pnpm is not installed')
 
-  const installedPnpmVersion = result.value
+  // const installedPnpmVersion = result.value
 
   if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
     log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). One moment...`)

@@ -5,11 +5,12 @@ import { storage } from '@stacksjs/config'
 
 export class StorageStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: NestedStackProps) {
-    super(scope, id, props);
+    super(scope, id, props)
 
     if (!storage.name)
-      throw new Error('./config storage.name is not defined');
+      throw new Error('./config storage.name is not defined')
 
-    new s3.Bucket(this, storage.name);
+    // eslint-disable-next-line no-new
+    new s3.Bucket(this, storage.name)
   }
 }

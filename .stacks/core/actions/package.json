@@ -45,10 +45,6 @@
       "types": "./dist/build/stacks.d.ts",
       "import": "./dist/build/stacks.mjs"
     },
-    "./deploy/domains": {
-      "types": "./dist/deploy/domains.d.ts",
-      "import": "./dist/deploy/domains.mjs"
-    },
     "./dev": {
       "types": "./dist/dev/index.d.ts",
       "import": "./dist/dev/index.mjs"
