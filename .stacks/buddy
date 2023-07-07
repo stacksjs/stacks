@@ -1,0 +1,8 @@
+#!/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+case $(uname) in
+*CYGWIN*) basedir=$(cygpath -w "$basedir") ;;
+esac
+
+exec tsx "$basedir/core/buddy/src/cli.ts" "$@"

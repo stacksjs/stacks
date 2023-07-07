@@ -1,6 +1,5 @@
 .nitro
 .output
-libs/components/certs/*
 libs/components/vue/.vite-inspect
 libs/entries/*.ts
 **/dist/*.cjs

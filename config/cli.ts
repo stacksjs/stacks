@@ -1,4 +1,4 @@
-import { defineCli } from '@stacksjs/utils'
+import { defineCli } from 'stacks/core/utils/src'
 
 /**
  * **CLI Configuration**

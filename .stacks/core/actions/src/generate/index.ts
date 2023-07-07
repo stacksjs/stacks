@@ -140,7 +140,7 @@ export async function generateTeaConfig() {
   // write the yaml string to a file in your project root
   files.put(projectPath('./tea.yaml'), yamlStr)
 
-  log.success('Successfully generated ./tea.yaml')
+  log.success('Successfully generated `./tea.yaml` based on your `./config/deps` file')
 }
 
 export async function generateSeeder() {

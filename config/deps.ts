@@ -1,4 +1,4 @@
-import { defineDependencies } from '@stacksjs/utils'
+import { defineDependencies } from 'stacks/core/utils/src'
 
 /**
  * **Dependency Manager**
@@ -12,8 +12,8 @@ import { defineDependencies } from '@stacksjs/utils'
 export default defineDependencies({
   'nodejs.org': '18.16.1',
   'npmjs.com': '9.7.2',
-  'pnpm.io': '8.6.5',
-  'sqlite.org': '3.42.0', //  you may also yse 'mysql.org': '8.0.33' and/or 'mariadb.org': '10.6.5' and/or 'postgresql.org': '14.1'
+  'pnpm.io': '8.6.6',
+  'sqlite.org': '3.42.0', //  you may also yse 'mysql.org': '8.0.33', 'mariadb.org': '10.6.5' and/or 'postgresql.org': '14.1'
   'redis.io': '7.0.11',
   'aws.amazon.com/cli': '2.12.7',
 })

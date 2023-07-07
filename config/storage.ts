@@ -1,4 +1,4 @@
-import { defineStorage } from '@stacksjs/utils'
+import { defineStorage } from 'stacks/core/utils/src'
 import app from './app'
 
 /**

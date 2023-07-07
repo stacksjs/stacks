@@ -22,7 +22,7 @@ export async function installIfVersionMismatch() {
   const deps = dependencies
 
   const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
-  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.5'
+  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.6'
   const installedNodeVersion = process.version
   const installedPnpmVersion = execSync('pnpm --version').trim()
 
@@ -32,12 +32,12 @@ export async function installIfVersionMismatch() {
   // const installedPnpmVersion = result.value
 
   if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
-    log.error(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). One moment...`)
+    log.warn(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). Adding it to your environment. One moment...`)
     await runCommand(`tea +nodejs.org${requiredNodeVersion} >/dev/null 2>&1`)
   }
 
   if (!semver.satisfies(installedPnpmVersion, requiredPnpmVersion)) {
-    log.error(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). One moment...`)
+    log.warn(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). Adding it to your environment. One moment...`)
     await runCommand(`tea +pnpm.io${requiredPnpmVersion} >/dev/null 2>&1`)
   }
 }

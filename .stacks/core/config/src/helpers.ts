@@ -1,4 +1,4 @@
-import { loadConfig } from 'c12'
+import { loadConfig, watchConfig } from 'c12'
 import { readPackageJson } from '@stacksjs/storage'
 import { frameworkPath } from '@stacksjs/path'
 import type { ResolvedStacksOptions, StacksOptions as StacksConfig } from '@stacksjs/types'
@@ -46,3 +46,5 @@ export async function loadStacksConfig(overrides?: Partial<StacksConfig>, cwd = 
 export function defineStacksConfig(config: Partial<StacksConfig>) {
   return config
 }
+
+export { loadConfig, watchConfig }

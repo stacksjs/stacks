@@ -12,7 +12,7 @@ export interface DependenciesOptions {
    * @default '^18.16.1'
    * @link https://nodejs.org
    */
-  'nodejs.org'?: string | '^18.16.1'
+  'nodejs.org': string | '^18.16.1'
 
   /**
    * **NPM**
@@ -34,7 +34,7 @@ export interface DependenciesOptions {
    * @default '^8.6.5'
    * @link https://pnpm.io
    */
-  'pnpm.io'?: string | '^8.6.5'
+  'pnpm.io': string | '^8.6.5'
 
   /**
    * **SQLite**
