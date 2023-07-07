@@ -1,8 +1,4 @@
-import type {
-  VineBoolean as Boolean,
-  VineNumber as Number,
-  VineString as String,
-} from '@vinejs/vine'
+import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { Nullable, SearchEngineSettings } from './'
 
 export interface AuthOptions {}
@@ -52,7 +48,7 @@ export interface Fields {
     required?: boolean
     factory?: () => any
     validator?: {
-      rule: String | Number | Boolean | Date | Nullable<any>
+      rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
       message: string
     }
     // validation?: String | Number | Boolean | Date

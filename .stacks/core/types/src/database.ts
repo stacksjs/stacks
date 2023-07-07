@@ -23,8 +23,8 @@ export interface DatabaseOptions {
       prefix?: string
     }
 
-    planetscale: {}
-    postgres: {}
+    planetscale: object
+    postgres: object
   }
 
   migrations: string

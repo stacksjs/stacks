@@ -168,7 +168,7 @@ export interface ExpoPushNotificationOptions {
   }
   payload: {
     to: string[]
-    data: Object
+    data: object
     title: string
     body: string
     ttl: number
