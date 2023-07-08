@@ -62,7 +62,7 @@ export function autoImports(options?: AutoImportsOptions) {
     dirs: [
       p.resourcesPath('functions'),
       p.resourcesPath('components'),
-      p.projectPath('config'),
+      // p.projectPath('config'),
 
       // auto imported utilities start here
       p.aiPath('src'),

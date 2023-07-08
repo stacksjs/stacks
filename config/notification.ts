@@ -1,4 +1,4 @@
-import { defineNotification } from 'stacks/core/utils/src'
+import { defineNotification } from 'stacks/utils'
 
 /**
  * **Notification Configuration**

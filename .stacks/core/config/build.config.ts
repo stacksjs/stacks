@@ -1,8 +1,8 @@
-import { alias, defineBuildConfig, withCjsEntries } from '@stacksjs/development'
+import { alias, defineBuildConfig, withCjsEntries as entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
-  entries: withCjsEntries,
+  entries,
 
   externals: [
     '@novu/stateless',

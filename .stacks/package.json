@@ -35,6 +35,176 @@
     "javascript",
     "starter kit"
   ],
+  "exports": {
+    ".": {
+      "types": "./core/buddy/src/index.ts"
+    },
+    "./actions": {
+      "import": "./core/actions/src/index.ts"
+    },
+    "./ai": {
+      "import": "./core/ai/src/index.ts"
+    },
+    "./alias": {
+      "import": "./core/alias/src/index.ts"
+    },
+    "./analytics": {
+      "import": "./core/analytics/src/index.ts"
+    },
+    "./arrays": {
+      "import": "./core/arrays/src/index.ts"
+    },
+    "./auth": {
+      "import": "./core/auth/src/index.ts"
+    },
+    "./buddy": {
+      "import": "./core/buddy/src/index.ts"
+    },
+    "./build": {
+      "import": "./core/build/src/index.ts"
+    },
+    "./cache": {
+      "import": "./core/cache/src/index.ts"
+    },
+    "./chat": {
+      "import": "./core/chat/src/index.ts"
+    },
+    "./cli": {
+      "import": "./core/cli/src/index.ts"
+    },
+    "./collections": {
+      "import": "./core/collections/src/index.ts"
+    },
+    "./config": {
+      "import": "./core/config/src/index.ts"
+    },
+    "./database": {
+      "import": "./core/database/src/index.ts"
+    },
+    "./datetime": {
+      "import": "./core/datetime/src/index.ts"
+    },
+    "./desktop": {
+      "import": "./core/desktop/src/index.ts"
+    },
+    "./development": {
+      "import": "./core/development/src/index.ts"
+    },
+    "./dns": {
+      "import": "./core/dns/src/index.ts"
+    },
+    "./docs": {
+      "import": "./core/docs/src/index.ts"
+    },
+    "./email": {
+      "import": "./core/email/src/index.ts"
+    },
+    "./error-handling": {
+      "import": "./core/error-handling/src/index.ts"
+    },
+    "./events": {
+      "import": "./core/events/src/index.ts"
+    },
+    "./faker": {
+      "import": "./core/faker/src/index.ts"
+    },
+    "./git": {
+      "import": "./core/git/src/index.ts"
+    },
+    "./health": {
+      "import": "./core/health/src/index.ts"
+    },
+    "./lint": {
+      "import": "./core/lint/src/index.ts"
+    },
+    "./logging": {
+      "import": "./core/logging/src/index.ts"
+    },
+    "./modules/*": {
+      "import": "./core/modules/src/*"
+    },
+    "./notifications": {
+      "import": "./core/notifications/src/index.ts"
+    },
+    "./objects": {
+      "import": "./core/objects/src/index.ts"
+    },
+    "./orm": {
+      "import": "./core/orm/src/index.ts"
+    },
+    "./path": {
+      "import": "./core/path/src/index.ts"
+    },
+    "./payments": {
+      "import": "./core/payments/src/index.ts"
+    },
+    "./push": {
+      "import": "./core/push/src/index.ts"
+    },
+    "./query-builder": {
+      "import": "./core/query-builder/src/index.ts"
+    },
+    "./queue": {
+      "import": "./core/queue/src/index.ts"
+    },
+    "./realtime": {
+      "import": "./core/realtime/src/index.ts"
+    },
+    "./repl": {
+      "import": "./core/repl/src/index.ts"
+    },
+    "./router": {
+      "import": "./core/router/src/index.ts"
+    },
+    "./scheduler": {
+      "import": "./core/scheduler/src/index.ts"
+    },
+    "./search-engine": {
+      "import": "./core/search-engine/src/index.ts"
+    },
+    "./security": {
+      "import": "./core/security/src/index.ts"
+    },
+    "./server": {
+      "import": "./core/server/src/index.ts"
+    },
+    "./signals": {
+      "import": "./core/signals/src/index.ts"
+    },
+    "./slug": {
+      "import": "./core/slug/src/index.ts"
+    },
+    "./sms": {
+      "import": "./core/sms/src/index.ts"
+    },
+    "./storage": {
+      "import": "./core/storage/src/index.ts"
+    },
+    "./strings": {
+      "import": "./core/strings/src/index.ts"
+    },
+    "./testing": {
+      "import": "./core/testing/src/index.ts"
+    },
+    "./tinker": {
+      "import": "./core/tinker/src/index.ts"
+    },
+    "./types": {
+      "import": "./core/types/src/index.ts"
+    },
+    "./ui": {
+      "import": "./core/ui/src/index.ts"
+    },
+    "./utils": {
+      "import": "./core/utils/src/index.ts"
+    },
+    "./validation": {
+      "import": "./core/validation/src/index.ts"
+    },
+    "./vite-plugin": {
+      "import": "./core/vite-plugin/src/index.ts"
+    }
+  },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -184,7 +354,6 @@
     "@stacksjs/notifications": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
@@ -231,7 +400,6 @@
     "@stacksjs/notifications": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",

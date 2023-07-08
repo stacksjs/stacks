@@ -1,5 +1,5 @@
-import { defineChat } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineChat } from 'stacks/utils'
+import { env } from 'stacks/validation'
 
 /**
  * **Chat Configuration**

@@ -1,3 +1,4 @@
+// this files need to be built inline
 export { default as app } from '../../../../config/app'
 export { default as cache } from '../../../../config/cache'
 export { default as cdn } from '../../../../config/cdn'
@@ -14,5 +15,5 @@ export { default as payment } from '../../../../config/payment'
 export { default as notification } from '../../../../config/notification'
 export { default as searchEngine } from '../../../../config/search-engine'
 export { default as services } from '../../../../config/services'
-export { default as storage } from '../../../../config/storage'
+export { default as storageConfig } from '../../../../config/storage'
 export { default as ui } from '../../../../config/ui'

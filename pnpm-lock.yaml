@@ -101,9 +101,6 @@ importers:
       '@stacksjs/orm':
         specifier: workspace:*
         version: link:core/orm
-      '@stacksjs/pages':
-        specifier: workspace:*
-        version: link:core/pages
       '@stacksjs/path':
         specifier: workspace:*
         version: link:core/path
@@ -182,9 +179,6 @@ importers:
       '@stacksjs/logging':
         specifier: workspace:*
         version: link:../logging
-      '@stacksjs/pages':
-        specifier: workspace:*
-        version: link:../pages
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -357,9 +351,6 @@ importers:
       '@stacksjs/orm':
         specifier: workspace:*
         version: link:../orm
-      '@stacksjs/pages':
-        specifier: workspace:*
-        version: link:../pages
       '@stacksjs/path':
         specifier: workspace:*
         version: link:../path
@@ -1076,25 +1067,6 @@ importers:
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
-
-  .stacks/core/pages:
-    dependencies:
-      '@stacksjs/collections':
-        specifier: workspace:*
-        version: link:../collections
-      '@stacksjs/config':
-        specifier: workspace:*
-        version: link:../config
-      '@stacksjs/storage':
-        specifier: workspace:*
-        version: link:../storage
-    devDependencies:
-      '@stacksjs/development':
-        specifier: workspace:*
-        version: link:../development
-      '@stacksjs/utils':
-        specifier: workspace:*
-        version: link:../utils
 
   .stacks/core/path:
     dependencies:

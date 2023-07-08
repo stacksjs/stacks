@@ -1,4 +1,4 @@
-import { defineHashing } from 'stacks/core/utils/src'
+import { defineHashing } from 'stacks/utils'
 
 /**
  * **Hashing Configuration**

@@ -1,5 +1,5 @@
-import { defineDatabase } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineDatabase } from 'stacks/utils'
+import { env } from 'stacks/validation'
 
 /**
  * **Database Configuration**

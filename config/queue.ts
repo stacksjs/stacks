@@ -1,4 +1,4 @@
-import { defineQueue } from 'stacks/core/utils/src'
+import { defineQueue } from 'stacks/utils'
 
 /**
  * **Queue Options**

@@ -98,7 +98,6 @@
     "@stacksjs/notifications": "workspace:*",
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/pages": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",

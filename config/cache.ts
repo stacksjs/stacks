@@ -1,5 +1,5 @@
-import { defineCache } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineCache } from 'stacks/utils'
+import { env } from 'stacks/validation'
 
 /**
  * **Cache Configuration**

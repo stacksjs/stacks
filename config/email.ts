@@ -1,5 +1,5 @@
-import { defineEmailConfig } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineEmailConfig } from 'stacks/utils'
+import { env } from 'stacks/validation'
 import app from './app'
 
 /**

@@ -1,4 +1,4 @@
-import { defineDependencies } from 'stacks/core/utils/src'
+import { defineDependencies } from 'stacks/utils'
 
 /**
  * **Dependency Manager**

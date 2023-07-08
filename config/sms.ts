@@ -1,5 +1,5 @@
-import { defineSms } from 'stacks/core/utils/src'
-import { env } from 'stacks/core/validation/src'
+import { defineSms } from 'stacks/utils'
+import { env } from 'stacks/validation'
 
 /**
  * **SMS Configuration**

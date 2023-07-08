@@ -1,4 +1,4 @@
-import { definePayment } from 'stacks/core/utils/src'
+import { definePayment } from 'stacks/utils'
 
 /**
  * **Payment Configuration**
