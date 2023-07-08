@@ -50,14 +50,14 @@
     "@aws-lambda-powertools/metrics": "^1.11.0",
     "@aws-lambda-powertools/tracer": "^1.11.0",
     "@stacksjs/dns": "workspace:*",
-    "aws-cdk-lib": "^2.86.0"
+    "aws-cdk-lib": "^2.87.0"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^1.11.0",
     "@aws-lambda-powertools/metrics": "^1.11.0",
     "@aws-lambda-powertools/tracer": "^1.11.0",
     "@stacksjs/dns": "workspace:*",
-    "aws-cdk-lib": "^2.86.0"
+    "aws-cdk-lib": "^2.87.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -44,11 +44,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vue/repl": "^2.4.0",
+    "@vue/repl": "^2.5.2",
     "tsx": "^3.12.7"
   },
   "dependencies": {
-    "@vue/repl": "^2.4.0",
+    "@vue/repl": "^2.5.2",
     "tsx": "^3.12.7"
   },
   "devDependencies": {
