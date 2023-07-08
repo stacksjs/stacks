@@ -1,8 +1,8 @@
-import { type DocsConfig } from 'stacks/types/src'
+import { type DocsConfig } from 'stacks/types'
+import { frameworkPath } from 'stacks/path'
+import services from './services'
 
 // import type { PluginOption } from 'vite'
-import { frameworkPath } from '@stacksjs/path'
-import services from './services'
 
 /**
  * **Documentation Options**

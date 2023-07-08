@@ -5,6 +5,7 @@ export default defineBuildConfig({
   entries,
 
   externals: [
+    'stacks',
     '@novu/stateless',
     '@stacksjs/storage',
     '@stacksjs/path',
