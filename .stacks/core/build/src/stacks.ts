@@ -4,15 +4,13 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
-
-// import Layouts from 'vite-plugin-vue-layouts'
 import type { PluginOption } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
 
-export { resolve }
+// import Layouts from 'vite-plugin-vue-layouts'
 
 export function inspect(options?: InspectOptions) {
   return Inspect(options)
@@ -182,15 +180,15 @@ export function uiEngine(isWebComponent = false) {
   })
 }
 
-export function componentPreset(isWebComponent = false) {
-  return [
-    // inspect,
-    uiEngine(isWebComponent),
-    cssEngine(isWebComponent),
-    // autoImports,
-    // components,
-  ] satisfies PluginOption
-}
+// export function componentPreset(isWebComponent = false) {
+//   return [
+//     // inspect,
+//     uiEngine(isWebComponent),
+//     cssEngine(isWebComponent),
+//     // autoImports,
+//     // components,
+//   ] satisfies PluginOption
+// }
 
 // const pagesPreset = (isWebComponent = false) => <PluginOption>[
 //   //
@@ -199,3 +197,5 @@ export function componentPreset(isWebComponent = false) {
 // const functionsPreset = () => <PluginOption>[
 //   //
 // ]
+
+export { resolve }

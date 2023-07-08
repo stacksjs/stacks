@@ -15,13 +15,13 @@ fonts:
   - any: ['.stacks/fonts/**', '!.stacks/fonts/**/package.json']
 
 ide:
-  - any: ['.stacks/ide/**', '!.stacks/ide/package.json']
+  - any: ['.stacks/ide/**', '!.stacks/ide/package.json', '!.stacks/ide/**/package.json']
 
 jetbrains:
-  - .stacks/ide/jetbrains/**
+  - any: [ '.stacks/ide/jetbrains/**', '!.stacks/ide/jetbrains/package.json']
 
 vscode:
-  - .stacks/ide/vscode/**
+  - any: [ '.stacks/ide/vscode/**', '!.stacks/ide/vscode/package.json']
 
 libs:
   - any: ['.stacks/libs/**', '!.stacks/libs/**/package.json']
