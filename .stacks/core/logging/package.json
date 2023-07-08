@@ -44,12 +44,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "consola": "^3.2.2",
+    "consola": "^3.2.3",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },
   "dependencies": {
-    "consola": "^3.2.2",
+    "consola": "^3.2.3",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },
