@@ -1,5 +1,6 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 

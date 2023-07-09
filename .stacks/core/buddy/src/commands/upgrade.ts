@@ -2,6 +2,7 @@ import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
+import { isString } from '@stacksjs/validation'
 
 export async function upgrade(buddy: CLI) {
   const descriptions = {

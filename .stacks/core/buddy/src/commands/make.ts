@@ -2,6 +2,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompt, runCommand } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
+import { isString } from '@stacksjs/validation'
 import {
   createModel,
   createNotification,

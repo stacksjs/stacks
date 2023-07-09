@@ -1,6 +1,7 @@
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
+import { isString } from '@stacksjs/validation'
 import {
   generateComponentMeta,
   generateIdeHelpers,
