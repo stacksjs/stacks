@@ -795,8 +795,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0
       cz-git:
-        specifier: ^1.6.1
-        version: 1.6.1
+        specifier: ^1.7.0
+        version: 1.7.0
       giget:
         specifier: ^1.1.2
         version: 1.1.2
@@ -1077,8 +1077,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       kysely:
-        specifier: ^0.26.0
-        version: 0.26.0
+        specifier: ^0.26.1
+        version: 0.26.1
       mysql2:
         specifier: ^3.5.0
         version: 3.5.0
@@ -1387,8 +1387,8 @@ importers:
   .stacks/core/tinker:
     dependencies:
       '@vue/repl':
-        specifier: ^2.5.3
-        version: 2.5.3
+        specifier: ^2.5.5
+        version: 2.5.5
       tsx:
         specifier: ^3.12.7
         version: 3.12.7
@@ -7895,8 +7895,8 @@ packages:
       '@vue/shared': 3.3.4
     dev: false
 
-  /@vue/repl@2.5.3:
-    resolution: {integrity: sha512-t9Ny4/pzV0Rq1kEnh0WsauzZljajmdhsmYER8120uDv+zabJv/MMNytw/qdvEHMqkvwvoFA6E0sLSxgqpQpk3Q==}
+  /@vue/repl@2.5.5:
+    resolution: {integrity: sha512-wzhUz4kqVHarN1oykypFP8e81VLJMRd0Gtkwa945XbAI1mIGTVVyxgs93H6f73NHsHTD+S144UYLUPVCnlqjeQ==}
     requiresBuild: true
     dev: false
 
@@ -9860,8 +9860,9 @@ packages:
       - '@swc/wasm'
     dev: false
 
-  /cz-git@1.6.1:
-    resolution: {integrity: sha512-+ohk/MFETERw4o/WpN3hUk7GM8oAwnaQI/uDuREGm4/B+G3DghGvNZQ/0MbFqZHWgKWvMzNZI6eKmPo0uPCu1A==}
+  /cz-git@1.7.0:
+    resolution: {integrity: sha512-A9ix8zJtRfuj7aXrlS2K6SqrFy/9VcoHOeZKEYM0qG4h++9p4/vkeEjHpwxHN0S2ARtbmlKypjrhVkFtFnBG1Q==}
+    engines: {node: '>=v12.20.0'}
     dev: false
 
   /dashdash@1.14.1:
@@ -13715,8 +13716,8 @@ packages:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
     dev: false
 
-  /kysely@0.26.0:
-    resolution: {integrity: sha512-uj4wsWeWyGYoJlT4vNjO5wMjZxYp55I+igJJsJGe12R2WDZ4AWHNyRRMQz8Mdnv35DnHXck0S7/I2FIPEIZwjw==}
+  /kysely@0.26.1:
+    resolution: {integrity: sha512-FVRomkdZofBu3O8SiwAOXrwbhPZZr8mBN5ZeUWyprH29jzvy6Inzqbd0IMmGxpd4rcOCL9HyyBNWBa8FBqDAdg==}
     engines: {node: '>=14.0.0'}
     dev: false
 
