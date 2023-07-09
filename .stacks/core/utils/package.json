@@ -46,7 +46,8 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "size": "tsx scripts/export-size.ts"
   },
   "peerDependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -65,6 +66,7 @@
     "@vueuse/shared": "^10.2.1",
     "defu": "^6.1.2",
     "dinero.js": "2.0.0-alpha.14",
+    "export-size": "^0.5.2",
     "fast-glob": "^3.3.0",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
@@ -90,6 +92,7 @@
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",
     "dinero.js": "2.0.0-alpha.14",
+    "export-size": "^0.5.2",
     "fast-glob": "^3.3.0",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
@@ -100,6 +103,7 @@
     "yaml": "^2.3.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "markdown-table": "^3.0.3"
   }
 }
