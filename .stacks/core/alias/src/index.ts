@@ -210,7 +210,7 @@ export const alias: Record<string, string> = {
   'stacks/vite/*': p.vitePath('src/*'),
   'stacks/x-ray': p.xRayPath('src/index.ts'),
   'stacks/x-ray/*': p.xRayPath('src/*'),
-  'stacks/*': p.frameworkPath('src/*'),
+  // 'stacks/*': p.frameworkPath('src/*'),
   'app/*': p.appPath('*'),
   'config/*': p.projectConfigPath('*'),
   'components/*': p.componentsPath('*'),

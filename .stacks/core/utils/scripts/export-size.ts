@@ -87,8 +87,8 @@ async function run() {
   }
   // await fs.remove(join(packagesRoot, 'shared/index.mjs'))
   // await fs.remove(join(packagesRoot, 'core/index.mjs'))
-  await fs.writeFile('../../export-size.md', md, 'utf-8')
-  await fs.writeJSON('packages/export-size.json', mdJSON, { spaces: 2 })
+  await fs.writeFile('../export-size.md', md, 'utf-8')
+  await fs.writeJSON('../export-size.json', mdJSON, { spaces: 2 })
 }
 
 run()

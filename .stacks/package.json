@@ -238,9 +238,8 @@
   ],
   "scripts": {
     "buddy": "tsx ./core/buddy/src/cli.ts",
-    "build": "pnpm prerequistes-for-build && pnpm --filter='./core/**' build",
-    "dev": "pnpm prerequistes-for-build && pnpm --filter='./core/**' dev",
-    "prerequistes-for-build": "pnpm --filter='./core/path' dev && pnpm --filter='./core/alias' install && pnpm --filter='./core/alias' dev && pnpm --filter='./core/logging' install && pnpm --filter='./core/logging' dev && pnpm --filter='./core/development' install && pnpm --filter='./core/development' dev && pnpm --filter='./core/utils' install && pnpm --filter='./core/utils' dev && pnpm --filter='./core/storage' install && pnpm --filter='./core/storage' dev && pnpm --filter='./core/tinker' install && pnpm --filter='./core/tinker' dev",
+    "build": "pnpm --filter='./core/**' build",
+    "dev": "pnpm --filter='./core/**' dev",
     "publish:framework": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
     "publish:dummy-libs": "pnpm run generate:entries && pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "pnpm buddy fresh",

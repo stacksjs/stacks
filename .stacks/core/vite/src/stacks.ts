@@ -4,7 +4,7 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
-import type { PluginOption } from 'vite'
+import type { Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
@@ -20,7 +20,7 @@ export function inspect(options?: InspectOptions) {
 //   return Layouts(options)
 // }
 
-export function components(options?: ComponentOptions): PluginOption {
+export function components(options?: ComponentOptions): Plugin {
   const defaultOptions = {
     // also allow auto-loading markdown components
     extensions: ['vue', 'md'],
@@ -166,7 +166,7 @@ export function pwa() {
 //   return VueI18n(newOptions)
 // }
 
-export function uiEngine(isWebComponent = false) {
+export function uiEngine(isWebComponent = false): Plugin {
   if (isWebComponent) {
     return Vue({
       include: [/\.vue$/, /\.md$/],
@@ -175,12 +175,12 @@ export function uiEngine(isWebComponent = false) {
           isCustomElement: () => true,
         },
       },
-    })
+    }) as Plugin
   }
 
   return Vue({
     include: [/\.vue$/, /\.md$/],
-  })
+  }) as Plugin
 }
 
 // export function componentPreset(isWebComponent = false) {
