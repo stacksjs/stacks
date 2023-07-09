@@ -106,6 +106,8 @@
       "@stacksjs/server/*": ["./core/server/src/*"],
       "@stacksjs/signals": ["./core/signals/src/index.ts"],
       "@stacksjs/signals/*": ["./core/signals/src/*"],
+      "@stacksjs/slug": ["./core/slug/src/index.ts"],
+      "@stacksjs/slug/*": ["./core/slug/src/*"],
       "@stacksjs/sms": ["./core/sms/src/index.ts"],
       "@stacksjs/sms/*": ["./core/sms/src/*"],
       "@stacksjs/storage": ["./core/storage/src/index.ts"],

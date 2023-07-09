@@ -1,5 +1,4 @@
-const wipSlug = true
-export { wipSlug }
+export const wipSlug = true
 // import { slug as slugify } from '@stacksjs/strings'
 // import type { ColumnOptions, Model } from '@stacksjs/types'
 // import { client as DatabaseClient } from '@stacksjs/database'

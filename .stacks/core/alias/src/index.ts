@@ -84,6 +84,8 @@ export const alias: Record<string, string> = {
   '@stacksjs/security/*': p.securityPath('src/*'),
   '@stacksjs/server': p.serverPath('src/index.ts'),
   '@stacksjs/server/*': p.serverPath('src/*'),
+  '@stacksjs/slug': p.slugPath('src/index.ts'),
+  '@stacksjs/slug/*': p.slugPath('src/*'),
   '@stacksjs/sms': p.smsPath('src/index.ts'),
   '@stacksjs/sms/*': p.smsPath('src/*'),
   '@stacksjs/scheduler': p.schedulerPath('src/index.ts'),
