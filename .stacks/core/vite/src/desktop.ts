@@ -1,4 +1,3 @@
-import path from 'node:path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Pages from 'vite-plugin-pages'
@@ -11,6 +10,7 @@ import Inspect from 'vite-plugin-inspect'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from '@unocss/vite'
 import Shiki from 'markdown-it-shiki'
+import { path, projectPath } from '@stacksjs/path'
 
 export default defineConfig({
   resolve: {

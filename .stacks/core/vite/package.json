@@ -1,0 +1,107 @@
+{
+  "name": "@stacksjs/vite",
+  "type": "module",
+  "version": "0.57.4",
+  "packageManager": "pnpm@8.6.6",
+  "description": "The Stacks Vite plugin.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/vite-plugin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/vite-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "vite",
+    "configs",
+    "vite-plugin",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./plugin": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./desktop": {
+      "types": "./dist/desktop.d.ts",
+      "import": "./dist/desktop.mjs"
+    },
+    "./example/web-components": {
+      "types": "./dist/example-wc.d.ts",
+      "import": "./dist/example-wc.mjs"
+    },
+    "./example/vue-components": {
+      "types": "./dist/example-vue.d.ts",
+      "import": "./dist/example-vue.mjs"
+    },
+    "./functions": {
+      "types": "./dist/functions.d.ts",
+      "import": "./dist/functions.mjs"
+    },
+    "./stacks": {
+      "types": "./dist/stacks.d.ts",
+      "import": "./dist/stacks.mjs"
+    },
+    "./views": {
+      "types": "./dist/views.d.ts",
+      "import": "./dist/views.mjs"
+    },
+    "./vue-components": {
+      "types": "./dist/vue-components.d.ts",
+      "import": "./dist/vue-components.mjs"
+    },
+    "./web-components": {
+      "types": "./dist/web-components.d.ts",
+      "import": "./dist/web-components.mjs"
+    }
+  },
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/server": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "markdown-it-link-attributes": "^4.0.1",
+    "markdown-it-shiki": "^0.9.0",
+    "unbuild": "^1.2.1",
+    "unplugin-auto-import": "^0.16.6",
+    "unplugin-vue-components": "^0.25.1",
+    "vite": "^4.4.2",
+    "vite-plugin-inspect": "^0.7.32",
+    "vite-plugin-pages": "^0.31.0",
+    "vite-plugin-pwa": "^0.16.4",
+    "vite-plugin-vue-layouts": "^0.8.0",
+    "vite-plugin-vue-markdown": "^0.23.5",
+    "vite-ssg": "^0.23.0",
+    "vite-ssg-sitemap": "^0.5.1"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "vite-plugin-full-reload": "^1.0.5"
+  }
+}

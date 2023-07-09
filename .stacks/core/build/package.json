@@ -47,26 +47,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "markdown-it-link-attributes": "^4.0.1",
-    "markdown-it-shiki": "^0.9.0",
-    "unbuild": "^1.2.1",
-    "unplugin-auto-import": "^0.16.6",
-    "unplugin-vue-components": "^0.25.1",
-    "vite": "^4.4.2",
-    "vite-plugin-inspect": "^0.7.32",
-    "vite-plugin-pages": "^0.31.0",
-    "vite-plugin-pwa": "^0.16.4",
-    "vite-plugin-vue-layouts": "^0.8.0",
-    "vite-plugin-vue-markdown": "^0.23.5",
-    "vite-ssg": "^0.23.0",
-    "vite-ssg-sitemap": "^0.5.1",
+    "@stacksjs/vite": "workspace:*",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {

@@ -394,6 +394,10 @@ export function validationPath(path?: string) {
   return corePath(`validation/${path || ''}`)
 }
 
+export function vitePath(path?: string) {
+  return corePath(`vite/${path || ''}`)
+}
+
 export function xRayPath(path?: string) {
   return corePath(`x-ray/${path || ''}`)
 }
@@ -479,6 +483,7 @@ export const path = {
   uiPath,
   utilsPath,
   validationPath,
+  vitePath,
   xRayPath,
 
   // path utils
