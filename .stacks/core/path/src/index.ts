@@ -46,6 +46,10 @@ export function runtimePath(path?: string) {
   return frameworkPath(`buddy/${path || ''}`)
 }
 
+export function analyticsPath(path?: string) {
+  return corePath(`analytics/${path || ''}`)
+}
+
 export function arraysPath(path?: string) {
   return corePath(`arrays/${path || ''}`)
 }
@@ -398,6 +402,7 @@ export const path = {
   aiPath,
   actionsPath,
   aliasPath,
+  analyticsPath,
   arraysPath,
   appPath,
   authPath,

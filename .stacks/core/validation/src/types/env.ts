@@ -1,9 +1,12 @@
 import process from 'node:process'
 import type { VineObject } from '@vinejs/vine'
 import validator from '@vinejs/vine'
-import type { Infer } from '@vinejs/vine/build/src/types'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import type { Infer } from '@vinejs/vine/build/src/types'
 
 // TODO: envSchema needs to be auto generated from the .env file
 // envSchema could also be named "backendEnvSchema"
