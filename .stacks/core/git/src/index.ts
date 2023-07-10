@@ -1,1 +1,1 @@
-export * from 'changelogen'
+export * as changelog from 'changelogen'
