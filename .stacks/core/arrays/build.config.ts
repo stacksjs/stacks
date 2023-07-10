@@ -3,6 +3,6 @@ import { alias, defineBuildConfig, entries } from '@stacksjs/development'
 export default defineBuildConfig({
   alias,
   entries,
-  clean: false,
+  clean: true,
   declaration: true,
 })

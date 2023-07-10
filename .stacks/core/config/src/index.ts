@@ -1,2 +1,2 @@
-export * from './defaults'
-export * from './helpers'
+export * as config from './config'
+export * from './config'

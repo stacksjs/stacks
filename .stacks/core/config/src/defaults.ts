@@ -1,19 +1,61 @@
-// this files need to be built inline
-export { default as app } from '../../../../config/app'
-export { default as cache } from '../../../../config/cache'
-export { default as cdn } from '../../../../config/cdn'
-export { default as cli } from '../../../../config/cli'
-export { default as database } from '../../../../config/database'
-export { default as dependencies } from '../../../../config/deps'
-export { default as dns } from '../../../../config/dns'
-export { default as docs } from '../../../../config/docs'
-export { default as email } from '../../../../config/email'
-export { default as git } from '../../../../config/git'
-export { default as hashing } from '../../../../config/hashing'
-export { default as library } from '../../../../config/library'
-export { default as payment } from '../../../../config/payment'
-export { default as notification } from '../../../../config/notification'
-export { default as searchEngine } from '../../../../config/search-engine'
-export { default as services } from '../../../../config/services'
-export { default as storageConfig } from '../../../../config/storage'
-export { default as ui } from '../../../../config/ui'
+import type { ResolvedStacksOptions } from 'stacks/types'
+import app from '../../../../config/app'
+import cache from '../../../../config/cache'
+import cdn from '../../../../config/cdn'
+import cli from '../../../../config/cli'
+import database from '../../../../config/database'
+import dependencies from '../../../../config/deps'
+import dns from '../../../../config/dns'
+import docs from '../../../../config/docs'
+import email from '../../../../config/email'
+import git from '../../../../config/git'
+import hashing from '../../../../config/hashing'
+import library from '../../../../config/library'
+import payment from '../../../../config/payment'
+import notification from '../../../../config/notification'
+import storage from '../../../../config/storage'
+import searchEngine from '../../../../config/search-engine'
+import services from '../../../../config/services'
+import ui from '../../../../config/ui'
+
+export const defaults: ResolvedStacksOptions = {
+  app,
+  cache,
+  cdn,
+  cli,
+  database,
+  dependencies,
+  dns,
+  docs,
+  email,
+  git,
+  hashing,
+  library,
+  notification,
+  payment,
+  searchEngine,
+  services,
+  storage,
+  ui,
+}
+
+export {
+  app,
+  cache,
+  cdn,
+  cli,
+  database,
+  dependencies,
+  dns,
+  docs,
+  email,
+  git,
+  hashing,
+  library,
+  notification,
+  payment,
+  searchEngine,
+  services,
+  storage,
+  ui,
+}

@@ -26,6 +26,10 @@ export type CronJob = CronJobOptions
 export type CronJobs = CronJob[]
 
 export enum Every {
+  Second = '* * * * * *',
+  FiveSeconds = '*/5 * * * * *',
+  TenSeconds = '*/10 * * * * *',
+  ThirtySeconds = '*/30 * * * * *',
   Minute = '* * * * *',
   Hour = '0 * * * *',
   HalfHour = '0,30 * * * *',

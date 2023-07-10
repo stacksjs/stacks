@@ -52,9 +52,7 @@ export function ensurePrefix(prefix: string, str: string) {
  * ```
  */
 export function ensureSuffix(suffix: string, str: string) {
-  if (!str.endsWith(suffix))
-    return str + suffix
-  return str
+  return str.endsWith(suffix) ? str : str + suffix
 }
 
 /**
@@ -72,9 +70,7 @@ export function ensureSuffix(suffix: string, str: string) {
 export function template(str: string, ...args: any[]): string {
   return str.replace(/{(\d+)}/g, (match, key) => {
     const index = Number(key)
-    if (Number.isNaN(index))
-      return match
-    return args[index]
+    return Number.isNaN(index) ? match : args[index]
   })
 }
 

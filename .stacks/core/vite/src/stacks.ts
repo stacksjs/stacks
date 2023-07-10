@@ -62,8 +62,8 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // { stacks: [''] },
     ],
     dirs: [
-      p.resourcesPath('functions'),
-      p.resourcesPath('components'),
+      // p.resourcesPath('functions'),
+      // p.resourcesPath('components'),
 
       // auto imported utilities start here
       p.frameworkPath('src'),

@@ -5,7 +5,13 @@ import { parse } from 'yaml'
 import { execSync, log, runCommand, spawn } from '@stacksjs/cli'
 import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
+import { readPackageJson } from '@stacksjs/storage'
 import { semver } from './versions'
+
+export async function packageManager() {
+  const { packageManager } = await readPackageJson(frameworkPath('package.json'))
+  return packageManager
+}
 
 export async function isProjectCreated() {
   if (storage.isFile('.env'))

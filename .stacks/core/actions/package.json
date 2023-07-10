@@ -258,8 +258,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "fast-glob": "^3.3.0",
-    "fs-extra": "^11.1.1",
     "markdown-it": "^13.0.1",
     "vue-component-meta": "^1.8.4"
   },

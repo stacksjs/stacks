@@ -1103,7 +1103,6 @@ declare module 'vue' {
     readonly convert: UnwrapRef<typeof import('./core/utils/src/currency')['convert']>
     readonly copyFolder: UnwrapRef<typeof import('./core/storage/src/folders')['copyFolder']>
     readonly corePath: UnwrapRef<typeof import('./core/path/src/index')['corePath']>
-    readonly count: UnwrapRef<typeof import('../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('./core/utils/src/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('./core/utils/src/vendors')['createEventHook']>
@@ -1307,7 +1306,6 @@ declare module 'vue' {
     readonly hidden: UnwrapRef<typeof import('./core/cli/src/utilities')['hidden']>
     readonly hits: UnwrapRef<typeof import('./core/search-engine/src/index')['hits']>
     readonly ignorableWatch: UnwrapRef<typeof import('./core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('./core/search-engine/src/index')['index']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('./core/utils/src/helpers')['installIfVersionMismatch']>
@@ -1320,7 +1318,6 @@ declare module 'vue' {
     readonly isArray: UnwrapRef<typeof import('./core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('./core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('./core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../resources/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('./core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('./core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('./core/validation/src/is')['isDef']>
@@ -1503,7 +1500,6 @@ declare module 'vue' {
     readonly plivo: UnwrapRef<typeof import('./core/sms/src/drivers/index')['plivo']>
     readonly plural: UnwrapRef<typeof import('./core/strings/src/pluralize')['plural']>
     readonly postmark: UnwrapRef<typeof import('./core/email/src/drivers/index')['postmark']>
-    readonly preferredDark: UnwrapRef<typeof import('../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('./core/ui/src/index')['presetForms']>
     readonly projectConfigPath: UnwrapRef<typeof import('./core/path/src/index')['projectConfigPath']>
     readonly projectPath: UnwrapRef<typeof import('./core/path/src/index')['projectPath']>
@@ -1651,7 +1647,6 @@ declare module 'vue' {
     readonly toString: UnwrapRef<typeof import('./core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('./core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../resources/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('./core/search-engine/src/index')['totalPages']>
     readonly transformerCompileClass: UnwrapRef<typeof import('./core/ui/src/index')['transformerCompileClass']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
@@ -2037,7 +2032,6 @@ declare module '@vue/runtime-core' {
     readonly convert: UnwrapRef<typeof import('./core/utils/src/currency')['convert']>
     readonly copyFolder: UnwrapRef<typeof import('./core/storage/src/folders')['copyFolder']>
     readonly corePath: UnwrapRef<typeof import('./core/path/src/index')['corePath']>
-    readonly count: UnwrapRef<typeof import('../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('./core/utils/src/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('./core/utils/src/vendors')['createEventHook']>
@@ -2241,7 +2235,6 @@ declare module '@vue/runtime-core' {
     readonly hidden: UnwrapRef<typeof import('./core/cli/src/utilities')['hidden']>
     readonly hits: UnwrapRef<typeof import('./core/search-engine/src/index')['hits']>
     readonly ignorableWatch: UnwrapRef<typeof import('./core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('./core/search-engine/src/index')['index']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('./core/utils/src/helpers')['installIfVersionMismatch']>
@@ -2254,7 +2247,6 @@ declare module '@vue/runtime-core' {
     readonly isArray: UnwrapRef<typeof import('./core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('./core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('./core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../resources/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('./core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('./core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('./core/validation/src/is')['isDef']>
@@ -2437,7 +2429,6 @@ declare module '@vue/runtime-core' {
     readonly plivo: UnwrapRef<typeof import('./core/sms/src/drivers/index')['plivo']>
     readonly plural: UnwrapRef<typeof import('./core/strings/src/pluralize')['plural']>
     readonly postmark: UnwrapRef<typeof import('./core/email/src/drivers/index')['postmark']>
-    readonly preferredDark: UnwrapRef<typeof import('../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('./core/ui/src/index')['presetForms']>
     readonly projectConfigPath: UnwrapRef<typeof import('./core/path/src/index')['projectConfigPath']>
     readonly projectPath: UnwrapRef<typeof import('./core/path/src/index')['projectPath']>
@@ -2585,7 +2576,6 @@ declare module '@vue/runtime-core' {
     readonly toString: UnwrapRef<typeof import('./core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('./core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../resources/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('./core/search-engine/src/index')['totalPages']>
     readonly transformerCompileClass: UnwrapRef<typeof import('./core/ui/src/index')['transformerCompileClass']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
