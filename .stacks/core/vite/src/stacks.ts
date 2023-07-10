@@ -38,7 +38,7 @@ export function components(options?: ComponentOptions): Plugin {
 }
 
 // https://github.com/hannoeru/vite-plugin-pages
-export function pages(options?: PagesOption) {
+export function pages(options?: PagesOption): Plugin {
   const defaultOptions = {
     extensions: ['vue', 'md'],
     dirs: [
@@ -51,7 +51,7 @@ export function pages(options?: PagesOption) {
   return Pages(newOptions)
 }
 
-export function autoImports(options?: AutoImportsOptions) {
+export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', 'vitest', 'pinia',
@@ -64,7 +64,6 @@ export function autoImports(options?: AutoImportsOptions) {
     dirs: [
       p.resourcesPath('functions'),
       p.resourcesPath('components'),
-      // p.projectPath('config'),
 
       // auto imported utilities start here
       p.frameworkPath('src'),
