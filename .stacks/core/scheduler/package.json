@@ -2,7 +2,7 @@
   "name": "@stacksjs/scheduler",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.6",
+  "packageManager": "pnpm@8.6.7",
   "description": "The Stacks scheduler.",
   "author": "Chris Breuer",
   "license": "MIT",
