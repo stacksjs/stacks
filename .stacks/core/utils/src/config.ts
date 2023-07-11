@@ -2,7 +2,7 @@ import type {
   AppOptions,
   CacheOptions,
   CdnOptions,
-  CronJobOptions,
+  JobOptions as CronJobOptions,
   DatabaseOptions,
   DependenciesOptions,
   DnsOptions,
