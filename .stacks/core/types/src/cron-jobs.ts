@@ -6,24 +6,19 @@ export interface JobOptions {
    * The name of the job.
    */
   name?: string
-  action?: string | Function
-  run?: string | Function
+  run: string | Function
   schedule?: string
   description?: string
-  enabled?: boolean
   timezone?: string
-  active?: boolean
   tries?: number
   backoff?: number | number[]
+  enabled?: boolean
 }
+
 export type Job = JobOptions
 export type Jobs = Job[]
-
-export interface CronJobOptions extends Omit<JobOptions, 'schedule'> {
-  schedule: string
-}
-export type CronJob = CronJobOptions
-export type CronJobs = CronJob[]
+export type CronJob = Job
+export type CronJobs = Jobs
 
 export enum Every {
   Second = '* * * * * *',
