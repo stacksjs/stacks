@@ -18,10 +18,10 @@ ide:
   - any: ['.stacks/ide/**', '!.stacks/ide/package.json', '!.stacks/ide/**/package.json']
 
 jetbrains:
-  - any: [ '.stacks/ide/jetbrains/**', '!.stacks/ide/jetbrains/package.json']
+  - any: ['.stacks/ide/jetbrains/**', '!.stacks/ide/jetbrains/package.json']
 
 vscode:
-  - any: [ '.stacks/ide/vscode/**', '!.stacks/ide/vscode/package.json']
+  - any: ['.stacks/ide/vscode/**', '!.stacks/ide/vscode/package.json']
 
 libs:
   - any: ['.stacks/libs/**', '!.stacks/libs/**/package.json']

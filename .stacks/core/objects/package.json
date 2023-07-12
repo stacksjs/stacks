@@ -42,6 +42,10 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "@stacksjs/collections": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
   "dependencies": {
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/types": "workspace:*",

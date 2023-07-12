@@ -6,5 +6,3 @@ export * from './parse'
 export * from './run'
 export * from './spinner'
 export * from './utilities'
-
-export { ExitCode } from '@stacksjs/types'

@@ -37,174 +37,175 @@
   ],
   "exports": {
     ".": {
-      "types": "./core/buddy/src/index.ts"
+      "types": "./core/buddy/dist/index.mjs"
     },
     "./actions": {
-      "import": "./core/actions/src/index.ts"
+      "import": "./core/actions/dist/index.mjs"
     },
     "./ai": {
-      "import": "./core/ai/src/index.ts"
+      "import": "./core/ai/dist/index.mjs"
     },
     "./alias": {
-      "import": "./core/alias/src/index.ts"
+      "import": "./core/alias/dist/index.mjs"
     },
     "./analytics": {
-      "import": "./core/analytics/src/index.ts"
+      "import": "./core/analytics/dist/index.mjs"
     },
     "./arrays": {
-      "import": "./core/arrays/src/index.ts"
+      "import": "./core/arrays/dist/index.mjs"
     },
     "./auth": {
-      "import": "./core/auth/src/index.ts"
+      "import": "./core/auth/dist/index.mjs"
     },
     "./buddy": {
-      "import": "./core/buddy/src/index.ts"
+      "import": "./core/buddy/dist/index.mjs"
     },
     "./build": {
-      "import": "./core/build/src/index.ts"
+      "import": "./core/build/dist/index.mjs"
     },
     "./cache": {
-      "import": "./core/cache/src/index.ts"
+      "import": "./core/cache/dist/index.mjs"
     },
     "./chat": {
-      "import": "./core/chat/src/index.ts"
+      "import": "./core/chat/dist/index.mjs"
     },
     "./cli": {
-      "import": "./core/cli/src/index.ts"
+      "import": "./core/cli/dist/index.mjs"
     },
     "./collections": {
-      "import": "./core/collections/src/index.ts"
+      "import": "./core/collections/dist/index.mjs"
     },
     "./config": {
-      "import": "./core/config/src/index.ts"
+      "import": "./core/config/dist/index.mjs"
     },
     "./database": {
-      "import": "./core/database/src/index.ts"
+      "import": "./core/database/dist/index.mjs"
     },
     "./datetime": {
-      "import": "./core/datetime/src/index.ts"
+      "import": "./core/datetime/dist/index.mjs"
     },
     "./desktop": {
-      "import": "./core/desktop/src/index.ts"
+      "import": "./core/desktop/dist/index.mjs"
     },
     "./development": {
-      "import": "./core/development/src/index.ts"
+      "import": "./core/development/dist/index.mjs"
     },
     "./dns": {
-      "import": "./core/dns/src/index.ts"
+      "import": "./core/dns/dist/index.mjs"
     },
     "./docs": {
-      "import": "./core/docs/src/index.ts"
+      "import": "./core/docs/dist/index.mjs"
     },
     "./email": {
-      "import": "./core/email/src/index.ts"
+      "import": "./core/email/dist/index.mjs"
     },
     "./error-handling": {
-      "import": "./core/error-handling/src/index.ts"
+      "import": "./core/error-handling/dist/index.mjs"
     },
     "./events": {
-      "import": "./core/events/src/index.ts"
+      "import": "./core/events/dist/index.mjs"
     },
     "./faker": {
-      "import": "./core/faker/src/index.ts"
+      "import": "./core/faker/dist/index.mjs"
     },
     "./git": {
-      "import": "./core/git/src/index.ts"
+      "import": "./core/git/dist/index.mjs"
     },
     "./health": {
-      "import": "./core/health/src/index.ts"
+      "import": "./core/health/dist/index.mjs"
     },
     "./lint": {
-      "import": "./core/lint/src/index.ts"
+      "import": "./core/lint/dist/index.mjs"
     },
     "./logging": {
-      "import": "./core/logging/src/index.ts"
+      "import": "./core/logging/dist/index.mjs"
     },
     "./modules/*": {
-      "import": "./core/modules/src/*"
+      "import": "./core/modules/distmjs"
     },
     "./notifications": {
-      "import": "./core/notifications/src/index.ts"
+      "import": "./core/notifications/dist/index.mjs"
     },
     "./objects": {
-      "import": "./core/objects/src/index.ts"
+      "import": "./core/objects/dist/index.mjs"
     },
     "./orm": {
-      "import": "./core/orm/src/index.ts"
+      "import": "./core/orm/dist/index.mjs"
     },
     "./path": {
-      "import": "./core/path/src/index.ts"
+      "import": "./core/path/dist/index.mjs"
     },
     "./payments": {
-      "import": "./core/payments/src/index.ts"
+      "import": "./core/payments/dist/index.mjs"
     },
     "./push": {
-      "import": "./core/push/src/index.ts"
+      "import": "./core/push/dist/index.mjs"
     },
     "./query-builder": {
-      "import": "./core/query-builder/src/index.ts"
+      "import": "./core/query-builder/dist/index.mjs"
     },
     "./queue": {
-      "import": "./core/queue/src/index.ts"
+      "import": "./core/queue/dist/index.mjs"
     },
     "./realtime": {
-      "import": "./core/realtime/src/index.ts"
+      "import": "./core/realtime/dist/index.mjs"
     },
     "./repl": {
-      "import": "./core/repl/src/index.ts"
+      "import": "./core/repl/dist/index.mjs"
     },
     "./router": {
-      "import": "./core/router/src/index.ts"
+      "import": "./core/router/dist/index.mjs"
     },
     "./scheduler": {
-      "import": "./core/scheduler/src/index.ts"
+      "import": "./core/scheduler/dist/index.mjs"
     },
     "./search-engine": {
-      "import": "./core/search-engine/src/index.ts"
+      "import": "./core/search-engine/dist/index.mjs"
     },
     "./security": {
-      "import": "./core/security/src/index.ts"
+      "import": "./core/security/dist/index.mjs"
     },
     "./server": {
-      "import": "./core/server/src/index.ts"
+      "import": "./core/server/dist/index.mjs"
     },
     "./signals": {
-      "import": "./core/signals/src/index.ts"
+      "import": "./core/signals/dist/index.mjs"
     },
     "./slug": {
-      "import": "./core/slug/src/index.ts"
+      "import": "./core/slug/dist/index.mjs"
     },
     "./sms": {
-      "import": "./core/sms/src/index.ts"
+      "import": "./core/sms/dist/index.mjs"
     },
     "./storage": {
-      "import": "./core/storage/src/index.ts"
+      "import": "./core/storage/dist/index.mjs"
     },
     "./strings": {
-      "import": "./core/strings/src/index.ts"
+      "import": "./core/strings/dist/index.mjs"
     },
     "./testing": {
-      "import": "./core/testing/src/index.ts"
+      "import": "./core/testing/dist/index.mjs"
     },
     "./tinker": {
-      "import": "./core/tinker/src/index.ts"
+      "import": "./core/tinker/dist/index.mjs"
     },
     "./types": {
-      "import": "./core/types/src/index.ts"
+      "import": "./core/types/dist/index.mjs"
     },
     "./ui": {
-      "import": "./core/ui/src/index.ts"
+      "import": "./core/ui/dist/index.mjs"
     },
     "./utils": {
-      "import": "./core/utils/src/index.ts"
+      "import": "./core/utils/dist/index.mjs"
     },
     "./validation": {
-      "import": "./core/validation/src/index.ts"
+      "import": "./core/validation/dist/index.mjs"
     },
     "./vite-plugin": {
-      "import": "./core/vite-plugin/src/index.ts"
+      "import": "./core/vite-plugin/dist/index.mjs"
     }
   },
+  "types": "./core/types/dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],

@@ -1,6 +1,7 @@
 // triggered via `$your-command inspire`
 
-import { Command, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+import { Command } from '@stacksjs/cli'
 import type { CliOptions } from '@stacksjs/types'
 
 export default new Command({
@@ -16,6 +17,8 @@ export default new Command({
   ],
 
   run: async (options: CliOptions) => {
+    log.info('Passed options are:', options)
+
     await intro('buddy inspire')
 
     return await runAction(Action.Inspire)

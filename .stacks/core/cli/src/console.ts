@@ -74,5 +74,3 @@ export class Prompt {
 }
 
 export const prompt = new Prompt()
-
-export { log }

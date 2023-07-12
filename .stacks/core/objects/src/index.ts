@@ -2,7 +2,7 @@ import { notNullish } from '@stacksjs/utils'
 import { isObject } from '@stacksjs/validation'
 import type { DeepMerge } from '@stacksjs/types'
 
-export { Collection, collect } from '@stacksjs/collections'
+export * from '@stacksjs/collections'
 
 /**
  * Map key/value pairs for an object, and construct a new one
@@ -141,7 +141,7 @@ export function clearUndefined<T extends object>(obj: T): T {
  * @category Object
  */
 export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
-  if (obj == null)
-    return false
-  return Object.prototype.hasOwnProperty.call(obj, v)
+  return obj == null
+    ? false
+    : Object.prototype.hasOwnProperty.call(obj, v)
 }
