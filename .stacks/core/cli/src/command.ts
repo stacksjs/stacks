@@ -1,5 +1,15 @@
 import type { CliOptions, CommandResult } from '@stacksjs/types'
 
+type CommandOptionTuple = [string, string, { default: boolean }]
+
+interface CommandOptionObject {
+  name: string
+  description: string
+  default: boolean | string
+}
+
+type CommandOptions = CommandOptionTuple | CommandOptionObject[]
+
 export class Command {
   name: string
   description: string
@@ -18,7 +28,7 @@ export class Command {
   }: {
     name: string
     description: string
-    options: object[]
+    options: CommandOptions
     run: (options: CliOptions) => Promise<CommandResult>
     onFail: (error: Error) => void
     onSuccess: () => void

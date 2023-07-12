@@ -8,14 +8,16 @@ import type { CliOptions } from '@stacksjs/types'
 export default new Command({
   name: 'inspire',
   description: 'Inspire yourself with a random quote',
+  options: ['--two, -t', 'Show two quotes', { default: false }],
 
-  options: [ // alternatively, `options: ['--two, -t', 'Show two quotes', { default: false }]`
-    {
-      name: '--two, -t',
-      description: 'Show two quotes',
-      default: false,
-    },
-  ],
+  // alternatively, you may use
+  // options: [
+  //   {
+  //     name: '--two, -t',
+  //     description: 'Show two quotes',
+  //     default: false,
+  //   },
+  // ],
 
   run: async (options: CliOptions) => {
     log.info('Passed options are:', options)
