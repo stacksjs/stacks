@@ -11,7 +11,6 @@ updates
 tests/unit/coverage
 dist*
 storage/logs/*
-storage/certs/components/*
 
 # todo: ensure Buddy auto-removes these ignored files for the developer and these files
 # in which case, they should be version-controlled

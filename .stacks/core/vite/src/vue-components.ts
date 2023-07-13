@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath, projectStoragePath, storagePath } from '@stacksjs/path'
+import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
 import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
@@ -40,7 +40,7 @@ export const vueComponentsConfig: ViteConfig = {
     inspect(),
     mkcert({
       autoUpgrade: true,
-      savePath: projectStoragePath('certs/components'),
+      savePath: frameworkPath('certs/components'),
       keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
       certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
     }),
