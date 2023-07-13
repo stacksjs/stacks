@@ -1,5 +1,6 @@
 import * as storage from '@stacksjs/storage'
-import { italic, log, runCommand, runCommands } from '@stacksjs/cli'
+import { italic, runCommand, runCommands } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { actionsPath, functionsPath } from '@stacksjs/path'
 import type { ActionOptions, CommandResult } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'

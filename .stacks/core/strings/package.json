@@ -57,7 +57,6 @@
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/pluralize": "^0.0.30",
     "@types/validator": "^13.7.17",
     "change-case": "^4.1.2",
     "detect-indent": "^7.0.1",

@@ -1,4 +1,5 @@
-import { intro, log, outro, runCommand, spawn } from '@stacksjs/cli'
+import { intro, outro, runCommand, spawn } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import * as storage from '@stacksjs/storage'
 import { determineDebugLevel } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'

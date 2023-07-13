@@ -548,6 +548,9 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
     devDependencies:
+      '@stacksjs/alias':
+        specifier: workspace:*
+        version: link:../alias
       '@stacksjs/development':
         specifier: workspace:*
         version: link:../development
@@ -1321,9 +1324,6 @@ importers:
       '@stacksjs/types':
         specifier: workspace:*
         version: link:../types
-      '@types/pluralize':
-        specifier: ^0.0.30
-        version: 0.0.30
       '@types/validator':
         specifier: ^13.7.17
         version: 13.7.17
@@ -1438,9 +1438,6 @@ importers:
       '@types/nprogress':
         specifier: ^0.2.0
         version: 0.2.0
-      '@types/pluralize':
-        specifier: ^0.0.30
-        version: 0.0.30
       '@vinejs/vine':
         specifier: ^1.5.1
         version: 1.5.1
@@ -7491,10 +7488,6 @@ packages:
 
   /@types/nprogress@0.2.0:
     resolution: {integrity: sha512-1cYJrqq9GezNFPsWTZpFut/d4CjpZqA0vhqDUPFWYKF1oIyBz5qnoYMzR+0C/T96t3ebLAC1SSnwrVOm5/j74A==}
-    dev: false
-
-  /@types/pluralize@0.0.30:
-    resolution: {integrity: sha512-kVww6xZrW/db5BR9OqiT71J9huRdQ+z/r+LbDuT7/EK50mCmj5FoaIARnVv0rvjUS/YpDox0cDU9lpQT011VBA==}
     dev: false
 
   /@types/resolve@1.17.1:

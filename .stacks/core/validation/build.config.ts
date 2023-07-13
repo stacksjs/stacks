@@ -1,4 +1,5 @@
-import { alias, defineBuildConfig, withCjsEntries as entries } from '@stacksjs/development'
+import { defineBuildConfig, withCjsEntries as entries } from '@stacksjs/development'
+import { alias } from '@stacksjs/alias'
 
 export default defineBuildConfig({
   alias,

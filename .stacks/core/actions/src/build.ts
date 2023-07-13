@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { type BuildOptions, NpmScript } from '@stacksjs/types'
-import { types as generateTypes } from './generate'
+import { generateTypes } from './generate'
 
 export async function invoke(options: BuildOptions) {
   if (options.components)

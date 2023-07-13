@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { searchEngine } from '@stacksjs/config'
 import { MeiliSearch } from 'meilisearch'
 

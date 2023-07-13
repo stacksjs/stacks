@@ -4,7 +4,7 @@
 
 import type { Ora } from 'ora'
 import type { ExecaReturnValue } from 'execa'
-import type { Err, Ok } from './errors'
+import type { Err, Ok } from '@stacksjs/error-handling'
 
 export type CommandReturnValue = ExecaReturnValue<string>
 export type CommandResult = Ok<ExecaReturnValue<string>, Error | void> | Err<ExecaReturnValue<string>, Error | string | void>

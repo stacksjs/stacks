@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { Every } from '@stacksjs/types'
 import { Job } from '@stacksjs/queue'
 

@@ -1,8 +1,8 @@
-import { logsPath } from 'stacks/path'
-import type { StacksError, ValidationError } from 'stacks/types'
-import { fs } from 'stacks/storage'
-import { log } from 'stacks/logging'
-import { italic } from 'stacks/cli'
+import { logsPath } from '@stacksjs/path'
+import type { StacksError, ValidationError } from '@stacksjs/types'
+import { fs } from '@stacksjs/storage'
+import { log } from '@stacksjs/logging'
+import { italic } from '@stacksjs/cli'
 
 export class ErrorHandler {
   static logFile = logsPath('errors.log')

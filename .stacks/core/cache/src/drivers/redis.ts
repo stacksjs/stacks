@@ -2,7 +2,7 @@ import type { RedisClientType } from 'redis'
 import { createClient } from 'redis'
 import { cache } from '@stacksjs/config'
 
-const client: RedisClientType = createClient({
+export const client: RedisClientType = createClient({
   socket: {
     host: cache.drivers?.redis?.host,
     port: cache.drivers?.redis?.port,
@@ -15,30 +15,28 @@ const client: RedisClientType = createClient({
 //   console.error(error)
 // })
 
-async function set(key: string, value: any): Promise<void> {
+export async function set(key: string, value: any): Promise<void> {
   await client.set(key, value)
 }
 
-async function get(key: string): Promise<any> {
+export async function get(key: string): Promise<any> {
   const value = await client.get(key)
 
   return value
 }
 
-async function remove(key: string): Promise<void> {
+export async function remove(key: string): Promise<void> {
   await client.del(key)
 }
 
-async function del(key: string): Promise<void> {
+export async function del(key: string): Promise<void> {
   await client.del(key)
 }
 
-async function flushAll(): Promise<void> {
+export async function flushAll(): Promise<void> {
   await client.sendCommand(['FLUSHALL', 'ASYNC'])
 }
 
-async function flushDB(): Promise<void> {
+export async function flushDB(): Promise<void> {
   await client.sendCommand(['FLUSHDB', 'ASYNC'])
 }
-
-export { set, get, remove, del, flushAll, flushDB, client }

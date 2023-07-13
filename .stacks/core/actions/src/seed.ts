@@ -1,3 +1,3 @@
-import { seeder } from './generate'
-
-await seeder()
+// import { seeder } from './generate'
+//
+// await seeder()

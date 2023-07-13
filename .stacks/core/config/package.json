@@ -48,6 +48,7 @@
     "c12": "^1.4.2"
   },
   "devDependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*"
   }

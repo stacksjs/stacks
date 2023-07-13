@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { frameworkPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { app } from '@stacksjs/config'
 import { runActions } from './'
 

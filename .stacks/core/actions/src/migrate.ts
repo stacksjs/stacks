@@ -1,3 +1,3 @@
-import { migrations as generateMigrations } from './generate'
+import { generateMigrations } from './generate'
 
 await generateMigrations()

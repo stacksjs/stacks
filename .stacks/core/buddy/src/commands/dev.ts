@@ -1,7 +1,8 @@
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, log, outro, prompt } from '@stacksjs/cli'
+import { intro, outro, prompt } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
 // import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'

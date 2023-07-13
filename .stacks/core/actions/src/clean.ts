@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { del } from '@stacksjs/utils'
 

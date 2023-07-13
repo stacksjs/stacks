@@ -6,6 +6,7 @@ import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
+import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
@@ -27,7 +28,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', 'fsevents', '@stacksjs/utils'],
+    exclude: ['vue'],
   },
 
   plugins: [
@@ -43,6 +44,8 @@ export const vueComponentsConfig: ViteConfig = {
       keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
       certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
     }),
+
+    // @ts-expect-error TODO: fix this
     {
       // ...
       configureServer(server: DevServer) {
@@ -72,7 +75,7 @@ export const vueComponentsConfig: ViteConfig = {
           const inspectUrl = `https://${appUrl}/__inspect/`
 
           // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
-          const stacksVersion = 'alpha-0.x.x'
+          const stacksVersion = `alpha-${version}`
 
           // eslint-disable-next-line no-console
           console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
@@ -98,7 +101,6 @@ export const vueComponentsConfig: ViteConfig = {
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
-    target: 'esnext',
     outDir: libsPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
@@ -117,7 +119,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@stacksjs/alias', '@stacksjs/utils'],
+      external: ['vue'],
       output: {
         globals: {
           vue: 'Vue',

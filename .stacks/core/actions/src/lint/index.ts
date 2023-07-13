@@ -1,6 +1,6 @@
-import { ExitCode, runCommands } from '@stacksjs/cli'
+import { runCommands } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
-import { NpmScript } from '@stacksjs/types'
+import { ExitCode, NpmScript } from '@stacksjs/types'
 
 export default async function lintAction() {
   const result = await runCommands([

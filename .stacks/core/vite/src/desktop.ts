@@ -47,7 +47,7 @@ export default defineConfig({
         '@vueuse/head',
         '@vueuse/core',
       ],
-      dts: '../../../auto-imports.d.ts',
+      dts: '../../../types/auto-imports.d.ts',
       dirs: [
         projectPath('functions'),
         '../../../../app/stores',

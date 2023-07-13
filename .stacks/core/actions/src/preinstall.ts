@@ -1,4 +1,5 @@
-import { log, spawn } from '@stacksjs/cli'
+import { spawn } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import type { PreinstallOptions } from '@stacksjs/types'
 import { determineDebugLevel } from '@stacksjs/utils'

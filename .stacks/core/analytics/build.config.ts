@@ -1,5 +1,6 @@
 import type { BuildConfig } from '@stacksjs/development'
-import { alias, defineBuildConfig } from '@stacksjs/development'
+import { defineBuildConfig } from '@stacksjs/development'
+import { alias } from '@stacksjs/alias'
 
 const devEntries = [{
   input: './src/index',

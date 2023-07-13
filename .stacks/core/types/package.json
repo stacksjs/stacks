@@ -62,7 +62,6 @@
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.16.19",
     "@types/nprogress": "^0.2.0",
-    "@types/pluralize": "^0.0.30",
     "@vinejs/vine": "^1.5.1",
     "cac": "^6.7.14",
     "execa": "^7.1.1",

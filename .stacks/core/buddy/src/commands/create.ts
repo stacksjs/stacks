@@ -1,5 +1,6 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, green, intro, log, runCommand } from '@stacksjs/cli'
+import { bold, cyan, green, intro, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'

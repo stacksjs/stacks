@@ -1,8 +1,6 @@
 import type { BuildConfig } from 'unbuild'
 
 export { defineBuildConfig } from 'unbuild'
-export * from '@stacksjs/logging'
-export * from '@stacksjs/alias'
 
 const devEntries = [{
   input: './src/index',

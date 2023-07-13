@@ -1,6 +1,6 @@
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { invoke } from '@stacksjs/actions/add'
 
 export async function add(buddy: CLI) {

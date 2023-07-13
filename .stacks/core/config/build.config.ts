@@ -1,10 +1,41 @@
-import { alias, defineBuildConfig, withCjsEntries as entries } from '@stacksjs/development'
+import { alias } from '@stacksjs/alias'
+import { defineBuildConfig, withCjsEntries as entries } from '@stacksjs/development'
 
 export default defineBuildConfig({
   alias,
   entries,
 
   externals: [
+    '@types/pluralize',
+    'rimraf',
+    '@dinero.js/currencies',
+    'dinero.js',
+    'export-size',
+    'detect-indent',
+    'title-case',
+    'redis',
+    'perfect-debounce',
+    'vue-component-meta',
+    'detect-newline',
+    '@maverick-js/signals',
+    'nitropack',
+    'kolorist',
+    'mysql2',
+    '@playwright/test',
+    'macroable',
+    'consola',
+    'pinia',
+    'constructs',
+    '@unocss/transformer-compile-class',
+    '@julr/unocss-preset-forms',
+    'pathe',
+    'vitest',
+    'node-ray',
+    'eslint',
+    'collect.js',
+    'unbuild',
+    'changelogen',
+    '@faker-js/faker',
     'unocss',
     '@novu/stateless',
     'meilisearch',

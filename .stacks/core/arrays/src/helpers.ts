@@ -151,16 +151,19 @@ export function last<T>(array: readonly T[]): T | undefined {
  * ```ts
  * const arr = [1, 2, 3]
  * remove(arr, 2) // true
+ * Arr.remove(arr, 4) // false
  * console.log(arr) // [1, 3]
  */
 export function remove<T>(array: T[], value: T) {
   if (!array)
     return false
+
   const index = array.indexOf(value)
   if (index >= 0) {
     array.splice(index, 1)
     return true
   }
+
   return false
 }
 

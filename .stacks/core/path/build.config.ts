@@ -1,4 +1,5 @@
-import { alias, defineBuildConfig, entries } from '../development/src'
+import { defineBuildConfig, entries } from '../development/src'
+import { alias } from '../alias/src'
 
 export default defineBuildConfig({
   alias,
