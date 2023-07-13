@@ -29,7 +29,7 @@ export function components(options?: ComponentOptions): Plugin {
       p.componentsPath(),
       // pagesPath(),
     ],
-    dts: p.frameworkPath('components.d.ts'),
+    dts: p.frameworkPath('types/components.d.ts'),
   }
 
   const newOptions = defu(options, defaultOptions)
@@ -54,7 +54,7 @@ export function pages(options?: PagesOption): Plugin {
 export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {
     imports: [
-      'vue', 'vue-router', 'vue/macros', 'vitest', 'pinia',
+      'vue', 'vue-router', 'vue/macros', 'pinia',
       // 'vitepress'
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
       // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
@@ -103,7 +103,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // p.utilsPath('src'),
       // p.validationPath('src'),
     ],
-    dts: p.frameworkPath('auto-imports.d.ts'),
+    dts: p.frameworkPath('types/auto-imports.d.ts'),
     vueTemplate: true,
     eslintrc: {
       enabled: false,
