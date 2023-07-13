@@ -1,5 +1,3 @@
-import { defineLibrary } from 'stacks/utils'
-
 /**
  * **Library Configuration**
  *

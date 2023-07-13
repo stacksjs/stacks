@@ -12,6 +12,7 @@ import type {
   LibraryOptions,
   NotificationOptions,
   PaymentOptions,
+  QueueOptions,
   SearchEngineOptions,
   ServicesOptions,
   StorageOptions,
@@ -152,6 +153,15 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   payment: Partial<PaymentOptions>
+
+  /**
+   * **Queue Options**
+   *
+   * This configuration defines all of your Queue options. Because Stacks is fully-typed,
+   * you may hover any of the options below and the definitions will be provided. In case
+   * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  queue: Partial<QueueOptions>
 
   /**
    * **Search Engine Options**

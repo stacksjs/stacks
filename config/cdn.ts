@@ -1,5 +1,3 @@
-import { defineCdn } from 'stacks/utils'
-
 /**
  * **CDN Configuration**
  *

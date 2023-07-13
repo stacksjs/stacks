@@ -1,6 +1,3 @@
-import { defineDns } from 'stacks/utils'
-import { env } from 'stacks/validation'
-
 /**
  * **DNS Options**
  *

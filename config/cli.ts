@@ -1,5 +1,3 @@
-import { defineCli } from 'stacks/utils'
-
 /**
  * **CLI Configuration**
  *

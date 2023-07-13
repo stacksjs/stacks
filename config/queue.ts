@@ -1,5 +1,3 @@
-import { defineQueue } from 'stacks/utils'
-
 /**
  * **Queue Options**
  *

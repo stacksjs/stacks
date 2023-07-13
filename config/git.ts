@@ -1,5 +1,3 @@
-import { defineGit } from 'stacks/utils'
-
 /**
  * **Git Configuration**
  *

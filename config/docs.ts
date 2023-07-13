@@ -1,5 +1,4 @@
 import { type DocsConfig } from '@stacksjs/types'
-import { frameworkPath } from '@stacksjs/path'
 import services from './services'
 
 // import type { PluginOption } from 'vite'

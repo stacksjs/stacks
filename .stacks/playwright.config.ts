@@ -1,6 +1,6 @@
 import type { PlaywrightTestConfig } from '@playwright/test'
 import { devices } from '@playwright/test'
-import { testsPath } from '@stacksjs/path'
+import { projectPath, testsPath } from '@stacksjs/path'
 
 /**
  * Read environment variables from file.
@@ -12,7 +12,7 @@ import { testsPath } from '@stacksjs/path'
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
-  testDir: './tests/feature',
+  testDir: projectPath('tests/feature'),
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {

@@ -11,6 +11,7 @@ import email from '../../../../config/email'
 import git from '../../../../config/git'
 import hashing from '../../../../config/hashing'
 import library from '../../../../config/library'
+import queue from '../../../../config/queue'
 import payment from '../../../../config/payment'
 import notification from '../../../../config/notification'
 import storage from '../../../../config/storage'
@@ -32,6 +33,7 @@ export const defaults: ResolvedStacksOptions = {
   hashing,
   library,
   notification,
+  queue,
   payment,
   searchEngine,
   services,
@@ -53,6 +55,7 @@ export {
   hashing,
   library,
   notification,
+  queue,
   payment,
   searchEngine,
   services,

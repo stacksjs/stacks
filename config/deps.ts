@@ -1,5 +1,3 @@
-import { defineDependencies } from 'stacks/utils'
-
 /**
  * **Dependency Manager**
  *
