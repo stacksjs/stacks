@@ -43,12 +43,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/database": "link:@stacksjs/database",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

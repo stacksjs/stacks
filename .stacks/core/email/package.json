@@ -64,18 +64,18 @@
     "@novu/sendgrid": "^0.16.3",
     "@novu/ses": "^0.16.3",
     "@novu/stateless": "^0.16.3",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/logging": "link:@stacksjs/logging"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/types": "link:@stacksjs/types"
   }
 }

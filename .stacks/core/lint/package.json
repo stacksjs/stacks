@@ -52,6 +52,6 @@
     "publint": "^0.1.16"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

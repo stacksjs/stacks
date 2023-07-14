@@ -48,14 +48,14 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
+    "@stacksjs/arrays": "link:@stacksjs/arrays",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/types": "link:@stacksjs/types",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.8.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

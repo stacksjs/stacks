@@ -53,12 +53,12 @@
     "meilisearch": "^0.33.0"
   },
   "dependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/ui": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/ui": "link:@stacksjs/ui"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/types": "link:@stacksjs/types"
   }
 }

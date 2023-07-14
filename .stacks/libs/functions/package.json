@@ -36,6 +36,6 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "stacks": "link:stacks"
   }
 }

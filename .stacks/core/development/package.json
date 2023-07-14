@@ -45,20 +45,20 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/testing": "workspace:*",
-    "@stacksjs/tinker": "workspace:*",
-    "@stacksjs/types": "workspace:*",
+    "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/testing": "link:@stacksjs/testing",
+    "@stacksjs/tinker": "link:@stacksjs/tinker",
+    "@stacksjs/types": "link:@stacksjs/types",
     "typescript": "^5.1.6",
     "unbuild": "^1.2.1"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/testing": "workspace:*",
-    "@stacksjs/tinker": "workspace:*",
-    "@stacksjs/types": "workspace:*",
+    "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/testing": "link:@stacksjs/testing",
+    "@stacksjs/tinker": "link:@stacksjs/tinker",
+    "@stacksjs/types": "link:@stacksjs/types",
     "unbuild": "^1.2.1"
   },
   "devDependencies": {

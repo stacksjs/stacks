@@ -47,17 +47,17 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/faker": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/faker": "link:@stacksjs/faker",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/query-builder": "link:@stacksjs/query-builder",
+    "@stacksjs/storage": "link:@stacksjs/storage",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:*"
+    "@stacksjs/config": "link:@stacksjs/config"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

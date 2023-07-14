@@ -45,10 +45,10 @@
   },
   "peerDependencies": {
     "@faker-js/faker": "^8.0.2",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

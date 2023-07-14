@@ -51,14 +51,14 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/chat": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/push": "workspace:*",
-    "@stacksjs/sms": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/chat": "link:@stacksjs/chat",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/email": "link:@stacksjs/email",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/push": "link:@stacksjs/push",
+    "@stacksjs/sms": "link:@stacksjs/sms",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
     "@maizzle/framework": "^4.4.6"
@@ -87,6 +87,6 @@
     "@novu/twilio": "^0.16.3"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

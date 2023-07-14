@@ -43,16 +43,16 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/collections": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/collections": "link:@stacksjs/collections",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
-    "@stacksjs/collections": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/collections": "link:@stacksjs/collections",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/utils": "link:@stacksjs/utils",
+    "@stacksjs/validation": "link:@stacksjs/validation"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

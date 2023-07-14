@@ -23,7 +23,7 @@
     "preview": "vite --config ../core/build/src/desktop.ts preview"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/desktop": "workspace:*"
+    "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/desktop": "link:@stacksjs/desktop"
   }
 }

@@ -45,11 +45,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/desktop": "link:@stacksjs/desktop",
+    "@stacksjs/logging": "link:@stacksjs/logging",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

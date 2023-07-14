@@ -52,6 +52,6 @@
     "simple-git-hooks": "^2.8.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

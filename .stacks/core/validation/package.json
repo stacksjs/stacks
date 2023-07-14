@@ -44,14 +44,14 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/utils": "link:@stacksjs/utils",
     "@vinejs/vine": "^1.5.1"
   },
   "dependencies": {
     "@vinejs/vine": "^1.5.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/path": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/path": "link:@stacksjs/path"
   }
 }

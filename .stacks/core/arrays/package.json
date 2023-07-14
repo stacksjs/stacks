@@ -45,15 +45,15 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/utils": "link:@stacksjs/utils",
     "macroable": "^7.0.2"
   },
   "dependencies": {
     "macroable": "^7.0.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/types": "link:@stacksjs/types"
   }
 }

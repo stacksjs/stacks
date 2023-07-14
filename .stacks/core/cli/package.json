@@ -51,12 +51,12 @@
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/utils": "link:@stacksjs/utils",
     "cac": "^6.7.14",
     "execa": "^7.1.1",
     "ora": "^6.3.1"
@@ -65,6 +65,6 @@
     "kolorist": "1.8.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

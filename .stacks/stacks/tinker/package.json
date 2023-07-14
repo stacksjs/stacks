@@ -39,10 +39,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/repl": "workspace:*"
+    "@stacksjs/desktop": "link:@stacksjs/desktop",
+    "@stacksjs/repl": "link:@stacksjs/repl"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

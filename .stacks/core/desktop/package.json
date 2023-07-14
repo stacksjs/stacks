@@ -52,8 +52,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/server": "workspace:*",
+    "@stacksjs/build": "link:@stacksjs/build",
+    "@stacksjs/server": "link:@stacksjs/server",
     "@tauri-apps/api": "1.4.0",
     "@tauri-apps/cli": "1.4.0",
     "unified-network": "0.6.4",
@@ -62,6 +62,6 @@
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

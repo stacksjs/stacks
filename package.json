@@ -98,9 +98,6 @@
     "bud": "pnpm buddy",
     "stx": "pnpm buddy"
   },
-  "dependencies": {
-    "stacks": "workspace:*"
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
@@ -108,5 +105,18 @@
     "commitizen": {
       "path": ".stacks/node_modules/cz-git"
     }
-  }
+  },
+  "workspaces": [
+    ".stacks/core/*",
+    ".stacks/api",
+    ".stacks/core/*",
+    ".stacks/docs",
+    ".stacks/fonts/*",
+    ".stacks/ide/*",
+    ".stacks/libs/*",
+    ".stacks/stacks/*",
+    ".stacks/vcs/*",
+    ".stacks/views/*",
+    ".stacks"
+  ]
 }

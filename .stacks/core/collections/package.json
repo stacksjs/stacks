@@ -49,6 +49,6 @@
     "collect.js": "^4.36.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

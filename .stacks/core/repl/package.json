@@ -44,12 +44,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/tinker": "workspace:*"
+    "@stacksjs/tinker": "link:@stacksjs/tinker"
   },
   "dependencies": {
-    "@stacksjs/tinker": "workspace:*"
+    "@stacksjs/tinker": "link:@stacksjs/tinker"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

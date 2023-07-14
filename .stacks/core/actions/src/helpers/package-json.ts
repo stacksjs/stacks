@@ -76,7 +76,7 @@ export async function generatePackageJson(type: PackageJsonType) {
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "stacks": "link:stacks"
   }
 }
 `,

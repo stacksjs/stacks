@@ -45,13 +45,13 @@
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.45.2",
-    "@stacksjs/cli": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli"
   },
   "dependencies": {
-    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/cli": "link:@stacksjs/cli",
     "neverthrow": "^6.0.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

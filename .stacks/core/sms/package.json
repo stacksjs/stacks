@@ -59,13 +59,13 @@
     "@novu/telnyx": "^0.16.3",
     "@novu/termii": "^0.16.3",
     "@novu/twilio": "^0.16.3",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

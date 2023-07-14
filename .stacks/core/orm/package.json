@@ -41,11 +41,11 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/query-builder": "link:@stacksjs/query-builder",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

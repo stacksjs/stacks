@@ -55,8 +55,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/types": "workspace:*",
+    "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/types": "link:@stacksjs/types",
     "@types/validator": "^13.7.17",
     "change-case": "^4.1.2",
     "detect-indent": "^7.0.1",
@@ -71,6 +71,6 @@
     "macroable": "^7.0.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

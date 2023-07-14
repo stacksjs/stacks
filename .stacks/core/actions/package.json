@@ -234,34 +234,34 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/security": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/database": "link:@stacksjs/database",
+    "@stacksjs/error-handling": "link:@stacksjs/handling",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/security": "link:@stacksjs/security",
+    "@stacksjs/storage": "link:@stacksjs/storage",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/utils": "link:@stacksjs/utils",
     "markdown-it": "^13.0.1",
     "vue-component-meta": "^1.8.5"
   },
   "dependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/security": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/database": "link:@stacksjs/database",
+    "@stacksjs/error-handling": "link:@stacksjs/handling",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/security": "link:@stacksjs/security",
+    "@stacksjs/storage": "link:@stacksjs/storage",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/utils": "link:@stacksjs/utils",
     "markdown-it": "^13.0.1",
     "vue-component-meta": "^1.8.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }
