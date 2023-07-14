@@ -12,6 +12,13 @@ export default defineBuildConfig({
     './src/index',
   ],
 
+  externals: [
+    '@stacksjs/error-handling',
+    '@stacksjs/config',
+    '@stacksjs/logging',
+    '@stacksjs/types',
+  ],
+
   declaration: true,
   clean: false,
 })

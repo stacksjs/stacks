@@ -42,13 +42,14 @@ export default defineBuildConfig({
     'unocss',
     '@vueuse/math',
     '@vueuse/core',
-    '@stacksjs/lint',
+    'stacks/validation',
+    '@stacksjs/path',
   ],
 
   rollup: {
     alias,
   },
 
-  declaration: true,
+  declaration: false, // todo: investigate why it errors when enabled & whether it's useful
   clean: true,
 })
