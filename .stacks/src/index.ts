@@ -1,5 +1,6 @@
 // the reason we disable the eslint rule here is that those "same-named exports" will never be bundled together
-
+// all we do here is just import all the packages directly so that the vite plugin can generate all the
+// auto imports
 export * from '../core/actions/src'
 export * from '../core/ai/src'
 export * from '../core/alias/src'

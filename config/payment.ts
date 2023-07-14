@@ -1,3 +1,5 @@
+import { definePayment } from 'stacks/utils'
+
 /**
  * **Payment Configuration**
  *

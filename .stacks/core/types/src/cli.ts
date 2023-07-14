@@ -34,12 +34,13 @@ type SpinnerOptions = Ora
 export type CliOptionsKeys = keyof CliOptions
 
 /**
- * The CLI Options used in `./config/cli.ts`.
+ * The Binary/CLI Options used in `./config/binary.ts`.
  */
-export interface UserCliOptions {
+export interface BinaryOptions {
   name?: string
   command?: string
   description?: string
+  // path?: string // TODO: add this for a configurable path where the commands are located
 }
 
 /**
@@ -215,14 +216,14 @@ export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | '
  */
 export const enum NpmScript {
   Build = 'build',
-  BuildComponents = 'vite build --config ./core/build/src/vue-components.ts',
+  BuildComponents = 'vite build --config ./core/vite/src/vue-components.ts',
   BuildWebComponents = 'build:web-components',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
   Clean = 'rimraf pnpm-lock.yaml node_modules/ .stacks/**/node_modules .stacks/**/dist',
   Dev = 'dev',
-  DevComponents = 'vite --config ./core/build/src/vue-components.ts',
+  DevComponents = 'vite --config ./core/vite/src/vue-components.ts',
   DevDocs = 'npx vitepress dev ./docs/src',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',

@@ -1,3 +1,6 @@
+import { defineApp } from 'stacks/utils'
+import { env } from 'stacks/validation'
+
 /**
  * **Application Configuration**
  *

@@ -252,6 +252,8 @@
     "../router/**/*",
     "../storage/*",
     "../storage/**/*",
+    "../types/*",
+    "../types/**/*",
     "../tests/*",
     "../tests/**/*"
   ],

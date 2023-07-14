@@ -16,6 +16,7 @@ declare global {
   const Arr: typeof import('../core/arrays/src/macro')['Arr']
   const Collection: typeof import('../core/collections/src/index')['Collection']
   const Command: typeof import('../core/cli/src/command')['Command']
+  const Console: typeof import('../core/logging/src/index')['Console']
   const CssEngine: typeof import('../core/ui/src/index')['CssEngine']
   const DnsStack: typeof import('../core/dns/src/index')['DnsStack']
   const EffectScope: typeof import('vue')['EffectScope']
@@ -217,6 +218,7 @@ declare global {
   const defaults: typeof import('./core/config/src/defaults')['defaults']
   const defineApp: typeof import('../core/utils/src/config')['defineApp']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
+  const defineBinary: typeof import('../core/utils/src/config')['defineBinary']
   const defineBuildConfig: typeof import('../core/development/src/index')['defineBuildConfig']
   const defineCache: typeof import('../core/utils/src/config')['defineCache']
   const defineCdn: typeof import('../core/utils/src/config')['defineCdn']
@@ -510,7 +512,7 @@ declare global {
   const not: typeof import('../core/utils/src/math')['not']
   const notNullish: typeof import('../core/utils/src/guards')['notNullish']
   const notUndefined: typeof import('../core/utils/src/guards')['notUndefined']
-  const notification: typeof import('./core/config/src/defaults')['notification']
+  const notification: typeof import('../core/notifications/src/index')['notification']
   const notifications: typeof import('./src/index')['notifications']
   const notificationsPath: typeof import('../core/path/src/index')['notificationsPath']
   const now: typeof import('../core/datetime/src/index')['now']
@@ -974,6 +976,7 @@ declare module 'vue' {
     readonly Arr: UnwrapRef<typeof import('../core/arrays/src/macro')['Arr']>
     readonly Collection: UnwrapRef<typeof import('../core/collections/src/index')['Collection']>
     readonly Command: UnwrapRef<typeof import('../core/cli/src/command')['Command']>
+    readonly Console: UnwrapRef<typeof import('../core/logging/src/index')['Console']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly DnsStack: UnwrapRef<typeof import('../core/dns/src/index')['DnsStack']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -1152,6 +1155,7 @@ declare module 'vue' {
     readonly defaultWindow: UnwrapRef<typeof import('../core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineBuildConfig: UnwrapRef<typeof import('../core/development/src/index')['defineBuildConfig']>
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
@@ -1423,6 +1427,7 @@ declare module 'vue' {
     readonly not: UnwrapRef<typeof import('../core/utils/src/math')['not']>
     readonly notNullish: UnwrapRef<typeof import('../core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('../core/utils/src/guards')['notUndefined']>
+    readonly notification: UnwrapRef<typeof import('../core/notifications/src/index')['notification']>
     readonly notificationsPath: UnwrapRef<typeof import('../core/path/src/index')['notificationsPath']>
     readonly now: UnwrapRef<typeof import('../core/datetime/src/index')['now']>
     readonly objectEntries: UnwrapRef<typeof import('../core/objects/src/index')['objectEntries']>
@@ -1847,6 +1852,7 @@ declare module '@vue/runtime-core' {
     readonly Arr: UnwrapRef<typeof import('../core/arrays/src/macro')['Arr']>
     readonly Collection: UnwrapRef<typeof import('../core/collections/src/index')['Collection']>
     readonly Command: UnwrapRef<typeof import('../core/cli/src/command')['Command']>
+    readonly Console: UnwrapRef<typeof import('../core/logging/src/index')['Console']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly DnsStack: UnwrapRef<typeof import('../core/dns/src/index')['DnsStack']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -2025,6 +2031,7 @@ declare module '@vue/runtime-core' {
     readonly defaultWindow: UnwrapRef<typeof import('../core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineBuildConfig: UnwrapRef<typeof import('../core/development/src/index')['defineBuildConfig']>
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
@@ -2296,6 +2303,7 @@ declare module '@vue/runtime-core' {
     readonly not: UnwrapRef<typeof import('../core/utils/src/math')['not']>
     readonly notNullish: UnwrapRef<typeof import('../core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('../core/utils/src/guards')['notUndefined']>
+    readonly notification: UnwrapRef<typeof import('../core/notifications/src/index')['notification']>
     readonly notificationsPath: UnwrapRef<typeof import('../core/path/src/index')['notificationsPath']>
     readonly now: UnwrapRef<typeof import('../core/datetime/src/index')['now']>
     readonly objectEntries: UnwrapRef<typeof import('../core/objects/src/index')['objectEntries']>

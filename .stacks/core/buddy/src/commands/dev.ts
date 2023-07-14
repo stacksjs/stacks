@@ -27,7 +27,7 @@ export async function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       // const perf = await intro('buddy dev')
-      // const result = await runAction(Action.Dev, { ...options, verbose: true })
+      // const result = await runAction(Action.Dev, options)
 
       if (hasNoOptions(options)) {
         const answer = await prompt.require()
@@ -72,7 +72,7 @@ export async function dev(buddy: CLI) {
     .command('dev:components', descriptions.components)
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runAction(Action.DevComponents, { ...options, verbose: true })
+      const result = await runAction(Action.DevComponents, options)
 
       if (options.verbose)
         log.info('runAction result is', result)
@@ -93,7 +93,7 @@ export async function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:docs')
-      const result = await runAction(Action.DevDocs, { ...options, verbose: true })
+      const result = await runAction(Action.DevDocs, options)
 
       // check if result is an array
       if (Array.isArray(result)) {

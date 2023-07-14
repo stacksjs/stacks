@@ -1,5 +1,6 @@
 import type {
   AppOptions,
+  BinaryOptions,
   CacheOptions,
   CdnOptions,
   JobOptions as CronJobOptions,
@@ -21,7 +22,6 @@ import type {
   ServicesOptions,
   StorageOptions,
   UiOptions,
-  UserCliOptions,
 } from '@stacksjs/types'
 
 export { loadStacksConfig } from '@stacksjs/config'
@@ -30,15 +30,21 @@ export function defineApp(config: Partial<AppOptions>) {
   return config
 }
 
+// the user commands
+export function defineBinary(config: Partial<BinaryOptions>) {
+  return config
+}
+
+// alias for defineBinary
+export function defineCli(config: Partial<BinaryOptions>) {
+  return config
+}
+
 export function defineCache(config: Partial<CacheOptions>) {
   return config
 }
 
 export function defineCdn(config: Partial<CdnOptions>) {
-  return config
-}
-
-export function defineCli(config: Partial<UserCliOptions>) {
   return config
 }
 

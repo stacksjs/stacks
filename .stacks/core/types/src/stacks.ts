@@ -1,5 +1,6 @@
 import type {
   AppOptions,
+  BinaryOptions,
   CacheOptions,
   CdnOptions,
   DatabaseOptions,
@@ -17,7 +18,6 @@ import type {
   ServicesOptions,
   StorageOptions,
   UiOptions,
-  UserCliOptions,
 } from './'
 
 /**
@@ -38,6 +38,15 @@ export interface StacksOptions {
   app: Partial<AppOptions>
 
   /**
+   * **Binary Options**
+   *
+   * This configuration defines all of your Binary options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  binary: Partial<BinaryOptions>
+
+  /**
    * **Cache Options**
    *
    * This configuration defines all of your Cache options. Because Stacks is fully-typed, you
@@ -54,15 +63,6 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   cdn: Partial<CdnOptions>
-
-  /**
-   * **CLI Options**
-   *
-   * This configuration defines all of your CLI options. Because Stacks is fully-typed, you
-   * may hover any of the options below and the definitions will be provided. In case you
-   * have any questions, feel free to reach out via Discord or GitHub Discussions.
-   */
-  cli: Partial<UserCliOptions>
 
   /**
    * **Database Options**

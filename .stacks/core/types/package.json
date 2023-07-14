@@ -57,7 +57,6 @@
     "@types/crypto-js": "^4.1.1",
     "@types/eslint": "^8.44.0",
     "@types/fs-extra": "^11.0.1",
-    "@types/js-yaml": "^4.0.5",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.16.19",

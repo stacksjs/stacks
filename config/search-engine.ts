@@ -1,3 +1,5 @@
+import { defineSearchEngine } from 'stacks/utils'
+
 /**
  * **Search Engine Options**
  *

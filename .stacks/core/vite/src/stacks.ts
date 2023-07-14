@@ -66,7 +66,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // p.resourcesPath('components'),
 
       // auto imported utilities start here
-      p.frameworkPath('src'),
+      p.frameworkPath('src'), // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
       // p.aiPath('src'),
       // p.arraysPath('src'),
       // p.authPath('src'),

@@ -1,7 +1,9 @@
-export * as vueComponentExample from '@stacksjs/vite/example-vue'
-export * as webComponentExample from '@stacksjs/vite/example-wc'
-export * as functions from '@stacksjs/vite/functions'
-export * as views from '@stacksjs/vite/views'
-export * as vueComponents from '@stacksjs/vite/vue-components'
-export * as webComponents from '@stacksjs/vite/web-components'
-export * as stacks from '@stacksjs/vite/stacks'
+export {
+  vueComponentExample,
+  webComponentExample,
+  functions,
+  views,
+  vueComponents,
+  webComponents,
+  stacks,
+} from '@stacksjs/vite'
