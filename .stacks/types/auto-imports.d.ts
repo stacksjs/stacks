@@ -217,11 +217,12 @@ declare global {
   const defaults: typeof import('./core/config/src/defaults')['defaults']
   const defineApp: typeof import('../core/utils/src/config')['defineApp']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
+  const defineBinary: typeof import('../core/utils/src/config')['defineBinary']
   const defineBuildConfig: typeof import('../core/development/src/index')['defineBuildConfig']
   const defineCache: typeof import('../core/utils/src/config')['defineCache']
   const defineCdn: typeof import('../core/utils/src/config')['defineCdn']
   const defineChat: typeof import('../core/utils/src/config')['defineChat']
-  const defineBinary: typeof import('../core/utils/src/config')['defineBinary']
+  const defineCli: typeof import('../core/utils/src/config')['defineCli']
   const defineComponent: typeof import('vue')['defineComponent']
   const defineCronJobsConfig: typeof import('../core/utils/src/config')['defineCronJobsConfig']
   const defineDatabase: typeof import('../core/utils/src/config')['defineDatabase']
@@ -1152,11 +1153,12 @@ declare module 'vue' {
     readonly defaultWindow: UnwrapRef<typeof import('../core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineBuildConfig: UnwrapRef<typeof import('../core/development/src/index')['defineBuildConfig']>
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
-    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
+    readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>
@@ -2025,11 +2027,12 @@ declare module '@vue/runtime-core' {
     readonly defaultWindow: UnwrapRef<typeof import('../core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineBuildConfig: UnwrapRef<typeof import('../core/development/src/index')['defineBuildConfig']>
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
-    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
+    readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>

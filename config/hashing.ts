@@ -1,3 +1,5 @@
+import { defineHashing } from 'stacks/utils'
+
 /**
  * **Hashing Configuration**
  *

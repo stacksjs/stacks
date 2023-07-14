@@ -1,3 +1,4 @@
+import { frameworkPath } from '@stacksjs/path'
 import { type DocsConfig } from '@stacksjs/types'
 import services from './services'
 
