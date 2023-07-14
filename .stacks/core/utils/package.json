@@ -104,6 +104,7 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
+    "@types/js-yaml": "^4.0.5",
     "markdown-table": "^3.0.3"
   }
 }

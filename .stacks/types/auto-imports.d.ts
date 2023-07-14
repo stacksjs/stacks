@@ -221,7 +221,7 @@ declare global {
   const defineCache: typeof import('../core/utils/src/config')['defineCache']
   const defineCdn: typeof import('../core/utils/src/config')['defineCdn']
   const defineChat: typeof import('../core/utils/src/config')['defineChat']
-  const defineCli: typeof import('../core/utils/src/config')['defineCli']
+  const defineBinary: typeof import('../core/utils/src/config')['defineBinary']
   const defineComponent: typeof import('vue')['defineComponent']
   const defineCronJobsConfig: typeof import('../core/utils/src/config')['defineCronJobsConfig']
   const defineDatabase: typeof import('../core/utils/src/config')['defineDatabase']
@@ -1156,7 +1156,7 @@ declare module 'vue' {
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
-    readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>
@@ -2029,7 +2029,7 @@ declare module '@vue/runtime-core' {
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
-    readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
+    readonly defineBinary: UnwrapRef<typeof import('../core/utils/src/config')['defineBinary']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>

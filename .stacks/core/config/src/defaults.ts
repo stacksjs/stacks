@@ -1,8 +1,8 @@
 import type { ResolvedStacksOptions } from 'stacks/types'
 import app from '../../../../config/app'
+import binary from '../../../../config/binary'
 import cache from '../../../../config/cache'
 import cdn from '../../../../config/cdn'
-import cli from '../../../../config/cli'
 import database from '../../../../config/database'
 import dependencies from '../../../../config/deps'
 import dns from '../../../../config/dns'
@@ -19,11 +19,11 @@ import searchEngine from '../../../../config/search-engine'
 import services from '../../../../config/services'
 import ui from '../../../../config/ui'
 
-export const defaults: ResolvedStacksOptions = {
+const defaults: ResolvedStacksOptions = {
   app,
+  binary,
   cache,
   cdn,
-  cli,
   database,
   dependencies,
   dns,
@@ -42,10 +42,11 @@ export const defaults: ResolvedStacksOptions = {
 }
 
 export {
+  defaults,
   app,
+  binary,
   cache,
   cdn,
-  cli,
   database,
   dependencies,
   dns,
