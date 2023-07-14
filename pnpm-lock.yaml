@@ -409,13 +409,13 @@ importers:
         version: link:../development
       vite-plugin-mkcert:
         specifier: ^1.16.0
-        version: 1.16.0(vite@4.4.3)
+        version: 1.16.0(vite@4.4.4)
 
   .stacks/core/cache:
     dependencies:
       '@aws-sdk/client-dynamodb':
-        specifier: ^3.369.0
-        version: 3.369.0
+        specifier: ^3.370.0
+        version: 3.370.0
       '@stacksjs/config':
         specifier: workspace:*
         version: link:../config
@@ -1030,8 +1030,8 @@ importers:
         specifier: ^1.54.1
         version: 1.54.1
       stripe:
-        specifier: ^12.12.0
-        version: 12.12.0
+        specifier: ^12.13.0
+        version: 12.13.0
     devDependencies:
       '@stacksjs/config':
         specifier: workspace:*
@@ -1197,8 +1197,8 @@ importers:
         specifier: ^2.5.2
         version: 2.5.2
       vite:
-        specifier: ^4.4.3
-        version: 4.4.3(@types/node@18.16.19)
+        specifier: ^4.4.4
+        version: 4.4.4(@types/node@18.16.19)
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -1461,7 +1461,7 @@ importers:
         version: 6.3.1
       unocss:
         specifier: ^0.53.5
-        version: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.3)
+        version: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.4)
       unplugin-auto-import:
         specifier: ^0.16.6
         version: 0.16.6(rollup@2.79.1)
@@ -1469,20 +1469,20 @@ importers:
         specifier: ^0.25.1
         version: 0.25.1(rollup@2.79.1)(vue@3.3.4)
       vite:
-        specifier: ^4.4.3
-        version: 4.4.3(@types/node@18.16.19)
+        specifier: ^4.4.4
+        version: 4.4.4(@types/node@18.16.19)
       vite-plugin-inspect:
         specifier: ^0.7.33
-        version: 0.7.33(rollup@2.79.1)(vite@4.4.3)
+        version: 0.7.33(rollup@2.79.1)(vite@4.4.4)
       vite-plugin-pwa:
         specifier: ^0.16.4
-        version: 0.16.4(vite@4.4.3)(workbox-build@7.0.0)(workbox-window@7.0.0)
+        version: 0.16.4(vite@4.4.4)(workbox-build@7.0.0)(workbox-window@7.0.0)
       vite-plugin-vue-layouts:
         specifier: ^0.8.0
-        version: 0.8.0(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.8.0(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4)
       vite-ssg:
         specifier: ^0.23.0
-        version: 0.23.0(@unhead/vue@1.1.30)(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.23.0(@unhead/vue@1.1.30)(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4)
       vitepress:
         specifier: 1.0.0-beta.5
         version: 1.0.0-beta.5(@algolia/client-search@4.18.0)(@types/node@18.16.19)(search-insights@2.7.0)
@@ -1522,7 +1522,7 @@ importers:
         version: 2.1.4(typescript@5.1.6)(vue@3.3.4)
       unocss:
         specifier: ^0.53.5
-        version: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.3)
+        version: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.4)
       vue:
         specifier: ^3.3.4
         version: 3.3.4
@@ -1660,7 +1660,7 @@ importers:
         version: link:../utils
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.2.3(vite@4.4.3)(vue@3.3.4)
+        version: 4.2.3(vite@4.4.4)(vue@3.3.4)
       markdown-it-link-attributes:
         specifier: ^4.0.1
         version: 4.0.1
@@ -1677,26 +1677,26 @@ importers:
         specifier: ^0.25.1
         version: 0.25.1(rollup@2.79.1)(vue@3.3.4)
       vite:
-        specifier: ^4.4.3
-        version: 4.4.3(@types/node@18.16.19)
+        specifier: ^4.4.4
+        version: 4.4.4(@types/node@18.16.19)
       vite-plugin-inspect:
         specifier: ^0.7.33
-        version: 0.7.33(rollup@2.79.1)(vite@4.4.3)
+        version: 0.7.33(rollup@2.79.1)(vite@4.4.4)
       vite-plugin-pages:
         specifier: ^0.31.0
-        version: 0.31.0(vite@4.4.3)
+        version: 0.31.0(vite@4.4.4)
       vite-plugin-pwa:
         specifier: ^0.16.4
-        version: 0.16.4(vite@4.4.3)(workbox-build@7.0.0)(workbox-window@7.0.0)
+        version: 0.16.4(vite@4.4.4)(workbox-build@7.0.0)(workbox-window@7.0.0)
       vite-plugin-vue-layouts:
         specifier: ^0.8.0
-        version: 0.8.0(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.8.0(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4)
       vite-plugin-vue-markdown:
         specifier: ^0.23.5
-        version: 0.23.5(rollup@2.79.1)(vite@4.4.3)
+        version: 0.23.5(rollup@2.79.1)(vite@4.4.4)
       vite-ssg:
         specifier: ^0.23.0
-        version: 0.23.0(@unhead/vue@1.1.30)(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.23.0(@unhead/vue@1.1.30)(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4)
       vite-ssg-sitemap:
         specifier: ^0.5.1
         version: 0.5.1
@@ -1706,7 +1706,7 @@ importers:
         version: link:../development
       vite-plugin-full-reload:
         specifier: ^1.0.5
-        version: 1.0.5(vite@4.4.3)
+        version: 1.0.5(vite@4.4.4)
 
   .stacks/docs:
     dependencies:
@@ -1768,8 +1768,8 @@ importers:
         specifier: ^0.33.0
         version: 0.33.0
       vite:
-        specifier: ^4.4.3
-        version: 4.4.3(@types/node@18.16.19)
+        specifier: ^4.4.4
+        version: 4.4.4(@types/node@18.16.19)
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -2002,7 +2002,7 @@ packages:
     resolution: {integrity: sha512-IzSgsrxUcsrejQbPVilIKy16kAT52EwB6zSaI+M3xxIhKh5+aldEyvI+z6erM7TCLB2BJsFrtHjp6/4/sr+3dA==}
     dependencies:
       '@aws-crypto/util': 3.0.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       tslib: 1.14.1
     dev: false
 
@@ -2019,7 +2019,7 @@ packages:
       '@aws-crypto/sha256-js': 3.0.0
       '@aws-crypto/supports-web-crypto': 3.0.0
       '@aws-crypto/util': 3.0.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@aws-sdk/util-locate-window': 3.310.0
       '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
@@ -2029,7 +2029,7 @@ packages:
     resolution: {integrity: sha512-PnNN7os0+yd1XvXAy23CFOmTbMaDxgxXtTKHybrJ39Y8kGzBATgBFibWJKH6BhytLI/Zyszs87xCOBNyBig6vQ==}
     dependencies:
       '@aws-crypto/util': 3.0.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       tslib: 1.14.1
     dev: false
 
@@ -2042,7 +2042,7 @@ packages:
   /@aws-crypto/util@3.0.0:
     resolution: {integrity: sha512-2OJlpeJpCR48CC8r+uKVChzs9Iungj9wkZrl8Z041DWEWvyIHILYKCPNzJghKsivj+S3mLo6BVc7mBNzdxA46w==}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
     dev: false
@@ -2079,24 +2079,24 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/client-dynamodb@3.369.0:
-    resolution: {integrity: sha512-BBE8ktqqgXvG4r1yWmRZYR/gqaebtmeWFQMwbr0hTMLEw5joeVWLHywLHd4uNMS9uCNEEmaSWAlVyC6LfMc7Mw==}
+  /@aws-sdk/client-dynamodb@3.370.0:
+    resolution: {integrity: sha512-qL02C4adrZljZXgPonSHYJ95qkj1IlIsZx3NxaGzMc5S3uPJua14phktk2XP8K/Ap3gD6vLWt1UVVoo/rDFOAQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.369.0
-      '@aws-sdk/credential-provider-node': 3.369.0
-      '@aws-sdk/middleware-endpoint-discovery': 3.369.0
-      '@aws-sdk/middleware-host-header': 3.369.0
-      '@aws-sdk/middleware-logger': 3.369.0
-      '@aws-sdk/middleware-recursion-detection': 3.369.0
-      '@aws-sdk/middleware-signing': 3.369.0
-      '@aws-sdk/middleware-user-agent': 3.369.0
-      '@aws-sdk/types': 3.369.0
-      '@aws-sdk/util-endpoints': 3.369.0
-      '@aws-sdk/util-user-agent-browser': 3.369.0
-      '@aws-sdk/util-user-agent-node': 3.369.0
+      '@aws-sdk/client-sts': 3.370.0
+      '@aws-sdk/credential-provider-node': 3.370.0
+      '@aws-sdk/middleware-endpoint-discovery': 3.370.0
+      '@aws-sdk/middleware-host-header': 3.370.0
+      '@aws-sdk/middleware-logger': 3.370.0
+      '@aws-sdk/middleware-recursion-detection': 3.370.0
+      '@aws-sdk/middleware-signing': 3.370.0
+      '@aws-sdk/middleware-user-agent': 3.370.0
+      '@aws-sdk/types': 3.370.0
+      '@aws-sdk/util-endpoints': 3.370.0
+      '@aws-sdk/util-user-agent-browser': 3.370.0
+      '@aws-sdk/util-user-agent-node': 3.370.0
       '@smithy/config-resolver': 1.0.1
       '@smithy/fetch-http-handler': 1.0.1
       '@smithy/hash-node': 1.0.1
@@ -2297,20 +2297,20 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sso-oidc@3.369.0:
-    resolution: {integrity: sha512-NOnsRrkHMss9pE68uTPMEt1KoW6eWt4ZCesJayCOiIgmIA/AhXHz06IBCYJ9eu9Xbu/55FDr4X3VCtUf7Rfh6g==}
+  /@aws-sdk/client-sso-oidc@3.370.0:
+    resolution: {integrity: sha512-jAYOO74lmVXylQylqkPrjLzxvUnMKw476JCUTvCO6Q8nv3LzCWd76Ihgv/m9Q4M2Tbqi1iP2roVK5bstsXzEjA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/middleware-host-header': 3.369.0
-      '@aws-sdk/middleware-logger': 3.369.0
-      '@aws-sdk/middleware-recursion-detection': 3.369.0
-      '@aws-sdk/middleware-user-agent': 3.369.0
-      '@aws-sdk/types': 3.369.0
-      '@aws-sdk/util-endpoints': 3.369.0
-      '@aws-sdk/util-user-agent-browser': 3.369.0
-      '@aws-sdk/util-user-agent-node': 3.369.0
+      '@aws-sdk/middleware-host-header': 3.370.0
+      '@aws-sdk/middleware-logger': 3.370.0
+      '@aws-sdk/middleware-recursion-detection': 3.370.0
+      '@aws-sdk/middleware-user-agent': 3.370.0
+      '@aws-sdk/types': 3.370.0
+      '@aws-sdk/util-endpoints': 3.370.0
+      '@aws-sdk/util-user-agent-browser': 3.370.0
+      '@aws-sdk/util-user-agent-node': 3.370.0
       '@smithy/config-resolver': 1.0.1
       '@smithy/fetch-http-handler': 1.0.1
       '@smithy/hash-node': 1.0.1
@@ -2419,20 +2419,20 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sso@3.369.0:
-    resolution: {integrity: sha512-SjJd9QGT9ccHOY64qnMfvVjrneBORIx/k8OdtL0nV2wemPqCM9uAm+TYZ01E91D/+lfXS+lLMGSidSA39PMIOA==}
+  /@aws-sdk/client-sso@3.370.0:
+    resolution: {integrity: sha512-0Ty1iHuzNxMQtN7nahgkZr4Wcu1XvqGfrQniiGdKKif9jG/4elxsQPiydRuQpFqN6b+bg7wPP7crFP1uTxx2KQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/middleware-host-header': 3.369.0
-      '@aws-sdk/middleware-logger': 3.369.0
-      '@aws-sdk/middleware-recursion-detection': 3.369.0
-      '@aws-sdk/middleware-user-agent': 3.369.0
-      '@aws-sdk/types': 3.369.0
-      '@aws-sdk/util-endpoints': 3.369.0
-      '@aws-sdk/util-user-agent-browser': 3.369.0
-      '@aws-sdk/util-user-agent-node': 3.369.0
+      '@aws-sdk/middleware-host-header': 3.370.0
+      '@aws-sdk/middleware-logger': 3.370.0
+      '@aws-sdk/middleware-recursion-detection': 3.370.0
+      '@aws-sdk/middleware-user-agent': 3.370.0
+      '@aws-sdk/types': 3.370.0
+      '@aws-sdk/util-endpoints': 3.370.0
+      '@aws-sdk/util-user-agent-browser': 3.370.0
+      '@aws-sdk/util-user-agent-node': 3.370.0
       '@smithy/config-resolver': 1.0.1
       '@smithy/fetch-http-handler': 1.0.1
       '@smithy/hash-node': 1.0.1
@@ -2549,23 +2549,23 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/client-sts@3.369.0:
-    resolution: {integrity: sha512-kyZl654U27gsQX9UjiiO4CX5M6kHwzDouwbhjc5HshQld/lUbJQ4uPpAwhlbZiqnzGeB639MdAGaSwrOOw2ixw==}
+  /@aws-sdk/client-sts@3.370.0:
+    resolution: {integrity: sha512-utFxOPWIzbN+3kc415Je2o4J72hOLNhgR2Gt5EnRSggC3yOnkC4GzauxG8n7n5gZGBX45eyubHyPOXLOIyoqQA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/credential-provider-node': 3.369.0
-      '@aws-sdk/middleware-host-header': 3.369.0
-      '@aws-sdk/middleware-logger': 3.369.0
-      '@aws-sdk/middleware-recursion-detection': 3.369.0
-      '@aws-sdk/middleware-sdk-sts': 3.369.0
-      '@aws-sdk/middleware-signing': 3.369.0
-      '@aws-sdk/middleware-user-agent': 3.369.0
-      '@aws-sdk/types': 3.369.0
-      '@aws-sdk/util-endpoints': 3.369.0
-      '@aws-sdk/util-user-agent-browser': 3.369.0
-      '@aws-sdk/util-user-agent-node': 3.369.0
+      '@aws-sdk/credential-provider-node': 3.370.0
+      '@aws-sdk/middleware-host-header': 3.370.0
+      '@aws-sdk/middleware-logger': 3.370.0
+      '@aws-sdk/middleware-recursion-detection': 3.370.0
+      '@aws-sdk/middleware-sdk-sts': 3.370.0
+      '@aws-sdk/middleware-signing': 3.370.0
+      '@aws-sdk/middleware-user-agent': 3.370.0
+      '@aws-sdk/types': 3.370.0
+      '@aws-sdk/util-endpoints': 3.370.0
+      '@aws-sdk/util-user-agent-browser': 3.370.0
+      '@aws-sdk/util-user-agent-node': 3.370.0
       '@smithy/config-resolver': 1.0.1
       '@smithy/fetch-http-handler': 1.0.1
       '@smithy/hash-node': 1.0.1
@@ -2624,11 +2624,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/credential-provider-env@3.369.0:
-    resolution: {integrity: sha512-EZUXGLjnun5t5/dVYJ9yyOwPAJktOdLEQSwtw7Q9XOxaNqVFFz9EU+TwYraV4WZ3CFRNn7GEIctVlXAHVFLm/w==}
+  /@aws-sdk/credential-provider-env@3.370.0:
+    resolution: {integrity: sha512-raR3yP/4GGbKFRPP5hUBNkEmTnzxI9mEc2vJAJrcv4G4J4i/UP6ELiLInQ5eO2/VcV/CeKGZA3t7d1tsJ+jhCg==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -2680,15 +2680,15 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-ini@3.369.0:
-    resolution: {integrity: sha512-12XXd4gnrn05adio/xPF8Nxl99L2FFzksbFILDIfSni7nLDX0m2XprnkswQiCKSbfDIQQsgnnh2F+HhorLuqfQ==}
+  /@aws-sdk/credential-provider-ini@3.370.0:
+    resolution: {integrity: sha512-eJyapFKa4NrC9RfTgxlXnXfS9InG/QMEUPPVL+VhG7YS6nKqetC1digOYgivnEeu+XSKE0DJ7uZuXujN2Y7VAQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/credential-provider-env': 3.369.0
-      '@aws-sdk/credential-provider-process': 3.369.0
-      '@aws-sdk/credential-provider-sso': 3.369.0
-      '@aws-sdk/credential-provider-web-identity': 3.369.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/credential-provider-env': 3.370.0
+      '@aws-sdk/credential-provider-process': 3.370.0
+      '@aws-sdk/credential-provider-sso': 3.370.0
+      '@aws-sdk/credential-provider-web-identity': 3.370.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/credential-provider-imds': 1.0.1
       '@smithy/property-provider': 1.0.1
       '@smithy/shared-ini-file-loader': 1.0.1
@@ -2735,16 +2735,16 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-node@3.369.0:
-    resolution: {integrity: sha512-vxX4s33EpRDh7OhKBDVAPxdBxVHPOOj1r7nN6f0hZLw5WPeeffSjLqw+MnFj33gSO7Htnt+Q0cAJQzeY5G8q3A==}
+  /@aws-sdk/credential-provider-node@3.370.0:
+    resolution: {integrity: sha512-gkFiotBFKE4Fcn8CzQnMeab9TAR06FEAD02T4ZRYW1xGrBJOowmje9dKqdwQFHSPgnWAP+8HoTA8iwbhTLvjNA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/credential-provider-env': 3.369.0
-      '@aws-sdk/credential-provider-ini': 3.369.0
-      '@aws-sdk/credential-provider-process': 3.369.0
-      '@aws-sdk/credential-provider-sso': 3.369.0
-      '@aws-sdk/credential-provider-web-identity': 3.369.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/credential-provider-env': 3.370.0
+      '@aws-sdk/credential-provider-ini': 3.370.0
+      '@aws-sdk/credential-provider-process': 3.370.0
+      '@aws-sdk/credential-provider-sso': 3.370.0
+      '@aws-sdk/credential-provider-web-identity': 3.370.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/credential-provider-imds': 1.0.1
       '@smithy/property-provider': 1.0.1
       '@smithy/shared-ini-file-loader': 1.0.1
@@ -2775,11 +2775,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/credential-provider-process@3.369.0:
-    resolution: {integrity: sha512-OyasKV3mZz6TRSxczRnyZoifrtYwqGBxtr75YP37cm/JkecDshHXRcE8Jt9LyBg/93oWfKou03WVQiY9UIDJGQ==}
+  /@aws-sdk/credential-provider-process@3.370.0:
+    resolution: {integrity: sha512-0BKFFZmUO779Xdw3u7wWnoWhYA4zygxJbgGVSyjkOGBvdkbPSTTcdwT1KFkaQy2kOXYeZPl+usVVRXs+ph4ejg==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/shared-ini-file-loader': 1.0.1
       '@smithy/types': 1.1.0
@@ -2815,13 +2815,13 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/credential-provider-sso@3.369.0:
-    resolution: {integrity: sha512-qXbEsmgFpGPbRVnwBYPxL53wQuue0+Z8tVu877itbrzpHm61AuQ04Hn8T1boKrr40excDuxiSrCX5oCKRG4srQ==}
+  /@aws-sdk/credential-provider-sso@3.370.0:
+    resolution: {integrity: sha512-PFroYm5hcPSfC/jkZnCI34QFL3I7WVKveVk6/F3fud/cnP8hp6YjA9NiTNbqdFSzsyoiN/+e5fZgNKih8vVPTA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso': 3.369.0
-      '@aws-sdk/token-providers': 3.369.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/client-sso': 3.370.0
+      '@aws-sdk/token-providers': 3.370.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/shared-ini-file-loader': 1.0.1
       '@smithy/types': 1.1.0
@@ -2849,11 +2849,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/credential-provider-web-identity@3.369.0:
-    resolution: {integrity: sha512-oFGxC839pQTJ6djFEBuokSi3/jNjNMVgZSpg26Z23V/r3vKRSgXfVmeus1FLYIWg0jO7KFsMPo9eVJW6auzw6w==}
+  /@aws-sdk/credential-provider-web-identity@3.370.0:
+    resolution: {integrity: sha512-CFaBMLRudwhjv1sDzybNV93IaT85IwS+L8Wq6VRMa0mro1q9rrWsIZO811eF+k0NEPfgU1dLH+8Vc2qhw4SARQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -2910,12 +2910,12 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-endpoint-discovery@3.369.0:
-    resolution: {integrity: sha512-iNxD1ae8YIA853HBdn76tbYf2OLMJXGsRzlEDxTtnT8qWCiCAWuzsWclG/T88Cj0oYqbs1DHtDPH+Q8Eqomv3w==}
+  /@aws-sdk/middleware-endpoint-discovery@3.370.0:
+    resolution: {integrity: sha512-CxTo+AUW1XIT0U1COzBjdQ39eWbWk5Sv9OmA73g1vHwwvy9M3vFl78cnaKnauGv7BI/NtM5IeRy0w5T22BtWgg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/endpoint-cache': 3.310.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/protocol-http': 1.1.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -2954,11 +2954,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-host-header@3.369.0:
-    resolution: {integrity: sha512-ysbur68WHY7RYpGfth1Iu0+S03nSCLtIHJ+CDVYcVcyvYxaAv6y3gvfrkH9oL220uX75UVLj3tCKgAaLUBy5uA==}
+  /@aws-sdk/middleware-host-header@3.370.0:
+    resolution: {integrity: sha512-CPXOm/TnOFC7KyXcJglICC7OiA7Kj6mT3ChvEijr56TFOueNHvJdV4aNIFEQy0vGHOWtY12qOWLNto/wYR1BAQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/protocol-http': 1.1.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -2981,11 +2981,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-logger@3.369.0:
-    resolution: {integrity: sha512-mp4gVRaFRRX+LEDEIlPxHOI/+k1jPPp0tuKyoyNZQS8IPOL+6bqFdPan03hkTjujeyaZOyRjpaXXat6k1HkHhw==}
+  /@aws-sdk/middleware-logger@3.370.0:
+    resolution: {integrity: sha512-cQMq9SaZ/ORmTJPCT6VzMML7OxFdQzNkhMAgKpTDl+tdPWynlHF29E5xGoSzROnThHlQPCjogU0NZ8AxI0SWPA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
     dev: false
@@ -3009,11 +3009,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-recursion-detection@3.369.0:
-    resolution: {integrity: sha512-V7TNhHRTwiKlVXiaW2CYGcm3vObWdG5zU0SN7ZxHDT27eTRYL8ncVpDnQZ65HfekXL8T9llVibBTYYvZrxLJ1g==}
+  /@aws-sdk/middleware-recursion-detection@3.370.0:
+    resolution: {integrity: sha512-L7ZF/w0lAAY/GK1khT8VdoU0XB7nWHk51rl/ecAg64J70dHnMOAg8n+5FZ9fBu/xH1FwUlHOkwlodJOgzLJjtg==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/protocol-http': 1.1.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -3054,12 +3054,12 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-sdk-sts@3.369.0:
-    resolution: {integrity: sha512-Igizyt7TWy8kTitvE6o7R1Cfa4qLqijS/WxqT1cnHscQyZFFiIJVNypWeV4V19DZ9Msb/feAQdc8EWgHvZvYGA==}
+  /@aws-sdk/middleware-sdk-sts@3.370.0:
+    resolution: {integrity: sha512-ykbsoVy0AJtVbuhAlTAMcaz/tCE3pT8nAp0L7CQQxSoanRCvOux7au0KwMIQVhxgnYid4dWVF6d00SkqU5MXRA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/middleware-signing': 3.369.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/middleware-signing': 3.370.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
     dev: false
@@ -3097,11 +3097,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-signing@3.369.0:
-    resolution: {integrity: sha512-55qihn+9/zjsHUNvEgc4OUWQBxVlKW9C+whVhdy8H8olwAnfOH1ui9xXQ+SAyBCD9ck3vAY89VmBeQQQGZVVQw==}
+  /@aws-sdk/middleware-signing@3.370.0:
+    resolution: {integrity: sha512-Dwr/RTCWOXdm394wCwICGT2VNOTMRe4IGPsBRJAsM24pm+EEqQzSS3Xu/U/zF4exuxqpMta4wec4QpSarPNTxA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/protocol-http': 1.1.0
       '@smithy/signature-v4': 1.0.1
@@ -3137,12 +3137,12 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/middleware-user-agent@3.369.0:
-    resolution: {integrity: sha512-a7Wb3s0y+blGF654GZv3nI3ZMRARAGH7iQrF2gWGtb2Qq0f3TQGHmpoHddWObYxiFWYzdXdTC3kbsAW1zRwEAA==}
+  /@aws-sdk/middleware-user-agent@3.370.0:
+    resolution: {integrity: sha512-2+3SB6MtMAq1+gVXhw0Y3ONXuljorh6ijnxgTpv+uQnBW5jHCUiAS8WDYiDEm7i9euJPbvJfM8WUrSMDMU6Cog==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
-      '@aws-sdk/util-endpoints': 3.369.0
+      '@aws-sdk/types': 3.370.0
+      '@aws-sdk/util-endpoints': 3.370.0
       '@smithy/protocol-http': 1.1.0
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -3269,12 +3269,12 @@ packages:
       - aws-crt
     dev: false
 
-  /@aws-sdk/token-providers@3.369.0:
-    resolution: {integrity: sha512-xIz8KbF4RMlMq0aAJbVocLB03OiqJIU5RLy+2t+bKMQ60fV4bnVINH5GxAMiFXiBIQVqfehFJlxJACtEphqQwA==}
+  /@aws-sdk/token-providers@3.370.0:
+    resolution: {integrity: sha512-EyR2ZYr+lJeRiZU2/eLR+mlYU9RXLQvNyGFSAekJKgN13Rpq/h0syzXVFLP/RSod/oZenh/fhVZ2HwlZxuGBtQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.369.0
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/client-sso-oidc': 3.370.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/property-provider': 1.0.1
       '@smithy/shared-ini-file-loader': 1.0.1
       '@smithy/types': 1.1.0
@@ -3297,8 +3297,8 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/types@3.369.0:
-    resolution: {integrity: sha512-0LgII+RatF2OEFaFQcNyX72py4ZgWz+/JAv++PXv0gkIaTRnsJbSveQArNynEK+aAc/rZKWJgBvwT4FvLM2vgA==}
+  /@aws-sdk/types@3.370.0:
+    resolution: {integrity: sha512-8PGMKklSkRKjunFhzM2y5Jm0H2TBu7YRNISdYzXLUHKSP9zlMEYagseKVdmox0zKHf1LXVNuSlUV2b6SRrieCQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@smithy/types': 1.1.0
@@ -3387,11 +3387,11 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/util-endpoints@3.369.0:
-    resolution: {integrity: sha512-dkzhhMIvQRsgdomHi8fmgQ3df2cS1jeWAUIPjxV4lBikcvcF2U0CtvH9QYyMpluSNP1IYcEuONe8wfZGSrNjdg==}
+  /@aws-sdk/util-endpoints@3.370.0:
+    resolution: {integrity: sha512-5ltVAnM79nRlywwzZN5i8Jp4tk245OCGkKwwXbnDU+gq7zT3CIOsct1wNZvmpfZEPGt/bv7/NyRcjP+7XNsX/g==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       tslib: 2.6.0
     dev: false
 
@@ -3448,10 +3448,10 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/util-user-agent-browser@3.369.0:
-    resolution: {integrity: sha512-wrF0CqnfFac4sYr8jLZXz7B5NPxdW4GettH07Sl3ihO2aXsTvZ0RoyqzwF7Eve8ihbK0vCKt1S3/vZTOLw8sCg==}
+  /@aws-sdk/util-user-agent-browser@3.370.0:
+    resolution: {integrity: sha512-028LxYZMQ0DANKhW+AKFQslkScZUeYlPmSphrCIXgdIItRZh6ZJHGzE7J/jDsEntZOrZJsjI4z0zZ5W2idj04w==}
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/types': 1.1.0
       bowser: 2.11.0
       tslib: 2.6.0
@@ -3486,8 +3486,8 @@ packages:
       tslib: 2.6.0
     dev: false
 
-  /@aws-sdk/util-user-agent-node@3.369.0:
-    resolution: {integrity: sha512-RkiGyWp+YUlK4njsvqD7S08aihEW8aMNrT5OXmLGdukEUGWMAyvIcq4XS8MxA02GRPUxTUNInLltXwc1AaDpCw==}
+  /@aws-sdk/util-user-agent-node@3.370.0:
+    resolution: {integrity: sha512-33vxZUp8vxTT/DGYIR3PivQm07sSRGWI+4fCv63Rt7Q++fO24E0kQtmVAlikRY810I10poD6rwILVtITtFSzkg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       aws-crt: '>=1.0.0'
@@ -3495,7 +3495,7 @@ packages:
       aws-crt:
         optional: true
     dependencies:
-      '@aws-sdk/types': 3.369.0
+      '@aws-sdk/types': 3.370.0
       '@smithy/node-config-provider': 1.0.1
       '@smithy/types': 1.1.0
       tslib: 2.6.0
@@ -5700,7 +5700,7 @@ packages:
       unocss: '>= 0.31.13 < 1'
     dependencies:
       mini-svg-data-uri: 1.4.4
-      unocss: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.3)
+      unocss: 0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.4)
     dev: false
 
   /@mailchimp/mailchimp_transactional@1.0.50:
@@ -5795,7 +5795,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.5.3
+      semver: 7.5.4
       tar: 6.1.15
     transitivePeerDependencies:
       - encoding
@@ -7758,12 +7758,12 @@ packages:
       vue: 3.3.4
     dev: false
 
-  /@unocss/astro@0.53.5(rollup@2.79.1)(vite@4.4.3):
+  /@unocss/astro@0.53.5(rollup@2.79.1)(vite@4.4.4):
     resolution: {integrity: sha512-W4A0uIN4xAzVH6Vwf5ukG8rJpCeIwQZcpZPrEBWsqY5YcHZcLTFGMHcNmxyeG0qoXpXoxtvHyXXhgGU0BY5ZEw==}
     dependencies:
       '@unocss/core': 0.53.5
       '@unocss/reset': 0.53.5
-      '@unocss/vite': 0.53.5(rollup@2.79.1)(vite@4.4.3)
+      '@unocss/vite': 0.53.5(rollup@2.79.1)(vite@4.4.4)
     transitivePeerDependencies:
       - rollup
       - vite
@@ -7939,7 +7939,7 @@ packages:
       '@unocss/core': 0.53.5
     dev: false
 
-  /@unocss/vite@0.53.5(rollup@2.79.1)(vite@4.4.3):
+  /@unocss/vite@0.53.5(rollup@2.79.1)(vite@4.4.4):
     resolution: {integrity: sha512-ez0MVRatewLUQq79LI+XRAVRbXWaGbK1K1ht2B8vGyL9OrL6uieEwzxjHV7+rUa8i+FEHfD4Ntmtdpb3WuQSAA==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0
@@ -7954,7 +7954,7 @@ packages:
       chokidar: 3.5.3
       fast-glob: 3.3.0
       magic-string: 0.30.1
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     transitivePeerDependencies:
       - rollup
     dev: false
@@ -8008,14 +8008,14 @@ packages:
       vue: 3.3.4
     dev: false
 
-  /@vitejs/plugin-vue@4.2.3(vite@4.4.3)(vue@3.3.4):
+  /@vitejs/plugin-vue@4.2.3(vite@4.4.4)(vue@3.3.4):
     resolution: {integrity: sha512-R6JDUfiZbJA9cMiguQ7jxALsgiprjBeHL5ikpXfJCH62pPHtI+JdJ5xWj6Ev73yXSlYl86+blXn1kZHQ7uElxw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       vue: 3.3.4
     dev: false
 
@@ -11240,7 +11240,7 @@ packages:
     dependencies:
       debug: 3.2.7
       is-core-module: 2.12.1
-      resolve: 1.22.3
+      resolve: 1.22.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -18299,8 +18299,8 @@ packages:
       acorn: 8.9.0
     dev: false
 
-  /stripe@12.12.0:
-    resolution: {integrity: sha512-aM9xfyDryiaf/qSWMtJaTMrlc/he3qyx3aVHMqOZqUiMdgTV6lt7tLpFrU0pG+QURm1LAP9GYZ+EcA17446YoQ==}
+  /stripe@12.13.0:
+    resolution: {integrity: sha512-mn7CxL71FCRWkQp33jcJ7+xfRF7HGzPYZlq2c87U+6kxL1qd7f/N3S1g1E5uaSWe83V5v3jN/IiWqg9y8+kWRw==}
     engines: {node: '>=12.*'}
     dependencies:
       '@types/node': 18.16.19
@@ -19161,7 +19161,7 @@ packages:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
 
-  /unocss@0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.3):
+  /unocss@0.53.5(postcss@8.4.25)(rollup@2.79.1)(vite@4.4.4):
     resolution: {integrity: sha512-LXAdtzAaH8iEDWxW4t9i6TvJNw0OSrgdN+jw8rAZAWb73Nx51ZLoKPUB1rFvQMr2Li7LcsUj5hYpOrQbhhafYg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -19170,7 +19170,7 @@ packages:
       '@unocss/webpack':
         optional: true
     dependencies:
-      '@unocss/astro': 0.53.5(rollup@2.79.1)(vite@4.4.3)
+      '@unocss/astro': 0.53.5(rollup@2.79.1)(vite@4.4.4)
       '@unocss/cli': 0.53.5(rollup@2.79.1)
       '@unocss/core': 0.53.5
       '@unocss/extractor-arbitrary-variants': 0.53.5
@@ -19189,7 +19189,7 @@ packages:
       '@unocss/transformer-compile-class': 0.53.5
       '@unocss/transformer-directives': 0.53.5
       '@unocss/transformer-variant-group': 0.53.5
-      '@unocss/vite': 0.53.5(rollup@2.79.1)(vite@4.4.3)
+      '@unocss/vite': 0.53.5(rollup@2.79.1)(vite@4.4.4)
     transitivePeerDependencies:
       - postcss
       - rollup
@@ -19569,7 +19569,7 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -19581,17 +19581,17 @@ packages:
       - terser
     dev: false
 
-  /vite-plugin-full-reload@1.0.5(vite@4.4.3):
+  /vite-plugin-full-reload@1.0.5(vite@4.4.4):
     resolution: {integrity: sha512-kVZFDFWr0DxiHn6MuDVTQf7gnWIdETGlZh0hvTiMXzRN80vgF4PKbONSq8U1d0WtHsKaFODTQgJeakLacoPZEQ==}
     peerDependencies:
       vite: ^2 || ^3 || ^4
     dependencies:
       picocolors: 1.0.0
       picomatch: 2.3.1
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     dev: true
 
-  /vite-plugin-inspect@0.7.33(rollup@2.79.1)(vite@4.4.3):
+  /vite-plugin-inspect@0.7.33(rollup@2.79.1)(vite@4.4.4):
     resolution: {integrity: sha512-cQRLQKa/+Ua++5hN0IZfqNn1JYXBg2eCQOSUatPTwhXMO7nwfSvhhSc45E1nXfBBEhzLLOxgr1OdbDu55PiDDA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -19604,13 +19604,13 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     transitivePeerDependencies:
       - rollup
       - supports-color
     dev: false
 
-  /vite-plugin-mkcert@1.16.0(vite@4.4.3):
+  /vite-plugin-mkcert@1.16.0(vite@4.4.4):
     resolution: {integrity: sha512-5r+g8SB9wZzLNUFekGwZo3e0P6QlS6rbxK5p9z/itxNAimsYohgjK/YfVPVxM9EuglP9hjridq0lUejo9v1nVg==}
     engines: {node: '>=v16.7.0'}
     peerDependencies:
@@ -19620,13 +19620,13 @@ packages:
       axios: 1.4.0(debug@4.3.4)
       debug: 4.3.4
       picocolors: 1.0.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     transitivePeerDependencies:
       - encoding
       - supports-color
     dev: true
 
-  /vite-plugin-pages@0.31.0(vite@4.4.3):
+  /vite-plugin-pages@0.31.0(vite@4.4.4):
     resolution: {integrity: sha512-fw3onBfVTXQI7rOzAbSZhmfwvk50+3qNnGZpERjmD93c8nEjrGLyd53eFXYMxcJV4KA1vzi4qIHt2+6tS4dEMw==}
     peerDependencies:
       '@vue/compiler-sfc': ^2.7.0 || ^3.0.0
@@ -19643,13 +19643,13 @@ packages:
       json5: 2.2.3
       local-pkg: 0.4.3
       picocolors: 1.0.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       yaml: 2.3.1
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /vite-plugin-pwa@0.16.4(vite@4.4.3)(workbox-build@7.0.0)(workbox-window@7.0.0):
+  /vite-plugin-pwa@0.16.4(vite@4.4.4)(workbox-build@7.0.0)(workbox-window@7.0.0):
     resolution: {integrity: sha512-lmwHFIs9zI2H9bXJld/zVTbCqCQHZ9WrpyDMqosICDV0FVnCJwniX1NMDB79HGTIZzOQkY4gSZaVTJTw6maz/Q==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
@@ -19660,14 +19660,14 @@ packages:
       debug: 4.3.4
       fast-glob: 3.3.0
       pretty-bytes: 6.1.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       workbox-build: 7.0.0
       workbox-window: 7.0.0
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /vite-plugin-vue-layouts@0.8.0(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4):
+  /vite-plugin-vue-layouts@0.8.0(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-UZW2nSV2LraTSe7gsAL46hfdi7a0X1RvkGGoJVtA2O8beu7anzpXFwQLou8+kHy31CzVycT4gIPySBsHhtBN5g==}
     peerDependencies:
       vite: ^2.5.0 || ^3.0.0-0 || ^4.0.0
@@ -19677,14 +19677,14 @@ packages:
       '@vue/compiler-sfc': 3.3.4
       debug: 4.3.4
       fast-glob: 3.3.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       vue: 3.3.4
       vue-router: 4.2.4(vue@3.3.4)
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /vite-plugin-vue-markdown@0.23.5(rollup@2.79.1)(vite@4.4.3):
+  /vite-plugin-vue-markdown@0.23.5(rollup@2.79.1)(vite@4.4.4):
     resolution: {integrity: sha512-NXTZ4y+n691gLPWayMBbh4jldQeaqDp9e9WjWUYbn9obsLqS9qU+hr4RAruDq5kP4siTOp7JDV34Sw5eA7WxLg==}
     peerDependencies:
       vite: ^2.0.0 || ^3.0.0-0 || ^4.0.0
@@ -19696,7 +19696,7 @@ packages:
       '@rollup/pluginutils': 5.0.2(rollup@2.79.1)
       '@types/markdown-it': 12.2.3
       markdown-it: 13.0.1
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
     transitivePeerDependencies:
       - rollup
     dev: false
@@ -19705,7 +19705,7 @@ packages:
     resolution: {integrity: sha512-X3ZImSVpFMypBTIhaTqEOdKj7tO9n7Puzd8vsxuQluFUyu6x/e2Dzv8qk5qZsC34ZR6iHt0wa2sPhDu1OjdOsA==}
     dev: false
 
-  /vite-ssg@0.23.0(@unhead/vue@1.1.30)(vite@4.4.3)(vue-router@4.2.4)(vue@3.3.4):
+  /vite-ssg@0.23.0(@unhead/vue@1.1.30)(vite@4.4.4)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-15hH++eI98dNVuIu1ZaziL24arFsUWDepII6DPWe4dq6DPO6iDo0qW1BjdKz4htXu3CTbNaJzBqsL9PwZBOL8g==}
     engines: {node: '>=14.0.0'}
     hasBin: true
@@ -19729,7 +19729,7 @@ packages:
       jsdom: 22.1.0
       kolorist: 1.8.0
       prettier: 2.8.8
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       vue: 3.3.4
       vue-router: 4.2.4(vue@3.3.4)
       yargs: 17.7.2
@@ -19776,8 +19776,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /vite@4.4.3(@types/node@18.16.19):
-    resolution: {integrity: sha512-IMnXQXXWgLi5brBQx/4WzDxdzW0X3pjO4nqFJAuNvwKtxzAmPzFE1wszW3VDpAGQJm3RZkm/brzRdyGsnwgJIA==}
+  /vite@4.4.4(@types/node@18.16.19):
+    resolution: {integrity: sha512-4mvsTxjkveWrKDJI70QmelfVqTm+ihFAb6+xf4sjEU2TmUCTlVX87tmg/QooPEMQb/lM9qGHT99ebqPziEd3wg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -19908,7 +19908,7 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.3(@types/node@18.16.19)
+      vite: 4.4.4(@types/node@18.16.19)
       vite-node: 0.33.0(@types/node@18.16.19)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
