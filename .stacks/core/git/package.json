@@ -43,6 +43,14 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "bumpp": "^9.1.1",
+    "changelogen": "^0.5.4",
+    "commitizen": "^4.3.0",
+    "cz-git": "^1.7.0",
+    "giget": "^1.1.2",
+    "simple-git-hooks": "^2.8.1"
+  },
   "peerDependencies": {
     "bumpp": "^9.1.1",
     "changelogen": "^0.5.4",

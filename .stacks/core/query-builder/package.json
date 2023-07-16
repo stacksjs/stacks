@@ -44,9 +44,14 @@
     "@stacksjs/types": "link:@stacksjs/types",
     "kysely": "^0.26.1",
     "mysql2": "^3.5.1",
-    "pg": "^8.11.1"
+    "pg": "^8.11.1",
+    "pg-cursor": "^2.10.1"
   },
   "dependencies": {
+    "@stacksjs/types": "link:@stacksjs/types",
+    "kysely": "^0.26.1",
+    "mysql2": "^3.5.1",
+    "pg": "^8.11.1",
     "pg-cursor": "^2.10.1"
   },
   "devDependencies": {

@@ -42,6 +42,12 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@maverick-js/signals": "^5.11.2",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
   "peerDependencies": {
     "@maverick-js/signals": "^5.11.2",
     "@stacksjs/cli": "link:@stacksjs/cli",

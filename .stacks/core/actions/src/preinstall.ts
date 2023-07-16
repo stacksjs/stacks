@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/logging'
 import type { PreinstallOptions } from '@stacksjs/types'
-import { determineDebugLevel } from '@stacksjs/utils'
+// import { determineDebugLevel } from '@stacksjs/utils'
 
 export async function invoke(options?: PreinstallOptions) {
   try {
-    const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
+    // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 
     log.info('Preinstall check...')
     // await spawn('bunx only-allow pnpm', { stdio, cwd: projectPath() })

@@ -45,6 +45,13 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/validation": "link:@stacksjs/validation",
+    "nitropack": "^2.5.2",
+    "vite": "^4.4.4"
+  },
   "peerDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/path": "link:@stacksjs/path",

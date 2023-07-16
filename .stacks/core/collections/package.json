@@ -45,6 +45,9 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "collect.js": "^4.36.1"
+  },
   "peerDependencies": {
     "collect.js": "^4.36.1"
   },

@@ -18,7 +18,7 @@ export class Cloud extends Stack {
     if (app.url)
       domainName = app.url.replace('https://', '').replace('http://', '')
     else
-      domainName = this.node.tryGetContext('domainName')
+      domainName = 'stacks.test'
 
     const {
       accountId,

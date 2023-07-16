@@ -43,6 +43,11 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@faker-js/faker": "^8.0.2",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config"
+  },
   "peerDependencies": {
     "@faker-js/faker": "^8.0.2",
     "@stacksjs/cli": "link:@stacksjs/cli",

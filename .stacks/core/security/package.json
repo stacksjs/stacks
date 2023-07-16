@@ -42,6 +42,14 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/validation": "link:@stacksjs/validation",
+    "bcryptjs": "^2.4.3",
+    "crypto-js": "^4.1.1",
+    "js-base64": "^3.7.5"
+  },
   "peerDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/types": "link:@stacksjs/types",
