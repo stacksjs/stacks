@@ -54,6 +54,12 @@
     "@vitest/ui": "^0.33.0",
     "vitest": "^0.33.0"
   },
+  "dependencies": {
+    "@playwright/test": "^1.36.0",
+    "@vitest/coverage-istanbul": "^0.33.0",
+    "@vitest/ui": "^0.33.0",
+    "vitest": "^0.33.0"
+  },
   "devDependencies": {
     "typescript": "^5.1.6",
     "unbuild": "^1.2.1"

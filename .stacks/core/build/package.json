@@ -50,6 +50,10 @@
     "@stacksjs/vite": "link:@stacksjs/vite",
     "vue-docgen-web-types": "^0.1.8"
   },
+  "dependencies": {
+    "@stacksjs/vite": "link:@stacksjs/vite",
+    "vue-docgen-web-types": "^0.1.8"
+  },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development",
     "vite-plugin-mkcert": "^1.16.0"
