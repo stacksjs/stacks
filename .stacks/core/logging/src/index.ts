@@ -10,5 +10,5 @@ export function dd(...args: any[]) {
 }
 
 export const logger = consola
-
 export const log = logger
+export const Console = logger

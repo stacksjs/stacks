@@ -29,7 +29,7 @@ export async function installIfVersionMismatch() {
   const deps = dependencies
 
   const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
-  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.6'
+  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.7'
   const installedNodeVersion = process.version
   const installedPnpmVersion = execSync('pnpm --version').trim()
 

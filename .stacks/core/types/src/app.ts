@@ -52,17 +52,6 @@ export interface AppOptions {
   debug: boolean
 
   /**
-   * **Application Port**
-   *
-   * This port is used when Stacks creates a server you. You should set
-   * a port that's not already in use by your machine. Stacks defaults
-   * to a memorable port that likely is free on your end: 3333.
-   *
-   * @default number 3333
-   */
-  port: number
-
-  /**
    * **Encryption Key**
    *
    * This key is used by the Stacks encrypter service and should be set to

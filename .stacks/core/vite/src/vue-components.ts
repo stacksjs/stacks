@@ -11,14 +11,14 @@ import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
-  base: frameworkPath(),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: storagePath('public'),
 
   server: {
     https: true,
-    port: 3333,
+    host: app.url,
+    port: app.port,
     open: true,
   },
 
@@ -39,6 +39,7 @@ export const vueComponentsConfig: ViteConfig = {
     components(),
     inspect(),
     mkcert({
+      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
       autoUpgrade: true,
       savePath: frameworkPath('certs/components'),
       keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',

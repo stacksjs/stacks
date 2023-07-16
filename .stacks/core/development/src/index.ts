@@ -6,11 +6,13 @@ const devEntries = [{
   input: './src/index',
   outDir: './dist',
 }]
-const buildEntries = [{
+
+export const buildEntries = [{
   builder: 'mkdist',
   input: './src',
   outDir: './dist',
 }]
+
 export const entries: BuildConfig['entries'] = process.env.npm_lifecycle_script?.includes('--stub')
   ? devEntries
   : buildEntries
