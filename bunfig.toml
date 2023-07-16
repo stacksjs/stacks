@@ -6,7 +6,7 @@ globalDir = "~/.stacks/install/global"
 globalBinDir = "~/.stacks/bin"
 
 # whether to install optionalDependencies
-optional = false
+optional = true
 
 # whether to install devDependencies
 dev = true
