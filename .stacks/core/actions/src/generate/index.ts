@@ -125,7 +125,7 @@ export async function generateMigrations() {
 
   // await migrate(path, { database: database.driver })
 
-  await runCommand(`npx prisma migrate dev --schema=${path}`)
+  await runCommand(`bunx prisma migrate dev --schema=${path}`)
 
   log.success('Successfully updated migrations')
 }

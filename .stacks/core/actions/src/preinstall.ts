@@ -7,7 +7,7 @@ export async function invoke(options?: PreinstallOptions) {
     const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 
     log.info('Preinstall check...')
-    // await spawn('npx only-allow pnpm', { stdio, cwd: projectPath() })
+    // await spawn('bunx only-allow pnpm', { stdio, cwd: projectPath() })
     log.success('Environment ready')
   }
   catch (error) {

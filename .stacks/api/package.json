@@ -29,8 +29,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "npx nitro dev",
-    "build": "npx nitro build",
+    "dev": "nitro dev",
+    "build": "nitro build",
     "preview": "",
     "deploy": "wip"
   },

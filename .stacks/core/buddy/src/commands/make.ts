@@ -247,7 +247,7 @@ export async function make(buddy: CLI) {
         process.exit()
       }
 
-      await runCommand(`npx prisma migrate ${options.env} --name=${name} --schema=${path}`)
+      await runCommand(`bunx prisma migrate ${options.env} --name=${name} --schema=${path}`)
       log.success(path, name)
     })
 }

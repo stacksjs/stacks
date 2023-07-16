@@ -6,5 +6,5 @@ const options = parseArgs()
 console.log('options are:', options)
 
 // await runCommands([
-//   'npx tinker',
+//   'bunx tinker',
 // ], { verbose: true })

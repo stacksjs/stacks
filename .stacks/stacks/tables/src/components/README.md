@@ -11,7 +11,7 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx stacks new hello-world
+bunx stacks new hello-world
 cd hello-world
 
 pnpm i # install deps for all packages

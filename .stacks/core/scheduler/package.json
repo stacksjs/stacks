@@ -36,7 +36,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "bun build.ts",
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },

@@ -22,7 +22,7 @@ pnpm i -D @stacksjs/tinker
 Now, you can easily access it in your project:
 
 ```bash
-npx tinker
+bunx tinker
 ```
 
 To learn more, visit [`tsx`](https://github.com/esbuild-kit/tsx).

@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import { MoneyValidator, Validator } from '@stacksjs/validation'
 
 /**

@@ -114,7 +114,7 @@ sh <(curl stacksjs.dev) my-project
 
 # alternatively, if Node.js >= v18.16 is installed already,
 # you may also get started via:
-npx stacks new my-project
+bunx stacks new my-project
 ```
 
 ## 🤖 Usage
@@ -214,7 +214,7 @@ buddy make:seed cars # creates a Car seed file
 buddy make:table cars # boostraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-project # shares logic with `npx stacks new my-project`
+buddy make:stack my-project # shares logic with `bunx stacks new my-project`
 
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues

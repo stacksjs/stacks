@@ -63,7 +63,7 @@
   ],
   "scripts": {
     "buddy": "tsx ./src/cli.ts",
-    "build": "unbuild",
+    "build": "bun build.ts",
     "dev": "unbuild --stub",
     "prepublishOnly": "tsx ./src/cli.ts prepublish",
     "typecheck": "tsc --noEmit"

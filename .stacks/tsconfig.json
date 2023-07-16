@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
+    "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
@@ -12,6 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
+    "moduleDetection": "force",
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "isolatedModules": true,
@@ -19,8 +20,7 @@
     "baseUrl": ".",
     "outDir": "./dist/types",
     "lib": [
-      "ESNext",
-      "DOM"
+      "esnext",
     ],
     "types": [
       "vitest",
@@ -28,7 +28,8 @@
       "vue/ref-macros",
       "vite-plugin-pages/client",
       //      "vite-plugin-vue-layouts/client",
-      "vite-plugin-pwa/client"
+      "vite-plugin-pwa/client",
+      "bun-types"
     ],
     "paths": {
       "~/*": ["../*"],
