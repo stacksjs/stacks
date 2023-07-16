@@ -1,1 +1,1 @@
-export { default as fs } from 'fs-extra'
+export { default as fs, existsSync, mkdirSync, writeFileSync } from 'fs-extra'

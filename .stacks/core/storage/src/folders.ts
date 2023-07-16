@@ -1,4 +1,4 @@
-import fs from 'fs-extra'
+import { fs } from '@stacksjs/storage'
 import { contains } from '@stacksjs/arrays'
 import { join } from '@stacksjs/path'
 
