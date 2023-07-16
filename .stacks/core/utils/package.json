@@ -104,6 +104,7 @@
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development",
+    "@types/semver": "^7.5.0",
     "@types/js-yaml": "^4.0.5",
     "markdown-table": "^3.0.3"
   }

@@ -50,6 +50,18 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@iconify-json/heroicons-outline": "^1.1.6",
+    "@iconify-json/heroicons-solid": "^1.1.7",
+    "@julr/unocss-preset-forms": "^0.0.5",
+    "@stacksjs/build": "link:@stacksjs/build",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@unocss/transformer-compile-class": "^0.53.5",
+    "pinia": "^2.1.4",
+    "unocss": "^0.53.5",
+    "vue": "^3.3.4",
+    "vue-tsc": "^1.8.5"
+  },
   "peerDependencies": {
     "@iconify-json/heroicons-outline": "^1.1.6",
     "@iconify-json/heroicons-solid": "^1.1.7",
