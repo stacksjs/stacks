@@ -11,7 +11,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['vue', 'vue-demi', 'chalk', 'cac', 'human-signals', 'execa', 'node-ray', 'node:url'],
+      external: ['vue', 'vue-demi', 'chalk', 'cac', 'human-signals', 'node-ray', 'node:url'],
       output: {
         // exports: 'named',
         globals: {

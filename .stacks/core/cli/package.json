@@ -28,7 +28,6 @@
     "helpers",
     "cac",
     "ora",
-    "consola",
     "ez-spawn",
     "stacks"
   ],
@@ -61,7 +60,6 @@
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
     "cac": "^6.7.14",
-    "execa": "^7.1.1",
     "ora": "^6.3.1"
   },
   "dependencies": {

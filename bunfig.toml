@@ -1,4 +1,7 @@
 [install]
+# set default registry as a string
+registry = { url = "https://registry.npmjs.org", token = "123456" }
+
 # where `bun install --global` installs packages
 globalDir = "~/.stacks/install/global"
 

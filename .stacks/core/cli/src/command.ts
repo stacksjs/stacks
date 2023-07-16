@@ -35,4 +35,4 @@ export class Command {
 }
 
 export { cac as command } from 'cac'
-export { execaCommand as spawn } from 'execa'
+export { spawn, spawnSync } from 'bun'

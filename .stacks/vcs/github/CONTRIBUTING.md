@@ -3,7 +3,7 @@
 First off, thank you for taking the time to contribute to the Stacks ecosystem ❤️
 
 > **Note**
-> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vue][vue], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Vitest][vitest].
+> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vue][vue], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Bun][bun].
 
 ## 💭 Knowledge
 
@@ -150,7 +150,7 @@ buddy test:types # runs typecheck
 
 ## 🧪 Testing
 
-All of the framework tests are stored within within the `./.stacks/tests` project folder. When adding or updating functionality, please ensure it is covered through our Vitest test suite. Ensure so by running `buddy test`.
+All of the framework tests are stored within within the `./.stacks/tests` project folder. When adding or updating functionality, please ensure it is covered through our test suite. Ensure so by running `buddy test`.
 
 When working on an individual Stack, tests are stored within the `./tests` project folder & it is recommended to write tests (when useful). Bu
 
@@ -184,7 +184,7 @@ Don't expect your PR to be accepted immediately or even accepted at all. Give th
 [vite]: https://vitejs.dev/
 [tauri]: https://tauri.app/
 [nitro]: https://nitro.unjs.io/
-[vitest]: https://vitest.dev/
+[bun]: https://bun.sh/
 [stacks]: https://github.com/stacksjs/stacks
 [semantic-commit-style]: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
 [pr-beginner-series]: https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github

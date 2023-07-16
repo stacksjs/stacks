@@ -25,7 +25,6 @@
     "utilities",
     "functions",
     "playwright",
-    "vitest",
     "stacks"
   ],
   "exports": {
@@ -49,16 +48,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.36.0",
-    "@vitest/coverage-istanbul": "^0.33.0",
-    "@vitest/ui": "^0.33.0",
-    "vitest": "^0.33.0"
+    "@playwright/test": "^1.36.0"
   },
   "dependencies": {
-    "@playwright/test": "^1.36.0",
-    "@vitest/coverage-istanbul": "^0.33.0",
-    "@vitest/ui": "^0.33.0",
-    "vitest": "^0.33.0"
+    "@playwright/test": "^1.36.0"
   },
   "devDependencies": {
     "typescript": "^5.1.6",

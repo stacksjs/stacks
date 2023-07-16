@@ -64,7 +64,6 @@
     "@vinejs/vine": "^1.5.1",
     "bun-types": "^0.6.14",
     "cac": "^6.7.14",
-    "execa": "^7.1.1",
     "markdown-it": "^13.0.1",
     "meilisearch": "^0.33.0",
     "neverthrow": "^6.0.0",

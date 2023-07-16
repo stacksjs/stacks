@@ -230,7 +230,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
+    "dev": "echo 'No dev script needed'",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

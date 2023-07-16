@@ -1,4 +1,7 @@
-import { log } from '@stacksjs/logging'
+import { Console } from '@stacksjs/logging'
+
+export const console = Console
+export { Console }
 
 export class Prompt {
   private required: boolean
@@ -18,58 +21,58 @@ export class Prompt {
 
   async select(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'select', required: true })
+      return Console.prompt(message, { ...options, type: 'select', required: true })
 
-    return log.prompt(message, { ...options, type: 'select' })
+    return Console.prompt(message, { ...options, type: 'select' })
   }
 
   async checkbox(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'multiselect', required: true })
+      return Console.prompt(message, { ...options, type: 'multiselect', required: true })
 
-    return log.prompt(message, { ...options, type: 'multiselect' })
+    return Console.prompt(message, { ...options, type: 'multiselect' })
   }
 
   async confirm(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'confirm', required: true })
+      return Console.prompt(message, { ...options, type: 'confirm', required: true })
 
-    return log.prompt(message, { ...options, type: 'confirm' })
+    return Console.prompt(message, { ...options, type: 'confirm' })
   }
 
   async input(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'text', required: true })
+      return Console.prompt(message, { ...options, type: 'text', required: true })
 
-    return log.prompt(message, { ...options, type: 'text' })
+    return Console.prompt(message, { ...options, type: 'text' })
   }
 
   async password(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'password', required: true })
+      return Console.prompt(message, { ...options, type: 'password', required: true })
 
-    return log.prompt(message, { ...options, type: 'password' })
+    return Console.prompt(message, { ...options, type: 'password' })
   }
 
   async number(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'numeral', required: true })
+      return Console.prompt(message, { ...options, type: 'numeral', required: true })
 
-    return log.prompt(message, { ...options, type: 'numeral' })
+    return Console.prompt(message, { ...options, type: 'numeral' })
   }
 
   async multiselect(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'multiselect', required: true })
+      return Console.prompt(message, { ...options, type: 'multiselect', required: true })
 
-    return log.prompt(message, { ...options, type: 'multiselect' })
+    return Console.prompt(message, { ...options, type: 'multiselect' })
   }
 
   async autocomplete(message: string, options: any) {
     if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'autocomplete', required: true })
+      return Console.prompt(message, { ...options, type: 'autocomplete', required: true })
 
-    return log.prompt(message, { ...options, type: 'autocomplete' })
+    return Console.prompt(message, { ...options, type: 'autocomplete' })
   }
 }
 

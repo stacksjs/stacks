@@ -23,7 +23,6 @@
       "esnext",
     ],
     "types": [
-      "vitest",
       "vite/client",
       "vue/ref-macros",
       "vite-plugin-pages/client",
@@ -259,7 +258,6 @@
     "../tests/**/*"
   ],
   "exclude": [
-    "./vitest.config.ts",
     "./libs/examples/**",
     "../commitlint.config.cjs",
     "../**/README.md",

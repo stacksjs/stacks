@@ -1,33 +1,31 @@
 {
-  "name": "@stacksjs/logging",
+  "name": "@stacksjs/bun",
   "type": "module",
   "version": "0.57.4",
   "packageManager": "pnpm@8.6.7",
-  "description": "The Stacks logging system.",
+  "description": "Bun relating.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/logging#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/bun#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/logging"
+    "directory": "./.stacks/core/bun"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "logging",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript"
+    "bun",
+    "stacks"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    }
+    },
+    "./*": "./dist/*"
   },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -43,15 +41,7 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "node-ray": "1.21.0",
-    "vue-ray": "^1.17.4"
-  },
-  "dependencies": {
-    "node-ray": "1.21.0",
-    "vue-ray": "^1.17.4"
-  },
   "devDependencies": {
-    "typescript": "^5.1.6"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

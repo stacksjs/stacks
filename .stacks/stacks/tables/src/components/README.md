@@ -58,7 +58,6 @@ Read more about these tips in the docs.
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [Commitizen & git-cz](https://www.npmjs.com/package/git-cz) - Automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - Unit & E2E testing powered by Vite
 - [Renovate](https://renovatebot.com/) - automatic PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 - [VS Code Extensions](./.vscode/extensions.json)

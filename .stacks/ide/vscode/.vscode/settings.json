@@ -1,17 +1,5 @@
 {
   "vue.inlayHints.missingProps": true,
-  "vitest.nodeEnv": {},
-  "vitest.include": [
-    "**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
-    "**/src/should_included_test.ts"
-  ],
-  "vitest.exclude": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/cypress/**",
-    "**/.{idea,git,cache,output,temp}/**",
-    "**/ignored.test.ts"
-  ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "editor.formatOnSave": true,

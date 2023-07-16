@@ -17,7 +17,6 @@ Please note, the Stacks framework auto-configures any extension that needs to be
 - [UnoCSS](https://marketplace.visualstudio.com/items?itemName=antfu.unocss) - An atomic CSS framework.
 - [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree) - This extension quickly searches (using ripgrep) your workspace for comment tags like TODO and FIXME, and displays them in a tree view in the activity bar. The view can be dragged out of the activity bar into the explorer pane (or anywhere else you would prefer it to be).
 - [Log Output Colorizer](https://marketplace.visualstudio.com/items?itemName=IBM.output-colorizer) - Language extension for VS Code that adds syntax colorization for both the output/debug/extensions panel and *.log files.
-- [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=antfu.vitest-explorer) - A VS Code extension for the Vitest test runner.
 - [PostHTML Snippets](https://marketplace.visualstudio.com/items?itemName=cossssmin.posthtml) - Quickly build HTML emails with utility-first CSS.
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - An extension that allows you to jump to the definition of an aliased import.
 

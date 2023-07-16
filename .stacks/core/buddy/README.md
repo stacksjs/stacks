@@ -97,7 +97,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
+- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 

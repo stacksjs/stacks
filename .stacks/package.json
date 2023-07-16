@@ -230,7 +230,6 @@
     "simple-git-hooks.cjs",
     "tea.yaml",
     "tsconfig.json",
-    "vitest.config.ts",
     "web-types.json",
     "README.md"
   ],

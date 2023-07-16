@@ -10,6 +10,8 @@ export interface SingletonPromiseReturn<T> {
   reset: () => Promise<void>
 }
 
+export { peek } from 'bun'
+
 /**
  * Promise with `resolve` and `reject` methods of itself
  */
@@ -109,16 +111,6 @@ export function createControlledPromise<T>(): ControlledPromise<T> {
 }
 
 /**
- * Promised `setTimeout`.
- *
- * @category Promise
+ * Create a promise that will be resolved after `ms` milliseconds.
  */
-export function sleep(ms: number, callback?: Fn<any>) {
-  return new Promise<void>(resolve =>
-
-    setTimeout(async () => {
-      await callback?.()
-      resolve()
-    }, ms),
-  )
-}
+export { sleep, sleepSync } from 'bun'
