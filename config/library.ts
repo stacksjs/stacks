@@ -14,7 +14,7 @@ export default defineLibrary({
   repository: 'stacksjs/stacks',
   license: 'MIT',
   author: 'Chris Breuer',
-  contributors: ['Chris Breuer <chris@ow3.org>'],
+  contributors: ['Chris Breuer <chris@stacksjs.dev>'],
   defaultLanguage: 'en',
 
   vueComponents: {

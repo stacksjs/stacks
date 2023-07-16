@@ -70,9 +70,10 @@ export async function dev(buddy: CLI) {
 
   buddy
     .command('dev:components', descriptions.components)
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runAction(Action.DevComponents, options)
+      const result = await runAction(Action.DevComponents, { ...options, shell: true })
 
       if (options.verbose)
         log.info('runAction result is', result)
