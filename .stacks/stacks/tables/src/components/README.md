@@ -43,10 +43,10 @@ This project also includes a simple way to handle your versioning. Through seman
 ```bash
 # how to create a git commit?
 git add . # select the changes you want to commit
-pnpm run commit # then simply follow the prompts
+bun run commit # then simply follow the prompts
 
 # after you successfully committed, you may create a "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
+bun run release # automates git commits, versioning, and CHANGELOG generation
 ```
 
 Read more about these tips in the docs.

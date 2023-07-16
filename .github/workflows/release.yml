@@ -29,7 +29,7 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm buddy key:generate
+        run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
         run: pnpm --filter='./.stacks' build

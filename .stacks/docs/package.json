@@ -32,10 +32,10 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "pnpm run copy-src && vitepress dev src",
-    "build": "pnpm run copy-src && vitepress build",
-    "preview": "pnpm run copy-src && vitepress preview",
-    "deploy": "pnpm run copy-src && wip",
+    "dev": "bun run copy-src && vitepress dev src",
+    "build": "bun run copy-src && vitepress build",
+    "preview": "bun run copy-src && vitepress preview",
+    "deploy": "bun run copy-src && wip",
     "copy-src": "rimraf ./src/* && cp -R ../../docs/* ./src"
   },
   "dependencies": {

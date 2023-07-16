@@ -25,7 +25,7 @@ import { command, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cl
 const stacks = command('stacks')
 
 stacks
-  .command('example', 'A dummy command') // pnpm buddy example
+  .command('example', 'A dummy command') // bun buddy example
   .option('-i, --install', 'The install option', { default: true })
   .action(async (options) => {
     if (options.install)
