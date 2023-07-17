@@ -10,4 +10,3 @@ export function dd(...args: any[]) {
 
 export const logger = console
 export const log = logger
-export const Console = logger

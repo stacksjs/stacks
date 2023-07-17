@@ -36,8 +36,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "unbuild",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

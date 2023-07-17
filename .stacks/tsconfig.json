@@ -20,7 +20,7 @@
     "baseUrl": ".",
     "outDir": "./dist/types",
     "lib": [
-      "esnext",
+      "esnext"
     ],
     "types": [
       "vite/client",
@@ -43,8 +43,6 @@
       "@stacksjs/buddy/*": ["./core/buddy/src/*"],
       "@stacksjs/build": ["./core/build/src/index.ts"],
       "@stacksjs/build/*": ["./core/build/src/*"],
-      "@stacksjs/bun": ["./core/bun/src/index.ts"],
-      "@stacksjs/bun/*": ["./core/bun/src/*"],
       "@stacksjs/cache": ["./core/cache/src/index.ts"],
       "@stacksjs/cache/*": ["./core/cache/src/*"],
       "@stacksjs/chat": ["./core/chat/src/index.ts"],

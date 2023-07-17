@@ -40,15 +40,14 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@faker-js/faker": "^8.0.2",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@faker-js/faker": "^8.0.2",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config"

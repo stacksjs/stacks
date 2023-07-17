@@ -1,4 +1,5 @@
 import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
+
 const dynamodb = new DynamoDB({ region: 'us-east-1' })
 
 describe('DynamoDB test', () => {

@@ -1,4 +1,3 @@
-import type { Fn } from '@stacksjs/types'
 import { remove } from '@stacksjs/arrays'
 
 export interface SingletonPromiseReturn<T> {

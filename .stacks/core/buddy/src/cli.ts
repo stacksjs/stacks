@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+
 import { runAction } from '@stacksjs/actions'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'

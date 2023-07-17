@@ -63,9 +63,6 @@
     "./build": {
       "import": "./core/build/dist/index.mjs"
     },
-    "./bun": {
-      "import": "./core/bun/dist/index.mjs"
-    },
     "./cache": {
       "import": "./core/cache/dist/index.mjs"
     },
@@ -264,7 +261,7 @@
     "build:docs": "bun buddy build:docs",
     "build:views": "bunx vite-ssg build ./views -c ./core/vite/src/views.ts",
     "build:core": "bun buddy build:core",
-    "build:buddy": "bunx unbuild",
+    "build:buddy": "bun run build:buddy",
     "build:cli": "bun run build:buddy",
     "build:runtime": "bun run build:cli",
     "build:desktop": "wip",
@@ -331,7 +328,6 @@
     "@stacksjs/auth": "link:@stacksjs/auth",
     "@stacksjs/buddy": "link:@stacksjs/buddy",
     "@stacksjs/build": "link:@stacksjs/build",
-    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/cache": "link:@stacksjs/cache",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/cloud": "link:@stacksjs/cloud",
@@ -378,7 +374,6 @@
     "@stacksjs/auth": "link:@stacksjs/auth",
     "@stacksjs/buddy": "link:@stacksjs/buddy",
     "@stacksjs/build": "link:@stacksjs/build",
-    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/cache": "link:@stacksjs/cache",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/cloud": "link:@stacksjs/cloud",

@@ -39,10 +39,9 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/validation": "link:@stacksjs/validation",
@@ -50,7 +49,7 @@
     "crypto-js": "^4.1.1",
     "js-base64": "^3.7.5"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/validation": "link:@stacksjs/validation",

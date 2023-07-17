@@ -42,14 +42,12 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "pathe": "^1.1.1"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "typescript": "^5.1.6"
   }
 }

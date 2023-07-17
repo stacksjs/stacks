@@ -25,7 +25,7 @@ Now, you can easily access it in your project:
 bunx tinker
 ```
 
-To learn more, visit [`tsx`](https://github.com/esbuild-kit/tsx).
+To learn more, visit [`bunx`](https://bun.sh/docs).
 
 ## 📈 Changelog
 
@@ -49,8 +49,7 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [tsx](https://github.com/esbuild-kit/tsx)
-- [esno](https://github.com/esbuild-kit/esno)
+- [bun](https://bun.sh)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

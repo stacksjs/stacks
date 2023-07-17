@@ -1,8 +1,11 @@
 import { log } from '@stacksjs/logging'
-import type { PreinstallOptions } from '@stacksjs/types'
+
+// import type { PreinstallOptions } from '@stacksjs/types'
+
 // import { determineDebugLevel } from '@stacksjs/utils'
 
-export async function invoke(options?: PreinstallOptions) {
+// export async function invoke(options?: PreinstallOptions) {
+export async function invoke() {
   try {
     // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 

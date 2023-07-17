@@ -1,7 +1,8 @@
 // import NProgress from 'nprogress'
 import { type UserModule } from '@stacksjs/types'
 
-export const install: UserModule = ({ isClient, router }) => {
+export const install: UserModule = ({ isClient }) => {
+// export const install: UserModule = ({ isClient, router }) => {
   if (isClient) {
     // router.beforeEach((to, from) => {
     //   if (to.path !== from.path)

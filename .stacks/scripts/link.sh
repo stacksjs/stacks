@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # loop over every directory in .stacks/core/*
 for dir in ../core/*/

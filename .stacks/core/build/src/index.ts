@@ -7,5 +7,3 @@ export {
   webComponents,
   stacks,
 } from '@stacksjs/vite'
-
-export { build } from '@stacksjs/bun'

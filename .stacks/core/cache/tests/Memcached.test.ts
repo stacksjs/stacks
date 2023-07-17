@@ -1,5 +1,6 @@
 import type { Client } from 'memjs'
 import Memcached from 'memjs'
+
 const client: Client = Memcached.Client.create('127.0.0.1:11211')
 
 // TODO: needs to be imported to cache package

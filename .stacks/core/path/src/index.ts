@@ -417,6 +417,7 @@ export const path = {
   buildEnginePath,
   libsEntriesPath,
   buildPath,
+  bunPath,
   cachePath,
   chatPath,
   cliPath,

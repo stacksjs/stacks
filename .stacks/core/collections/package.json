@@ -42,13 +42,12 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "collect.js": "^4.36.1"
   },
-  "peerDependencies": {
+  "dependencies": {
     "collect.js": "^4.36.1"
   },
   "devDependencies": {

@@ -51,7 +51,6 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

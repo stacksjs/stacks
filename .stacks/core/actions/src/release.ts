@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { frameworkPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'

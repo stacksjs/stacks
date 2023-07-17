@@ -5,7 +5,7 @@ import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } fro
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
-import c from 'picocolors'
+import { kolorist as c } from '@stacksjs/utils'
 import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 

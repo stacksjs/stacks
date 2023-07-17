@@ -39,9 +39,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "mkdist",
+    "build": "echo 'wip'",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -80,7 +78,6 @@
     "vue": "^3.3.4"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "typescript": "^5.1.6"
   }
 }

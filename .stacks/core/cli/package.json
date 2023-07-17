@@ -48,7 +48,6 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -63,7 +62,16 @@
     "ora": "^6.3.1"
   },
   "dependencies": {
-    "kolorist": "1.8.0"
+    "@antfu/install-pkg": "^0.1.1",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/utils": "link:@stacksjs/utils",
+    "cac": "^6.7.14",
+    "kolorist": "1.8.0",
+    "ora": "^6.3.1"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

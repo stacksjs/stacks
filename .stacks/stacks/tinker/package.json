@@ -34,8 +34,7 @@
   ],
   "scripts": {
     "build": "echo 'wip'",
-    "dev": "echo 'wip'",
-    "prepublishOnly": "unbuild",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

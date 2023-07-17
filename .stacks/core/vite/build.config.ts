@@ -17,7 +17,6 @@ export default defineBuildConfig({
     'unocss/vite',
     'defu',
     'vite-plugin-mkcert',
-    'picocolors',
     'vite',
     'vitepress',
   ],

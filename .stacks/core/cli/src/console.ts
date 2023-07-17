@@ -1,7 +1,6 @@
-import { Console } from '@stacksjs/logging'
+import { logger } from '@stacksjs/logging'
 
-export const console = Console
-export { Console }
+export const Console = logger
 
 export class Prompt {
   private required: boolean

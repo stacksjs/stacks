@@ -20,6 +20,7 @@ brotli
 browserslist
 bumpp
 bundleconfig
+bunx
 cardano
 changelist
 changelogithub
@@ -135,6 +136,7 @@ nuxt
 openai
 openweb
 openweblabs
+outdir
 outro
 ow3org
 pathe

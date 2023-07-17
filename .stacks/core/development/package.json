@@ -41,7 +41,6 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -51,7 +50,7 @@
     "@stacksjs/testing": "link:@stacksjs/testing",
     "@stacksjs/tinker": "link:@stacksjs/tinker",
     "@stacksjs/types": "link:@stacksjs/types",
-    "bun": "^0.6.14",
+    "eslint": "^8.45.0",
     "typescript": "^5.1.6"
   },
   "dependencies": {
@@ -61,7 +60,7 @@
     "@stacksjs/testing": "link:@stacksjs/testing",
     "@stacksjs/tinker": "link:@stacksjs/tinker",
     "@stacksjs/types": "link:@stacksjs/types",
-    "bun": "^0.6.14",
+    "eslint": "^8.45.0",
     "typescript": "^5.1.6"
   },
   "devDependencies": {

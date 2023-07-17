@@ -39,9 +39,8 @@
   "scripts": {
     "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",
-    "dev": "echo 'wip'",
     "serve:tauri": "vite",
-    "prepublishOnly": "unbuild",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

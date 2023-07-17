@@ -20,8 +20,6 @@
     "tinker",
     "repl",
     "typescript",
-    "tsx",
-    "esno",
     "zero-config",
     "stacks"
   ],
@@ -40,19 +38,15 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@vue/repl": "^2.5.5",
-    "tsx": "^3.12.7"
+    "@vue/repl": "^2.5.5"
   },
   "dependencies": {
-    "@vue/repl": "^2.5.5",
-    "tsx": "^3.12.7"
+    "@vue/repl": "^2.5.5"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "typescript": "^5.1.6"
   }
 }

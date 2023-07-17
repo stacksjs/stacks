@@ -1,5 +1,4 @@
 export * from './actions'
-export * from './colors'
 export * from './command'
 export * from './console'
 export * from './helpers'

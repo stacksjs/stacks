@@ -41,24 +41,24 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@ow3/eslint-config": "^0.45.2",
+  "peerDependencies": {
+    "@ow3/eslint-config": "^0.47.1",
     "@types/eslint": "^8.44.0",
     "eslint": "^8.45.0",
     "lint-staged": "^13.2.3",
     "publint": "^0.1.16"
   },
-  "peerDependencies": {
-    "@ow3/eslint-config": "^0.45.2",
+  "dependencies": {
+    "@ow3/eslint-config": "^0.47.1",
     "@types/eslint": "^8.44.0",
     "eslint": "^8.45.0",
     "lint-staged": "^13.2.3",
     "publint": "^0.1.16"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "link:@stacksjs/development",
+    "eslint-plugin-import": "^2.27.5"
   }
 }

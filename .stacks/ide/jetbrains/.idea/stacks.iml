@@ -57,11 +57,11 @@
       <excludeFolder url="file://$MODULE_DIR$/.stacks/core/ui/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/core/utils/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/core/validation/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/.stacks/core/vite-plugin/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/fonts" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/libs/components/vue/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/libs/entries" />
+      <excludeFolder url="file://$MODULE_DIR$/.stacks/core/vite/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

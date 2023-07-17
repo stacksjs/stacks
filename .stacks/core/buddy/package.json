@@ -62,10 +62,9 @@
     "README.md"
   ],
   "scripts": {
-    "buddy": "tsx ./src/cli.ts",
+    "buddy": "bunx ./src/cli.ts",
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "tsx ./src/cli.ts prepublish",
+    "prepublishOnly": "bunx ./src/cli.ts prepublish",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

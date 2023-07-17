@@ -45,7 +45,6 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit",
     "size": "tsx scripts/export-size.ts"
   },
@@ -104,8 +103,8 @@
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development",
-    "@types/semver": "^7.5.0",
     "@types/js-yaml": "^4.0.5",
+    "@types/semver": "^7.5.0",
     "markdown-table": "^3.0.3"
   }
 }
