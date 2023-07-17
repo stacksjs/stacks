@@ -47,10 +47,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/vite": "link:@stacksjs/vite",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
+    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/vite": "link:@stacksjs/vite",
     "vue-docgen-web-types": "^0.1.8"
   },

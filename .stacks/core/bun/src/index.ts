@@ -1,1 +1,1 @@
-export { default as Bun } from 'bun'
+export { default as Bun, build } from 'bun'

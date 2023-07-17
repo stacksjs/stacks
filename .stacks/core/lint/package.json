@@ -44,6 +44,9 @@
     "dev": "unbuild --stub",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "eslint": "^8.45.0"
+  },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.45.2",
     "@types/eslint": "^8.44.0",
