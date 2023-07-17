@@ -125,13 +125,9 @@
       "types": "./dist/upgrade/framework.d.ts",
       "import": "./dist/upgrade/framework.mjs"
     },
-    "./upgrade/node": {
-      "types": "./dist/upgrade/node.d.ts",
-      "import": "./dist/upgrade/node.mjs"
-    },
-    "./upgrade/package-manager": {
-      "types": "./dist/upgrade/package-manager.d.ts",
-      "import": "./dist/upgrade/package-manager.mjs"
+    "./upgrade/bun": {
+      "types": "./dist/upgrade/bun.d.ts",
+      "import": "./dist/upgrade/bun.mjs"
     },
     "./add": {
       "types": "./dist/add.d.ts",

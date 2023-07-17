@@ -63,6 +63,9 @@
     "./build": {
       "import": "./core/build/dist/index.mjs"
     },
+    "./bun": {
+      "import": "./core/bun/dist/index.mjs"
+    },
     "./cache": {
       "import": "./core/cache/dist/index.mjs"
     },
@@ -328,6 +331,7 @@
     "@stacksjs/auth": "link:@stacksjs/auth",
     "@stacksjs/buddy": "link:@stacksjs/buddy",
     "@stacksjs/build": "link:@stacksjs/build",
+    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/cache": "link:@stacksjs/cache",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/cloud": "link:@stacksjs/cloud",
@@ -374,6 +378,7 @@
     "@stacksjs/auth": "link:@stacksjs/auth",
     "@stacksjs/buddy": "link:@stacksjs/buddy",
     "@stacksjs/build": "link:@stacksjs/build",
+    "@stacksjs/bun": "link:@stacksjs/bun",
     "@stacksjs/cache": "link:@stacksjs/cache",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/cloud": "link:@stacksjs/cloud",

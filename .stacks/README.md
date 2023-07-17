@@ -150,12 +150,11 @@ buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 
-buddy upgrade # auto-upgrades deps, framework, node.js, and/or pnpm
+buddy upgrade # auto-upgrades deps, Stacks, and Bun
 buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
-buddy upgrade:package-manager # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine
-buddy upgrade:node # upgrades to latest project-defined node version
+buddy upgrade:bun # upgrades to latest project-defined Bun version
 buddy upgrade:all # upgrades Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix

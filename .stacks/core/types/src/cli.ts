@@ -258,7 +258,7 @@ export const enum NpmScript {
   Preinstall = 'preinstall',
   Prepublish = 'prepublish',
   Wip = 'wip',
-  UpgradeNode = './.stacks/scripts/setup.sh +nodejs.org',
+  UpgradeBun = './.stacks/scripts/setup.sh +bun.sh',
   UpgradeDependencies = 'pnpm up',
 }
 
@@ -298,8 +298,7 @@ export const enum Action {
   Tinker = 'tinker',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
-  UpgradeNode = 'upgrade/node',
-  UpgradePackageManager = 'upgrade/package-manager',
+  UpgradeBun = 'upgrade/bun',
 }
 
 export type { CAC as CLI } from 'cac'

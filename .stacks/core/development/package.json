@@ -46,20 +46,23 @@
   },
   "peerDependencies": {
     "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/lint": "link:@stacksjs/lint",
     "@stacksjs/logging": "link:@stacksjs/logging",
     "@stacksjs/testing": "link:@stacksjs/testing",
     "@stacksjs/tinker": "link:@stacksjs/tinker",
     "@stacksjs/types": "link:@stacksjs/types",
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "bun": "^0.6.14",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@stacksjs/alias": "link:@stacksjs/alias",
+    "@stacksjs/lint": "link:@stacksjs/lint",
     "@stacksjs/logging": "link:@stacksjs/logging",
     "@stacksjs/testing": "link:@stacksjs/testing",
     "@stacksjs/tinker": "link:@stacksjs/tinker",
     "@stacksjs/types": "link:@stacksjs/types",
-    "unbuild": "^1.2.1"
+    "bun": "^0.6.14",
+    "typescript": "^5.1.6"
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.4.2"

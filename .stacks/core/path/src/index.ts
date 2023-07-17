@@ -78,6 +78,10 @@ export function buildPath(path?: string) {
   return corePath(`build/${path || ''}`)
 }
 
+export function bunPath(path?: string) {
+  return corePath(`bun/${path || ''}`)
+}
+
 export function buildEnginePath(path?: string) {
   return buildPath(`${path || ''}`)
 }

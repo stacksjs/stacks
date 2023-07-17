@@ -60,17 +60,3 @@ export async function updateDependencies(options: UpgradeOptions) {
   outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
   process.exit()
 }
-
-export async function updatePackageManager(options: UpgradeOptions) {
-  const perf = await intro('buddy upgrade:package-manager')
-  const version = options?.version || 'latest'
-  const result = await runCommand(`corepack prepare pnpm@${version} --activate`, options)
-
-  if (result.isErr()) {
-    outro('While running the upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
-    process.exit()
-  }
-
-  outro(`Updated to version: ${version}`, { startTime: perf, useSeconds: true })
-  process.exit()
-}

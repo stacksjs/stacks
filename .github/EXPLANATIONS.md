@@ -8,7 +8,7 @@ This folder contains GitHub configurations for the project, including the follow
     - `typecheck`s the code
     - Auto fixes & applies code style updates via a PR
     - Runs tests (unit & end-to-end)
-    - Runs on `ubuntu-latest` with `node-versions` set to `[18x]`
+    - Runs on `ubuntu-latest` with `bun-versions` set to `[x]`
   - [Release][Release] - automates the release process & changelog generation
 - [Stale][Stale] - Automates managing stale GitHub issues
 - Renovate

@@ -82,30 +82,6 @@ export async function upgrade(buddy: CLI) {
     })
 
   buddy
-    .command('upgrade:package-manager', descriptions.packageManager)
-    .option('--verbose', descriptions.verbose, { default: false })
-    .alias('upgrade:pm')
-    .alias('upgrade:pnpm')
-    .example('buddy upgrade:package-manager 7.16.1 --verbose')
-    .example('buddy upgrade:package-manager latest')
-    .action(async (options: UpgradeOptions) => {
-      options.version = 'latest'
-
-      if (buddy.args[0])
-        options.version = buddy.args[0]
-
-      const perf = await intro('buddy upgrade:package-manager')
-      const result = await runAction(Action.UpgradePackageManager, options)
-
-      if (result.isErr()) {
-        outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
-        process.exit()
-      }
-
-      process.exit(ExitCode.Success)
-    })
-
-  buddy
     .command('upgrade:node', descriptions.node)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
