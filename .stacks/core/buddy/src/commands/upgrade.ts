@@ -82,11 +82,11 @@ export async function upgrade(buddy: CLI) {
     })
 
   buddy
-    .command('upgrade:node', descriptions.node)
+    .command('upgrade:bun', descriptions.node)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:node')
-      const result = await runAction(Action.UpgradeNode, options)
+      const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
         outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
