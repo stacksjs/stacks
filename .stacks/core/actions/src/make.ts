@@ -1,4 +1,4 @@
-import { italic, spawn } from '@stacksjs/cli'
+import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
@@ -216,7 +216,7 @@ export async function stack(options: MakeOptions) {
     log.info(`Creating your ${name} stack...`)
     const path = resolve(process.cwd(), name)
 
-    await spawn(`giget stacks ${path}`)
+    // await spawn(`giget stacks ${path}`)
     log.success('Successfully scaffolded your project')
     log.info(`cd ${path} && pnpm install`)
   }

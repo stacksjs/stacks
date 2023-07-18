@@ -1,4 +1,3 @@
-import process from 'node:process'
 import validator from '@vinejs/vine'
 import { loadEnv } from 'vite'
 import { projectPath } from '@stacksjs/path'

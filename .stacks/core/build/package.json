@@ -43,7 +43,8 @@
   ],
   "scripts": {
     "build": "bun build ./src/index.ts --external bun --external @stacksjs/vite --outdir dist --format esm",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/vite": "link:@stacksjs/vite",

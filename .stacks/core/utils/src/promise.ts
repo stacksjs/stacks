@@ -9,7 +9,7 @@ export interface SingletonPromiseReturn<T> {
   reset: () => Promise<void>
 }
 
-export { peek } from 'bun'
+// export { peek } from 'bun'
 
 /**
  * Promise with `resolve` and `reject` methods of itself
@@ -112,4 +112,4 @@ export function createControlledPromise<T>(): ControlledPromise<T> {
 /**
  * Create a promise that will be resolved after `ms` milliseconds.
  */
-export { sleep, sleepSync } from 'bun'
+// export { sleep, sleepSync } from 'bun'

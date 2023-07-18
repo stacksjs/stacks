@@ -48,7 +48,8 @@
   ],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir dist --format esm --external bun --external cac --external ora --external prompts --external @antfu/install-pkg --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/logging --external @stacksjs/path --external @stacksjs/types --external @stacksjs/utils --external @types/prompts --external bun --external cac --external ora --external prompts --external vite --external kolorist --target bun",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",

@@ -64,7 +64,8 @@
   "scripts": {
     "buddy": "bunx ./src/cli.ts",
     "build": "bun build ./src/index.ts ./src/cli.ts --outdir dist --format esm --target bun --external @stacksjs/actions --external @stacksjs/error-handling --external @stacksjs/cli --external @stacksjs/logging --external @stacksjs/utils --external @stacksjs/validation --external @stacksjs/path --external @stacksjs/storage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/actions": "link:@stacksjs/actions",

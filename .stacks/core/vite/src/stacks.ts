@@ -59,7 +59,6 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
       // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
       // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-      // { stacks: [''] },
     ],
     dirs: [
       // p.resourcesPath('functions'),

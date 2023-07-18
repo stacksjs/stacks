@@ -7,34 +7,12 @@
  */
 export interface DependenciesOptions {
   /**
-   * **Node.js**
+   * **Bun**
    *
-   * @default '^18.16.1'
-   * @link https://nodejs.org
+   * @default '0.6.14'
+   * @link https://bun.sh
    */
-  'nodejs.org': string | '^18.16.1'
-
-  /**
-   * **NPM**
-   *
-   * If you are planning on creating local releases (e.g. component libraries, function libraries),
-   * you need to have npm installed. If you are not planning on creating local releases, you may
-   * disable this dependency by not setting it.
-   *
-   * @default '^9.7.2'
-   * @link https://npmjs.com
-   */
-  'npmjs.com'?: string | '^9.7.2'
-
-  /**
-   * **PNPM**
-   *
-   * You may disable this dependency if you have pnpm installed globally.
-   *
-   * @default '^8.6.5'
-   * @link https://pnpm.io
-   */
-  'pnpm.io': string | '^8.6.5'
+  'bun.sh': string | '0.6.14'
 
   /**
    * **SQLite**

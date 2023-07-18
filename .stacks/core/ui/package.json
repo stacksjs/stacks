@@ -47,7 +47,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@iconify-json/heroicons-outline": "^1.1.6",

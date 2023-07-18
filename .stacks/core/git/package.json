@@ -40,7 +40,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "bumpp": "^9.1.1",

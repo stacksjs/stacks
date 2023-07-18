@@ -1,4 +1,4 @@
-import type { CLI, PreinstallOptions } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
 import { invoke } from '@stacksjs/actions/preinstall'
 
 export async function preinstall(buddy: CLI) {

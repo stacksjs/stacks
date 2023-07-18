@@ -42,20 +42,19 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/validation": "link:@stacksjs/validation",
-    "nitropack": "^2.5.2",
     "vite": "^4.4.4"
   },
   "dependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/validation": "link:@stacksjs/validation",
-    "nitropack": "^2.5.2",
     "vite": "^4.4.4"
   },
   "devDependencies": {

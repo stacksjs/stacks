@@ -41,7 +41,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.47.1",

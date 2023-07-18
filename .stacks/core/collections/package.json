@@ -42,7 +42,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "collect.js": "^4.36.1"

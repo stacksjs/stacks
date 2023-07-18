@@ -40,7 +40,8 @@
   ],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir dist --format esm",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

@@ -8,7 +8,7 @@ globalDir = "~/.stacks/install/global"
 # where globally-installed package bins are linked
 globalBinDir = "~/.stacks/bin"
 
-# whether to install optionalDependencies
+# whether to install optionalDependencies (currently needed because all drivers are optional)
 optional = true
 
 # whether to install devDependencies

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.57.4",
   "packageManager": "pnpm@8.6.7",
-  "description": "The Stacks Chat Integration. Easy sending of messages for chat services",
+  "description": "The Stacks Chat Integration. Simple programmatic sending of messages for chat services.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -20,6 +20,7 @@
     "chat",
     "stacks",
     "discord",
+    "microsoft teams",
     "slack"
   ],
   "exports": {
@@ -38,19 +39,29 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
+    "build": "bun build ./src/index.ts --external @novu/stateless --external @stacksjs/cli --external @stacksjs/error-handling --external @novu/discord --external @novu/ms-teams --external @novu/node --external @novu/slack --outdir dist --format esm --target bun",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@novu/discord": "^0.16.3",
-    "@novu/ms-teams": "^0.16.3",
-    "@novu/node": "^0.16.3",
-    "@novu/slack": "^0.16.3",
     "@novu/stateless": "^0.16.3",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/error-handling": "link:@stacksjs/error-handling",
     "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "dependencies": {
+    "@novu/stateless": "^0.16.3",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "optionalDependencies": {
+    "@novu/discord": "^0.16.3",
+    "@novu/ms-teams": "^0.16.3",
+    "@novu/node": "^0.16.3",
+    "@novu/slack": "^0.16.3"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

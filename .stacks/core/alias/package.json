@@ -37,7 +37,8 @@
   ],
   "scripts": {
     "build": "bun build ./src/index.ts --external @stacksjs/path --outdir dist --format esm",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/path": "link:@stacksjs/path"

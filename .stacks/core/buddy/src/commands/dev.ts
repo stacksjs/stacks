@@ -1,7 +1,7 @@
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, outro, prompt } from '@stacksjs/cli'
+import { intro, outro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
@@ -30,29 +30,29 @@ export async function dev(buddy: CLI) {
       // const result = await runAction(Action.Dev, options)
 
       if (hasNoOptions(options)) {
-        const answer = await prompt.require()
-          .select(descriptions.select, {
-            options: [
-              { value: 'all', label: 'All' },
-              { value: 'pages', label: 'Frontend' },
-              { value: 'api', label: 'Backend' },
-              { value: 'desktop', label: 'Desktop' },
-              { value: 'components', label: 'Components' },
-              { value: 'functions', label: 'Functions' },
-              { value: 'docs', label: 'Documentation' },
-            ],
-          })
+        // const answer = await prompt.require()
+        //   .select(descriptions.select, {
+        //     options: [
+        //       { value: 'all', label: 'All' },
+        //       { value: 'pages', label: 'Frontend' },
+        //       { value: 'api', label: 'Backend' },
+        //       { value: 'desktop', label: 'Desktop' },
+        //       { value: 'components', label: 'Components' },
+        //       { value: 'functions', label: 'Functions' },
+        //       { value: 'docs', label: 'Documentation' },
+        //     ],
+        //   })
 
-        if (answer === 'components')
-          await components(options)
-        else if (answer === 'functions')
-          await functions(options)
-        else if (answer === 'pages')
-          await pages(options)
+        // if (answer === 'components')
+        //   await components(options)
+        // else if (answer === 'functions')
+        //   await functions(options)
+        // else if (answer === 'pages')
+        //   await pages(options)
         // else if (answer === 'docs')
         //   await docs(options)
 
-        else process.exit(ExitCode.InvalidArgument)
+        // else process.exit(ExitCode.InvalidArgument)
       }
       else {
         if (options.components)

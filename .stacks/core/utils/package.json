@@ -46,6 +46,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build",
     "size": "tsx scripts/export-size.ts"
   },
   "peerDependencies": {
@@ -63,6 +64,7 @@
     "@vueuse/head": "^1.1.26",
     "@vueuse/math": "^10.2.1",
     "@vueuse/shared": "^10.2.1",
+    "bun": "^0.6.14",
     "defu": "^6.1.2",
     "dinero.js": "2.0.0-alpha.14",
     "export-size": "^0.5.2",
@@ -86,6 +88,7 @@
     "@vueuse/head": "^1.1.26",
     "@vueuse/math": "^10.2.1",
     "@vueuse/shared": "^10.2.1",
+    "bun": "^0.6.14",
     "defu": "^6.1.2",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",

@@ -154,6 +154,7 @@ pluginutils
 pnpm
 polacek
 postcssrc
+powertools
 prefetch
 preinstall
 prepublishing
@@ -214,6 +215,7 @@ versionlens
 versionrc
 vetur
 vfor
+vinejs
 vite
 vitebook
 vitejs

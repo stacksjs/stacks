@@ -1,12 +1,10 @@
-import { execSync as childExec } from 'node:child_process'
-import type { CliOptions, CommandResult, CommandReturnValue, SpinnerOptions as Spinner } from '@stacksjs/types'
+import type { CliOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
-import type { ResultAsync } from '@stacksjs/error-handling'
-import { ResultAsync as AsyncResult } from '@stacksjs/error-handling'
 import { determineDebugLevel } from '@stacksjs/utils'
+import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { spawn } from './command'
+import { spawn, spawnSync } from './command'
 import { startSpinner } from './helpers'
 import { italic } from '.'
 
@@ -18,15 +16,35 @@ import { italic } from '.'
  * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
  */
-export function exec(command: string, options?: CliOptions): ResultAsync<CommandReturnValue, Error> {
+export async function exec(command: string | string[], options?: CliOptions) {
   const cwd = options?.cwd || projectPath()
-  const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
   const shell = options?.shell || false
 
-  return AsyncResult.fromPromise(
-    spawn(command, { stdio, cwd, shell }),
-    () => new Error(`Failed to run command: ${italic(command)}`),
-  )
+  console.log('command', command)
+
+  if (!Array.isArray(command))
+    command = [command]
+
+  const proc = spawn(command, {
+    cwd,
+    env: process.env,
+    shell,
+    // stdio: 'inherit',
+    onExit(subprocess, exitCode, signalCode, error) {
+      console.log('subprocess', subprocess)
+      console.log('exitCode', exitCode)
+      console.log('signalCode', signalCode)
+      console.log('error', error)
+      return err('Failed to execute command')
+    },
+  })
+
+  console.log('proc', proc)
+
+  await proc.exited
+
+  if (proc.exitCode === ExitCode.Success)
+    return ok(proc)
 }
 
 /**
@@ -36,7 +54,10 @@ export function exec(command: string, options?: CliOptions): ResultAsync<Command
  * @returns The result of the command.
  */
 export function execSync(command: string) {
-  return childExec(command, { encoding: 'utf-8' })
+  const cwd = options?.cwd || projectPath()
+  const shell = options?.shell || false
+
+  return spawnSync([command], { cwd, shell })
 }
 
 /**
@@ -46,7 +67,7 @@ export function execSync(command: string) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<CommandReturnValue, Error>> {
+export async function runCommand(command: string | string[], options?: CliOptions) {
   return exec(command, options)
 }
 
@@ -57,8 +78,8 @@ export async function runCommand(command: string, options?: CliOptions): Promise
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<CommandResult | CommandResult[]> {
-  const results: CommandResult[] = []
+export async function runCommands(commands: string[], options?: CliOptions) {
+  const results = []
   const numberOfCommands = commands.length
 
   if (!numberOfCommands) {

@@ -1,8 +1,8 @@
 import type { AddressInfo } from 'node:net'
-import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
+import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { execSync, runCommand, spawn } from '@stacksjs/cli'
+import { runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
@@ -18,9 +18,10 @@ export async function isProjectCreated() {
   if (storage.isFile('.env'))
     return await isAppKeySet()
 
+  // TODO: need to re-enable this
   // copy the .env.example to become the .env file
-  if (storage.isFile('.env.example'))
-    await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+  // if (storage.isFile('.env.example'))
+  //   await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
@@ -28,24 +29,12 @@ export async function isProjectCreated() {
 export async function installIfVersionMismatch() {
   const deps = dependencies
 
-  const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
-  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.7'
-  const installedNodeVersion = process.version
-  const installedPnpmVersion = execSync('pnpm --version').trim()
+  const requiredBunVersion = deps['bun.sh'] || '0.6.14'
+  const installedBunVersion = process.version
 
-  // if (result.isErr())
-  //   throw new Error('pnpm is not installed')
-
-  // const installedPnpmVersion = result.value
-
-  if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
-    log.warn(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). Adding it to your environment. One moment...`)
-    await runCommand(`tea +nodejs.org${requiredNodeVersion} >/dev/null 2>&1`)
-  }
-
-  if (!semver.satisfies(installedPnpmVersion, requiredPnpmVersion)) {
-    log.warn(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). Adding it to your environment. One moment...`)
-    await runCommand(`tea +pnpm.io${requiredPnpmVersion} >/dev/null 2>&1`)
+  if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
+    log.warn(`Installed Node.js version (${installedBunVersion}) does not satisfy required version (${requiredBunVersion}). Adding it to your environment. One moment...`)
+    await runCommand(`tea +nodejs.org${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
 
@@ -122,7 +111,7 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<CommandResult> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<any> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists

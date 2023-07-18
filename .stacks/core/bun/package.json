@@ -1,24 +1,23 @@
 {
-  "name": "@stacksjs/auth",
+  "name": "@stacksjs/bun",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
-  "description": "A more simplistic way to authenticate.",
+  "packageManager": "bun@0.6.14",
+  "description": "Bun integration.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/auth#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/bun#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/auth"
+    "directory": "./.stacks/core/bun"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "auth",
-    "authenticate",
+    "bun",
     "stacks"
   ],
   "exports": {
@@ -37,7 +36,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir dist --format esm",
+    "build": "bun build.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

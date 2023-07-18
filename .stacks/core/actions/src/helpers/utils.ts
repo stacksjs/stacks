@@ -2,7 +2,7 @@ import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { ActionOptions, CommandResult } from '@stacksjs/types'
+import type { ActionOptions } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
@@ -23,7 +23,7 @@ function parseOptions(options?: ActionOptions) {
   return parsedOptions.filter(Boolean).join(' ').replace('----=', '')
 }
 
-export type ActionResult = CommandResult
+// export type ActionResult = CommandResult
 
 /**
  * Run an Action the Stacks way.
@@ -32,7 +32,7 @@ export type ActionResult = CommandResult
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<CommandResult> {
+export async function runAction(action: string, options?: ActionOptions): Promise<any> {
   if (!hasAction(action))
     return err(`The specified action "${action}" does not exist`)
 
@@ -44,7 +44,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
     log.debug('running command:', italic(cmd))
 
   return options?.showSpinner
-    ? await runCommands([cmd], options) as CommandResult
+    ? await runCommands([cmd], options)
     : await runCommand(cmd, options)
 }
 
@@ -55,7 +55,8 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
+// export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
+export async function runActions(actions: string[], options?: ActionOptions) {
   if (!actions.length)
     return err('No actions were specified')
 

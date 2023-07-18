@@ -1,18 +1,20 @@
-import { intro, outro, runCommand, spawn } from '@stacksjs/cli'
+import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as storage from '@stacksjs/storage'
-import { determineDebugLevel } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'
 import type { UpgradeOptions } from '@stacksjs/types'
-import { ExitCode, NpmScript } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/types'
 
-export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
+// import { determineDebugLevel } from '@stacksjs/utils'
+
+// export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
+export async function checkForUncommittedChanges(options: UpgradeOptions) {
   try {
-    const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
+    // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 
     // check if the .stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
-    await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
+    // await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
   }
   catch (error: any) {
     if (error.status === 1) {
@@ -21,15 +23,15 @@ export async function checkForUncommittedChanges(path = './.stacks', options: Up
       // the user knows what they are doing. There is also a change that simply the deps within .stacks
       // folder have been updated and that could produce a diff.
       if (!options?.force) {
-        const confirmed = await log.prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
-          type: 'confirm',
-        })
+        // const confirmed = await log.prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
+        //   type: 'confirm',
+        // })
 
-        if (!confirmed) {
-          log.info('Aborted. Stacks did not update itself.')
-          log.info('Note: if you commit your changes and replay the update, you can see what changed.')
-          process.exit(ExitCode.Success)
-        }
+        // if (!confirmed) {
+        //   log.info('Aborted. Stacks did not update itself.')
+        //   log.info('Note: if you commit your changes and replay the update, you can see what changed.')
+        //   process.exit(ExitCode.Success)
+        // }
       }
     }
   }

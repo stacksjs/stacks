@@ -10,9 +10,7 @@ import { defineDependencies } from 'stacks/utils'
  * @note This configuration is responsible for generating `./tea.yaml`
  */
 export default defineDependencies({
-  'nodejs.org': '18.16.1',
-  'npmjs.com': '9.7.2',
-  'pnpm.io': '8.6.7',
+  'bun.sh': '0.6.14',
   'sqlite.org': '3.42.0', //  you may also yse 'mysql.org': '8.0.33', 'mariadb.org': '10.6.5' and/or 'postgresql.org': '14.1'
   'redis.io': '7.0.11',
   'aws.amazon.com/cli': '2.12.7',
