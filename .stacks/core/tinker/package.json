@@ -23,8 +23,8 @@
     "zero-config",
     "stacks"
   ],
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
