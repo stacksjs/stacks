@@ -47,7 +47,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun build ./src/index.ts --outdir dist --format esm --external bun --external cac --external ora --external prompts --external @antfu/install-pkg --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/logging --external @stacksjs/path --external @stacksjs/types --external @stacksjs/utils --external @types/prompts --external bun --external cac --external ora --external prompts --external vite --external kolorist --target bun",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -58,8 +58,11 @@
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
+    "@types/prompts": "^2.4.4",
+    "bun": "^0.6.14",
     "cac": "^6.7.14",
-    "ora": "^6.3.1"
+    "ora": "^6.3.1",
+    "prompts": "^2.4.2"
   },
   "dependencies": {
     "@antfu/install-pkg": "^0.1.1",
@@ -69,9 +72,12 @@
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
+    "@types/prompts": "^2.4.4",
+    "bun": "^0.6.14",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
-    "ora": "^6.3.1"
+    "ora": "^6.3.1",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

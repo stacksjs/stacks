@@ -24,6 +24,6 @@ export async function invoke() {
  * @param options
  * @returns
  */
-export async function preinstall(options: PreinstallOptions) {
-  return invoke(options)
+export async function preinstall() {
+  return invoke()
 }

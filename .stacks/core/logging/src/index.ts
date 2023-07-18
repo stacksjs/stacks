@@ -1,3 +1,4 @@
+import { prompt } from '@stacksjs/cli'
 import { ray as debug } from 'node-ray'
 
 export function dump(...args: any[]) {
@@ -9,4 +10,9 @@ export function dd(...args: any[]) {
 }
 
 export const logger = console
-export const log = logger
+export const log = {
+  // eslint-disable-next-line no-console
+  success: console.log, // TODO: create a proper success method
+  prompt,
+  ...logger,
+}
