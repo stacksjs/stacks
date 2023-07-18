@@ -15,4 +15,7 @@ export default defineBuildConfig({
 
   declaration: false, // todo: investigate why it errors when enabled & whether it's useful
   clean: true,
+  rollup: {
+    emitCJS: true,
+  },
 })

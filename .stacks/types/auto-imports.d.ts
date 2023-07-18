@@ -121,6 +121,7 @@ declare global {
   const buddy: typeof import('../src/index')['buddy']
   const build: typeof import('./src/index')['build']
   const buildEnginePath: typeof import('../core/path/src/index')['buildEnginePath']
+  const buildEntries: typeof import('../core/development/src/index')['buildEntries']
   const buildPath: typeof import('../core/path/src/index')['buildPath']
   const cache: typeof import('./core/config/src/defaults')['cache']
   const cachePath: typeof import('../core/path/src/index')['cachePath']
@@ -1070,6 +1071,7 @@ declare module 'vue' {
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../src/index')['buddy']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
+    readonly buildEntries: UnwrapRef<typeof import('../core/development/src/index')['buildEntries']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
@@ -1946,6 +1948,7 @@ declare module '@vue/runtime-core' {
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../src/index')['buddy']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
+    readonly buildEntries: UnwrapRef<typeof import('../core/development/src/index')['buildEntries']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
