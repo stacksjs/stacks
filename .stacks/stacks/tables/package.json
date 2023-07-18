@@ -22,7 +22,7 @@
     "vue",
     "typescript",
     "javascript"
-  ], 
+  ],
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -30,7 +30,7 @@
     "dev": "vite",
     "build": "",
     "preview": "vite preview",
-    "dev:components": "vite -c ../../core/vite/src/vue-components.mts"
+    "dev:components": "vite -c ../../core/vite/src/vue-components.ts"
   },
   "peerDependencies": {
     "@stacksjs/search-engine": "workspace:*",
