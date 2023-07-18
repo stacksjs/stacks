@@ -1,4 +1,4 @@
-import { Macroable } from 'macroable'
+import { Macroable } from '@stacksjs/utils'
 import type { Arrayable, Nullable } from '@stacksjs/types'
 import type { PartitionFilter } from './helpers'
 import { uniq } from './helpers'

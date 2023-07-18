@@ -107,6 +107,7 @@ latexmk
 leex
 lighthouserc
 lintstagedrc
+macroable
 mailgun
 mailjet
 maizzle

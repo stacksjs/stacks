@@ -36,13 +36,16 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun build ./src/index.ts --external @stacksjs/path --outdir dist --format esm",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/path": "link:@stacksjs/path"
   },
+  "dependencies": {
+    "@stacksjs/path": "link:@stacksjs/path"
+  },
   "devDependencies": {
-    "typescript": "^5.1.6"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

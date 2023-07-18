@@ -1,0 +1,1 @@
+export { Macroable } from 'macroable'

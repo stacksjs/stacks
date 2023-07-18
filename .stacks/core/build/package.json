@@ -42,15 +42,17 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun build ./src/index.ts --external bun --external @stacksjs/vite --outdir dist --format esm",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/vite": "link:@stacksjs/vite",
+    "bun": "^0.6.14",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
     "@stacksjs/vite": "link:@stacksjs/vite",
+    "bun": "^0.6.14",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {

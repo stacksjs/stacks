@@ -40,19 +40,16 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun build ./src/index.ts --external @stacksjs/utils --outdir dist --format esm",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/utils": "link:@stacksjs/utils",
-    "macroable": "^7.0.2"
+    "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "dependencies": {
-    "macroable": "^7.0.2"
+    "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

@@ -45,12 +45,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun build ./src/index.ts --outdir dist --format esm",
     "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"
