@@ -1,5 +1,6 @@
 import type { Client } from 'memjs'
 import Memcached from 'memjs'
+import { expect, it } from '@stacksjs/testing'
 
 const client: Client = Memcached.Client.create('127.0.0.1:11211')
 

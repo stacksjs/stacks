@@ -65,6 +65,7 @@ encrypter
 envrc
 execa
 flowconfig
+FLUSHALL
 fontshare
 formkit
 foxundermoon

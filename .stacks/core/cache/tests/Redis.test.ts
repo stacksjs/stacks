@@ -1,4 +1,5 @@
 import { createClient } from 'redis' // TODO: needs to be imported from cache package
+import { expect, it } from '@stacksjs/testing'
 
 const client: any = createClient({
   socket: {

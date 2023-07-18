@@ -1,2 +1,3 @@
-export { describe, test, Test, it, Describe, afterEach, afterAll, beforeEach, beforeAll, jest, Mock, mock, expect, Expect, TestOptions as BunTestOptions, spyOn, setSystemTime } from 'bun:test'
+export type { Expect, TestOptions as BunTestOptions, Test, Describe, Mock } from 'bun:test'
+export { describe, test, it, afterEach, afterAll, beforeEach, beforeAll, jest, mock, expect, spyOn, setSystemTime } from 'bun:test'
 export * as feature from '@playwright/test'
