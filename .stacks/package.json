@@ -121,7 +121,7 @@
       "import": "./core/logging/dist/index.mjs"
     },
     "./modules/*": {
-      "import": "./core/modules/distmjs"
+      "import": "./core/modules/dist/index.mjs"
     },
     "./notifications": {
       "import": "./core/notifications/dist/index.mjs"

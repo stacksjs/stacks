@@ -1,12 +1,12 @@
 import { defineConfig, loadEnv } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
 import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { app, library } from '@stacksjs/config'
-import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import Components from 'unplugin-vue-components/vite'
-import { autoImports, cssEngine, uiEngine } from '@stacksjs/vite'
+import type { ViteConfig } from '../../core/types/src'
+import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '../../core/path/src'
+import { app, library } from '../../core/config/src'
+import { alias } from '../../core/alias/src'
+import { autoImports, cssEngine, uiEngine } from '../../core/vite/src'
 
 export const vueComponentsConfig: ViteConfig = {
   envDir: projectPath(),
@@ -16,7 +16,6 @@ export const vueComponentsConfig: ViteConfig = {
   server: {
     https: true,
     host: app.url,
-    port: app.port,
     open: true,
   },
 
@@ -26,7 +25,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['stacks', 'stacks/validation', 'stacks/utils', 'vue', 'fsevents', 'emitter', 'browser-sync', '@stacksjs/utils', '@stacksjs/validation'],
+    exclude: ['stacks', 'vue', 'fsevents', 'emitter', '@stacksjs/utils', '@stacksjs/validation', '@stacksjs/vite', '@stacksjs/server', '@stacksjs/config', 'stacks/utils', 'stacks/validation'],
   },
 
   plugins: [
@@ -73,7 +72,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@stacksjs/vite'],
       output: {
         globals: {
           vue: 'Vue',

@@ -1761,6 +1761,9 @@ importers:
       '@stacksjs/utils':
         specifier: workspace:*
         version: link:../../core/utils
+      '@stacksjs/vite':
+        specifier: workspace:*
+        version: link:../../core/vite
       '@vueform/multiselect':
         specifier: ^2.6.2
         version: 2.6.2
