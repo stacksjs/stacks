@@ -2,7 +2,6 @@
   "name": "@stacksjs/build",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",

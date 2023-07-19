@@ -2,7 +2,6 @@
   "name": "@stacksjs/analytics",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
   "description": "Stacks Analytics. Privacy-friendly.",
   "author": "Chris Breuer",
   "license": "MIT",

@@ -2,7 +2,6 @@
   "name": "@stacksjs/server",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",

@@ -1,7 +1,6 @@
 {
   "name": "mona-sans",
   "version": "1.0.0",
-  "packageManager": "pnpm@8.6.7",
   "description": "Mona Sans, a variable font from GitHub.",
   "license": "OFL-1.1",
   "homepage": "https://github.com/github/mona-sans",

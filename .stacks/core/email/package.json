@@ -2,7 +2,6 @@
   "name": "@stacksjs/email",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "license": "MIT",
