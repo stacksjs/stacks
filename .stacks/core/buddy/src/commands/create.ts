@@ -42,7 +42,7 @@ export async function create(buddy: CLI) {
       await onlineCheck()
       const result = await download(name, path, options)
 
-      if (result.isErr()) {
+      if (result?.isErr()) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -100,14 +100,14 @@ async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
   let result = await runCommand('pnpm install', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit()
   }
 
   result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -116,7 +116,7 @@ async function install(path: string, options: CreateOptions) {
 
   result = await runCommand('git init', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }

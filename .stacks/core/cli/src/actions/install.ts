@@ -1,5 +1,4 @@
 import { installPackage as installPkg } from '@antfu/install-pkg'
-import type { CommandReturnValue } from '@stacksjs/types'
 
 interface InstallPackageOptions {
   cwd?: string
@@ -18,7 +17,7 @@ interface InstallPackageOptions {
  * @param pkg - The options to pass to the install.The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installPackage(pkg: string, options?: InstallPackageOptions): Promise<CommandReturnValue> {
+export async function installPackage(pkg: string, options?: InstallPackageOptions) {
   if (options)
     return await installPkg(pkg, options)
 
@@ -32,7 +31,7 @@ export async function installPackage(pkg: string, options?: InstallPackageOption
  * @param options - The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installStack(name: string, options?: InstallPackageOptions): Promise<CommandReturnValue> {
+export async function installStack(name: string, options?: InstallPackageOptions) {
   if (options)
     return await installPkg(`@stacksjs/${name}`, options)
 

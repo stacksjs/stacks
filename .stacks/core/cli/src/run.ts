@@ -2,7 +2,7 @@ import type { CliOptions, SpinnerOptions as Spinner } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 import { determineDebugLevel } from '@stacksjs/utils'
-import { err, ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { spawn, spawnSync } from './command'
 import { startSpinner } from './helpers'
@@ -29,14 +29,6 @@ export async function exec(command: string | string[], options?: CliOptions) {
     cwd,
     env: process.env,
     shell,
-    // stdio: 'inherit',
-    onExit(subprocess, exitCode, signalCode, error) {
-      console.log('subprocess', subprocess)
-      console.log('exitCode', exitCode)
-      console.log('signalCode', signalCode)
-      console.log('error', error)
-      return err('Failed to execute command')
-    },
   })
 
   console.log('proc', proc)
@@ -92,10 +84,10 @@ export async function runCommands(commands: string[], options?: CliOptions) {
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result.isOk()) {
+    if (result?.isOk()) {
       results.push(result)
     }
-    else if (result.isErr()) {
+    else if (result?.isErr()) {
       log.error(new Error(`Failed to run command ${italic(command)}`))
 
       process.exit(ExitCode.FatalError)
