@@ -4,6 +4,7 @@
     "module": "esnext",
     "strict": true,
     "declaration": true,
+    "declarationMap": true,
     "incremental": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
@@ -19,7 +20,7 @@
     "isolatedModules": true,
     "strictNullChecks": true,
     "baseUrl": ".",
-    "outDir": "./dist",
+    "outDir": "./dist/types",
     "lib": [
       "esnext"
     ],
