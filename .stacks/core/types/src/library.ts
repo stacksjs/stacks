@@ -14,9 +14,15 @@ export interface LibraryOptions {
   name: string
 
   /**
-   * The name of your organization (parent).
+   * The organization / parent / owner name.
+   * @example
+   * ```ts
+   * const owner = 'your-org' // <-- this is the owner
+   * const repository = 'your-repo'
+   * const packageName = owner ? `@${owner}/${repository}' // @your-org/your-repo  <-- this is where the owner's name would be used
+   * ```
    */
-  parentName: string | null
+  owner: string | null
 
   /**
    * The package registry to use.

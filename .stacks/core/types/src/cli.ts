@@ -43,17 +43,6 @@ export interface BinaryOptions {
  */
 export interface CliOptions {
   /**
-   * **Quiet Output**
-   *
-   * When your application is in "quiet"-mode, a different level of information
-   * like useful outputs for debugging reasons, will be shown.
-   * When disabled, it defaults to the "normal experience."
-   *
-   * @default false
-   */
-  quiet?: boolean
-
-  /**
    * **Verbose Output**
    *
    * When your application is in "verbose"-mode, a different level of,
@@ -63,6 +52,8 @@ export interface CliOptions {
    * @default false
    */
   verbose?: boolean
+
+  stdout?: 'inherit' | 'pipe' | 'ignore' | number
 
   /**
    * **Current Work Directory**

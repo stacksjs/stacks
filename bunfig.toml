@@ -40,10 +40,10 @@ disableManifest = false
 [install.lockfile]
 
 # path to read bun.lockb from
-path = "deps.lockb"
+path = "bun.lockb"
 
 # path to save bun.lockb to
-savePath = "deps.lockb"
+savePath = "bun.lockb"
 
 # whether to save the lockfile to disk
 save = true

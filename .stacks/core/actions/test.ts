@@ -1,3 +1,6 @@
-// import { runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 
-// const t = await runCommand(['echo', 'hello world'])
+log.info('Running build...')
+const result = await runCommand('bun run build', {
+  cwd: import.meta.dir,
+})
