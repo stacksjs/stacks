@@ -221,4 +221,4 @@ export {
   renderHeadToString,
 } from '@vueuse/head'
 
-export { default as fg } from 'fast-glob'
+export { default as glob } from 'fast-glob'

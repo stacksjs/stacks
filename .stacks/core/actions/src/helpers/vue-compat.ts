@@ -1,8 +1,8 @@
-import { fg } from '@stacksjs/utils'
+import { glob } from '@stacksjs/utils'
 import { fs } from '@stacksjs/storage'
 
 export async function generateVueCompat(paths: string[]) {
-  const files = await fg(paths, {
+  const files = await glob(paths, {
     onlyFiles: true,
   })
 

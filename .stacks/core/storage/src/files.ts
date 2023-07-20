@@ -157,3 +157,19 @@ export async function get(path: string): Promise<string> {
     })
   })
 }
+
+export const files = {
+  readJsonFile,
+  readPackageJson,
+  readTextFile,
+  writeJsonFile,
+  writeTextFile,
+  isFile,
+  hasFiles,
+  hasComponents,
+  hasFunctions,
+  deleteFiles,
+  getFiles,
+  put,
+  get,
+}
