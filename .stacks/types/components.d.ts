@@ -15,5 +15,6 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ToggleDark: typeof import('./../../resources/components/Buttons/ToggleDark.vue')['default']
+    Undefined: typeof import('./../../resources/views/index.vue')['default']
   }
 }

@@ -1,152 +1,110 @@
-import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import Pages from 'vite-plugin-pages'
-import generateSitemap from 'vite-ssg-sitemap'
-import Components from 'unplugin-vue-components/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Markdown from 'vite-plugin-vue-markdown'
-import { VitePWA } from 'vite-plugin-pwa'
-import Inspect from 'vite-plugin-inspect'
-import LinkAttributes from 'markdown-it-link-attributes'
-import Unocss from '@unocss/vite'
-import Shiki from 'markdown-it-shiki'
-import { path, projectPath } from '@stacksjs/path'
+import { defineConfig, loadEnv } from 'vite'
+import type { ViteConfig } from '@stacksjs/types'
+import { frameworkPath, libraryEntryPath, libsPath, projectPath, resourcesPath, storagePath } from '@stacksjs/path'
+import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
+import { app, library } from '@stacksjs/config'
+import { alias } from '@stacksjs/alias'
+import mkcert from 'vite-plugin-mkcert'
+import c from 'picocolors'
+import { version } from '../package.json'
+import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 
-export default defineConfig({
-  resolve: {
-    alias: {
-      '~/': `${path.resolve(__dirname, '../../../../')}/`,
-    },
-  },
-  clearScreen: false,
+export const vueComponentsConfig: ViteConfig = {
+  root: frameworkPath('views/desktop'),
+  envDir: projectPath(),
+  envPrefix: 'FRONTEND_',
+  publicDir: storagePath('public'),
 
   server: {
-    port: 3333,
-    strictPort: true,
+    https: true,
+    host: app.url,
+    port: 5173,
+    open: true,
   },
-  envPrefix: [''],
+
+  resolve: {
+    dedupe: ['vue'],
+    alias,
+  },
+
+  optimizeDeps: {
+    exclude: ['vue'],
+  },
+
   plugins: [
-
-    Vue({
-      include: [/\.vue$/, /\.md$/],
-      reactivityTransform: true,
+    // preview(),
+    uiEngine(),
+    cssEngine(),
+    autoImports(),
+    components({
+      dirs: [resourcesPath('views'), resourcesPath('components')],
+    }),
+    inspect(),
+    mkcert({
+      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
+      autoUpgrade: true,
+      savePath: frameworkPath('certs/components'),
+      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
     }),
 
-    // https://github.com/hannoeru/vite-plugin-pages
-    Pages({
-      extensions: ['vue', 'md'],
-    }),
+    // @ts-expect-error TODO: fix this
+    {
+      // ...
+      configureServer(server: DevServer) {
+        // const base = server.config.base || '/'
+        // const _print = server.printUrls
+        server.printUrls = () => {
+          // const url = server.resolvedUrls?.local[0]
+          //
+          // if (url) {
+          //   try {
+          //     const u = new URL(url)
+          //     // eslint-disable-next-line no-console
+          //     console.log(`${u.protocol}//${u.host}`)
+          //     // const host = `${u.protocol}//${u.host}`
+          //   }
+          //   catch (error) {
+          //     log.warn('Parse resolved url failed:', error)
+          //   }
+          // }
 
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: [
-        'vue',
-        'vue-router',
-        'vue-i18n',
-        'vue/macros',
-        '@vueuse/head',
-        '@vueuse/core',
-      ],
-      dts: '../../../types/auto-imports.d.ts',
-      dirs: [
-        projectPath('functions'),
-        '../../../../app/stores',
-      ],
-      vueTemplate: true,
-    }),
+          const appUrl = app.url
+          const frontendUrl = `https://${appUrl}`
+          const backendUrl = `https://api.${appUrl}`
+          const dashboardUrl = `https://admin.${appUrl}`
+          const libraryUrl = `https://libs.${appUrl}`
+          const docsUrl = `https://docs.${appUrl}`
+          const inspectUrl = `https://${appUrl}/__inspect/`
 
-    // https://github.com/antfu/unplugin-vue-components
-    Components({
-      // allow auto load markdown components under `./src/components/`
-      extensions: ['vue', 'md'],
-      // allow auto import and register components used in markdown
-      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: '../../../../components',
-    }),
+          // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
+          const stacksVersion = `alpha-${version}`
 
-    // https://github.com/antfu/unocss
-    // see unocss.config.ts for config
-    Unocss({
-      configFile: '../../ui/src/unocss.config.ts',
-      mode: 'vue-scoped',
-    }),
-
-    // https://github.com/antfu/vite-plugin-vue-markdown
-    // Don't need this? Try vitesse-lite: https://github.com/antfu/vitesse-lite
-    Markdown({
-      wrapperClasses: 'prose prose-sm m-auto text-left',
-      headEnabled: true,
-      markdownItSetup(md) {
-        // https://prismjs.com/
-        md.use(Shiki, {
-          theme: {
-            light: 'vitesse-light',
-            dark: 'vitesse-dark',
-          },
-        })
-        md.use(LinkAttributes, {
-          matcher: (link: string) => /^https?:\/\//.test(link),
-          attrs: {
-            target: '_blank',
-            rel: 'noopener',
-          },
-        })
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.green(backendUrl)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
+          // eslint-disable-next-line no-console
+          console.log(`  ${c.green('➜')}  ${c.dim('Inspect')}: ${c.green(inspectUrl)}`)
+        }
       },
-    }),
-
-    // https://github.com/antfu/vite-plugin-pwa
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'safari-pinned-tab.svg'],
-      manifest: {
-        name: 'Vitesse',
-        short_name: 'Vitesse',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-        ],
-      },
-    }),
-
-    // https://github.com/antfu/vite-plugin-inspect
-    // Visit http://localhost:3333/__inspect/ to see the inspector
-    Inspect(),
-
-  ],
-
-  // https://github.com/vitest-dev/vitest
-  test: {
-    include: ['test/**/*.test.ts'],
-    environment: 'jsdom',
-    deps: {
-      inline: ['@vue', '@vueuse', 'vue-demi'],
     },
-  },
+  ],
+}
 
-  // https://github.com/antfu/vite-ssg
-  ssgOptions: {
-    script: 'async',
-    formatting: 'minify',
-    onFinished() { generateSitemap() },
-  },
+export default defineConfig(({ command, mode }) => {
+  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
 
-  ssr: {
-    // TODO: workaround until they support native ESM
-    noExternal: ['workbox-window', /vue-i18n/],
-  },
+  if (command === 'serve')
+    return vueComponentsConfig
+
+  return vueComponentsConfig
 })

@@ -47,8 +47,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
+    "dev:desktop": "tauri dev",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

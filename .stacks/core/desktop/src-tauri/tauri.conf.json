@@ -1,25 +1,18 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "devPath": "http://localhost:3333",
-    "distDir": "../dist"
+    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "pnpm dev",
+    "devPath": "https://stacks.test:5173",
+    "distDir": "../../../views/desktop/dist"
   },
   "package": {
-    "productName": "stacks-template",
+    "productName": "stacks",
     "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": [
-          "https://**",
-          "http://**"
-        ]
-      }
+      "all": false
     },
     "bundle": {
       "active": true,
@@ -36,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.stacks.stacks-Development",
+      "identifier": "com.stacks.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -65,7 +58,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "Stacks Development",
+        "title": "stacks-desktop",
         "width": 800
       }
     ]

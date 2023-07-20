@@ -8,9 +8,16 @@ importers:
 
   .:
     dependencies:
+      '@tauri-apps/api':
+        specifier: ^1.4.0
+        version: 1.4.0
       stacks:
         specifier: workspace:*
         version: link:.stacks
+    devDependencies:
+      '@tauri-apps/cli':
+        specifier: ^1.4.0
+        version: 1.4.0
 
   .stacks:
     dependencies:
@@ -7208,7 +7215,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-darwin-x64@1.4.0:
@@ -7217,7 +7223,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-linux-arm-gnueabihf@1.4.0:
@@ -7226,7 +7231,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-linux-arm64-gnu@1.4.0:
@@ -7235,7 +7239,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-linux-arm64-musl@1.4.0:
@@ -7244,7 +7247,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-linux-x64-gnu@1.4.0:
@@ -7253,7 +7255,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-linux-x64-musl@1.4.0:
@@ -7262,7 +7263,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-win32-arm64-msvc@1.4.0:
@@ -7271,7 +7271,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-win32-ia32-msvc@1.4.0:
@@ -7280,7 +7279,6 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli-win32-x64-msvc@1.4.0:
@@ -7289,7 +7287,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@tauri-apps/cli@1.4.0:
@@ -7307,7 +7304,6 @@ packages:
       '@tauri-apps/cli-win32-arm64-msvc': 1.4.0
       '@tauri-apps/cli-win32-ia32-msvc': 1.4.0
       '@tauri-apps/cli-win32-x64-msvc': 1.4.0
-    dev: false
 
   /@tootallnate/once@1.1.2:
     resolution: {integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==}
