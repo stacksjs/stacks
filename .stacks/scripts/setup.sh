@@ -9,6 +9,7 @@ set -o noglob
 # prevent existing env breaking this script
 unset TEA_DESTDIR
 unset TEA_VERSION
+unset TEA_MAGIC
 
 unset stop
 while test "$#" -gt 0 -a -z "$stop"; do
@@ -36,6 +37,10 @@ while test "$#" -gt 0 -a -z "$stop"; do
     TEA_YES=1
     shift
     ;;
+  --magic)
+    TEA_INSTALL_MAGIC=1
+    shift
+    ;;
   --help | -h)
     echo "tea: docs: https://github.com/teaxyz/setup"
     exit
@@ -45,7 +50,6 @@ while test "$#" -gt 0 -a -z "$stop"; do
     ;;
   esac
 done
-
 unset stop
 
 ####################################################################### funcs
@@ -54,7 +58,7 @@ prepare() {
   #FIXME doesn’t seem to work through `gum` prompts
   trap "echo; exit" INT
 
-  if ! command -v tar >/dev/null 2>&1; then
+  if ! command -v tar >/dev/null; then
     echo "tea: error: sorry. pls install tar :(" >&2
   fi
 
@@ -105,12 +109,12 @@ prepare() {
   fi
 
   if test $ZZ = 'gz'; then
-    if command -v base64 >/dev/null 2>&1; then
+    if command -v base64 >/dev/null; then
       BASE64_TARXZ="/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4AX/AFNdADMb7AG6cMNAaNMVK8FvZMaza8QKKTQY6wZ3kG/F814lHE9ruhkFO5DAG7XNamN7JMHavgmbbLacr72NaAzgGUXOstqUaGb6kbp7jrkF+3aQT12CAAB8Uikc1gG8RwABb4AMAAAAeGbHwbHEZ/sCAAAAAARZWg=="
       if echo "$BASE64_TARXZ" | base64 -d | tar Jtf - >/dev/null 2>&1; then
         ZZ=xz
       fi
-    elif command -v uudecode >/dev/null 2>&1; then
+    elif command -v uudecode >/dev/null; then
       TMPFILE=$(mktemp)
       cat >"$TMPFILE" <<-EOF
 				begin 644 foo.tar.xz
@@ -120,7 +124,7 @@ prepare() {
 				-P;'\$9_L"\`\`\`\`\`\`196@\`\`
 				\`
 				end
-			EOF
+				EOF
       if uudecode -p "$TMPFILE" | tar Jtf - >/dev/null 2>&1; then
         ZZ=xz
       fi
@@ -138,7 +142,7 @@ prepare() {
 
   if test -z "$TEA_DESTDIR"; then
     # update existing installation if found
-    if command -v tea >/dev/null 2>&1; then
+    if command -v tea >/dev/null; then
       set +e
       TEA_DESTDIR="$(tea --prefix --silent)"
       if test $? -eq 0 -a -n "$TEA_DESTDIR"; then
@@ -155,19 +159,23 @@ prepare() {
       if test "$MODE" = exec; then
         TEA_DESTDIR="$(mktemp -dt tea-XXXXXX)"
       else
-        TEA_DESTDIR="$HOME/.stacks"
-        # make our configurations portable
-        TEA_DESTDIR_WRITABLE="\$HOME/.stacks"
+        TEA_DESTDIR="$HOME/.tea"
       fi
     fi
   fi
 
-  if test -z "$TEA_DESTDIR_WRITABLE"; then
+  # be portable
+  case "$TEA_DESTDIR" in
+  "$HOME"/*)
+    TEA_DESTDIR_WRITABLE="\$HOME${TEA_DESTDIR#$HOME}"
+    ;;
+  *)
     TEA_DESTDIR_WRITABLE="$TEA_DESTDIR"
-  fi
+    ;;
+  esac
 
   if test -z "$CURL"; then
-    if command -v curl >/dev/null 2>&1; then
+    if command -v curl >/dev/null; then
       CURL="curl -Ssf"
     elif test -f "$TEA_DESTDIR/curl.se/v*/bin/curl"; then
       CURL="$TEA_DESTDIR/curl.se/v*/bin/curl -Ssf"
@@ -180,7 +188,7 @@ prepare() {
 }
 
 get_gum() {
-  if command -v gum >/dev/null 2>&1; then
+  if command -v gum >/dev/null; then
     TEA_GUM=gum
   elif test -n "$ALREADY_INSTALLED"; then
     TEA_GUM="tea --silent +charm.sh/gum gum"
@@ -252,17 +260,31 @@ gum_func() {
 }
 
 welcome() {
-  gum_func format --theme="dracula" -- <<-EoMD
+  gum_func format -- <<-EoMD
 		# hi 👋 let’s set up stacks
 
 		* stacks uses tea to manage your environments
 		* everything stacks installs goes: \`$TEA_DESTDIR\`
 		* (it won’t touch anything else)
 
-		> docs https://github.com/stacksjs/stacks
-	EoMD
+		> docs https://github.com/teaxyz/cli#getting-started
+		EoMD
 
   echo #spacer
+
+  if ! __TEA_WE_ABORT=1 gum_func confirm "how about it?" --affirmative="install tea" --negative="cancel"; then
+    #0123456789012345678901234567890123456789012345678901234567890123456789012
+    gum_func format -- <<-EoMD
+			# alrighty, aborting
+
+			btw \`tea\`’s just a standalone executable; you can run it anywhere; you \\
+			don’t need to install it
+
+			> check it https://github.com/teaxyz/cli
+			EoMD
+    echo #spacer
+    exit 1
+  fi
 }
 
 get_tea_version() {
@@ -273,7 +295,7 @@ get_tea_version() {
   v_sh="$(mktemp)"
   cat <<-EoMD >"$v_sh"
 		$CURL "https://dist.tea.xyz/tea.xyz/$MIDFIX/versions.txt" | tail -n1 > "$v_sh"
-	EoMD
+		EoMD
 
   gum_func spin --title 'determining tea version' -- sh "$v_sh"
 
@@ -323,7 +345,7 @@ install() {
   fix_links
 
   if ! test "$MODE" = exec; then
-    gum_func format --theme="dracula" -- "awesome, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
+    gum_func format -- "awesome, we installed \`$TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea\`"
   fi
 
   TEA_VERSION_MAJOR="$(echo "$TEA_VERSION" | cut -d. -f1)"
@@ -333,11 +355,11 @@ install() {
 }
 
 check_path() {
-  gum_func format --theme="dracula" -- <<-EoMD
+  gum_func format -- <<-EoMD
 		# one second!
 		without magic, tea’s not in your path!
 		> *we may need to ask for your **root password*** (via \`sudo\` obv.)
-	EoMD
+		EoMD
 
   if gum_func confirm "create /usr/local/bin/tea?" --affirmative="make symlink" --negative="skip"; then
     echo #spacer
@@ -348,28 +370,28 @@ check_path() {
     if test -w /usr/local/bin || (test ! -e /usr/local/bin && mkdir -p /usr/local/bin >/dev/null 2>&1); then
       mkdir -p /usr/local/bin
       ln -sf "$TEA_EXENAME" /usr/local/bin/tea
-    elif command -v sudo >/dev/null 2>&1; then
+    elif command -v sudo >/dev/null; then
       sudo --reset-timestamp
       sudo mkdir -p /usr/local/bin
       sudo ln -sf "$TEA_EXENAME" /usr/local/bin/tea
     else
       echo #spacer
-      gum_func format --theme="dracula" -- <<-EoMD
+      gum_func format -- <<-EoMD
 				> hmmm, sudo command not found.
 				> try installing sudo
-			EoMD
+				EoMD
     fi
 
-    if ! command -v tea >/dev/null 2>&1; then
+    if ! command -v tea >/dev/null; then
 
       echo #spacer
-      gum_func format --theme="dracula" -- <<-EoMD
+      gum_func format -- <<-EoMD
 				> hmmm, \`/usr/local/bin\` isn’t in your path,
 				> you’ll need to fix that yourself.
 				> sorry 😞
 
 				\`PATH=$PATH\`
-			EoMD
+				EoMD
     fi
   fi
 
@@ -387,11 +409,20 @@ check_shell_magic() {
 
   # foo knows I cannot tell you why $SHELL may be unset
   if test -z "$SHELL"; then
-    if command -v finger >/dev/null 2>&1; then
+    if test -z "$USER"; then
+      if ! command -v whoami >/dev/null; then
+        SHELL=bash
+      else
+        USER="$(whoami)"
+      fi
+    fi
+    if test -n "$SHELL"; then
+      : #noop: set above
+    elif command -v finger >/dev/null; then
       SHELL="$(finger "$USER" | grep Shell | cut -d: -f3 | tr -d ' ')"
-    elif command -v getent >/dev/null 2>&1; then
+    elif command -v getent >/dev/null; then
       SHELL="$(getent passwd "$USER")"
-    elif command -v id >/dev/null 2>&1; then
+    elif command -v id >/dev/null; then
       SHELL="$(id -P | cut -d ':' -f 10)"
     # Try to fall back with some level of normalcy
     elif test "$(uname)" == "Darwin"; then
@@ -401,7 +432,7 @@ check_shell_magic() {
     fi
   fi
 
-  SHELL=$(basename "$SHELL") # just in case
+  SHELL=$(basename "$SHELL")
 
   __TEA_ONE_LINER="test -d \"$TEA_DESTDIR_WRITABLE\" && source <(\"$TEA_DESTDIR_WRITABLE/tea.xyz/v*/bin/tea\" --magic=$SHELL --silent)"
 
@@ -420,6 +451,7 @@ check_shell_magic() {
   bash)
     __TEA_SH_FILE="$HOME/.bashrc"
     __TEA_BTN_TXT="add one-liner to your \`~/.bashrc\`?"
+    __TEA_ONE_LINER="test -d \"$TEA_DESTDIR_WRITABLE\" && source /dev/stdin <<<\"\$(\"$TEA_DESTDIR_WRITABLE/tea.xyz/v*/bin/tea\" --magic=$SHELL --silent)\""
     ;;
   elvish)
     __TEA_SH_FILE="$HOME/.config/elvish/rc.elv"
@@ -431,7 +463,7 @@ check_shell_magic() {
     __TEA_ONE_LINER="test -d \"$TEA_DESTDIR_WRITABLE\" && \"$TEA_DESTDIR_WRITABLE/tea.xyz/v*/bin/tea\" --magic=fish --silent | source"
     ;;
   *)
-    gum_func format --theme="dracula" -- <<-EoMD
+    gum_func format -- <<-EoMD
 			# we need your help 🙏
 
 			tea’s magic is optional but it’s the way it’s meant to be used.
@@ -439,7 +471,7 @@ check_shell_magic() {
 			we don’t know how to support \`$SHELL\` yet. can you make a pull request?
 
 			> https://github.com/teaxyz/cli/pulls
-		EoMD
+			EoMD
     return 1
     ;;
   esac
@@ -449,23 +481,31 @@ check_shell_magic() {
     return 0
   fi
 
-  echo >>"$__TEA_SH_FILE"
-  echo "alias buddy='./buddy '" >>"$__TEA_SH_FILE"
-  echo "alias bud='./buddy '" >>"$__TEA_SH_FILE"
-  echo "alias stacks='./buddy '" >>"$__TEA_SH_FILE"
-  echo "alias stx='./buddy '" >>"$__TEA_SH_FILE"
-  echo >>"$__TEA_SH_FILE"
-  echo "$__TEA_ONE_LINER" >>"$__TEA_SH_FILE"
+  gum_func format -- <<-EoMD
+		# may we interest you in some magic?
 
-  echo #spacer
+		tea’s shell magic is optional but it’s the way it’s meant to be used.
 
-  gum_func format --theme="dracula" -- <<-EoMD
-		Added one-liner to \`$__TEA_SH_FILE\`:
+		> docs https://docs.tea.xyz/features/magic
+		EoMD
 
-		\`$__TEA_ONE_LINER\`
-	EoMD
+  if gum_func confirm "$__TEA_BTN_TXT" --affirmative="add one-liner" --negative="skip"; then
+    echo >>"$__TEA_SH_FILE"
+    echo "$__TEA_ONE_LINER" >>"$__TEA_SH_FILE"
 
-  echo #spacer
+    echo #spacer
+
+    gum_func format -- <<-EoMD
+			Added:
+
+			\`$__TEA_ONE_LINER\`
+			EoMD
+
+    echo #spacer
+
+  else
+    return 1 # we need to offer a symlink to tea instead
+  fi
 }
 
 ########################################################################## go
@@ -486,35 +526,44 @@ fi
 
 if ! test -d "$TEA_DESTDIR/tea.xyz/var/pantry"; then
   title="prefetching"
-elif command -v git >/dev/null 2>&1; then
+elif command -v git >/dev/null; then
   title="syncing"
 fi
 
-gum_func spin --title "$title pantry" -- "$TEA_EXENAME" --sync --cd / /bin/echo
+gum_func spin --title "$title pantry" -- "$TEA_EXENAME" --sync --env=false
 
 case $MODE in
 install)
-  if ! test -n "$ALREADY_INSTALLED"; then
+  if ! test -n "$ALREADY_INSTALLED" -a "$TEA_INSTALL_MAGIC" != 1; then
     if ! check_shell_magic; then
       check_path
-      gum_func format --theme="dracula" -- <<-EoMD
+      gum_func format -- <<-EoMD
 				# you’re all set!
 
 				try it out:
 
 				\`tea wget -qO- tea.xyz/white-paper | tea glow -\`
-			EoMD
+				EoMD
     else
       if test -n "$GITHUB_ACTIONS"; then
         # if the user did call us directly from GHA may as well help them out
         echo "$TEA_DESTDIR/tea.xyz/v$TEA_VERSION_MAJOR/bin" >>"$GITHUB_PATH"
       fi
+
+      gum_func format -- <<-EoMD
+				# you’re all set!
+
+				try it out:
+
+				\`exec $SHELL -i\`  # or open a new tab
+				\`wget -qO- tea.xyz/white-paper | glow -\`
+				EoMD
     fi
   elif test -n "$TEA_IS_CURRENT"; then
-    gum_func format --theme="dracula" -- <<-EoMD
+    gum_func format -- <<-EoMD
 			# the latest version of tea was already installed
 			> $TEA_DESTDIR/tea.xyz/v$TEA_VERSION/bin/tea
-		EoMD
+			EoMD
   fi
   echo #spacer
   ;;
@@ -527,9 +576,9 @@ exec)
 
     echo #spacer
 
-    gum_func format --theme="dracula" <<-EoMD >&2
+    gum_func format <<-EoMD >&2
 			> powered by [stacks](https://stacksjs.dev) & [tea](https://tea.xyz)
-		EoMD
+			EoMD
 
     echo #spacer
   else
