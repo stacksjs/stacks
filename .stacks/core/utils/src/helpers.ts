@@ -33,8 +33,8 @@ export async function installIfVersionMismatch() {
   const installedBunVersion = process.version
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
-    log.warn(`Installed Node.js version (${installedBunVersion}) does not satisfy required version (${requiredBunVersion}). Adding it to your environment. One moment...`)
-    await runCommand(`tea +nodejs.org${requiredBunVersion} >/dev/null 2>&1`)
+    log.warn(`Installed Bun version (${installedBunVersion}) does not satisfy required version (${requiredBunVersion}). Adding it to your environment. One moment...`)
+    await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
 
