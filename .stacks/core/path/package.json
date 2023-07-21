@@ -2,7 +2,7 @@
   "name": "@stacksjs/path",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
+  "packageManager": "pnpm@8.6.9",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "license": "MIT",

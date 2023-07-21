@@ -2,7 +2,7 @@
   "name": "@stacksjs/error-handling",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
+  "packageManager": "pnpm@8.6.9",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.45.2",
+    "@ow3/eslint-config": "^0.47.1",
     "@stacksjs/cli": "workspace:*"
   },
   "dependencies": {

@@ -2,7 +2,7 @@
   "name": "@stacksjs/validation",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.7",
+  "packageManager": "pnpm@8.6.9",
   "description": "The Stacks Validation methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,10 +45,10 @@
   },
   "peerDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@vinejs/vine": "^1.5.1"
+    "@vinejs/vine": "^1.5.2"
   },
   "dependencies": {
-    "@vinejs/vine": "^1.5.1"
+    "@vinejs/vine": "^1.5.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
