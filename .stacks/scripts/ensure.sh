@@ -1,24 +1,24 @@
 #!/bin/sh
-REQUIRED_NODE_VERSION=$(awk '/nodejs.org/{print substr($2, 2)}' ../../tea.yaml | tr -d "'")
+REQUIRED_BUN_VERSION=$(awk '/bun.sh/{print substr($2, 2)}' ../../tea.yaml | tr -d "'")
 
 # Remove the '>=v' prefix from the version string
-REQUIRED_NODE_VERSION=${REQUIRED_NODE_VERSION#>=v}
+REQUIRED_BUN_VERSION=${REQUIRED_BUN_VERSION#>=v}
 
-REQUIRED_NODE_MAJOR=$(echo "$REQUIRED_NODE_VERSION" | cut -d. -f1)
-REQUIRED_NODE_MINOR=$(echo "$REQUIRED_NODE_VERSION" | cut -d. -f2)
-REQUIRED_NODE_PATCH=$(echo "$REQUIRED_NODE_VERSION" | cut -d. -f3)
+REQUIRED_BUN_MAJOR=$(echo "$REQUIRED_BUN_VERSION" | cut -d. -f1)
+REQUIRED_BUN_MINOR=$(echo "$REQUIRED_BUN_VERSION" | cut -d. -f2)
+REQUIRED_BUN_PATCH=$(echo "$REQUIRED_BUN_VERSION" | cut -d. -f3)
 
-INSTALLED_NODE_VERSION=$(node -v 2>/dev/null || echo "")
-INSTALLED_NODE_VERSION=${INSTALLED_NODE_VERSION#v} # removes the 'v' prefix
-INSTALLED_NODE_MAJOR=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f1)
-INSTALLED_NODE_MINOR=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f2)
-INSTALLED_NODE_PATCH=$(echo "$INSTALLED_NODE_VERSION" | cut -d. -f3)
+INSTALLED_BUN_VERSION=$(node -v 2>/dev/null || echo "")
+INSTALLED_BUN_VERSION=${INSTALLED_BUN_VERSION#v} # removes the 'v' prefix
+INSTALLED_BUN_MAJOR=$(echo "$INSTALLED_BUN_VERSION" | cut -d. -f1)
+INSTALLED_BUN_MINOR=$(echo "$INSTALLED_BUN_VERSION" | cut -d. -f2)
+INSTALLED_BUN_PATCH=$(echo "$INSTALLED_BUN_VERSION" | cut -d. -f3)
 
-if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
-  ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -lt "$REQUIRED_NODE_MINOR") ||
-  ("$INSTALLED_NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" && "$INSTALLED_NODE_MINOR" -eq "$REQUIRED_NODE_MINOR" && "$INSTALLED_NODE_PATCH" -lt "$REQUIRED_NODE_PATCH") ]]; then
+if [[ "$INSTALLED_BUN_MAJOR" -lt "$REQUIRED_BUN_MAJOR" ||
+  ("$INSTALLED_BUN_MAJOR" -eq "$REQUIRED_BUN_MAJOR" && "$INSTALLED_BUN_MINOR" -lt "$REQUIRED_BUN_MINOR") ||
+  ("$INSTALLED_BUN_MAJOR" -eq "$REQUIRED_BUN_MAJOR" && "$INSTALLED_BUN_MINOR" -eq "$REQUIRED_BUN_MINOR" && "$INSTALLED_BUN_PATCH" -lt "$REQUIRED_BUN_PATCH") ]]; then
     sh ./setup.sh
-    node_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +nodejs.org'=$REQUIRED_NODE_VERSION' >/dev/null 2>&1; tea +nodejs.org'=$REQUIRED_NODE_VERSION' node -v")
+    node_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +bun.sh'=$REQUIRED_BUN_VERSION' >/dev/null 2>&1; tea +bun.sh'=$REQUIRED_BUN_VERSION' node -v")
     pnpm_version=$(exec $SHELL -c "source ~/.zshrc; tea >/dev/null 2>&1; pnpm -v >/dev/null 2>&1; pnpm -v")
     exec $SHELL -c "source ~/.zshrc; tea -SE >/dev/null 2>&1 && cd ."
     echo "  # managed by stacks"
@@ -29,4 +29,4 @@ if [[ "$INSTALLED_NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ||
     exit
 fi
 
-echo "Node.js v$REQUIRED_NODE_VERSION or greater is installed!"
+echo "Node.js v$REQUIRED_BUN_VERSION or greater is installed!"
