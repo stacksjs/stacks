@@ -247,7 +247,6 @@
     "update:node": "bun buddy update:node",
     "update:all": "bun buddy update:all",
     "dev:components": "vite serve ../../components/vue -c ../build/src/vue-components.ts",
-    "dev:core": "pnpm --filter '../core/**' --filter '!../buddy/' dev",
     "dev:desktop": "vite serve ../../components/vue -c ../build/src/desktop.ts",
     "dev:docs": "buddy dev:docs",
     "dev:pages": "nitro dev",
