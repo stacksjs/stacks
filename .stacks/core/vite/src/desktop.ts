@@ -1,13 +1,13 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath, resourcesPath, storagePath } from '@stacksjs/path'
-import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
+import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
+import type { ViteDevServer as DevServer } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
 import { version } from '../package.json'
-import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
+import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('views/desktop'),
@@ -36,9 +36,6 @@ export const vueComponentsConfig: ViteConfig = {
     uiEngine(),
     cssEngine(),
     autoImports(),
-    components({
-      dirs: [resourcesPath('views'), resourcesPath('components')],
-    }),
     inspect(),
     mkcert({
       hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],

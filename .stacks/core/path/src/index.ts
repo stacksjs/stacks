@@ -248,8 +248,8 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
   return frameworkPath(`${type}/package.json`)
 }
 
-export function pagesPath(path?: string) {
-  return resourcesPath(`pages/${path || ''}`)
+export function viewsPath(path?: string) {
+  return resourcesPath(`views/${path || ''}`)
 }
 
 export function pathPath(path?: string) {
@@ -451,7 +451,7 @@ export const path = {
   onboardingPath,
   notificationsPath,
   packageJsonPath,
-  pagesPath,
+  viewsPath,
   pathPath,
   paymentsPath,
   projectPath,

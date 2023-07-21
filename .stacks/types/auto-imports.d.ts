@@ -559,7 +559,7 @@ declare global {
   const p: typeof import('../core/utils/src/p')['p']
   const packageJsonPath: typeof import('../core/path/src/index')['packageJsonPath']
   const packageManager: typeof import('../core/utils/src/helpers')['packageManager']
-  const pagesPath: typeof import('../core/path/src/index')['pagesPath']
+  const viewsPath: typeof import('../core/path/src/index')['viewsPath']
   const paramCase: typeof import('../core/strings/src/case')['paramCase']
   const parse: typeof import('../core/path/src/index')['parse']
   const parseArgs: typeof import('../core/cli/src/parse')['parseArgs']
@@ -1472,7 +1472,7 @@ declare module 'vue' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly pagesPath: UnwrapRef<typeof import('../core/path/src/index')['pagesPath']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>
@@ -2349,7 +2349,7 @@ declare module '@vue/runtime-core' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly pagesPath: UnwrapRef<typeof import('../core/path/src/index')['pagesPath']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>

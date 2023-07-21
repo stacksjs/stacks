@@ -215,5 +215,5 @@ export const alias: Record<string, string> = {
   'config/*': p.projectConfigPath('*'),
   'components/*': p.componentsPath('*'),
   'functions/*': p.functionsPath('*'),
-  'pages/*': p.pagesPath('*'),
+  'views/*': p.viewsPath('*'),
 }

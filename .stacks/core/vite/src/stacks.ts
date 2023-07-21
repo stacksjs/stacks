@@ -27,7 +27,7 @@ export function components(options?: ComponentOptions): Plugin {
     include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
       p.componentsPath(),
-      // pagesPath(),
+      // viewsPath(),
     ],
     dts: p.frameworkPath('types/components.d.ts'),
   }
@@ -42,7 +42,7 @@ export function pages(options?: PagesOption): Plugin {
   const defaultOptions = {
     extensions: ['vue', 'md'],
     dirs: [
-      p.pagesPath(),
+      p.viewsPath(),
     ],
   }
 
