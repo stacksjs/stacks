@@ -4,6 +4,8 @@
 
 import type { Ora } from 'ora'
 
+export type { Subprocess, SyncSubprocess } from 'bun'
+
 export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
   startTime?: number
