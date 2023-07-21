@@ -50,7 +50,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "nitropack": "^2.5.2",
-    "vite": "^4.4.5"
+    "vite": "^4.4.6"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
