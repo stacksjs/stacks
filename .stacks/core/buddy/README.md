@@ -72,7 +72,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
-- 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
+- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
 - 🤖 **Infrastructure as Code** _version-controlled cloud infrastructure_
@@ -362,7 +362,7 @@ View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?q
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

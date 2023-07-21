@@ -36,10 +36,13 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "node-cron": "3.0.2"
+  },
+  "dependencies": {
     "node-cron": "3.0.2"
   },
   "devDependencies": {

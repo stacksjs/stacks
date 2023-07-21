@@ -69,7 +69,7 @@ root((dispose) => {
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

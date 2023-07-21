@@ -46,7 +46,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
@@ -60,7 +60,15 @@
     "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.4.6"
+    "@maizzle/framework": "^4.4.6",
+    "@stacksjs/chat": "link:@stacksjs/chat",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/email": "link:@stacksjs/email",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/push": "link:@stacksjs/push",
+    "@stacksjs/sms": "link:@stacksjs/sms",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "optionalDependencies": {
     "@novu/discord": "^0.16.3",

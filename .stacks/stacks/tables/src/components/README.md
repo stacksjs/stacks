@@ -81,7 +81,7 @@ When using this template, feel free to adjust it to your needs. It is a framewor
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

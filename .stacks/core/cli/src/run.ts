@@ -1,7 +1,8 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CliOptions, Subprocess, SyncSubprocess } from '@stacksjs/types'
-import type { Result } from '@stacksjs/error-handling'
-import { ResultAsync, errAsync } from '@stacksjs/error-handling'
+import type { Result, ResultAsync } from '@stacksjs/error-handling'
+import { errAsync, okAsync } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/cli'
 import { spawn, spawnSync } from './command'
 
 /**
@@ -23,11 +24,12 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
         log.error(error)
     },
   })
+  const exited = await proc.exited
 
-  if (await proc.exited === ExitCode.Success)
+  if (exited === ExitCode.Success)
     return okAsync(proc)
 
-  return errAsync(proc)
+  return errAsync(new Error(`Failed to execute command: ${cmd.join(' ')}`))
 }
 
 /**
@@ -51,7 +53,7 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
   if (proc.success)
     return ok(proc)
 
-  return err(proc)
+  return err(new Error(`Failed to execute command: ${cmd.join(' ')}`))
 }
 
 /**
@@ -61,20 +63,9 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export function runCommand(command: string | string[], options?: CliOptions): ResultAsync<Subprocess, Error> {
-  // if (Array.isArray(command)) {
-  //   const results = []
-
-  //   for (const c of command)
-  //     results.push(ResultAsync.fromPromise(exec(c, options), () => new Error('Failed to run command')))
-
-  //   return results
-  // }
-
-  return ResultAsync.fromPromise(exec(command, options), () => new Error('Failed to run command'))
+export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<Subprocess, Error>> {
+  return await exec(command, options)
 }
-
-type CommandResult = Result<Subprocess, Error>
 
 /**
  * Run many commands.

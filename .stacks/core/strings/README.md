@@ -39,7 +39,7 @@ To view the full documentation, please visit [https://stacksjs.dev/strings](http
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

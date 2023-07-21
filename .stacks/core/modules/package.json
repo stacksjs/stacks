@@ -25,15 +25,15 @@
   "exports": {
     "./i18n": {
       "types": "./dist/i18n.d.ts",
-      "import": "./dist/i18n.mjs"
+      "import": "./dist/i18n.ts"
     },
     "./nprogress": {
       "types": "./dist/nprogress.d.ts",
-      "import": "./dist/nprogress.mjs"
+      "import": "./dist/nprogress.ts"
     },
     "./pwa": {
       "types": "./dist/pwa.d.ts",
-      "import": "./dist/pwa.mjs"
+      "import": "./dist/pwa.ts"
     }
   },
   "contributors": [
@@ -44,11 +44,17 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "build": "mkdir -p dist && cp -r src/* dist/",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/types": "link:@stacksjs/types",
+    "@types/nprogress": "^0.2.0",
+    "nprogress": "^0.2.0",
+    "vue-i18n": "^9.2.2"
+  },
+  "dependencies": {
     "@stacksjs/types": "link:@stacksjs/types",
     "@types/nprogress": "^0.2.0",
     "nprogress": "^0.2.0",

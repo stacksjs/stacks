@@ -13,7 +13,6 @@ export default defineDatabase({
 
   connections: {
     mysql: {
-      url: env.DB_URL,
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',
       port: env.DB_PORT || 3306,
@@ -23,7 +22,6 @@ export default defineDatabase({
     },
 
     sqlite: {
-      url: env.DB_URL,
       database: env.DB_DATABASE || 'stacks',
       prefix: '',
     },

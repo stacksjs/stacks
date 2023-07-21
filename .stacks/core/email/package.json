@@ -47,11 +47,25 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@maizzle/framework": "^4.4.6",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "dependencies": {
+    "@maizzle/framework": "^4.4.6",
+    "@novu/stateless": "^0.16.3",
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "optionalDependencies": {
     "@novu/emailjs": "^0.16.3",
     "@novu/mailgun": "^0.16.3",
     "@novu/mailjet": "^0.16.3",
@@ -61,20 +75,9 @@
     "@novu/nodemailer": "^0.16.3",
     "@novu/postmark": "^0.16.3",
     "@novu/sendgrid": "^0.16.3",
-    "@novu/ses": "^0.16.3",
-    "@novu/stateless": "^0.16.3",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
-    "@stacksjs/types": "link:@stacksjs/types"
-  },
-  "dependencies": {
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
-    "@stacksjs/logging": "link:@stacksjs/logging"
+    "@novu/ses": "^0.16.3"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

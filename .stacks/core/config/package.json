@@ -36,11 +36,12 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "c12": "^1.4.2"
+    "@stacksjs/utils": "link:@stacksjs/utils",
+    "@stacksjs/validation": "link:@stacksjs/validation"
   },
   "dependencies": {
     "c12": "^1.4.2"

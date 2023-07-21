@@ -1,6 +1,6 @@
 import { loadEnv } from 'vite'
 
-type Env = Partial<{
+interface Env {
   APP_NAME: string
   APP_ENV: 'local' | 'development' | 'staging' | 'production'
   APP_KEY: string
@@ -110,16 +110,16 @@ type Env = Partial<{
   MICROSOFT_TEAMS_APPLICATION_ID: string
   MICROSOFT_TEAMS_CLIENT_ID: string
   MICROSOFT_TEAMS_SECRET: string
-}>
+}
 
-export type FrontendEnv = Partial<{
+export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
   FRONTEND_APP_URL: string
-}>
+}
 
 export type EnvKeys = keyof Env
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export const env = process.env as Env
+export const env: Partial<Env> = process.env as Partial<Env>
 
 export { loadEnv }

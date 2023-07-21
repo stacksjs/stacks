@@ -21,6 +21,7 @@
     "utilities",
     "functions",
     "stripe",
+    "bun",
     "stacks"
   ],
   "exports": {
@@ -40,7 +41,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
@@ -50,7 +51,6 @@
   },
   "devDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

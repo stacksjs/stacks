@@ -28,7 +28,7 @@ To view the full documentation, please visit [https://stacksjs.dev/path](https:/
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

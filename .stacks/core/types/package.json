@@ -39,7 +39,7 @@
   ],
   "scripts": {
     "build": "echo 'wip'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
     "neverthrow": "^6.0.0"

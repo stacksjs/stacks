@@ -18,11 +18,11 @@
   "keywords": [
     "database",
     "orm",
+    "sqlite",
     "mysql",
     "postgres",
-    "planetScale",
-    "supabase",
-    "singleStore",
+    "planetscale",
+    "bun",
     "stacks"
   ],
   "exports": {
@@ -42,10 +42,11 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/faker": "link:@stacksjs/faker",
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/query-builder": "link:@stacksjs/query-builder",
@@ -54,7 +55,13 @@
     "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "dependencies": {
-    "@stacksjs/config": "link:@stacksjs/config"
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/faker": "link:@stacksjs/faker",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/query-builder": "link:@stacksjs/query-builder",
+    "@stacksjs/storage": "link:@stacksjs/storage",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/utils": "link:@stacksjs/utils"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

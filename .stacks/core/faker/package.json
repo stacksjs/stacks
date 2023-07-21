@@ -39,11 +39,10 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@faker-js/faker": "^8.0.2",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config"
   },

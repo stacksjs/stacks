@@ -47,10 +47,20 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/build": "link:@stacksjs/build",
+    "@stacksjs/server": "link:@stacksjs/server",
+    "@tauri-apps/api": "1.4.0",
+    "@tauri-apps/cli": "1.4.0",
+    "unified-network": "0.6.4",
+    "unstorage": "^1.8.0",
+    "vue": "3.3.4",
+    "vue3-highlightjs": "^1.0.5"
+  },
+  "dependencies": {
     "@stacksjs/build": "link:@stacksjs/build",
     "@stacksjs/server": "link:@stacksjs/server",
     "@tauri-apps/api": "1.4.0",

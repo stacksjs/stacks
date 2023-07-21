@@ -72,7 +72,7 @@ Learn more in the [docs](https://github.com/supermacro/neverthrow/wiki).
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 🤗 Motivation

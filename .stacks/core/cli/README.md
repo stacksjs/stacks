@@ -90,7 +90,7 @@ To view the full documentation, please visit [https://stacksjs.dev/cli](https://
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

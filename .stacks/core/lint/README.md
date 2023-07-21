@@ -36,7 +36,7 @@ To view the full documentation, please visit [https://stacksjs.dev/lint](https:/
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

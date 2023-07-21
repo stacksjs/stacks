@@ -46,7 +46,7 @@ Learn more in the docs.
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

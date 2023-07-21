@@ -1,4 +1,4 @@
-import type { ResolvedStacksOptions } from 'stacks/types'
+import type { ResolvedStacksOptions } from '@stacksjs/types'
 import app from '../../../../config/app'
 import binary from '../../../../config/binary'
 import cache from '../../../../config/cache'

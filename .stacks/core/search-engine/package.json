@@ -45,19 +45,18 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "meilisearch": "^0.33.0"
-  },
-  "dependencies": {
     "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/ui": "link:@stacksjs/ui"
   },
+  "dependencies": {
+    "meilisearch": "^0.33.0"
+  },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

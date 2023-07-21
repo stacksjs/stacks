@@ -1,6 +1,6 @@
 # this is the tea config for core stacks development
 dependencies:
-  bun.sh: ^0.6.14
+  bun.sh: ^0.7.0
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.12.7

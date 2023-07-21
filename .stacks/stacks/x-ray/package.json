@@ -40,7 +40,7 @@
     "serve": "vite --config ../build/src/desktop.ts",
     "serve:tauri": "vite",
     "prepublishOnly": "bun run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/desktop": "link:@stacksjs/desktop",

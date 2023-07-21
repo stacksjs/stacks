@@ -36,10 +36,15 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/query-builder": "link:@stacksjs/query-builder",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "dependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/query-builder": "link:@stacksjs/query-builder",
     "@stacksjs/types": "link:@stacksjs/types"

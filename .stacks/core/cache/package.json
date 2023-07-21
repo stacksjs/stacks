@@ -2,7 +2,7 @@
   "name": "@stacksjs/cache",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks way of caching.",
+  "description": "Caching the Stacks way.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -42,22 +42,21 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "redis": "^4.6.7"
+    "@stacksjs/config": "link:@stacksjs/config"
   },
   "dependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "redis": "^4.6.7"
+    "@stacksjs/config": "link:@stacksjs/config"
   },
   "optionalDependencies": {
     "@aws-sdk/client-dynamodb": "^3.370.0",
     "@types/memjs": "^1.3.0",
     "memcached": "^2.2.2",
-    "memjs": "^1.3.1"
+    "memjs": "^1.3.1",
+    "redis": "^4.6.7"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

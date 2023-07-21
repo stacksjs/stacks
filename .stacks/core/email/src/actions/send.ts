@@ -1,6 +1,5 @@
 import type { EmailOptions } from '@stacksjs/types'
-import { italic } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
 
 // @ts-expect-error check if types are available

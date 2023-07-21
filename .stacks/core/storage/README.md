@@ -46,7 +46,7 @@ To view the full documentation, please visit [https://stacksjs.dev/storage](http
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

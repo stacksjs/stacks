@@ -78,10 +78,6 @@ export function buildPath(path?: string) {
   return corePath(`build/${path || ''}`)
 }
 
-export function bunPath(path?: string) {
-  return corePath(`bun/${path || ''}`)
-}
-
 export function buildEnginePath(path?: string) {
   return buildPath(`${path || ''}`)
 }
@@ -417,7 +413,6 @@ export const path = {
   buildEnginePath,
   libsEntriesPath,
   buildPath,
-  bunPath,
   cachePath,
   chatPath,
   cliPath,

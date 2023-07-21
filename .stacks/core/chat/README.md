@@ -47,7 +47,7 @@ SLACK_SECRET_KEY=SSK123
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

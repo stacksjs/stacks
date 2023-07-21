@@ -41,13 +41,13 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "pathe": "^1.1.1"
   },
   "devDependencies": {
-    "typescript": "^5.1.6"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

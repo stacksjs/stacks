@@ -39,10 +39,11 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/cli": "link:@stacksjs/cli",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },

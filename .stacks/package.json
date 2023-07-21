@@ -234,7 +234,7 @@
   ],
   "scripts": {
     "buddy": "tsx ./core/buddy/src/cli.ts",
-    "build": "pnpm --filter='./core/**' build",
+    "build": "bun build.ts",
     "dev": "pnpm --filter='./core/**' dev",
     "publish:framework": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
     "publish:dummy-libs": "bun run generate:entries && pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",

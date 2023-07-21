@@ -16,18 +16,19 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "bun",
     "cli",
     "commands",
     "command line interface",
     "console",
     "binary",
     "apps",
+    "prompts",
     "spinners",
     "utilities",
     "helpers",
     "cac",
     "ora",
-    "ez-spawn",
     "stacks"
   ],
   "exports": {
@@ -46,8 +47,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir dist --format esm --external bun --external cac --external ora --external prompts --external @antfu/install-pkg --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/logging --external @stacksjs/path --external @stacksjs/types --external @stacksjs/utils --external @types/prompts --external bun --external cac --external ora --external prompts --external vite --external kolorist --target bun",
-    "typecheck": "tsc --noEmit",
+    "build": "bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {

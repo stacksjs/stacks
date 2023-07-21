@@ -39,12 +39,15 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.45.2",
-    "@stacksjs/cli": "link:@stacksjs/cli"
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/storage": "link:@stacksjs/storage",
+    "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
     "@stacksjs/cli": "link:@stacksjs/cli",

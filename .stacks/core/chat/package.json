@@ -38,8 +38,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --external @novu/stateless --external @stacksjs/cli --external @stacksjs/error-handling --external @novu/discord --external @novu/ms-teams --external @novu/node --external @novu/slack --outdir dist --format esm --target bun",
-    "typecheck": "tsc --noEmit",
+    "build": "bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {

@@ -43,10 +43,16 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/arrays": "link:@stacksjs/arrays",
+    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/strings": "link:@stacksjs/strings",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "dependencies": {
     "@stacksjs/arrays": "link:@stacksjs/arrays",
     "@stacksjs/path": "link:@stacksjs/path",
     "@stacksjs/strings": "link:@stacksjs/strings",

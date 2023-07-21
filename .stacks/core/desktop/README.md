@@ -21,7 +21,7 @@ import desktop from '@stacksjs/desktop'
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog

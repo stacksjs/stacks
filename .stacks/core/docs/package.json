@@ -38,10 +38,13 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "vitepress": "1.0.0-beta.5"
+  },
+  "dependencies": {
     "vitepress": "1.0.0-beta.5"
   },
   "devDependencies": {

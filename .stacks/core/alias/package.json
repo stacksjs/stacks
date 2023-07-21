@@ -35,8 +35,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --external @stacksjs/path --outdir dist --format esm",
-    "typecheck": "tsc --noEmit",
+    "build": "bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {

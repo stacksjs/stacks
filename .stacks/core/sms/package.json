@@ -44,10 +44,22 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "dependencies": {
+    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/config": "link:@stacksjs/config",
+    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
+    "@stacksjs/types": "link:@stacksjs/types"
+  },
+  "optionalDependencies": {
     "@novu/gupshup": "^0.16.3",
     "@novu/nexmo": "^0.16.3",
     "@novu/node": "^0.16.3",
@@ -57,11 +69,7 @@
     "@novu/stateless": "^0.16.3",
     "@novu/telnyx": "^0.16.3",
     "@novu/termii": "^0.16.3",
-    "@novu/twilio": "^0.16.3",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@novu/twilio": "^0.16.3"
   },
   "devDependencies": {
     "@stacksjs/config": "link:@stacksjs/config",
