@@ -46,7 +46,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
+    "dev:desktop": "tauri dev",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

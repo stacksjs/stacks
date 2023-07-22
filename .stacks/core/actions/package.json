@@ -236,7 +236,7 @@
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.8.5"
+    "vue-component-meta": "^1.8.6"
   },
   "dependencies": {
     "@stacksjs/cli": "link:@stacksjs/cli",
@@ -250,7 +250,7 @@
     "@stacksjs/strings": "link:@stacksjs/strings",
     "@stacksjs/utils": "link:@stacksjs/utils",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.8.5"
+    "vue-component-meta": "^1.8.6"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

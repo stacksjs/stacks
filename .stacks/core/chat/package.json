@@ -57,10 +57,11 @@
     "@stacksjs/types": "link:@stacksjs/types"
   },
   "optionalDependencies": {
-    "@novu/discord": "^0.16.3",
-    "@novu/ms-teams": "^0.16.3",
-    "@novu/node": "^0.16.3",
-    "@novu/slack": "^0.16.3"
+    "@novu/discord": "^0.16.4",
+    "@novu/ms-teams": "^0.16.4",
+    "@novu/node": "^0.16.4",
+    "@novu/slack": "^0.16.4",
+    "@novu/stateless": "^0.16.4"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

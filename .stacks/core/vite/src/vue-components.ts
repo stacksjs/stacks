@@ -18,7 +18,6 @@ export const vueComponentsConfig: ViteConfig = {
   server: {
     https: true,
     host: app.url,
-    port: 3333,
     open: true,
   },
 

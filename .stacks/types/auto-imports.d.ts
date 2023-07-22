@@ -117,6 +117,7 @@ declare global {
   const buddy: typeof import('../src/index')['buddy']
   const build: typeof import('./src/index')['build']
   const buildEnginePath: typeof import('../core/path/src/index')['buildEnginePath']
+  const buildEntries: typeof import('../core/development/src/index')['buildEntries']
   const buildPath: typeof import('../core/path/src/index')['buildPath']
   const cache: typeof import('./core/config/src/defaults')['cache']
   const cachePath: typeof import('../core/path/src/index')['cachePath']
@@ -551,7 +552,7 @@ declare global {
   const p: typeof import('../core/utils/src/p')['p']
   const packageJsonPath: typeof import('../core/path/src/index')['packageJsonPath']
   const packageManager: typeof import('../core/utils/src/helpers')['packageManager']
-  const pagesPath: typeof import('../core/path/src/index')['pagesPath']
+  const viewsPath: typeof import('../core/path/src/index')['viewsPath']
   const paramCase: typeof import('../core/strings/src/case')['paramCase']
   const parse: typeof import('../core/path/src/index')['parse']
   const parseArgs: typeof import('../core/cli/src/parse')['parseArgs']
@@ -1060,6 +1061,7 @@ declare module 'vue' {
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../src/index')['buddy']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
+    readonly buildEntries: UnwrapRef<typeof import('../core/development/src/index')['buildEntries']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
@@ -1460,7 +1462,7 @@ declare module 'vue' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly pagesPath: UnwrapRef<typeof import('../core/path/src/index')['pagesPath']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>
@@ -1936,6 +1938,7 @@ declare module '@vue/runtime-core' {
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../src/index')['buddy']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
+    readonly buildEntries: UnwrapRef<typeof import('../core/development/src/index')['buildEntries']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
@@ -2336,7 +2339,7 @@ declare module '@vue/runtime-core' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly pagesPath: UnwrapRef<typeof import('../core/path/src/index')['pagesPath']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>

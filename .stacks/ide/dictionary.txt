@@ -136,6 +136,7 @@ nexmo
 nitropack
 noopener
 novu
+npmjs
 npmrc
 nprogress
 nuxt
