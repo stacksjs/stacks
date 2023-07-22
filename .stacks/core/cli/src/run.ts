@@ -82,10 +82,3 @@ export async function runCommands(commands: string[], options?: CliOptions) {
 
   return results
 }
-
-// function determineSpinner(options?: CliOptions): Spinner | undefined {
-//   if (!determineDebugLevel(options))
-//     return startSpinner(options?.spinnerText)
-
-//   return undefined
-// }
