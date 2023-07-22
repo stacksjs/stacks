@@ -60,7 +60,7 @@
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
     "@types/prompts": "^2.4.4",
-    "bun": "^0.6.14",
+    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "ora": "^6.3.1",
     "prompts": "^2.4.2"
@@ -74,7 +74,7 @@
     "@stacksjs/types": "link:@stacksjs/types",
     "@stacksjs/utils": "link:@stacksjs/utils",
     "@types/prompts": "^2.4.4",
-    "bun": "^0.6.14",
+    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
     "ora": "^6.3.1",

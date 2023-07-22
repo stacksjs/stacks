@@ -48,11 +48,11 @@
   },
   "peerDependencies": {
     "@playwright/test": "^1.36.0",
-    "bun": "^0.6.14"
+    "bun": "^0.7.0"
   },
   "dependencies": {
     "@playwright/test": "^1.36.0",
-    "bun": "^0.6.14"
+    "bun": "^0.7.0"
   },
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development"

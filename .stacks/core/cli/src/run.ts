@@ -2,8 +2,8 @@ import { ExitCode } from '@stacksjs/types'
 import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
 import type { Result, ResultAsync } from '@stacksjs/error-handling'
 import { errAsync, handleError, okAsync } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/cli'
 import { spawn, spawnSync } from './command'
+import { log } from './log'
 
 /**
  * Execute a command.

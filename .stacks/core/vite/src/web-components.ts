@@ -1,6 +1,5 @@
 import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, projectPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import type { ViteBuildOptions } from './'
@@ -11,8 +10,8 @@ import { defineConfig } from './'
 // const isWebComponent = true
 
 export const webComponentsConfig: ViteConfig = {
-  root: frameworkPath('libs/components/web'),
-  envDir: projectPath(),
+  root: p.frameworkPath('libs/components/web'),
+  envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
   server,
@@ -38,11 +37,11 @@ export const webComponentsConfig: ViteConfig = {
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: frameworkPath('components/web/dist'),
+    outDir: p.frameworkPath('components/web/dist'),
     emptyOutDir: true,
     lib: {
-      entry: libraryEntryPath('web-components'),
-      name: library.webComponents?.name,
+      entry: p.libraryEntryPath('web-components'),
+      name: 'web-components',
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
