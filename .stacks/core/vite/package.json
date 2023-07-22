@@ -77,6 +77,9 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "peerDependencies": {
+    "vite": "^4.4.6"
+  },
   "dependencies": {
     "@stacksjs/alias": "link:@stacksjs/alias",
     "@stacksjs/config": "link:@stacksjs/config",
@@ -90,6 +93,7 @@
     "unplugin-auto-import": "^0.16.6",
     "unplugin-vue-components": "^0.25.1",
     "vite": "^4.4.6",
+    "vite-plugin-full-reload": "^1.0.5",
     "vite-plugin-inspect": "^0.7.33",
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.4",
@@ -99,7 +103,6 @@
     "vite-ssg-sitemap": "^0.5.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
-    "vite-plugin-full-reload": "^1.0.5"
+    "@stacksjs/development": "link:@stacksjs/development"
   }
 }

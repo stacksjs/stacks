@@ -6,3 +6,6 @@ export * as vueComponents from './vue-components'
 export * as webComponents from './web-components'
 export * from './stacks'
 export * as stacks from './stacks'
+
+export { defineConfig, loadEnv } from 'vite'
+export type { ViteDevServer, BuildOptions as ViteBuildOptions } from 'vite'

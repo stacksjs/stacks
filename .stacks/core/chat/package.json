@@ -43,14 +43,14 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@novu/stateless": "^0.16.3",
+    "@novu/stateless": "^0.16.4",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/error-handling": "link:@stacksjs/error-handling",
     "@stacksjs/types": "link:@stacksjs/types"
   },
   "dependencies": {
-    "@novu/stateless": "^0.16.3",
+    "@novu/stateless": "^0.16.4",
     "@stacksjs/cli": "link:@stacksjs/cli",
     "@stacksjs/config": "link:@stacksjs/config",
     "@stacksjs/error-handling": "link:@stacksjs/error-handling",

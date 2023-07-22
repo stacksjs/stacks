@@ -1,13 +1,13 @@
-import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
-import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import { kolorist as c } from '@stacksjs/cli'
 import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
+import type { ViteDevServer as DevServer, ViteBuildOptions } from './'
+import { defineConfig, loadEnv } from './'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
@@ -27,7 +27,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', '@stacksjs/path'],
   },
 
   plugins: [
@@ -119,7 +119,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@stacksjs/path'],
       output: {
         globals: {
           vue: 'Vue',
