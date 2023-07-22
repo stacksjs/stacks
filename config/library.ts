@@ -1,4 +1,4 @@
-import { defineLibrary } from 'stacks/utils'
+import { defineLibrary } from '@stacksjs/utils'
 
 /**
  * **Library Configuration**

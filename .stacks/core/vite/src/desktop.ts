@@ -1,13 +1,16 @@
-import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
-import type { ViteDevServer as DevServer } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
-import { version } from '../package.json'
+
+// import { version } from '../package.json'
 import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
+import type { ViteDevServer as DevServer } from './'
+import { defineConfig, loadEnv } from './'
+
+const version = '0.57.4'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('views/desktop'),
@@ -18,7 +21,6 @@ export const vueComponentsConfig: ViteConfig = {
   server: {
     https: true,
     host: app.url,
-    port: 5173,
     open: true,
   },
 

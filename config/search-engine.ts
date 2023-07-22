@@ -1,4 +1,4 @@
-import { defineSearchEngine } from 'stacks/utils'
+import { defineSearchEngine } from '@stacksjs/utils'
 
 /**
  * **Search Engine Options**

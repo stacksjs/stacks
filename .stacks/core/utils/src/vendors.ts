@@ -222,3 +222,4 @@ export {
 } from '@vueuse/head'
 
 export { default as glob } from 'fast-glob'
+export { default as readableSize } from 'pretty-bytes'

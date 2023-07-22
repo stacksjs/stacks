@@ -1,9 +1,8 @@
-import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
+import { defineConfig } from './'
+import type { ViteBuildOptions } from './'
 
 // import { autoImports } from '.'
 
@@ -27,10 +26,12 @@ export function functionsBuildOptions(): ViteBuildOptions {
   return {
     outDir: frameworkPath('functions/dist'),
     emptyOutDir: true,
-    sourcemap: library.functions?.shouldGenerateSourcemap,
+    sourcemap: true,
+    // sourcemap: library.functions?.shouldGenerateSourcemap,
     lib: {
       entry: libraryEntryPath('functions'),
-      name: library.functions?.name,
+      name: 'test-name',
+      // name: library.functions?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

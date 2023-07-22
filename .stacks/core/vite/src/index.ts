@@ -1,3 +1,6 @@
+import { defineConfig, loadEnv } from 'vite'
+import type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
+
 export * as vueComponentExample from './example-vue'
 export * as webComponentExample from './example-wc'
 export * as functions from './functions'
@@ -7,5 +10,5 @@ export * as webComponents from './web-components'
 export * from './stacks'
 export * as stacks from './stacks'
 
-export { defineConfig, loadEnv } from 'vite'
-export type { ViteDevServer, BuildOptions as ViteBuildOptions } from 'vite'
+export { defineConfig, loadEnv }
+export { ViteDevServer, ViteBuildOptions }

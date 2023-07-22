@@ -1,13 +1,16 @@
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
-import { app, library } from '@stacksjs/config'
+import { app } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import { kolorist as c } from '@stacksjs/cli'
-import { version } from '../package.json'
+
+// import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer, ViteBuildOptions } from './'
 import { defineConfig, loadEnv } from './'
+
+const version = '0.57.4'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
@@ -17,7 +20,7 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     https: true,
-    host: app.url,
+    // host: app.url,
     open: true,
   },
 
@@ -27,7 +30,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@stacksjs/path'],
+    exclude: ['vue', 'local-pkg', 'vue-starport'],
   },
 
   plugins: [
@@ -41,8 +44,8 @@ export const vueComponentsConfig: ViteConfig = {
       hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
       autoUpgrade: true,
       savePath: frameworkPath('certs/components'),
-      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
+      // keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+      // certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
     }),
 
     // @ts-expect-error TODO: fix this
@@ -105,7 +108,8 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: libraryEntryPath('vue-components'),
-      name: library.vueComponents?.name,
+      // name: library.vueComponents?.name,
+      name: 'test-lib-abc',
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')

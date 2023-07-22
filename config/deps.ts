@@ -1,4 +1,4 @@
-import { defineDependencies } from 'stacks/utils'
+import { defineDependencies } from '@stacksjs/utils'
 
 /**
  * **Dependency Manager**

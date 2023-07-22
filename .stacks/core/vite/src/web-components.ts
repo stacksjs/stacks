@@ -1,10 +1,10 @@
-import type { BuildOptions as ViteBuildOptions } from 'vite'
-import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import { library } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
+import type { ViteBuildOptions } from './'
+import { defineConfig } from './'
 
 // import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
@@ -19,6 +19,10 @@ export const webComponentsConfig: ViteConfig = {
 
   resolve: {
     alias,
+  },
+
+  optimizeDeps: {
+    exclude: ['vue', 'local-pkg', 'vue-starport'],
   },
 
   plugins: [

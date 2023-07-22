@@ -1,4 +1,4 @@
-import { defineNotification } from 'stacks/utils'
+import { defineNotification } from '@stacksjs/utils'
 
 /**
  * **Notification Configuration**

@@ -1,4 +1,4 @@
-import { defineBinary } from 'stacks/utils'
+import { defineBinary } from '@stacksjs/utils'
 
 /**
  * **Binary / CLI Configuration**
