@@ -18,15 +18,13 @@ if [[ "$INSTALLED_BUN_MAJOR" -lt "$REQUIRED_BUN_MAJOR" ||
   ("$INSTALLED_BUN_MAJOR" -eq "$REQUIRED_BUN_MAJOR" && "$INSTALLED_BUN_MINOR" -lt "$REQUIRED_BUN_MINOR") ||
   ("$INSTALLED_BUN_MAJOR" -eq "$REQUIRED_BUN_MAJOR" && "$INSTALLED_BUN_MINOR" -eq "$REQUIRED_BUN_MINOR" && "$INSTALLED_BUN_PATCH" -lt "$REQUIRED_BUN_PATCH") ]]; then
     sh ./setup.sh
-    node_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +bun.sh'=$REQUIRED_BUN_VERSION' >/dev/null 2>&1; tea +bun.sh'=$REQUIRED_BUN_VERSION' node -v")
-    pnpm_version=$(exec $SHELL -c "source ~/.zshrc; tea >/dev/null 2>&1; pnpm -v >/dev/null 2>&1; pnpm -v")
+    bun_version=$(exec $SHELL -l -c "source ~/.zshrc; tea +bun.sh'=$REQUIRED_BUN_VERSION' >/dev/null 2>&1; tea +bun.sh'=$REQUIRED_BUN_VERSION' bun -v")
     exec $SHELL -c "source ~/.zshrc; tea -SE >/dev/null 2>&1 && cd ."
     echo "  # managed by stacks"
-    echo "  • node.js $node_version"
-    echo "  • pnpm v$pnpm_version"
+    echo "  • bun $bun_version"
     echo "\n  Please reopen your shell for updates to take effect." | awk '{print "\033[3m" $0 "\033[0m"}'
 
     exit
 fi
 
-echo "Node.js v$REQUIRED_BUN_VERSION or greater is installed!"
+echo "Bun v$REQUIRED_BUN_VERSION or greater is installed!"

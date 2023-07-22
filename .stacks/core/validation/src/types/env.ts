@@ -1,4 +1,4 @@
-import { loadEnv } from 'vite'
+import { loadEnv } from '@stacksjs/vite'
 
 interface Env {
   APP_NAME: string
