@@ -1,9 +1,6 @@
-#!/usr/bin/env bun
-
 import { runAction } from '@stacksjs/actions'
 import { handleError } from '@stacksjs/error-handling'
-import { command } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import { command, log } from '@stacksjs/cli'
 import { env } from '@stacksjs/validation'
 import { frameworkVersion, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
 import { projectPath } from '@stacksjs/path'

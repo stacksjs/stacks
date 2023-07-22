@@ -1,7 +1,6 @@
 import { Action } from '@stacksjs/types'
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { intro, outro } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import { intro, log, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
 const descriptions = {

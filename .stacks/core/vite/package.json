@@ -89,7 +89,7 @@
     "markdown-it-shiki": "^0.9.0",
     "unplugin-auto-import": "^0.16.6",
     "unplugin-vue-components": "^0.25.1",
-    "vite": "^4.4.4",
+    "vite": "^4.4.6",
     "vite-plugin-inspect": "^0.7.33",
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.4",
