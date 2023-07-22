@@ -9,3 +9,15 @@ if (result.isErr())
 
 else
   log.success('Build complete')
+
+// log.info('Building Buddy CLI...')
+
+// const cliResult = await runCommand('bun build ./src/cli.ts --compile --outfile bud', {
+//   cwd: import.meta.dir,
+// })
+
+// if (cliResult.isErr())
+//   log.error(cliResult.error)
+
+// else
+//   log.success('Build complete')

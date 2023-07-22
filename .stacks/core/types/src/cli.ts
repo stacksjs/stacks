@@ -2,8 +2,6 @@
  * The parsed command-line arguments
  */
 
-import type { Ora } from 'ora'
-
 export type { Subprocess, SyncSubprocess } from 'bun'
 
 export interface OutroOptions extends CliOptions {
@@ -26,7 +24,7 @@ export interface IntroOptions {
   quiet: boolean
 }
 
-type SpinnerOptions = Ora
+// type SpinnerOptions = Ora
 
 export type CliOptionsKeys = keyof CliOptions
 
@@ -67,26 +65,6 @@ export interface CliOptions {
   cwd?: string
 
   /**
-   * **Should show loading animation spinner?**
-   *
-   * Should the command show a loading animation?
-   * Please note, when debug mode is enabled,
-   * the animation will not show.
-   *
-   * @default true
-   */
-  showSpinner?: boolean | SpinnerOptions
-
-  /**
-   * **Spinner Text**
-   *
-   * The text to show when the spinner is shown.
-   *
-   * @default 'Executing...'
-   */
-  spinnerText?: string
-
-  /**
    * **Should the command be run inside a shell?**
    *
    * If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe`
@@ -112,16 +90,17 @@ export interface CliOptions {
   encoding?: string
 }
 
-export type { Ora as SpinnerOptions } from 'ora'
+// export type { Ora as SpinnerOptions } from 'ora'
 
 // the `domains` option is only available for the `deploy` command
-export type ActionOption = 'types' | 'domains'
+// the `count` option is only available for the `seed` command
+export type ActionOption = 'types' | 'domains' | 'count'
 
 /**
  * The options to pass to the Action.
  */
 export type ActionOptions = {
-  [key in ActionOption]?: boolean;
+  [key in ActionOption]?: boolean | number;
 } & CliOptions
 
 export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'

@@ -2,8 +2,9 @@ import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { ActionOptions } from '@stacksjs/types'
+import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'
+import type { ResultAsync } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
   if (!options)
@@ -32,9 +33,9 @@ function parseOptions(options?: ActionOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<any> {
+export async function runAction(action: string, options?: ActionOptions): Promise<ResultAsync<Subprocess, StacksError>> {
   if (!hasAction(action))
-    return err(`The specified action "${action}" does not exist`)
+    return err(new Error(`The specified action "${action}" does not exist`))
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
@@ -43,9 +44,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
   if (options?.verbose)
     log.debug('running command:', italic(cmd))
 
-  return options?.showSpinner
-    ? await runCommands([cmd], options)
-    : await runCommand(cmd, options)
+  return await runCommand(cmd, options)
 }
 
 /**

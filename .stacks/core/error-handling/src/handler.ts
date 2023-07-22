@@ -9,10 +9,12 @@ export class ErrorHandler {
   static handle(err: StacksError, options?: any) {
     this.writeErrorToConsole(err, options)
     this.writeErrorToFile(err)
+    return err
   }
 
   static handleError(err: Error, options?: any) {
     this.handle(err, options)
+    return err
   }
 
   static writeErrorToFile(err: StacksError) {
@@ -34,8 +36,8 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: StacksError, options?: any): void {
-  ErrorHandler.handle(err, options)
+export function handleError(err: StacksError, options?: any): StacksError {
+  return ErrorHandler.handle(err, options)
 }
 
 function isErrorOfTypeValidation(err: any): err is ValidationError {

@@ -1,16 +1,34 @@
 import type { AddressInfo } from 'node:net'
-import type { CliOptions, Manifest, NpmScript } from '@stacksjs/types'
+import type { CliOptions, Manifest, NpmScript, StacksError, Subprocess } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { log, runCommand } from '@stacksjs/cli'
 import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
+import type { ResultAsync } from '@stacksjs/error-handling'
+import { err } from '@stacksjs/error-handling'
 import { semver } from './versions'
 
 export async function packageManager() {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
   return packageManager
+}
+
+export async function initProject(): Promise<ResultAsync<Subprocess, StacksError>> {
+  if (env.APP_ENV !== 'production')
+    log.info('Project not yet initialized, generating application key...')
+  else
+    handleError(new Error('Please run `buddy key:generate` to generate an application key'))
+
+  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
+
+  if (result.isErr())
+    return err(handleError(result.error as Error))
+
+  log.info('Application key generated.')
+
+  return ok(result.value)
 }
 
 export async function isProjectCreated() {
