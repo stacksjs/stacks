@@ -29,7 +29,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (exited === ExitCode.Success)
     return okAsync(proc)
 
-  return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`))
+  return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`)))
 }
 
 /**
