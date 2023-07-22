@@ -64,6 +64,8 @@ export interface CliOptions {
    */
   cwd?: string
 
+  env?: Record<string, string>
+
   /**
    * **Should the command be run inside a shell?**
    *

@@ -1,5 +1,6 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv as viteLoadEnv } from 'vite'
 import type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
+import type { Env } from '@stacksjs/validation'
 
 export * as vueComponentExample from './example-vue'
 export * as webComponentExample from './example-wc'
@@ -9,6 +10,10 @@ export * as vueComponents from './vue-components'
 export * as webComponents from './web-components'
 export * from './stacks'
 export * as stacks from './stacks'
+
+function loadEnv(...args: Parameters<typeof viteLoadEnv>): Env {
+  return viteLoadEnv(...args) as unknown as Env
+}
 
 export { defineConfig, loadEnv }
 export { ViteDevServer, ViteBuildOptions }

@@ -24,9 +24,9 @@ export interface AppOptions {
    * running in. This may determine how you prefer to configure various
    * services the application utilizes. Set this in your ".env" file
    *
-   * @default "local"
+   * @default "development"
    */
-  env: 'local' | 'development' | 'staging' | 'production'
+  env: 'development' | 'staging' | 'production'
 
   /**
    * **Application URL**

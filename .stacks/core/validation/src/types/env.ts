@@ -1,6 +1,6 @@
 import { loadEnv } from '@stacksjs/vite'
 
-interface Env {
+export interface Env {
   APP_NAME: string
   APP_ENV: 'local' | 'development' | 'staging' | 'production'
   APP_KEY: string

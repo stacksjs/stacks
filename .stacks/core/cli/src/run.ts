@@ -20,8 +20,10 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     stdout: options?.stdout || 'inherit',
     cwd: options?.cwd || import.meta.dir,
     onExit(subprocess, exitCode, signalCode, error) {
-      if (exitCode !== ExitCode.Success)
+      if (exitCode !== ExitCode.Success && exitCode) {
         log.error(error)
+        process.exit(exitCode)
+      }
     },
   })
   const exited = await proc.exited
@@ -63,7 +65,8 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
+// export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
+export async function runCommand(command: string, options: any): Promise<ResultAsync<Subprocess, StacksError>> {
   return await exec(command, options)
 }
 
