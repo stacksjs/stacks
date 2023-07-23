@@ -4,12 +4,11 @@ import { app } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import { kolorist as c } from '@stacksjs/cli'
-
-// import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer, ViteBuildOptions } from './'
-import { defineConfig, loadEnv } from './'
+import { defineConfig } from './'
 
+// import { version } from '../package.json'
 const version = '0.57.4'
 
 export const vueComponentsConfig: ViteConfig = {
@@ -20,7 +19,8 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     https: true,
-    // host: app.url,
+    host: 'stacks.test',
+    // host: app.url || 'stacks.test',
     open: true,
   },
 
@@ -30,7 +30,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', 'bun', 'bun-types'],
   },
 
   plugins: [
@@ -123,19 +123,19 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@stacksjs/path'],
+      external: ['vue', '@stacksjs/path', 'bun', 'bun-types'],
       output: {
         globals: {
-          vue: 'Vue',
+          'vue': 'Vue',
+          'Bun': 'Bun',
+          'globalThis.Bun': 'Bun',
         },
       },
     },
   }
 }
 
-export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
-
+export default defineConfig(({ command }) => {
   if (command === 'serve')
     return vueComponentsConfig
 

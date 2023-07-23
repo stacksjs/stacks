@@ -61,6 +61,7 @@
     "@stacksjs/utils": "link:@stacksjs/utils",
     "@stacksjs/validation": "link:@stacksjs/validation",
     "@types/prompts": "^2.4.4",
+    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "ora": "^6.3.1",
     "prompts": "^2.4.2"
@@ -75,6 +76,7 @@
     "@stacksjs/utils": "link:@stacksjs/utils",
     "@stacksjs/validation": "link:@stacksjs/validation",
     "@types/prompts": "^2.4.4",
+    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
     "ora": "^6.3.1",
