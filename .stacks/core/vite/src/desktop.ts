@@ -3,7 +3,7 @@ import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
-import c from 'picocolors'
+import c from 'kolorist'
 
 // import { version } from '../package.json'
 import { autoImports, cssEngine, inspect, uiEngine } from './stacks'

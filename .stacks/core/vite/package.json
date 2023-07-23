@@ -103,6 +103,8 @@
     "vite-ssg-sitemap": "^0.5.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@babel/preset-typescript": "latest",
+    "@stacksjs/development": "link:@stacksjs/development",
+    "vue-starport": "latest"
   }
 }
