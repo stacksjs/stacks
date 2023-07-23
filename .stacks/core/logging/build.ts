@@ -1,6 +1,6 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '../cli/src'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/cli --target bun', {
+const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/cli --external node-ray --target bun', {
   cwd: import.meta.dir,
 })
 

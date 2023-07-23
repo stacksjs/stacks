@@ -232,13 +232,13 @@
       "buddy": ["./core/buddy/src/index.ts"],
       "buddy/*": ["./core/buddy/src/*"],
       "framework/*": ["./*"],
-      "models/*": ["../app/models/*"],
-      "app/*": ["../app/*"],
-      "config/*": ["../config/*"],
-      "functions/*": ["../resources/functions/*"],
-      "components/*": ["../resources/components/*"],
-      "views/*": ["../resources/views/*"],
-      "resources/*": ["../resources/*"]
+      "~/models/*": ["../app/models/*"],
+      "~/app/*": ["../app/*"],
+      "~/config/*": ["../config/*"],
+      "~/functions/*": ["../resources/functions/*"],
+      "~/components/*": ["../resources/components/*"],
+      "~/views/*": ["../resources/views/*"],
+      "~/resources/*": ["../resources/*"]
     }
   },
   "include": [
