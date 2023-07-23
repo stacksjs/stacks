@@ -21,7 +21,7 @@ export const webComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', 'local-pkg', 'vue-starport'],
+    exclude: ['vue'],
   },
 
   plugins: [

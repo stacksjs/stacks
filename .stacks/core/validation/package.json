@@ -52,7 +52,6 @@
   "devDependencies": {
     "@stacksjs/development": "link:@stacksjs/development",
     "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/vite": "link:@stacksjs/vite",
-    "vue-starport": "latest"
+    "@stacksjs/vite": "link:@stacksjs/vite"
   }
 }

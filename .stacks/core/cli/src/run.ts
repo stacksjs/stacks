@@ -3,7 +3,7 @@ import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stack
 import type { Result, ResultAsync } from '@stacksjs/error-handling'
 import { errAsync, handleError, okAsync } from '@stacksjs/error-handling'
 import { spawn, spawnSync } from './command'
-import { log } from './log'
+import { log } from './console'
 
 /**
  * Execute a command.

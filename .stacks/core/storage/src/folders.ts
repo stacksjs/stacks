@@ -1,5 +1,5 @@
-import { fs } from '@stacksjs/storage'
 import { join } from '@stacksjs/path'
+import { fs } from './fs'
 
 /**
  * Determine whether a path is a folder.

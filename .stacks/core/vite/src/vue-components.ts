@@ -30,7 +30,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', 'local-pkg', 'vue-starport'],
+    exclude: ['vue'],
   },
 
   plugins: [

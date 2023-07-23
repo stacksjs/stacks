@@ -38,7 +38,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "echo 'wip'",
+    "build": "bun build.ts",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
