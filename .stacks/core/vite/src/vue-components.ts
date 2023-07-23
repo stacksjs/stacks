@@ -3,7 +3,7 @@ import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } f
 import { app } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
-import { kolorist as c } from '@stacksjs/cli'
+import * as c from 'kolorist'
 import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer, ViteBuildOptions } from './'
 import { defineConfig } from './'
@@ -16,6 +16,9 @@ export const vueComponentsConfig: ViteConfig = {
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: storagePath('public'),
+  // define: {
+  //   Bun,
+  // },
 
   server: {
     https: true,
@@ -30,7 +33,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', 'bun', 'bun-types'],
+    exclude: ['vue'],
   },
 
   plugins: [
@@ -123,12 +126,10 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@stacksjs/path', 'bun', 'bun-types'],
+      external: ['vue', '@stacksjs/path'],
       output: {
         globals: {
-          'vue': 'Vue',
-          'Bun': 'Bun',
-          'globalThis.Bun': 'Bun',
+          vue: 'Vue',
         },
       },
     },

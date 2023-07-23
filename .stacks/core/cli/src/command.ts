@@ -1,5 +1,7 @@
 import type { CliOptions } from '@stacksjs/types'
-import { spawn, spawnSync } from 'bun'
+
+const spawn = Bun.spawn
+const spawnSync = Bun.spawnSync
 
 export { spawn, spawnSync }
 
