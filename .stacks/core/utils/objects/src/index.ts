@@ -144,4 +144,4 @@ export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
     : Object.prototype.hasOwnProperty.call(obj, v)
 }
 
-export * from 'framework/core/utils/collections/src'
+export * from '@stacksjs/collections'

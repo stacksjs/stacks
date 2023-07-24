@@ -34,7 +34,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "module": "dist/index.js",
@@ -47,21 +47,20 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "@types/prompts": "^2.4.4",
-    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "ora": "^6.3.1",
     "prompts": "^2.4.2"
@@ -69,14 +68,13 @@
   "dependencies": {
     "@antfu/install-pkg": "^0.1.1",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "@types/prompts": "^2.4.4",
-    "bun": "^0.7.0",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
     "ora": "^6.3.1",

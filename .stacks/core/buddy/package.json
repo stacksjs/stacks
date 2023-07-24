@@ -38,7 +38,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     },
     "./cli": {
       "types": "./dist/cli.d.ts",
@@ -62,7 +62,7 @@
   ],
   "scripts": {
     "buddy": "bunx ./src/cli.ts",
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
@@ -84,7 +84,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/git": "workspace:*",
@@ -129,7 +129,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/git": "workspace:*",

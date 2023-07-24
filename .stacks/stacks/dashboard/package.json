@@ -34,7 +34,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },

@@ -33,7 +33,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "module": "dist/index.js",
@@ -46,7 +46,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
+    "build": "bunx mkdist -d",
+    "build:app": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
     "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
     "dev:desktop": "tauri dev",
     "typecheck": "bun --bun tsc --noEmit",

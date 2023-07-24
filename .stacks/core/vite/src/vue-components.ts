@@ -4,12 +4,12 @@ import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } f
 import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
 import type { ViteDevServer as DevServer } from 'vite'
-import { version } from '../package.json'
 import { autoImports, components, cssEngine, inspect, sslCertificate, uiEngine } from './stacks'
 import type { ViteBuildOptions } from './'
 import { defineConfig } from './'
 
-console.log('version', version)
+// import { version } from '../package.json'
+const version = '0.0.0'
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),

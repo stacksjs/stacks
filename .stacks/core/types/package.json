@@ -24,7 +24,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     },
     "./*": "./*"
   },
@@ -38,7 +38,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {

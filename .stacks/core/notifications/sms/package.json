@@ -30,7 +30,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "module": "dist/index.js",
@@ -43,20 +43,20 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "optionalDependencies": {

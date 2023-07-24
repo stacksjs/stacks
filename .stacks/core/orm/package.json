@@ -22,7 +22,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "module": "dist/index.js",
@@ -35,18 +35,18 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/query-builder": "workspace:**-builder",
+    "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/query-builder": "workspace:**-builder",
+    "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {

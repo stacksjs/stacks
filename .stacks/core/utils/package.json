@@ -42,7 +42,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build",
     "size": "tsx scripts/export-size.ts"

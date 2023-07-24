@@ -29,184 +29,184 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.mjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
     },
     "./build/component-libs": {
-      "types": "./dist/src/build/component-libs.d.ts",
-      "import": "./dist/src/build/component-libs.mjs"
+      "types": "./dist/build/component-libs.d.ts",
+      "import": "./dist/build/component-libs.mjs"
     },
     "./build/core": {
-      "types": "./dist/src/build/core.d.ts",
-      "import": "./dist/src/build/core.mjs"
+      "types": "./dist/build/core.d.ts",
+      "import": "./dist/build/core.mjs"
     },
     "./build/stacks": {
-      "types": "./dist/src/build/stacks.d.ts",
-      "import": "./dist/src/build/stacks.mjs"
+      "types": "./dist/build/stacks.d.ts",
+      "import": "./dist/build/stacks.mjs"
     },
     "./dev": {
-      "types": "./dist/src/dev/index.d.ts",
-      "import": "./dist/src/dev/index.mjs"
+      "types": "./dist/dev/index.d.ts",
+      "import": "./dist/dev/index.mjs"
     },
     "./dev/components": {
-      "types": "./dist/src/dev/components.d.ts",
-      "import": "./dist/src/dev/components.mjs"
+      "types": "./dist/dev/components.d.ts",
+      "import": "./dist/dev/components.mjs"
     },
     "./dev/docs": {
-      "types": "./dist/src/dev/docs.d.ts",
-      "import": "./dist/src/dev/docs.mjs"
+      "types": "./dist/dev/docs.d.ts",
+      "import": "./dist/dev/docs.mjs"
     },
     "./generate": {
-      "types": "./dist/src/generate/index.d.ts",
-      "import": "./dist/src/generate/index.mjs"
+      "types": "./dist/generate/index.d.ts",
+      "import": "./dist/generate/index.mjs"
     },
     "./generate/component-meta": {
-      "types": "./dist/src/generate/component-meta.d.ts",
-      "import": "./dist/src/generate/component-meta.mjs"
+      "types": "./dist/generate/component-meta.d.ts",
+      "import": "./dist/generate/component-meta.mjs"
     },
     "./generate/ide-helpers": {
-      "types": "./dist/src/generate/ide-helpers.d.ts",
-      "import": "./dist/src/generate/ide-helpers.mjs"
+      "types": "./dist/generate/ide-helpers.d.ts",
+      "import": "./dist/generate/ide-helpers.mjs"
     },
     "./generate/lib-entries": {
-      "types": "./dist/src/generate/lib-entries.d.ts",
-      "import": "./dist/src/generate/lib-entries.mjs"
+      "types": "./dist/generate/lib-entries.d.ts",
+      "import": "./dist/generate/lib-entries.mjs"
     },
     "./generate/vscode-custom-data": {
-      "types": "./dist/src/generate/vscode-custom-data.d.ts",
-      "import": "./dist/src/generate/vscode-custom-data.mjs"
+      "types": "./dist/generate/vscode-custom-data.d.ts",
+      "import": "./dist/generate/vscode-custom-data.mjs"
     },
     "./generate/vue-compat": {
-      "types": "./dist/src/generate/vue-compat.d.ts",
-      "import": "./dist/src/generate/vue-compat.mjs"
+      "types": "./dist/generate/vue-compat.d.ts",
+      "import": "./dist/generate/vue-compat.mjs"
     },
     "./helpers": {
-      "types": "./dist/src/helpers/index.d.ts",
-      "import": "./dist/src/helpers/index.mjs"
+      "types": "./dist/helpers/index.d.ts",
+      "import": "./dist/helpers/index.mjs"
     },
     "./lint": {
-      "types": "./dist/src/lint/index.d.ts",
-      "import": "./dist/src/lint/index.mjs"
+      "types": "./dist/lint/index.d.ts",
+      "import": "./dist/lint/index.mjs"
     },
     "./lint/fix": {
-      "types": "./dist/src/lint/fix.d.ts",
-      "import": "./dist/src/lint/fix.mjs"
+      "types": "./dist/lint/fix.d.ts",
+      "import": "./dist/lint/fix.mjs"
     },
     "./test/coverage": {
-      "types": "./dist/src/test/coverage.d.ts",
-      "import": "./dist/src/test/coverage.mjs"
+      "types": "./dist/test/coverage.d.ts",
+      "import": "./dist/test/coverage.mjs"
     },
     "./test/feature": {
-      "types": "./dist/src/test/feature.d.ts",
-      "import": "./dist/src/test/feature.mjs"
+      "types": "./dist/test/feature.d.ts",
+      "import": "./dist/test/feature.mjs"
     },
     "./test/ui": {
-      "types": "./dist/src/test/ui.d.ts",
-      "import": "./dist/src/test/ui.mjs"
+      "types": "./dist/test/ui.d.ts",
+      "import": "./dist/test/ui.mjs"
     },
     "./test/unit": {
-      "types": "./dist/src/test/unit.d.ts",
-      "import": "./dist/src/test/unit.mjs"
+      "types": "./dist/test/unit.d.ts",
+      "import": "./dist/test/unit.mjs"
     },
     "./upgrade": {
-      "types": "./dist/src/upgrade/index.d.ts",
-      "import": "./dist/src/upgrade/index.mjs"
+      "types": "./dist/upgrade/index.d.ts",
+      "import": "./dist/upgrade/index.mjs"
     },
     "./upgrade/dependencies": {
-      "types": "./dist/src/upgrade/dependencies.d.ts",
-      "import": "./dist/src/upgrade/dependencies.mjs"
+      "types": "./dist/upgrade/dependencies.d.ts",
+      "import": "./dist/upgrade/dependencies.mjs"
     },
     "./upgrade/framework": {
-      "types": "./dist/src/upgrade/framework.d.ts",
-      "import": "./dist/src/upgrade/framework.mjs"
+      "types": "./dist/upgrade/framework.d.ts",
+      "import": "./dist/upgrade/framework.mjs"
     },
     "./upgrade/bun": {
-      "types": "./dist/src/upgrade/bun.d.ts",
-      "import": "./dist/src/upgrade/bun.mjs"
+      "types": "./dist/upgrade/bun.d.ts",
+      "import": "./dist/upgrade/bun.mjs"
     },
     "./add": {
-      "types": "./dist/src/add.d.ts",
-      "import": "./dist/src/add.mjs"
+      "types": "./dist/add.d.ts",
+      "import": "./dist/add.mjs"
     },
     "./build": {
-      "types": "./dist/src/build.d.ts",
-      "import": "./dist/src/build.mjs"
+      "types": "./dist/build.d.ts",
+      "import": "./dist/build.mjs"
     },
     "./bump": {
-      "types": "./dist/src/bump.d.ts",
-      "import": "./dist/src/bump.mjs"
+      "types": "./dist/bump.d.ts",
+      "import": "./dist/bump.mjs"
     },
     "./changelog": {
-      "types": "./dist/src/changelog.d.ts",
-      "import": "./dist/src/changelog.mjs"
+      "types": "./dist/changelog.d.ts",
+      "import": "./dist/changelog.mjs"
     },
     "./clean": {
-      "types": "./dist/src/clean.d.ts",
-      "import": "./dist/src/clean.mjs"
+      "types": "./dist/clean.d.ts",
+      "import": "./dist/clean.mjs"
     },
     "./commit": {
-      "types": "./dist/src/commit.d.ts",
-      "import": "./dist/src/commit.mjs"
+      "types": "./dist/commit.d.ts",
+      "import": "./dist/commit.mjs"
     },
     "./copy-types": {
-      "types": "./dist/src/copy-types.d.ts",
-      "import": "./dist/src/copy-types.mjs"
+      "types": "./dist/copy-types.d.ts",
+      "import": "./dist/copy-types.mjs"
     },
     "./deploy": {
-      "types": "./dist/src/deploy/index.d.ts",
-      "import": "./dist/src/deploy/index.mjs"
+      "types": "./dist/deploy/index.d.ts",
+      "import": "./dist/deploy/index.mjs"
     },
     "./examples": {
-      "types": "./dist/src/examples.d.ts",
-      "import": "./dist/src/examples.mjs"
+      "types": "./dist/examples.d.ts",
+      "import": "./dist/examples.mjs"
     },
     "./fresh": {
-      "types": "./dist/src/fresh.d.ts",
-      "import": "./dist/src/fresh.mjs"
+      "types": "./dist/fresh.d.ts",
+      "import": "./dist/fresh.mjs"
     },
     "./key-generate": {
-      "types": "./dist/src/key-generate.d.ts",
-      "import": "./dist/src/key-generate.mjs"
+      "types": "./dist/key-generate.d.ts",
+      "import": "./dist/key-generate.mjs"
     },
     "./make": {
-      "types": "./dist/src/make.d.ts",
-      "import": "./dist/src/make.mjs"
+      "types": "./dist/make.d.ts",
+      "import": "./dist/make.mjs"
     },
     "./migrate": {
-      "types": "./dist/src/migrate.d.ts",
-      "import": "./dist/src/migrate.mjs"
+      "types": "./dist/migrate.d.ts",
+      "import": "./dist/migrate.mjs"
     },
     "./preinstall": {
-      "types": "./dist/src/preinstall.d.ts",
-      "import": "./dist/src/preinstall.mjs"
+      "types": "./dist/preinstall.d.ts",
+      "import": "./dist/preinstall.mjs"
     },
     "./prepublish": {
-      "types": "./dist/src/prepublish.d.ts",
-      "import": "./dist/src/prepublish.mjs"
+      "types": "./dist/prepublish.d.ts",
+      "import": "./dist/prepublish.mjs"
     },
     "./release": {
-      "types": "./dist/src/release.d.ts",
-      "import": "./dist/src/release.mjs"
+      "types": "./dist/release.d.ts",
+      "import": "./dist/release.mjs"
     },
     "./seed": {
-      "types": "./dist/src/seed.d.ts",
-      "import": "./dist/src/seed.mjs"
+      "types": "./dist/seed.d.ts",
+      "import": "./dist/seed.mjs"
     },
     "./test": {
-      "types": "./dist/src/test.d.ts",
-      "import": "./dist/src/test.mjs"
+      "types": "./dist/test.d.ts",
+      "import": "./dist/test.mjs"
     },
     "./tinker": {
-      "types": "./dist/src/tinker.d.ts",
-      "import": "./dist/src/tinker.mjs"
+      "types": "./dist/tinker.d.ts",
+      "import": "./dist/tinker.mjs"
     },
     "./typecheck": {
-      "types": "./dist/src/typecheck.d.ts",
-      "import": "./dist/src/typecheck.mjs"
+      "types": "./dist/typecheck.d.ts",
+      "import": "./dist/typecheck.mjs"
     },
     "./types": {
-      "types": "./dist/src/types.d.ts",
-      "import": "./dist/src/types.mjs"
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.mjs"
     },
     "./*": "./*"
   },
@@ -220,7 +220,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bunx mkdist -d",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
