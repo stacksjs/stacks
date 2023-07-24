@@ -33,10 +33,10 @@
     "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
-    "@stacksjs/search-engine": "link:@stacksjs/search-engine",
-    "@stacksjs/server": "link:@stacksjs/server",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/utils": "link:@stacksjs/utils",
+    "@stacksjs/search-engine": "workspace:**-engine",
+    "@stacksjs/server": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@vueform/multiselect": "^2.6.2",
     "meilisearch": "^0.33.0"
   },
@@ -44,7 +44,7 @@
     "vite": "^4.4.6"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"

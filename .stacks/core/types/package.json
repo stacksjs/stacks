@@ -59,7 +59,7 @@
     "@types/node": "^18.16.19",
     "@types/nprogress": "^0.2.0",
     "@vinejs/vine": "^1.5.1",
-    "bun-types": "^0.7.0",
+    "bun-types": "canary",
     "cac": "^6.7.14",
     "markdown-it": "^13.0.1",
     "meilisearch": "^0.33.0",

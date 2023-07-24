@@ -106,6 +106,8 @@
   },
   "workspaces": [
     ".stacks/core/*",
+    ".stacks/core/notifications/*",
+    ".stacks/core/utils/*",
     ".stacks/api",
     ".stacks/docs",
     ".stacks/fonts/*",

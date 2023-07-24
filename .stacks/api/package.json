@@ -34,9 +34,9 @@
     "deploy": "wip"
   },
   "dependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/server": "link@stacksjs/server:"
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/server": "workspace:*"
   }
 }

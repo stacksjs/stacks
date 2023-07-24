@@ -44,26 +44,27 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/lint": "link:@stacksjs/lint",
-    "@stacksjs/logging": "link:@stacksjs/logging",
-    "@stacksjs/testing": "link:@stacksjs/testing",
-    "@stacksjs/tinker": "link:@stacksjs/tinker",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
+    "@stacksjs/tinker": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "eslint": "^8.45.0",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/lint": "link:@stacksjs/lint",
-    "@stacksjs/logging": "link:@stacksjs/logging",
-    "@stacksjs/testing": "link:@stacksjs/testing",
-    "@stacksjs/tinker": "link:@stacksjs/tinker",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/testing": "workspace:*",
+    "@stacksjs/tinker": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "eslint": "^8.45.0",
     "typescript": "^5.1.6"
   },
   "devDependencies": {
-    "@total-typescript/ts-reset": "^0.4.2"
+    "@total-typescript/ts-reset": "^0.4.2",
+    "unbuild": "latest"
   }
 }

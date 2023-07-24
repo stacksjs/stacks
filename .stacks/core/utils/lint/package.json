@@ -1,26 +1,26 @@
 {
-  "name": "@stacksjs/arrays",
+  "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks array utilities.",
+  "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/arrays#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/arrays"
+    "directory": "./.stacks/core/lint"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "arrays",
-    "collections",
-    "contains",
-    "utilities",
-    "functions",
+    "linter",
+    "formatter",
+    "eslint",
+    "pre-configured",
+    "zero-config",
     "stacks"
   ],
   "exports": {
@@ -44,12 +44,21 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/utils": "link:@stacksjs/utils"
+    "@ow3/eslint-config": "^0.47.1",
+    "@types/eslint": "^8.44.0",
+    "eslint": "^8.45.0",
+    "lint-staged": "^13.2.3",
+    "publint": "^0.1.16"
   },
   "dependencies": {
-    "@stacksjs/utils": "link:@stacksjs/utils"
+    "@ow3/eslint-config": "^0.47.1",
+    "@types/eslint": "^8.44.0",
+    "eslint": "^8.45.0",
+    "lint-staged": "^13.2.3",
+    "publint": "^0.1.16"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*",
+    "eslint-plugin-import": "^2.27.5"
   }
 }

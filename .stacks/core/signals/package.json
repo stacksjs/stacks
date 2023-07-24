@@ -43,17 +43,17 @@
   },
   "peerDependencies": {
     "@maverick-js/signals": "^5.11.2",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
     "@maverick-js/signals": "^5.11.2",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

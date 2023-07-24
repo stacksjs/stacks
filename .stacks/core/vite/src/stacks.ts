@@ -4,15 +4,18 @@ import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
+import mkcert from 'vite-plugin-mkcert'
 import type { Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
+import { library } from '@stacksjs/config'
 
 // import Layouts from 'vite-plugin-vue-layouts'
 
 export function inspect(options?: InspectOptions) {
+  console.log('running inspect')
   return Inspect(options)
 }
 
@@ -21,6 +24,8 @@ export function inspect(options?: InspectOptions) {
 // }
 
 export function components(options?: ComponentOptions): Plugin {
+  console.log('running components')
+
   const defaultOptions = {
     // also allow auto-loading markdown components
     extensions: ['vue', 'md'],
@@ -52,6 +57,8 @@ export function pages(options?: PagesOption): Plugin {
 }
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
+  console.log('running autoImports')
+
   const defaultOptions: AutoImportsOptions = {
     imports: [
       'vue', 'vue-router', 'vue/macros', 'pinia',
@@ -112,10 +119,14 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
 
   const newOptions = defu(options, defaultOptions)
 
+  console.log('here after newoptions')
+
   return AutoImport(newOptions)
 }
 
 export function cssEngine(isWebComponent = false) {
+  console.log('running cssEngine')
+
   return Unocss({
     configFile: p.uiPath('src/unocss.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
@@ -164,7 +175,21 @@ export function pwa() {
 //   return VueI18n(newOptions)
 // }
 
+export function sslCertificate(): Plugin {
+  console.log('running sslCertificate')
+
+  return mkcert({
+    hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
+    autoUpgrade: true,
+    savePath: p.frameworkPath('certs/components'),
+    keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+    certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
+  }) as Plugin
+}
+
 export function uiEngine(isWebComponent = false): Plugin {
+  console.log('running uiEngine')
+
   if (isWebComponent) {
     return Vue({
       include: [/\.vue$/, /\.md$/],

@@ -40,15 +40,15 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/utils": "link:@stacksjs/utils",
-    "@stacksjs/validation": "link:@stacksjs/validation"
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "dependencies": {
     "c12": "^1.4.2"
   },
   "devDependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   }
 }

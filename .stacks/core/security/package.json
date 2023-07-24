@@ -42,19 +42,19 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/validation": "link:@stacksjs/validation"
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "dependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/validation": "link:@stacksjs/validation",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
     "js-base64": "^3.7.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

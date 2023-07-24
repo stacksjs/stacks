@@ -46,7 +46,7 @@
     "node-cron": "3.0.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "@types/node-cron": "^3.0.8"
   }
 }

@@ -45,18 +45,18 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/validation": "link:@stacksjs/validation",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "vite": "^4.4.6"
   },
   "dependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/validation": "link:@stacksjs/validation",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "vite": "^4.4.6"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

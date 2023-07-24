@@ -54,12 +54,12 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "change-case": "^4.1.2",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",
@@ -70,7 +70,7 @@
     "validator": "^13.9.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "@types/validator": "^13.7.17"
   }
 }

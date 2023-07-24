@@ -1,1 +1,1 @@
-export * as email from '@stacksjs/email'
+export * as email from 'framework/core/notifications/email/src'

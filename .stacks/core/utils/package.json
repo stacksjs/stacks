@@ -28,8 +28,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "main": "dist/index.cjs",
@@ -49,16 +48,20 @@
     "size": "tsx scripts/export-size.ts"
   },
   "peerDependencies": {
-    "@stacksjs/arrays": "link:@stacksjs/arrays",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/lint": "link:@stacksjs/lint",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/storage": "link:@stacksjs/storage",
-    "@stacksjs/strings": "link:@stacksjs/strings",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.5",
+    "@vueuse/core": "^10.2.1",
+    "@vueuse/head": "^1.1.26",
+    "@vueuse/math": "^10.2.1",
+    "@vueuse/shared": "^10.2.1",
     "export-size": "^0.5.2",
     "js-yaml": "^4.1.0",
     "rimraf": "^5.0.1",
@@ -67,13 +70,13 @@
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
-    "@stacksjs/arrays": "link:@stacksjs/arrays",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/lint": "link:@stacksjs/lint",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/storage": "link:@stacksjs/storage",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@types/semver": "^7.5.0",
     "@vueuse/core": "^10.2.1",
     "@vueuse/head": "^1.1.26",
@@ -96,7 +99,7 @@
     "yaml": "^2.3.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.5",
     "@types/semver": "^7.5.0",
     "markdown-table": "^3.0.3"

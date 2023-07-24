@@ -53,8 +53,8 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/build": "link:@stacksjs/build",
-    "@stacksjs/server": "link:@stacksjs/server",
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "1.4.0",
     "@tauri-apps/cli": "1.4.0",
     "unified-network": "0.6.4",
@@ -63,8 +63,8 @@
     "vue3-highlightjs": "^1.0.5"
   },
   "dependencies": {
-    "@stacksjs/build": "link:@stacksjs/build",
-    "@stacksjs/server": "link:@stacksjs/server",
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "1.4.0",
     "@tauri-apps/cli": "1.4.0",
     "unified-network": "0.6.4",
@@ -73,6 +73,6 @@
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

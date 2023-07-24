@@ -1,15 +1,15 @@
+import { app } from '@stacksjs/config'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
-import { app } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
-import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
-import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
-import type { ViteDevServer as DevServer, ViteBuildOptions } from './'
+import type { ViteDevServer as DevServer } from 'vite'
+import { version } from '../package.json'
+import { autoImports, components, cssEngine, inspect, sslCertificate, uiEngine } from './stacks'
+import type { ViteBuildOptions } from './'
 import { defineConfig } from './'
 
-// import { version } from '../package.json'
-const version = '0.57.4'
+console.log('version', version)
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
@@ -22,7 +22,7 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     https: true,
-    host: 'stacks.test',
+    // host: 'stacks.test',
     // host: app.url || 'stacks.test',
     open: true,
   },
@@ -43,21 +43,38 @@ export const vueComponentsConfig: ViteConfig = {
     autoImports(),
     components(),
     inspect(),
-    mkcert({
-      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
-      autoUpgrade: true,
-      savePath: frameworkPath('certs/components'),
-      // keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-      // certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-    }),
+    sslCertificate(),
 
     // @ts-expect-error TODO: fix this
     {
-      // ...
+      // BuildStart hook before the build starts
+      buildStart(options) {
+        console.log('BuildStart hook with options:', options)
+      },
+
+      // Load hook for loading individual files
+      async load(id) {
+        console.log('Load hook for:', id)
+        return null // Return null to let Vite handle the file loading
+      },
+
+      async resolveId(source, importer) {
+        console.log('ResolveId hook for source:', source, 'importer:', importer)
+        return null // Return null to let Vite handle the module resolution
+      },
+
+      // Transform hook for transforming individual files
+      async transform(code, id) {
+        console.log('Transform hook for:', id)
+        return code // Return the unmodified code
+      },
+
       configureServer(server: DevServer) {
         // const base = server.config.base || '/'
         // const _print = server.printUrls
         server.printUrls = () => {
+          console.log('here in server.printUrls')
+
           // const url = server.resolvedUrls?.local[0]
           //
           // if (url) {

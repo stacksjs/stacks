@@ -81,12 +81,12 @@
     "vite": "^4.4.6"
   },
   "dependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/server": "link:@stacksjs/server",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/utils": "link:@stacksjs/utils",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/server": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "@vitejs/plugin-vue": "^4.2.3",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
@@ -104,7 +104,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "latest",
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "vue-starport": "latest"
   }
 }

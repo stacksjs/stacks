@@ -1,23 +1,26 @@
 {
-  "name": "@stacksjs/push",
+  "name": "@stacksjs/datetime",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks Push integration",
+  "description": "The Stacks datetime helpers.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/push#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/datetime#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/push"
+    "directory": "./.stacks/core/datetime"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "push",
-    "aws",
+    "datetime",
+    "date",
+    "time",
+    "helpers",
+    "composables",
     "stacks"
   ],
   "exports": {
@@ -40,21 +43,10 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@novu/node": "^0.16.4",
-    "@novu/stateless": "^0.16.4",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling"
-  },
   "dependencies": {
-    "@novu/node": "^0.16.4",
-    "@novu/stateless": "^0.16.4",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

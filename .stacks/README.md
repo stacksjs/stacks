@@ -38,7 +38,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🌐 **Web** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
 - 🖥️ **Desktop** _components as desktop elements_
 - 📚 **Library** _auto-builds component & function libraries_
-- ⚡️ Powered by Nitro, Tauri, UnoCSS, Vite & Vue
+- ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
 ### Stacks Functions
 

@@ -51,7 +51,7 @@ export function analyticsPath(path?: string) {
 }
 
 export function arraysPath(path?: string) {
-  return corePath(`arrays/${path || ''}`)
+  return utilsPath(`arrays/${path || ''}`)
 }
 
 export function authPath(path?: string) {
@@ -107,7 +107,7 @@ export function cloudPath(path?: string) {
 }
 
 export function collectionsPath(path?: string) {
-  return corePath(`collections/${path || ''}`)
+  return utilsPath(`collections/${path || ''}`)
 }
 
 export function componentsPath(path?: string) {
@@ -135,7 +135,7 @@ export function databasePath(path?: string) {
 }
 
 export function datetimePath(path?: string) {
-  return corePath(`datetime/${path || ''}`)
+  return utilsPath(`datetime/${path || ''}`)
 }
 
 export function developmentPath(path?: string) {
@@ -155,7 +155,7 @@ export function dnsPath(path?: string) {
 }
 
 export function emailPath(path?: string) {
-  return corePath(`email/${path || ''}`)
+  return notificationsPath(`email/${path || ''}`)
 }
 
 export function errorHandlingPath(path?: string) {
@@ -187,7 +187,7 @@ export function functionsPath(path?: string) {
 }
 
 export function gitPath(path?: string) {
-  return corePath(`git/${path || ''}`)
+  return utilsPath(`git/${path || ''}`)
 }
 
 export function langPath(path?: string) {
@@ -200,7 +200,7 @@ export function libraryEntryPath(type: LibraryType) {
 }
 
 export function lintPath(path?: string) {
-  return corePath(`lint/${path || ''}`)
+  return utilsPath(`lint/${path || ''}`)
 }
 
 export function loggingPath(path?: string) {
@@ -228,7 +228,7 @@ export function ormPath(path?: string) {
 }
 
 export function objectsPath(path?: string) {
-  return corePath(`objects/${path || ''}`)
+  return utilsPath(`objects/${path || ''}`)
 }
 
 export function onboardingPath(path?: string) {
@@ -279,7 +279,7 @@ export function projectStoragePath(path?: string) {
 }
 
 export function pushPath(path?: string) {
-  return corePath(`push/${path || ''}`)
+  return notificationsPath(`push/${path || ''}`)
 }
 
 export function queryBuilderPath(path?: string) {
@@ -335,7 +335,7 @@ export function slugPath(path?: string) {
 }
 
 export function smsPath(path?: string) {
-  return corePath(`sms/${path || ''}`)
+  return notificationsPath(`sms/${path || ''}`)
 }
 
 export function storagePath(path?: string) {
@@ -363,7 +363,7 @@ export function stacksPath(path?: string) {
 }
 
 export function stringsPath(path?: string) {
-  return corePath(`strings/${path || ''}`)
+  return utilsPath(`strings/${path || ''}`)
 }
 
 export function testingPath(path?: string) {

@@ -39,6 +39,6 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

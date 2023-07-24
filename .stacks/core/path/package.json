@@ -48,6 +48,6 @@
     "pathe": "^1.1.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

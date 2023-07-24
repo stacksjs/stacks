@@ -43,11 +43,11 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/desktop": "link:@stacksjs/desktop",
-    "@stacksjs/logging": "link:@stacksjs/logging",
+    "@stacksjs/desktop": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

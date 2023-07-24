@@ -47,20 +47,20 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/arrays": "link:@stacksjs/arrays",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/strings": "link:@stacksjs/strings",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@stacksjs/arrays": "link:@stacksjs/arrays",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/strings": "link:@stacksjs/strings",
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.8.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

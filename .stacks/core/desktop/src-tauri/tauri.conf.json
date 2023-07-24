@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.stacks.dev",
+      "identifier": "com.stacks.test",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

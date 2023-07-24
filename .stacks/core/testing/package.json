@@ -53,6 +53,6 @@
     "@playwright/test": "^1.36.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

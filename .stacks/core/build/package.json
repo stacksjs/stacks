@@ -46,15 +46,15 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/vite": "link:@stacksjs/vite",
+    "@stacksjs/vite": "workspace:*",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
-    "@stacksjs/vite": "link:@stacksjs/vite",
+    "@stacksjs/vite": "workspace:*",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "vite-plugin-mkcert": "^1.16.0"
   }
 }

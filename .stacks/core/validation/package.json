@@ -43,15 +43,15 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/utils": "link:@stacksjs/utils",
+    "@stacksjs/utils": "workspace:*",
     "@vinejs/vine": "^1.5.1"
   },
   "dependencies": {
     "@vinejs/vine": "^1.5.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/vite": "link:@stacksjs/vite"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/vite": "workspace:*"
   }
 }

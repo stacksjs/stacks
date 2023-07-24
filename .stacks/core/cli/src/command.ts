@@ -1,4 +1,5 @@
 import type { CliOptions } from '@stacksjs/types'
+import { runCommand } from './'
 
 const spawn = Bun.spawn
 const spawnSync = Bun.spawnSync
@@ -16,7 +17,7 @@ interface Options {
   name: string
   description: string
   options: CommandOptions
-  run: (options: CliOptions) => Promise<any>
+  run: (options?: CliOptions) => Promise<any>
   onFail: (error: Error) => void
   onSuccess: () => void
 }
@@ -39,4 +40,12 @@ export class Command {
   }
 }
 
-export { cac as command } from 'cac'
+export const command = {
+  run: async (command: string, options?: CliOptions) => {
+    return runCommand(command, options)
+  },
+
+  runSync: (command: string, options?: CliOptions) => {
+    return execSync(command, options)
+  },
+}

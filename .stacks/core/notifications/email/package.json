@@ -52,18 +52,18 @@
   },
   "peerDependencies": {
     "@maizzle/framework": "^4.4.6",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
     "@maizzle/framework": "^4.4.6",
     "@novu/stateless": "^0.16.4",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/error-handling": "link:@stacksjs/error-handling",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:**-handling",
+    "@stacksjs/types": "workspace:*"
   },
   "optionalDependencies": {
     "@novu/emailjs": "^0.16.4",
@@ -78,6 +78,6 @@
     "@novu/ses": "^0.16.4"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

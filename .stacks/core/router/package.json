@@ -49,6 +49,6 @@
     "vue-router": "^4.2.4"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

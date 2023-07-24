@@ -49,14 +49,14 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/ui": "link:@stacksjs/ui"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/ui": "workspace:*"
   },
   "dependencies": {
     "meilisearch": "^0.33.0"
   },
   "devDependencies": {
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*"
   }
 }

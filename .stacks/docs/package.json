@@ -38,8 +38,8 @@
     "copy-src": "rimraf ./src/* && cp -R ../../docs/* ./src"
   },
   "dependencies": {
-    "@stacksjs/docs": "link:@stacksjs/docs",
-    "@stacksjs/path": "link:@stacksjs/path",
+    "@stacksjs/docs": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "rimraf": "^5.0.1",
     "vitepress": "^1.0.0-beta.5"
   }

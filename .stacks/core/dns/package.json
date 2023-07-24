@@ -49,7 +49,7 @@
     "aws-cdk-lib": "^2.88.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development",
+    "@stacksjs/development": "workspace:*",
     "aws-cdk-lib": "^2.88.0"
   }
 }

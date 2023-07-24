@@ -1,22 +1,23 @@
 {
-  "name": "@stacksjs/objects",
+  "name": "@stacksjs/git",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks objects.",
+  "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/objects#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/git#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/objects"
+    "directory": "./.stacks/core/git"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "objects",
+    "git",
+    "github",
     "utilities",
     "functions",
     "stacks"
@@ -42,18 +43,22 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/collections": "link:@stacksjs/collections",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/utils": "link:@stacksjs/utils",
-    "@stacksjs/validation": "link:@stacksjs/validation"
+    "bumpp": "^9.1.1",
+    "changelogen": "^0.5.4",
+    "commitizen": "^4.3.0",
+    "cz-git": "^1.7.0",
+    "giget": "^1.1.2",
+    "simple-git-hooks": "^2.8.1"
   },
   "dependencies": {
-    "@stacksjs/collections": "link:@stacksjs/collections",
-    "@stacksjs/types": "link:@stacksjs/types",
-    "@stacksjs/utils": "link:@stacksjs/utils",
-    "@stacksjs/validation": "link:@stacksjs/validation"
+    "bumpp": "^9.1.1",
+    "changelogen": "^0.5.4",
+    "commitizen": "^4.3.0",
+    "cz-git": "^1.7.0",
+    "giget": "^1.1.2",
+    "simple-git-hooks": "^2.8.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

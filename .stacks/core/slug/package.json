@@ -42,18 +42,18 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/database": "link:@stacksjs/database",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/strings": "link:@stacksjs/strings",
-    "@stacksjs/utils": "link:@stacksjs/utils"
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   },
   "dependencies": {
-    "@stacksjs/database": "link:@stacksjs/database",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/strings": "link:@stacksjs/strings",
-    "@stacksjs/utils": "link:@stacksjs/utils"
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

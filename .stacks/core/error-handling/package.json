@@ -44,16 +44,16 @@
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.45.2",
-    "@stacksjs/cli": "link:@stacksjs/cli",
-    "@stacksjs/path": "link:@stacksjs/path",
-    "@stacksjs/storage": "link:@stacksjs/storage",
-    "@stacksjs/types": "link:@stacksjs/types"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@stacksjs/cli": "link:@stacksjs/cli",
+    "@stacksjs/cli": "workspace:*",
     "neverthrow": "^6.0.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }

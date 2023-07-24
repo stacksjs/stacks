@@ -48,8 +48,8 @@
     "vitepress": "1.0.0-beta.5"
   },
   "devDependencies": {
-    "@stacksjs/alias": "link:@stacksjs/alias",
-    "@stacksjs/config": "link:@stacksjs/config",
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*"
   }
 }

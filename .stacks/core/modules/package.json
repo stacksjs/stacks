@@ -49,18 +49,18 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.0",
     "nprogress": "^0.2.0",
     "vue-i18n": "^9.2.2"
   },
   "dependencies": {
-    "@stacksjs/types": "link:@stacksjs/types",
+    "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.0",
     "nprogress": "^0.2.0",
     "vue-i18n": "^9.2.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "link:@stacksjs/development"
+    "@stacksjs/development": "workspace:*"
   }
 }
