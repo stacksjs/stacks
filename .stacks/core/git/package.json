@@ -2,7 +2,7 @@
   "name": "@stacksjs/git",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.9",
+  "packageManager": "pnpm@8.6.10",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -49,7 +49,7 @@
     "commitizen": "^4.3.0",
     "cz-git": "^1.7.0",
     "giget": "^1.1.2",
-    "simple-git-hooks": "^2.8.1"
+    "simple-git-hooks": "^2.9.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
