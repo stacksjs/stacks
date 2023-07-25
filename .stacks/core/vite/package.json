@@ -102,6 +102,7 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
+    "unplugin-vue-router": "^0.6.4",
     "vite-plugin-full-reload": "^1.0.5"
   }
 }

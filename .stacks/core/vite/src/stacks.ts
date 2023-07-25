@@ -3,22 +3,28 @@ import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
-import Pages from 'vite-plugin-pages'
 import type { Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import VueRouter from 'unplugin-vue-router/vite'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
+import type { Options } from 'unplugin-vue-router'
+import { VueRouterAutoImports } from 'unplugin-vue-router'
+import type { AutoImportsOptions, ComponentOptions, InspectOptions } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
-
-// import Layouts from 'vite-plugin-vue-layouts'
+import Layouts from 'vite-plugin-vue-layouts'
+import type { Options as LayoutOptions } from 'vite-plugin-vue-layouts'
 
 export function inspect(options?: InspectOptions) {
   return Inspect(options)
 }
 
-// export function layouts(options?: LayoutOptions) {
-//   return Layouts(options)
-// }
+export function layouts(options?: LayoutOptions) {
+  const defaultOptions = {}
+
+  const newOptions = defu(options, defaultOptions)
+
+  return Layouts(newOptions)
+}
 
 export function components(options?: ComponentOptions): Plugin {
   const defaultOptions = {
@@ -37,24 +43,21 @@ export function components(options?: ComponentOptions): Plugin {
   return Components(newOptions)
 }
 
-// https://github.com/hannoeru/vite-plugin-pages
-export function pages(options?: PagesOption): Plugin {
+// https://github.com/posva/unplugin-vue-router
+export function pages(options?: Options) {
   const defaultOptions = {
-    extensions: ['vue', 'md'],
-    dirs: [
-      p.viewsPath(),
-    ],
+    extensions: ['.vue', '.md'],
   }
 
   const newOptions = defu(options, defaultOptions)
 
-  return Pages(newOptions)
+  return VueRouter(newOptions)
 }
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {
     imports: [
-      'vue', 'vue-router', 'vue/macros', 'pinia',
+      'vue', VueRouterAutoImports, 'vue/macros', 'pinia',
       // 'vitepress'
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
       // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli

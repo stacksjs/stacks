@@ -238,6 +238,7 @@ declare global {
   const defineHashing: typeof import('../core/utils/src/config')['defineHashing']
   const defineJobsConfig: typeof import('../core/utils/src/config')['defineJobsConfig']
   const defineLibrary: typeof import('../core/utils/src/config')['defineLibrary']
+  const defineLoader: typeof import('vue-router/auto')['defineLoader']
   const defineModel: typeof import('../core/utils/src/config')['defineModel']
   const defineNotification: typeof import('../core/utils/src/config')['defineNotification']
   const definePage: typeof import('../core/utils/src/config')['definePage']
@@ -529,8 +530,8 @@ declare global {
   const okAsync: typeof import('../core/error-handling/src/index')['okAsync']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
-  const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
-  const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
+  const onBeforeRouteLeave: typeof import('vue-router/auto')['onBeforeRouteLeave']
+  const onBeforeRouteUpdate: typeof import('vue-router/auto')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
   const onClickOutside: typeof import('../core/utils/src/vendors')['onClickOutside']
@@ -559,7 +560,6 @@ declare global {
   const p: typeof import('../core/utils/src/p')['p']
   const packageJsonPath: typeof import('../core/path/src/index')['packageJsonPath']
   const packageManager: typeof import('../core/utils/src/helpers')['packageManager']
-  const viewsPath: typeof import('../core/path/src/index')['viewsPath']
   const paramCase: typeof import('../core/strings/src/case')['paramCase']
   const parse: typeof import('../core/path/src/index')['parse']
   const parseArgs: typeof import('../core/cli/src/parse')['parseArgs']
@@ -864,8 +864,8 @@ declare global {
   const useRefHistory: typeof import('../core/utils/src/vendors')['useRefHistory']
   const useResizeObserver: typeof import('../core/utils/src/vendors')['useResizeObserver']
   const useRound: typeof import('../core/utils/src/math')['useRound']
-  const useRoute: typeof import('vue-router')['useRoute']
-  const useRouter: typeof import('vue-router')['useRouter']
+  const useRoute: typeof import('vue-router/auto')['useRoute']
+  const useRouter: typeof import('vue-router/auto')['useRouter']
   const useSMS: typeof import('../core/notifications/src/index')['useSMS']
   const useScheduler: typeof import('../core/scheduler/src/index')['useScheduler']
   const useScreenOrientation: typeof import('../core/utils/src/vendors')['useScreenOrientation']
@@ -923,6 +923,7 @@ declare global {
   const verifyHash: typeof import('../core/security/src/hash')['verifyHash']
   const vi: typeof import('vitest')['vi']
   const views: typeof import('../core/build/src/index')['views']
+  const viewsPath: typeof import('../core/path/src/index')['viewsPath']
   const vitePath: typeof import('../core/path/src/index')['vitePath']
   const vitest: typeof import('vitest')['vitest']
   const vueComponentExample: typeof import('../core/build/src/index')['vueComponentExample']
@@ -1176,6 +1177,7 @@ declare module 'vue' {
     readonly defineHashing: UnwrapRef<typeof import('../core/utils/src/config')['defineHashing']>
     readonly defineJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineJobsConfig']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
+    readonly defineLoader: UnwrapRef<typeof import('vue-router/auto')['defineLoader']>
     readonly defineModel: UnwrapRef<typeof import('../core/utils/src/config')['defineModel']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
     readonly definePage: UnwrapRef<typeof import('../core/utils/src/config')['definePage']>
@@ -1443,8 +1445,8 @@ declare module 'vue' {
     readonly okAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['okAsync']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
+    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteLeave']>
+    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('../core/utils/src/vendors')['onClickOutside']>
@@ -1472,7 +1474,6 @@ declare module 'vue' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>
@@ -1710,7 +1711,6 @@ declare module 'vue' {
     readonly useInfiniteScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useInfiniteScroll']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useIntersectionObserver']>
     readonly useKeyModifier: UnwrapRef<typeof import('../core/utils/src/vendors')['useKeyModifier']>
-    readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('../core/utils/src/vendors')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('../core/utils/src/vendors')['useMagicKeys']>
     readonly useManualRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useManualRefHistory']>
@@ -1753,8 +1753,8 @@ declare module 'vue' {
     readonly useRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useResizeObserver']>
     readonly useRound: UnwrapRef<typeof import('../core/utils/src/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
+    readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
     readonly useScheduler: UnwrapRef<typeof import('../core/scheduler/src/index')['useScheduler']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
@@ -1809,6 +1809,7 @@ declare module 'vue' {
     readonly variance: UnwrapRef<typeof import('../core/arrays/src/math')['variance']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly views: UnwrapRef<typeof import('../core/build/src/index')['views']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly vitePath: UnwrapRef<typeof import('../core/path/src/index')['vitePath']>
     readonly vueComponentExample: UnwrapRef<typeof import('../core/build/src/index')['vueComponentExample']>
     readonly vueComponents: UnwrapRef<typeof import('../core/build/src/index')['vueComponents']>
@@ -2053,6 +2054,7 @@ declare module '@vue/runtime-core' {
     readonly defineHashing: UnwrapRef<typeof import('../core/utils/src/config')['defineHashing']>
     readonly defineJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineJobsConfig']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
+    readonly defineLoader: UnwrapRef<typeof import('vue-router/auto')['defineLoader']>
     readonly defineModel: UnwrapRef<typeof import('../core/utils/src/config')['defineModel']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
     readonly definePage: UnwrapRef<typeof import('../core/utils/src/config')['definePage']>
@@ -2320,8 +2322,8 @@ declare module '@vue/runtime-core' {
     readonly okAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['okAsync']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
+    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteLeave']>
+    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('../core/utils/src/vendors')['onClickOutside']>
@@ -2349,7 +2351,6 @@ declare module '@vue/runtime-core' {
     readonly p: UnwrapRef<typeof import('../core/utils/src/p')['p']>
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/index')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
-    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly paramCase: UnwrapRef<typeof import('../core/strings/src/case')['paramCase']>
     readonly parse: UnwrapRef<typeof import('../core/path/src/index')['parse']>
     readonly parseArgs: UnwrapRef<typeof import('../core/cli/src/parse')['parseArgs']>
@@ -2587,7 +2588,6 @@ declare module '@vue/runtime-core' {
     readonly useInfiniteScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useInfiniteScroll']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useIntersectionObserver']>
     readonly useKeyModifier: UnwrapRef<typeof import('../core/utils/src/vendors')['useKeyModifier']>
-    readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('../core/utils/src/vendors')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('../core/utils/src/vendors')['useMagicKeys']>
     readonly useManualRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useManualRefHistory']>
@@ -2630,8 +2630,8 @@ declare module '@vue/runtime-core' {
     readonly useRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useResizeObserver']>
     readonly useRound: UnwrapRef<typeof import('../core/utils/src/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
+    readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
     readonly useScheduler: UnwrapRef<typeof import('../core/scheduler/src/index')['useScheduler']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
@@ -2686,6 +2686,7 @@ declare module '@vue/runtime-core' {
     readonly variance: UnwrapRef<typeof import('../core/arrays/src/math')['variance']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly views: UnwrapRef<typeof import('../core/build/src/index')['views']>
+    readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly vitePath: UnwrapRef<typeof import('../core/path/src/index')['vitePath']>
     readonly vueComponentExample: UnwrapRef<typeof import('../core/build/src/index')['vueComponentExample']>
     readonly vueComponents: UnwrapRef<typeof import('../core/build/src/index')['vueComponents']>

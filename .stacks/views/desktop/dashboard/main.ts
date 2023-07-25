@@ -1,19 +1,13 @@
-import { createApp } from 'vue'
+import { ViteSSG } from 'vite-ssg'
+import { routes } from 'vue-router/auto/routes'
+import { setupLayouts } from 'virtual:generated-layouts'
+import App from './App.vue'
+import '@unocss/reset/tailwind.css'
 
-// import Previewer from 'virtual:vue-component-preview'
-import App from './src/App.vue'
-
-// prepare the messages object from the yaml language files
-// const messages = Object.fromEntries(
-//   Object.entries(
-//     import.meta.glob<{ default: any }>('../../../lang/*.y(a)?ml', { eager: true }))
-//     .map(([key, value]) => {
-//       const yaml = key.endsWith('.yaml')
-//       return [key.slice(14, yaml ? -5 : -4), value.default]
-//     }),
-// )
-
-const app = createApp(App)
-
-// app.use(Previewer)
-app.mount('#app')
+export const createApp = ViteSSG(
+  App,
+  {
+    routes: setupLayouts(routes),
+    base: import.meta.env.BASE_URL,
+  },
+)

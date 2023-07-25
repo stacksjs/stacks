@@ -47,8 +47,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
-    "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
+    "build": "vite build ../../views/desktop/dashboard -c ../../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop/dashboard -c ../../core/vite/src/desktop.ts",
     "dev:desktop": "tauri dev",
     "typecheck": "tsc --noEmit"
   },

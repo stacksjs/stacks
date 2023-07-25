@@ -35,8 +35,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
+    "build": "vite build ../../views/desktop/dashboard -c ../../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop/dashboard -c ../../core/vite/src/desktop.ts",
+    "dev:desktop": "tauri dev",
     "prepublishOnly": "unbuild",
     "typecheck": "tsc --noEmit"
   },

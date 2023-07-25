@@ -7,10 +7,11 @@ import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import c from 'picocolors'
 import { version } from '../package.json'
-import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
+
+import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
 
 export const vueComponentsConfig: ViteConfig = {
-  root: frameworkPath('views/desktop'),
+  root: frameworkPath('views/desktop/dashboard'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: storagePath('public'),
@@ -33,9 +34,14 @@ export const vueComponentsConfig: ViteConfig = {
 
   plugins: [
     // preview(),
+    pages({
+      routesFolder: ['../../stacks/dashboard/src/pages'],
+    }),
+    layouts({
+      layoutsDirs: '../../../stacks/dashboard/src/layouts',
+    }),
     uiEngine(),
     cssEngine(),
-    autoImports(),
     inspect(),
     mkcert({
       hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
