@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/cache
+pnpm i -D @stacksjs/http
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * as cache from '@stacksjs/cache'
+import * as http from '@stacksjs/http'
 
 // wip
 ```
