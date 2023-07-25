@@ -26,7 +26,7 @@
     "type safe",
     "stacks"
   ],
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"

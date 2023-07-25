@@ -45,7 +45,7 @@
       "import": "./dist/cli.mjs"
     }
   },
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -62,7 +62,7 @@
   ],
   "scripts": {
     "buddy": "bunx ./src/cli.ts",
-    "build": "bunx mkdist -d",
+    "build": "bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

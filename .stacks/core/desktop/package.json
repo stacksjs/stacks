@@ -36,7 +36,7 @@
       "import": "./dist/index.mjs"
     }
   },
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -46,7 +46,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bunx mkdist -d",
+    "build": "bun build.ts",
     "build:app": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
     "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
     "dev:desktop": "tauri dev",

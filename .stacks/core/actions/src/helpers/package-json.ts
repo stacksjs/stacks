@@ -65,7 +65,7 @@ export async function generatePackageJson(type: PackageJsonType) {
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
