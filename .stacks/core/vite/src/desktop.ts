@@ -8,7 +8,7 @@ import * as c from 'kolorist'
 // import { version } from '../package.json'
 import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer } from './'
-import { defineConfig, loadEnv } from './'
+import { defineConfig } from './'
 
 const version = '0.57.4'
 
@@ -99,8 +99,8 @@ export const vueComponentsConfig: ViteConfig = {
   ],
 }
 
-export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
+export default defineConfig(({ command }) => {
+  // process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
 
   if (command === 'serve')
     return vueComponentsConfig

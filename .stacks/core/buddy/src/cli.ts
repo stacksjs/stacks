@@ -3,7 +3,7 @@ import { command } from '@stacksjs/cli'
 import { frameworkVersion, initProject, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
 import { build, changelog, clean, commit, deploy, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
-const cli = command('buddy')
+const cli = command.cli('buddy')
 
 // setup global error handlers
 process.on('uncaughtException', handleError)

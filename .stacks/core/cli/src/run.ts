@@ -66,7 +66,7 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
  * @returns The result of the command.
  */
 // export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
-export async function runCommand(command: string, options: any): Promise<ResultAsync<Subprocess, StacksError>> {
+export async function runCommand(command: string, options?: any): Promise<ResultAsync<Subprocess, StacksError>> {
   return await exec(command, options)
 }
 

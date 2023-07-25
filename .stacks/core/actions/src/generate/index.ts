@@ -3,8 +3,7 @@ import { Action, NpmScript } from '@stacksjs/types'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { dumpYaml, runNpmScript } from '@stacksjs/utils'
 import { files } from '@stacksjs/storage'
-import { runCommand } from '@stacksjs/cli'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 import { dependencies } from '@stacksjs/config'
 import { runAction } from '../helpers'
 
@@ -121,11 +120,11 @@ export async function generateTypes(options?: GeneratorOptions) {
 }
 
 export async function generateMigrations() {
-  const path = frameworkPath('database/schema.prisma')
+  // const path = frameworkPath('database/schema.prisma')
 
   // await migrate(path, { database: database.driver })
 
-  await runCommand(`bunx prisma migrate dev --schema=${path}`)
+  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
 
   log.success('Successfully updated migrations')
 }

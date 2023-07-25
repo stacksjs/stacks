@@ -1,5 +1,6 @@
 import type { CliOptions } from '@stacksjs/types'
-import { runCommand } from './'
+import cac from 'cac'
+import { execSync, runCommand } from './'
 
 const spawn = Bun.spawn
 const spawnSync = Bun.spawnSync
@@ -48,4 +49,6 @@ export const command = {
   runSync: (command: string, options?: CliOptions) => {
     return execSync(command, options)
   },
+
+  cli: cac,
 }
