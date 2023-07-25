@@ -2,7 +2,7 @@
   "name": "@stacksjs/database",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.9",
+  "packageManager": "pnpm@8.6.10",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",

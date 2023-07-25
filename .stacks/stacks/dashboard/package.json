@@ -2,7 +2,7 @@
   "name": "@stacksjs/dashboard",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.6.9",
+  "packageManager": "pnpm@8.6.10",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",

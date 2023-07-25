@@ -2,7 +2,7 @@
   "name": "@stacksjs/server",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.9",
+  "packageManager": "pnpm@8.6.10",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "nitropack": "^2.5.2",
-    "vite": "^4.4.6"
+    "vite": "^4.4.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
