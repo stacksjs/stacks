@@ -19,7 +19,7 @@ export default new Command({
   //   },
   // ],
 
-  run: async (options: CliOptions) => {
+  run: async (options?: CliOptions) => {
     log.info('Passed options are:', options)
 
     await intro('buddy inspire')
