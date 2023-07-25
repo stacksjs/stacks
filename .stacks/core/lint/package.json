@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@ow3/eslint-config": "^0.47.1",
-    "@types/eslint": "^8.44.0",
+    "@types/eslint": "^8.44.1",
     "eslint": "^8.45.0",
     "lint-staged": "^13.2.3",
     "publint": "^0.1.16"
