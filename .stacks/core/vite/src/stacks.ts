@@ -10,7 +10,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
 import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
 
 // import Layouts from 'vite-plugin-vue-layouts'
 
@@ -182,8 +181,8 @@ export function sslCertificate(): Plugin {
     hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
     autoUpgrade: true,
     savePath: p.frameworkPath('certs/components'),
-    keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-    certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
+    // keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+    // certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
   }) as Plugin
 }
 

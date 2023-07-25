@@ -102,6 +102,7 @@
     "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.5",
     "@types/semver": "^7.5.0",
-    "markdown-table": "^3.0.3"
+    "markdown-table": "^3.0.3",
+    "vue-starport": "^0.3.0"
   }
 }
