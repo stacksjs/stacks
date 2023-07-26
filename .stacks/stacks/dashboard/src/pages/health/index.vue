@@ -378,7 +378,7 @@
                   data-v-85662274=""
                 >
                   <div
-                    class="w-3 h-3 mt-0.5 rounded-full bg-carefree-blue-1"
+                    class="w-3 h-3 mt-0.5 rounded-full bg-blue-500"
                     data-v-85662274=""
                   /><h3
                     class="text-lg"

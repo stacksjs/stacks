@@ -27,7 +27,18 @@
         </div>
       </div>
       <div>
-        Env section here
+        <pre
+          v-highlightjs
+        >
+        <code class="plaintext">
+  VITE_API_BASE_URL=https://stacks.test/api/v3
+  VITE_API_ROOT_BASE_URL=https://stacks.test
+  VITE_MEILISEARCH_HOST=http://127.0.0.1:7700/
+  VITE_MEILISEARCH_KEY=
+  VITE_FLAREAPP_BASE_URL=https://flareapp.io/api
+  VITE_FLAREAPP_KEY=aaaaaa
+  VITE_FLAREAPP_REPORTS_KEY=bbbbbb
+        </code></pre>
       </div>
       <div>
         <div class="mt-4 flex justify-end">

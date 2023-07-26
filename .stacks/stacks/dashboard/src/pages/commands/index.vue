@@ -33,9 +33,7 @@
               list="artisanCommands"
               placeholder="ls -la"
               autocorrect="off"
-            ><datalist id="artisanCommands">
-              <option value="php artisan cache:clear" /><option value="php artisan config:clear" /><option value="php artisan route:clear" /><option value="php artisan view:clear" /><option value="php artisan migrate --force" /><option value="php artisan migrate:fresh" /><option value="php artisan storage:link" /><option value="cd /home/forge/carefreeagency.com/current &amp;&amp; php artisan scout:import &quot;App\User&quot;" /><option value="cd /home/forge/carefreeagency.com/current &amp;&amp; php artisan scout:flush &quot;App\User&quot;" /><option value="cd /home/forge/carefreeagency.com/current &amp;&amp; php artisan scout:import &quot;App\Event&quot;" /><option value="cd /home/forge/carefreeagency.com/current &amp;&amp; php artisan scout:flush &quot;App\Event&quot;" /><option value="cd /home/forge/carefreeagency.com/current &amp;&amp; php artisan sync:sf-users" />
-            </datalist>
+            >
           </div>
         </div>
       </div>
@@ -109,7 +107,9 @@
                     Chris Breuer
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    cd /home/forge/carefreeagency.com/current && php artisan scout:import "App\User"
+                    <pre
+                      v-highlightjs
+                    ><code class="bash"> buddy dev:components </code></pre>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     3 hours ago
@@ -132,7 +132,9 @@
                     Chris Breuer
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    cd /home/forge/carefreeagency.com/current && php artisan scout:import "App\User"
+                    <pre
+                      v-highlightjs
+                    ><code class="bash"> buddy dev:desktop </code></pre>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     3 hours ago
@@ -158,3 +160,9 @@
     </div>
   </div>
 </template>
+
+<style>
+code {
+  @apply rounded-lg !important
+}
+</style>

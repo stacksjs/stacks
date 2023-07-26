@@ -32,13 +32,7 @@ export default defineConfig({
         mono: 'DM Mono',
       },
     }),
-  ],
-  rules: [
-    ['bg-carefree-green-1', { background: '#86C83A' }],
-    ['text-carefree-green-1', { color: '#86C83A' }],
-    ['bg-carefree-blue-1', { background: '#0085BF' }],
-    ['text-carefree-blue-1', { color: '#0085BF' }],
-  ],
+  ]
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),
