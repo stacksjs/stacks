@@ -143,5 +143,3 @@ export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
     ? false
     : Object.prototype.hasOwnProperty.call(obj, v)
 }
-
-export * from '@stacksjs/collections'
