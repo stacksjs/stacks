@@ -43,9 +43,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*"
   },
-  "dependencies": {
-    "c12": "^1.4.2"
-  },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",

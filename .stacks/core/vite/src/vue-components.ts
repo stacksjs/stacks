@@ -1,15 +1,16 @@
-import { app } from '@stacksjs/config'
 import type { ViteConfig } from '@stacksjs/types'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
 import type { ViteDevServer as DevServer } from 'vite'
+import app from '../../../../config/app'
 import { autoImports, components, cssEngine, inspect, sslCertificate, uiEngine } from './stacks'
 import type { ViteBuildOptions } from './'
 import { defineConfig } from './'
 
 // import { version } from '../package.json'
 const version = '0.0.0'
+console.log('version', version)
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('libs/components/vue'),
@@ -117,6 +118,7 @@ export const vueComponentsConfig: ViteConfig = {
         }
       },
     },
+
   ],
 
   build: vueComponentsBuildOptions(),

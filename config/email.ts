@@ -1,6 +1,6 @@
 import { defineEmailConfig } from '@stacksjs/utils'
 import { env } from '@stacksjs/validation'
-import app from './app'
+import { app } from '@stacksjs/config'
 
 /**
  * **Email Configuration**

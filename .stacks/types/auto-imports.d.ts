@@ -468,7 +468,6 @@ declare global {
   const lint: typeof import('./src/index')['lint']
   const lintPath: typeof import('../core/path/src/index')['lintPath']
   const listen: typeof import('../core/events/src/index')['listen']
-  const loadConfig: typeof import('./core/config/src/helpers')['loadConfig']
   const loadEnv: typeof import('../core/validation/src/types/env')['loadEnv']
   const loadStacksConfig: typeof import('../core/utils/src/config')['loadStacksConfig']
   const loadYaml: typeof import('../core/utils/src/helpers')['loadYaml']

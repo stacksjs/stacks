@@ -24,8 +24,6 @@ import type {
   UiOptions,
 } from '@stacksjs/types'
 
-export { loadStacksConfig } from '@stacksjs/config'
-
 export function defineApp(config: Partial<AppOptions>) {
   return config
 }
