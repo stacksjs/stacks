@@ -211,6 +211,7 @@ export const alias: Record<string, string> = {
   'stacks/x-ray/*': p.xRayPath('src/*'),
   '~/app/*': p.appPath('*'),
   '~/config/*': p.projectConfigPath('*'),
+  '~/lang/*': p.langPath('*'),
   '~/components/*': p.componentsPath('*'),
   '~/functions/*': p.functionsPath('*'),
   '~views/*': p.viewsPath('*'),

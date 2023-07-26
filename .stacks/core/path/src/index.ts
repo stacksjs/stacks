@@ -191,7 +191,7 @@ export function gitPath(path?: string) {
 }
 
 export function langPath(path?: string) {
-  return resourcesPath(`lang/${path || ''}`)
+  return projectPath(`lang/${path || ''}`)
 }
 
 export type LibraryType = 'vue-components' | 'web-components' | 'functions'

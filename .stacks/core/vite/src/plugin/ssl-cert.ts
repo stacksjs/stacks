@@ -1,7 +1,7 @@
 import mkcert from 'vite-plugin-mkcert'
 import type { Plugin } from 'vite'
 import { path as p } from '@stacksjs/path'
-import library from '../../../../../config/library'
+import library from '~/config/library'
 
 export function sslCertificate(): Plugin {
   console.log('sslCertificate')

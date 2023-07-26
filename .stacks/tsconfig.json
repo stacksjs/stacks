@@ -235,6 +235,7 @@
       "~/models/*": ["../app/models/*"],
       "~/app/*": ["../app/*"],
       "~/config/*": ["../config/*"],
+      "~/lang/*": ["../lang/*"],
       "~/functions/*": ["../resources/functions/*"],
       "~/components/*": ["../resources/components/*"],
       "~/views/*": ["../resources/views/*"],
