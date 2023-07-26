@@ -6,11 +6,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/strings#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/strings#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/strings"
+    "directory": "./.stacks/core/utils/strings"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
