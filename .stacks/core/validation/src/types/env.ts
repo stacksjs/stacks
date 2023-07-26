@@ -120,6 +120,6 @@ export interface FrontendEnv {
 export type EnvKeys = keyof Env
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export const env: Partial<Env> = process.env as Partial<Env>
+export const env: Partial<Env> = process.env
 
 export { loadEnv }

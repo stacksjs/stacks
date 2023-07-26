@@ -1,6 +1,4 @@
-import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import Vue from '@vitejs/plugin-vue'
 import Unocss from 'unocss/vite'
 import Inspect from 'vite-plugin-inspect'
 import Pages from 'vite-plugin-pages'
@@ -8,8 +6,11 @@ import mkcert from 'vite-plugin-mkcert'
 import type { Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defu } from 'defu'
-import type { AutoImportsOptions, ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
+import type { ComponentOptions, InspectOptions, PagesOption } from '@stacksjs/types'
 import { path as p, resolve } from '@stacksjs/path'
+
+export { uiEngine } from './plugin/ui-engine'
+export { autoImports } from './plugin/auto-imports'
 
 // import Layouts from 'vite-plugin-vue-layouts'
 
@@ -53,74 +54,6 @@ export function pages(options?: PagesOption): Plugin {
   const newOptions = defu(options, defaultOptions)
 
   return Pages(newOptions)
-}
-
-export function autoImports(options?: AutoImportsOptions): Plugin {
-  console.log('running autoImports')
-
-  const defaultOptions: AutoImportsOptions = {
-    imports: [
-      'vue', 'vue-router', 'vue/macros', 'pinia',
-      // 'vitepress'
-      // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-      // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-      // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-    ],
-    dirs: [
-      // p.resourcesPath('functions'),
-      // p.resourcesPath('components'),
-
-      // auto imported utilities start here
-      p.frameworkPath('src'), // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
-      // p.aiPath('src'),
-      // p.arraysPath('src'),
-      // p.authPath('src'),
-      // p.cachePath('src'),
-      // p.chatPath('src'),
-      // p.cliPath('src'),
-      // p.cloudPath('src'),
-      // p.databasePath('src'),
-      // p.datetimePath('src'),
-      // p.desktopPath('src'),
-      // p.errorHandlingPath('src'),
-      // p.eventsPath('src'),
-      // p.fakerPath('src'),
-      // p.healthPath('src'),
-      // p.lintPath('src'),
-      // p.notificationsPath('src'),
-      // p.objectsPath('src'),
-      // p.ormPath('src'),
-      // p.pathPath('src'),
-      // p.paymentsPath('src'),
-      // p.pushPath('src'),
-      // p.queuePath('src'),
-      // p.queryBuilderPath('src'),
-      // p.realtimePath('src'),
-      // p.routerPath('src'),
-      // p.searchEnginePath('src'),
-      // p.securityPath('src'),
-      // p.signalsPath('src'),
-      // p.smsPath('src'),
-      // p.slugPath('src'),
-      // p.storagePath('src'),
-      // p.stringsPath('src'),
-      // p.testingPath('src'),
-      // p.utilsPath('src'),
-      // p.validationPath('src'),
-    ],
-    dts: p.frameworkPath('types/auto-imports.d.ts'),
-    vueTemplate: true,
-    eslintrc: {
-      enabled: false,
-      // filepath: frameworkPath('.eslintrc-auto-import.json'),
-    },
-  }
-
-  const newOptions = defu(options, defaultOptions)
-
-  console.log('here after newoptions')
-
-  return AutoImport(newOptions)
 }
 
 export function cssEngine(isWebComponent = false) {
@@ -183,25 +116,6 @@ export function sslCertificate(): Plugin {
     savePath: p.frameworkPath('certs/components'),
     // keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
     // certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-  }) as Plugin
-}
-
-export function uiEngine(isWebComponent = false): Plugin {
-  console.log('running uiEngine')
-
-  if (isWebComponent) {
-    return Vue({
-      include: [/\.vue$/, /\.md$/],
-      template: {
-        compilerOptions: {
-          isCustomElement: () => true,
-        },
-      },
-    }) as Plugin
-  }
-
-  return Vue({
-    include: [/\.vue$/, /\.md$/],
   }) as Plugin
 }
 
