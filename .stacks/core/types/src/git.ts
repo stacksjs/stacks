@@ -130,8 +130,4 @@ interface Hooks {
 
 export type GitConfig = GitOptions
 
-export function defineGit(config: Partial<GitOptions>) {
-  return config
-}
-
 export interface GitHooks extends Hooks {}

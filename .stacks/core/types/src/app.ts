@@ -107,4 +107,4 @@ export interface AppOptions {
   // inspect: <InspectOptions>{},
 }
 
-export type AppConfig = AppOptions
+export type AppConfig = Partial<AppOptions>

@@ -115,6 +115,7 @@ declare global {
   const copy: typeof import('../core/storage/src/copy')['copy']
   const copyFile: typeof import('../core/storage/src/copy')['copyFile']
   const copyFolder: typeof import('../core/storage/src/copy')['copyFolder']
+  const coreEnvPath: typeof import('../core/path/src/index')['coreEnvPath']
   const corePath: typeof import('../core/path/src/index')['corePath']
   const createApp: typeof import('vue')['createApp']
   const createControlledPromise: typeof import('../core/utils/src/promise')['createControlledPromise']
@@ -216,7 +217,7 @@ declare global {
   const email: typeof import('../src/index')['email']
   const emailPath: typeof import('../core/path/src/index')['emailPath']
   const encrypt: typeof import('../core/security/src/crypt')['encrypt']
-  const env: typeof import('../core/validation/src/types/env')['env']
+  const env: typeof import('../core/env/src/index')['env']
   const equal: typeof import('../core/utils/src/currency')['equal']
   const err: typeof import('../core/error-handling/src/index')['err']
   const errAsync: typeof import('../core/error-handling/src/index')['errAsync']
@@ -447,6 +448,7 @@ declare global {
   const put: typeof import('../core/storage/src/files')['put']
   const query: typeof import('../core/search-engine/src/index')['query']
   const queryBuilderPath: typeof import('../core/path/src/index')['queryBuilderPath']
+  const queue: typeof import('../src/index')['queue']
   const queuePath: typeof import('../core/path/src/index')['queuePath']
   const rand: typeof import('../core/utils/src/math')['rand']
   const reactive: typeof import('vue')['reactive']
@@ -778,7 +780,6 @@ declare module 'vue' {
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
-    readonly Job: UnwrapRef<typeof import('../core/queue/src/index')['Job']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../core/query-builder/src/kysely')['MysqlDialect']>
@@ -871,6 +872,7 @@ declare module 'vue' {
     readonly copy: UnwrapRef<typeof import('../core/storage/src/copy')['copy']>
     readonly copyFile: UnwrapRef<typeof import('../core/storage/src/copy')['copyFile']>
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
+    readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/index')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/index')['corePath']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -966,7 +968,7 @@ declare module 'vue' {
     readonly email: UnwrapRef<typeof import('../src/index')['email']>
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
-    readonly env: UnwrapRef<typeof import('../core/validation/src/types/env')['env']>
+    readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
@@ -1103,7 +1105,6 @@ declare module 'vue' {
     readonly libsPath: UnwrapRef<typeof import('../core/path/src/index')['libsPath']>
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/index')['lintPath']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
-    readonly loadEnv: UnwrapRef<typeof import('../core/validation/src/types/env')['loadEnv']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
@@ -1197,6 +1198,7 @@ declare module 'vue' {
     readonly put: UnwrapRef<typeof import('../core/storage/src/files')['put']>
     readonly query: UnwrapRef<typeof import('../core/search-engine/src/index')['query']>
     readonly queryBuilderPath: UnwrapRef<typeof import('../core/path/src/index')['queryBuilderPath']>
+    readonly queue: UnwrapRef<typeof import('../src/index')['queue']>
     readonly queuePath: UnwrapRef<typeof import('../core/path/src/index')['queuePath']>
     readonly rand: UnwrapRef<typeof import('../core/utils/src/math')['rand']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
@@ -1522,7 +1524,6 @@ declare module '@vue/runtime-core' {
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
-    readonly Job: UnwrapRef<typeof import('../core/queue/src/index')['Job']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../core/query-builder/src/kysely')['MysqlDialect']>
@@ -1615,6 +1616,7 @@ declare module '@vue/runtime-core' {
     readonly copy: UnwrapRef<typeof import('../core/storage/src/copy')['copy']>
     readonly copyFile: UnwrapRef<typeof import('../core/storage/src/copy')['copyFile']>
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
+    readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/index')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/index')['corePath']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1710,7 +1712,7 @@ declare module '@vue/runtime-core' {
     readonly email: UnwrapRef<typeof import('../src/index')['email']>
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
-    readonly env: UnwrapRef<typeof import('../core/validation/src/types/env')['env']>
+    readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
@@ -1847,7 +1849,6 @@ declare module '@vue/runtime-core' {
     readonly libsPath: UnwrapRef<typeof import('../core/path/src/index')['libsPath']>
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/index')['lintPath']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
-    readonly loadEnv: UnwrapRef<typeof import('../core/validation/src/types/env')['loadEnv']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
@@ -1941,6 +1942,7 @@ declare module '@vue/runtime-core' {
     readonly put: UnwrapRef<typeof import('../core/storage/src/files')['put']>
     readonly query: UnwrapRef<typeof import('../core/search-engine/src/index')['query']>
     readonly queryBuilderPath: UnwrapRef<typeof import('../core/path/src/index')['queryBuilderPath']>
+    readonly queue: UnwrapRef<typeof import('../src/index')['queue']>
     readonly queuePath: UnwrapRef<typeof import('../core/path/src/index')['queuePath']>
     readonly rand: UnwrapRef<typeof import('../core/utils/src/math')['rand']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>

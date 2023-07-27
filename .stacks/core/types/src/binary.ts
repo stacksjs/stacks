@@ -8,4 +8,4 @@ export interface BinaryOptions {
   // path?: string // TODO: add this for a configurable path where the commands are located
 }
 
-export type BinaryConfig = BinaryOptions
+export type BinaryConfig = Partial<BinaryOptions>

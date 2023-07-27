@@ -1,5 +1,3 @@
-import { loadEnv } from '@stacksjs/vite'
-
 export interface Env {
   APP_NAME: string
   APP_ENV: 'development' | 'staging' | 'production'
@@ -122,4 +120,4 @@ export type FrontendEnvKeys = keyof FrontendEnv
 
 export const env: Partial<Env> = process.env
 
-export { loadEnv }
+// export { loadEnv } from 'vite'

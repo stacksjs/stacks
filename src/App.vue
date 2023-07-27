@@ -3,7 +3,10 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <span class="btn">test me</span>
+  <button class="btn">
+    test me
+  </button>
+
   <div>
     <a
       href="https://vitejs.dev"

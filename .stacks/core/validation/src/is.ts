@@ -1,4 +1,5 @@
-import { getTypeName, toString } from '@stacksjs/utils'
+import { getTypeName } from '@stacksjs/types'
+import { toString } from '@stacksjs/strings'
 
 export function isDef<T = any>(val?: T): val is T {
   return typeof val !== 'undefined'

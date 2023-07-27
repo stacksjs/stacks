@@ -14,6 +14,8 @@ declare module 'vue' {
     README: typeof import('./../../resources/components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Starport: typeof import('vue-starport')['Starport']
+    StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     ToggleDark: typeof import('./../../resources/components/Buttons/ToggleDark.vue')['default']
     Undefined: typeof import('./../../resources/views/index.vue')['default']
   }

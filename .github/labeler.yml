@@ -72,7 +72,7 @@ analytics:
   - any: ['.stacks/core/analytics/**', '!.stacks/core/analytics/package.json']
 
 arrays:
-  - any: ['.stacks/core/arrays/**', '!.stacks/core/arrays/package.json']
+  - any: ['.stacks/core/utils/arrays/**', '!.stacks/core/utils/arrays/package.json']
 
 auth:
   - any: ['.stacks/core/auth/**', '!.stacks/core/auth/package.json']
@@ -87,7 +87,7 @@ cache:
   - any: ['.stacks/core/cache/**', '!.stacks/core/cache/package.json']
 
 chat:
-  - any: ['.stacks/core/chat/**', '!.stacks/core/chat/package.json']
+  - any: ['.stacks/core/notifications/chat/**', '!.stacks/core/notifications/chat/package.json']
 
 cli:
   - any: ['.stacks/core/cli/**', '!.stacks/core/cli/package.json']
@@ -97,7 +97,7 @@ cloud:
   - any: ['.stacks/core/cloud/**', '!.stacks/core/cloud/package.json']
 
 collections:
-  - any: ['.stacks/core/collections/**', '!.stacks/core/collections/package.json']
+  - any: ['.stacks/core/utils/collections/**', '!.stacks/core/utils/collections/package.json']
 
 config:
   - any: ['.stacks/core/config/**', '!.stacks/core/config/package.json']
@@ -107,7 +107,7 @@ database:
   - any: ['.stacks/core/database/**', '!.stacks/core/database/package.json']
 
 datetime:
-  - any: ['.stacks/core/datetime/**', '!.stacks/core/datetime/package.json']
+  - any: ['.stacks/core/utils/datetime/**', '!.stacks/core/utils/datetime/package.json']
 
 desktop:
   - any: ['.stacks/core/desktop/**', '!.stacks/core/desktop/package.json']
@@ -126,7 +126,7 @@ docs:
   - config/docs.ts
 
 email:
-  - any: ['.stacks/core/email/**', '!.stacks/core/email/package.json']
+  - any: ['.stacks/core/notifications/email/**', '!.stacks/core/notifications/email/package.json']
 
 error-handling:
   - any: ['.stacks/core/error-handling/**', '!.stacks/core/error-handling/package.json']
@@ -139,13 +139,13 @@ faker:
   - any: ['.stacks/core/faker/**', '!.stacks/core/faker/package.json']
 
 git:
-  - any: ['.stacks/core/git/**', '!.stacks/core/git/package.json']
+  - any: ['.stacks/core/utils/git/**', '!.stacks/core/utils/git/package.json']
 
 health:
   - any: ['.stacks/core/health/**', '!.stacks/core/health/package.json']
 
 lint:
-  - any: ['.stacks/core/lint/**', '!.stacks/core/lint/package.json']
+  - any: ['.stacks/core/utils/lint/**', '!.stacks/core/utils/lint/package.json']
 
 logging:
   - any: ['.stacks/core/logging/**', '!.stacks/core/logging/package.json']
@@ -158,7 +158,7 @@ notifications:
   - app/notifications/**
 
 objects:
-  - any: ['.stacks/core/objects/**', '!.stacks/core/objects/package.json']
+  - any: ['.stacks/core/utils/objects/**', '!.stacks/core/utils/objects/package.json']
 
 orm:
   - any: ['.stacks/core/orm/**', '!.stacks/core/orm/package.json']
@@ -173,7 +173,7 @@ payments:
   - any: ['.stacks/core/payments/**', '!.stacks/core/payments/package.json']
 
 push:
-  - any: ['.stacks/core/push/**', '!.stacks/core/push/package.json']
+  - any: ['.stacks/core/notifications/push/**', '!.stacks/core/notifications/push/package.json']
 
 query-builder:
   - any: ['.stacks/core/query-builder/**', '!.stacks/core/query-builder/package.json']
@@ -209,14 +209,14 @@ slug:
   - any: ['.stacks/core/slug/**', '!.stacks/core/slug/package.json']
 
 sms:
-  - any: ['.stacks/core/sms/**', '!.stacks/core/sms/package.json']
+  - any: ['.stacks/core/notifications/sms/**', '!.stacks/core/notifications/sms/package.json']
 
 storage:
   - any: ['.stacks/core/storage/**', '!.stacks/core/storage/package.json']
   - storage/**
 
 strings:
-  - any: ['.stacks/core/strings/**', '!.stacks/core/strings/package.json']
+  - any: ['.stacks/core/utils/strings/**', '!.stacks/core/utils/strings/package.json']
 
 testing:
   - any: ['.stacks/core/testing/**', '!.stacks/core/testing/package.json']

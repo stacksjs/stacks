@@ -145,7 +145,3 @@ export interface NotificationOptions {
 }
 
 export type NotificationConfig = NotificationOptions
-
-export function defineNotification(config: Partial<NotificationOptions>) {
-  return config
-}

@@ -73,6 +73,8 @@
       "@stacksjs/dns/*": ["./core/dns/src/*"],
       "@stacksjs/email": ["./core/notifications/email/src/index.ts"],
       "@stacksjs/email/*": ["./core/notifications/email/src/*"],
+      "@stacksjs/env": ["./core/env/src/index.ts"],
+      "@stacksjs/env/*": ["./core/env/src/*"],
       "@stacksjs/events": ["./core/events/src/index.ts"],
       "@stacksjs/events/*": ["./core/events/src/*"],
       "@stacksjs/error-handling": ["./core/error-handling/src/index.ts"],

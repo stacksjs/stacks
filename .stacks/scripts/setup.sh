@@ -12,6 +12,9 @@ unset TEA_VERSION
 unset TEA_MAGIC
 
 unset stop
+
+TEA_DESTDIR=$HOME/.stacks
+
 while test "$#" -gt 0 -a -z "$stop"; do
   case $1 in
   --prefix)
@@ -261,26 +264,21 @@ gum_func() {
 
 welcome() {
   gum_func format -- <<-EoMD
-		# hi 👋 let’s set up stacks
+		# Hi 👋 let’s set up Stacks
 
-		* stacks uses tea to manage your environments
-		* everything stacks installs goes: \`$TEA_DESTDIR\`
-		* (it won’t touch anything else)
+		* Stacks uses tea to manage your environments.
+		* Your local environment is placed here: \`$TEA_DESTDIR\`
+		* (Stacks won’t touch anything else)
 
-		> docs https://github.com/teaxyz/cli#getting-started
+		> docs https://docs.stacksjs.dev/getting-started
 		EoMD
 
   echo #spacer
 
-  if ! __TEA_WE_ABORT=1 gum_func confirm "how about it?" --affirmative="install tea" --negative="cancel"; then
+  if ! __TEA_WE_ABORT=1 gum_func confirm "You ready?" --affirmative="get started" --negative="cancel"; then
     #0123456789012345678901234567890123456789012345678901234567890123456789012
     gum_func format -- <<-EoMD
 			# alrighty, aborting
-
-			btw \`tea\`’s just a standalone executable; you can run it anywhere; you \\
-			don’t need to install it
-
-			> check it https://github.com/teaxyz/cli
 			EoMD
     echo #spacer
     exit 1
@@ -357,7 +355,7 @@ install() {
 check_path() {
   gum_func format -- <<-EoMD
 		# one second!
-		without magic, tea’s not in your path!
+		without magic, tea dependencies will not be in your path!
 		> *we may need to ask for your **root password*** (via \`sudo\` obv.)
 		EoMD
 
@@ -481,31 +479,23 @@ check_shell_magic() {
     return 0
   fi
 
+  # if gum_func confirm "$__TEA_BTN_TXT" --affirmative="add one-liner" --negative="skip"; then
+  echo >>"$__TEA_SH_FILE"
+  echo "$__TEA_ONE_LINER" >>"$__TEA_SH_FILE"
+
+  echo #spacer
+
   gum_func format -- <<-EoMD
-		# may we interest you in some magic?
-
-		tea’s shell magic is optional but it’s the way it’s meant to be used.
-
-		> docs https://docs.tea.xyz/features/magic
-		EoMD
-
-  if gum_func confirm "$__TEA_BTN_TXT" --affirmative="add one-liner" --negative="skip"; then
-    echo >>"$__TEA_SH_FILE"
-    echo "$__TEA_ONE_LINER" >>"$__TEA_SH_FILE"
-
-    echo #spacer
-
-    gum_func format -- <<-EoMD
-			Added:
+			Added to your shell’s config:
 
 			\`$__TEA_ONE_LINER\`
 			EoMD
 
-    echo #spacer
+  echo #spacer
 
-  else
-    return 1 # we need to offer a symlink to tea instead
-  fi
+  # else
+  #   return 1 # we need to offer a symlink to tea instead
+  # fi
 }
 
 ########################################################################## go
@@ -538,11 +528,7 @@ install)
     if ! check_shell_magic; then
       check_path
       gum_func format -- <<-EoMD
-				# you’re all set!
-
-				try it out:
-
-				\`tea wget -qO- tea.xyz/white-paper | tea glow -\`
+				# Perfect, you’re all set!
 				EoMD
     else
       if test -n "$GITHUB_ACTIONS"; then
@@ -552,11 +538,6 @@ install)
 
       gum_func format -- <<-EoMD
 				# you’re all set!
-
-				try it out:
-
-				\`exec $SHELL -i\`  # or open a new tab
-				\`wget -qO- tea.xyz/white-paper | glow -\`
 				EoMD
     fi
   elif test -n "$TEA_IS_CURRENT"; then

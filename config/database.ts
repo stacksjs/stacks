@@ -1,5 +1,5 @@
+import { env } from '@stacksjs/env'
 import { defineDatabase } from '../.stacks/core/config/src/helpers'
-import { env } from '../.stacks/core/validation/src'
 
 /**
  * **Database Configuration**

@@ -1,31 +1,25 @@
-import type { ViteConfig } from '@stacksjs/types'
-import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
-import { autoImports, components, inspect, sslCertificate, uiEngine } from './stacks'
-import { stacks } from './plugin/stacks'
-
-// import { autoImports, components, cssEngine, inspect, sslCertificate, uiEngine } from './stacks'
+import { path as p } from '@stacksjs/path'
+import { defineConfig } from 'vite'
+import type { ViteConfig } from '@stacksjs/types'
+import { components } from './plugin/components'
+import { uiEngine } from './plugin/ui-engine'
+import { autoImports } from './plugin/auto-imports'
+import { cssEngine } from './plugin/css-engine'
+import { inspect } from './plugin/inspect'
 import type { ViteBuildOptions } from './'
-import { defineConfig } from './'
+import app from '~/config/app'
 
-// import { version } from '../package.json'
-const version = '0.0.0'
-console.log('version', version)
+// import { sslCertificate } from './plugin/ssl-cert' -> NotImplementedError: node:http2 createSecureServer is not yet implemented in Bun. Track the status & thumbs up the issue: https://github.com/oven-sh/bun/issues/887
 
-export const vueComponentsConfig: ViteConfig = {
+const config = {
   root: p.frameworkPath('libs/components/vue'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.storagePath('public'),
-  // define: {
-  //   Bun,
-  // },
 
   server: {
-    https: true,
-    host: 'stacks.test',
-    // host: app.url || 'stacks.test',
-    open: true,
+    host: app.url || 'stacks.test',
   },
 
   resolve: {
@@ -38,18 +32,17 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   plugins: [
-    // preview(),
     uiEngine(),
-    // cssEngine(),
     autoImports(),
-    components(),
+    cssEngine(), // blocked by: unconfig uses jiti which errors in Bun: https://github.com/oven-sh/bun/issues/1134#issuecomment-1652676500
     inspect(),
-    sslCertificate(),
-    stacks(),
+    components(),
+    // sslCertificate(), // blocked by: node:http2 not yet implemented in Bun
+    // stacks(),
   ],
 
   build: vueComponentsBuildOptions(),
-}
+} satisfies ViteConfig
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
@@ -84,7 +77,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return vueComponentsConfig
+    return config
 
-  return vueComponentsConfig
+  return config
 })

@@ -50,6 +50,8 @@ export const alias: Record<string, string> = {
   '@stacksjs/error-handling/*': p.errorHandlingPath('src/*'),
   '@stacksjs/events': p.eventsPath('src/index.ts'),
   '@stacksjs/events/*': p.eventsPath('src/*'),
+  '@stacksjs/env': p.coreEnvPath('src/index.ts'),
+  '@stacksjs/env/*': p.coreEnvPath('src/*'),
   '@stacksjs/faker': p.fakerPath('src/index.ts'),
   '@stacksjs/faker/*': p.fakerPath('src/*'),
   '@stacksjs/git': p.gitPath('src/index.ts'),
@@ -214,6 +216,7 @@ export const alias: Record<string, string> = {
   '~/lang/*': p.langPath('*'),
   '~/components/*': p.componentsPath('*'),
   '~/functions/*': p.functionsPath('*'),
+  '~/resources/*': p.resourcesPath('*'),
   '~views/*': p.viewsPath('*'),
   '~/*': p.projectPath('*'),
 }

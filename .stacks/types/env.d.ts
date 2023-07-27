@@ -1,4 +1,4 @@
-import type { Env } from '@stacksjs/validation'
+import type { Env } from '@stacksjs/env'
 
 declare global {
   namespace NodeJS {

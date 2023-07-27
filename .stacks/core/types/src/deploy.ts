@@ -1,4 +1,4 @@
-import type { CliOptions } from '@stacksjs/types'
+import type { CliOptions } from './cli'
 
 /**
  * **Deploy Options**

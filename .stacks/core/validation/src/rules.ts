@@ -1,4 +1,5 @@
-import { USD, currency } from '@stacksjs/utils'
+import { dinero as currency } from 'dinero.js'
+import { USD } from '@dinero.js/currencies'
 import { validator } from './validate'
 
 /**

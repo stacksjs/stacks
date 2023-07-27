@@ -166,6 +166,10 @@ export function eventsPath(path?: string) {
   return corePath(`events/${path || ''}`)
 }
 
+export function coreEnvPath(path?: string) {
+  return corePath(`env/${path || ''}`)
+}
+
 export function examplesPath(type: 'vue-components' | 'web-components') {
   return frameworkPath(`examples/${type || ''}`)
 }
@@ -399,7 +403,7 @@ export function vitePath(path?: string) {
 }
 
 export function xRayPath(path?: string) {
-  return corePath(`x-ray/${path || ''}`)
+  return frameworkPath(`stacks/x-ray/${path || ''}`)
 }
 
 export const path = {
@@ -433,6 +437,7 @@ export const path = {
   emailPath,
   errorHandlingPath,
   eventsPath,
+  coreEnvPath,
   healthPath,
   examplesPath,
   fakerPath,
