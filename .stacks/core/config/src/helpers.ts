@@ -1,4 +1,4 @@
-import type { AppConfig, BinaryConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, GitConfig, HashingConfig, JobConfig, LibraryConfig, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import type { AppConfig, BinaryConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
 
 export function defineStacksConfig(config: Partial<StacksConfig>) {
   return config
@@ -97,5 +97,13 @@ export function defineStorage(config: Partial<StorageConfig>) {
 }
 
 export function defineUi(config: Partial<UiConfig>) {
+  return config
+}
+
+export function defineModel(config: Partial<Model>) {
+  return config
+}
+
+export function defineEvents(config: Partial<Events>) {
   return config
 }

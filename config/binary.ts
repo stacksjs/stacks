@@ -1,4 +1,4 @@
-import { defineBinary } from '../.stacks/core/types/src/binary'
+import { defineBinary } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Binary / CLI Configuration**

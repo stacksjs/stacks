@@ -1,5 +1,5 @@
 import { frameworkPath } from '../.stacks/core/path/src'
-import type { DocsConfig } from '../.stacks/core/types/src/docs'
+import type { DocsConfig } from '../.stacks/core/config/src/helpers'
 import services from './services'
 
 // import type { PluginOption } from 'vite'

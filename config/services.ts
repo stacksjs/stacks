@@ -1,4 +1,4 @@
-import { defineServices } from '../.stacks/core/types/src/services'
+import { defineServices } from '../.stacks/core/config/src/helpers'
 import { env } from '../.stacks/core/validation/src'
 
 /**

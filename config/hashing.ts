@@ -1,4 +1,4 @@
-import { defineHashing } from '../.stacks/core/types/src/hashing'
+import { defineHashing } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Hashing Configuration**

@@ -166,6 +166,7 @@ declare global {
   const defineChat: typeof import('../core/utils/src/config')['defineChat']
   const defineCli: typeof import('../core/utils/src/config')['defineCli']
   const defineComponent: typeof import('vue')['defineComponent']
+  const defineCronJob: typeof import('../core/utils/src/config')['defineCronJob']
   const defineCronJobsConfig: typeof import('../core/utils/src/config')['defineCronJobsConfig']
   const defineDatabase: typeof import('../core/utils/src/config')['defineDatabase']
   const defineDependencies: typeof import('../core/utils/src/config')['defineDependencies']
@@ -176,6 +177,7 @@ declare global {
   const defineEvents: typeof import('../core/utils/src/config')['defineEvents']
   const defineGit: typeof import('../core/utils/src/config')['defineGit']
   const defineHashing: typeof import('../core/utils/src/config')['defineHashing']
+  const defineJob: typeof import('../core/utils/src/config')['defineJob']
   const defineJobsConfig: typeof import('../core/utils/src/config')['defineJobsConfig']
   const defineLibrary: typeof import('../core/utils/src/config')['defineLibrary']
   const defineModel: typeof import('../core/utils/src/config')['defineModel']
@@ -920,21 +922,17 @@ declare module 'vue' {
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
     readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
-    readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
+    readonly defineCronJob: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJob']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>
     readonly defineDependencies: UnwrapRef<typeof import('../core/utils/src/config')['defineDependencies']>
-    readonly defineDeps: UnwrapRef<typeof import('../core/utils/src/config')['defineDeps']>
     readonly defineDns: UnwrapRef<typeof import('../core/utils/src/config')['defineDns']>
     readonly defineEmail: UnwrapRef<typeof import('../core/utils/src/config')['defineEmail']>
     readonly defineEmailConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineEmailConfig']>
-    readonly defineEvents: UnwrapRef<typeof import('../core/utils/src/config')['defineEvents']>
     readonly defineGit: UnwrapRef<typeof import('../core/utils/src/config')['defineGit']>
     readonly defineHashing: UnwrapRef<typeof import('../core/utils/src/config')['defineHashing']>
-    readonly defineJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineJobsConfig']>
+    readonly defineJob: UnwrapRef<typeof import('../core/utils/src/config')['defineJob']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
-    readonly defineModel: UnwrapRef<typeof import('../core/utils/src/config')['defineModel']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
-    readonly definePage: UnwrapRef<typeof import('../core/utils/src/config')['definePage']>
     readonly definePayment: UnwrapRef<typeof import('../core/utils/src/config')['definePayment']>
     readonly defineQueue: UnwrapRef<typeof import('../core/utils/src/config')['defineQueue']>
     readonly defineSearchEngine: UnwrapRef<typeof import('../core/utils/src/config')['defineSearchEngine']>
@@ -1668,21 +1666,17 @@ declare module '@vue/runtime-core' {
     readonly defineChat: UnwrapRef<typeof import('../core/utils/src/config')['defineChat']>
     readonly defineCli: UnwrapRef<typeof import('../core/utils/src/config')['defineCli']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
-    readonly defineCronJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJobsConfig']>
+    readonly defineCronJob: UnwrapRef<typeof import('../core/utils/src/config')['defineCronJob']>
     readonly defineDatabase: UnwrapRef<typeof import('../core/utils/src/config')['defineDatabase']>
     readonly defineDependencies: UnwrapRef<typeof import('../core/utils/src/config')['defineDependencies']>
-    readonly defineDeps: UnwrapRef<typeof import('../core/utils/src/config')['defineDeps']>
     readonly defineDns: UnwrapRef<typeof import('../core/utils/src/config')['defineDns']>
     readonly defineEmail: UnwrapRef<typeof import('../core/utils/src/config')['defineEmail']>
     readonly defineEmailConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineEmailConfig']>
-    readonly defineEvents: UnwrapRef<typeof import('../core/utils/src/config')['defineEvents']>
     readonly defineGit: UnwrapRef<typeof import('../core/utils/src/config')['defineGit']>
     readonly defineHashing: UnwrapRef<typeof import('../core/utils/src/config')['defineHashing']>
-    readonly defineJobsConfig: UnwrapRef<typeof import('../core/utils/src/config')['defineJobsConfig']>
+    readonly defineJob: UnwrapRef<typeof import('../core/utils/src/config')['defineJob']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
-    readonly defineModel: UnwrapRef<typeof import('../core/utils/src/config')['defineModel']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
-    readonly definePage: UnwrapRef<typeof import('../core/utils/src/config')['definePage']>
     readonly definePayment: UnwrapRef<typeof import('../core/utils/src/config')['definePayment']>
     readonly defineQueue: UnwrapRef<typeof import('../core/utils/src/config')['defineQueue']>
     readonly defineSearchEngine: UnwrapRef<typeof import('../core/utils/src/config')['defineSearchEngine']>

@@ -1,4 +1,4 @@
-import { defineDependencies } from '../.stacks/core/types/src/dependencies'
+import { defineDependencies } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Dependency Manager**

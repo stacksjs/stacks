@@ -1,5 +1,8 @@
-import { defineApp } from '../.stacks/core/utils/src'
+// import { defineApp } from '../.stacks/core/utils/src/config'
 import { env } from '../.stacks/core/validation/src'
+import { defineApp } from '../.stacks/core/config/src/helpers'
+
+// import type { AppOptions } from '@stacksjs/types'
 
 /**
  * **Application Configuration**
@@ -21,3 +24,8 @@ export default defineApp({
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
 })
+
+// export default {
+//   name: 'Stacks',
+//   url: 'stacks.test',
+// } satisfies Partial<AppOptions>

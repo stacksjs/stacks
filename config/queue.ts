@@ -1,4 +1,4 @@
-import { defineQueue } from '../.stacks/core/types/src/queue'
+import { defineQueue } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Queue Options**

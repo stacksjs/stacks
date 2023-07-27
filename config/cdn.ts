@@ -1,4 +1,4 @@
-import { defineCdn } from '../.stacks/core/types/src/cdn'
+import { defineCdn } from '../.stacks/core/config/src/helpers'
 
 /**
  * **CDN Configuration**

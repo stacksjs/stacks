@@ -1,4 +1,4 @@
-import { defineDatabase } from '../.stacks/core/types/src/database'
+import { defineDatabase } from '../.stacks/core/config/src/helpers'
 import { env } from '../.stacks/core/validation/src'
 
 /**

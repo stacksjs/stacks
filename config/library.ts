@@ -1,4 +1,4 @@
-import { defineLibrary } from '../.stacks/core/types/src/library'
+import { defineLibrary } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Library Configuration**
