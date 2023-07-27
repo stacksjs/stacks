@@ -40,7 +40,7 @@ export const vueComponentsConfig: ViteConfig = {
   plugins: [
     // preview(),
     uiEngine(),
-    cssEngine(),
+    // cssEngine(),
     autoImports(),
     components(),
     inspect(),

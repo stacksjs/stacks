@@ -237,15 +237,15 @@ export function onboardingPath(path?: string) {
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
   if (type === 'vue-components')
-    return frameworkPath('components/vue/package.json')
+    return frameworkPath('libs/components/vue/package.json')
 
   if (type === 'web-components')
-    return frameworkPath('components/web/package.json')
+    return frameworkPath('libs/components/web/package.json')
 
   if (type === 'functions')
-    return frameworkPath('functions/package.json')
+    return frameworkPath('libs/functions/package.json')
 
-  return frameworkPath(`${type}/package.json`)
+  return frameworkPath(`libs/${type}/package.json`)
 }
 
 export function viewsPath(path?: string) {

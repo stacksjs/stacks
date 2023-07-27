@@ -96,6 +96,9 @@
     "bud": "bun buddy",
     "stx": "bun buddy"
   },
+  "overrides": {
+    "unconfig": "npm:bun-unconfig@0.3.9-3"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
