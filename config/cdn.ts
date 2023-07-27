@@ -1,4 +1,4 @@
-import { defineCdn } from '@stacksjs/utils'
+import { defineCdn } from '../.stacks/core/types/src/cdn'
 
 /**
  * **CDN Configuration**

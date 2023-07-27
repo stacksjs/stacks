@@ -32,3 +32,5 @@ export interface QueueOptions {
     table: 'failed_jobs'
   }
 }
+
+export type QueueConfig = QueueOptions

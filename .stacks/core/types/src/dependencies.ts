@@ -65,3 +65,5 @@ export interface DependenciesOptions {
    */
   'aws.amazon.com/cli'?: string | '^2.12.7'
 }
+
+export type DependenciesConfig = DependenciesOptions

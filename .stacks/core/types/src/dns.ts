@@ -47,3 +47,5 @@ export interface DnsOptions {
   mx?: MXRecord[]
   txt?: TxtRecord[]
 }
+
+export type DnsConfig = DnsOptions

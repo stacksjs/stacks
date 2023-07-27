@@ -29,16 +29,6 @@ export interface IntroOptions {
 export type CliOptionsKeys = keyof CliOptions
 
 /**
- * The Binary/CLI Options used in `./config/binary.ts`.
- */
-export interface BinaryOptions {
-  name?: string
-  command?: string
-  description?: string
-  // path?: string // TODO: add this for a configurable path where the commands are located
-}
-
-/**
  * The options to pass to the CLI.
  */
 export interface CliOptions {
@@ -91,6 +81,8 @@ export interface CliOptions {
    */
   encoding?: string
 }
+
+export type CliConfig = CliOptions
 
 // export type { Ora as SpinnerOptions } from 'ora'
 

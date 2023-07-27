@@ -46,6 +46,8 @@ export interface HashingOptions {
   argon?: ArgonOptions
 }
 
+export type HashingConfig = HashingOptions
+
 /**
  * **Bcrypt Options**
  *

@@ -200,4 +200,6 @@ export interface StacksOptions {
   ui: Partial<UiOptions>
 }
 
+export type StacksConfig = StacksOptions
+
 export type ResolvedStacksOptions = Required<StacksOptions>

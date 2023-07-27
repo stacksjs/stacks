@@ -30,6 +30,8 @@ export interface DatabaseOptions {
   migrations: string
 }
 
+export type DatabaseConfig = DatabaseOptions
+
 export interface FactoryOptions {
   name: string
   count?: number

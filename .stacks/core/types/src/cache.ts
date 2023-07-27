@@ -74,3 +74,5 @@ export interface CacheOptions {
     dynamodb?: object
   }
 }
+
+export type CacheConfig = CacheOptions
