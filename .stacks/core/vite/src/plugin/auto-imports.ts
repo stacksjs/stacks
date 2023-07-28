@@ -1,7 +1,8 @@
 import AutoImport from 'unplugin-auto-import/vite'
 import { defu } from 'defu'
 import type { AutoImportsOptions } from '@stacksjs/types'
-import { path as p } from '@stacksjs/path'
+import { frameworkPath, resourcesPath } from '@stacksjs/path'
+import type { Plugin } from 'vite'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {
@@ -13,13 +14,13 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
     ],
     dirs: [
-      // p.resourcesPath('functions'),
-      // p.resourcesPath('components'),
+      resourcesPath('functions'),
+      resourcesPath('components'),
 
       // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
-      p.frameworkPath('src'),
+      frameworkPath('src'),
     ],
-    dts: p.frameworkPath('types/auto-imports.d.ts'),
+    dts: frameworkPath('types/auto-imports.d.ts'),
     vueTemplate: true,
     eslintrc: {
       enabled: false,

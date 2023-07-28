@@ -2,6 +2,7 @@
 // which properties does your component accept?
 const { greeting = 'Welcome!' } = defineProps<{
   showButtons: boolean
+  greeting: string
 }>()
 
 // easily use any of the lifecycle hooks without needing to import them
