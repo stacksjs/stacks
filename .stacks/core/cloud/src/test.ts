@@ -8,7 +8,8 @@ import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront'
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins'
-import { app, storage } from '@stacksjs/config'
+import app from '~/config/app'
+import storage from '~/config/storage'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

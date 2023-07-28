@@ -1,4 +1,4 @@
-import { notification } from '@stacksjs/config'
+import notification from '~/config/notification'
 
 export const email = notification.email
 

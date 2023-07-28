@@ -4,8 +4,8 @@ import type { GeneratorOptions } from '@stacksjs/types'
 import { dumpYaml, runNpmScript } from '@stacksjs/utils'
 import { files } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
-import { dependencies } from '@stacksjs/config'
 import { runAction } from '../helpers'
+import dependencies from '~/config/deps'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)

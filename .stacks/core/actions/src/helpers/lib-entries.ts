@@ -4,8 +4,8 @@ import type { LibraryType } from '@stacksjs/path'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
-import { library } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
+import library from '~/config/library'
 
 /**
  * Based on the config values, this method

@@ -3,12 +3,14 @@ import type { CliOptions, Manifest, NpmScript, StacksError, Subprocess } from '@
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
 import { log, runCommand } from '@stacksjs/cli'
-import { app, dependencies, ui } from '@stacksjs/config'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 import { semver } from './versions'
+import ui from '~/config/ui'
+import dependencies from '~/config/deps'
+import app from '~/config/app'
 
 export async function packageManager() {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))

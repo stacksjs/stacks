@@ -33,9 +33,11 @@ export interface UiOptions {
    *
    * @example
    * ```
-   * shortcuts: {
-   *   'btn': 'px-4 py-2 rounded text-white bg-blue-500',
-   *   'btn-lg': 'btn px-6 py-3',
+   * config: {
+   *   shortcuts: {
+   *     'btn': 'px-4 py-2 rounded text-white bg-blue-500',
+   *     'btn-lg': 'btn px-6 py-3',
+   *   }
    * }
    * ```
    */
