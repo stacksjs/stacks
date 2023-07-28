@@ -1,10 +1,9 @@
-import type { UserConfig } from 'unocss'
 import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import ui from '~/config/ui'
+import ui from '../../../../config/ui'
 
-const config: UserConfig = defineConfig({
+export default defineConfig({
   shortcuts: ui.shortcuts,
 
   presets: [
@@ -39,7 +38,5 @@ const config: UserConfig = defineConfig({
     transformerVariantGroup(),
   ],
 
-  safelist: ui.safelist?.split(' '),
+  safelist: ui.safelist.split(' ') || [],
 })
-
-export default config
