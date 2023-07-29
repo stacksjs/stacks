@@ -1,4 +1,7 @@
 #!/bin/sh
+
+## This script ensures that Bun is installed.
+
 REQUIRED_BUN_VERSION=$(awk '/bun.sh/{print substr($2, 2)}' ../../tea.yaml | tr -d "'")
 
 # Remove the '>=v' prefix from the version string

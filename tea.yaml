@@ -1,6 +1,5 @@
-# this is the tea config for core stacks development
 dependencies:
-  bun.sh: ^0.7.0
+  bun.sh: ^0.7.1
   npmjs.com: ^9.7.2
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
