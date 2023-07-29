@@ -5,8 +5,7 @@ import { path as p } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
 import { Arr } from '@stacksjs/arrays'
 import { ExitCode } from '@stacksjs/types'
-
-// import { italic, command } from '@stacksjs/cli'
+import { italic, runCommand } from '@stacksjs/cli'
 
 log.info('Building core packages')
 
@@ -20,19 +19,17 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-console.log('dirs', dirs)
+for (const folder of dirs) {
+  const path = folder
 
-// for (const folder of dirs) {
-//   const path = folder
+  log.info(`Building ${italic(path)}`)
 
-//   log.info(`Building ${italic(path)}`)
+  const result = await runCommand('bun run build', {
+    cwd: path,
+  })
 
-//   const result = await command.run('bun run build', {
-//     cwd: path,
-//   })
+  if (result.isErr())
+    process.exit(ExitCode.FatalError)
 
-//   if (result.isErr())
-//     process.exit(ExitCode.FatalError)
-
-//   log.success(`Built ${italic(path)}`)
-// }
+  log.success(`Built ${italic(path)}`)
+}

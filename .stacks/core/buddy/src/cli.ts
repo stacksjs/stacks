@@ -1,6 +1,6 @@
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
-import { frameworkVersion, initProject, installIfVersionMismatch, isProjectCreated } from '@stacksjs/utils'
+import { frameworkVersion, initProject, isProjectCreated } from '@stacksjs/utils'
 import { build, changelog, clean, commit, deploy, dev, example, fresh, generate, key, lint, make, migrate, preinstall, prepublish, release, seed, setup, test, upgrade, version } from './commands'
 
 const cli = command.cli('buddy')
@@ -11,7 +11,7 @@ process.on('unhandledRejection', handleError)
 
 async function main() {
   // the following commands are not dependent on the project being initialized
-  await installIfVersionMismatch()
+  // await installIfVersionMismatch()
   await setup(cli)
   await key(cli)
 
