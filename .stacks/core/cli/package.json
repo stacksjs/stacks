@@ -62,7 +62,7 @@
     "@stacksjs/utils": "workspace:*",
     "cac": "^6.7.14",
     "execa": "^7.2.0",
-    "ora": "^6.3.1"
+    "ora": "^7.0.0"
   },
   "dependencies": {
     "kolorist": "1.8.0"
