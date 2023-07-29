@@ -2,7 +2,7 @@
   <div class="px-4 sm:px-6 lg:px-8 py-8">
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800">
       <div class="flex items-center justify-between">
-        <h5 class="forge-h5">
+        <h5>
           Commands
         </h5>
       </div>

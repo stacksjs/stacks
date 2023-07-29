@@ -48,7 +48,7 @@
   ],
   "scripts": {
     "build": "vite build ../../views/desktop/dashboard -c ../../vite/src/desktop.ts",
-    "dev": "unbuild --stub",
+    "dev": "vite dev ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
     "dev:desktop": "tauri dev",
     "typecheck": "tsc --noEmit"
   },
