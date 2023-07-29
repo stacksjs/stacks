@@ -1,7 +1,7 @@
-import { Action, ExitCode } from '@stacksjs/types'
+import { Action, ExitCode, NpmScript } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
 // import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
@@ -72,12 +72,11 @@ export async function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runAction(Action.DevComponents, { ...options, shell: true })
+      const result = await runCommand(NpmScript.DevComponents, options)
 
       if (options.verbose)
-        log.info('runAction result is', result)
+        log.info('buddy dev:components result', result)
 
-      // check if result is an error
       if (result.isErr()) {
         outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
