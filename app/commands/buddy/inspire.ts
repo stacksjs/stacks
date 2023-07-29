@@ -1,8 +1,7 @@
 // triggered via `buddy inspire`
 // overwrites the default `buddy inspire` command
 
-import { log } from '@stacksjs/logging'
-import { Command } from '@stacksjs/cli'
+import { Command, intro, log } from '@stacksjs/cli'
 import type { CliOptions } from '@stacksjs/types'
 
 export default new Command({

@@ -28,7 +28,7 @@ const config = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', '@stacksjs/path'],
   },
 
   plugins: [

@@ -1,7 +1,6 @@
 // triggered via `$your-command inspire`
 
-import { log } from '@stacksjs/logging'
-import { Command } from '@stacksjs/cli'
+import { Command, intro, log } from '@stacksjs/cli'
 import type { CliOptions } from '@stacksjs/types'
 
 export default new Command({
