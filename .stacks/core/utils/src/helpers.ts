@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net'
 import type { CliOptions, Manifest, NpmScript, StacksError, Subprocess } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { log, runCommand } from '@stacksjs/cli'
+import { italic, log, runCommand } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
 import type { ResultAsync } from '@stacksjs/error-handling'
@@ -52,7 +52,7 @@ export async function installIfVersionMismatch() {
   const installedBunVersion = process.version
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
-    log.warn(`Installed Bun version (${installedBunVersion}) does not satisfy required version (${requiredBunVersion}). Adding it to your environment. One moment...`)
+    log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
     await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
