@@ -12,23 +12,37 @@ import { log } from './console'
  * @param options The options to pass to the command.
  * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
+ * @example
+ * ```ts
+ * const result = await exec('ls')
+ *
+ * if (result.isErr())
+ *   console.error(result.error)
+ * else
+ *   console.log(result)
+ * ```
+ * @example
+ * ```ts
+ * const result = await exec('ls', { cwd: '/home' })
+ * ```
  */
 export async function exec(command: string | string[], options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
-  const cmd = Array.isArray(command) ? command : command.split(' ')
+  const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
   const proc = spawn(cmd, {
     ...options,
     stdout: options?.stdout || 'inherit',
     cwd: options?.cwd || import.meta.dir,
     onExit(subprocess, exitCode, signalCode, error) {
-      if (exitCode !== ExitCode.Success && exitCode) {
+      console.log('here')
+      if (exitCode !== 0 && exitCode) {
         log.error(error)
         process.exit(exitCode)
       }
     },
   })
-  const exited = await proc.exited
 
-  if (exited === ExitCode.Success)
+  const exited = await proc.exited
+  if (exited === 0)
     return okAsync(proc)
 
   return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`)))
@@ -39,6 +53,19 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  *
  * @param command The command to execute.
  * @returns The result of the command.
+ * @example
+ * ```ts
+ * const result = execSync('ls')
+ *
+ * if (result.isErr())
+ *   console.error(result.error)
+ * else
+ *   console.log(result)
+ * ```
+ * @example
+ * ```ts
+ * const result = execSync('ls', { cwd: '/home' })
+ * ```
  */
 export function execSync(command: string | string[], options?: CliOptions): Result<SyncSubprocess, Error> {
   const cmd = Array.isArray(command) ? command : command.split(' ')
@@ -64,9 +91,29 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
  * @param command The command to run.
  * @param options The options to pass to the command.
  * @returns The result of the command.
+ * @example
+ * ```ts
+ * const result = await runCommand('ls')
+ *
+ * if (result.isErr())
+ *   console.error(result.error)
+ * else
+ *   console.log(result)
+ * ```
+ * @example
+ * ```ts
+ * const result = await runCommand('ls', { cwd: '/home' })
+ *
+ * if (result.isErr())
+ *   console.error(result.error)
+ * else
+ *   console.log(result)
+ * ```
  */
-// export async function runCommand(command: string, options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
-export async function runCommand(command: string, options?: any): Promise<ResultAsync<Subprocess, StacksError>> {
+export async function runCommand(command: string, options?: string | CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
+  if (typeof options === 'string')
+    return await exec(command, { cwd: options })
+
   return await exec(command, options)
 }
 

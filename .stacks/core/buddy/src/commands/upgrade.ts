@@ -52,7 +52,7 @@ export async function upgrade(buddy: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      const result = await runAction(Action.Upgrade, { ...options, shell: true })
+      const result = await runAction(Action.Upgrade, { ...options })
 
       if (result.isErr()) {
         outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
