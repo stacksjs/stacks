@@ -1,4 +1,3 @@
-export { getTypeName } from '@stacksjs/types'
 export { toString } from '@stacksjs/strings'
 
 export function assert(condition: boolean, message: string): asserts condition {

@@ -268,7 +268,7 @@ declare global {
   const getFiles: typeof import('../core/storage/src/files')['getFiles']
   const getFolders: typeof import('../core/storage/src/folders')['getFolders']
   const getSSRHandler: typeof import('../core/utils/src/vendors')['getSSRHandler']
-  const getTypeName: typeof import('../core/utils/src/base')['getTypeName']
+  const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../core/path/src/index')['gitPath']
   const glob: typeof import('../core/utils/src/glob')['glob']
   const goToNextPage: typeof import('../core/search-engine/src/index')['goToNextPage']
@@ -1024,7 +1024,7 @@ declare module 'vue' {
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
-    readonly getTypeName: UnwrapRef<typeof import('../core/utils/src/base')['getTypeName']>
+    readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/index')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../core/utils/src/glob')['glob']>
     readonly goToNextPage: UnwrapRef<typeof import('../core/search-engine/src/index')['goToNextPage']>
@@ -1773,7 +1773,7 @@ declare module '@vue/runtime-core' {
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
-    readonly getTypeName: UnwrapRef<typeof import('../core/utils/src/base')['getTypeName']>
+    readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/index')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../core/utils/src/glob')['glob']>
     readonly goToNextPage: UnwrapRef<typeof import('../core/search-engine/src/index')['goToNextPage']>

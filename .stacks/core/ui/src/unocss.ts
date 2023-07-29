@@ -1,7 +1,7 @@
 import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import transformerCompileClass from '@unocss/transformer-compile-class'
-import ui from '../../../../config/ui'
+import ui from '~/config/ui'
 
 export default defineConfig({
   shortcuts: ui.shortcuts,
