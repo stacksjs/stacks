@@ -9,10 +9,10 @@ export interface DependenciesOptions {
   /**
    * **Bun**
    *
-   * @default '0.6.14'
+   * @default '0.7.1'
    * @link https://bun.sh
    */
-  'bun.sh': string | '0.6.14'
+  'bun.sh': string | '0.7.1'
 
   /**
    * **SQLite**

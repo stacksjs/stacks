@@ -10,7 +10,7 @@ import { defineDependencies } from '../.stacks/core/config/src/helpers'
  * @note This configuration is responsible for generating `./tea.yaml`
  */
 export default defineDependencies({
-  'bun.sh': '0.6.14',
+  'bun.sh': '0.7.1',
   'sqlite.org': '3.42.0', //  you may also yse 'mysql.org': '8.0.33', 'mariadb.org': '10.6.5' and/or 'postgresql.org': '14.1'
   'redis.io': '7.0.11',
   'aws.amazon.com/cli': '2.12.7',

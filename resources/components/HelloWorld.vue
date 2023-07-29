@@ -253,7 +253,7 @@ onMounted(() => {
           </div>
 
           <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Alpha (Bun v0.6.14)
+            Stacks Alpha (Bun v0.7.1)
           </div>
         </div>
       </div>

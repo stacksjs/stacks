@@ -112,7 +112,7 @@ It's incredibly easy to get started with this framework. Simply run the followin
 ```bash
 sh <(curl stacksjs.dev) my-project
 
-# alternatively, if Node.js >= v18.16 is installed already,
+# alternatively, if Bun >= v0.7 is installed already,
 # you may also get started via:
 bunx stacks new my-project
 ```

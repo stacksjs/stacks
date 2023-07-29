@@ -48,7 +48,7 @@ export async function isProjectCreated() {
 export async function installIfVersionMismatch() {
   const deps = dependencies
 
-  const requiredBunVersion = deps['bun.sh'] || '0.6.14'
+  const requiredBunVersion = deps['bun.sh'] || '0.7.1'
   const installedBunVersion = process.version
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
