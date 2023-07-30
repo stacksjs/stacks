@@ -1,11 +1,29 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { runCommand } from '../cli/src/run'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm', {
-  cwd: import.meta.dir,
-})
+const command: string = 'bun build ./src/index.ts --outdir dist --format esm'
+const result = await runCommand(command, import.meta.dir)
 
 if (result.isErr())
-  log.error(result.error)
-
+  console.error(result.error)
 else
-  log.success('Build complete')
+  // eslint-disable-next-line no-console
+  console.log('Build complete')
+
+// const cmd: string[] = command.split(' ')
+// const proc = Bun.spawn(cmd, {
+//   stdout: 'inherit',
+//   cwd: import.meta.dir,
+//   onExit(subprocess, exitCode, signalCode, error) {
+//     if (exitCode !== 0 && exitCode) {
+//       console.error(error)
+//       process.exit(exitCode)
+//     }
+//   },
+// })
+
+// const exited = await proc.exited
+
+// if (exited === 0)
+//   console.log('Build complete')
+
+// console.log(`Failed to execute command: ${cmd.join(' ')}`, proc.exited)

@@ -1,11 +1,7 @@
 import type { CliOptions } from '@stacksjs/types'
 import cac from 'cac'
-import { execSync, runCommand } from './'
-
-const spawn = Bun.spawn
-const spawnSync = Bun.spawnSync
-
-export { spawn, spawnSync }
+import { execSync } from './exec'
+import { runCommand } from './run'
 
 type CommandOptionTuple = [string, string, { default: boolean }]
 interface CommandOptionObject {
