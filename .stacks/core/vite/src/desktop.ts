@@ -3,12 +3,14 @@ import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
-import { version } from '../package.json'
+import pkgjson from '../package.json'
 import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
 import library from '~/config/library'
 import app from '~/config/app'
+
+const { version } = pkgjson
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('views/desktop'),

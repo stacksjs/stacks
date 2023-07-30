@@ -1,5 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
+import { err, errAsync, ok, okAsync } from '@stacksjs/error-handling'
 import type { Result, ResultAsync } from '@stacksjs/error-handling'
 import { log } from './console'
 

@@ -1,9 +1,11 @@
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
-import { version } from '../package.json'
+import pkgjson from '../package.json'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
+
+const { version } = pkgjson
 
 /**
  * Prints the intro message.

@@ -156,6 +156,7 @@ pflannery
 phpcs
 phpunit
 pinia
+pkgjson
 planetscale
 plivo
 pluginutils
