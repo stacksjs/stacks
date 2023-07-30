@@ -112,7 +112,7 @@ jobs:
         run: bun buddy key:generate
 
       - name: Test Suite
-        run: bun run test
+        run: bun --bun run test
 
   # you may need to "Allow GitHub Actions to create and approve pull requests"
   # https://stackoverflow.com/questions/72376229/github-actions-is-not-permitted-to-create-or-approve-pull-requests-createpullre

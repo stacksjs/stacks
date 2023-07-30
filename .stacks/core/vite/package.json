@@ -85,7 +85,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "vite": "^4.4.6"

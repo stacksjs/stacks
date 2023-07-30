@@ -46,7 +46,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",

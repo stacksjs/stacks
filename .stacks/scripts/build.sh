@@ -3,7 +3,7 @@
 # Find all directories containing package.json recursively in ../core
 for dir in $(find ../core -name 'package.json' -exec dirname {} \;); do
   # Navigate into directory and execute your command in background
-  (cd "$dir" && bun run build) &
+  (cd "$dir" && bun --bun run build) &
 done
 
 # Wait for all background jobs to finish
@@ -14,7 +14,7 @@ wait
 #   # Navigate into directory
 #   cd "$dir"
 #   # Execute your command
-#   bun run build
+#   bun --bun run build
 #   # Navigate back to the original directory
 #   cd -
 # done
@@ -26,7 +26,7 @@ wait
 #     # navigate into directory
 #     cd "$dir"
 #     # execute your command
-#     bun run build
+#     bun --bun run build
 #     # navigate back to the original directory
 #     cd -
 #   fi

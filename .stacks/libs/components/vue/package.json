@@ -32,7 +32,7 @@
   ],
   "scripts": {
     "build": "vite build -c ../build/vue-components.ts",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun --bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"
