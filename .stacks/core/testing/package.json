@@ -2,7 +2,7 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.10",
+  "packageManager": "pnpm@8.6.11",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "license": "MIT",

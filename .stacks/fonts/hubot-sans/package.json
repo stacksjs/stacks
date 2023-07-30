@@ -1,7 +1,7 @@
 {
   "name": "hubot-sans",
   "version": "1.0.0",
-  "packageManager": "pnpm@8.6.10",
+  "packageManager": "pnpm@8.6.11",
   "description": "Hubot Sans, a variable font from GitHub.",
   "license": "OFL-1.1",
   "homepage": "https://github.com/github/hubot-sans#readme",

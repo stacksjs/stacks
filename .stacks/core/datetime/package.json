@@ -2,7 +2,7 @@
   "name": "@stacksjs/datetime",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.10",
+  "packageManager": "pnpm@8.6.11",
   "description": "The Stacks datetime helpers.",
   "author": "Chris Breuer",
   "license": "MIT",
