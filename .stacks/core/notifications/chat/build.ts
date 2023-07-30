@@ -6,6 +6,3 @@ const result = await runCommand('bun build ./src/index.ts --external @novu/state
 
 if (result.isErr())
   log.error(result.error)
-
-else
-  log.success('Build complete')

@@ -1,16 +1,13 @@
-// loop through all of the core packages and build them via `bun --bun run build`
-
-import { glob } from '@stacksjs/utils'
-import { path as p } from '@stacksjs/path'
-import { log } from '@stacksjs/logging'
+import { glob, p } from '@stacksjs/utils'
+import { corePath } from '@stacksjs/path'
 import { Arr } from '@stacksjs/arrays'
 import { ExitCode } from '@stacksjs/types'
-import { italic, runCommand } from '@stacksjs/cli'
+import { italic, log, runCommand } from '@stacksjs/cli'
 
 log.info('Building core packages')
 
 const dirsToIgnore = ['src', 'dist', 'snippets', 'scripts', 'tests', 'node_modules', 'art']
-const dirs = (await glob([p.corePath('*'), p.corePath('*/*')], { onlyDirectories: true }))
+const dirs = (await glob([corePath('*'), corePath('*/*')], { onlyDirectories: true }))
   // filter out any directories that are not "core packages"
   .filter(dir => !Arr.contains(dir, dirsToIgnore))
 
@@ -19,17 +16,28 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-for (const folder of dirs) {
+// Create an array of all build processes
+const buildProcesses = dirs.map(async (folder) => {
   const path = folder
 
   log.info(`Building ${italic(path)}`)
 
-  const result = await runCommand('bun --bun run build', {
-    cwd: path,
-  })
+  const result = await runCommand('bun --bun run build', path)
 
-  if (result.isErr())
-    process.exit(ExitCode.FatalError)
+  if (result.isErr()) {
+    log.error(`Failed to build ${italic(path)}`)
+    return Promise.reject(result)
+  }
 
   log.success(`Built ${italic(path)}`)
+})
+
+// Run all build processes in parallel
+try {
+  await p(buildProcesses, { concurrency: 4 })
+  process.exit(ExitCode.Success)
+}
+catch (err) {
+  log.error('One or more builds failed', err)
+  process.exit(ExitCode.FatalError)
 }
