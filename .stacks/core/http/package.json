@@ -19,6 +19,7 @@
     "http",
     "utilities",
     "functions",
+    "bun",
     "stacks"
   ],
   "exports": {

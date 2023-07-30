@@ -1,1 +1,1 @@
-export * as sms from 'framework/core/notifications/sms/src'
+export * as sms from '@stacksjs/sms'

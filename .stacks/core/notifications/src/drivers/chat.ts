@@ -1,1 +1,1 @@
-export * as chat from 'framework/core/notifications/chat/src'
+export * as chat from '@stacksjs/chat'

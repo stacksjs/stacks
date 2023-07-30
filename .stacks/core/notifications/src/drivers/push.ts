@@ -1,1 +1,1 @@
-export * as push from 'framework/core/notifications/push/src'
+export * as push from '@stacksjs/push'
