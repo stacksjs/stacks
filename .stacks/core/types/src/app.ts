@@ -58,7 +58,7 @@ export interface AppOptions {
    * a random, 32 character string, otherwise these encrypted strings will
    * not be safe. Please do this before deploying an application!
    */
-  key?: string
+  key: string
 
   /**
    * **Application Timezone**
@@ -69,7 +69,7 @@ export interface AppOptions {
    *
    * @default string "UTC"
    */
-  timezone?: string
+  timezone: string
 
   /**
    * **Application Locale Configuration**
@@ -82,7 +82,7 @@ export interface AppOptions {
    * @example
    * de // ./lang/de.yml needs to be present for this
    */
-  locale?: string
+  locale: string
 
   /**
    * **Application Fallback Locale**
