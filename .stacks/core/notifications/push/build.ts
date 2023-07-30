@@ -5,5 +5,3 @@ const result = await runCommand(command, import.meta.dir)
 
 if (result.isErr())
   log.error(result.error)
-else
-  log.success('Build complete')

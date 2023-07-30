@@ -6,5 +6,3 @@ const result = await runCommand('bun --bun build ./src/index.ts --outdir dist --
 
 if (result.isErr())
   log.error(result.error)
-else
-  log.success('Build complete')
