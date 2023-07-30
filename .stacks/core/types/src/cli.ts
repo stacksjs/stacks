@@ -43,27 +43,16 @@ export interface CliOptions {
    */
   verbose?: boolean
 
-  stdout?: 'inherit' | 'pipe' | 'ignore' | number
-
   /**
    * **Current Work Directory**
-   *
-   * Based on the `cwd` value, that's where the command...
-   *
-   * @default projectPath()
-   */
+  *
+  * Based on the `cwd` value, that's where the command...
+  *
+  * @default projectPath()
+  */
   cwd?: string
 
-  env?: Record<string, string>
-
-  /**
-   * **Encoding**
-   *
-   * Encoding type
-   *
-   * @default 'utf-8'
-   */
-  encoding?: string
+  stdout?: 'inherit' | 'pipe' | 'ignore' | number
 }
 
 export type CliConfig = CliOptions
