@@ -31,7 +31,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     stdout: options?.stdout || 'inherit',
     cwd: options?.cwd || import.meta.dir,
     onExit(subprocess, exitCode, signalCode, error) {
-      if (exitCode !== 0 && exitCode) {
+      if (exitCode !== ExitCode.Success && exitCode) {
         log.error(error)
         process.exit(exitCode)
       }
@@ -39,7 +39,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   })
 
   const exited = await proc.exited
-  if (exited === 0)
+  if (exited === ExitCode.Success)
     return okAsync(proc)
 
   return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`)))

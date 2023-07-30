@@ -3,11 +3,13 @@ import { runCommand } from '../cli/src/run'
 const command: string = 'bun build ./src/index.ts --outdir dist --format esm'
 const result = await runCommand(command, import.meta.dir)
 
-if (result.isErr())
+if (result.isErr()) {
   console.error(result.error)
-else
+}
+else {
   // eslint-disable-next-line no-console
   console.log('Build complete')
+}
 
 // const cmd: string[] = command.split(' ')
 // const proc = Bun.spawn(cmd, {
