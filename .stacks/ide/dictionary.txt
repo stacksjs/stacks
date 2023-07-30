@@ -93,6 +93,7 @@ highlightjs
 hookable
 htmlnanorc
 hubot
+huggingface
 huskyrc
 iconify
 iife

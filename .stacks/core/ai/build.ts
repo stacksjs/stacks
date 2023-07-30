@@ -1,16 +1,16 @@
-import { runCommand } from '../cli/src/run'
+import { runCommand } from '@stacksjs/cli'
 
 const command: string = 'bun build ./src/index.ts --outdir dist --format esm'
+
 const result = await runCommand(command, import.meta.dir)
 
-if (result.isErr()) {
+if (result.isErr())
   console.error(result.error)
-}
-else {
+else
   // eslint-disable-next-line no-console
   console.log('Build complete')
-}
 
+// alternatively, the equivalent of the above using bun directly
 // const cmd: string[] = command.split(' ')
 // const proc = Bun.spawn(cmd, {
 //   stdout: 'inherit',
@@ -22,10 +22,10 @@ else {
 //     }
 //   },
 // })
-
+//
 // const exited = await proc.exited
 
 // if (exited === 0)
 //   console.log('Build complete')
-
-// console.log(`Failed to execute command: ${cmd.join(' ')}`, proc.exited)
+// else
+//   console.log(`Failed to execute command: ${cmd.join(' ')}`, proc.exited)
