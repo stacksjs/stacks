@@ -22,10 +22,7 @@
     "typescript",
     "javascript",
     "bun",
-    "vite",
-    "nitro",
-    "components",
-    "library"
+    "vite"
   ],
   "exports": {
     ".": {
