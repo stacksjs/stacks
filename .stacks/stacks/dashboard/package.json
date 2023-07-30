@@ -24,7 +24,7 @@
     "requests",
     "stacks"
   ],
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
