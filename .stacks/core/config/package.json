@@ -26,9 +26,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "exports": {
-    ".": {
-      "import": "./dist/index.mjs"
-    }
+    "bun": "./src/index.ts"
   },
   "files": [
     "src",

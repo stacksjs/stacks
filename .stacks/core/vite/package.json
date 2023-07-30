@@ -23,42 +23,52 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
     "./plugin": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
     "./desktop": {
+      "bun": "./src/desktop.ts",
       "types": "./dist/desktop.d.ts",
       "import": "./dist/desktop.mjs"
     },
     "./example/web-components": {
+      "bun": "./src/example-wc.ts",
       "types": "./dist/example-wc.d.ts",
       "import": "./dist/example-wc.mjs"
     },
     "./example/vue-components": {
+      "bun": "./src/example-vue.ts",
       "types": "./dist/example-vue.d.ts",
       "import": "./dist/example-vue.mjs"
     },
     "./functions": {
+      "bun": "./src/functions.ts",
       "types": "./dist/functions.d.ts",
       "import": "./dist/functions.mjs"
     },
     "./stacks": {
+      "bun": "./src/stacks.ts",
       "types": "./dist/stacks.d.ts",
       "import": "./dist/stacks.mjs"
     },
     "./views": {
+      "bun": "./src/views.ts",
       "types": "./dist/views.d.ts",
       "import": "./dist/views.mjs"
     },
     "./vue-components": {
+      "bun": "./src/vue-components.ts",
       "types": "./dist/vue-components.d.ts",
       "import": "./dist/vue-components.mjs"
     },
     "./web-components": {
+      "bun": "./src/web-components.ts",
       "types": "./dist/web-components.d.ts",
       "import": "./dist/web-components.mjs"
     }

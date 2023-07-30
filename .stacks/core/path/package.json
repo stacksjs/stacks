@@ -21,13 +21,11 @@
     "paths",
     "utilities",
     "functions",
+    "bun",
     "stacks"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    "bun": "./src/index.ts"
   },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

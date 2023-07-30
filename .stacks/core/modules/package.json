@@ -24,14 +24,17 @@
   ],
   "exports": {
     "./i18n": {
+      "bun": "./src/i18n.ts",
       "types": "./dist/i18n.d.ts",
       "import": "./dist/i18n.ts"
     },
     "./nprogress": {
+      "bun": "./src/nprogress.ts",
       "types": "./dist/nprogress.d.ts",
       "import": "./dist/nprogress.ts"
     },
     "./pwa": {
+      "bun": "./src/pwa.ts",
       "types": "./dist/pwa.d.ts",
       "import": "./dist/pwa.ts"
     }

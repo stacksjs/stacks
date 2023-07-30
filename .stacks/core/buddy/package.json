@@ -37,13 +37,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
     },
     "./cli": {
+      "bun": "./src/cli.ts",
       "types": "./dist/cli.d.ts",
       "import": "./dist/cli.mjs"
-    }
+    },
+    "./*": "./*"
   },
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

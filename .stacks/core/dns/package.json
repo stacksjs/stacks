@@ -28,10 +28,7 @@
     "javascript"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+    "bun": "./src/index.ts"
   },
   "contributors": [
     "Chris Breuer <chris@ow3.org>"

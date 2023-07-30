@@ -22,6 +22,17 @@
     "zero-config",
     "stacks"
   ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts"
+    },
+    "./cli": {
+      "bun": "./src/cli.ts",
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.mjs"
+    },
+    "./*": "./*"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
