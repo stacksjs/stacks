@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
-import { del } from '@stacksjs/utils'
+import { rimraf as del } from '@stacksjs/utils'
 
 log.info('Running clean command...')
 

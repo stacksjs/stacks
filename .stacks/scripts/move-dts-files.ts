@@ -1,8 +1,7 @@
-import { glob } from '@stacksjs/utils'
-import { log } from '@stacksjs/logging'
-import { italic } from '@stacksjs/cli'
-import { storage } from '@stacksjs/storage'
+import { italic, log } from '@stacksjs/cli'
+import { glob, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { corePath } from '@stacksjs/path'
 
 log.info('Getting started to move d.ts & d.ts.map files...')
 
@@ -17,7 +16,7 @@ const files = await glob([
 
 if (files.length === 0) {
   log.info('No d.ts files found')
-  process.exit(ExitCode.FatalError)
+  process.exit(ExitCode.Success)
 }
 
 for (const file of files) {
@@ -29,5 +28,7 @@ for (const file of files) {
 
   await storage.move(file, path, { overwrite: true })
 }
-
 log.success('Moved d.ts files')
+
+log.info('Deleting dist/src folders')
+await storage.del(corePath('**/dist/src'))

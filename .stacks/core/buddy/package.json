@@ -63,7 +63,7 @@
   ],
   "scripts": {
     "buddy": "bunx ./src/cli.ts",
-    "build": "bun build.ts",
+    "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },

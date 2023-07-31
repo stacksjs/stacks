@@ -1,5 +1,6 @@
-import { glob, p } from '@stacksjs/utils'
-import { corePath } from '@stacksjs/path'
+import { p } from '@stacksjs/utils'
+import { glob } from '@stacksjs/storage'
+import { corePath, projectPath } from '@stacksjs/path'
 import { Arr } from '@stacksjs/arrays'
 import { ExitCode } from '@stacksjs/types'
 import { italic, log, runCommand } from '@stacksjs/cli'
@@ -35,9 +36,46 @@ const buildProcesses = dirs.map(async (folder) => {
 // Run all build processes in parallel
 try {
   await p(buildProcesses, { concurrency: 4 })
-  process.exit(ExitCode.Success)
 }
 catch (err) {
   log.error('One or more builds failed', err)
   process.exit(ExitCode.FatalError)
 }
+
+// run the tsc command
+log.info('Generating type definitions...')
+
+const tscResult = await runCommand('bun --bun tsc', projectPath())
+
+if (tscResult.isErr()) {
+  log.error(tscResult.error)
+  process.exit(ExitCode.FatalError)
+}
+
+log.success('Generated type definitions')
+
+// move type definitions to the dist folder
+log.info('Moving type definitions to dist folder...')
+const moveResult = await runCommand('bun --bun move-dts-files.ts', import.meta.dir)
+
+if (moveResult.isErr()) {
+  log.error(moveResult.error)
+  process.exit(ExitCode.FatalError)
+}
+
+log.success('Moved type definitions to dist folder')
+
+// move core/*/dist/src/* to core/*/dist/*
+log.info('Moving built source files to dist folder...')
+const moveSrcResult = await runCommand('bun --bun move-built-src-files.ts', import.meta.dir)
+
+if (moveSrcResult.isErr()) {
+  log.error(moveSrcResult.error)
+  process.exit(ExitCode.FatalError)
+}
+
+log.success('Moved built source files in the dist folder')
+
+log.success('Build complete')
+
+process.exit(ExitCode.Success)

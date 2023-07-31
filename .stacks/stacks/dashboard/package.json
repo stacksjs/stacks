@@ -34,7 +34,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun --bun build.ts",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },

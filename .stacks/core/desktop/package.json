@@ -43,7 +43,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun build.ts",
+    "build": "bun --bun build.ts",
     "build:app": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
     "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
     "dev:app": "tauri dev",
