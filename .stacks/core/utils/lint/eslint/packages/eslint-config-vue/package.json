@@ -1,0 +1,26 @@
+{
+  "name": "@stacksjs/eslint-config-vue",
+  "version": "0.0.0",
+  "description": "",
+  "author": "Chris Breuer <chris@ow3.org> (https://github.com/stacksjs/)",
+  "license": "MIT",
+  "keywords": [
+    "eslint-config"
+  ],
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "peerDependencies": {
+    "eslint": ">=7.4.0"
+  },
+  "dependencies": {
+    "@stacksjs/eslint-config-basic": "workspace:*",
+    "@stacksjs/eslint-config-ts": "workspace:*",
+    "eslint-plugin-vue": "^9.15.1",
+    "local-pkg": "^0.4.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0"
+  }
+}

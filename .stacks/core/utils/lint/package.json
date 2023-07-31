@@ -46,14 +46,14 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.47.3",
+    "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.0",
     "eslint": "^8.46.0",
     "lint-staged": "^13.2.3",
     "publint": "^0.1.16"
   },
   "dependencies": {
-    "@ow3/eslint-config": "^0.47.3",
+    "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.0",
     "eslint": "^8.45.0",
     "lint-staged": "^13.2.3",

@@ -263,10 +263,11 @@
     "../tests/**/*"
   ],
   "exclude": [
-    "./libs/examples/**",
+    "./libs/examples",
     "../commitlint.config.cjs",
     "../**/README.md",
     "../**/dist",
-    "../**/node_modules/**"
+    "../**/fixtures",
+    "../**/node_modules"
   ]
 }

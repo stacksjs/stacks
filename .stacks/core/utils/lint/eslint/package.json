@@ -1,0 +1,22 @@
+{
+  "name": "@stacksjs/eslint-config-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Chris Breuer <chris@ow3.org> (https://github.com/chrisbbreuer/)",
+  "license": "MIT",
+  "scripts": {
+    "lint": "pnpm -r run stub && eslint .",
+    "test": "pnpm -r run test",
+    "build": "pnpm -r run build",
+    "prepare": "pnpm -r run stub",
+    "release": "bumpp -r && pnpm -r publish"
+  },
+  "devDependencies": {
+    "@stacksjs/eslint-config": "workspace:*",
+    "bumpp": "^9.1.1",
+    "eslint": "^8.45.0",
+    "eslint-plugin-stacks": "link:eslint-plugin-stacks",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.1.6"
+  }
+}

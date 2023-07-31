@@ -1,0 +1,24 @@
+{
+  "name": "eslint-plugin-stacks",
+  "version": "0.0.0",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && bun --bun build.ts",
+    "stub": "unbuild --stub",
+    "test": "vitest",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2"
+  }
+}
