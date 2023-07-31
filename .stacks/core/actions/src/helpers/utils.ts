@@ -39,7 +39,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
-  const cmd = `bunx ${actionsPath(`${action}.ts ${opts}`)}`
+  const cmd = `bun --bun ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
     log.debug('running command:', italic(cmd))

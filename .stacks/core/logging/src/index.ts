@@ -11,8 +11,7 @@ export function dd(...args: any[]) {
 
 export const logger = console
 export const log = {
-  // eslint-disable-next-line no-console
-  success: console.log, // TODO: create a proper success method
+  success: (...args: any[]) => logger.log(...args),
   prompt: prompts,
   ...logger,
 }
