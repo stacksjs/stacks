@@ -232,15 +232,14 @@
       "stacks/*": ["./.stacks/*"],
       "buddy": ["./core/buddy/src/index.ts"],
       "buddy/*": ["./core/buddy/src/*"],
-      "framework/*": ["./*"],
-      "~/models/*": ["../app/models/*"],
       "~/app/*": ["../app/*"],
       "~/config/*": ["../config/*"],
-      "~/lang/*": ["../lang/*"],
-      "~/functions/*": ["../resources/functions/*"],
       "~/components/*": ["../resources/components/*"],
-      "~/views/*": ["../resources/views/*"],
-      "~/resources/*": ["../resources/*"]
+      "~/functions/*": ["../resources/functions/*"],
+      "~/lang/*": ["../lang/*"],
+      "~/models/*": ["../app/models/*"],
+      "~/resources/*": ["../resources/*"],
+      "~/views/*": ["../resources/views/*"]
     }
   },
   "include": [
