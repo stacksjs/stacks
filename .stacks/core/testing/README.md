@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/testing
+bun install -d @stacksjs/testing
 ```
 
 Now, you can use it in your project:

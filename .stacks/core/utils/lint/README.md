@@ -20,7 +20,7 @@ Easily get your project linted. It "just works."
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/lint
+bun install -d @stacksjs/lint
 ```
 
 Now, you can easily access it in your project:

@@ -10,7 +10,7 @@ Easily work with via Laravel-like collections.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/collections
+bun install -d @stacksjs/collections
 ```
 
 Now, you can easily access it in your project:

@@ -9,7 +9,7 @@ Stacks Chat is driver system for sending messages through chat apps.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/chat
+bun install -d @stacksjs/chat
 ```
 
 You may now use it in your project:

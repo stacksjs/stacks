@@ -12,7 +12,7 @@ This package contains the Stacks UI engine.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/ui
+bun install -d @stacksjs/ui
 ```
 
 Now, you can use it in your project:

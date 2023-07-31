@@ -11,7 +11,7 @@ Visualize & debug your application logs.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/x-ray
+bun install -d @stacksjs/x-ray
 ```
 
 Now, you can use it in your project:

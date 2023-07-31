@@ -11,7 +11,7 @@ The Health Engine is a unified driver system to easily manage health checks for 
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/health
+bun install -d @stacksjs/health
 ```
 
 You may now use:

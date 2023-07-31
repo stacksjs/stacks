@@ -9,7 +9,7 @@ Stacks Push is driver system for Pushing messages through apps.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/push
+bun install -d @stacksjs/push
 ```
 
 You may now use it in your project:

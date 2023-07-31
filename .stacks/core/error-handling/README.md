@@ -20,7 +20,7 @@ Currently, a wrapper of the `neverthrow` API.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/error-handling
+bun install -d @stacksjs/error-handling
 ```
 
 You can now use it in your project:

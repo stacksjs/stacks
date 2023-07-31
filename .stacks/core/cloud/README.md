@@ -15,7 +15,7 @@ This package assists you in setting up & maintaining your application's cloud in
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/cloud
+bun install -d @stacksjs/cloud
 ```
 
 Now, you can use it in your project:

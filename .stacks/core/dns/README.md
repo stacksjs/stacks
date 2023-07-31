@@ -12,7 +12,7 @@ Easily manage your domains.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/dns
+bun install -d @stacksjs/dns
 ```
 
 Now, you can use it in your project:

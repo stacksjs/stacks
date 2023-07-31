@@ -12,7 +12,7 @@ The simple way to build beautiful CLIs.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/cli
+bun install -d @stacksjs/cli
 ```
 
 Now, you can use it in your project:

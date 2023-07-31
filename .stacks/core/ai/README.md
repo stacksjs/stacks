@@ -17,7 +17,7 @@ This package contains a pretty wrapper for the OpenAI API.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/ai
+bun install -d @stacksjs/ai
 ```
 
 You may now use:

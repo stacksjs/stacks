@@ -17,7 +17,7 @@ Stacks Notifications is a unified driver system for sending messages/notificatio
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/notifications
+bun install -d @stacksjs/notifications
 ```
 
 Set these variables in your env:

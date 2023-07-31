@@ -12,7 +12,7 @@ Easily work with file paths.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/path
+bun install -d @stacksjs/path
 ```
 
 Now, you can easily access it in your project:

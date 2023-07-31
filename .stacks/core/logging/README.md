@@ -9,7 +9,7 @@ The Stacks logging system.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/logging
+bun install -d @stacksjs/logging
 ```
 
 Now, you can use it in your project:

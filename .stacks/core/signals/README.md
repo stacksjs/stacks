@@ -18,7 +18,7 @@ Stacks proxies [https://github.com/maverick-js/signals](Maverick.js's) signals.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/signals
+bun install -d @stacksjs/signals
 ```
 
 You may now use it in your project:

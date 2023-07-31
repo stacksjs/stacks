@@ -9,7 +9,7 @@ wip
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/query-builder
+bun install -d @stacksjs/query-builder
 ```
 
 You may now use it in your project:

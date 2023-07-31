@@ -9,7 +9,7 @@ Stacks Email is driver system for sending Emails.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/email
+bun install -d @stacksjs/email
 ```
 
 You may now use it in your project:

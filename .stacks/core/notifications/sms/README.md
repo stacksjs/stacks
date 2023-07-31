@@ -9,7 +9,7 @@ Stacks SMS is driver system for sending SMS messages.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/sms
+bun install -d @stacksjs/sms
 ```
 
 You may now use it in your project:

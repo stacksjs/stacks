@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/arrays
+bun install -d @stacksjs/arrays
 ```
 
 Now, you can use it in your project:

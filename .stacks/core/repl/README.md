@@ -9,7 +9,7 @@ A Stacks optimized REPL.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/repl
+bun install -d @stacksjs/repl
 ```
 
 Now, you can use it in your project:

@@ -10,7 +10,7 @@ Easily work with objects.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/objects
+bun install -d @stacksjs/objects
 ```
 
 Now, you can easily access it in your project:

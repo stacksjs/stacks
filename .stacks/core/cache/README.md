@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/cache
+bun install -d @stacksjs/cache
 ```
 
 Now, you can use it in your project:

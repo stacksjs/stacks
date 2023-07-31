@@ -9,7 +9,7 @@ Git helpers and more.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/git
+bun install -d @stacksjs/git
 ```
 
 Now, you can easily access it in your project:

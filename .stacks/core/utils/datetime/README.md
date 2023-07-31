@@ -12,7 +12,7 @@ Easily work with dates.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/datetime
+bun install -d @stacksjs/datetime
 ```
 
 Now, you can easily access it in your project:

@@ -7,7 +7,7 @@
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/server
+bun install -d @stacksjs/server
 ```
 
 Now, you can use it in your project:

@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/auth
+bun install -d @stacksjs/auth
 ```
 
 Now, you can use it in your project:

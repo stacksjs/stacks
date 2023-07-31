@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/realtime
+bun install -d @stacksjs/realtime
 ```
 
 Now, you can use it in your project:

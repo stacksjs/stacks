@@ -10,7 +10,7 @@ Easily manipulate & work with strings.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/strings
+bun install -d @stacksjs/strings
 ```
 
 Now, you can use it in your project:

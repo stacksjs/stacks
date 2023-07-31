@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/vite-plugin
+bun install -d @stacksjs/vite-plugin
 ```
 
 Now, you can use it in your project:

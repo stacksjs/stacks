@@ -25,7 +25,7 @@ The Stacks Dashboard.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/dashboard
+bun install -d @stacksjs/dashboard
 ```
 
 Now, you can use it in your project:

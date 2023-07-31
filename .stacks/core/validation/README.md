@@ -9,7 +9,7 @@ This package contains the Stacks Validation system.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/validation
+bun install -d @stacksjs/validation
 ```
 
 Now, you can use it in your project:

@@ -16,7 +16,7 @@ A powerful TypeScript REPL, powered by TSX.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/tinker
+bun install -d @stacksjs/tinker
 ```
 
 Now, you can easily access it in your project:

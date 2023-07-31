@@ -20,7 +20,7 @@ The Stacks Search Engine is a unified driver system to easily interact with sear
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/search-engine
+bun install -d @stacksjs/search-engine
 ```
 
 You may now use:

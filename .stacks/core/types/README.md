@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-pnpm i -D @stacksjs/types
+bun install -d @stacksjs/types
 ```
 
 Now, you can use it in your project:

@@ -14,7 +14,7 @@ This package contains the Stacks Actions.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/actions
+bun install -d @stacksjs/actions
 ```
 
 Now, you can use it in your project:

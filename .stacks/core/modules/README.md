@@ -5,7 +5,7 @@ A custom user module system. Place a `.ts` file with the following template & it
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/modules
+bun install -d @stacksjs/modules
 ```
 
 Now, you can use it in your project:

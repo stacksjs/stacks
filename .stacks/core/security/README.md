@@ -13,7 +13,7 @@ Easily work with encryptions, decryptions, and hashing.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/security
+bun install -d @stacksjs/security
 ```
 
 Now, you can easily access it in your project:

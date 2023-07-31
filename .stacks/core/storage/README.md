@@ -12,7 +12,7 @@ This package contains the Stacks File System source.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/storage
+bun install -d @stacksjs/storage
 ```
 
 Now, you can use it in your project:

@@ -9,7 +9,7 @@ Functional event emitting.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/events
+bun install -d @stacksjs/events
 ```
 
 Now, you can use it in your project:

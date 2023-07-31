@@ -9,7 +9,7 @@ wip
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/orm
+bun install -d @stacksjs/orm
 ```
 
 You may now use it in your project:
