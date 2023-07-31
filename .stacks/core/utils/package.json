@@ -26,7 +26,12 @@
     "stacks"
   ],
   "exports": {
-    "bun": "./src/index.ts"
+    ".": {
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
+    }
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",

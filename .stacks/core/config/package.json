@@ -26,7 +26,12 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "exports": {
-    "bun": "./src/index.ts"
+    ".": {
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
+    }
   },
   "files": [
     "src",
