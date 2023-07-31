@@ -84,7 +84,6 @@
     "detect-newline": "^4.0.0",
     "dinero.js": "2.0.0-alpha.14",
     "export-size": "^0.5.2",
-    "fast-glob": "^3.3.0",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",

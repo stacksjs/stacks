@@ -1,1 +1,1 @@
-export { default as glob } from 'fast-glob'
+export { glob } from '@stacksjs/storage'

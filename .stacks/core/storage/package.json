@@ -19,10 +19,12 @@
     "storage",
     "fs",
     "file system",
+    "glob",
     "api",
     "collections",
     "utilities",
     "functions",
+    "bun",
     "stacks"
   ],
   "exports": {
@@ -56,6 +58,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "fast-glob": "^3.3.0",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.8.0"
   },

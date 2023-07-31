@@ -1,4 +1,3 @@
-// import type { glob } from '@stacksjs/utils'
 import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
