@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { isString } from '@stacksjs/validation'
+
 // import type { Hits, SearchResponse } from '@stacksjs/types'
-import { useTable } from '../functions/table'
 
 // interface Props {
 //   type: string // the Meilisearch index you would like to use for this table

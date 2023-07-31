@@ -45,7 +45,6 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.45.2",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",

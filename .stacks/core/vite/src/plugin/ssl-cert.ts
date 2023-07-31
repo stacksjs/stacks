@@ -4,8 +4,6 @@ import { path as p } from '@stacksjs/path'
 import library from '~/config/library'
 
 export function sslCertificate(): Plugin {
-  console.log('sslCertificate')
-
   return mkcert({
     hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
     autoUpgrade: true,

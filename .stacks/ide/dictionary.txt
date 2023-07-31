@@ -65,6 +65,7 @@ docgen
 dotenv
 dprint
 encrypter
+entrypoints
 envrc
 execa
 filesize
