@@ -1,3 +1,5 @@
+import { italic, log } from '@stacksjs/cli'
+import { glob } from './glob'
 import { fs } from './fs'
 
 export async function deleteFolder(path: string) {
@@ -16,5 +18,21 @@ export function deleteEmptyFolders(dir: string) {
         else deleteEmptyFolders(p)
       }
     })
+  }
+}
+
+// TODO: ensure this also works for files
+export async function del(path: string) {
+  if (path.includes('*')) {
+    const directories = await glob([path], { onlyDirectories: true })
+
+    for (const directory of directories) {
+      await deleteFolder(directory)
+      log.info(`Deleted ${italic(directory)}`)
+    }
+  }
+  else {
+    await deleteFolder(path)
+    log.info(`Deleted ${italic(path)}`)
   }
 }
