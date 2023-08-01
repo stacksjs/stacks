@@ -3,8 +3,17 @@
   "version": "0.0.0",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
+  "type": "module",
   "module": "./dist/index.js",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
