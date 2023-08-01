@@ -4,22 +4,23 @@
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
   "type": "module",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "bun": "./dist/index.js",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "bun": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "stub": "unbuild --stub",
+    "build": "bunx unbuild",
+    "build-bun": "bun --bun build.ts",
+    "stub": "bunx unbuild --stub",
     "test": "bun --bun test",
     "prepublishOnly": "bun --bun run build"
   },
@@ -27,6 +28,7 @@
     "@typescript-eslint/utils": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.4.2"
+    "@types/node": "^20.4.2",
+    "unbuild": "latest"
   }
 }

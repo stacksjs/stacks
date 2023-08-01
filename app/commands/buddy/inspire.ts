@@ -2,7 +2,7 @@
 // overwrites the default `buddy inspire` command
 
 import { Command, intro, log } from '@stacksjs/cli'
-import type { CliOptions } from '@stacksjs/types'
+import { type CliOptions } from '@stacksjs/types'
 
 export default new Command({
   name: 'inspire',

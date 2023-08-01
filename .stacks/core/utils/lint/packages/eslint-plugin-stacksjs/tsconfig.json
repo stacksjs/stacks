@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "es2020",
+    "module": "es2020",
+    "moduleResolution": "node"
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./**/fixtures/**/*.*"
+  ]
+}

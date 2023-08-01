@@ -161,6 +161,7 @@ module.exports = {
     'stacksjs/no-cjs-exports': 'error',
     'stacksjs/no-ts-export-equal': 'error',
     'stacksjs/no-const-enum': 'error',
+    'stacksjs/named-tuple-spacing': 'error',
 
     // off
     '@typescript-eslint/consistent-indexed-object-style': 'off',

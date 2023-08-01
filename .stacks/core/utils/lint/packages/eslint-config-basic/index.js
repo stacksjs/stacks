@@ -142,8 +142,9 @@ module.exports = {
             pathPattern: '^exports.*$',
             order: [
               'types',
-              'require',
               'import',
+              'require',
+              'default',
             ],
           },
         ],
@@ -395,9 +396,10 @@ module.exports = {
     'yml/no-empty-document': 'off',
 
     // stacksjs
+    'stacksjs/no-import-node-modules-by-path': 'error',
     'stacksjs/if-newline': 'error',
     'stacksjs/import-dedupe': 'error',
     'stacksjs/top-level-function': 'error',
-    // 'stacksjs/prefer-inline-type-import': 'error',
+    'stacksjs/prefer-inline-type-import': 'error',
   },
 }

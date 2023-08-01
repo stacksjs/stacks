@@ -1,4 +1,4 @@
-import type { AppConfig, AppOptions } from '@stacksjs/types'
+import { type AppConfig, type AppOptions } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
 /**

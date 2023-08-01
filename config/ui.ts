@@ -1,5 +1,5 @@
 // import { defineUi } from '../.stacks/core/config/src/helpers'
-import type { UiConfig, UiOptions } from '@stacksjs/types'
+import { type UiConfig, type UiOptions } from '@stacksjs/types'
 
 /**
  * **UI Engine Options**
