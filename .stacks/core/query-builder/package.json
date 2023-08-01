@@ -44,10 +44,10 @@
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.26.1",
     "mysql2": "^3.5.2",
-    "pg": "^8.11.1"
+    "pg": "^8.11.2"
   },
   "dependencies": {
-    "pg-cursor": "^2.10.1"
+    "pg-cursor": "^2.10.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
