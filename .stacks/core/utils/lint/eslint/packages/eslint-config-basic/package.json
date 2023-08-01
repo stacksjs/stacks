@@ -19,7 +19,7 @@
     "eslint": ">=7.4.0"
   },
   "dependencies": {
-    "eslint-plugin-stacks": "workspace:*",
+    "eslint-plugin-stacksjs": "workspace:*",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-import": "^2.28.0",

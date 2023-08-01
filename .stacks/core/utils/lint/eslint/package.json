@@ -12,8 +12,7 @@
   "devDependencies": {
     "@stacksjs/eslint-config": "workspace:*",
     "eslint": "^8.45.0",
-    "eslint-plugin-stacks": "link:eslint-plugin-stacks",
-    "rimraf": "^5.0.1",
+    "eslint-plugin-stacksjs": "link:eslint-plugin-stacksjs",
     "typescript": "^5.1.6"
   }
 }

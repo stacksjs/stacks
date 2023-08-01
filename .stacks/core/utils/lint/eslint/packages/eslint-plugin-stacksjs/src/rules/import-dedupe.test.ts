@@ -1,17 +1,15 @@
 import { RuleTester } from '@typescript-eslint/utils/dist/ts-eslint'
-import { it } from 'vitest'
-import rule, { RULE_NAME } from './if-newline'
+import { it } from 'bun:test'
+import rule, { RULE_NAME } from './import-dedupe'
 
 const valids = [
-  `if (true)
-  console.log('hello')
-`,
-  `if (true) {
-  console.log('hello')
-}`,
+  'import { a } from \'foo\'',
 ]
 const invalids = [
-  ['if (true) console.log(\'hello\')', 'if (true) \nconsole.log(\'hello\')'],
+  [
+    'import { a, b, a, a, c, a } from \'foo\'',
+    'import { a, b,   c,  } from \'foo\'',
+  ],
 ]
 
 it('runs', () => {
@@ -24,7 +22,7 @@ it('runs', () => {
     invalid: invalids.map(i => ({
       code: i[0],
       output: i[1],
-      errors: [{ messageId: 'missingIfNewline' }],
+      errors: [{ messageId: 'importDedupe' }, { messageId: 'importDedupe' }, { messageId: 'importDedupe' }],
     })),
   })
 })

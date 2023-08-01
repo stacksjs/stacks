@@ -232,7 +232,7 @@
       "stacks/*": ["./.stacks/*"],
       "buddy": ["./core/buddy/src/index.ts"],
       "buddy/*": ["./core/buddy/src/*"],
-      "eslint-plugin-stacks": ["./.stacks/utils/lint/eslint/packages/eslint-plugin-stacks/src/index.ts"],
+      "eslint-plugin-stacksjs": ["./.stacks/utils/lint/eslint/packages/eslint-plugin-stacksjs/src/index.ts"],
       "~/app/*": ["../app/*"],
       "~/config/*": ["../config/*"],
       "~/components/*": ["../resources/components/*"],

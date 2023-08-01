@@ -3,16 +3,15 @@
   "version": "0.0.0",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rimraf dist && bun --bun build.ts",
+    "build": "bun --bun build.ts",
     "stub": "unbuild --stub",
-    "test": "vitest",
+    "test": "bun --bun test",
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {

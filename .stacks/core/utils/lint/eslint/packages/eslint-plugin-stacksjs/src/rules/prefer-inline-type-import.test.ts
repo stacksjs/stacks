@@ -1,5 +1,5 @@
 import { RuleTester } from '@typescript-eslint/utils/dist/ts-eslint'
-import { it } from 'vitest'
+import { it } from 'bun:test'
 import rule, { RULE_NAME } from './prefer-inline-type-import'
 
 const valids = [
