@@ -119,7 +119,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -127,7 +128,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">ios-app</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -172,7 +173,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -180,7 +182,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">mobile-api</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -225,7 +227,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -233,7 +236,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">tailwindcss.com</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -278,7 +281,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -286,7 +290,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">tailwindui.com</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -331,7 +335,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -339,7 +344,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">relay-service</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -384,7 +389,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -392,7 +398,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">android-app</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -437,7 +443,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -445,7 +452,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">api.protocol.chat</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
@@ -490,7 +497,8 @@
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
             <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
-              <a
+              <router-link
+                to="/deployments/1"
                 href="#"
                 class="flex gap-x-2"
               >
@@ -498,7 +506,7 @@
                 <span class="text-gray-400">/</span>
                 <span class="whitespace-nowrap">planetaria.tech</span>
                 <span class="absolute inset-0" />
-              </a>
+              </router-link>
             </h2>
           </div>
           <div class="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">

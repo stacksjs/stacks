@@ -72,8 +72,18 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >Edit</a>
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                    >
+                      <svg
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="w-5 h-5"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                      </svg>
+                    </a>
                   </td>
                 </tr>
                 <tr>
@@ -95,8 +105,19 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >Edit</a>
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                    >
+                      <svg
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="w-5 h-5"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                      </svg>
+
+                    </a>
                   </td>
                 </tr>
               </tbody>

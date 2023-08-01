@@ -93,13 +93,18 @@
                     18.15.1
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    Installed
+                    Pending
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
+                      class="text-indigo-600 font-normal text-xs hover:text-indigo-900 hover:underline"
                     >Install</a>
+
+                    <a
+                      href="#"
+                      class="text-indigo-600 font-normal text-xs hover:text-indigo-900 hover:underline pl-2"
+                    >Remove</a>
                   </td>
                 </tr>
                 <tr>
@@ -112,11 +117,57 @@
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     Installed
                   </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 flex justify-end text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >Install</a>
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                    >
+                      <svg
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="w-5 h-5"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                      </svg>
+
+                      <div
+                        class="absolute hidden dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="menu-button"
+                        tabindex="-1"
+                      >
+                        <div
+                          class="py-1"
+                          role="none"
+                        >
+                          <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+                          <a
+                            id="menu-item-0"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >View</a>
+                          <a
+                            id="menu-item-1"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Re-run</a>
+                          <a
+                            id="menu-item-2"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Delete</a>
+                        </div>
+                      </div>
+                    </a>
                   </td>
                 </tr>
               </tbody>

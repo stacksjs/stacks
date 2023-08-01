@@ -42,7 +42,7 @@
         <div class="mt-4 flex justify-end">
           <button
             type="button"
-            class="rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="rounded bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Submit
           </button>
@@ -60,7 +60,7 @@
       </div>
       <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+          <div class="inline-block table-responsive min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <table class="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
@@ -121,11 +121,22 @@
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     Finished
                   </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                  <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, Lindsay Walton</span></a>
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                    >
+                      <svg
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="w-5 h-5"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                      </svg>
+
+                    </a>
                   </td>
                 </tr>
                 <tr>
@@ -146,11 +157,57 @@
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     Finished
                   </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                  <td class=" whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, Lindsay Walton</span></a>
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                    >
+                      <svg
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="w-5 h-5"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                      </svg>
+
+                      <div
+                        class="absolute hidden dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="menu-button"
+                        tabindex="-1"
+                      >
+                        <div
+                          class="py-1"
+                          role="none"
+                        >
+                          <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+                          <a
+                            id="menu-item-0"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >View</a>
+                          <a
+                            id="menu-item-1"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Re-run</a>
+                          <a
+                            id="menu-item-2"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Delete</a>
+                        </div>
+                      </div>
+                    </a>
                   </td>
                 </tr>
               </tbody>
@@ -165,5 +222,13 @@
 <style>
 code {
   @apply rounded-lg !important
+}
+
+.table-responsive {
+  position: static !important;
+}
+
+.table-responsive{
+  overflow-y: visible !important;
 }
 </style>
