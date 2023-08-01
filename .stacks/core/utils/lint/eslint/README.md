@@ -40,7 +40,7 @@ Simply create a `.eslintrc` file in your project root with the following content
 
 ```json
 {
-  "extends": "@stacks"
+  "extends": "@stacksjs"
 }
 ```
 
