@@ -1,5 +1,5 @@
-import type { ConfigEnv, Plugin } from 'vite'
-import type { UserConfig } from 'vitepress'
+import { type ConfigEnv, type Plugin } from 'vite'
+import { type UserConfig } from 'vitepress'
 
 // import { autoImports, components, cssEngine, inspect, layouts, pages, uiEngine } from '@stacksjs/build'
 // import type { ConfigEnv, Plugin, PluginOption } from 'vite'

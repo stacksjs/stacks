@@ -1,4 +1,4 @@
-import type { VineString as ValidationString } from '@vinejs/vine'
+import { type VineString as ValidationString } from '@vinejs/vine'
 import validator, { Vine as Validator } from '@vinejs/vine'
 import { MoneyValidator } from './types/money'
 

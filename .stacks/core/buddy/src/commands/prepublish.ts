@@ -1,4 +1,4 @@
-import type { CLI, PrepublishOptions } from '@stacksjs/types'
+import { type CLI, type PrepublishOptions } from '@stacksjs/types'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 

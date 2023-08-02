@@ -1,6 +1,6 @@
 import { NexmoSmsProvider } from '@novu/nexmo'
 import { italic } from '@stacksjs/cli'
-import type { SmsOptions } from '@stacksjs/types'
+import { type SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import notification from '~/config/notification'
 

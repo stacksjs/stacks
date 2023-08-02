@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 export interface Env {
   APP_NAME: string
   APP_ENV: 'development' | 'staging' | 'production'

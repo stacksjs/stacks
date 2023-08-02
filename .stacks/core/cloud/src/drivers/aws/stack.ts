@@ -1,5 +1,5 @@
-import type { StackProps } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
+import { type StackProps } from 'aws-cdk-lib'
+import { type Construct } from 'constructs'
 import { Stack } from 'aws-cdk-lib'
 import { DnsStack } from '@stacksjs/dns'
 

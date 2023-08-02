@@ -1,6 +1,6 @@
-import type { StackProps } from 'aws-cdk-lib/core'
+import { type StackProps } from 'aws-cdk-lib/core'
 import { CfnOutput, Duration, RemovalPolicy, ScopedAws, Stack } from 'aws-cdk-lib/core'
-import type { Construct } from 'constructs'
+import { type Construct } from 'constructs'
 import * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import * as route53 from 'aws-cdk-lib/aws-route53'
 import * as targets from 'aws-cdk-lib/aws-route53-targets'

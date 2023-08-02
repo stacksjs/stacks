@@ -1,4 +1,5 @@
-import type { CLI, UpgradeOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type UpgradeOptions } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'

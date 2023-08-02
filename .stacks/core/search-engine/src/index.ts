@@ -1,5 +1,5 @@
 import { searchEngine } from '@stacksjs/config'
-import type { UiEngine } from '@stacksjs/ui'
+import { type UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
 import { client as meilisearch } from './drivers/meilisearch'
 import { determineState } from './helpers'

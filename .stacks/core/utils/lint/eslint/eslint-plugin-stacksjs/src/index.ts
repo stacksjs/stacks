@@ -3,11 +3,11 @@ import ifNewline from './rules/if-newline'
 import importDedupe from './rules/import-dedupe'
 import preferInlineTypeImport from './rules/prefer-inline-type-import'
 import topLevelFunction from './rules/top-level-function'
+import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path'
 import noTsExportEqual from './rules/no-ts-export-equal'
 import noCjsExports from './rules/no-cjs-exports'
 import noConstEnum from './rules/no-const-enum'
 import namedTupleSpacing from './rules/named-tuple-spacing'
-import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path'
 
 export default {
   rules: {

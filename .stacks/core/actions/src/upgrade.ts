@@ -1,8 +1,9 @@
+import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as storage from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
-import type { UpgradeOptions } from '@stacksjs/types'
+import { type UpgradeOptions } from '@stacksjs/types'
 
 // import { determineDebugLevel } from '@stacksjs/utils'
 

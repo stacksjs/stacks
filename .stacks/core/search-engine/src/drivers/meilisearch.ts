@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { searchEngine } from '@stacksjs/config'
 import { MeiliSearch } from 'meilisearch'
 
-import type { SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
+import { type SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
 
 interface SearchEngineOptions {
   host: string

@@ -2,9 +2,9 @@ import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
+import { type ActionOptions, type StacksError, type Subprocess } from '@stacksjs/types'
 import { err } from '@stacksjs/error-handling'
-import type { ResultAsync } from '@stacksjs/error-handling'
+import { type ResultAsync } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
   if (!options)

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { runNpmScript } from '@stacksjs/utils'
 import { NpmScript, type TypesOptions } from '@stacksjs/types'

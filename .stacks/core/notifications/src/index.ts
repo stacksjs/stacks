@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { err } from '@stacksjs/error-handling'
 import { notification as config } from '@stacksjs/config'
 import { log } from '@stacksjs/cli'

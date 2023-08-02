@@ -1,4 +1,4 @@
-import type { IntroOptions, OutroOptions } from '@stacksjs/types'
+import { type IntroOptions, type OutroOptions } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
 import pkgjson from '../package.json'

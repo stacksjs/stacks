@@ -1,5 +1,6 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, MakeOptions } from '@stacksjs/types'
+import { type CLI, type MakeOptions } from '@stacksjs/types'
 import { intro, italic, outro, prompt, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'

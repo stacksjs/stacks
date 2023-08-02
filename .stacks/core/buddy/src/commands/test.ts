@@ -1,4 +1,5 @@
-import type { CLI, TestOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type TestOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'

@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/types'
-import type { CLI, ReleaseOptions } from '@stacksjs/types'
+import { type CLI, type ReleaseOptions } from '@stacksjs/types'
 import { intro, log, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 

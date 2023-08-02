@@ -2,7 +2,7 @@
 import { markdownTable } from 'markdown-table'
 import filesize from 'filesize'
 import { fs } from '@stacksjs/storage'
-import type { PackageManifest } from '@vueuse/metadata'
+import { type PackageManifest } from '@vueuse/metadata'
 import { getExportsSize } from '../src/export-size'
 import pkgjson from '../package.json'
 
@@ -78,7 +78,7 @@ async function run() {
 
     md += markdownTable([
       ['Function', 'min+gzipped'],
-      // eslint-disable-next-line ow3/no-cjs-exports
+      // eslint-disable-next-line stacksjs/no-cjs-exports
       ...exports.map((i) => {
         mdJSON[i.name] = filesize(i.minzipped)
         return [`\`${i.name}\``, filesize(i.minzipped)]

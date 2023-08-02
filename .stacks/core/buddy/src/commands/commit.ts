@@ -1,4 +1,4 @@
-import type { CLI, FreshOptions } from '@stacksjs/types'
+import { type CLI, type FreshOptions } from '@stacksjs/types'
 import { invoke } from '@stacksjs/actions/commit'
 
 export async function commit(buddy: CLI) {

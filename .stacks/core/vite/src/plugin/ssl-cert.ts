@@ -1,5 +1,5 @@
 import mkcert from 'vite-plugin-mkcert'
-import type { Plugin } from 'vite'
+import { type Plugin } from 'vite'
 import { path as p } from '@stacksjs/path'
 import library from '~/config/library'
 

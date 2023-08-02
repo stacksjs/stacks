@@ -1,6 +1,6 @@
-import type { NestedStackProps } from 'aws-cdk-lib'
+import { type NestedStackProps } from 'aws-cdk-lib'
 import { NestedStack, aws_s3 as s3 } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
+import { type Construct } from 'constructs'
 import { storage } from '@stacksjs/config'
 
 export class StorageStack extends NestedStack {

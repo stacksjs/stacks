@@ -103,7 +103,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
         (handlers as EventHandlerList<Events[keyof Events]>)
           .slice()
           .map((handler) => {
-            return handler(evt!)
+            return handler(evt)
           })
       }
 
@@ -112,7 +112,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
           .map((handler) => {
-            return handler(type, evt!)
+            return handler(type, evt)
           })
       }
     },

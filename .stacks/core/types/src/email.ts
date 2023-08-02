@@ -1,4 +1,4 @@
-import type { IEmailOptions } from '@novu/stateless'
+import { type IEmailOptions } from '@novu/stateless'
 
 export type EmailOptions = Omit<IEmailOptions, 'from'> & {
   from: {

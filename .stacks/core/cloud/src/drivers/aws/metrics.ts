@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { Metrics } from '@aws-lambda-powertools/metrics'
 
 export const metrics = new Metrics({

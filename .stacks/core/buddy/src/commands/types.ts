@@ -1,4 +1,4 @@
-import type { CLI } from '@stacksjs/types'
+import { type CLI } from '@stacksjs/types'
 import { generateTypes } from '@stacksjs/actions/generate'
 
 export async function types(buddy: CLI) {

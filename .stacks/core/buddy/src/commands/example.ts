@@ -1,5 +1,6 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, ExamplesOptions } from '@stacksjs/types'
+import { type CLI, type ExamplesOptions } from '@stacksjs/types'
 import { invoke as runExample } from '@stacksjs/actions/examples'
 
 export async function example(buddy: CLI) {

@@ -1,5 +1,5 @@
-import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
-import type { MaybePromise } from '.'
+import { type EnqueuedTask, type Hits, type Index, type IndexOptions, type IndexesResults, type MeiliSearch, type DocumentOptions as RecordOptions, type Settings as SearchEngineSettings, type SearchParams, type SearchResponse } from 'meilisearch'
+import { type MaybePromise } from '.'
 
 type Search = any
 type Page = any

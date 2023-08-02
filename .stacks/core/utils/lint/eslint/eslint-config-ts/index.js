@@ -3,7 +3,8 @@ const { join } = require('node:path')
 const process = require('node:process')
 const basic = require('@stacksjs/eslint-config-basic')
 
-const tsconfig = process.env.ESLINT_TSCONFIG || 'tsconfig.eslint.json'
+const tsconfig = process.env.ESLINT_TSCONFIG || 'tsconfig.json'
+// console.log('eslint-config-ts', join(process.cwd(), tsconfig))
 
 module.exports = {
   extends: [

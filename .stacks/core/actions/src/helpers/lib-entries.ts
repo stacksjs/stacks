@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { kebabCase } from '@stacksjs/strings'
-import type { LibraryType } from '@stacksjs/path'
+import { type LibraryType } from '@stacksjs/path'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'

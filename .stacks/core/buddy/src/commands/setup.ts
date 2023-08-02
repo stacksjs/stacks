@@ -1,5 +1,5 @@
 import { runCommand } from '@stacksjs/cli'
-import type { CLI, CliOptions } from '@stacksjs/types'
+import { type CLI, type CliOptions } from '@stacksjs/types'
 
 export async function setup(buddy: CLI) {
   const descriptions = {

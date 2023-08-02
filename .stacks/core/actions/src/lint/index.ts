@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { runCommands } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode, NpmScript } from '@stacksjs/types'

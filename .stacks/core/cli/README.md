@@ -20,7 +20,7 @@ Now, you can use it in your project:
 ```js
 // command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
-import { command, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cli'
+import { ExitCode, command, italic, prompts, spawn, spinner } from '@stacksjs/cli'
 
 const stacks = command('stacks')
 
@@ -55,7 +55,8 @@ async function install() {
     }, 5000)
     await spawn('pnpm install')
     spin.stop()
-  } catch (error) {
+  }
+  catch (error) {
     log.error(error)
   }
 }

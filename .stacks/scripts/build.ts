@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { p } from '@stacksjs/utils'
 import { glob } from '@stacksjs/storage'
 import { corePath, projectPath } from '@stacksjs/path'

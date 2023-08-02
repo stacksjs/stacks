@@ -1,13 +1,13 @@
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
+import { type ViteConfig } from '@stacksjs/types'
 import { components } from './plugin/components'
 import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { cssEngine } from './plugin/css-engine'
 import { inspect } from './plugin/inspect'
-import type { ViteBuildOptions } from './'
+import { type ViteBuildOptions } from './'
 import app from '~/config/app'
 
 // import { sslCertificate } from './plugin/ssl-cert' -> NotImplementedError: node:http2 createSecureServer is not yet implemented in Bun. Track the status & thumbs up the issue: https://github.com/oven-sh/bun/issues/887

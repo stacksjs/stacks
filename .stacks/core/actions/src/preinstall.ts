@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 
 // import type { PreinstallOptions } from '@stacksjs/types'

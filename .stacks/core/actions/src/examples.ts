@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { hasComponents } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'

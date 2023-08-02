@@ -1,4 +1,4 @@
-import type { AppConfig, BinaryConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import { type AppConfig, type BinaryConfig, type CacheConfig, type CdnConfig, type ChatConfig, type CliConfig, type DatabaseConfig, type DependenciesConfig, type DnsConfig, type EmailConfig, type Events, type GitConfig, type HashingConfig, type JobConfig, type LibraryConfig, type Model, type NotificationConfig, type PaymentConfig, type QueueConfig, type SearchEngineConfig, type ServicesConfig, type SmsConfig, type StacksConfig, type StorageConfig, type UiConfig } from '@stacksjs/types'
 
 export function defineStacksConfig(config: Partial<StacksConfig>) {
   return config

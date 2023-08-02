@@ -1,5 +1,5 @@
-import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { Nullable, SearchEngineSettings } from './'
+import { type VineBoolean, type VineNumber, type VineString } from '@vinejs/vine'
+import { type Nullable, type SearchEngineSettings } from './'
 
 export interface AuthOptions {}
 

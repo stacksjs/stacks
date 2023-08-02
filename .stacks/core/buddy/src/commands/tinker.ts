@@ -1,4 +1,4 @@
-import type { CLI, TinkerOptions } from '@stacksjs/types'
+import { type CLI, type TinkerOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'

@@ -5,7 +5,7 @@ export default defineBuildConfig({
     'src/index',
   ],
   externals: [
-    'bun:test'
+    'bun:test',
   ],
   declaration: true,
   clean: true,

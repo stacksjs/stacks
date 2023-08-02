@@ -1,4 +1,5 @@
-import type { CLI, GeneratorOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
 import { isString } from '@stacksjs/validation'

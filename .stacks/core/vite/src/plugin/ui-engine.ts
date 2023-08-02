@@ -1,5 +1,5 @@
 import Vue from '@vitejs/plugin-vue'
-import type { Plugin } from 'vite'
+import { type Plugin } from 'vite'
 
 export function uiEngine(isWebComponent = false): Plugin {
   if (isWebComponent) {
@@ -10,10 +10,10 @@ export function uiEngine(isWebComponent = false): Plugin {
           isCustomElement: () => true,
         },
       },
-    }) as Plugin
+    })
   }
 
   return Vue({
     include: [/\.vue$/, /\.md$/],
-  }) as Plugin
+  })
 }

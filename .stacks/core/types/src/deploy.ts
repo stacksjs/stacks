@@ -1,4 +1,4 @@
-import type { CliOptions } from './cli'
+import { type CliOptions } from './cli'
 
 /**
  * **Deploy Options**

@@ -1,4 +1,4 @@
-import type { Options } from 'vite-plugin-pwa'
+import { type Options } from 'vite-plugin-pwa'
 
 /**
  * **PWA Options**

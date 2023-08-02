@@ -1,4 +1,4 @@
-import type { EmailOptions } from '@stacksjs/types'
+import { type EmailOptions } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
 

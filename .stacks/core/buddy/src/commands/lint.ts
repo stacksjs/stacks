@@ -1,4 +1,5 @@
-import type { CLI, LintOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type LintOptions } from '@stacksjs/types'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'

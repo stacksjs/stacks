@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
 import { runCommand } from '@stacksjs/cli'
-import type { DevOptions } from '@stacksjs/types'
+import { type DevOptions } from '@stacksjs/types'
 import { NpmScript } from '@stacksjs/types'
 
 export async function components(options: DevOptions) {

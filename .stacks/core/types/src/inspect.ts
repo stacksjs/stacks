@@ -1,4 +1,4 @@
-import type { Options } from 'vite-plugin-inspect'
+import { type Options } from 'vite-plugin-inspect'
 
 /**
  * **Inspect Options**

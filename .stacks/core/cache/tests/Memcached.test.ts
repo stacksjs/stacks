@@ -1,4 +1,4 @@
-import type { Client } from 'memjs'
+import { type Client } from 'memjs'
 import Memcached from 'memjs'
 import { expect, it } from '@stacksjs/testing'
 

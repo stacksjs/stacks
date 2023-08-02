@@ -1,12 +1,10 @@
 {
-  "name": "eslint-plugin-stacksjs",
+  "name": "eslint-plugin-stacks",
+  "type": "module",
   "version": "0.0.0",
+  "description": "ESLint plugin for Stacks.",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
-  "type": "module",
-  "module": "./dist/index.mjs",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -14,6 +12,9 @@
       "require": "./dist/index.cjs"
     }
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],

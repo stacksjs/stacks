@@ -1,4 +1,5 @@
-import type { CLI, CreateOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type CreateOptions } from '@stacksjs/types'
 import { bold, cyan, green, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'

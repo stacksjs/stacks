@@ -1,4 +1,4 @@
-import type { HttpMethod, Middleware, Route, RouteCallback, RouteGroupOptions } from '@stacksjs/types'
+import { type HttpMethod, type Middleware, type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
 
 export class Router {
   private routes: Route[] = []

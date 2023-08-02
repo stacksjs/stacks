@@ -1,5 +1,5 @@
 import { logsPath } from '@stacksjs/path'
-import type { StacksError, ValidationError } from '@stacksjs/types'
+import { type StacksError, type ValidationError } from '@stacksjs/types'
 import { fs } from '@stacksjs/storage'
 import { italic, log } from '@stacksjs/cli'
 

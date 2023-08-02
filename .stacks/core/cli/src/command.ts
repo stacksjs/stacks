@@ -1,4 +1,4 @@
-import type { CliOptions } from '@stacksjs/types'
+import { type CliOptions } from '@stacksjs/types'
 import cac from 'cac'
 import { execSync } from './exec'
 import { runCommand } from './run'

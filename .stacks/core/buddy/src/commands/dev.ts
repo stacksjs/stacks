@@ -1,6 +1,7 @@
+import process from 'node:process'
 import { Action, ExitCode, NpmScript } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import type { CLI, DevOptions } from '@stacksjs/types'
+import { type CLI, type DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 

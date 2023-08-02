@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
 import { frameworkVersion, initProject, isProjectCreated } from '@stacksjs/utils'

@@ -1,7 +1,7 @@
 // import { ray } from 'node-ray'
 
 import { send } from './client'
-import type { Log } from './types'
+import { type Log } from './types'
 
 function ray(content: any): void {
   const splitString = getErrorObject()?.split('/') || ['file:0']

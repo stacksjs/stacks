@@ -1,4 +1,4 @@
-import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
+import { type JsonFile, type PackageJson, type TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
@@ -9,7 +9,7 @@ import { fs } from './fs'
  */
 export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
-  const data = JSON.parse(file.data) as unknown
+  const data = JSON.parse(file.data)
   const indent = detectIndent(file.data).indent
   const newline = detectNewline(file.data)
 
