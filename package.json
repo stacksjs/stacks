@@ -108,6 +108,8 @@
     ".stacks/core/*",
     ".stacks/core/notifications/*",
     ".stacks/core/utils/*",
+    ".stacks/core/utils/lint/",
+    ".stacks/core/utils/lint/*",
     ".stacks/core/utils/lint/packages/*",
     ".stacks/api",
     ".stacks/docs",

@@ -1,6 +1,6 @@
 {
   "extends": "@stacksjs",
   "plugins": [
-    "stacks"
+    "stacksjs"
   ]
 }

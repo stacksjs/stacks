@@ -49,6 +49,7 @@
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.0",
     "eslint": "^8.46.0",
+    "eslint-plugin-stacksjs": "workspace:*",
     "lint-staged": "^13.2.3",
     "publint": "^0.1.16"
   },

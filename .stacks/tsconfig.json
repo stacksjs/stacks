@@ -235,6 +235,7 @@
       "eslint-plugin-stacks": ["./.stacks/utils/lint/eslint/eslint-plugin-stacks/src/index.ts"],
       "eslint-plugin-stacksjs": ["./.stacks/utils/lint/eslint/eslint-plugin-stacksjs/src/index.ts"],
       "@stacksjs/eslint-config": ["./.stacks/utils/lint/eslint/eslint-config/src/index.ts"],
+      "@stacksjs/eslint-config-basic": ["./.stacks/utils/lint/eslint/eslint-config-basic/src/index.ts"],
       "~/app/*": ["../app/*"],
       "~/config/*": ["../config/*"],
       "~/components/*": ["../resources/components/*"],
