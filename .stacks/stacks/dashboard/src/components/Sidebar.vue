@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Static sidebar for desktop -->
-    <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+    <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
       <!-- Sidebar component, swap this element with another sidebar if you like -->
       <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center">
@@ -306,7 +306,7 @@
             </li>
             <li class="mt-auto">
               <router-link
-                to="/settings"
+                to="/settings/account"
                 class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
               >
                 <svg
@@ -338,7 +338,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .sidebar-links {
   @apply text-gray-700 hover:text-indigo-600 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
 }

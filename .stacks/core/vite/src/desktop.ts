@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
+import { frameworkPath, projectPath, projectStoragePath } from '@stacksjs/path'
 import type { ViteDevServer as DevServer } from 'vite'
 import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
@@ -14,7 +14,7 @@ export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('views/desktop/dashboard'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: storagePath('public'),
+  publicDir: projectStoragePath('public'),
 
   server: {
     https: true,
