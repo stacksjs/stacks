@@ -8,7 +8,7 @@ import { parse } from 'yaml'
 import { italic, log, runCommand } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
-import { type ResultAsync } from '@stacksjs/error-handling'
+import { type Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 import { semver } from './versions'
 import ui from '~/config/ui'
@@ -20,7 +20,7 @@ export async function packageManager() {
   return packageManager
 }
 
-export async function initProject(): Promise<ResultAsync<Subprocess, StacksError>> {
+export async function initProject(): Promise<Result<Subprocess, StacksError>> {
   if (env.APP_ENV !== 'production')
     log.info('Project not yet initialized, generating application key...')
   else
@@ -29,7 +29,7 @@ export async function initProject(): Promise<ResultAsync<Subprocess, StacksError
   const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
   if (result.isErr())
-    return err(handleError(result.error as Error))
+    return err(handleError(result.error))
 
   log.info('Application key generated.')
 
@@ -133,7 +133,7 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<any> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists

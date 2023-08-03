@@ -1,7 +1,15 @@
-import { runCommands } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
+import { log, runCommands } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 
-await runCommands([
+const results = await runCommands([
   'bun buddy clean',
-  'bun install',
-], { cwd: frameworkPath(), verbose: true })
+  'bun install -y',
+], { cwd: frameworkPath() })
+
+for (const result of results) {
+  if (result.isErr()) {
+    log.error(result.error)
+    process.exit(ExitCode.FatalError)
+  }
+}

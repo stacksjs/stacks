@@ -4,7 +4,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-export async function key(buddy: CLI) {
+export function key(buddy: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
     verbose: 'Enable verbose output',
@@ -22,6 +22,6 @@ export async function key(buddy: CLI) {
         process.exit()
       }
 
-      outro('Set random application key.', { startTime })
+      await outro('Set random application key.', { startTime })
     })
 }

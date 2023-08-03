@@ -3,7 +3,7 @@ import { ExitCode } from '@stacksjs/types'
 import { type CLI, type ExamplesOptions } from '@stacksjs/types'
 import { invoke as runExample } from '@stacksjs/actions/examples'
 
-export async function example(buddy: CLI) {
+export function example(buddy: CLI) {
   const descriptions = {
     example: 'Which example do you want to see?',
     components: 'Test your libraries against your built bundle',

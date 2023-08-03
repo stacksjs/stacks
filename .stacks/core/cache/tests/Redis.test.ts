@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
 import { createClient } from 'redis' // TODO: needs to be imported from cache package
 import { expect, it } from '@stacksjs/testing'
 

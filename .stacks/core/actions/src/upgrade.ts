@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
@@ -8,7 +9,7 @@ import { type UpgradeOptions } from '@stacksjs/types'
 // import { determineDebugLevel } from '@stacksjs/utils'
 
 // export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
-export async function checkForUncommittedChanges(options: UpgradeOptions) {
+export function checkForUncommittedChanges(options: UpgradeOptions) {
   try {
     // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
 
@@ -60,6 +61,6 @@ export async function updateDependencies() {
   //   process.exit()
   // }
 
-  outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
+  await outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
   process.exit()
 }

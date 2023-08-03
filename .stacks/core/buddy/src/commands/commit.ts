@@ -1,7 +1,7 @@
 import { type CLI, type FreshOptions } from '@stacksjs/types'
 import { invoke } from '@stacksjs/actions/commit'
 
-export async function commit(buddy: CLI) {
+export function commit(buddy: CLI) {
   const descriptions = {
     commit: 'Commit your stashed changes',
     verbose: 'Enable verbose output',

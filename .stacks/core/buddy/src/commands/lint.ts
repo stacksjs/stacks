@@ -4,7 +4,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-export async function lint(buddy: CLI) {
+export function lint(buddy: CLI) {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
@@ -20,11 +20,11 @@ export async function lint(buddy: CLI) {
       const result = await runAction(Action.Lint, { ...options })
       // console.log('res', result)
       if (result.isErr()) {
-        outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Linted your project', { startTime, useSeconds: true })
+      await outro('Linted your project', { startTime, useSeconds: true })
     })
 
   buddy

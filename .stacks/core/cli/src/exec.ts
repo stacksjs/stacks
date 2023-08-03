@@ -1,8 +1,7 @@
-import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { type CliOptions, type StacksError, type Subprocess, type SyncSubprocess } from '@stacksjs/types'
-import { err, errAsync, ok, okAsync } from '@stacksjs/error-handling'
-import { type Result, type ResultAsync } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
+import { type Result } from '@stacksjs/error-handling'
 import { log } from './console'
 
 /**
@@ -26,25 +25,27 @@ import { log } from './console'
  * const result = await exec('ls', { cwd: '/home' })
  * ```
  */
-export async function exec(command: string | string[], options?: CliOptions): Promise<ResultAsync<Subprocess, StacksError>> {
-  const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
-  const proc = Bun.spawn(cmd, {
-    ...options,
-    stdout: options?.stdout || 'inherit',
-    cwd: options?.cwd || import.meta.dir,
-    onExit(subprocess, exitCode, signalCode, error) {
-      if (exitCode !== ExitCode.Success && exitCode) {
-        log.error(error)
-        process.exit(exitCode)
-      }
-    },
+export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
+  return new Promise(async (resolve, reject) => {
+    const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
+    const proc = Bun.spawn(cmd, {
+      ...options,
+      stdout: options?.stdout || 'inherit',
+      cwd: options?.cwd || import.meta.dir,
+      onExit(subprocess, exitCode, signalCode, error) {
+        if (exitCode !== ExitCode.Success && exitCode) {
+          log.error(error)
+          reject(new Error(`Failed to execute command: ${cmd.join(' ')}`))
+        }
+      },
+    })
+
+    const exited = await proc.exited
+    if (exited === ExitCode.Success)
+      return resolve(ok(proc))
+
+    return reject(err(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`))))
   })
-
-  const exited = await proc.exited
-  if (exited === ExitCode.Success)
-    return okAsync(proc)
-
-  return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`)))
 }
 
 /**

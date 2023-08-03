@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { type CLI, type MakeOptions } from '@stacksjs/types'
@@ -19,7 +21,7 @@ import {
 
 } from '@stacksjs/actions/make'
 
-export async function make(buddy: CLI) {
+export function make(buddy: CLI) {
   const descriptions = {
     model: 'Create a new model',
     component: 'Create a new component',
@@ -195,11 +197,11 @@ export async function make(buddy: CLI) {
       const result = await createNotification(options)
 
       if (!result) {
-        outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
         process.exit()
       }
 
-      outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
+      await outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

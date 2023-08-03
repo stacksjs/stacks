@@ -2,7 +2,7 @@ import { type CLI, type PrepublishOptions } from '@stacksjs/types'
 import { Action } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-export async function prepublish(buddy: CLI) {
+export function prepublish(buddy: CLI) {
   const descriptions = {
     command: 'Run your prepublish script',
     verbose: 'Enable verbose output',

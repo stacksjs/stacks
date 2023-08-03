@@ -7,7 +7,7 @@ import { resolve } from '@stacksjs/path'
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-export async function create(buddy: CLI) {
+export function create(buddy: CLI) {
   const descriptions = {
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
@@ -38,8 +38,8 @@ export async function create(buddy: CLI) {
       const name = options.name
       const path = resolve(process.cwd(), name)
 
-      await isFolderCheck(path)
-      await onlineCheck()
+      isFolderCheck(path)
+      onlineCheck()
       const result = await download(name, path, options)
 
       if (result?.isErr()) {
@@ -64,14 +64,14 @@ export async function create(buddy: CLI) {
     })
 }
 
-async function isFolderCheck(path: string) {
-  if (await isFolder(path)) {
+function isFolderCheck(path: string) {
+  if (isFolder(path)) {
     log.error(`Path ${path} already exists`)
     process.exit(ExitCode.FatalError)
   }
 }
 
-async function onlineCheck() {
+function onlineCheck() {
   const online = useOnline()
   if (!online) {
     log.info('It appears you are disconnected from the internet.')

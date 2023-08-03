@@ -7,7 +7,7 @@ import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
 
 // import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
-export async function dev(buddy: CLI) {
+export function dev(buddy: CLI) {
   const descriptions = {
     components: 'Start the Components development server',
     desktop: 'Start the Desktop development server',
@@ -79,12 +79,13 @@ export async function dev(buddy: CLI) {
         log.info('buddy dev:components result', result)
 
       if (result.isErr()) {
-        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
+        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
       }
 
+      // eslint-disable-next-line no-console
       console.log('')
-      outro('Exited', { startTime: perf, useSeconds: true })
+      await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -99,18 +100,18 @@ export async function dev(buddy: CLI) {
       if (Array.isArray(result)) {
         // check if any of the items in the array is an error
         // if (result.some(item => item.isErr())) {
-        //   outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        //   await outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
         //   process.exit()
         // }
       }
 
       // check if result is an error
       else if (result.isErr()) {
-        outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
+        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
         process.exit()
       }
 
-      outro('Finished running dev:docs.', { startTime: perf, useSeconds: true })
+      await outro('Finished running dev:docs.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

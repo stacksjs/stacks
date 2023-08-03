@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
+
 import { logsPath } from '@stacksjs/path'
 import { type StacksError, type ValidationError } from '@stacksjs/types'
 import { fs } from '@stacksjs/storage'

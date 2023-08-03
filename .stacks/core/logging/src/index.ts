@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { prompts } from '@stacksjs/cli'
 import { ray as debug } from 'node-ray'
 

@@ -1,6 +1,5 @@
-// Thanks to mitt for this functional event emitter
-// ported due to error TS7016: Could not find a declaration file for module 'mitt'
-// relating to bundler tsconfig.json
+// thanks to mitt for the base of this wonderful functional event emitter
+
 export type EventType = string | symbol
 
 // An event handler can take an optional event argument
@@ -35,9 +34,7 @@ export interface Emitter<Events extends Record<EventType, unknown>> {
 }
 
 /**
- * Mitt: Tiny (~200b) functional event emitter / pubsub.
- * @name mitt
- * @returns {Mitt}
+ * A tiny (~200b) functional event emitter / pubsub.
  */
 export default function mitt<Events extends Record<EventType, unknown>>(
   all?: EventHandlerMap<Events>,
@@ -142,14 +139,12 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 const events = mitt
-
 const emitter = events()
-
-const useEvent = emitter.emit
+const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events()
-const dispatch = emitter.emit
-const listen = emitter.on
-const off = emitter.off
-const all = emitter.all
+const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
+const listen: typeof emitter.on = emitter.on.bind(emitter)
+const off: typeof emitter.off = emitter.off.bind(emitter)
+const all: typeof emitter.all = emitter.all
 
 export { useEvent, useEvents, dispatch, listen, all, off, events, mitt }

@@ -4,7 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-export async function inspire(buddy: CLI) {
+export function inspire(buddy: CLI) {
   buddy
     .command('inspire', 'Inspire yourself with a random quote')
     .option('--two', 'Show two quotes', { default: false })
@@ -13,11 +13,11 @@ export async function inspire(buddy: CLI) {
       const result = await runAction(Action.Inspire)
 
       if (result.isErr()) {
-        outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Your quote is: ...', { startTime: perf, useSeconds: true })
+      await outro('Your quote is: ...', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

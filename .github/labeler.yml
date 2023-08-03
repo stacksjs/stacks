@@ -1,33 +1,33 @@
 # TODO: create generator for this file for the end user
 api:
-  - any: ['.stacks/api/**', '!.stacks/api/package.json']
+  - '.stacks/api/**'
 
 art:
   - .stacks/art/**
 
 deps:
-  - any: [./package.json, ./pnpm-lock.yaml, './**/package.json']
+  - ./package.json
 
 core:
-  - any: ['.stacks/**', '!.stacks/**/package.json']
+  - '.stacks/**'
 
 fonts:
-  - any: ['.stacks/fonts/**', '!.stacks/fonts/**/package.json']
+  - '.stacks/fonts/**'
 
 ide:
-  - any: ['.stacks/ide/**', '!.stacks/ide/package.json', '!.stacks/ide/**/package.json']
+  - '.stacks/ide/**'
 
 jetbrains:
-  - any: ['.stacks/ide/jetbrains/**', '!.stacks/ide/jetbrains/package.json']
+  - '.stacks/ide/jetbrains/**'
 
 vscode:
-  - any: ['.stacks/ide/vscode/**', '!.stacks/ide/vscode/package.json']
+  - '.stacks/ide/vscode/**'
 
 libs:
-  - any: ['.stacks/libs/**', '!.stacks/libs/**/package.json']
+  - '.stacks/libs/**'
 
 components:
-  - any: ['.stacks/libs/components/**', '!.stacks/libs/components/**/package.json']
+  - '.stacks/libs/components/**'
   - resources/components/**
 
 entries:
@@ -37,14 +37,17 @@ examples:
   - .stacks/libs/examples/**
 
 functions:
-  - any: ['.stacks/libs/functions/**', '!.stacks/libs/functions/package.json']
+  - '.stacks/libs/functions/**'
   - resources/functions/**
 
 scripts:
   - .stacks/scripts/**
 
 stack:
-  - any: ['.stacks/stacks/**', '!.stacks/stacks/**/package.json']
+  - '.stacks/stacks/**'
+
+dashboard:
+  - '.stacks/stacks/dashboard/**'
 
 vcs:
   - .stacks/vcs/**
@@ -53,188 +56,188 @@ github:
   - .stacks/vcs/github/**
 
 views:
-  - any: ['.stacks/views/**', '!.stacks/views/**/package.json']
+  - '.stacks/views/**'
   - resources/views/**
 
 web:
   - .stacks/views/web/**
 
 actions:
-  - any: ['.stacks/core/actions/**', '!.stacks/core/actions/package.json']
+  - '.stacks/core/actions/**'
 
 ai:
-  - any: ['.stacks/core/ai/**', '!.stacks/core/ai/package.json']
+  - '.stacks/core/ai/**'
 
 alias:
-  - any: ['.stacks/core/alias/**', '!.stacks/core/alias/package.json']
+  - '.stacks/core/alias/**'
 
 analytics:
-  - any: ['.stacks/core/analytics/**', '!.stacks/core/analytics/package.json']
+  - '.stacks/core/analytics/**'
 
 arrays:
-  - any: ['.stacks/core/utils/arrays/**', '!.stacks/core/utils/arrays/package.json']
+  - '.stacks/core/utils/arrays/**'
 
 auth:
-  - any: ['.stacks/core/auth/**', '!.stacks/core/auth/package.json']
+  - '.stacks/core/auth/**'
 
 buddy:
-  - any: ['.stacks/core/buddy/**', '!.stacks/core/buddy/package.json']
+  - '.stacks/core/buddy/**'
 
 build:
-  - any: ['.stacks/core/build/**', '!.stacks/core/build/package.json']
+  - '.stacks/core/build/**'
 
 cache:
-  - any: ['.stacks/core/cache/**', '!.stacks/core/cache/package.json']
+  - '.stacks/core/cache/**'
 
 chat:
-  - any: ['.stacks/core/notifications/chat/**', '!.stacks/core/notifications/chat/package.json']
+  - '.stacks/core/notifications/chat/**'
 
 cli:
-  - any: ['.stacks/core/cli/**', '!.stacks/core/cli/package.json']
+  - '.stacks/core/cli/**'
   - app/commands/**
 
 cloud:
-  - any: ['.stacks/core/cloud/**', '!.stacks/core/cloud/package.json']
+  - '.stacks/core/cloud/**'
 
 collections:
-  - any: ['.stacks/core/utils/collections/**', '!.stacks/core/utils/collections/package.json']
+  - '.stacks/core/utils/collections/**'
 
 config:
-  - any: ['.stacks/core/config/**', '!.stacks/core/config/package.json']
+  - '.stacks/core/config/**'
   - config/**
 
 database:
-  - any: ['.stacks/core/database/**', '!.stacks/core/database/package.json']
+  - '.stacks/core/database/**'
 
 datetime:
-  - any: ['.stacks/core/utils/datetime/**', '!.stacks/core/utils/datetime/package.json']
+  - '.stacks/core/utils/datetime/**'
 
 desktop:
-  - any: ['.stacks/core/desktop/**', '!.stacks/core/desktop/package.json']
+  - '.stacks/core/desktop/**'
   - .stacks/views/desktop/**
 
 development:
-  - any: ['.stacks/core/development/**', '!.stacks/core/development/package.json']
+  - '.stacks/core/development/**'
 
 dns:
-  - any: ['.stacks/core/dns/**', '!.stacks/core/dns/package.json']
+  - '.stacks/core/dns/**'
 
 docs:
-  - any: ['.stacks/core/docs/**', '!.stacks/core/docs/package.json']
-  - any: ['.stacks/docs/**', '!.stacks/docs/package.json']
+  - '.stacks/core/docs/**'
+  - '.stacks/docs/**'
   - resources/docs/**
   - config/docs.ts
 
 email:
-  - any: ['.stacks/core/notifications/email/**', '!.stacks/core/notifications/email/package.json']
+  - '.stacks/core/notifications/email/**'
 
 error-handling:
-  - any: ['.stacks/core/error-handling/**', '!.stacks/core/error-handling/package.json']
+  - '.stacks/core/error-handling/**'
 
 events:
-  - any: ['.stacks/core/events/**', '!.stacks/core/events/package.json']
+  - '.stacks/core/events/**'
   - app/events/**
 
 faker:
-  - any: ['.stacks/core/faker/**', '!.stacks/core/faker/package.json']
+  - '.stacks/core/faker/**'
 
 git:
-  - any: ['.stacks/core/utils/git/**', '!.stacks/core/utils/git/package.json']
+  - '.stacks/core/utils/git/**'
 
 health:
-  - any: ['.stacks/core/health/**', '!.stacks/core/health/package.json']
+  - '.stacks/core/health/**'
 
 lint:
-  - any: ['.stacks/core/utils/lint/**', '!.stacks/core/utils/lint/package.json']
+  - '.stacks/core/utils/lint/**'
 
 logging:
-  - any: ['.stacks/core/logging/**', '!.stacks/core/logging/package.json']
+  - '.stacks/core/logging/**'
 
 modules:
-  - any: ['.stacks/core/modules/**', '!.stacks/core/modules/package.json']
+  - '.stacks/core/modules/**'
 
 notifications:
-  - any: ['.stacks/core/notifications/**', '!.stacks/core/notifications/package.json']
+  - '.stacks/core/notifications/**'
   - app/notifications/**
 
 objects:
-  - any: ['.stacks/core/utils/objects/**', '!.stacks/core/utils/objects/package.json']
+  - '.stacks/core/utils/objects/**'
 
 orm:
-  - any: ['.stacks/core/orm/**', '!.stacks/core/orm/package.json']
+  - '.stacks/core/orm/**'
 
 pages:
-  - any: ['.stacks/core/pages/**', '!.stacks/core/pages/package.json']
+  - '.stacks/core/pages/**'
 
 path:
-  - any: ['.stacks/core/path/**', '!.stacks/core/path/package.json']
+  - '.stacks/core/path/**'
 
 payments:
-  - any: ['.stacks/core/payments/**', '!.stacks/core/payments/package.json']
+  - '.stacks/core/payments/**'
 
 push:
-  - any: ['.stacks/core/notifications/push/**', '!.stacks/core/notifications/push/package.json']
+  - '.stacks/core/notifications/push/**'
 
 query-builder:
-  - any: ['.stacks/core/query-builder/**', '!.stacks/core/query-builder/package.json']
+  - '.stacks/core/query-builder/**'
 
 queue:
-  - any: ['.stacks/core/queue/**', '!.stacks/core/queue/package.json']
+  - '.stacks/core/queue/**'
 
 real-time:
-  - any: ['.stacks/core/real-time/**', '!.stacks/core/real-time/package.json']
+  - '.stacks/core/real-time/**'
 
 repl:
-  - any: ['.stacks/core/repl/**', '!.stacks/core/repl/package.json']
+  - '.stacks/core/repl/**'
 
 router:
-  - any: ['.stacks/core/router/**', '!.stacks/core/router/package.json']
+  - '.stacks/core/router/**'
 
 scheduler:
-  - any: ['.stacks/core/scheduler/**', '!.stacks/core/scheduler/package.json']
+  - '.stacks/core/scheduler/**'
 
 search-engine:
-  - any: ['.stacks/core/search-engine/**', '!.stacks/core/search-engine/package.json']
+  - '.stacks/core/search-engine/**'
 
 security:
-  - any: ['.stacks/core/security/**', '!.stacks/core/security/package.json']
+  - '.stacks/core/security/**'
 
 server:
-  - any: ['.stacks/core/server/**', '!.stacks/core/server/package.json']
+  - '.stacks/core/server/**'
 
 signals:
-  - any: ['.stacks/core/signals/**', '!.stacks/core/signals/package.json']
+  - '.stacks/core/signals/**'
 
 slug:
-  - any: ['.stacks/core/slug/**', '!.stacks/core/slug/package.json']
+  - '.stacks/core/slug/**'
 
 sms:
-  - any: ['.stacks/core/notifications/sms/**', '!.stacks/core/notifications/sms/package.json']
+  - '.stacks/core/notifications/sms/**'
 
 storage:
-  - any: ['.stacks/core/storage/**', '!.stacks/core/storage/package.json']
+  - '.stacks/core/storage/**'
   - storage/**
 
 strings:
-  - any: ['.stacks/core/utils/strings/**', '!.stacks/core/utils/strings/package.json']
+  - '.stacks/core/utils/strings/**'
 
 testing:
-  - any: ['.stacks/core/testing/**', '!.stacks/core/testing/package.json']
+  - '.stacks/core/testing/**'
 
 tinker:
-  - any: ['.stacks/core/tinker/**', '!.stacks/core/tinker/package.json']
+  - '.stacks/core/tinker/**'
 
 types:
-  - any: ['.stacks/core/types/**', '!.stacks/core/types/package.json']
+  - '.stacks/core/types/**'
 
 ui:
-  - any: ['.stacks/core/ui/**', '!.stacks/core/ui/package.json']
+  - '.stacks/core/ui/**'
 
 utils:
-  - any: ['.stacks/core/utils/**', '!.stacks/core/utils/package.json']
+  - '.stacks/core/utils/**'
 
 validation:
-  - any: ['.stacks/core/validation/**', '!.stacks/core/validation/package.json']
+  - '.stacks/core/validation/**'
 
 app:
   - app/**

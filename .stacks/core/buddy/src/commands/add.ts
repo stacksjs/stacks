@@ -3,7 +3,7 @@ import { type AddOptions, type BuildOptions, type CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { invoke } from '@stacksjs/actions/add'
 
-export async function add(buddy: CLI) {
+export function add(buddy: CLI) {
   const descriptions = {
     add: 'Add a stack to your project (coming soon)',
     table: 'Add the Table Stack to your project',

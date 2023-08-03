@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
@@ -245,9 +246,6 @@ export function packageJsonPath(type: 'vue-components' | 'web-components' | 'fun
 
   if (type === 'web-components')
     return frameworkPath('libs/components/web/package.json')
-
-  if (type === 'functions')
-    return frameworkPath('libs/functions/package.json')
 
   return frameworkPath(`libs/${type}/package.json`)
 }

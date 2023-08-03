@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
+
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { searchEngine } from '@stacksjs/config'
 import { MeiliSearch } from 'meilisearch'

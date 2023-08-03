@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
+
 import { type EmailOptions } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
@@ -31,6 +33,7 @@ export async function send(options: EmailOptions, provider: any, providerName: s
     .catch((error: any) => log.error(`Failed to render email template using provider: ${italic(providerName)}.`, error))
 
   return ResultAsync.fromPromise(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     provider.sendMessage(options),
     () => new Error(`Failed to send message using provider: ${italic(providerName)}`),
   )

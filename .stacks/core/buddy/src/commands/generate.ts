@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
 import process from 'node:process'
 import { type CLI, type GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -16,7 +17,7 @@ import {
   invoke as startGenerationProcess,
 } from '@stacksjs/actions/generate'
 
-export async function generate(buddy: CLI) {
+export function generate(buddy: CLI) {
   const descriptions = {
     command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
     types: 'Generate your TypeScript types',

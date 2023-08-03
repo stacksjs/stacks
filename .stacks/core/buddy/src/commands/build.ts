@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
+
 import process from 'node:process'
 import { type BuildOptions, type CLI } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
@@ -5,7 +7,7 @@ import { isString } from '@stacksjs/validation'
 import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
-export async function build(buddy: CLI) {
+export function build(buddy: CLI) {
   const descriptions = {
     components: 'Build your component library',
     vueComponents: 'Build your Vue component library',
@@ -53,8 +55,6 @@ export async function build(buddy: CLI) {
         // creates an object out of array and sets answers to true
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
-
-      console.log('options', options)
 
       await runAction(Action.BuildStacks, options)
 
@@ -124,7 +124,7 @@ export async function build(buddy: CLI) {
         process.exit()
       }
 
-      outro('Stacks core built successfully', { startTime, useSeconds: true })
+      await outro('Stacks core built successfully', { startTime, useSeconds: true })
     })
 
   buddy
@@ -140,7 +140,7 @@ export async function build(buddy: CLI) {
         process.exit()
       }
 
-      outro('Stacks built successfully', { startTime, useSeconds: true })
+      await outro('Stacks built successfully', { startTime, useSeconds: true })
     })
 }
 

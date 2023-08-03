@@ -123,6 +123,7 @@ export function determineState(): SearchEngineStore {
   const ls = localStorage.getItem('search-engine')
 
   if (isString(ls))
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return JSON.parse(ls) as any
 
   return { // default state

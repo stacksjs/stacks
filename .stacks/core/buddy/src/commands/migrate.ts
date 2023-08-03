@@ -4,7 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-export async function migrate(buddy: CLI) {
+export function migrate(buddy: CLI) {
   const descriptions = {
     migrate: 'Migrates your database',
     verbose: 'Enable verbose output',
@@ -18,13 +18,13 @@ export async function migrate(buddy: CLI) {
       const result = await runAction(Action.Migrate, { ...options })
 
       if (result.isErr()) {
-        outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
+      await outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

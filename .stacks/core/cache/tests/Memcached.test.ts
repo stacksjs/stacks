@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { type Client } from 'memjs'
 import Memcached from 'memjs'
 import { expect, it } from '@stacksjs/testing'

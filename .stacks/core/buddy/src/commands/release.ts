@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { Action } from '@stacksjs/types'
 import { type CLI, type ReleaseOptions } from '@stacksjs/types'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -8,7 +9,7 @@ const descriptions = {
   verbose: 'Enable verbose output',
 }
 
-export async function release(buddy: CLI) {
+export function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
     .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
@@ -21,6 +22,6 @@ export async function release(buddy: CLI) {
         process.exit()
       }
 
-      outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
+      await outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
     })
 }
