@@ -2,7 +2,7 @@
  * The parsed command-line arguments
  */
 
-export type { Subprocess, SyncSubprocess } from 'node:bun'
+export type { Subprocess, SyncSubprocess } from 'bun'
 
 export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
@@ -148,7 +148,7 @@ export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | '
 /**
  * The available npm scripts within the Stacks toolkit.
  */
-export const enum NpmScript {
+export enum NpmScript {
   Build = 'build',
   BuildComponents = 'vite build --config ./core/vite/src/vue-components.ts',
   BuildWebComponents = 'build:web-components',
@@ -195,7 +195,7 @@ export const enum NpmScript {
   UpgradeDependencies = 'pnpm up',
 }
 
-export const enum Action {
+export enum Action {
   Bump = 'bump',
   BuildStacks = 'build/stacks',
   BuildComponentLibs = 'build/component-libs',

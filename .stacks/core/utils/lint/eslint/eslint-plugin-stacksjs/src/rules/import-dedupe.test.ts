@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+
 import { RuleTester } from '@typescript-eslint/utils/dist/ts-eslint'
-import { it } from 'bun:test'
+import { it } from '@stacksjs/testing'
 import rule, { RULE_NAME } from './import-dedupe'
 
 const valids = [

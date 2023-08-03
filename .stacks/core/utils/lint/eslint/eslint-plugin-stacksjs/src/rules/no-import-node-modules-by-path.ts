@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+
 import { createEslintRule } from '../utils'
 
 export const RULE_NAME = 'no-import-node-modules-by-path'

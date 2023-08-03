@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { type Arrayable, type Nullable } from '@stacksjs/types'
 import { clamp } from '@stacksjs/utils'
 
