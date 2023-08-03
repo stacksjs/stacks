@@ -98,15 +98,7 @@ function openAddDnsSection() {
                       href="#"
                       class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
                     >
-                      <svg
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="w-5 h-5"
-                      >
-                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                      </svg>
+                      <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
                     </a>
                   </td>
                 </tr>
@@ -131,15 +123,7 @@ function openAddDnsSection() {
                       href="#"
                       class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
                     >
-                      <svg
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="w-5 h-5"
-                      >
-                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                      </svg>
+                      <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
                     </a>
                   </td>
@@ -216,6 +200,16 @@ function openAddDnsSection() {
             >
           </div>
         </div>
+      </div>
+
+      <div class="justify-end flex mt-4">
+        <button
+          type="button"
+          class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          @click="openAddDnsSection"
+        >
+          Save
+        </button>
       </div>
     </div>
   </div>

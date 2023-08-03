@@ -27,7 +27,7 @@
                     to="/"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-home w-6 h-6"></div>
+                    <div class="i-heroicons-home w-6 h-6" />
                     Dashboard
                   </router-link>
                 </li>
@@ -36,7 +36,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                  <div class="i-heroicons-clock w-6 h-6"></div>
+                    <div class="i-heroicons-clock w-6 h-6" />
                     Deployments
                   </router-link>
                 </li>
@@ -45,7 +45,7 @@
                     to="/commands"
                     class="sidebar-links group"
                   >
-                  <div class="i-heroicons-command-line w-6 h-6"></div>
+                    <div class="i-heroicons-command-line w-6 h-6" />
                     Commands
                   </router-link>
                 </li>
@@ -54,7 +54,7 @@
                     to="/dns"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cloud w-6 h-6"></div>
+                    <div class="i-heroicons-cloud w-6 h-6" />
                     DNS
                   </router-link>
                 </li>
@@ -63,16 +63,16 @@
                     to="/environment"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cpu-chip w-6 h-6"></div>
+                    <div class="i-heroicons-cpu-chip w-6 h-6" />
                     Environment
-                   </router-link>
+                  </router-link>
                 </li>
                 <li>
                   <router-link
                     to="/dependencies"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cube w-6 h-6"></div>
+                    <div class="i-heroicons-cube w-6 h-6" />
                     Dependencies
                   </router-link>
                 </li>
@@ -81,7 +81,7 @@
                     to="/queue"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-queue-list w-6 h-6"></div>
+                    <div class="i-heroicons-queue-list w-6 h-6" />
                     Queue
                   </router-link>
                 </li>
@@ -90,7 +90,7 @@
                     to="/library"
                     class="sidebar-links group"
                   >
-                  <div class="i-heroicons-building-library w-6 h-6"></div>
+                    <div class="i-heroicons-building-library w-6 h-6" />
                     Library
                   </router-link>
                 </li>
@@ -99,7 +99,7 @@
                     to="/health"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-heart w-6 h-6"></div>
+                    <div class="i-heroicons-heart w-6 h-6" />
                     Health
                   </router-link>
                 </li>
@@ -179,7 +179,7 @@
                 to="/settings/account"
                 class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600"
               >
-                <div class="i-heroicons-cog w-6 h-6"></div>
+                <div class="i-heroicons-cog w-6 h-6" />
                 Settings
               </router-link>
             </li>
