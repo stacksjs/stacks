@@ -1,5 +1,6 @@
 {
-  "extends": "@stacksjs",
+  // "extends": "@stacksjs",
+  "extends": "@antfu",
   "plugins": [
     "stacksjs"
   ]

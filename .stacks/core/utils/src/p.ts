@@ -44,6 +44,7 @@ class PInstance<T = any> extends Promise<Awaited<T>[]> {
     return new PInstance(
       Array.from(this.items)
         .map(async (i, idx) => {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const v = await i
           if ((v as any) === VOID)
             return VOID as unknown as U
@@ -57,6 +58,7 @@ class PInstance<T = any> extends Promise<Awaited<T>[]> {
     return new PInstance(
       Array.from(this.items)
         .map(async (i, idx) => {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const v = await i
           const r = await fn(v, idx)
           if (!r)
@@ -68,6 +70,7 @@ class PInstance<T = any> extends Promise<Awaited<T>[]> {
   }
 
   forEach(fn: (value: Awaited<T>, index: number) => void): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.map(fn).then()
   }
 

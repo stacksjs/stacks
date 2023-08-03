@@ -66,6 +66,7 @@ async function run() {
   md += '\n\n'
 
   for (const pkg of [...packages.slice(2), packages[1]]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { exports, packageJSON } = await getExportsSize({
       pkg: `./packages/${pkg.name}/dist`,
       output: false,
@@ -74,6 +75,7 @@ async function run() {
       includes: ['@vueuse/shared'],
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     md += `<kbd>${packageJSON.name}</kbd>\n\n`
 
     md += markdownTable([
@@ -93,4 +95,4 @@ async function run() {
   await fs.writeJSON('../export-size.json', mdJSON, { spaces: 2 })
 }
 
-run()
+await run()

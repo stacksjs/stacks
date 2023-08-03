@@ -25,6 +25,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
+    "@antfu/eslint-config": "latest",
     "@typescript-eslint/utils": "^6.0.0"
   },
   "devDependencies": {

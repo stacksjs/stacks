@@ -248,6 +248,9 @@
   },
   "include": [
     "./**.d.ts",
+    "./docs/.vitepress/*",
+    "./types/*",
+    "./types/**/*",
     "./**/*",
     "../app/*",
     "../app/**/*",

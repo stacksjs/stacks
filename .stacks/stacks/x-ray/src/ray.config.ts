@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 // TODO: this should be normalized and pulled from a published config file
 export default {
   enable: true,

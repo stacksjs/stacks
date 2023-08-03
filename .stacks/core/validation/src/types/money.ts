@@ -8,6 +8,7 @@ import { isMoney } from '../rules'
 
 export class MoneyValidator extends BaseLiteralType<Money, Money> {
   constructor(options?: FieldOptions, validations?: Validation<any>[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
     super(options, validations || [isMoney()])
   }
 

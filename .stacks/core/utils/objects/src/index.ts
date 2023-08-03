@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
+
 import { notNullish } from '@stacksjs/utils'
 import { isObject } from '@stacksjs/validation'
 import { type DeepMerge } from '@stacksjs/types'

@@ -1,4 +1,3 @@
-import { type VineString as ValidationString } from '@vinejs/vine'
 import validator, { Vine as Validator } from '@vinejs/vine'
 import { MoneyValidator } from './types/money'
 
@@ -7,12 +6,12 @@ Validator.macro('money', () => {
 })
 
 const validate: Validator = validator
-const RuleString: ValidationString = validator.string()
-const RuleNumber: Validator['number'] = validator.number
-const RuleBoolean: Validator['boolean'] = validator.boolean
-const RuleArray: Validator['array'] = validator.array
-const RuleObject: Validator['object'] = validator.object
-const RuleAny: Validator['any'] = validator.any
+const RuleString: Validator['string'] = (...args) => validator.string(...args)
+const RuleNumber: Validator['number'] = (...args) => validator.number(...args)
+const RuleBoolean: Validator['boolean'] = (...args) => validator.boolean(...args)
+const RuleArray: Validator['array'] = (...args) => validator.array(...args)
+const RuleObject: Validator['object'] = (...args) => validator.object(...args)
+const RuleAny: Validator['any'] = (...args) => validator.any(...args)
 // const email = () => validator.string().email()
 
 export { validate, validator, Validator, RuleString, RuleNumber, RuleBoolean, RuleArray, RuleObject, RuleAny }

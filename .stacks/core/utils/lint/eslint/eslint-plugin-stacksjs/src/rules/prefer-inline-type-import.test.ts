@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
+
 import { RuleTester } from '@typescript-eslint/utils/dist/ts-eslint'
 import { it } from 'bun:test'
 import rule, { RULE_NAME } from './prefer-inline-type-import'

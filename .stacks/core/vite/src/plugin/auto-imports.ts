@@ -30,5 +30,6 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
 
   const newOptions = defu(options, defaultOptions)
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return AutoImport(newOptions)
 }

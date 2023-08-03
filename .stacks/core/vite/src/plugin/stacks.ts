@@ -5,7 +5,6 @@ import app from '~/config/app'
 
 // https://github.com/hannoeru/vite-plugin-pages
 export function stacks(): Plugin {
-  console.log('stacks plugin')
   return {
     name: 'stacks',
 
@@ -17,18 +16,18 @@ export function stacks(): Plugin {
 
     // Load hook for loading individual files
     // async load(id) {
-    async load() {
+    load() {
       return null // Return null to let Vite handle the file loading
     },
 
     // async resolveId(source, importer) {
-    async resolveId() {
+    resolveId() {
       return null // Return null to let Vite handle the module resolution
     },
 
     // Transform hook for transforming individual files
     // async transform(code, id) {
-    async transform(code) {
+    transform(code) {
       return code // Return the unmodified code
     },
 
