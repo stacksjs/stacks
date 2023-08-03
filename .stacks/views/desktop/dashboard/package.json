@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
-    "@stacksjs/desktop": "workspace:*",
-    "vue3-highlightjs": "^1.0.5"
+    "@stacksjs/desktop": "workspace:*"
   }
 }

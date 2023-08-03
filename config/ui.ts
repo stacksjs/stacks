@@ -16,7 +16,7 @@ export default defineUi({
   classPrefix: 'stx-',
   reset: 'tailwind',
 
-  icons: ['heroicon-outline', 'heroicon-solid'],
+  icons: ['heroicons'],
 
   fonts: {
     email: {

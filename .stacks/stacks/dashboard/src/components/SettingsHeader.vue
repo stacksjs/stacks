@@ -37,10 +37,10 @@
 
 <style scoped>
 .sidebar-links {
-  @apply text-gray-700 hover:text-indigo-600 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
+  @apply text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
 }
 
 .router-link-active, .router-link-exact-active {
-  @apply text-indigo-600 text-sm rounded-md !important
+  @apply text-blue-600 text-sm rounded-md !important
 }
 </style>

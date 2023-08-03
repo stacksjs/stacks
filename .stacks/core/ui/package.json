@@ -51,8 +51,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@iconify-json/heroicons-outline": "^1.1.6",
-    "@iconify-json/heroicons-solid": "^1.1.7",
+    "@iconify-json/heroicons": "^1.1.11",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -63,6 +62,8 @@
     "vue-tsc": "^1.8.8"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@iconify-json/heroicons": "^1.1.11",
+    "@stacksjs/development": "workspace:*",
+    "@unocss/preset-icons": "^0.54.1"
   }
 }

@@ -36,7 +36,7 @@
         <div class="mt-4 flex justify-end">
           <button
             type="button"
-            class="rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="rounded bg-blue-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             Add
           </button>
@@ -98,12 +98,12 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 font-normal text-xs hover:text-indigo-900 hover:underline"
+                      class="text-blue-600 font-normal text-xs hover:text-blue-900 hover:underline"
                     >Install</a>
 
                     <a
                       href="#"
-                      class="text-indigo-600 font-normal text-xs hover:text-indigo-900 hover:underline pl-2"
+                      class="text-blue-600 font-normal text-xs hover:text-blue-900 hover:underline pl-2"
                     >Remove</a>
                   </td>
                 </tr>

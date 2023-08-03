@@ -70,7 +70,7 @@
         <div class="mt-4 flex justify-end">
           <button
             type="button"
-            class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             Create
           </button>
@@ -132,7 +132,7 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
+                      class="text-blue-600 hover:text-blue-900"
                     >Install</a>
                   </td>
                 </tr>
@@ -149,7 +149,7 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-indigo-600 hover:text-indigo-900"
+                      class="text-blue-600 hover:text-blue-900"
                     >Install</a>
                   </td>
                 </tr>

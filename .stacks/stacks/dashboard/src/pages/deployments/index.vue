@@ -153,18 +153,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -204,21 +193,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-indigo-600 bg-indigo-500/10 ring-indigo-600/30">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
           Production
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -261,18 +239,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -315,18 +282,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -366,21 +322,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-indigo-600 bg-indigo-500/10 ring-indigo-600/30">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
           Production
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -423,18 +368,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -477,18 +411,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -531,18 +454,7 @@
         <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
           Preview
         </div>
-        <svg
-          class="h-5 w-5 flex-none text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-            clip-rule="evenodd"
-          />
-        </svg>
+         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
       </li>
     </ul>
   </main>
@@ -554,7 +466,7 @@
       </h2>
       <a
         href="#"
-        class="text-sm font-semibold leading-6 text-indigo-700"
+        class="text-sm font-semibold leading-6 text-blue-700"
       >View all</a>
     </header>
     <ul

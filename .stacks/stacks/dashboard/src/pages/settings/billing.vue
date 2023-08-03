@@ -39,7 +39,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
 
           <button
             type="button"
-            class="rounded-md ml-4  bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="rounded-md ml-4  bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             Change Plan
           </button>
@@ -61,7 +61,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 id="credit-card"
                 name="payment-type"
                 type="radio"
-                class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
               >
               <label
                 for="credit-card"
@@ -73,7 +73,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 id="paypal"
                 name="payment-type"
                 type="radio"
-                class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
               >
               <label
                 for="paypal"
@@ -95,7 +95,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 type="text"
                 name="card-number"
                 autocomplete="cc-number"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
             </div>
           </div>
@@ -111,7 +111,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 type="text"
                 name="name-on-card"
                 autocomplete="cc-name"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
             </div>
           </div>
@@ -127,7 +127,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 type="text"
                 name="expiration-date"
                 autocomplete="cc-exp"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
             </div>
           </div>
@@ -143,7 +143,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 type="text"
                 name="cvc"
                 autocomplete="csc"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
             </div>
           </div>

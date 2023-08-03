@@ -29,7 +29,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               <div>
                 <button
                   type="button"
-                  class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                  class="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm"
                 >
                   Change avatar
                 </button>
@@ -93,7 +93,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 class="block text-sm font-medium leading-6 text-gray-900"
               >Username</label>
               <div class="mt-2">
-                <div class="flex rounded-md ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                <div class="flex rounded-md ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500">
                   <span class="flex select-none items-center pl-3 text-gray-600 sm:text-sm">example.com/</span>
                   <input
                     id="username"
@@ -129,7 +129,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           <div class="mt-8 flex">
             <button
               type="submit"
-              class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              class="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
             >
               Save
             </button>
@@ -201,7 +201,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           <div class="mt-8 flex">
             <button
               type="submit"
-              class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              class="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
             >
               Save
             </button>
@@ -241,7 +241,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           <div class="mt-8 flex">
             <button
               type="submit"
-              class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              class="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
             >
               Log out other sessions
             </button>

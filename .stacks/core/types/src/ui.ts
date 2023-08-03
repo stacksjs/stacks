@@ -1,7 +1,7 @@
 import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
-export type Icon = 'heroicon-outline' | 'heroicon-solid'
+export type Icon = 'heroicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
 
 export interface FontInfo {

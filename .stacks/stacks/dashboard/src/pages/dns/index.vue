@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ModalWrapper from '../../components/Modals/ModalWrapper.vue'
 
-const addDnsModal = ref(false)
+const addDnsSection = ref(false)
 
-function closeAddDnsModal() {
-  addDnsModal.value = false
+function closeAddDnsSection() {
+  addDnsSection.value = false
 }
 
-function openAddDnsModal() {
-  addDnsModal.value = true
+function openAddDnsSection() {
+  addDnsSection.value = true
 }
 </script>
 
@@ -25,24 +24,10 @@ function openAddDnsModal() {
 
         <button
           type="button"
-          class="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          @click="openAddDnsModal"
+          class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          @click="openAddDnsSection"
         >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-            class="w-5 h-5 text-white"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
+          <div class="i-heroicons-plus w-5 h-5" />
 
           DNS
         </button>
@@ -165,76 +150,73 @@ function openAddDnsModal() {
         </div>
       </div>
     </div>
-  </div>
 
-  <ModalWrapper
-    v-if="addDnsModal"
-    @close-modal="closeAddDnsModal()"
-  >
-    <template #modal-body>
-      <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
+    <div
+      v-if="addDnsSection"
+      class="bg-white rounded-bl-md rounded-br-md px-6 py-4"
+    >
+      <div class="flex justify-between">
+        <h1 class="text-base font-semibold leading-6 text-gray-900">
+          Add DNS
+        </h1>
+
         <button
-          type="button"
-          class="text-gray-400 rounded-md dark:text-gray-200 dark-hover:text-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
-          @click="closeAddDnsModal()"
-        >
-          <span class="sr-only">Close</span>
-          <!-- Heroicon name: outline/x-mark -->
-          <svg
-            class="w-6 h-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+          class="i-heroicons-x-mark-solid w-5 h-5 text-gray-500 hover:text-gray-700"
+          @click="closeAddDnsSection"
+        />
       </div>
 
-      <div class="sm:flex sm:items-start">
-        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-          <h3
-            id="modal-title"
-            class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
-          >
-            Search Engine Instance
-          </h3>
+      <div class="grid gap-6 grid-cols-3 mt-8">
+        <div class="sm:col-span-1">
+          <label
+            for="city"
+            class="block text-sm font-medium leading-6 text-gray-900"
+          >Type</label>
           <div class="mt-2">
-            <p
-              id="subtitle"
-              class="mb-2 text-xs text-green-800 dark:text-green-600"
-            >
-              test
-            </p>
+            <select class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+              <option value="A">
+                A
+              </option>
+              <option value="AA">
+                AA
+              </option>
+              <option value="AAA">
+                AAA
+              </option>
+            </select>
+          </div>
+        </div>
 
-            test
-
-            <p
-              id="title"
-              class="mt-2 text-sm text-gray-800 dark:text-gray-200"
+        <div class="sm:col-span-1">
+          <label
+            for="region"
+            class="block text-sm font-medium leading-6 text-gray-900"
+          >Name</label>
+          <div class="mt-2">
+            <input
+              id="name"
+              type="text"
+              name="name"
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
             >
-              test
-            </p>
+          </div>
+        </div>
+
+        <div class="sm:col-span-1">
+          <label
+            for="region"
+            class="block text-sm font-medium leading-6 text-gray-900"
+          >Address</label>
+          <div class="mt-2">
+            <input
+              id="name"
+              type="text"
+              name="name"
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            >
           </div>
         </div>
       </div>
-    </template>
-
-    <template #modal-actions>
-      <button
-        type="button"
-        class="secondary-button"
-        @click="closeAddDnsModal()"
-      >
-        Close
-      </button>
-    </template>
-  </ModalWrapper>
+    </div>
+  </div>
 </template>

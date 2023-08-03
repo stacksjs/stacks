@@ -3,7 +3,7 @@
     <div class="relative isolate overflow-hidden">
       <!-- Stats -->
       <div class="border-b border-b-gray-900/10 lg:border-t lg:border-t-gray-900/5">
-        <dl class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
+        <dl class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8">
             <dt class="text-sm font-medium leading-6 text-gray-500">
               X Library
@@ -64,8 +64,8 @@
 
     <div class="space-y-8 py-16 xl:space-y-12 px-4 sm:px-6 lg:px-8">
       <!-- Recent activity table -->
-      <div>
-        <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-7xl">
+        <div>
           <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
             Recent Deploys
           </h2>
@@ -164,7 +164,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-indigo-600 bg-indigo-500/10 ring-indigo-600/30">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
               Production
             </div>
             <svg
@@ -235,8 +235,8 @@
           </li>
         </ul>
       </div>
-      <div>
-        <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-7xl">
+        <div>
           <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
             Recent Commits
           </h2>

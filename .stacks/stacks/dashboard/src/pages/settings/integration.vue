@@ -80,7 +80,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               App key
             </dt>
             <dd class="text-gray-700">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
           <div class="flex justify-between gap-x-4 py-3">
@@ -88,7 +88,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               Secret key
             </dt>
             <dd class="flex items-start gap-x-2">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
         </dl>
@@ -163,7 +163,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               App key
             </dt>
             <dd class="text-gray-700">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
           <div class="flex justify-between gap-x-4 py-3">
@@ -171,7 +171,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               Secret key
             </dt>
             <dd class="flex items-start gap-x-2">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
         </dl>
@@ -246,7 +246,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               App key
             </dt>
             <dd class="text-gray-700">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
           <div class="flex justify-between gap-x-4 py-3">
@@ -254,7 +254,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               Secret key
             </dt>
             <dd class="flex items-start gap-x-2">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
         </dl>
@@ -329,7 +329,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               App key
             </dt>
             <dd class="text-gray-700">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
           <div class="flex justify-between gap-x-4 py-3">
@@ -337,7 +337,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               Secret key
             </dt>
             <dd class="flex items-start gap-x-2">
-              <span> •••• •••• •••• XXXX </span>
+              <span> •••• •••• •••• 5173 </span>
             </dd>
           </div>
         </dl>

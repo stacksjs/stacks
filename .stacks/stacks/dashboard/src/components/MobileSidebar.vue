@@ -81,13 +81,13 @@
                   class="-mx-2 space-y-1"
                 >
                   <li>
-                    <!-- Current: "bg-gray-50 text-indigo-600", Default: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50" -->
+                    <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                     <a
                       href="#"
-                      class="bg-gray-50 text-indigo-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="bg-gray-50 text-blue-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -106,10 +106,10 @@
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -128,10 +128,10 @@
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -150,10 +150,10 @@
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -172,10 +172,10 @@
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -194,10 +194,10 @@
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
                       <svg
-                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                        class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -229,30 +229,30 @@
                   class="-mx-2 mt-2 space-y-1"
                 >
                   <li>
-                    <!-- Current: "bg-gray-50 text-indigo-600", Default: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50" -->
+                    <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
-                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600">H</span>
+                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-blue-600 group-hover:text-blue-600">H</span>
                       <span class="truncate">Heroicons</span>
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
-                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600">T</span>
+                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-blue-600 group-hover:text-blue-600">T</span>
                       <span class="truncate">Tailwind Labs</span>
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                      class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                     >
-                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600">W</span>
+                      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-blue-600 group-hover:text-blue-600">W</span>
                       <span class="truncate">Workcation</span>
                     </a>
                   </li>
@@ -261,10 +261,10 @@
               <li class="mt-auto">
                 <a
                   href="#"
-                  class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                  class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                 >
                   <svg
-                    class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                    class="h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.5"

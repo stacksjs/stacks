@@ -143,7 +143,7 @@
                   class="filter-button"
                 >
                   <svg
-                    class="mr-1.5 h-3 w-3 text-indigo-400"
+                    class="mr-1.5 h-3 w-3 text-blue-400"
                     fill="currentColor"
                     viewBox="0 0 8 8"
                   >

@@ -100,6 +100,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
+    "jiti": "1.18.2",
     "stacks": "workspace:*"
   },
   "lint-staged": {
