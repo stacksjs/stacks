@@ -28,14 +28,12 @@ import { exec } from './exec'
  * ```
  */
 export async function runCommand(command: string, options?: string | CliOptions): Promise<Result<Subprocess, StacksError>> {
-  return new Promise(async (resolve, reject) => {
-    const result = await exec(command, options)
+  const result = await exec(command, options)
 
-    if (result.isErr())
-      return reject(result.error)
+  if (result.isErr())
+    return reject(result.error)
 
-    return resolve(result)
-  })
+  return result
 }
 
 /**
