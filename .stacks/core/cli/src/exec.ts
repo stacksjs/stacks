@@ -35,7 +35,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
       onExit(subprocess, exitCode, signalCode, error) {
         if (exitCode !== ExitCode.Success && exitCode) {
           log.error(error)
-          reject(new Error(`Failed to execute command: ${cmd.join(' ')}`))
+          return reject(handleError(`Failed to execute command: ${cmd.join(' ')}`))
         }
       },
     })

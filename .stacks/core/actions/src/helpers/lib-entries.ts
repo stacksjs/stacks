@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { kebabCase } from '@stacksjs/strings'
 import { type LibraryType } from '@stacksjs/path'
