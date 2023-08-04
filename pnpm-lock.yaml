@@ -1359,8 +1359,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       validator:
-        specifier: ^13.9.0
-        version: 13.9.0
+        specifier: ^13.11.0
+        version: 13.11.0
     devDependencies:
       '@stacksjs/development':
         specifier: workspace:*
@@ -19599,6 +19599,11 @@ packages:
     resolution: {integrity: sha512-M6w37eVCMMouJ9V/sdPGnC5H4uDr73/+xdq0FBLO3TFFX1+7wiUY6Es328NN+y43tmY+doUdN9g9J21vqB7iLw==}
     dependencies:
       builtins: 1.0.3
+    dev: false
+
+  /validator@13.11.0:
+    resolution: {integrity: sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==}
+    engines: {node: '>= 0.10'}
     dev: false
 
   /validator@13.9.0:
