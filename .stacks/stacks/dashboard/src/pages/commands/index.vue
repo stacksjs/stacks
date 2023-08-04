@@ -144,15 +144,7 @@ function toggleDropdown(index: number) {
                       class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition cursor-pointer"
                       @click="toggleDropdown(0)"
                     >
-                      <svg
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="w-5 h-5"
-                      >
-                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                      </svg>
+                      <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
                       <div
                         class="absolute dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
@@ -216,15 +208,7 @@ function toggleDropdown(index: number) {
                       class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition cursor-pointer"
                       @click="toggleDropdown(1)"
                     >
-                      <svg
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="w-5 h-5"
-                      >
-                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                      </svg>
+                      <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
                       <div
                         class="absolute dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
@@ -273,17 +257,3 @@ function toggleDropdown(index: number) {
     </div>
   </div>
 </template>
-
-<style>
-code {
-  @apply rounded-lg !important
-}
-
-.table-responsive {
-  position: static !important;
-}
-
-.table-responsive{
-  overflow-y: visible !important;
-}
-</style>

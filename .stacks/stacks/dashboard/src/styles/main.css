@@ -1,0 +1,21 @@
+code {
+  @apply rounded-lg !important
+}
+
+.table-responsive {
+  position: static !important;
+  }
+
+.table-responsive{
+  overflow-y: visible !important;
+}
+
+textarea {
+  @apply resize-none;
+}
+
+
+/* textarea {
+  background: #1c1c1c !important;
+  color: #FFFFFF !important;
+} */

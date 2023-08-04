@@ -52,7 +52,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.4.7",
+    "@maizzle/framework": "^4.5.0",
     "@novu/emailjs": "^0.17.1",
     "@novu/mailgun": "^0.17.1",
     "@novu/mailjet": "^0.17.1",

@@ -12,8 +12,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       jiti:
-        specifier: 1.18.2
-        version: 1.18.2
+        specifier: 1.19.1
+        version: 1.19.1
       stacks:
         specifier: workspace:*
         version: link:.stacks
@@ -693,8 +693,8 @@ importers:
   .stacks/core/email:
     dependencies:
       '@maizzle/framework':
-        specifier: ^4.4.7
-        version: 4.4.7(glob@7.2.3)
+        specifier: ^4.5.0
+        version: 4.5.0(glob@7.2.3)
       '@novu/emailjs':
         specifier: ^0.17.1
         version: 0.17.1
@@ -888,8 +888,8 @@ importers:
   .stacks/core/notifications:
     dependencies:
       '@maizzle/framework':
-        specifier: ^4.4.7
-        version: 4.4.7(glob@7.2.3)
+        specifier: ^4.5.0
+        version: 4.5.0(glob@7.2.3)
       '@stacksjs/chat':
         specifier: workspace:*
         version: link:../chat
@@ -1506,12 +1506,6 @@ importers:
 
   .stacks/core/ui:
     dependencies:
-      '@iconify-json/heroicons-outline':
-        specifier: ^1.1.6
-        version: 1.1.6
-      '@iconify-json/heroicons-solid':
-        specifier: ^1.1.7
-        version: 1.1.7
       '@julr/unocss-preset-forms':
         specifier: ^0.0.5
         version: 0.0.5(unocss@0.54.1)
@@ -5281,18 +5275,6 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: false
 
-  /@iconify-json/heroicons-outline@1.1.6:
-    resolution: {integrity: sha512-izccU3vb112HalbgKkZ1OyM0IH7HjaSCD8lvf2BZSBs1PiwFIP/2yytj6eBRlVYetPhxMoa93hd2T94qcZpz0Q==}
-    dependencies:
-      '@iconify/types': 2.0.0
-    dev: false
-
-  /@iconify-json/heroicons-solid@1.1.7:
-    resolution: {integrity: sha512-eHg55+AvKHHxhg9D3s+ldW8yh3myWeC5LH36OGF1w25e41ruixIlpCEcXbnvREH0y7XV7NY1AykGQ8rDVwA9cQ==}
-    dependencies:
-      '@iconify/types': 2.0.0
-    dev: false
-
   /@iconify-json/heroicons@1.1.11:
     resolution: {integrity: sha512-Autw98FvUTmBCgb4CuKZ7iQQ2633YBCmcCbAbVNU9hAo6vms9uVcbtrAQt/qlB+qzNi52PV3DWDiRtJgmPeZIw==}
     dependencies:
@@ -5480,8 +5462,8 @@ packages:
       - zenObservable
     dev: false
 
-  /@maizzle/framework@4.4.7(glob@7.2.3):
-    resolution: {integrity: sha512-bzf4IYSsRrqWZvuXh8W+rvcmbpoOXW3VOGD4gidBd/X0PDpCuQDhrU4gaJAp1GGca1cVYVqsThFTNyKciCqPew==}
+  /@maizzle/framework@4.5.0(glob@7.2.3):
+    resolution: {integrity: sha512-73tjo9zEgYlUqc8Y92WgdPjgXLnF7L71am+K81jlDNCxX1NLuzcyH7fQVSW1M4lc1FvPPwyOg7R4+c3vW9Ks0A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -8265,24 +8247,6 @@ packages:
   /@vue/devtools-api@6.5.0:
     resolution: {integrity: sha512-o9KfBeaBmCKl10usN4crU53fYtC1r7jJwdGKjPT24t348rHxgfpZ0xL3Xm/gLUYnc0oTp8LAmrxOeLyu6tbk2Q==}
 
-  /@vue/language-core@1.8.8:
-    resolution: {integrity: sha512-i4KMTuPazf48yMdYoebTkgSOJdFraE4pQf0B+FTOFkbB+6hAfjrSou/UmYWRsWyZV6r4Rc6DDZdI39CJwL0rWw==}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@volar/language-core': 1.10.0
-      '@volar/source-map': 1.10.0
-      '@vue/compiler-dom': 3.3.4
-      '@vue/reactivity': 3.3.4
-      '@vue/shared': 3.3.4
-      minimatch: 9.0.3
-      muggle-string: 0.3.1
-      vue-template-compiler: 2.7.14
-    dev: false
-
   /@vue/language-core@1.8.8(typescript@5.1.6):
     resolution: {integrity: sha512-i4KMTuPazf48yMdYoebTkgSOJdFraE4pQf0B+FTOFkbB+6hAfjrSou/UmYWRsWyZV6r4Rc6DDZdI39CJwL0rWw==}
     peerDependencies:
@@ -9522,6 +9486,7 @@ packages:
   /callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
+    requiresBuild: true
     dev: false
 
   /callsites@4.0.0:
@@ -13830,11 +13795,6 @@ packages:
       supports-color: 7.2.0
     dev: false
 
-  /jiti@1.18.2:
-    resolution: {integrity: sha512-QAdOptna2NYiSSpv0O/BwoHBSmz4YhpzJHyi+fnMRTXFjp7B8i/YG5Z8IfusxB1ufjcD2Sre1F3R+nX3fvy7gg==}
-    hasBin: true
-    dev: false
-
   /jiti@1.19.1:
     resolution: {integrity: sha512-oVhqoRDaBXf7sjkll95LHVS6Myyyb1zaunVwk4Z0+WPSW4gjS0pl01zYKHScTuyEhQsFxV5L4DR5r+YqSyqyyg==}
     hasBin: true
@@ -15938,6 +15898,7 @@ packages:
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
+    requiresBuild: true
     dependencies:
       callsites: 3.1.0
     dev: false
@@ -17265,6 +17226,7 @@ packages:
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
     engines: {node: '>=4'}
+    requiresBuild: true
     dev: false
 
   /resolve-from@5.0.0:
@@ -20052,7 +20014,7 @@ packages:
         optional: true
     dependencies:
       '@volar/typescript': 1.10.0
-      '@vue/language-core': 1.8.8
+      '@vue/language-core': 1.8.8(typescript@5.1.6)
       typesafe-path: 0.2.2
       vue-component-type-helpers: 1.8.8
     dev: false
