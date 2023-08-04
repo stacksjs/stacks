@@ -8,49 +8,49 @@ const flag = ref(false)
   <div class="px-4 sm:px-6 lg:px-8 py-8">
     <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-gray-800">
       <div class="px-4 sm:px-0">
-        <h3 class="text-base font-semibold leading-7 text-gray-900">
+        <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
           Latest Deployment
         </h3>
       </div>
-      <div class="mt-6 border-t border-gray-100">
-        <dl class="divide-y divide-gray-100">
+      <div class="mt-6 border-t border-gray-100 dark:border-gray-600">
+        <dl class="divide-y divide-gray-100 dark:divide-gray-600">
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900">
+            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Status
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               Ready
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900">
+            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Environment
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               Production
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900">
+            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Duration
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               50s
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900">
+            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Domain
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               www.stacks.com
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900">
+            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Source
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               <div class="flex items-center">
                 <svg
                   class="with-icon_icon__MHUeb"
@@ -116,13 +116,13 @@ const flag = ref(false)
     </div>
 
     <div class="rounded-lg mt-12   bg-white px-6 py-8 text-sm dark:bg-gray-800">
-      <h2 class="text-2xl font-bold leading-10 tracking-tight text-gray-900">
+      <h2 class="text-2xl font-bold leading-10 tracking-tight text-gray-900  dark:text-gray-100">
         Deployment Details
       </h2>
       <div>
         <ul
           role="list"
-          class="border rounded-md divide-y divide-gray-200 mt-8"
+          class="border rounded-md divide-y divide-gray-200 dark:divide-gray-600 mt-8"
         >
           <li
             class="relative flex-col cursor-pointer"
@@ -131,7 +131,7 @@ const flag = ref(false)
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900">
+                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
                     <svg
                       class="h-6 w-6 flex-none text-gray-400"
                       viewBox="0 0 20 20"
@@ -192,7 +192,7 @@ const flag = ref(false)
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900">
+                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
                     <svg
                       class="h-6 w-6 flex-none text-gray-400"
                       viewBox="0 0 20 20"
@@ -253,7 +253,7 @@ const flag = ref(false)
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900">
+                  <p class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
                     <svg
                       class="h-6 w-6 flex-none text-gray-400"
                       viewBox="0 0 20 20"

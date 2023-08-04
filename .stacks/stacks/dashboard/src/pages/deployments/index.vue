@@ -1,7 +1,7 @@
 <template>
   <main class="lg:pr-96">
-    <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <h1 class="text-base font-semibold leading-7 text-gray-900">
+    <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-600">
+      <h1 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
         Deployments
       </h1>
 
@@ -16,7 +16,7 @@
         <button
           id="sort-menu-button"
           type="button"
-          class="flex items-center gap-x-1 text-sm font-medium leading-6 text-gray-900"
+          class="flex items-center gap-x-1 text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
           x-ref="button"
           aria-expanded="false"
           aria-haspopup="true"
@@ -110,7 +110,7 @@
     <!-- Deployment list -->
     <ul
       role="list"
-      class="divide-y divide-gray-200"
+      class="divide-y divide-gray-200 dark:divide-gray-600"
     >
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -118,7 +118,7 @@
             <div class="flex-none rounded-full p-1 text-gray-500 bg-gray-100/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -150,10 +150,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -161,7 +161,7 @@
             <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -193,10 +193,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
           Production
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -204,7 +204,7 @@
             <div class="flex-none rounded-full p-1 text-gray-500 bg-gray-100/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -236,10 +236,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -247,7 +247,7 @@
             <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -279,10 +279,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -290,7 +290,7 @@
             <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -322,10 +322,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
           Production
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -333,7 +333,7 @@
             <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -365,10 +365,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -376,7 +376,7 @@
             <div class="flex-none rounded-full p-1 text-rose-400 bg-rose-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -408,10 +408,10 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
       <li class="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="min-w-0 flex-auto">
@@ -419,7 +419,7 @@
             <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
               <div class="h-2 w-2 rounded-full bg-current" />
             </div>
-            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+            <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
               <router-link
                 to="/deployments/1"
                 href="#"
@@ -451,17 +451,17 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
           Preview
         </div>
-         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400"></div>
+        <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
       </li>
     </ul>
   </main>
 
-  <aside class="lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-gray-300">
-    <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <h2 class="text-base font-semibold leading-7 text-gray-900">
+  <aside class="lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-gray-300 dark:border-gray-600">
+    <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-600">
+      <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
         Activity feed
       </h2>
       <a
@@ -480,12 +480,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Michael Foster
           </h3>
           <time
             datetime="2023-01-23T11:00"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >1h</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -499,12 +499,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Lindsay Walton
           </h3>
           <time
             datetime="2023-01-23T09:00"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >3h</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -518,12 +518,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Courtney Henry
           </h3>
           <time
             datetime="2023-01-23T00:00"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >12h</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -537,12 +537,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Courtney Henry
           </h3>
           <time
             datetime="2023-01-21T13:00"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >2d</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -556,12 +556,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Michael Foster
           </h3>
           <time
             datetime="2023-01-18T12:34"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >5d</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -575,12 +575,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Courtney Henry
           </h3>
           <time
             datetime="2023-01-16T15:54"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >1w</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -594,12 +594,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Michael Foster
           </h3>
           <time
             datetime="2023-01-16T11:31"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >1w</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">
@@ -613,12 +613,12 @@
             alt=""
             class="h-6 w-6 flex-none rounded-full bg-gray-800"
           >
-          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+          <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
             Whitney Francis
           </h3>
           <time
             datetime="2023-01-09T08:45"
-            class="flex-none text-xs text-gray-600"
+            class="flex-none text-xs text-gray-600 dark:text-gray-300"
           >2w</time>
         </div>
         <p class="mt-3 truncate text-sm text-gray-500">

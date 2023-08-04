@@ -1,5 +1,5 @@
 <template>
-  <header class="border-b border-gray-200">
+  <header class="border-b border-gray-200 dark:border-gray-600">
     <!-- Secondary navigation -->
     <nav class="flex overflow-x-auto py-4">
       <ul

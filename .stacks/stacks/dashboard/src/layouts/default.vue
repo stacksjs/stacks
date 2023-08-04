@@ -14,9 +14,17 @@ import Navbar from '../components/Navbar.vue'
     <div class="lg:pl-72">
       <Navbar />
 
-      <main class="bg-gray-50 h-full">
+      <main
+        class="bg-gray-50 dark:bg-gray-900"
+      >
         <RouterView />
       </main>
     </div>
   </div>
 </template>
+
+<style>
+body {
+  @apply dark:bg-gray-900 bg-gray-50;
+}
+</style>

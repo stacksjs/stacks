@@ -1,15 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+
+import { useDark, useToggle } from '@vueuse/core'
 
 const profileModal = ref(false)
+const isDark = useDark()
+const theme = ref(isDark.value ? 'dark' : 'light')
 
 function toggleProfileModal() {
   profileModal.value = !profileModal.value
 }
+
+watch(theme, (currentVal) => {
+  if (currentVal === 'light')
+    isDark.value = false
+
+  else
+    isDark.value = true
+
+  useToggle(isDark)
+})
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+  <div class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
     <button
       type="button"
       class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -61,7 +75,7 @@ function toggleProfileModal() {
         </svg>
         <input
           id="search-field"
-          class="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="block h-full w-full border-none dark:bg-gray-900 py-0 pl-8 pr-0 dark:text-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
           placeholder="Search..."
           type="search"
           name="search"
@@ -121,8 +135,8 @@ function toggleProfileModal() {
                 To: "transform opacity-0 scale-95"
             -->
           <div
-            class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none w-fit"
-            :class="{ hidden: profileModal }"
+            v-if="profileModal"
+            class="absolute right-0 z-10 mt-2.5 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-gray-700"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="user-menu-button"
@@ -132,22 +146,22 @@ function toggleProfileModal() {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 hover:bg-gray-100"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
-              <span class="font-bold ">
+              <p class="font-bold ">
                 John Doe
-              </span>
-              <span>
+              </p>
+              <p>
                 johndoe@email.com
-              </span>
+              </p>
             </a>
 
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 hover:bg-gray-100"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
@@ -156,7 +170,7 @@ function toggleProfileModal() {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 hover:bg-gray-100"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Settings</a>
@@ -164,22 +178,31 @@ function toggleProfileModal() {
             <a
               id="user-menu-item-0"
               href="#"
-              class="flex px-3 py-2 text-sm leading-6 text-gray-500 hover:bg-gray-100"
+              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100"
               role="menuitem"
               tabindex="-1"
             >
-            <label for="small" class="self-center mr-2 text-sm text-gray-500">Theme</label>
-              <select id="small" class="text-sm text-gray-500 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                <option selected>System</option>
-                <option value="dark">Dark</option>
+              <label
+                for="small"
+                class="self-center mr-2 text-sm text-gray-500 dark:text-gray-300"
+              >Theme</label>
+              <select
+                id="small"
+                v-model="theme"
+                class="text-sm text-gray-500 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              >
                 <option value="light">Light</option>
+
+                <option
+                  value="dark"
+                >Dark</option>
               </select>
             </a>
             <hr>
             <a
               id="user-menu-item-1"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 hover:bg-gray-100"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Log out</a>

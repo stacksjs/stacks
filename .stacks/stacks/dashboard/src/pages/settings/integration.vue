@@ -10,14 +10,14 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
       role="list"
       class="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
     >
-      <li class="overflow-hidden rounded-xl border border-gray-200">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+      <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
           <img
             src="/meilisearch.svg"
             alt="Tuple"
             class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
           >
-          <div class="text-sm font-medium leading-6 text-gray-900">
+          <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
             Meilisearch
           </div>
           <div class="relative ml-auto">
@@ -93,14 +93,14 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           </div>
         </dl>
       </li>
-      <li class="overflow-hidden rounded-xl border border-gray-200">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+      <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
           <img
             src="/stripe.png"
             alt="Tuple"
             class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
           >
-          <div class="text-sm font-medium leading-6 text-gray-900">
+          <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
             Stripe
           </div>
           <div class="relative ml-auto">
@@ -176,14 +176,14 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           </div>
         </dl>
       </li>
-      <li class="overflow-hidden rounded-xl border border-gray-200">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+      <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
           <img
             src="/planetscale.png"
             alt="Tuple"
             class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
           >
-          <div class="text-sm font-medium leading-6 text-gray-900">
+          <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
             PlanetScale
           </div>
           <div class="relative ml-auto">
@@ -259,14 +259,14 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
           </div>
         </dl>
       </li>
-      <li class="overflow-hidden rounded-xl border border-gray-200">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+      <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
           <img
             src="/aws.webp"
             alt="Tuple"
             class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
           >
-          <div class="text-sm font-medium leading-6 text-gray-900">
+          <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
             Amazon Web Services
           </div>
           <div class="relative ml-auto">

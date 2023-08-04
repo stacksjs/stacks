@@ -142,7 +142,7 @@
                   aria-haspopup="true"
                   class="bg-neutral-50 hover:bg-neutral-300 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-gray-100"
                 >
-                  <div class="i-heroicons-funnel w-5 h-5 text-gray-700 "></div>
+                  <div class="i-heroicons-funnel w-5 h-5 text-gray-700 " />
                 </button>
                 <!---->
               </div>
@@ -151,7 +151,7 @@
               type="button"
               class="bg-teal-600 hover:bg-teal-700 text-white py-2 pl-2 pr-3 rounded inline-flex"
             >
-              <div class="i-heroicons-plus-small w-5 h-5 mr-1"></div>
+              <div class="i-heroicons-plus-small w-5 h-5 mr-1" />
               <span class="text-sm">User</span>
             </button>
           </div>
@@ -164,7 +164,7 @@
         <div class="mx-auto rounded-lg shadow-lg dark:border dark:border-gray-600">
           <div class="flex flex-col">
             <div class="min-w-full overflow-x-auto align-middle rounded-t-lg">
-              <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-600">
+              <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-600 dark:divide-gray-600">
                 <thead class="dark:bg-gray-800">
                   <tr>
                     <th
@@ -710,7 +710,7 @@
                 </tbody>
               </table>
             </div>
-            <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 rounded-bl-lg rounded-br-lg dark:bg-gray-800 sm:px-6 dark:border-gray-600">
+            <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 dark:border-gray-600 rounded-bl-lg rounded-br-lg dark:bg-gray-800 sm:px-6 dark:border-gray-600">
               <div class="flex justify-between flex-1 sm:hidden">
                 <a
                   href="#"

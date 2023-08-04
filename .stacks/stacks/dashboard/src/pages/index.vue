@@ -5,46 +5,38 @@
       <div class="border-b border-b-gray-900/10 lg:border-t lg:border-t-gray-900/5">
         <dl class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8">
-            <dt class="text-sm font-medium leading-6 text-gray-500">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
               X Library
             </dt>
-            <dd class="text-xs font-medium text-gray-700">
-              +4.75%
-            </dd>
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
               200 Downloads
             </dd>
           </div>
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
-            <dt class="text-sm font-medium leading-6 text-gray-500">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
               Y Function
             </dt>
-            <dd class="text-xs font-medium text-rose-600">
-              +54.02%
-            </dd>
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
               500 Downloads
             </dd>
           </div>
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 lg:border-l">
-            <dt class="text-sm font-medium leading-6 text-gray-500">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
               Y Library
             </dt>
-            <dd class="text-xs font-medium text-gray-700">
-              -1.39%
-            </dd>
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
               300 Downloads
             </dd>
           </div>
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
-            <dt class="text-sm font-medium leading-6 text-gray-500">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
               Y Function
             </dt>
-            <dd class="text-xs font-medium text-rose-600">
-              +10.18%
-            </dd>
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900">
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
               100 Downloads
             </dd>
           </div>
@@ -66,13 +58,13 @@
       <!-- Recent activity table -->
       <div class="mx-auto max-w-7xl">
         <div>
-          <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
+          <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 dark:text-gray-100 lg:mx-0 lg:max-w-none dark:text-gray-100">
             Recent Deploys
           </h2>
         </div>
         <ul
           role="list"
-          class="divide-y divide-gray-200"
+          class="divide-y divide-gray-200 dark:divide-gray-600"
         >
           <li class="relative flex items-center space-x-4 py-4">
             <div class="min-w-0 flex-auto">
@@ -80,7 +72,7 @@
                 <div class="flex-none rounded-full p-1 text-gray-500 bg-gray-100/10">
                   <div class="h-2 w-2 rounded-full bg-current" />
                 </div>
-                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   <a
                     href="#"
                     class="flex gap-x-2"
@@ -111,7 +103,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
               Preview
             </div>
             <svg
@@ -133,7 +125,7 @@
                 <div class="flex-none rounded-full p-1 text-green-400 bg-green-400/10">
                   <div class="h-2 w-2 rounded-full bg-current" />
                 </div>
-                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   <a
                     href="#"
                     class="flex gap-x-2"
@@ -164,7 +156,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
               Production
             </div>
             <svg
@@ -186,7 +178,7 @@
                 <div class="flex-none rounded-full p-1 text-gray-500 bg-gray-100/10">
                   <div class="h-2 w-2 rounded-full bg-current" />
                 </div>
-                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900">
+                <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   <a
                     href="#"
                     class="flex gap-x-2"
@@ -217,7 +209,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-gray-600 dark:text-gray-300">
               Preview
             </div>
             <svg
@@ -237,7 +229,7 @@
       </div>
       <div class="mx-auto max-w-7xl">
         <div>
-          <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
+          <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 dark:text-gray-100 lg:mx-0 lg:max-w-none dark:text-gray-100">
             Recent Commits
           </h2>
         </div>
@@ -252,12 +244,12 @@
                 alt=""
                 class="h-6 w-6 flex-none rounded-full bg-gray-800"
               >
-              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                 Michael Foster
               </h3>
               <time
                 datetime="2023-01-23T11:00"
-                class="flex-none text-xs text-gray-600"
+                class="flex-none text-xs text-gray-600 dark:text-gray-300"
               >1h</time>
             </div>
             <p class="mt-3 truncate text-sm text-gray-500">
@@ -271,12 +263,12 @@
                 alt=""
                 class="h-6 w-6 flex-none rounded-full bg-gray-800"
               >
-              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                 Lindsay Walton
               </h3>
               <time
                 datetime="2023-01-23T09:00"
-                class="flex-none text-xs text-gray-600"
+                class="flex-none text-xs text-gray-600 dark:text-gray-300"
               >3h</time>
             </div>
             <p class="mt-3 truncate text-sm text-gray-500">
@@ -290,12 +282,12 @@
                 alt=""
                 class="h-6 w-6 flex-none rounded-full bg-gray-800"
               >
-              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
+              <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                 Courtney Henry
               </h3>
               <time
                 datetime="2023-01-23T00:00"
-                class="flex-none text-xs text-gray-600"
+                class="flex-none text-xs text-gray-600 dark:text-gray-300"
               >12h</time>
             </div>
             <p class="mt-3 truncate text-sm text-gray-500">
@@ -309,7 +301,7 @@
       <div class="mx-auto max-w-7xl">
         <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold leading-7 text-gray-900">
+            <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
               Stacks Apps
             </h2>
           </div>
@@ -317,17 +309,17 @@
             role="list"
             class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
           >
-            <li class="overflow-hidden rounded-xl border border-gray-200">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/tuple.svg"
                   alt="Tuple"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
-                <div class="text-sm font-medium leading-6 text-gray-900">
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   X App
                 </div>
-                <div class="text-sm font-medium leading-6 text-gray-900">
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
                 </div>
                 <div class="relative ml-auto">
@@ -385,14 +377,14 @@
                 </div>
               </div>
             </li>
-            <li class="overflow-hidden rounded-xl border border-gray-200">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/savvycal.svg"
                   alt="SavvyCal"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
-                <div class="text-sm font-medium leading-6 text-gray-900">
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   Y App
                 </div>
                 <div class="relative ml-auto">
@@ -450,14 +442,14 @@
                 </div>
               </div>
             </li>
-            <li class="overflow-hidden rounded-xl border border-gray-200">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/reform.svg"
                   alt="Reform"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
-                <div class="text-sm font-medium leading-6 text-gray-900">
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   Z App
                 </div>
                 <div class="relative ml-auto">
