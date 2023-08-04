@@ -1,3 +1,21 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+
+interface DummyRefItem {
+  value: boolean;
+}
+
+const dummyRef: DummyRefItem[] = [
+  ref(false),
+  ref(false),
+];
+
+function toggleDropdown(index: number) {
+  dummyRef[index].value = !dummyRef[index].value;
+}
+</script>
+
+
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800">
@@ -123,11 +141,47 @@
                   </td>
                   <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
-                      href="#"
-                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition cursor-pointer"
+                      @click="toggleDropdown(0)"
                     >
                       <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
+                      <div
+                        class="absolute dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        :class="{ hidden: dummyRef[0].value }"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="menu-button"
+                        tabindex="-1"
+                      >
+                        <div
+                          class="py-1"
+                          role="none"
+                        >
+                          <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+                          <a
+                            id="menu-item-0"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >View</a>
+                          <a
+                            id="menu-item-1"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Re-run</a>
+                          <a
+                            id="menu-item-2"
+                            href="#"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            role="menuitem"
+                            tabindex="-1"
+                          >Delete</a>
+                        </div>
+                      </div>
                     </a>
                   </td>
                 </tr>
@@ -151,13 +205,14 @@
                   </td>
                   <td class=" whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
-                      href="#"
-                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition cursor-pointer"
+                      @click="toggleDropdown(1)"
                     >
                       <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
                       <div
-                        class="absolute hidden dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        class="absolute dropdown-menu right-20 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        :class="{ hidden: dummyRef[1].value }"
                         role="menu"
                         aria-orientation="vertical"
                         aria-labelledby="menu-button"

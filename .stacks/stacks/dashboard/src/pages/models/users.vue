@@ -140,42 +140,18 @@
                   type="button"
                   aria-expanded="true"
                   aria-haspopup="true"
-                  class="filter-button"
+                  class="bg-neutral-50 hover:bg-neutral-300 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-gray-100"
                 >
-                  <svg
-                    class="mr-1.5 h-3 w-3 text-blue-400"
-                    fill="currentColor"
-                    viewBox="0 0 8 8"
-                  >
-                    <circle
-                      cx="4"
-                      cy="4"
-                      r="3"
-                    />
-                  </svg>
-                  <span class="text-sm">Filters</span>
+                  <div class="i-heroicons-funnel w-5 h-5 text-gray-700 "></div>
                 </button>
                 <!---->
               </div>
             </div>
             <button
               type="button"
-              class="primary-button"
+              class="bg-teal-600 hover:bg-teal-700 text-white py-2 pl-2 pr-3 rounded inline-flex"
             >
-              <svg
-                class="w-5 h-5 mr-1 svg sprite-sprites"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+              <div class="i-heroicons-plus-small w-5 h-5 mr-1"></div>
               <span class="text-sm">User</span>
             </button>
           </div>
@@ -224,35 +200,7 @@
                       class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase cursor-pointer whitespace-nowrap dark:text-gray-400 dark:text-gray-300"
                     >
                       <div class="flex items-center">
-                        <span>Web ID</span>
-                        <div class="pl-2">
-                          <div>
-                            <svg
-                              fill="none"
-                              stroke="currentColor"
-                              class="w-5 h-5 text-gray-400"
-                              stroke-width="1.5"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                              aria-hidden="true"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
-                              />
-                            </svg>
-                          </div>
-                          <!----><!---->
-                        </div>
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase cursor-pointer dark:text-gray-400 dark:text-gray-300"
-                    >
-                      <div class="flex items-center">
-                        <span>NPN</span>
+                        <span>ID</span>
                         <div class="pl-2">
                           <div>
                             <svg
@@ -285,19 +233,7 @@
                       scope="col"
                       class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400 dark:text-gray-300"
                     >
-                      Disposition
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400 dark:text-gray-300"
-                    >
-                      Recruitment Status
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400 dark:text-gray-300"
-                    >
-                      Salesforce ID
+                      Status
                     </th>
                     <th
                       scope="col"
@@ -356,23 +292,15 @@
                         </div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
+                    <td class="px-6 py-4 text-sm text-left text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       2
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      00000
-                    </td>
+
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       222222
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      N/A
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       Contracting
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      23423423
                     </td>
                     <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       07-25-2023 08:12:36 PM
@@ -509,23 +437,15 @@
                         </div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
+                    <td class="px-6 py-4 text-sm text-left text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       2
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      00000
-                    </td>
+
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       222222
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      N/A
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       Contracting
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      23423423
                     </td>
                     <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       07-25-2023 08:12:36 PM
@@ -662,23 +582,15 @@
                         </div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
+                    <td class="px-6 py-4 text-sm text-left text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       2
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      00000
-                    </td>
+
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       222222
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      N/A
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       Contracting
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
-                      23423423
                     </td>
                     <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 dark:text-gray-300 whitespace-nowrap">
                       07-25-2023 08:12:36 PM
