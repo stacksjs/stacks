@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.26.1",
-    "mysql2": "^3.5.2",
+    "mysql2": "^3.6.0",
     "pg": "^8.11.2"
   },
   "dependencies": {
