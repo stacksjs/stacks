@@ -1,5 +1,5 @@
-import { type CliOptions, type StacksError, type Subprocess } from '@stacksjs/types'
-import { type Result } from '@stacksjs/error-handling'
+import { type CliOptions, type CommandError, type Subprocess } from '@stacksjs/types'
+import { errAsync } from '@stacksjs/error-handling'
 import { exec } from './exec'
 
 /**
@@ -27,13 +27,13 @@ import { exec } from './exec'
  *   console.log(result)
  * ```
  */
-export async function runCommand(command: string, options?: string | CliOptions): Promise<Result<Subprocess, StacksError>> {
+export async function runCommand(command: string, options?: string | CliOptions): ResultAsync<Subprocess, CommandError> {
   const result = await exec(command, options)
 
   if (result.isErr())
-    return reject(result.error)
+    return errAsync(result._unsafeUnwrapErr())
 
-  return result
+  return okAsync(result.value)
 }
 
 /**
