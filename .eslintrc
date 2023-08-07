@@ -1,5 +1,5 @@
 {
   "extends": "@stacksjs",
   // need to migrate the following into our config
-  "ignorePatterns": ["**/README.md"]
+  "ignorePatterns": ["**/README.md", "**/lint/eslint/**"]
 }

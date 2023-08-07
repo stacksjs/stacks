@@ -24,11 +24,13 @@ const buildProcesses = dirs.map(async (folder) => {
 
   log.info(`Building ${italic(path)}`)
 
-  const result = await runCommand('bun --bun run build', path)
+  const result = await runCommand('bun --bun run build', {
+    cwd: path,
+  })
 
   if (result.isErr()) {
     log.error(`Failed to build ${italic(path)}`)
-    return Promise.reject(result)
+    return result.error
   }
 
   log.success(`Built ${italic(path)}`)

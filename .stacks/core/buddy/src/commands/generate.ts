@@ -123,14 +123,14 @@ export function generate(buddy: CLI) {
   buddy
     .command('generate:tea-config', descriptions.tea)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
-      await generateTeaConfig()
+    .action(() => {
+      generateTeaConfig()
     })
 
   buddy
     .command('generate:migrations', 'Generate Migrations')
-    .action(async () => {
-      await generateMigrations()
+    .action(() => {
+      generateMigrations()
     })
 }
 

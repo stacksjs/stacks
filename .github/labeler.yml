@@ -148,7 +148,7 @@ health:
   - '.stacks/core/health/**'
 
 lint:
-  - '.stacks/core/utils/lint/**'
+  - '.stacks/core/lint/**'
 
 logging:
   - '.stacks/core/logging/**'

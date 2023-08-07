@@ -120,7 +120,7 @@ export async function generateTypes(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export async function generateMigrations() {
+export function generateMigrations() {
   // const path = frameworkPath('database/schema.prisma')
 
   // await migrate(path, { database: database.driver })
@@ -130,7 +130,7 @@ export async function generateMigrations() {
   log.success('Successfully updated migrations')
 }
 
-export async function generateTeaConfig() {
+export function generateTeaConfig() {
   // define your dependencies
   const deps = dependencies
 

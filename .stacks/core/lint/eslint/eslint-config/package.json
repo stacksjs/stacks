@@ -4,7 +4,7 @@
   "description": "The Stacks ESLint config",
   "author": "Chris Breuer <chris@ow3.org> (https://github.com/stacksjs/)",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
   "keywords": [
     "eslint-config"
   ],

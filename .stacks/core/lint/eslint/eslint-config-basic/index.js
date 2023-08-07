@@ -397,7 +397,7 @@ module.exports = {
 
     // stacksjs
     'stacksjs/no-import-node-modules-by-path': 'error',
-    'stacksjs/if-newline': 'error',
+    'stacksjs/if-newline': 2,
     'stacksjs/import-dedupe': 'error',
     'stacksjs/top-level-function': 'error',
     'stacksjs/prefer-inline-type-import': 'error',

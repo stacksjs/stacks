@@ -223,7 +223,7 @@ declare global {
   const err: typeof import('../core/error-handling/src/index')['err']
   const errAsync: typeof import('../core/error-handling/src/index')['errAsync']
   const errorHandlingPath: typeof import('../core/path/src/index')['errorHandlingPath']
-  const eslint: typeof import('../core/utils/lint/src/index')['eslint']
+  const eslint: typeof import('../core/lint/src/index')['eslint']
   const events: typeof import('../core/events/src/index')['events']
   const eventsPath: typeof import('../core/path/src/index')['eventsPath']
   const examplesPath: typeof import('../core/path/src/index')['examplesPath']
@@ -979,7 +979,7 @@ declare module 'vue' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/index')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/utils/lint/src/index')['eslint']>
+    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/index')['eventsPath']>
     readonly examplesPath: UnwrapRef<typeof import('../core/path/src/index')['examplesPath']>
@@ -1728,7 +1728,7 @@ declare module '@vue/runtime-core' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/index')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/utils/lint/src/index')['eslint']>
+    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/index')['eventsPath']>
     readonly examplesPath: UnwrapRef<typeof import('../core/path/src/index')['examplesPath']>

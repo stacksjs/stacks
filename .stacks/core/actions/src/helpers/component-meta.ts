@@ -14,7 +14,7 @@ import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
 
-export async function generateComponentMeta() {
+export function generateComponentMeta() {
   const md = new MarkdownIt()
   const checkerOptions: MetaCheckerOptions = {
     forceUseTs: true,
@@ -32,8 +32,8 @@ export async function generateComponentMeta() {
 
     // Exclude global props
     const props: ComponentApiProps[] = []
-    meta.props.forEach((prop: any) => {
-      if (prop.global)
+    meta.props.forEach((prop) => {
+      if (prop?.global)
         return
 
       const { name, description, required, type, default: defaultValue } = prop
@@ -69,6 +69,7 @@ export async function generateComponentMeta() {
     const metaDirPath = frameworkPath('component-meta')
 
     // if meta dir doesn't exist create
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (!existsSync(metaDirPath))
       mkdirSync(metaDirPath)
 

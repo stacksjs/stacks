@@ -7,4 +7,4 @@ import { generateAppKey } from '@stacksjs/security'
 if (!isFile('.env'))
   await runCommand('cp .env.example .env', { cwd: projectPath() })
 
-await setEnvValue('APP_KEY', await generateAppKey())
+await setEnvValue('APP_KEY', generateAppKey())

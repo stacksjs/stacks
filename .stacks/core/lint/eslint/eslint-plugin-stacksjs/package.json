@@ -3,10 +3,9 @@
   "type": "module",
   "version": "0.0.0",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }

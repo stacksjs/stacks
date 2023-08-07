@@ -105,8 +105,8 @@
     }
   },
   "workspaces": [
-    ".stacks/core/utils/lint/eslint/*",
-    ".stacks/core/utils/lint",
+    ".stacks/core/lint/eslint/*",
+    ".stacks/core/lint",
     ".stacks/core/utils/*",
     ".stacks/core/notifications/*",
     ".stacks/core/*",

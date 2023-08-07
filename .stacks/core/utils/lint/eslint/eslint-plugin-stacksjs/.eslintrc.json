@@ -1,7 +1,0 @@
-{
-  // "extends": "@stacksjs",
-  "extends": "@antfu",
-  "plugins": [
-    "stacksjs"
-  ]
-}

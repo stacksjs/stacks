@@ -1,6 +1,6 @@
 import { ExitCode } from '@stacksjs/types'
 import { type CliOptions, type StacksError, type Subprocess, type SyncSubprocess } from '@stacksjs/types'
-import { type Result, type ResultAsync, err, handleError, ok, errAsync, okAsync } from '@stacksjs/error-handling'
+import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from './console'
 
 /**
@@ -24,7 +24,7 @@ import { log } from './console'
  * const result = await exec('ls', { cwd: '/home' })
  * ```
  */
-export async function exec(command: string | string[], options?: CliOptions): ResultAsync<Subprocess, StacksError> {
+export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
   const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
   const proc = Bun.spawn(cmd, {
     ...options,
@@ -32,18 +32,19 @@ export async function exec(command: string | string[], options?: CliOptions): Re
     cwd: options?.cwd || import.meta.dir,
     onExit(subprocess, exitCode, signalCode, error) {
       if (exitCode !== ExitCode.Success && exitCode) {
-        log.error(error)
-        return errAsync(handleError(new Error(`Failed to execute command: ${cmd.join(' ')}`)))
+        handleError(new Error(
+          `Failed to execute command: ${cmd.join(' ')}`,
+        ))
       }
     },
   })
 
   const exited = await proc.exited
   if (exited === ExitCode.Success)
-    return okAsync(proc)
+    return ok(proc)
 
-  return errAsync(handleError(new Error(
-    `Failed to execute command: ${cmd.join(' ')}`
+  return err(handleError(new Error(
+    `Failed to execute command: ${cmd.join(' ')}`,
   )))
 }
 

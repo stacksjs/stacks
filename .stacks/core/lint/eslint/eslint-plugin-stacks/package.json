@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "ESLint plugin for Stacks.",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/utils/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
   "exports": {
     ".": {
       "bun": "./src/index.ts",

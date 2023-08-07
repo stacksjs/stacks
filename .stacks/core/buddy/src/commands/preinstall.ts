@@ -10,7 +10,7 @@ export function preinstall(buddy: CLI) {
   buddy
     .command('preinstall', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
-      await invoke()
+    .action(() => {
+      invoke()
     })
 }

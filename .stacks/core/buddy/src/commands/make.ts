@@ -108,7 +108,7 @@ export function make(buddy: CLI) {
     .command('make:database', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -117,14 +117,14 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeDatabase(options)
+      makeDatabase(options)
     })
 
   buddy
     .command('make:factory', descriptions.factory)
     .option('-n, --name', 'The name of the factory')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -133,7 +133,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeFactory(options)
+      makeFactory(options)
     })
 
   buddy
@@ -209,7 +209,7 @@ export function make(buddy: CLI) {
     .command('make:stack', descriptions.stack)
     .option('-n, --name', 'The name of the stack')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -218,7 +218,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeStack(options)
+      makeStack(options)
     })
 
   buddy

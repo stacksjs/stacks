@@ -166,9 +166,9 @@
       "import": "./core/health/dist/index.js"
     },
     "./lint": {
-      "bun": "./core/utils/lint/src/index.ts",
-      "types": "./core/utils/lint/dist/index.d.ts",
-      "import": "./core/utils/lint/dist/index.js"
+      "bun": "./core/lint/src/index.ts",
+      "types": "./core/lint/dist/index.d.ts",
+      "import": "./core/lint/dist/index.js"
     },
     "./logging": {
       "bun": "./core/logging/src/index.ts",
@@ -388,7 +388,7 @@
     "example": "wip",
     "example:vue": "bun --bun run build:components && cd examples/vue && ln -sf ../../components/vue/dist dist && bunx vite serve -c ../../core/build/example-vue.ts",
     "example:web-components": "bun --bun run build:web-components && cd examples/web && ln -sf ../../components/web/dist dist && bunx vite serve -c ../../core/build/example-wc.ts",
-    "lint": "bun buddy lint",
+    "lint": "bun --bun eslint -c ../.eslintrc ..",
     "lint:stacks": "bun buddy lint:stacks",
     "lint:fix": "bun buddy lint:fix",
     "serve": "bun buddy serve",

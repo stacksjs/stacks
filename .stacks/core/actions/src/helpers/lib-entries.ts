@@ -36,7 +36,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating the Vue component library entry point.', err))
+    log.error('There was an error generating the Vue component library entry point.', err)
     process.exit(ExitCode.FatalError)
   })
 
@@ -50,7 +50,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating the Web Component library entry point', err))
+    log.error('There was an error generating the Web Component library entry point', err)
     process.exit(ExitCode.FatalError)
   })
 
@@ -64,7 +64,7 @@ export async function createFunctionLibraryEntryPoint(type: LibraryType = 'funct
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating Function library entry point', err))
+    log.error('There was an error generating Function library entry point', err)
     process.exit(ExitCode.FatalError)
   })
 

@@ -6,12 +6,10 @@ import { log } from '@stacksjs/logging'
 // import { determineDebugLevel } from '@stacksjs/utils'
 
 // export async function invoke(options?: PreinstallOptions) {
-export async function invoke() {
+export function invoke() {
   try {
-    // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
-
     log.info('Preinstall check...')
-    // await spawn('bunx only-allow pnpm', { stdio, cwd: projectPath() })
+    // ...
     log.success('Environment ready')
   }
   catch (error) {
@@ -25,6 +23,6 @@ export async function invoke() {
  * @param options
  * @returns
  */
-export async function preinstall() {
+export function preinstall() {
   return invoke()
 }

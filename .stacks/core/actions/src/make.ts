@@ -10,10 +10,10 @@ export async function invoke(options: MakeOptions) {
     await component(options)
 
   if (options.database)
-    await database(options)
+    database(options)
 
   if (options.factory)
-    await factory(options)
+    factory(options)
 
   if (options.function)
     await fx(options)
@@ -31,7 +31,7 @@ export async function invoke(options: MakeOptions) {
     await page(options)
 
   if (options.stack)
-    await stack(options)
+    stack(options)
 }
 
 /**
@@ -74,11 +74,11 @@ console.log('Hello World component created')
   })
 }
 
-export async function database(options: MakeOptions) {
+export function database(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
-    await createDatabase(options)
+    createDatabase(options)
     log.success(`Created the ${italic(name)} database`)
   }
   catch (error) {
@@ -87,16 +87,16 @@ export async function database(options: MakeOptions) {
   }
 }
 
-export async function createDatabase(options: MakeOptions) {
+export function createDatabase(options: MakeOptions) {
   // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
-export async function factory(options: MakeOptions) {
+export function factory(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
-    await createDatabase(options)
+    createDatabase(options)
     log.success(`Created the ${italic(name)} factory`)
   }
   catch (error) {
@@ -105,7 +105,7 @@ export async function factory(options: MakeOptions) {
   }
 }
 
-export async function createFactory(options: MakeOptions) {
+export function createFactory(options: MakeOptions) {
   // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
@@ -127,7 +127,7 @@ export async function page(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your page...')
-    createPage(options)
+    await createPage(options)
     log.success(`Created the ${name} page`)
   }
   catch (error) {
@@ -192,7 +192,7 @@ export async function language(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your translation file...')
-    createLanguage(options)
+    await createLanguage(options)
     log.success(`Created the ${name} translation file`)
   }
   catch (error) {
@@ -211,7 +211,7 @@ export async function createLanguage(options: MakeOptions) {
   })
 }
 
-export async function stack(options: MakeOptions) {
+export function stack(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${name} stack...`)
