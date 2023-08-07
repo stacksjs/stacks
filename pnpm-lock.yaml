@@ -1037,8 +1037,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@stripe/stripe-js':
-        specifier: ^1.54.2
-        version: 1.54.2
+        specifier: ^2.0.0
+        version: 2.0.0
       stripe:
         specifier: ^12.17.0
         version: 12.17.0
@@ -3641,7 +3641,7 @@ packages:
       '@babel/helper-plugin-utils': 7.22.5
       debug: 4.3.4
       lodash.debounce: 4.0.8
-      resolve: 1.22.2
+      resolve: 1.22.3
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -6263,7 +6263,7 @@ packages:
       builtin-modules: 3.3.0
       deepmerge: 4.3.1
       is-module: 1.0.0
-      resolve: 1.22.2
+      resolve: 1.22.3
       rollup: 2.79.1
     dev: false
 
@@ -7150,8 +7150,8 @@ packages:
       pathe: 1.1.1
     dev: false
 
-  /@stripe/stripe-js@1.54.2:
-    resolution: {integrity: sha512-R1PwtDvUfs99cAjfuQ/WpwJ3c92+DAMy9xGApjqlWQMj0FKQabUAys2swfTRNzuYAYJh7NqK2dzcYVNkKLEKUg==}
+  /@stripe/stripe-js@2.0.0:
+    resolution: {integrity: sha512-SxZnf192En0uAfgbigUIj7oJYaXgGc5AI1aos59YXvO8DPeLI0AtT4oMg/Wuk17wbpquEv73+akyCe7xdEjGlA==}
     dev: false
 
   /@surma/rollup-plugin-off-main-thread@2.2.3:
