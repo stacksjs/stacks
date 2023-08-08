@@ -2,7 +2,7 @@
   "name": "@stacksjs/ui",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.11",
+  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks atomic UI engine, powered by UnoCSS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -51,19 +51,19 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@iconify-json/heroicons": "^1.1.11",
+    "@iconify-json/heroicons": "^1.1.12",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.54.1",
+    "@unocss/transformer-compile-class": "^0.54.2",
     "pinia": "^2.1.6",
-    "unocss": "^0.54.1",
+    "unocss": "^0.54.2",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.8"
   },
   "devDependencies": {
-    "@iconify-json/heroicons": "^1.1.11",
+    "@iconify-json/heroicons": "^1.1.12",
     "@stacksjs/development": "workspace:*",
-    "@unocss/preset-icons": "^0.54.1"
+    "@unocss/preset-icons": "^0.54.2"
   }
 }
