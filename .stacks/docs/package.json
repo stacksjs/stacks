@@ -42,6 +42,6 @@
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "rimraf": "^5.0.1",
-    "vitepress": "^1.0.0-beta.7"
+    "vitepress": "^1.0.0-rc.4"
   }
 }
