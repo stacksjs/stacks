@@ -2,7 +2,7 @@
   "name": "@stacksjs/dns",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.11",
+  "packageManager": "pnpm@8.6.12",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,10 +47,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.89.0"
+    "aws-cdk-lib": "^2.90.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.89.0"
+    "aws-cdk-lib": "^2.90.0"
   }
 }

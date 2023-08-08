@@ -2,7 +2,7 @@
   "name": "@stacksjs/strings",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.11",
+  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -57,7 +57,7 @@
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/validator": "^13.9.0",
+    "@types/validator": "^13.11.1",
     "change-case": "^4.1.2",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.0",
