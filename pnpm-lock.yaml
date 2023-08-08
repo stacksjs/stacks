@@ -1037,8 +1037,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@stripe/stripe-js':
-        specifier: ^1.54.2
-        version: 1.54.2
+        specifier: ^2.0.0
+        version: 2.0.0
       stripe:
         specifier: ^12.17.0
         version: 12.17.0
@@ -7112,8 +7112,8 @@ packages:
       pathe: 1.1.1
     dev: false
 
-  /@stripe/stripe-js@1.54.2:
-    resolution: {integrity: sha512-R1PwtDvUfs99cAjfuQ/WpwJ3c92+DAMy9xGApjqlWQMj0FKQabUAys2swfTRNzuYAYJh7NqK2dzcYVNkKLEKUg==}
+  /@stripe/stripe-js@2.0.0:
+    resolution: {integrity: sha512-SxZnf192En0uAfgbigUIj7oJYaXgGc5AI1aos59YXvO8DPeLI0AtT4oMg/Wuk17wbpquEv73+akyCe7xdEjGlA==}
     dev: false
 
   /@surma/rollup-plugin-off-main-thread@2.2.3:
