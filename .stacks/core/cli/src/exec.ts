@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { ExitCode } from '@stacksjs/types'
 import { type CliOptions, type StacksError, type Subprocess, type SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'

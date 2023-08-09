@@ -1,11 +1,14 @@
 import process from 'node:process'
 import { Action, ExitCode, NpmScript } from '@stacksjs/types'
-import { runAction } from '@stacksjs/actions'
+import {
+  runAction,
+  runComponentsDevServer,
+  runDesktopDevServer,
+  runFunctionsDevServer,
+  runPagesDevServer,
+} from '@stacksjs/actions'
 import { type CLI, type DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
-import { components, desktop, functions, pages } from '@stacksjs/actions/dev'
-
-// import { components, desktop, functions, views, invoke as startDevelopmentServer } from '@stacksjs/actions/dev'
 
 export function dev(buddy: CLI) {
   const descriptions = {
@@ -56,11 +59,11 @@ export function dev(buddy: CLI) {
       }
       else {
         if (options.components)
-          await components(options)
+          await runComponentsDevServer(options)
         else if (options.functions)
-          await functions(options)
+          await runFunctionsDevServer(options)
         else if (options.pages)
-          await pages(options)
+          await runPagesDevServer(options)
         // else if (options.docs)
       }
       // await startDevelopmentServer(options)
@@ -119,21 +122,21 @@ export function dev(buddy: CLI) {
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await desktop(options)
+      await runDesktopDevServer(options)
     })
 
   buddy
     .command('dev:functions', descriptions.functions)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await functions(options)
+      await runFunctionsDevServer(options)
     })
 
   buddy
     .command('dev:views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await pages(options)
+      await runPagesDevServer(options)
     })
 }
 

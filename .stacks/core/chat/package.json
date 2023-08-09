@@ -1,0 +1,71 @@
+{
+  "name": "@stacksjs/chat",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "The Stacks Chat Integration. Simple programmatic sending of messages for chat services.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/chat#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/chat"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "chat",
+    "stacks",
+    "discord",
+    "microsoft teams",
+    "slack"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@novu/stateless": "^0.16.4",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@novu/stateless": "^0.16.4",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "optionalDependencies": {
+    "@novu/discord": "^0.16.4",
+    "@novu/ms-teams": "^0.16.4",
+    "@novu/node": "^0.16.4",
+    "@novu/slack": "^0.16.4",
+    "@novu/stateless": "^0.16.4"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

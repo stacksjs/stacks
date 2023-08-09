@@ -8,18 +8,17 @@ import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
 import { isString } from '@stacksjs/validation'
 import {
+  invoke,
   createModel,
   createNotification,
-  invoke,
-  component as makeComponent,
-  database as makeDatabase,
-  factory as makeFactory,
-  fx as makeFunction,
-  language as makeLanguage,
-  page as makePage,
-  stack as makeStack,
-
-} from '@stacksjs/actions/make'
+  makeComponent,
+  makeDatabase,
+  // makeFactory,
+  makeFunction,
+  makeLanguage,
+  makePage,
+  makeStack,
+} from '@stacksjs/actions'
 
 export function make(buddy: CLI) {
   const descriptions = {
@@ -133,7 +132,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      makeFactory(options)
+      // makeFactory(options)
     })
 
   buddy

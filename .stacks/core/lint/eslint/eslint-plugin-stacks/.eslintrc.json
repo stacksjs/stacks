@@ -1,9 +1,0 @@
-{
-  "extends": "@stacksjs",
-  "plugins": [
-    "stacksjs"
-  ],
-  "rules": {
-    "stacksjs/if-newline": 2
-  }
-}

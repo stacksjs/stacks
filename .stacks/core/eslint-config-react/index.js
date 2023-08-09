@@ -1,0 +1,21 @@
+// thanks to @antfu for the great configuration!
+
+module.exports = {
+  extends: [
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    '@stacksjs/eslint-config-ts',
+  ],
+  settings: {
+    react: {
+      version: '17.0',
+    },
+  },
+  rules: {
+    'jsx-quotes': [
+      'error',
+      'prefer-double',
+    ],
+    'react/react-in-jsx-scope': 'off',
+  },
+}

@@ -15,7 +15,7 @@ import {
   generateVueCompat,
   generateWebTypes,
   invoke as startGenerationProcess,
-} from '@stacksjs/actions/generate'
+} from '@stacksjs/actions'
 
 export function generate(buddy: CLI) {
   const descriptions = {

@@ -7,31 +7,31 @@ import { type MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
-    await component(options)
+    await makeComponent(options)
 
   if (options.database)
-    database(options)
+    makeDatabase(options)
 
   if (options.factory)
     factory(options)
 
   if (options.function)
-    await fx(options)
+    await makeFunction(options)
 
   if (options.language)
-    await language(options)
+    await makeLanguage(options)
 
   // if (options.migration)
   //   await migration(options)
 
   if (options.notification)
-    await notification(options)
+    await makeNotification(options)
 
   if (options.page)
-    await page(options)
+    await makePage(options)
 
   if (options.stack)
-    stack(options)
+    makeStack(options)
 }
 
 /**
@@ -43,7 +43,7 @@ export async function make(options: MakeOptions) {
   return invoke(options)
 }
 
-export async function component(options: MakeOptions) {
+export async function makeComponent(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your component...')
@@ -74,7 +74,7 @@ console.log('Hello World component created')
   })
 }
 
-export function database(options: MakeOptions) {
+export function makeDatabase(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
@@ -110,7 +110,7 @@ export function createFactory(options: MakeOptions) {
   console.log('options', options) // wip
 }
 
-export async function notification(options: MakeOptions) {
+export async function makeNotification(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
@@ -123,7 +123,7 @@ export async function notification(options: MakeOptions) {
   }
 }
 
-export async function page(options: MakeOptions) {
+export async function makePage(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your page...')
@@ -155,7 +155,7 @@ console.log('Hello World page created')
   })
 }
 
-export async function fx(options: MakeOptions) {
+export async function makeFunction(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your function...')
@@ -188,7 +188,7 @@ export {
   })
 }
 
-export async function language(options: MakeOptions) {
+export async function makeLanguage(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your translation file...')
@@ -211,7 +211,7 @@ export async function createLanguage(options: MakeOptions) {
   })
 }
 
-export function stack(options: MakeOptions) {
+export function makeStack(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${name} stack...`)

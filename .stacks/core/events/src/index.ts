@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 // thanks to mitt for the base of this wonderful functional event emitter
 
 export type EventType = string | symbol
@@ -103,8 +104,8 @@ export default function mitt<Events extends Record<EventType, unknown>>(
             if (evt)
               return handler(evt)
 
-            else
-              console.error('No event provided')
+            console.error('No event provided')
+            return handler({})
           })
       }
 
@@ -112,11 +113,13 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
-          .map((handler) => {
+          //
+          .map((handler: any) => {
             if (evt)
               return handler(type, evt)
-            else
-              console.error('No event provided')
+
+            console.error('No event provided')
+            return 'No event provided'
           })
       }
     },

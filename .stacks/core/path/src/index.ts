@@ -52,7 +52,7 @@ export function analyticsPath(path?: string) {
 }
 
 export function arraysPath(path?: string) {
-  return utilsPath(`arrays/${path || ''}`)
+  return corePath(`arrays/${path || ''}`)
 }
 
 export function authPath(path?: string) {
@@ -108,7 +108,7 @@ export function cloudPath(path?: string) {
 }
 
 export function collectionsPath(path?: string) {
-  return utilsPath(`collections/${path || ''}`)
+  return corePath(`collections/${path || ''}`)
 }
 
 export function componentsPath(path?: string) {
@@ -136,7 +136,7 @@ export function databasePath(path?: string) {
 }
 
 export function datetimePath(path?: string) {
-  return utilsPath(`datetime/${path || ''}`)
+  return corePath(`datetime/${path || ''}`)
 }
 
 export function developmentPath(path?: string) {
@@ -192,7 +192,7 @@ export function functionsPath(path?: string) {
 }
 
 export function gitPath(path?: string) {
-  return utilsPath(`git/${path || ''}`)
+  return corePath(`git/${path || ''}`)
 }
 
 export function langPath(path?: string) {
@@ -205,7 +205,11 @@ export function libraryEntryPath(type: LibraryType) {
 }
 
 export function lintPath(path?: string) {
-  return utilsPath(`lint/${path || ''}`)
+  return corePath(`lint/${path || ''}`)
+}
+
+export function eslintPath(path?: string) {
+  return lintPath(`eslint/${path || ''}`)
 }
 
 export function loggingPath(path?: string) {
@@ -233,7 +237,7 @@ export function ormPath(path?: string) {
 }
 
 export function objectsPath(path?: string) {
-  return utilsPath(`objects/${path || ''}`)
+  return corePath(`objects/${path || ''}`)
 }
 
 export function onboardingPath(path?: string) {
@@ -365,7 +369,7 @@ export function stacksPath(path?: string) {
 }
 
 export function stringsPath(path?: string) {
-  return utilsPath(`strings/${path || ''}`)
+  return corePath(`strings/${path || ''}`)
 }
 
 export function testingPath(path?: string) {

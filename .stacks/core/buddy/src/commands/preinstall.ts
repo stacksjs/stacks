@@ -1,5 +1,5 @@
 import { type CLI } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/preinstall'
+import { runPreinstall } from '@stacksjs/actions'
 
 export function preinstall(buddy: CLI) {
   const descriptions = {
@@ -11,6 +11,6 @@ export function preinstall(buddy: CLI) {
     .command('preinstall', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(() => {
-      invoke()
+      runPreinstall()
     })
 }

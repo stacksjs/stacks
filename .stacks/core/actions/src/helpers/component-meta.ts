@@ -69,6 +69,7 @@ export function generateComponentMeta() {
     const metaDirPath = frameworkPath('component-meta')
 
     // if meta dir doesn't exist create
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (!existsSync(metaDirPath))
       mkdirSync(metaDirPath)

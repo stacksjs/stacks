@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { type AddOptions, type BuildOptions, type CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/add'
+import { runAdd } from '@stacksjs/actions'
 
 export function add(buddy: CLI) {
   const descriptions = {
@@ -33,7 +33,7 @@ export function add(buddy: CLI) {
         // options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await invoke(options)
+      await runAdd(options)
 
       process.exit(ExitCode.Success)
     })
@@ -43,7 +43,7 @@ export function add(buddy: CLI) {
     .option('-t, --table', descriptions.table, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAdd(options)
     })
 
   buddy
@@ -51,7 +51,7 @@ export function add(buddy: CLI) {
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAdd(options)
     })
 }
 

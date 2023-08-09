@@ -1,5 +1,5 @@
 import { type CLI, type FreshOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/commit'
+import { runCommit } from '@stacksjs/actions'
 
 export function commit(buddy: CLI) {
   const descriptions = {
@@ -11,6 +11,6 @@ export function commit(buddy: CLI) {
     .command('commit', descriptions.commit)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
-      await invoke(options)
+      await runCommit(options)
     })
 }

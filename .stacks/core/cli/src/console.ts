@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { log } from '@stacksjs/logging'
 import prompts from 'prompts'
 
