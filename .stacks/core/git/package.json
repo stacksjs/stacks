@@ -47,7 +47,7 @@
     "bumpp": "^9.1.1",
     "changelogen": "^0.5.4",
     "commitizen": "^4.3.0",
-    "cz-git": "^1.7.0",
+    "cz-git": "^1.7.1",
     "giget": "^1.1.2",
     "simple-git-hooks": "^2.9.0"
   },
