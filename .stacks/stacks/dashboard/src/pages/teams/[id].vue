@@ -27,7 +27,8 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-          /></svg><div class="ml-4 mt-0.5 flex flex-grow">
+          /></svg>
+          <div class="ml-4 mt-0.5 flex flex-grow">
             <p class="">
               You can add teammates here.
             </p>
@@ -49,7 +50,7 @@
         <div class="mt-4 flex justify-end">
           <button
             type="button"
-            class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            class="primary-button"
           >
             Invite
           </button>
@@ -111,12 +112,8 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-blue-600 hover:text-blue-900"
-                    >Remove</a>
-                    <a
-                      href="#"
-                      class="text-blue-600 hover:text-blue-900 pl-4"
-                    >Change Role</a>
+                      class="text-gray-400 hover:text-gray-500"
+                    ><div class="i-heroicons-ellipsis-vertical w-6 h-6" /></a>
                   </td>
                 </tr>
                 <tr>
@@ -132,12 +129,8 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-blue-600 hover:text-blue-900"
-                    >Remove</a>
-                    <a
-                      href="#"
-                      class="text-blue-600 hover:text-blue-900 pl-4"
-                    >Change Role</a>
+                      class="text-gray-400 hover:text-gray-500"
+                    ><div class="i-heroicons-ellipsis-vertical w-6 h-6" /></a>
                   </td>
                 </tr>
               </tbody>

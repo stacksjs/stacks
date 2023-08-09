@@ -176,7 +176,7 @@
             </li>
             <li class="mt-auto">
               <router-link
-                to="/settings/account"
+                to="/settings/cache"
                 class="sidebar-links group"
               >
                 <div class="i-heroicons-cog w-6 h-6" />
@@ -192,7 +192,7 @@
 
 <style scoped>
 .sidebar-links {
-  @apply text-gray-700 dark:text-gray-200 hover:text-blue-600 dark-hover:bg-gray-700 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
+  @apply text-gray-700 dark:text-gray-200 hover:text-blue-600 dark-hover:bg-gray-700 hover:bg-blue-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
 }
 
 .router-link-active, .router-link-exact-active {

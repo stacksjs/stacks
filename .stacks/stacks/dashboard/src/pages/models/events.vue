@@ -140,16 +140,17 @@
                   type="button"
                   aria-expanded="true"
                   aria-haspopup="true"
-                  class="bg-neutral-50 hover:bg-neutral-300 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-gray-100"
+                  class="bg-neutral-50 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-blue-50"
                 >
                   <div class="i-heroicons-funnel w-5 h-5 text-gray-700 " />
                 </button>
                 <!---->
               </div>
             </div>
+
             <button
               type="button"
-              class="bg-teal-600 hover:bg-teal-700 text-white py-2 pl-2 pr-3 rounded inline-flex"
+              class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-blue-50"
             >
               <div class="i-heroicons-plus-small w-5 h-5 mr-1" />
               <span class="text-sm">Event</span>
@@ -190,7 +191,6 @@
                             />
                           </svg>
                         </div>
-                        <!----><!---->
                       </div>
                     </div>
                   </th>
@@ -218,7 +218,6 @@
                             />
                           </svg>
                         </div>
-                        <!----><!---->
                       </div>
                     </div>
                   </th>
@@ -252,7 +251,6 @@
                             />
                           </svg>
                         </div>
-                        <!----><!---->
                       </div>
                     </div>
                   </th>
@@ -291,83 +289,31 @@
                         type="button"
                         href="#"
                         title="Edit"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark-hover:bg-gray-500 rounded-l-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+
+                        <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         href="#"
                         title="View Event in Salesforce"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-                          />
-                        </svg>
+                        <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         type="button"
                         title="Sync Events RSVP"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
+                        <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         type="button"
                         title="Delete"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark-hover:bg-gray-500 rounded-r-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-red-500 focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-red-500 focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
+                        <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                     </span>
                   </td>
@@ -400,192 +346,31 @@
                         type="button"
                         href="#"
                         title="Edit"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark-hover:bg-gray-500 rounded-l-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+
+                        <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         href="#"
                         title="View Event in Salesforce"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-                          />
-                        </svg>
+                        <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         type="button"
                         title="Sync Events RSVP"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
+                        <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                       <button
                         type="button"
                         title="Delete"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark-hover:bg-gray-500 rounded-r-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-red-500 focus:ring-2 group"
+                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-red-500 focus:ring-2 group"
                       >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </span>
-                  </td>
-                </tr>
-                <tr class="bg-white dark:bg-gray-800">
-                  <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    <a
-                      href="#"
-                      target="_new"
-                    >Event event</a>
-                  </td>
-                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap dark:text-gray-300">
-                    <p class="font-semibold">
-                      08-22-2023
-                    </p>
-                    <p>12:00 — 14:00 CDT</p>
-                  </td>
-                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap dark:text-gray-300">
-                    <a
-                      href="/events/1223/rsvps"
-                      class="text-blue-500"
-                    >0</a>
-                  </td>
-                  <td class="px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 whitespace-nowrap dark:text-gray-300">
-                    07-25-2023
-                  </td>
-                  <td class="px-6 py-4 text-sm font-semibold text-right whitespace-nowrap">
-                    <span class="inline-flex rounded-md shadow-sm isolate">
-                      <button
-                        type="button"
-                        href="#"
-                        title="Edit"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark-hover:bg-gray-500 rounded-l-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
-                      >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        href="#"
-                        title="View Event in Salesforce"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
-                      >
-                        <svg
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        title="Sync Events RSVP"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-2 group"
-                      >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        title="Delete"
-                        class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark-hover:bg-gray-500 rounded-r-md hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-red-500 focus:ring-2 group"
-                      >
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
+                        <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
                       </button>
                     </span>
                   </td>
@@ -619,43 +404,19 @@
                     class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:text-gray-400 hover:bg-gray-50 focus:z-20"
                   >
                     <span class="sr-only">First</span>
-                    <svg
-                      class="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <path
-                        clip-rule="evenodd"
-                        fill-rule="evenodd"
-                        d="M15.79 14.77a.75.75 0 01-1.06.02l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 111.04 1.08L11.832 10l3.938 3.71a.75.75 0 01.02 1.06zm-6 0a.75.75 0 01-1.06.02l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 111.04 1.08L5.832 10l3.938 3.71a.75.75 0 01.02 1.06z"
-                      />
-                    </svg>
+                    <div class="i-heroicons-chevron-double-left-20-solid w-5 h-5" />
                   </a>
                   <a
                     href="#"
                     class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:text-gray-400 hover:bg-gray-50 focus:z-20"
                   >
                     <span class="sr-only">Previous</span>
-                    <svg
-                      class="w-5 h-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                    <div class="i-heroicons-chevron-left-20-solid w-5 h-5" />
                   </a>
                   <a
                     href="#"
                     aria-current="page"
-                    class="border-teal-500 z-20 text-teal-600 dark:bg-gray-600 bg-teal-50 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                    class="border-blue-500 z-20 text-blue-600 dark:bg-gray-600 bg-blue-50 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
                   >1</a><a
                     href="#"
                     aria-current="page"
@@ -678,43 +439,14 @@
                     class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:text-gray-400 hover:bg-gray-50 focus:z-20"
                   >
                     <span class="sr-only">Next</span>
-                    <svg
-                      class="w-5 h-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                    <div class="i-heroicons-chevron-right-20-solid w-5 h-5" />
                   </a>
                   <a
                     href="#"
                     class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:text-gray-400 hover:bg-gray-50 focus:z-20"
                   >
                     <span class="sr-only">Last</span>
-                    <svg
-                      class="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <path
-                        clip-rule="evenodd"
-                        fill-rule="evenodd"
-                        d="M10.21 14.77a.75.75 0 01.02-1.06L14.168 10 10.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                      />
-                      <path
-                        clip-rule="evenodd"
-                        fill-rule="evenodd"
-                        d="M4.21 14.77a.75.75 0 01.02-1.06L8.168 10 4.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                      />
-                    </svg>
+                    <div class="i-heroicons-chevron-double-right-20-solid w-5 h-5" />
                   </a>
                 </nav>
               </div>
@@ -722,7 +454,6 @@
           </div>
         </div>
       </div>
-      <!----><!---->
     </div>
   </div>
 </template>

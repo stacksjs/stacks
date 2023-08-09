@@ -148,7 +148,7 @@
                           <a
                             id="menu-item-0"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Edit</a>
@@ -156,7 +156,7 @@
                           <a
                             id="menu-item-2"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-gray-100 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Uninstall</a>

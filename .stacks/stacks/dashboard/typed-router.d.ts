@@ -52,9 +52,11 @@ declare module 'vue-router/auto/routes' {
     '/models/events': RouteRecordInfo<'/models/events', '/models/events', Record<never, never>, Record<never, never>>,
     '/models/users': RouteRecordInfo<'/models/users', '/models/users', Record<never, never>, Record<never, never>>,
     '/queue/': RouteRecordInfo<'/queue/', '/queue', Record<never, never>, Record<never, never>>,
-    '/settings/account': RouteRecordInfo<'/settings/account', '/settings/account', Record<never, never>, Record<never, never>>,
     '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
-    '/settings/integration': RouteRecordInfo<'/settings/integration', '/settings/integration', Record<never, never>, Record<never, never>>,
+    '/settings/cache': RouteRecordInfo<'/settings/cache', '/settings/cache', Record<never, never>, Record<never, never>>,
+    '/settings/database': RouteRecordInfo<'/settings/database', '/settings/database', Record<never, never>, Record<never, never>>,
+    '/settings/services': RouteRecordInfo<'/settings/services', '/settings/services', Record<never, never>, Record<never, never>>,
+    '/settings/storage': RouteRecordInfo<'/settings/storage', '/settings/storage', Record<never, never>, Record<never, never>>,
     '/teams/[id]': RouteRecordInfo<'/teams/[id]', '/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
   }
 }

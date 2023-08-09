@@ -8,26 +8,34 @@
       >
         <li>
           <router-link
-            to="/settings/account"
+            to="/settings/cache"
             class=""
           >
-            Account
+            Cache
           </router-link>
         </li>
         <li>
           <router-link
-            to="/settings/billing"
+            to="/settings/database"
             class=""
           >
-            Billing
+            Database
           </router-link>
         </li>
         <li>
           <router-link
-            to="/settings/integration"
+            to="/settings/storage"
             class=""
           >
-            Integrations
+            Storage
+          </router-link>
+        </li>
+        <li>
+          <router-link
+            to="/settings/services"
+            class=""
+          >
+            Services
           </router-link>
         </li>
       </ul>

@@ -146,7 +146,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
@@ -161,7 +161,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
@@ -170,7 +170,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Settings</a>
@@ -178,7 +178,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100"
+              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600"
               role="menuitem"
               tabindex="-1"
             >
@@ -202,7 +202,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-1"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-gray-100 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Log out</a>
