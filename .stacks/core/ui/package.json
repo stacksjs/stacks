@@ -55,15 +55,15 @@
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.54.2",
+    "@unocss/transformer-compile-class": "^0.55.0",
     "pinia": "^2.1.6",
-    "unocss": "^0.54.2",
+    "unocss": "^0.55.0",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.8"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.1.12",
     "@stacksjs/development": "workspace:*",
-    "@unocss/preset-icons": "^0.54.2"
+    "@unocss/preset-icons": "^0.55.0"
   }
 }
