@@ -27,7 +27,7 @@
                     to="/"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-home w-6 h-6" />
+                    <div class="i-heroicons-home text-gray-500 w-6 h-6" />
                     Dashboard
                   </router-link>
                 </li>
@@ -36,7 +36,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-clock w-6 h-6" />
+                    <div class="i-heroicons-clock text-gray-500 w-6 h-6" />
                     Deployments
                   </router-link>
                 </li>
@@ -45,7 +45,7 @@
                     to="/commands"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-command-line w-6 h-6" />
+                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6" />
                     Commands
                   </router-link>
                 </li>
@@ -54,7 +54,7 @@
                     to="/dns"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cloud w-6 h-6" />
+                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6" />
                     DNS
                   </router-link>
                 </li>
@@ -63,7 +63,7 @@
                     to="/environment"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cpu-chip w-6 h-6" />
+                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6" />
                     Environment
                   </router-link>
                 </li>
@@ -72,7 +72,7 @@
                     to="/dependencies"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cube w-6 h-6" />
+                    <div class="i-heroicons-cube text-gray-500 w-6 h-6" />
                     Dependencies
                   </router-link>
                 </li>
@@ -81,7 +81,7 @@
                     to="/queue"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-queue-list w-6 h-6" />
+                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6" />
                     Queue
                   </router-link>
                 </li>
@@ -90,7 +90,7 @@
                     to="/library"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-building-library w-6 h-6" />
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6" />
                     Library
                   </router-link>
                 </li>
@@ -99,7 +99,7 @@
                     to="/health"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-heart w-6 h-6" />
+                    <div class="i-heroicons-heart text-gray-500 w-6 h-6" />
                     Health
                   </router-link>
                 </li>
@@ -174,12 +174,12 @@
                 </li>
               </ul>
             </li>
-            <li class="mt-auto">
+            <li class="mt-auto -mx-2">
               <router-link
                 to="/settings/cache"
                 class="sidebar-links group"
               >
-                <div class="i-heroicons-cog w-6 h-6" />
+                <div class="i-heroicons-cog text-gray-500 w-6 h-6" />
                 Settings
               </router-link>
             </li>
@@ -192,10 +192,10 @@
 
 <style scoped>
 .sidebar-links {
-  @apply text-gray-700 dark:text-gray-200 hover:text-blue-600 dark-hover:bg-gray-700 hover:bg-blue-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
+  @apply text-blue-gray-600 dark:text-blue-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
 }
 
 .router-link-active, .router-link-exact-active {
-  @apply dark:bg-gray-700 bg-gray-50 dark:text-blue-300 text-blue-600 p-2 flex items-center text-sm rounded-md !important
+  @apply dark:bg-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 p-2 flex items-center text-sm rounded-md !important
 }
 </style>

@@ -9,7 +9,6 @@
         <li>
           <router-link
             to="/settings/cache"
-            class=""
           >
             Cache
           </router-link>
@@ -17,7 +16,6 @@
         <li>
           <router-link
             to="/settings/database"
-            class=""
           >
             Database
           </router-link>
@@ -25,15 +23,27 @@
         <li>
           <router-link
             to="/settings/storage"
-            class=""
           >
             Storage
           </router-link>
         </li>
         <li>
           <router-link
+            to="/settings/mail"
+          >
+            Mail
+          </router-link>
+        </li>
+        <li>
+          <router-link
+            to="/settings/queue"
+          >
+            Queue
+          </router-link>
+        </li>
+        <li>
+          <router-link
             to="/settings/services"
-            class=""
           >
             Services
           </router-link>

@@ -106,18 +106,8 @@
             <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
               Preview
             </div>
-            <svg
-              class="h-5 w-5 flex-none text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                clip-rule="evenodd"
-              />
-            </svg>
+
+            <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
           </li>
           <li class="relative flex items-center space-x-4 py-4">
             <div class="min-w-0 flex-auto">
@@ -159,18 +149,8 @@
             <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
               Production
             </div>
-            <svg
-              class="h-5 w-5 flex-none text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                clip-rule="evenodd"
-              />
-            </svg>
+
+            <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
           </li>
           <li class="relative flex items-center space-x-4 py-4">
             <div class="min-w-0 flex-auto">
@@ -212,18 +192,8 @@
             <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-gray-600 dark:text-gray-300">
               Preview
             </div>
-            <svg
-              class="h-5 w-5 flex-none text-gray-400"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                clip-rule="evenodd"
-              />
-            </svg>
+
+            <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
           </li>
         </ul>
       </div>
@@ -326,19 +296,13 @@
                   <button
                     id="options-menu-0-button"
                     type="button"
-                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
                     aria-expanded="false"
                     aria-haspopup="true"
                   >
                     <span class="sr-only">Open options</span>
-                    <svg
-                      class="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-                    </svg>
+
+                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--
@@ -391,19 +355,12 @@
                   <button
                     id="options-menu-1-button"
                     type="button"
-                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
                     aria-expanded="false"
                     aria-haspopup="true"
                   >
                     <span class="sr-only">Open options</span>
-                    <svg
-                      class="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-                    </svg>
+                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--
@@ -456,19 +413,12 @@
                   <button
                     id="options-menu-2-button"
                     type="button"
-                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+                    class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
                     aria-expanded="false"
                     aria-haspopup="true"
                   >
                     <span class="sr-only">Open options</span>
-                    <svg
-                      class="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-                    </svg>
+                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--

@@ -55,6 +55,8 @@ declare module 'vue-router/auto/routes' {
     '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
     '/settings/cache': RouteRecordInfo<'/settings/cache', '/settings/cache', Record<never, never>, Record<never, never>>,
     '/settings/database': RouteRecordInfo<'/settings/database', '/settings/database', Record<never, never>, Record<never, never>>,
+    '/settings/mail': RouteRecordInfo<'/settings/mail', '/settings/mail', Record<never, never>, Record<never, never>>,
+    '/settings/queue': RouteRecordInfo<'/settings/queue', '/settings/queue', Record<never, never>, Record<never, never>>,
     '/settings/services': RouteRecordInfo<'/settings/services', '/settings/services', Record<never, never>, Record<never, never>>,
     '/settings/storage': RouteRecordInfo<'/settings/storage', '/settings/storage', Record<never, never>, Record<never, never>>,
     '/teams/[id]': RouteRecordInfo<'/teams/[id]', '/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,

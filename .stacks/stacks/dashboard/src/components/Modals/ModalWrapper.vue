@@ -59,7 +59,7 @@ onUnmounted(() => {
         <div class="absolute top-0 right-0 pt-4 pr-4">
           <button
             type="button"
-            class="text-gray-400 transition duration-150 ease-in-out hover:text-gray-500 focus:outline-none focus:text-gray-500"
+            class="text-gray-400 transition duration-150 ease-in-out hover:text-blue-gray-500 focus:outline-none focus:text-gray-500"
             aria-label="Close"
             @click="emit('closeModal')"
           >

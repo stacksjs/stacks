@@ -74,7 +74,7 @@
       <div>
         <div class="flex items-center justify-between">
           <div class="flex items-start text-xl font-medium text-gray-900 sm:mx-none sm:mr-auto dark:text-gray-100">
-            <div class="i-heroicons-plus flex-shrink-0 w-6 h-6 mr-3 text-gray-400 dark:text-gray-100 group-hover:text-gray-500 dark:text-gray-400" />
+            <div class="i-heroicons-plus flex-shrink-0 w-6 h-6 mr-3 text-gray-400 dark:text-gray-100 group-hover:text-blue-gray-500 dark:text-gray-400" />
             <span>Events</span>
           </div>
           <div class="flex items-center">
@@ -85,7 +85,7 @@
                   type="button"
                   aria-expanded="true"
                   aria-haspopup="true"
-                  class="bg-neutral-50 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-blue-50"
+                  class="bg-neutral-50 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-blue-gray-50"
                 >
                   <div class="i-heroicons-funnel w-5 h-5 text-gray-700 " />
                 </button>
@@ -95,7 +95,7 @@
 
             <button
               type="button"
-              class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-blue-50"
+              class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-50"
             >
               <div class="i-heroicons-plus-small w-5 h-5 mr-1" />
               <span class="text-sm">User</span>
@@ -205,41 +205,41 @@
                         <button
                           type="button"
                           title="Edit User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           href="#"
                           title="View User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           href="#"
                           title="Login As"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           type="button"
                           title="Sync User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           type="button"
                           title="Delete"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                       </span>
                     </td>
@@ -282,41 +282,41 @@
                         <button
                           type="button"
                           title="Edit User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           href="#"
                           title="View User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           href="#"
                           title="Login As"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           type="button"
                           title="Sync User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           type="button"
                           title="Delete"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                       </span>
                     </td>
@@ -359,41 +359,41 @@
                         <button
                           type="button"
                           title="Edit User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-l-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-pencil-square w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           href="#"
                           title="View User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
 
-                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-eye w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           href="#"
                           title="Login As"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-right-on-rectangle w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
 
                         </button>
                         <button
                           type="button"
                           title="Sync User"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-arrow-path w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                         <button
                           type="button"
                           title="Delete"
-                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-50 focus:z-10 focus:outline-none focus:ring-2 group"
+                          class="relative items-center p-2 text-xs font-semibold text-white transition duration-150 ease-in-out border border-l-0 border-gray-300 dark:border-gray-500 dark-hover:bg-gray-500 rounded-r-md hover:bg-blue-gray-50 focus:z-10 focus:outline-none focus:ring-2 group"
                         >
-                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" />
+                          <div class="i-heroicons-trash w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-gray-700" />
                         </button>
                       </span>
                     </td>
@@ -439,23 +439,23 @@
                     <a
                       href="#"
                       aria-current="page"
-                      class="border-blue-500 z-20 text-blue-600 dark:bg-gray-600 bg-blue-50 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                      class="border-blue-gray-400 z-20 text-blue-600 dark:bg-gray-600 bg-blue-gray-50 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-blue-gray-50 dark:border-gray-600 dark:text-teal-50"
                     >1</a><a
                       href="#"
                       aria-current="page"
-                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-blue-gray-50 dark:border-gray-600 dark:text-teal-50"
                     >2</a><a
                       href="#"
                       aria-current="page"
-                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-blue-gray-50 dark:border-gray-600 dark:text-teal-50"
                     >3</a><a
                       href="#"
                       aria-current="page"
-                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-blue-gray-50 dark:border-gray-600 dark:text-teal-50"
                     >4</a><a
                       href="#"
                       aria-current="page"
-                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-gray-50 dark:border-gray-600 dark:text-teal-50"
+                      class="dark:bg-gray-700 dark-hover:bg-gray-600 relative inline-flex items-center px-4 py-2 text-sm font-medium border hover:bg-blue-gray-50 dark:border-gray-600 dark:text-teal-50"
                     >5</a>
                     <a
                       href="#"

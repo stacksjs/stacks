@@ -11,23 +11,51 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
       <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>
           <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
-            MySQL
+            Main Config
           </h2>
           <p class="mt-1 text-sm leading-6 text-gray-600">
-            Update your MySQL driver settings.
+            Update mail settings.
           </p>
         </div>
 
         <form class="md:col-span-2">
           <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-            <div class="sm:col-span-3">
+            <div class="sm:col-span-full">
               <label
-                for="mysql-host"
+                for="mail-from"
                 class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
-              >Host</label>
+              >Mail From</label>
               <div class="mt-2">
                 <input
-                  id="mysql-host"
+                  id="mail-from"
+                  type="text"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <div class="sm:col-span-full">
+              <label
+                for="mail-to"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+              >Mail To</label>
+              <div class="mt-2">
+                <input
+                  id="mail-to"
+                  type="text"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <div class="sm:col-span-full">
+              <label
+                for="mail-driver"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+              >Driver</label>
+              <div class="mt-2">
+                <input
+                  id="mail-driver"
                   type="text"
                   name="name"
                   class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
@@ -37,12 +65,27 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
 
             <div class="sm:col-span-3">
               <label
-                for="mysql-port"
+                for="mail-host"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+              >Host</label>
+              <div class="mt-2">
+                <input
+                  id="mail-host"
+                  type="text"
+                  name="name"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <div class="sm:col-span-3">
+              <label
+                for="mail-port"
                 class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
               >Port</label>
               <div class="mt-2">
                 <input
-                  id="mysql-port"
+                  id="mail-port"
                   type="text"
                   name="name"
                   class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
@@ -52,12 +95,12 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
 
             <div class="sm:col-span-3">
               <label
-                for="mysql-username"
+                for="mail-username"
                 class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
               >Username</label>
               <div class="mt-2">
                 <input
-                  id="mysql-username"
+                  id="mail-username"
                   type="text"
                   class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -66,92 +109,13 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
 
             <div class="sm:col-span-3">
               <label
-                for="mysql-password"
+                for="mail-password"
                 class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
               >Password</label>
               <div class="mt-2">
                 <input
-                  id="mysql-password"
+                  id="mail-password"
                   type="text"
-                  name="last-name"
-                  autocomplete="family-name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-            </div>
-
-            <div class="sm:col-span-full">
-              <label
-                for="mysql-password"
-                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
-              >Database</label>
-              <div class="mt-2">
-                <input
-                  id="mysql-password"
-                  type="text"
-                  name="last-name"
-                  autocomplete="family-name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-        <div>
-          <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
-            SQLite
-          </h2>
-          <p class="mt-1 text-sm leading-6 text-gray-600">
-            Update your SQLite driver settings.
-          </p>
-        </div>
-
-        <form class="md:col-span-2">
-          <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-            <div class="sm:col-span-3">
-              <label
-                for="sqlite-host"
-                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
-              >Host</label>
-              <div class="mt-2">
-                <input
-                  id="sqlite-host"
-                  type="text"
-                  name="name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-            </div>
-
-            <div class="sm:col-span-3">
-              <label
-                for="sqlite-prefix"
-                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
-              >Prefix</label>
-              <div class="mt-2">
-                <input
-                  id="sqlite-prefix"
-                  type="text"
-                  name="name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-            </div>
-
-            <div class="sm:col-span-full">
-              <label
-                for="mysql-password"
-                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
-              >Database</label>
-              <div class="mt-2">
-                <input
-                  id="mysql-password"
-                  type="text"
-                  name="last-name"
-                  autocomplete="family-name"
                   class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>

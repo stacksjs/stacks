@@ -29,20 +29,8 @@ watch(theme, (currentVal) => {
       class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
     >
       <span class="sr-only">Open sidebar</span>
-      <svg
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-        />
-      </svg>
+
+      <div class="i-heroicons-bars-3 h-6 w-6" />
     </button>
 
     <!-- Separator -->
@@ -61,18 +49,8 @@ watch(theme, (currentVal) => {
           for="search-field"
           class="sr-only"
         >Search</label>
-        <svg
-          class="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-            clip-rule="evenodd"
-          />
-        </svg>
+
+        <div class="i-heroicons-magnifying-glass pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
         <input
           id="search-field"
           class="block h-full w-full border-none dark:bg-gray-900 py-0 pl-8 pr-0 dark:text-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
@@ -84,14 +62,14 @@ watch(theme, (currentVal) => {
       <div class="flex items-center gap-x-4 lg:gap-x-6">
         <button
           type="button"
-          class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
         >
           <span class="sr-only">View Documentation</span>
           <div class="i-heroicons-document-text w-6 h-6" />
         </button>
         <button
           type="button"
-          class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
         >
           <span class="sr-only">View notifications</span>
           <div class="i-heroicons-bell w-6 h-6" />
@@ -146,7 +124,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
@@ -161,7 +139,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >
@@ -170,7 +148,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Settings</a>
@@ -178,7 +156,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-0"
               href="#"
-              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600"
+              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600"
               role="menuitem"
               tabindex="-1"
             >
@@ -202,7 +180,7 @@ watch(theme, (currentVal) => {
             <a
               id="user-menu-item-1"
               href="#"
-              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
             >Log out</a>

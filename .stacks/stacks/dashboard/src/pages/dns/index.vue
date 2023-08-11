@@ -24,7 +24,7 @@ function openAddDnsSection() {
 
         <button
           type="button"
-          class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          class="primary-button inline-flex items-center"
           @click="openAddDnsSection"
         >
           <div class="i-heroicons-plus w-5 h-5" />
@@ -96,7 +96,7 @@ function openAddDnsSection() {
                   <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                      class="text-gray-400 text-left hover:text-blue-gray-500 duration-150 ease-in-out transition"
                     >
                       <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
@@ -116,14 +116,14 @@ function openAddDnsSection() {
                           <a
                             id="menu-item-0"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Edit</a>
                           <a
                             id="menu-item-1"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Delete</a>
@@ -152,7 +152,7 @@ function openAddDnsSection() {
                   <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                      class="text-gray-400 text-left hover:text-blue-gray-500 duration-150 ease-in-out transition"
                     >
                       <div class="i-heroicons-ellipsis-vertical w-6 h-6" />
 
@@ -172,14 +172,14 @@ function openAddDnsSection() {
                           <a
                             id="menu-item-0"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Edit</a>
                           <a
                             id="menu-item-1"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Delete</a>
@@ -207,7 +207,7 @@ function openAddDnsSection() {
         </h1>
 
         <button
-          class="i-heroicons-x-mark-solid w-5 h-5 text-gray-500 hover:text-gray-700 dark:text-gray-400"
+          class="i-heroicons-x-mark-solid w-5 h-5 text-gray-500 hover:text-blue-gray-700 dark:text-gray-400"
           @click="closeAddDnsSection"
         />
       </div>
@@ -267,7 +267,7 @@ function openAddDnsSection() {
       <div class="justify-end flex mt-4">
         <button
           type="button"
-          class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          class="primary-button"
           @click="openAddDnsSection"
         >
           Save

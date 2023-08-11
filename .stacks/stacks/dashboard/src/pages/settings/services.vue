@@ -24,19 +24,13 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
             <button
               id="options-menu-0-button"
               type="button"
-              class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+              class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
               aria-expanded="false"
               aria-haspopup="true"
             >
               <span class="sr-only">Open options</span>
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-              </svg>
+
+              <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
             </button>
 
             <!--
@@ -107,19 +101,12 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
             <button
               id="options-menu-0-button"
               type="button"
-              class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+              class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
               aria-expanded="false"
               aria-haspopup="true"
             >
               <span class="sr-only">Open options</span>
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-              </svg>
+              <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
             </button>
 
             <!--
@@ -190,19 +177,12 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
             <button
               id="options-menu-0-button"
               type="button"
-              class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+              class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
               aria-expanded="false"
               aria-haspopup="true"
             >
               <span class="sr-only">Open options</span>
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-              </svg>
+              <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
             </button>
 
             <!--
@@ -273,19 +253,12 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
             <button
               id="options-menu-0-button"
               type="button"
-              class="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500"
+              class="-m-2.5 block p-2.5 text-gray-400 hover:text-blue-gray-500"
               aria-expanded="false"
               aria-haspopup="true"
             >
               <span class="sr-only">Open options</span>
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M3 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8.5 10a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM15.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
-              </svg>
+              <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
             </button>
 
             <!--

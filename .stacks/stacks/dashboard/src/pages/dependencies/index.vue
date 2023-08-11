@@ -3,18 +3,8 @@
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800">
       <div class="py-2">
         <div class="bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400 flex flex-row rounded-lg p-4 text-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="text-gray-400 h-6 flex-shrink-0"
-          ><path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-          /></svg><div class="ml-4 mt-0.5 flex flex-grow">
+          <div class="i-heroicons-information-circle text-gray-400 h-6 w-6 flex-shrink-0" />
+          <div class="ml-4 mt-0.5 flex flex-grow">
             <p class="">
               Search for dependencies using tea.
             </p>
@@ -25,9 +15,8 @@
           <div class="mt-1 flex flex-col">
             <input
               type="text"
-              class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 focus:border-teal-500 dark:border-gray-600 focus:outline-none focus:ring-2"
+              class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
               list="artisanCommands"
-              autocorrect="off"
             >
           </div>
         </div>
@@ -36,7 +25,7 @@
         <div class="mt-4 flex justify-end">
           <button
             type="button"
-            class="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            class="primary-button"
           >
             Add
           </button>
@@ -120,17 +109,10 @@
                   <td class="whitespace-nowrap py-4 pl-3 pr-4 flex justify-end text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-gray-400 text-left hover:text-gray-500 duration-150 ease-in-out transition"
+                      class="text-gray-400 text-left hover:text-blue-gray-500 duration-150 ease-in-out transition"
                     >
-                      <svg
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="w-5 h-5"
-                      >
-                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                      </svg>
+
+                      <div class="i-heroicons-ellipsis-vertical w-5 h-5" />
 
                       <div
                         v-if="false"
@@ -148,7 +130,7 @@
                           <a
                             id="menu-item-0"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Edit</a>
@@ -156,7 +138,7 @@
                           <a
                             id="menu-item-2"
                             href="#"
-                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-50 text-xs"
+                            class="text-gray-700 block px-4 py-1.5 text-sm hover:bg-blue-gray-50 text-xs"
                             role="menuitem"
                             tabindex="-1"
                           >Uninstall</a>

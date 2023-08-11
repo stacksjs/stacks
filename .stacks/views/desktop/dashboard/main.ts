@@ -3,6 +3,7 @@ import { routes } from 'vue-router/auto/routes'
 import { setupLayouts } from 'virtual:generated-layouts'
 import VueHighlightJS from 'vue3-highlightjs'
 import App from './App.vue'
+
 import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
 
