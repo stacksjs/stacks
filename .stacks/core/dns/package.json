@@ -47,10 +47,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.90.0"
+    "aws-cdk-lib": "^2.91.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.90.0"
+    "aws-cdk-lib": "^2.91.0"
   }
 }
