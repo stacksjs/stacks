@@ -1,5 +1,5 @@
-import { defineDns } from 'stacks/utils'
-import { env } from 'stacks/validation'
+import { env } from '@stacksjs/env'
+import { defineDns } from '../.stacks/core/config/src/helpers'
 
 /**
  * **DNS Options**
@@ -11,7 +11,7 @@ import { env } from 'stacks/validation'
 export default defineDns({
   a: [
     {
-      name: env.APP_URL, // Hostname (root domain)
+      name: env.APP_URL || '', // Hostname (root domain)
       address: '10.0.0.1', // IPv4 address
       ttl: 300, // Time-to-live in seconds
     },

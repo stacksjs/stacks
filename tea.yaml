@@ -1,8 +1,5 @@
-# this is the tea config for core stacks development
 dependencies:
-  nodejs.org: ^18.16.1
   npmjs.com: ^9.7.2
-  pnpm.io: ^8.6.5
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.12.7

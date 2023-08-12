@@ -1,4 +1,6 @@
-import type { CLI, GeneratorOptions } from '@stacksjs/types'
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import process from 'node:process'
+import { type CLI, type GeneratorOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { prompt } from '@stacksjs/cli'
 import { isString } from '@stacksjs/validation'
@@ -13,9 +15,9 @@ import {
   generateVueCompat,
   generateWebTypes,
   invoke as startGenerationProcess,
-} from '@stacksjs/actions/generate'
+} from '@stacksjs/actions'
 
-export async function generate(buddy: CLI) {
+export function generate(buddy: CLI) {
   const descriptions = {
     command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
     types: 'Generate your TypeScript types',
@@ -121,14 +123,14 @@ export async function generate(buddy: CLI) {
   buddy
     .command('generate:tea-config', descriptions.tea)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
-      await generateTeaConfig()
+    .action(() => {
+      generateTeaConfig()
     })
 
   buddy
     .command('generate:migrations', 'Generate Migrations')
-    .action(async () => {
-      await generateMigrations()
+    .action(() => {
+      generateMigrations()
     })
 }
 

@@ -220,3 +220,5 @@ export {
   createHead,
   renderHeadToString,
 } from '@vueuse/head'
+
+export { default as readableSize } from 'pretty-bytes'

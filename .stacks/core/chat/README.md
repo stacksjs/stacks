@@ -9,7 +9,7 @@ Stacks Chat is driver system for sending messages through chat apps.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/chat
+bun install -d @stacksjs/chat
 ```
 
 You may now use it in your project:
@@ -47,7 +47,7 @@ SLACK_SECRET_KEY=SSK123
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -66,7 +66,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

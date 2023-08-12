@@ -1,9 +1,9 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, ExamplesOptions } from '@stacksjs/types'
-import { prompt } from '@stacksjs/cli'
-import { componentExample, invoke as runExample, webComponentExample } from '@stacksjs/actions/examples'
+import { type CLI, type ExamplesOptions } from '@stacksjs/types'
+import { runExample } from '@stacksjs/actions'
 
-export async function example(buddy: CLI) {
+export function example(buddy: CLI) {
   const descriptions = {
     example: 'Which example do you want to see?',
     components: 'Test your libraries against your built bundle',
@@ -20,19 +20,19 @@ export async function example(buddy: CLI) {
     .option('-w, --web-components', descriptions.webComponents)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
-      const answer = await prompt.require()
-        .select(descriptions.select, {
-          options: [
-            { value: 'components', label: 'Vue Components' },
-            { value: 'web-components', label: 'Web Components' },
-          ],
-        })
+      // const answer = await prompt.require()
+      //   .select(descriptions.select, {
+      //     options: [
+      //       { value: 'components', label: 'Vue Components' },
+      //       { value: 'web-components', label: 'Web Components' },
+      //     ],
+      //   })
 
-      if (answer === 'components')
-        await componentExample(options)
-      else if (answer === 'web-components')
-        await webComponentExample(options)
-      else process.exit(ExitCode.InvalidArgument)
+      // if (answer === 'components')
+      //   await componentExample(options)
+      // else if (answer === 'web-components')
+      //   await webComponentExample(options)
+      // else process.exit(ExitCode.InvalidArgument)
 
       await runExample(options)
       process.exit(ExitCode.Success)

@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { runNpmScript } from '@stacksjs/utils'
-import type { CleanOptions } from '@stacksjs/types'
+import { type CleanOptions } from '@stacksjs/types'
 import { NpmScript } from '@stacksjs/types'
 
 export async function invoke(options: CleanOptions) {

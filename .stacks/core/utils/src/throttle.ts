@@ -1,8 +1,8 @@
 /**
  * Throttle a function.
  *
- * @param fn
- * @param wait
+ * @param fn: Function
+ * @param wait = 300
  * @returns
  *
  * @example
@@ -15,7 +15,9 @@
  *     console.log(window.innerHeight)
  *   }, 250)
  * )
+ * ```
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function throttle(fn: Function, wait = 300) {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>

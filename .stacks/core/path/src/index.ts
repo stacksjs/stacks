@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
@@ -155,7 +156,7 @@ export function dnsPath(path?: string) {
 }
 
 export function emailPath(path?: string) {
-  return corePath(`email/${path || ''}`)
+  return notificationsPath(`email/${path || ''}`)
 }
 
 export function errorHandlingPath(path?: string) {
@@ -164,6 +165,10 @@ export function errorHandlingPath(path?: string) {
 
 export function eventsPath(path?: string) {
   return corePath(`events/${path || ''}`)
+}
+
+export function coreEnvPath(path?: string) {
+  return corePath(`env/${path || ''}`)
 }
 
 export function examplesPath(type: 'vue-components' | 'web-components') {
@@ -191,7 +196,7 @@ export function gitPath(path?: string) {
 }
 
 export function langPath(path?: string) {
-  return resourcesPath(`lang/${path || ''}`)
+  return projectPath(`lang/${path || ''}`)
 }
 
 export type LibraryType = 'vue-components' | 'web-components' | 'functions'
@@ -201,6 +206,10 @@ export function libraryEntryPath(type: LibraryType) {
 
 export function lintPath(path?: string) {
   return corePath(`lint/${path || ''}`)
+}
+
+export function eslintPath(path?: string) {
+  return lintPath(`eslint/${path || ''}`)
 }
 
 export function loggingPath(path?: string) {
@@ -237,15 +246,12 @@ export function onboardingPath(path?: string) {
 
 export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions') {
   if (type === 'vue-components')
-    return frameworkPath('components/vue/package.json')
+    return frameworkPath('libs/components/vue/package.json')
 
   if (type === 'web-components')
-    return frameworkPath('components/web/package.json')
+    return frameworkPath('libs/components/web/package.json')
 
-  if (type === 'functions')
-    return frameworkPath('functions/package.json')
-
-  return frameworkPath(`${type}/package.json`)
+  return frameworkPath(`libs/${type}/package.json`)
 }
 
 export function viewsPath(path?: string) {
@@ -279,7 +285,7 @@ export function projectStoragePath(path?: string) {
 }
 
 export function pushPath(path?: string) {
-  return corePath(`push/${path || ''}`)
+  return notificationsPath(`push/${path || ''}`)
 }
 
 export function queryBuilderPath(path?: string) {
@@ -335,7 +341,7 @@ export function slugPath(path?: string) {
 }
 
 export function smsPath(path?: string) {
-  return corePath(`sms/${path || ''}`)
+  return notificationsPath(`sms/${path || ''}`)
 }
 
 export function storagePath(path?: string) {
@@ -399,7 +405,7 @@ export function vitePath(path?: string) {
 }
 
 export function xRayPath(path?: string) {
-  return corePath(`x-ray/${path || ''}`)
+  return frameworkPath(`stacks/x-ray/${path || ''}`)
 }
 
 export const path = {
@@ -433,6 +439,7 @@ export const path = {
   emailPath,
   errorHandlingPath,
   eventsPath,
+  coreEnvPath,
   healthPath,
   examplesPath,
   fakerPath,

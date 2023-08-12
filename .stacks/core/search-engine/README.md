@@ -20,7 +20,7 @@ The Stacks Search Engine is a unified driver system to easily interact with sear
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/search-engine
+bun install -d @stacksjs/search-engine
 ```
 
 You may now use:
@@ -38,7 +38,7 @@ Learn more in the docs.
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -57,7 +57,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

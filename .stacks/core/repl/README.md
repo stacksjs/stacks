@@ -9,7 +9,7 @@ A Stacks optimized REPL.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/repl
+bun install -d @stacksjs/repl
 ```
 
 Now, you can use it in your project:
@@ -25,7 +25,7 @@ To view the full documentation, please visit [https://stacksjs.dev/repl](https:/
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -44,7 +44,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

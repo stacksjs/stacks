@@ -1,12 +1,12 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/types'
-import type { GeneratorOptions } from '@stacksjs/types'
+import { type GeneratorOptions } from '@stacksjs/types'
 import { dumpYaml, runNpmScript } from '@stacksjs/utils'
 import { files } from '@stacksjs/storage'
-import { runCommand } from '@stacksjs/cli'
-import { frameworkPath, projectPath } from '@stacksjs/path'
-import { dependencies } from '@stacksjs/config'
+import { projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
+import dependencies from '~/config/deps'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)
@@ -120,17 +120,17 @@ export async function generateTypes(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export async function generateMigrations() {
-  const path = frameworkPath('database/schema.prisma')
+export function generateMigrations() {
+  // const path = frameworkPath('database/schema.prisma')
 
   // await migrate(path, { database: database.driver })
 
-  await runCommand(`npx prisma migrate dev --schema=${path}`)
+  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
 
   log.success('Successfully updated migrations')
 }
 
-export async function generateTeaConfig() {
+export function generateTeaConfig() {
   // define your dependencies
   const deps = dependencies
 

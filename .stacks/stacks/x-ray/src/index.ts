@@ -1,9 +1,11 @@
-// import { ray } from 'node-ray'
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import { send } from './client'
-import type { Log } from './types'
+import { type Log } from './types'
 
-function ray(content: any): void {
+// import { ray } from 'node-ray'
+
+async function ray(content: any): Promise<void> {
   const splitString = getErrorObject()?.split('/') || ['file:0']
   const splitLength = splitString?.length || 1
   const originFile = splitString[splitLength - 1]
@@ -16,7 +18,7 @@ function ray(content: any): void {
     time: getTime(),
   }
 
-  send(log, '/api/store-logs')
+  await send(log, '/api/store-logs')
 }
 
 function getErrorObject() {

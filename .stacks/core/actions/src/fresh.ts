@@ -1,7 +1,16 @@
-import { runCommands } from '@stacksjs/cli'
+import process from 'node:process'
+import { ExitCode } from '@stacksjs/types'
+import { log, runCommands } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 
-await runCommands([
-  'buddy clean',
-  'pnpm install',
-], { cwd: frameworkPath(), verbose: true })
+const results = await runCommands([
+  'bun buddy clean',
+  'bun install -y',
+], { cwd: frameworkPath() })
+
+for (const result of results) {
+  if (result.isErr()) {
+    log.error(result.error)
+    process.exit(ExitCode.FatalError)
+  }
+}

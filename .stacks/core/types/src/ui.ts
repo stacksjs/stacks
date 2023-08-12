@@ -1,4 +1,4 @@
-import type { UserShortcuts } from 'unocss'
+import { type UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons'
@@ -33,9 +33,11 @@ export interface UiOptions {
    *
    * @example
    * ```
-   * shortcuts: {
-   *   'btn': 'px-4 py-2 rounded text-white bg-blue-500',
-   *   'btn-lg': 'btn px-6 py-3',
+   * config: {
+   *   shortcuts: {
+   *     'btn': 'px-4 py-2 rounded text-white bg-blue-500',
+   *     'btn-lg': 'btn px-6 py-3',
+   *   }
    * }
    * ```
    */
@@ -179,6 +181,8 @@ export interface UiOptions {
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
 }
+
+export type UiConfig = UiOptions
 
 export type Shortcuts = UserShortcuts
 

@@ -12,7 +12,7 @@ The simple way to build beautiful CLIs.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/cli
+bun install -d @stacksjs/cli
 ```
 
 Now, you can use it in your project:
@@ -20,12 +20,12 @@ Now, you can use it in your project:
 ```js
 // command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
-import { command, prompts, spawn, spinner, ExitCode, italic } from '@stacksjs/cli'
+import { ExitCode, command, italic, prompts, spawn, spinner } from '@stacksjs/cli'
 
 const stacks = command('stacks')
 
 stacks
-  .command('example', 'A dummy command') // pnpm buddy example
+  .command('example', 'A dummy command') // bun buddy example
   .option('-i, --install', 'The install option', { default: true })
   .action(async (options) => {
     if (options.install)
@@ -55,7 +55,8 @@ async function install() {
     }, 5000)
     await spawn('pnpm install')
     spin.stop()
-  } catch (error) {
+  }
+  catch (error) {
     log.error(error)
   }
 }
@@ -68,7 +69,7 @@ command.parse() // parse the command
 You may now run the command via:
 
 ```bash
-tsx command.ts
+bunx command.ts
 ```
 
 To view a more detailed example, check out [Buddy](../../buddy/).
@@ -90,7 +91,7 @@ To view the full documentation, please visit [https://stacksjs.dev/cli](https://
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -109,7 +110,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

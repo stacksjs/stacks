@@ -1,7 +1,7 @@
-import type { CLI, PreinstallOptions } from '@stacksjs/types'
-import { invoke } from '@stacksjs/actions/preinstall'
+import { type CLI } from '@stacksjs/types'
+import { runPreinstall } from '@stacksjs/actions'
 
-export async function preinstall(buddy: CLI) {
+export function preinstall(buddy: CLI) {
   const descriptions = {
     command: 'Run your preinstall script',
     verbose: 'Enable verbose output',
@@ -10,7 +10,7 @@ export async function preinstall(buddy: CLI) {
   buddy
     .command('preinstall', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: PreinstallOptions) => {
-      await invoke(options)
+    .action(() => {
+      runPreinstall()
     })
 }

@@ -1,4 +1,6 @@
-import type { HttpMethod, Middleware, Route, RouteCallback, RouteGroupOptions } from '@stacksjs/types'
+/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
+
+import { type HttpMethod, type Middleware, type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
 
 export class Router {
   private routes: Route[] = []

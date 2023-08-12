@@ -1,13 +1,13 @@
-import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, green, intro, runCommand } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import process from 'node:process'
+import { type CLI, type CreateOptions } from '@stacksjs/types'
+import { bold, cyan, green, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
 import { Action, ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 
-export async function create(buddy: CLI) {
+export function create(buddy: CLI) {
   const descriptions = {
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
@@ -38,11 +38,11 @@ export async function create(buddy: CLI) {
       const name = options.name
       const path = resolve(process.cwd(), name)
 
-      await isFolderCheck(path)
-      await onlineCheck()
+      isFolderCheck(path)
+      onlineCheck()
       const result = await download(name, path, options)
 
-      if (result.isErr()) {
+      if (result?.isErr()) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -64,14 +64,14 @@ export async function create(buddy: CLI) {
     })
 }
 
-async function isFolderCheck(path: string) {
-  if (await isFolder(path)) {
+function isFolderCheck(path: string) {
+  if (isFolder(path)) {
     log.error(`Path ${path} already exists`)
     process.exit(ExitCode.FatalError)
   }
 }
 
-async function onlineCheck() {
+function onlineCheck() {
   const online = useOnline()
   if (!online) {
     log.info('It appears you are disconnected from the internet.')
@@ -100,14 +100,14 @@ async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
   let result = await runCommand('pnpm install', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit()
   }
 
   result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -116,7 +116,7 @@ async function install(path: string, options: CreateOptions) {
 
   result = await runCommand('git init', { ...options, cwd: path })
 
-  if (result.isErr()) {
+  if (result?.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }

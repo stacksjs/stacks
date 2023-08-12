@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { isString } from '@stacksjs/validation'
+// import { isString } from '@stacksjs/validation'
+
 // import type { Hits, SearchResponse } from '@stacksjs/types'
-import { useTable } from '../functions/table'
 
 // interface Props {
 //   type: string // the Meilisearch index you would like to use for this table
@@ -48,12 +48,12 @@ import { useTable } from '../functions/table'
 //   selectedAll = false,
 // } = defineProps<Props>()
 
-const parsedColumns = computed((): string[] => {
-  if (isString(columns))
-    return columns.split(',').map(col => col.trim())
+// const parsedColumns = computed((): string[] => {
+//   if (isString(columns))
+//     return columns.split(',').map(col => col.trim())
 
-  return columns
-})
+//   return columns
+// })
 
 // const parsedSorts = computed((): string[] => {
 //   if (isString(sorts))

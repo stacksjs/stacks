@@ -2,7 +2,6 @@
   "name": "@stacksjs/docs",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -24,11 +23,13 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -38,12 +39,15 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "vitepress": "1.0.0-rc.4"
+    "vitepress": "1.0.0-beta.5"
+  },
+  "dependencies": {
+    "vitepress": "1.0.0-beta.5"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

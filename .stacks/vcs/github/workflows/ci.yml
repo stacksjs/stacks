@@ -46,10 +46,10 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm buddy key:generate
+        run: bun buddy key:generate
 
       - name: Lint
-        run: pnpm buddy lint
+        run: bun buddy lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -76,10 +76,10 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm buddy key:generate
+        run: bun buddy key:generate
 
       - name: Typecheck
-        run: pnpm buddy test:types
+        run: bun buddy test:types
 
   test:
     runs-on: ${{ matrix.os }}
@@ -109,10 +109,10 @@ jobs:
         uses: niden/actions-memcached@v7
 
       - name: Set Application Key
-        run: pnpm buddy key:generate
+        run: bun buddy key:generate
 
       - name: Test Suite
-        run: pnpm run test
+        run: bun --bun run test
 
   # you may need to "Allow GitHub Actions to create and approve pull requests"
   # https://stackoverflow.com/questions/72376229/github-actions-is-not-permitted-to-create-or-approve-pull-requests-createpullre
@@ -142,7 +142,7 @@ jobs:
         run: pnpm install
 
       - name: Set Application Key
-        run: pnpm buddy key:generate
+        run: bun buddy key:generate
 
       - name: Prepare Git User
         run: |

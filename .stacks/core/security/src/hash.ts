@@ -27,7 +27,7 @@ async function bcryptEncode(password: string) {
   if (!hashing.bcrypt)
     throw new Error('Bcrypt hashing is not configured')
 
-  const salt = await bcryptjs.genSaltSync(hashing.bcrypt.rounds)
+  const salt = bcryptjs.genSaltSync(hashing.bcrypt.rounds)
   const hash = await bcryptjs.hash(password, salt)
 
   return hash
@@ -37,15 +37,15 @@ async function bcryptVerify(password: string, hash: string) {
   return await bcryptjs.compare(password, hash)
 }
 
-async function base64Encode(password: string) {
-  return await Base64.encode(password)
+function base64Encode(password: string) {
+  return Base64.encode(password)
 }
 
-async function base64Verify(password: string, hash: string) {
+function base64Verify(password: string, hash: string) {
   return Base64.decode(hash) === password
 }
 
-async function md5Encode(password: string) {
+function md5Encode(password: string) {
   return md5(password)
 }
 

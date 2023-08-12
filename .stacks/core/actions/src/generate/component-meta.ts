@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /**
  * This action generates the component meta.
@@ -9,7 +9,7 @@ import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from '../helpers/component-meta'
 
 if (hasComponents())
-  await generateComponentMeta()
+  generateComponentMeta()
 
 else
   log.info('No components found. Skipping component meta generation.')

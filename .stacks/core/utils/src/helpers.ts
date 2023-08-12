@@ -1,26 +1,49 @@
-import type { AddressInfo } from 'node:net'
-import type { CliOptions, CommandResult, Manifest, NpmScript } from '@stacksjs/types'
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+
+import process from 'node:process'
+import { type AddressInfo } from 'node:net'
+import { type CliOptions, type Manifest, type NpmScript, type StacksError, type Subprocess } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
-import { execSync, runCommand, spawn } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
-import { app, dependencies, ui } from '@stacksjs/config'
+import { italic, log, runCommand } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
+import { type Result } from '@stacksjs/error-handling'
+import { err } from '@stacksjs/error-handling'
 import { semver } from './versions'
+import ui from '~/config/ui'
+import dependencies from '~/config/deps'
+import app from '~/config/app'
 
 export async function packageManager() {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
   return packageManager
 }
 
+export async function initProject(): Promise<Result<Subprocess, StacksError>> {
+  if (env.APP_ENV !== 'production')
+    log.info('Project not yet initialized, generating application key...')
+  else
+    handleError(new Error('Please run `buddy key:generate` to generate an application key'))
+
+  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
+
+  if (result.isErr())
+    return err(handleError(result.error))
+
+  log.info('Application key generated.')
+
+  return ok(result.value)
+}
+
 export async function isProjectCreated() {
   if (storage.isFile('.env'))
     return await isAppKeySet()
 
+  // TODO: need to re-enable this
   // copy the .env.example to become the .env file
-  if (storage.isFile('.env.example'))
-    await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+  // if (storage.isFile('.env.example'))
+  //   await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
 
   return await isAppKeySet()
 }
@@ -28,24 +51,12 @@ export async function isProjectCreated() {
 export async function installIfVersionMismatch() {
   const deps = dependencies
 
-  const requiredNodeVersion = deps['nodejs.org'] || '^18.16.1'
-  const requiredPnpmVersion = deps['pnpm.io'] || '^8.6.7'
-  const installedNodeVersion = process.version
-  const installedPnpmVersion = execSync('pnpm --version').trim()
+  const requiredBunVersion = deps['bun.sh'] || '0.7.1'
+  const installedBunVersion = process.version
 
-  // if (result.isErr())
-  //   throw new Error('pnpm is not installed')
-
-  // const installedPnpmVersion = result.value
-
-  if (!semver.satisfies(installedNodeVersion, requiredNodeVersion)) {
-    log.warn(`Installed Node.js version (${installedNodeVersion}) does not satisfy required version (${requiredNodeVersion}). Adding it to your environment. One moment...`)
-    await runCommand(`tea +nodejs.org${requiredNodeVersion} >/dev/null 2>&1`)
-  }
-
-  if (!semver.satisfies(installedPnpmVersion, requiredPnpmVersion)) {
-    log.warn(`Installed pnpm version (${installedPnpmVersion}) does not satisfy required version (${requiredPnpmVersion}). Adding it to your environment. One moment...`)
-    await runCommand(`tea +pnpm.io${requiredPnpmVersion} >/dev/null 2>&1`)
+  if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
+    log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
+    await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
 
@@ -122,11 +133,11 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<CommandResult> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
-    return await runCommand(`pnpm run ${script}`, options)
+    return await runCommand(`bun --bun run ${script}`, options)
 
   log.error(`The specified npm script "${script}" does not exist in the package.json file`)
   process.exit()

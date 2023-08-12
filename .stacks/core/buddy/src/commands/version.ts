@@ -1,9 +1,8 @@
-import type { CLI } from '@stacksjs/types'
-import { bold, dim, green, intro } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
-import * as storage from '@stacksjs/storage'
+import { type CLI } from '@stacksjs/types'
+import { bold, dim, green, intro, log } from '@stacksjs/cli'
+import { storage } from '@stacksjs/storage'
 
-export async function version(buddy: CLI) {
+export function version(buddy: CLI) {
   const descriptions = {
     version: 'Retrieving Stacks build version',
   }

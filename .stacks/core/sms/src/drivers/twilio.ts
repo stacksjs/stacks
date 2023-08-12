@@ -1,8 +1,8 @@
 import { TwilioSmsProvider } from '@novu/twilio'
 import { italic } from '@stacksjs/cli'
-import type { SmsOptions } from '@stacksjs/types'
+import { type SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
-import { notification } from '@stacksjs/config'
+import notification from '~/config/notification'
 
 const from = notification.sms?.from
 const env = notification.sms?.drivers.twilio

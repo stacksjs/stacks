@@ -1,4 +1,6 @@
-import { getTypeName } from './base'
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
+
+import { getTypeName } from '@stacksjs/types'
 
 export function isDeepEqual(value1: any, value2: any): boolean {
   const type1 = getTypeName(value1)

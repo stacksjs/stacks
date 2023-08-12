@@ -38,7 +38,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🌐 **Web** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
 - 🖥️ **Desktop** _components as desktop elements_
 - 📚 **Library** _auto-builds component & function libraries_
-- ⚡️ Powered by Nitro, Tauri, UnoCSS, Vite & Vue
+- ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
 ### Stacks Functions
 
@@ -72,7 +72,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
-- 📧 **Email** _secure & simplistic easy-peasy@custom-domains.com mail_
+- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mail_
 - 🔐 **Firewall** _native web application firewall support_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
 - 🤖 **Infrastructure as Code** _version-controlled cloud infrastructure_
@@ -97,7 +97,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
-- 🧪 **Testing** _unit & e2e tests powered by Vitest & Playwright_
+- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
@@ -112,9 +112,9 @@ It's incredibly easy to get started with this framework. Simply run the followin
 ```bash
 sh <(curl stacksjs.dev) my-project
 
-# alternatively, if Node.js >= v18.16 is installed already,
+# alternatively, if Bun >= v0.7 is installed already,
 # you may also get started via:
-npx stacks new my-project
+bunx stacks new my-project
 ```
 
 ## 🤖 Usage
@@ -153,9 +153,8 @@ buddy clean # removes all deps
 buddy upgrade # auto-upgrades deps, framework, node.js, and/or pnpm
 buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
-buddy upgrade:package-manager # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine
-buddy upgrade:node # upgrades to latest project-defined node version
+buddy upgrade:bun # upgrades to latest project-defined Bun version
 buddy upgrade:all # upgrades Node, package manager, framework, dependencies
 
 # if you need any more info on any command listed here, you may suffix
@@ -214,7 +213,7 @@ buddy make:seed cars # creates a Car seed file
 buddy make:table cars # boostraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-project # shares logic with `npx stacks new my-project`
+buddy make:stack my-project # shares logic with `bunx stacks new my-project`
 
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues
@@ -363,7 +362,7 @@ View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?q
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -382,7 +381,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 Sponsors
 

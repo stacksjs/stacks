@@ -26,7 +26,7 @@ features:
   - title: “Be a Good Commitizen”
     details: Pre-configured commitlint setup to simplify semantic git commits, versioning, changelog generations, and npm releases.
   - title: Built With Testing In Mind
-    details: Pre-configured unit & e2e-testing powered by Vitest.
+    details: Pre-configured unit & e2e-testing powered by Bun.
   - title: Renovate Your Code
     details: Optimized & automated PR dependency updates.
   - title: Supercharged Actions

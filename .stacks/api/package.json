@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.51.0",
   "private": true,
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks generated API server.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -29,8 +28,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "npx nitro dev",
-    "build": "npx nitro build",
+    "dev": "nitro dev",
+    "build": "nitro build",
     "preview": "",
     "deploy": "wip"
   },

@@ -26,5 +26,6 @@
  * ```
  */
 export interface Events {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   [key: string]: (...args: any[]) => Function
 }

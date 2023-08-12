@@ -1,5 +1,3 @@
-import type { IEmailOptions } from '@novu/stateless'
-
 export interface NotificationOptions {
   default: 'email' | 'sms' | 'chat' | string
 
@@ -146,60 +144,4 @@ export interface NotificationOptions {
   }
 }
 
-export interface FCMPushNotificationOptions {
-  eventName: string
-  to: {
-    subscriberId: string
-  }
-  payload: {
-    deviceTokens: Array<string>
-    badge: boolean
-    clickAction: string
-    color: string
-    icon: string
-    sound: string
-  }
-}
-
-export interface ExpoPushNotificationOptions {
-  eventName: string
-  to: {
-    subscriberId: string
-  }
-  payload: {
-    to: string[]
-    data: object
-    title: string
-    body: string
-    ttl: number
-    expiration: number
-    priority: 'default' | 'normal' | 'high'
-    subtitle: string
-    sound: 'default' | null
-    badge: number
-    channelId: string
-    categoryId: string
-    mutableContent: boolean
-  }
-}
-
-export type {
-  IChatOptions as ChatOptions,
-  ISendMessageSuccessResponse as SendMessageSuccessResponse,
-  ISmsOptions as SmsOptions,
-} from '@novu/stateless'
-
-export type EmailOptions = Omit<IEmailOptions, 'from'> & {
-  from: {
-    name?: string
-    address?: string
-  }
-
-  domain?: string
-
-  mailboxes?: {
-    [key: string]: string
-    // 'username': string
-    // 'forwardTo': string
-  }
-}
+export type NotificationConfig = NotificationOptions

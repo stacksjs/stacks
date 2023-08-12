@@ -2,7 +2,6 @@
   "name": "@stacksjs/repl",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "A Stacks optimized TS & Vue REPL.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -27,10 +26,13 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -39,9 +41,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@stacksjs/tinker": "workspace:*"

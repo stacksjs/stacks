@@ -1,9 +1,9 @@
-import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
+import process from 'node:process'
+import { type AddOptions, type BuildOptions, type CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { log } from '@stacksjs/logging'
-import { invoke } from '@stacksjs/actions/add'
+import { runAdd } from '@stacksjs/actions'
 
-export async function add(buddy: CLI) {
+export function add(buddy: CLI) {
   const descriptions = {
     add: 'Add a stack to your project (coming soon)',
     table: 'Add the Table Stack to your project',
@@ -21,19 +21,19 @@ export async function add(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
-        const answers = await log.prompt(descriptions.select, {
-          type: 'multiselect',
-          options: [
-            { label: 'Calendar', value: 'calendar' },
-            { label: 'Table', value: 'table' },
-          ],
-        })
+        // const answers = await log.prompt(descriptions.select, {
+        //   type: 'multiselect',
+        //   options: [
+        //     { label: 'Calendar', value: 'calendar' },
+        //     { label: 'Table', value: 'table' },
+        //   ],
+        // })
 
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        // // creates an object out of array and sets answers to true
+        // options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      await invoke(options)
+      await runAdd(options)
 
       process.exit(ExitCode.Success)
     })
@@ -43,7 +43,7 @@ export async function add(buddy: CLI) {
     .option('-t, --table', descriptions.table, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAdd(options)
     })
 
   buddy
@@ -51,7 +51,7 @@ export async function add(buddy: CLI) {
     .option('-t, --calendar', descriptions.calendar, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
-      await invoke(options)
+      await runAdd(options)
     })
 }
 

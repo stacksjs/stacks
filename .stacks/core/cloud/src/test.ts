@@ -1,6 +1,6 @@
-import type { StackProps } from 'aws-cdk-lib/core'
+import { type StackProps } from 'aws-cdk-lib/core'
 import { CfnOutput, Duration, RemovalPolicy, ScopedAws, Stack } from 'aws-cdk-lib/core'
-import type { Construct } from 'constructs'
+import { type Construct } from 'constructs'
 import * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import * as route53 from 'aws-cdk-lib/aws-route53'
 import * as targets from 'aws-cdk-lib/aws-route53-targets'
@@ -8,7 +8,8 @@ import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront'
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins'
-import { app, storage } from '@stacksjs/config'
+import app from '~/config/app'
+import storage from '~/config/storage'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -18,7 +19,7 @@ export class Cloud extends Stack {
     if (app.url)
       domainName = app.url.replace('https://', '').replace('http://', '')
     else
-      domainName = this.node.tryGetContext('domainName')
+      domainName = 'stacks.test'
 
     const {
       accountId,

@@ -1,8 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
-import { packageManager } from '@stacksjs/utils'
-import { library } from '@stacksjs/config'
+import library from '~/config/library'
 
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
 
@@ -42,7 +41,7 @@ export async function generatePackageJson(type: PackageJsonType) {
   "name": "${name}",
   "type": "module",
   "version": "",
-  "packageManager": "${await packageManager()}",
+  "packageManager": "bun",
   "description": "${description}",
   "author": "${library.author}",
   "license": "MIT",
@@ -61,7 +60,7 @@ export async function generatePackageJson(type: PackageJsonType) {
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs"
     }
   },
   "main": "dist/index.cjs",
@@ -73,7 +72,7 @@ export async function generatePackageJson(type: PackageJsonType) {
   ],
   "scripts": {
     "build": "vite build -c ../build/${config}.ts",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "bun --bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

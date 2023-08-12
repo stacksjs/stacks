@@ -2,7 +2,6 @@
   "name": "@stacksjs/push",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -23,11 +22,13 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -37,17 +38,23 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@novu/node": "^0.17.1",
-    "@novu/stateless": "^0.17.1",
+    "@novu/node": "^0.16.4",
+    "@novu/stateless": "^0.16.4",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/error-handling": "workspace:*"
+  },
+  "dependencies": {
+    "@novu/node": "^0.16.4",
+    "@novu/stateless": "^0.16.4",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

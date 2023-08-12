@@ -1,6 +1,6 @@
 // import { MandrillProvider } from '@novu/mandrill'
 // import type { EmailOptions } from '@stacksjs/types'
-// import { notification } from '@stacksjs/config'
+// import notification from '~/config/notification'
 // import type { ResultAsync } from '@stacksjs/error-handling'
 // import { send as sendEmail } from '../actions/send'
 

@@ -30,14 +30,13 @@
     "dev": "vite",
     "build": "",
     "preview": "vite preview",
-    "dev:components": "vite -c ../../core/vite/src/vue-components.ts"
+    "dev:components": "vite -c vite.config.ts"
   },
   "peerDependencies": {
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
     "@vueform/multiselect": "^2.6.2",
     "meilisearch": "^0.34.1"
   },

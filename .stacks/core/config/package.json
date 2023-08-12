@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.57.4",
   "private": true,
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks config helper methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -28,7 +27,10 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
   "files": [
@@ -36,15 +38,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "c12": "^1.4.2"
-  },
-  "dependencies": {
-    "c12": "^1.4.2"
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

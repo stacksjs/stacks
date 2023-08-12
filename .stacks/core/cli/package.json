@@ -2,7 +2,6 @@
   "name": "@stacksjs/cli",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "TypeScript framework for CLI artisans. Build beautiful console apps with ease.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -17,28 +16,30 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "bun",
     "cli",
     "commands",
     "command line interface",
     "console",
     "binary",
     "apps",
+    "prompts",
     "spinners",
     "utilities",
     "helpers",
     "cac",
     "ora",
-    "consola",
-    "ez-spawn",
     "stacks"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -48,9 +49,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.1.1",
@@ -60,12 +61,26 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "@types/prompts": "^2.4.4",
     "cac": "^6.7.14",
-    "execa": "^7.2.0",
-    "ora": "^7.0.1"
+    "ora": "^7.0.1",
+    "prompts": "^2.4.2"
   },
   "dependencies": {
-    "kolorist": "1.8.0"
+    "@antfu/install-pkg": "^0.1.1",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "@types/prompts": "^2.4.4",
+    "cac": "^6.7.14",
+    "kolorist": "1.8.0",
+    "ora": "^6.3.1",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

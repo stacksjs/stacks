@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+
 import { logsPath } from '@stacksjs/path'
-import type { StacksError, ValidationError } from '@stacksjs/types'
+import { type StacksError, type ValidationError } from '@stacksjs/types'
 import { fs } from '@stacksjs/storage'
-import { log } from '@stacksjs/logging'
-import { italic } from '@stacksjs/cli'
+import { italic, log } from '@stacksjs/cli'
 
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
@@ -10,10 +11,12 @@ export class ErrorHandler {
   static handle(err: StacksError, options?: any) {
     this.writeErrorToConsole(err, options)
     this.writeErrorToFile(err)
+    return err
   }
 
   static handleError(err: Error, options?: any) {
     this.handle(err, options)
+    return err
   }
 
   static writeErrorToFile(err: StacksError) {
@@ -35,8 +38,8 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: StacksError, options?: any): void {
-  ErrorHandler.handle(err, options)
+export function handleError(err: StacksError, options?: any): StacksError {
+  return ErrorHandler.handle(err, options)
 }
 
 function isErrorOfTypeValidation(err: any): err is ValidationError {

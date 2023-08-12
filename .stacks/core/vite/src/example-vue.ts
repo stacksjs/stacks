@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
+import { type ViteConfig } from '@stacksjs/types'
 import { examplesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
+import { defineConfig } from './'
 
 // import { uiEngine } from '.'
 

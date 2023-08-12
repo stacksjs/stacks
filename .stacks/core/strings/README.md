@@ -10,7 +10,7 @@ Easily manipulate & work with strings.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/strings
+bun install -d @stacksjs/strings
 ```
 
 Now, you can use it in your project:
@@ -22,16 +22,16 @@ import {
   addIrregularRule, addPluralRule, addSingularRule, addUncountableRule,
 
   // case
-  camelCase, capitalCase, constantCase, dotCase
+  camelCase, capitalCase, constantCase, dotCase,
   headerCase, kebabCase, noCase, paramCase, pascalCase,
-  pathCase, sentenceCase , snakeCase, titleCase
+  pathCase, sentenceCase, snakeCase, titleCase,
 
   // validation
   isEmail, isStrongPassword, isAlphanumeric, validateUsername, isURL, isMobilePhone, isAlpha, isPostalCode, isDate, isNumeric, isBoolean, isHexColor, isHexadecimal, isBase64, isUUID, isJSON, isCreditCard, isISBN, isIP, isIPRange, isMACAddress, isLatLong, isLatitude, isLongitude, isCurrency, isDataURI, isMimeType, isJWT, isMongoId, isAscii, isBase32, isByteLength, isFQDN, isFullWidth, isHalfWidth, isHash, isHSL, isIBAN, isIdentityCard, isISIN, isISO8601, isISRC, isISSN, isISO31661Alpha2, isISO31661Alpha3
 } from '@stacksjs/strings'
 
-console.log(camelCase('hello world')) //=> "helloWorld"
-console.log(plural('dog')) //=> "dogs"
+console.log(camelCase('hello world')) // => "helloWorld"
+console.log(plural('dog')) // => "dogs"
 ```
 
 To view the full documentation, please visit [https://stacksjs.dev/strings](https://stacksjs.dev/strings).
@@ -39,7 +39,7 @@ To view the full documentation, please visit [https://stacksjs.dev/strings](http
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -58,7 +58,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

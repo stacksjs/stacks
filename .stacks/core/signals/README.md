@@ -18,7 +18,7 @@ Stacks proxies [https://github.com/maverick-js/signals](Maverick.js's) signals.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/signals
+bun install -d @stacksjs/signals
 ```
 
 You may now use it in your project:
@@ -69,7 +69,7 @@ root((dispose) => {
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -88,7 +88,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

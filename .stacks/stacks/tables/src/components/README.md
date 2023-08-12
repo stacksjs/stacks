@@ -11,7 +11,7 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx stacks new hello-world
+bunx stacks new hello-world
 cd hello-world
 
 pnpm i # install deps for all packages
@@ -43,10 +43,10 @@ This project also includes a simple way to handle your versioning. Through seman
 ```bash
 # how to create a git commit?
 git add . # select the changes you want to commit
-pnpm run commit # then simply follow the prompts
+bun --bun run commit # then simply follow the prompts
 
 # after you successfully committed, you may create a "release"
-pnpm run release # automates git commits, versioning, and CHANGELOG generation
+bun --bun run release # automates git commits, versioning, and CHANGELOG generation
 ```
 
 Read more about these tips in the docs.
@@ -58,7 +58,6 @@ Read more about these tips in the docs.
 - [Vue 3.2](https://vuejs.org/) - make easy use of Vue's powerful SFCs
 - [UnoCSS](https://github.com/unocss/unocss) - create your own style guide with ease (e.g. Tailwind CSS)
 - [Commitizen & git-cz](https://www.npmjs.com/package/git-cz) - Automate git commits, versioning, and CHANGELOG generation
-- [Vitest](https://github.com/vitest-dev/vitest) - Unit & E2E testing powered by Vite
 - [Renovate](https://renovatebot.com/) - automatic PR dependency updates
 - [GitHub Actions](https://github.com/features/actions) - automatically fixes code style issues, tags releases, and runs the test suite
 - [VS Code Extensions](./.vscode/extensions.json)
@@ -82,7 +81,7 @@ When using this template, feel free to adjust it to your needs. It is a framewor
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -101,7 +100,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

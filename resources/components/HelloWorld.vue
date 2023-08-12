@@ -2,6 +2,7 @@
 // which properties does your component accept?
 const { greeting = 'Welcome!' } = defineProps<{
   showButtons: boolean
+  greeting: string
 }>()
 
 // easily use any of the lifecycle hooks without needing to import them
@@ -252,7 +253,7 @@ onMounted(() => {
           </div>
 
           <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Alpha (Node v18.16)
+            Stacks Alpha (Bun v0.7.1)
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import fg from 'fast-glob'
+import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
-import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
+import { type ComponentMeta, type MetaCheckerOptions } from 'vue-component-meta'
+import { createComponentMetaChecker } from 'vue-component-meta'
 import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
 
 /**
@@ -14,7 +14,7 @@ import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
 
-export async function generateComponentMeta() {
+export function generateComponentMeta() {
   const md = new MarkdownIt()
   const checkerOptions: MetaCheckerOptions = {
     forceUseTs: true,
@@ -32,8 +32,8 @@ export async function generateComponentMeta() {
 
     // Exclude global props
     const props: ComponentApiProps[] = []
-    meta.props.forEach((prop: any) => {
-      if (prop.global)
+    meta.props.forEach((prop) => {
+      if (prop?.global)
         return
 
       const { name, description, required, type, default: defaultValue } = prop
@@ -56,7 +56,7 @@ export async function generateComponentMeta() {
     }
   }
 
-  const components = fg.sync(['components/*.vue', 'components/**/*.vue'], {
+  const components = glob.sync(['components/*.vue', 'components/**/*.vue'], {
     cwd: projectPath(),
     absolute: true,
   })
@@ -69,6 +69,8 @@ export async function generateComponentMeta() {
     const metaDirPath = frameworkPath('component-meta')
 
     // if meta dir doesn't exist create
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (!existsSync(metaDirPath))
       mkdirSync(metaDirPath)
 

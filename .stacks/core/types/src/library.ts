@@ -1,4 +1,4 @@
-import type { TagsOptions } from './components'
+import { type TagsOptions } from './components'
 
 /**
  * **Library Options**
@@ -14,9 +14,15 @@ export interface LibraryOptions {
   name: string
 
   /**
-   * The name of your organization (parent).
+   * The organization / parent / owner name.
+   * @example
+   * ```ts
+   * const owner = 'your-org' // <-- this is the owner
+   * const repository = 'your-repo'
+   * const packageName = owner ? `@${owner}/${repository}' // @your-org/your-repo  <-- this is where the owner's name would be used
+   * ```
    */
-  parentName: string | null
+  owner: string | null
 
   /**
    * The package registry to use.
@@ -71,6 +77,8 @@ export interface LibraryOptions {
    */
   functions: LibraryBuildOptions
 }
+
+export type LibraryConfig = LibraryOptions
 
 /**
  * The list of available options to build your library.

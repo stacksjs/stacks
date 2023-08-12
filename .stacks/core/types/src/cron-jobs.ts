@@ -6,6 +6,7 @@ export interface JobOptions {
    * The name of the job.
    */
   name?: string
+  // eslint-disable-next-line @typescript-eslint/ban-types
   run: string | Function
   schedule?: string
   description?: string
@@ -14,6 +15,12 @@ export interface JobOptions {
   backoff?: number | number[]
   enabled?: boolean
 }
+
+export type JobConfig = JobOptions
+export type Job = JobOptions
+export type Jobs = Job[]
+export type CronJob = Job
+export type CronJobs = Jobs
 
 // export type Job = JobOptions
 // export type Jobs = Job[]

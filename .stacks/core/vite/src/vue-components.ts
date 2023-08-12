@@ -1,24 +1,25 @@
-import { defineConfig, loadEnv } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '@stacksjs/path'
-import type { ViteDevServer as DevServer, BuildOptions as ViteBuildOptions } from 'vite'
-import { app, library } from '@stacksjs/config'
 import { alias } from '@stacksjs/alias'
-import mkcert from 'vite-plugin-mkcert'
-import c from 'picocolors'
-import { version } from '../package.json'
-import { autoImports, components, cssEngine, inspect, uiEngine } from './stacks'
+import { path as p } from '@stacksjs/path'
+import { defineConfig } from 'vite'
+import { type ViteConfig } from '@stacksjs/types'
+import { components } from './plugin/components'
+import { uiEngine } from './plugin/ui-engine'
+import { autoImports } from './plugin/auto-imports'
+import { cssEngine } from './plugin/css-engine'
+import { inspect } from './plugin/inspect'
+import { type ViteBuildOptions } from './'
+import app from '~/config/app'
 
-export const vueComponentsConfig: ViteConfig = {
-  root: frameworkPath('libs/components/vue'),
-  envDir: projectPath(),
+// import { sslCertificate } from './plugin/ssl-cert' -> NotImplementedError: node:http2 createSecureServer is not yet implemented in Bun. Track the status & thumbs up the issue: https://github.com/oven-sh/bun/issues/887
+
+const config = {
+  root: p.frameworkPath('libs/components/vue'),
+  envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: storagePath('public'),
+  publicDir: p.storagePath('public'),
 
   server: {
-    https: true,
-    host: app.url,
-    open: true,
+    host: app.url || 'stacks.test',
   },
 
   resolve: {
@@ -27,85 +28,30 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', '@stacksjs/path'],
   },
 
   plugins: [
-    // preview(),
     uiEngine(),
-    cssEngine(),
     autoImports(),
-    components(),
+    cssEngine(), // blocked by: unconfig uses jiti which errors in Bun: https://github.com/oven-sh/bun/issues/1134#issuecomment-1652676500
     inspect(),
-    mkcert({
-      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
-      autoUpgrade: true,
-      savePath: frameworkPath('certs/components'),
-      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-    }),
-
-    // @ts-expect-error TODO: fix this
-    {
-      // ...
-      configureServer(server: DevServer) {
-        // const base = server.config.base || '/'
-        // const _print = server.printUrls
-        server.printUrls = () => {
-          // const url = server.resolvedUrls?.local[0]
-          //
-          // if (url) {
-          //   try {
-          //     const u = new URL(url)
-          //     // eslint-disable-next-line no-console
-          //     console.log(`${u.protocol}//${u.host}`)
-          //     // const host = `${u.protocol}//${u.host}`
-          //   }
-          //   catch (error) {
-          //     log.warn('Parse resolved url failed:', error)
-          //   }
-          // }
-
-          const appUrl = app.url
-          const frontendUrl = `https://${appUrl}`
-          const backendUrl = `https://api.${appUrl}`
-          const dashboardUrl = `https://admin.${appUrl}`
-          const libraryUrl = `https://libs.${appUrl}`
-          const docsUrl = `https://docs.${appUrl}`
-          const inspectUrl = `https://${appUrl}/__inspect/`
-
-          // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
-          const stacksVersion = `alpha-${version}`
-
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.green(backendUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.dim('Inspect')}: ${c.green(inspectUrl)}`)
-        }
-      },
-    },
+    components(),
+    // sslCertificate(), // blocked by: node:http2 not yet implemented in Bun
+    // stacks(),
   ],
 
   build: vueComponentsBuildOptions(),
-}
+} satisfies ViteConfig
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: libsPath('components/vue/dist'),
+    outDir: p.libsPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
-      entry: libraryEntryPath('vue-components'),
-      name: library.vueComponents?.name,
+      entry: p.libraryEntryPath('vue-components'),
+      // name: library.vueComponents?.name,
+      name: 'test-lib-abc',
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
@@ -119,7 +65,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@stacksjs/path'],
       output: {
         globals: {
           vue: 'Vue',
@@ -129,11 +75,9 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
-
+export default defineConfig(({ command }) => {
   if (command === 'serve')
-    return vueComponentsConfig
+    return config
 
-  return vueComponentsConfig
+  return config
 })

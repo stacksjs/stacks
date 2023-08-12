@@ -1,7 +1,8 @@
-import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
+import process from 'node:process'
+import { type WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { componentsPath, frameworkPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
 import { frameworkVersion } from '@stacksjs/utils'
+import library from '~/config/library'
 
 export default {
   cwd: process.cwd(),

@@ -2,7 +2,6 @@
   "name": "@stacksjs/storage",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -20,20 +19,21 @@
     "storage",
     "fs",
     "file system",
+    "glob",
     "api",
     "collections",
     "utilities",
     "functions",
+    "bun",
     "stacks"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
     },
     "./*": "./*"
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -43,17 +43,24 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "fast-glob": "^3.3.0",
     "fs-extra": "^11.1.1",
-    "unstorage": "^1.9.0"
+    "unstorage": "^1.8.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

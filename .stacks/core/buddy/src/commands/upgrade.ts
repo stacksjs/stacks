@@ -1,10 +1,12 @@
-import type { CLI, UpgradeOptions } from '@stacksjs/types'
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+import process from 'node:process'
+import { type CLI, type UpgradeOptions } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 import { isString } from '@stacksjs/validation'
 
-export async function upgrade(buddy: CLI) {
+export function upgrade(buddy: CLI) {
   const descriptions = {
     command: 'Upgrade dependencies, framework, package manager, and/or Node.js',
     framework: 'Upgrade the Stacks framework',
@@ -52,14 +54,14 @@ export async function upgrade(buddy: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      const result = await runAction(Action.Upgrade, { ...options, shell: true })
+      const result = await runAction(Action.Upgrade, { ...options })
 
       if (result.isErr()) {
-        outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Upgrade complete.', { startTime: perf, useSeconds: true })
+      await outro('Upgrade complete.', { startTime: perf, useSeconds: true })
       process.exit()
     })
 
@@ -82,38 +84,14 @@ export async function upgrade(buddy: CLI) {
     })
 
   buddy
-    .command('upgrade:package-manager', descriptions.packageManager)
-    .option('--verbose', descriptions.verbose, { default: false })
-    .alias('upgrade:pm')
-    .alias('upgrade:pnpm')
-    .example('buddy upgrade:package-manager 7.16.1 --verbose')
-    .example('buddy upgrade:package-manager latest')
-    .action(async (options: UpgradeOptions) => {
-      options.version = 'latest'
-
-      if (buddy.args[0])
-        options.version = buddy.args[0]
-
-      const perf = await intro('buddy upgrade:package-manager')
-      const result = await runAction(Action.UpgradePackageManager, options)
-
-      if (result.isErr()) {
-        outro('While running the buddy upgrade:package-manager command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
-        process.exit()
-      }
-
-      process.exit(ExitCode.Success)
-    })
-
-  buddy
-    .command('upgrade:node', descriptions.node)
+    .command('upgrade:bun', descriptions.node)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:node')
-      const result = await runAction(Action.UpgradeNode, options)
+      const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
-        outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
+        await outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
         process.exit()
       }
 

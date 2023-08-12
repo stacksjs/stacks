@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
+import { type ViteConfig } from '@stacksjs/types'
 import { functionsPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
+import { defineConfig } from './'
 
 // import { autoImports, components, cssEngine, inspect, layouts, pages, pwa, uiEngine } from '.'
 // import generateSitemap from 'vite-ssg-sitemap'

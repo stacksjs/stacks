@@ -2,7 +2,6 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -22,204 +21,18 @@
     "framework",
     "typescript",
     "javascript",
-    "vite",
-    "nitro",
-    "vue",
-    "components",
-    "library"
+    "bun",
+    "vite"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
     },
-    "./build/component-libs": {
-      "types": "./dist/build/component-libs.d.ts",
-      "import": "./dist/build/component-libs.mjs"
-    },
-    "./build/core": {
-      "types": "./dist/build/core.d.ts",
-      "import": "./dist/build/core.mjs"
-    },
-    "./build/stacks": {
-      "types": "./dist/build/stacks.d.ts",
-      "import": "./dist/build/stacks.mjs"
-    },
-    "./dev": {
-      "types": "./dist/dev/index.d.ts",
-      "import": "./dist/dev/index.mjs"
-    },
-    "./dev/components": {
-      "types": "./dist/dev/components.d.ts",
-      "import": "./dist/dev/components.mjs"
-    },
-    "./dev/docs": {
-      "types": "./dist/dev/docs.d.ts",
-      "import": "./dist/dev/docs.mjs"
-    },
-    "./generate": {
-      "types": "./dist/generate/index.d.ts",
-      "import": "./dist/generate/index.mjs"
-    },
-    "./generate/component-meta": {
-      "types": "./dist/generate/component-meta.d.ts",
-      "import": "./dist/generate/component-meta.mjs"
-    },
-    "./generate/ide-helpers": {
-      "types": "./dist/generate/ide-helpers.d.ts",
-      "import": "./dist/generate/ide-helpers.mjs"
-    },
-    "./generate/lib-entries": {
-      "types": "./dist/generate/lib-entries.d.ts",
-      "import": "./dist/generate/lib-entries.mjs"
-    },
-    "./generate/settings": {
-      "types": "./dist/generate/settings.d.ts",
-      "import": "./dist/generate/settings.mjs"
-    },
-    "./generate/vscode-custom-data": {
-      "types": "./dist/generate/vscode-custom-data.d.ts",
-      "import": "./dist/generate/vscode-custom-data.mjs"
-    },
-    "./generate/vue-compat": {
-      "types": "./dist/generate/vue-compat.d.ts",
-      "import": "./dist/generate/vue-compat.mjs"
-    },
-    "./helpers": {
-      "types": "./dist/helpers/index.d.ts",
-      "import": "./dist/helpers/index.mjs"
-    },
-    "./lint": {
-      "types": "./dist/lint/index.d.ts",
-      "import": "./dist/lint/index.mjs"
-    },
-    "./lint/fix": {
-      "types": "./dist/lint/fix.d.ts",
-      "import": "./dist/lint/fix.mjs"
-    },
-    "./test/coverage": {
-      "types": "./dist/test/coverage.d.ts",
-      "import": "./dist/test/coverage.mjs"
-    },
-    "./test/feature": {
-      "types": "./dist/test/feature.d.ts",
-      "import": "./dist/test/feature.mjs"
-    },
-    "./test/ui": {
-      "types": "./dist/test/ui.d.ts",
-      "import": "./dist/test/ui.mjs"
-    },
-    "./test/unit": {
-      "types": "./dist/test/unit.d.ts",
-      "import": "./dist/test/unit.mjs"
-    },
-    "./upgrade": {
-      "types": "./dist/upgrade/index.d.ts",
-      "import": "./dist/upgrade/index.mjs"
-    },
-    "./upgrade/dependencies": {
-      "types": "./dist/upgrade/dependencies.d.ts",
-      "import": "./dist/upgrade/dependencies.mjs"
-    },
-    "./upgrade/framework": {
-      "types": "./dist/upgrade/framework.d.ts",
-      "import": "./dist/upgrade/framework.mjs"
-    },
-    "./upgrade/node": {
-      "types": "./dist/upgrade/node.d.ts",
-      "import": "./dist/upgrade/node.mjs"
-    },
-    "./upgrade/package-manager": {
-      "types": "./dist/upgrade/package-manager.d.ts",
-      "import": "./dist/upgrade/package-manager.mjs"
-    },
-    "./add": {
-      "types": "./dist/add.d.ts",
-      "import": "./dist/add.mjs"
-    },
-    "./build": {
-      "types": "./dist/build.d.ts",
-      "import": "./dist/build.mjs"
-    },
-    "./bump": {
-      "types": "./dist/bump.d.ts",
-      "import": "./dist/bump.mjs"
-    },
-    "./changelog": {
-      "types": "./dist/changelog.d.ts",
-      "import": "./dist/changelog.mjs"
-    },
-    "./clean": {
-      "types": "./dist/clean.d.ts",
-      "import": "./dist/clean.mjs"
-    },
-    "./commit": {
-      "types": "./dist/commit.d.ts",
-      "import": "./dist/commit.mjs"
-    },
-    "./copy-types": {
-      "types": "./dist/copy-types.d.ts",
-      "import": "./dist/copy-types.mjs"
-    },
-    "./deploy": {
-      "types": "./dist/deploy/index.d.ts",
-      "import": "./dist/deploy/index.mjs"
-    },
-    "./examples": {
-      "types": "./dist/examples.d.ts",
-      "import": "./dist/examples.mjs"
-    },
-    "./fresh": {
-      "types": "./dist/fresh.d.ts",
-      "import": "./dist/fresh.mjs"
-    },
-    "./key-generate": {
-      "types": "./dist/key-generate.d.ts",
-      "import": "./dist/key-generate.mjs"
-    },
-    "./make": {
-      "types": "./dist/make.d.ts",
-      "import": "./dist/make.mjs"
-    },
-    "./migrate": {
-      "types": "./dist/migrate.d.ts",
-      "import": "./dist/migrate.mjs"
-    },
-    "./preinstall": {
-      "types": "./dist/preinstall.d.ts",
-      "import": "./dist/preinstall.mjs"
-    },
-    "./prepublish": {
-      "types": "./dist/prepublish.d.ts",
-      "import": "./dist/prepublish.mjs"
-    },
-    "./release": {
-      "types": "./dist/release.d.ts",
-      "import": "./dist/release.mjs"
-    },
-    "./seed": {
-      "types": "./dist/seed.d.ts",
-      "import": "./dist/seed.mjs"
-    },
-    "./test": {
-      "types": "./dist/test.d.ts",
-      "import": "./dist/test.mjs"
-    },
-    "./tinker": {
-      "types": "./dist/tinker.d.ts",
-      "import": "./dist/tinker.mjs"
-    },
-    "./typecheck": {
-      "types": "./dist/typecheck.d.ts",
-      "import": "./dist/typecheck.mjs"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.mjs"
-    },
-    "./*": "./*"
+    "./*": {
+      "bun": "./*"
+    }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -229,9 +42,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -245,7 +58,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.8.8"
+    "vue-component-meta": "^1.8.6"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -259,7 +72,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "markdown-it": "^13.0.1",
-    "vue-component-meta": "^1.8.8"
+    "vue-component-meta": "^1.8.6"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

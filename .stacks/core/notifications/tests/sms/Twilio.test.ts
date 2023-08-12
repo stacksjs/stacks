@@ -1,6 +1,5 @@
-// import { describe, expect, it } from 'vitest'
 // import { sms, useSMS } from '@stacksjs/notifications'
-// import { notification } from '@stacksjs/config'
+// import notification from '~/config/notification'
 //
 // describe('Twilio Test', () => {
 //   it('should send sms', async () => {

@@ -32,7 +32,7 @@ export default defineConfig({
         mono: 'DM Mono',
       },
     }),
-  ]
+  ],
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),

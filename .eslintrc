@@ -1,3 +1,4 @@
 {
-  "extends": "@ow3"
+  "extends": "@stacksjs",
+  "ignorePatterns": ["**/README.md"]
 }

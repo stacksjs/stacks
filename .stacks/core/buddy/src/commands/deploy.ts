@@ -1,9 +1,10 @@
-import type { CLI, DeployOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { type CLI, type DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 
-export async function deploy(buddy: CLI) {
+export function deploy(buddy: CLI) {
   const descriptions = {
     deploy: 'Reinstalls your npm dependencies',
     verbose: 'Enable verbose output',
@@ -17,11 +18,11 @@ export async function deploy(buddy: CLI) {
       const result = await runAction(Action.Deploy, options)
 
       if (result.isErr()) {
-        outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
+      await outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -33,11 +34,11 @@ export async function deploy(buddy: CLI) {
       const result = await runAction(Action.Deploy, { ...options, domains: true, verbose: options.verbose })
 
       if (result.isErr()) {
-        outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
         process.exit()
       }
 
-      outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
+      await outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

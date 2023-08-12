@@ -1,4 +1,4 @@
-import type { DeployOptions } from '@stacksjs/types'
+import { type DeployOptions } from '@stacksjs/types'
 import { parseOptions } from '@stacksjs/cli'
 
 const options: DeployOptions = parseOptions()

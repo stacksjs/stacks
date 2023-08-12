@@ -2,7 +2,6 @@
   "name": "hello-world-fx",
   "type": "module",
   "version": "",
-  "packageManager": "pnpm@8.6.12",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -20,8 +19,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "main": "dist/index.cjs",
@@ -33,7 +32,7 @@
   ],
   "scripts": {
     "build": "vite build -c ../build/functions.ts",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "bun --bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

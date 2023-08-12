@@ -2,7 +2,6 @@
   "name": "stacks",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,172 +36,279 @@
   ],
   "exports": {
     ".": {
-      "types": "./core/buddy/dist/index.mjs"
+      "bun": "./src/index.ts",
+      "types": "./core/buddy/dist/index.d.ts",
+      "import": "./core/buddy/dist/index.js"
     },
     "./actions": {
-      "import": "./core/actions/dist/index.mjs"
+      "bun": "./core/actions/src/index.ts",
+      "types": "./core/actions/dist/index.d.ts",
+      "import": "./core/actions/dist/index.js"
     },
     "./ai": {
-      "import": "./core/ai/dist/index.mjs"
+      "bun": "./core/ai/src/index.ts",
+      "types": "./core/ai/dist/index.d.ts",
+      "import": "./core/ai/dist/index.js"
     },
     "./alias": {
-      "import": "./core/alias/dist/index.mjs"
+      "bun": "./core/alias/src/index.ts",
+      "types": "./core/alias/dist/index.d.ts",
+      "import": "./core/alias/dist/index.js"
     },
     "./analytics": {
-      "import": "./core/analytics/dist/index.mjs"
+      "bun": "./core/analytics/src/index.ts",
+      "types": "./core/analytics/dist/index.d.ts",
+      "import": "./core/analytics/dist/index.js"
     },
     "./arrays": {
-      "import": "./core/arrays/dist/index.mjs"
+      "bun": "./core/utils/arrays/src/index.ts",
+      "types": "./core/utils/arrays/dist/index.d.ts",
+      "import": "./core/utils/arrays/dist/index.js"
     },
     "./auth": {
-      "import": "./core/auth/dist/index.mjs"
+      "bun": "./core/auth/src/index.ts",
+      "types": "./core/auth/dist/index.d.ts",
+      "import": "./core/auth/dist/index.js"
     },
     "./buddy": {
-      "import": "./core/buddy/dist/index.mjs"
+      "bun": "./core/buddy/src/index.ts",
+      "types": "./core/buddy/dist/index.d.ts",
+      "import": "./core/buddy/dist/index.js"
     },
     "./build": {
-      "import": "./core/build/dist/index.mjs"
+      "bun": "./core/build/src/index.ts",
+      "types": "./core/build/dist/index.d.ts",
+      "import": "./core/build/dist/index.js"
     },
     "./cache": {
-      "import": "./core/cache/dist/index.mjs"
+      "bun": "./core/cache/src/index.ts",
+      "types": "./core/cache/dist/index.d.ts",
+      "import": "./core/cache/dist/index.js"
     },
     "./chat": {
-      "import": "./core/chat/dist/index.mjs"
+      "bun": "./core/chat/src/index.ts",
+      "types": "./core/chat/dist/index.d.ts",
+      "import": "./core/chat/dist/index.js"
     },
     "./cli": {
-      "import": "./core/cli/dist/index.mjs"
+      "bun": "./core/cli/src/index.ts",
+      "types": "./core/cli/dist/index.d.ts",
+      "import": "./core/cli/dist/index.js"
     },
     "./collections": {
-      "import": "./core/collections/dist/index.mjs"
+      "bun": "./core/utils/collections/src/index.ts",
+      "types": "./core/utils/collections/dist/index.d.ts",
+      "import": "./core/utils/collections/dist/index.js"
     },
     "./config": {
-      "import": "./core/config/dist/index.mjs"
+      "bun": "./core/config/src/index.ts",
+      "types": "./core/config/dist/index.d.ts",
+      "import": "./core/config/dist/index.js"
     },
     "./database": {
-      "import": "./core/database/dist/index.mjs"
+      "bun": "./core/database/src/index.ts",
+      "types": "./core/database/dist/index.d.ts",
+      "import": "./core/database/dist/index.js"
     },
     "./datetime": {
-      "import": "./core/datetime/dist/index.mjs"
+      "bun": "./core/datetime/src/index.ts",
+      "types": "./core/datetime/dist/index.d.ts",
+      "import": "./core/datetime/dist/index.js"
     },
     "./desktop": {
-      "import": "./core/desktop/dist/index.mjs"
+      "bun": "./core/desktop/src/index.ts",
+      "types": "./core/desktop/dist/index.d.ts",
+      "import": "./core/desktop/dist/index.js"
     },
     "./development": {
-      "import": "./core/development/dist/index.mjs"
+      "bun": "./core/development/src/index.ts",
+      "types": "./core/development/dist/index.d.ts",
+      "import": "./core/development/dist/index.js"
     },
     "./dns": {
-      "import": "./core/dns/dist/index.mjs"
+      "bun": "./core/dns/src/index.ts",
+      "types": "./core/dns/dist/index.d.ts",
+      "import": "./core/dns/dist/index.js"
     },
     "./docs": {
-      "import": "./core/docs/dist/index.mjs"
+      "bun": "./core/docs/src/index.ts",
+      "types": "./core/docs/dist/index.d.ts",
+      "import": "./core/docs/dist/index.js"
     },
     "./email": {
-      "import": "./core/email/dist/index.mjs"
+      "bun": "./core/notifications/email/src/index.ts",
+      "types": "./core/notifications/email/dist/index.d.ts",
+      "import": "./core/notifications/email/dist/index.js"
     },
     "./error-handling": {
-      "import": "./core/error-handling/dist/index.mjs"
+      "bun": "./core/error-handling/src/index.ts",
+      "types": "./core/error-handling/dist/index.d.ts",
+      "import": "./core/error-handling/dist/index.js"
     },
     "./events": {
-      "import": "./core/events/dist/index.mjs"
+      "bun": "./core/events/src/index.ts",
+      "types": "./core/events/dist/index.d.ts",
+      "import": "./core/events/dist/index.js"
     },
     "./faker": {
-      "import": "./core/faker/dist/index.mjs"
+      "bun": "./core/faker/src/index.ts",
+      "types": "./core/faker/dist/index.d.ts",
+      "import": "./core/faker/dist/index.js"
     },
     "./git": {
-      "import": "./core/git/dist/index.mjs"
+      "bun": "./core/utils/git/src/index.ts",
+      "types": "./core/utils/git/dist/index.d.ts",
+      "import": "./core/utils/git/dist/index.js"
     },
     "./health": {
-      "import": "./core/health/dist/index.mjs"
+      "bun": "./core/health/src/index.ts",
+      "types": "./core/health/dist/index.d.ts",
+      "import": "./core/health/dist/index.js"
     },
     "./lint": {
-      "import": "./core/lint/dist/index.mjs"
+      "bun": "./core/lint/src/index.ts",
+      "types": "./core/lint/dist/index.d.ts",
+      "import": "./core/lint/dist/index.js"
     },
     "./logging": {
-      "import": "./core/logging/dist/index.mjs"
-    },
-    "./modules/*": {
-      "import": "./core/modules/dist/index.mjs"
+      "bun": "./core/logging/src/index.ts",
+      "types": "./core/logging/dist/index.d.ts",
+      "import": "./core/logging/dist/index.js"
     },
     "./notifications": {
-      "import": "./core/notifications/dist/index.mjs"
+      "bun": "./core/notifications/src/index.ts",
+      "types": "./core/notifications/dist/index.d.ts",
+      "import": "./core/notifications/dist/index.js"
     },
     "./objects": {
-      "import": "./core/objects/dist/index.mjs"
+      "bun": "./core/objects/src/index.ts",
+      "types": "./core/objects/dist/index.d.ts",
+      "import": "./core/objects/dist/index.js"
     },
     "./orm": {
-      "import": "./core/orm/dist/index.mjs"
+      "bun": "./core/orm/src/index.ts",
+      "types": "./core/orm/dist/index.d.ts",
+      "import": "./core/orm/dist/index.js"
     },
     "./path": {
-      "import": "./core/path/dist/index.mjs"
+      "bun": "./core/path/src/index.ts",
+      "types": "./core/path/dist/index.d.ts",
+      "import": "./core/path/dist/index.js"
     },
     "./payments": {
-      "import": "./core/payments/dist/index.mjs"
+      "bun": "./core/payments/src/index.ts",
+      "types": "./core/payments/dist/index.d.ts",
+      "import": "./core/payments/dist/index.js"
     },
     "./push": {
-      "import": "./core/push/dist/index.mjs"
+      "bun": "./core/notifications/push/src/index.ts",
+      "types": "./core/notifications/push/dist/index.d.ts",
+      "import": "./core/notifications/push/dist/index.js"
     },
     "./query-builder": {
-      "import": "./core/query-builder/dist/index.mjs"
+      "bun": "./core/query-builder/src/index.ts",
+      "types": "./core/query-builder/dist/index.d.ts",
+      "import": "./core/query-builder/dist/index.js"
     },
     "./queue": {
-      "import": "./core/queue/dist/index.mjs"
+      "bun": "./core/queue/src/index.ts",
+      "types": "./core/queue/dist/index.d.ts",
+      "import": "./core/queue/dist/index.js"
     },
     "./realtime": {
-      "import": "./core/realtime/dist/index.mjs"
+      "bun": "./core/realtime/src/index.ts",
+      "types": "./core/realtime/dist/index.d.ts",
+      "import": "./core/realtime/dist/index.js"
     },
     "./repl": {
-      "import": "./core/repl/dist/index.mjs"
+      "bun": "./core/repl/src/index.ts",
+      "types": "./core/repl/dist/index.d.ts",
+      "import": "./core/repl/dist/index.js"
     },
     "./router": {
-      "import": "./core/router/dist/index.mjs"
+      "bun": "./core/router/src/index.ts",
+      "types": "./core/router/dist/index.d.ts",
+      "import": "./core/router/dist/index.js"
     },
     "./scheduler": {
-      "import": "./core/scheduler/dist/index.mjs"
+      "bun": "./core/scheduler/src/index.ts",
+      "types": "./core/scheduler/dist/index.d.ts",
+      "import": "./core/scheduler/dist/index.js"
     },
     "./search-engine": {
-      "import": "./core/search-engine/dist/index.mjs"
+      "bun": "./core/search-engine/src/index.ts",
+      "types": "./core/search-engine/dist/index.d.ts",
+      "import": "./core/search-engine/dist/index.js"
     },
     "./security": {
-      "import": "./core/security/dist/index.mjs"
+      "bun": "./core/security/src/index.ts",
+      "types": "./core/security/dist/index.d.ts",
+      "import": "./core/security/dist/index.js"
     },
     "./server": {
-      "import": "./core/server/dist/index.mjs"
+      "bun": "./core/server/src/index.ts",
+      "types": "./core/server/dist/index.d.ts",
+      "import": "./core/server/dist/index.js"
     },
     "./signals": {
-      "import": "./core/signals/dist/index.mjs"
+      "bun": "./core/signals/src/index.ts",
+      "types": "./core/signals/dist/index.d.ts",
+      "import": "./core/signals/dist/index.js"
     },
     "./slug": {
-      "import": "./core/slug/dist/index.mjs"
+      "bun": "./core/utils/slug/src/index.ts",
+      "types": "./core/utils/slug/dist/index.d.ts",
+      "import": "./core/utils/slug/dist/index.js"
     },
     "./sms": {
-      "import": "./core/sms/dist/index.mjs"
+      "bun": "./core/notifications/sms/src/index.ts",
+      "types": "./core/notifications/sms/dist/index.d.ts",
+      "import": "./core/notifications/sms/dist/index.js"
     },
     "./storage": {
-      "import": "./core/storage/dist/index.mjs"
+      "bun": "./core/storage/src/index.ts",
+      "types": "./core/storage/dist/index.d.ts",
+      "import": "./core/storage/dist/index.js"
     },
     "./strings": {
-      "import": "./core/strings/dist/index.mjs"
+      "bun": "./core/utils/strings/src/index.ts",
+      "types": "./core/utils/strings/dist/index.d.ts",
+      "import": "./core/utils/strings/dist/index.js"
     },
     "./testing": {
-      "import": "./core/testing/dist/index.mjs"
+      "bun": "./core/testing/src/index.ts",
+      "types": "./core/testing/dist/index.d.ts",
+      "import": "./core/testing/dist/index.js"
     },
     "./tinker": {
-      "import": "./core/tinker/dist/index.mjs"
+      "bun": "./core/tinker/src/index.ts",
+      "types": "./core/tinker/dist/index.d.ts",
+      "import": "./core/tinker/dist/index.js"
     },
     "./types": {
-      "import": "./core/types/dist/index.mjs"
+      "bun": "./core/types/src/index.ts",
+      "types": "./core/types/dist/index.d.ts",
+      "import": "./core/types/dist/index.js"
     },
     "./ui": {
-      "import": "./core/ui/dist/index.mjs"
+      "bun": "./core/ui/src/index.ts",
+      "types": "./core/ui/dist/index.d.ts",
+      "import": "./core/ui/dist/index.js"
     },
     "./utils": {
-      "import": "./core/utils/dist/index.mjs"
+      "bun": "./core/utils/src/index.ts",
+      "types": "./core/utils/dist/index.d.ts",
+      "import": "./core/utils/dist/index.js"
     },
     "./validation": {
-      "import": "./core/validation/dist/index.mjs"
+      "bun": "./core/validation/src/index.ts",
+      "types": "./core/validation/dist/index.d.ts",
+      "import": "./core/validation/dist/index.js"
     },
-    "./vite-plugin": {
-      "import": "./core/vite-plugin/dist/index.mjs"
+    "./vite": {
+      "bun": "./core/vite/src/index.ts",
+      "types": "./core/vite/dist/index.d.ts",
+      "import": "./core/vite/dist/index.js"
     }
   },
   "types": "./core/types/dist/index.d.ts",
@@ -230,95 +336,92 @@
     "simple-git-hooks.cjs",
     "tea.yaml",
     "tsconfig.json",
-    "vitest.config.ts",
     "web-types.json",
     "README.md"
   ],
   "scripts": {
-    "buddy": "tsx ./core/buddy/src/cli.ts",
-    "build": "pnpm --filter='./core/**' build",
-    "dev": "pnpm --filter='./core/**' dev",
-    "publish:framework": "pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
-    "publish:dummy-libs": "pnpm run generate:entries && pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
-    "fresh": "pnpm buddy fresh",
-    "clean": "pnpm buddy clean",
-    "update": "pnpm buddy update",
-    "update:dependencies": "pnpm buddy update:dependencies",
-    "update:framework": "pnpm buddy update:framework",
-    "update:package-manager": "pnpm buddy update:package-manager",
-    "update:node": "pnpm buddy update:node",
-    "update:all": "pnpm buddy update:all",
+    "buddy": "bun --bun run ./core/buddy/src/cli.ts",
+    "build": "bun --bun run ./scripts/build.ts",
+    "dev": "bunx pnpm --filter='./core/**' dev",
+    "publish:framework": "bunx pnpm --filter './.stacks' --filter './core/**' --filter './fonts/**' --filter './ide/vscode' publish --access public --no-git-checks",
+    "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
+    "fresh": "bun buddy fresh",
+    "clean": "bun buddy clean",
+    "update": "bun buddy update",
+    "update:dependencies": "bun buddy update:dependencies",
+    "update:framework": "bun buddy update:framework",
+    "update:package-manager": "bun buddy update:package-manager",
+    "update:node": "bun buddy update:node",
+    "update:all": "bun buddy update:all",
     "dev:components": "vite serve ../../components/vue -c ../build/src/vue-components.ts",
-    "dev:core": "pnpm --filter '../core/**' --filter '!../buddy/' dev",
     "dev:desktop": "vite serve ../../components/vue -c ../build/src/desktop.ts",
     "dev:docs": "buddy dev:docs",
     "dev:pages": "nitro dev",
-    "dev:functions": "pnpm buddy dev:functions",
-    "development": "pnpm run dev",
-    "build:components": "pnpm buddy build:components",
-    "build:vue-components": "npx vite build -c ./core/vite/src/vue-components.ts",
-    "build:web-components": "npx vite build -c ./core/vite/src/web-components.ts",
-    "build:functions": "npx vite build -c ./core/vite/src/functions.ts",
-    "build:docs": "pnpm buddy build:docs",
-    "build:views": "npx vite-ssg build ./views -c ./core/vite/src/views.ts",
-    "build:core": "pnpm buddy build:core",
-    "build:buddy": "npx unbuild",
-    "build:cli": "pnpm run build:buddy",
-    "build:runtime": "pnpm run build:cli",
+    "dev:functions": "bun buddy dev:functions",
+    "development": "bun --bun run dev",
+    "build:components": "bun buddy build:components",
+    "build:vue-components": "bunx vite build -c ./core/vite/src/vue-components.ts",
+    "build:web-components": "bunx vite build -c ./core/vite/src/web-components.ts",
+    "build:functions": "bunx vite build -c ./core/vite/src/functions.ts",
+    "build:docs": "bun buddy build:docs",
+    "build:views": "bunx vite-ssg build ./views -c ./core/vite/src/views.ts",
+    "build:buddy": "bun --bun run build:buddy",
+    "build:cli": "bun --bun run build:buddy",
+    "build:runtime": "bun --bun run build:cli",
     "build:desktop": "wip",
-    "build:stacks": "pnpm buddy build:stacks",
+    "build:stacks": "bun buddy build:stacks",
     "build:all": "wip",
-    "prod": "pnpm run build",
-    "prod:components": "pnpm run build:components",
-    "prod:vue": "pnpm run prod:vue",
-    "prod:web-components": "pnpm run build:web-components",
-    "prod:functions": "pnpm run build:functions",
-    "prod:docs": "pnpm run build:docs",
-    "prod:pages": "pnpm run build:pages",
-    "prod:stacks": "pnpm run build:stacks",
-    "prod:all": "pnpm run build:all",
-    "deploy": "pnpm buddy deploy",
-    "deploy:functions": "pnpm buddy deploy:functions",
-    "deploy:pages": "pnpm buddy deploy:functions",
-    "deploy:docs": "pnpm buddy deploy:docs",
-    "deploy:all": "pnpm buddy deploy:all",
+    "prod": "bun --bun run build",
+    "prod:components": "bun --bun run build:components",
+    "prod:vue": "bun --bun run prod:vue",
+    "prod:web-components": "bun --bun run build:web-components",
+    "prod:functions": "bun --bun run build:functions",
+    "prod:docs": "bun --bun run build:docs",
+    "prod:pages": "bun --bun run build:pages",
+    "prod:stacks": "bun --bun run build:stacks",
+    "prod:all": "bun --bun run build:all",
+    "deploy": "bun buddy deploy",
+    "deploy:functions": "bun buddy deploy:functions",
+    "deploy:pages": "bun buddy deploy:functions",
+    "deploy:docs": "bun buddy deploy:docs",
+    "deploy:all": "bun buddy deploy:all",
     "example": "wip",
-    "example:vue": "pnpm run build:components && cd examples/vue && ln -sf ../../components/vue/dist dist && npx vite serve -c ../../core/build/example-vue.ts",
-    "example:web-components": "pnpm run build:web-components && cd examples/web && ln -sf ../../components/web/dist dist && npx vite serve -c ../../core/build/example-wc.ts",
-    "lint": "pnpm buddy lint",
-    "lint:stacks": "pnpm buddy lint:stacks",
-    "lint:fix": "pnpm buddy lint:fix",
-    "serve": "pnpm buddy serve",
-    "serve:pages": "pnpm run dev:pages",
-    "serve:functions": "pnpm run dev:functions",
-    "make": "pnpm buddy make",
-    "make:component": "pnpm buddy make:component",
-    "make:function": "pnpm buddy make:function",
-    "make:database": "pnpm buddy make:migration",
-    "make:migration": "pnpm buddy make:migration",
-    "make:factory": "pnpm buddy make:factory",
-    "make:lang": "pnpm buddy make:lang",
-    "make:stack": "pnpm buddy make:stack",
-    "key": "pnpm buddy key",
-    "key:generate": "pnpm buddy key:generate",
+    "example:vue": "bun --bun run build:components && cd examples/vue && ln -sf ../../components/vue/dist dist && bunx vite serve -c ../../core/build/example-vue.ts",
+    "example:web-components": "bun --bun run build:web-components && cd examples/web && ln -sf ../../components/web/dist dist && bunx vite serve -c ../../core/build/example-wc.ts",
+    "lint": "bun --bun eslint -c ../.eslintrc ..",
+    "lint:stacks": "bun buddy lint:stacks",
+    "lint:fix": "bun buddy lint:fix",
+    "serve": "bun buddy serve",
+    "serve:pages": "bun --bun run dev:pages",
+    "serve:functions": "bun --bun run dev:functions",
+    "make": "bun buddy make",
+    "make:component": "bun buddy make:component",
+    "make:function": "bun buddy make:function",
+    "make:database": "bun buddy make:migration",
+    "make:migration": "bun buddy make:migration",
+    "make:factory": "bun buddy make:factory",
+    "make:lang": "bun buddy make:lang",
+    "make:stack": "bun buddy make:stack",
+    "key": "bun buddy key",
+    "key:generate": "bun buddy key:generate",
     "commit": "git cz",
-    "release": "pnpm buddy release",
-    "changelog": "pnpm buddy changelog",
-    "generate": "pnpm buddy generate",
-    "generate:entries": "pnpm buddy generate:entries",
+    "release": "bun buddy release",
+    "changelog": "bun buddy changelog",
+    "generate": "bun buddy generate",
+    "generate:entries": "bun buddy generate:entries",
     "generate:vue-compat": "tsx ./core/actions/src/generate/vue-compat.ts",
     "generate:vscode-custom-data": "tsx ./core/actions/src/generate/vscode-custom-data.ts",
     "generate:web-types": "vue-docgen-web-types -c ./core/build/web-types.config.cjs",
     "generate:component-meta": "tsx ./core/actions/src/generate/component-meta.ts",
     "generate:ide-helpers": "tsx ./core/actions/src/generate/ide-helpers.ts",
-    "generate:all": "pnpm buddy generate:all",
+    "generate:all": "bun buddy generate:all",
     "types:generate": "vue-tsc --declaration --emitDeclarationOnly && tsx ./core/actions/src/copy-types.ts",
     "types:fix": "tsx actions/src/fix-types.ts",
-    "add": "pnpm buddy add",
-    "test": "pnpm buddy test",
-    "test:ui": "pnpm buddy test:ui",
-    "test:coverage": "pnpm buddy test:coverage",
-    "test:types": "pnpm buddy test:types"
+    "add": "bun buddy add",
+    "test": "bun buddy test",
+    "test:ui": "bun buddy test:ui",
+    "test:coverage": "bun buddy test:coverage",
+    "test:types": "bun buddy test:types"
   },
   "web-types": "./web-types.json",
   "peerDependencies": {
@@ -340,6 +443,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",

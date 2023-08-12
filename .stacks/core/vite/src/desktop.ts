@@ -1,14 +1,18 @@
-import { defineConfig, loadEnv } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
-import { frameworkPath, projectPath, projectStoragePath } from '@stacksjs/path'
-import type { ViteDevServer as DevServer } from 'vite'
-import { app, library } from '@stacksjs/config'
+import { type ViteConfig } from '@stacksjs/types'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
-import c from 'picocolors'
-import { version } from '../package.json'
+import * as c from 'kolorist'
+import pkgjson from '../package.json'
+import { cssEngine, inspect, uiEngine } from './stacks'
+import { pages } from './plugin/pages'
+import { layouts } from './plugin/layouts'
+import { type ViteDevServer as DevServer } from './'
+import { defineConfig } from './'
+import library from '~/config/library'
+import app from '~/config/app'
 
-import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
+const { version } = pkgjson
 
 export const vueComponentsConfig: ViteConfig = {
   root: frameworkPath('views/desktop/dashboard'),
@@ -19,7 +23,6 @@ export const vueComponentsConfig: ViteConfig = {
   server: {
     https: true,
     host: app.url,
-    port: 5173,
     open: true,
   },
 
@@ -34,12 +37,12 @@ export const vueComponentsConfig: ViteConfig = {
 
   plugins: [
     // preview(),
-    pages({
-      routesFolder: ['../../stacks/dashboard/src/pages'],
-    }),
-    layouts({
-      layoutsDirs: '../../../stacks/dashboard/src/layouts',
-    }),
+    // pages({
+    //   routesFolder: ['../../stacks/dashboard/src/pages'],
+    // }),
+    // layouts({
+    //   layoutsDirs: '../../../stacks/dashboard/src/layouts',
+    // }),
     uiEngine(),
     cssEngine(),
     inspect(),
@@ -103,8 +106,8 @@ export const vueComponentsConfig: ViteConfig = {
   ],
 }
 
-export default defineConfig(({ command, mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
+export default defineConfig(({ command }) => {
+  // process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
 
   if (command === 'serve')
     return vueComponentsConfig

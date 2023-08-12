@@ -9,7 +9,7 @@ wip
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/orm
+bun install -d @stacksjs/orm
 ```
 
 You may now use it in your project:
@@ -32,7 +32,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

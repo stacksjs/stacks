@@ -20,7 +20,7 @@ Currently, a wrapper of the `neverthrow` API.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/error-handling
+bun install -d @stacksjs/error-handling
 ```
 
 You can now use it in your project:
@@ -72,7 +72,7 @@ Learn more in the [docs](https://github.com/supermacro/neverthrow/wiki).
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 🤗 Motivation
@@ -122,7 +122,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

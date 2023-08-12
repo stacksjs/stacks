@@ -2,7 +2,7 @@
  * This file is used to define the types/interfaces used in the project.
  */
 
-import type { Hits, SearchResponse } from 'meilisearch'
+import { type Hits, type SearchResponse } from 'meilisearch'
 import { isString } from '@stacksjs/validation'
 
 // this interface is primarily used to persist data to localStorage, in a unified way
@@ -123,7 +123,8 @@ export function determineState(): SearchEngineStore {
   const ls = localStorage.getItem('search-engine')
 
   if (isString(ls))
-    return JSON.parse(ls) as any
+
+    return JSON.parse(ls)
 
   return { // default state
     source: 'http://127.0.0.1:7700',

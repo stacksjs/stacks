@@ -1,4 +1,4 @@
-import { defineQueue } from 'stacks/utils'
+import { defineQueue } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Queue Options**
@@ -39,5 +39,4 @@ export default defineQueue({
       region: 'us-east-1',
     },
   },
-
 })

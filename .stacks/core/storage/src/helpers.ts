@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs } from './fs'
 
 export const _dirname = typeof __dirname !== 'undefined'
   ? __dirname
@@ -21,4 +21,9 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
       reject(error)
     }
   })
+}
+
+export const helpers = {
+  _dirname,
+  updateConfigFile,
 }

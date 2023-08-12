@@ -11,7 +11,7 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 
 ```bash
 # you may use this GitHub template or the following command:
-npx stacks new hello-world
+bunx stacks new hello-world
 cd hello-world
 
 buddy install # install deps for all packages
@@ -59,7 +59,7 @@ When using this template, feel free to adjust it to your needs. It is a framewor
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -78,7 +78,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

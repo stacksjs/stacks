@@ -2,8 +2,7 @@
   "name": "@stacksjs/validation",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
-  "description": "The Stacks Validation methods.",
+  "description": "The Stacks Validation ways.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -17,20 +16,20 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "vinejs",
     "validation",
-    "yup",
     "utilities",
     "functions",
     "stacks"
   ],
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
@@ -39,19 +38,20 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@vinejs/vine": "^1.6.0"
+    "@vinejs/vine": "^1.5.1"
   },
   "dependencies": {
-    "@vinejs/vine": "^1.6.0"
+    "@vinejs/vine": "^1.5.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/path": "workspace:*"
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/vite": "workspace:*"
   }
 }

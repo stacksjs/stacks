@@ -16,16 +16,16 @@ A powerful TypeScript REPL, powered by TSX.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/tinker
+bun install -d @stacksjs/tinker
 ```
 
 Now, you can easily access it in your project:
 
 ```bash
-npx tinker
+bunx tinker
 ```
 
-To learn more, visit [`tsx`](https://github.com/esbuild-kit/tsx).
+To learn more, visit [`bunx`](https://bun.sh/docs).
 
 ## 📈 Changelog
 
@@ -43,14 +43,13 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [tsx](https://github.com/esbuild-kit/tsx)
-- [esno](https://github.com/esbuild-kit/esno)
+- [bun](https://bun.sh)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

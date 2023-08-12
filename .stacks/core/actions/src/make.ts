@@ -1,36 +1,37 @@
-import { italic, spawn } from '@stacksjs/cli'
+import process from 'node:process'
+import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
-import type { MakeOptions } from '@stacksjs/types'
+import { type MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
-    await component(options)
+    await makeComponent(options)
 
   if (options.database)
-    await database(options)
+    makeDatabase(options)
 
   if (options.factory)
-    await factory(options)
+    factory(options)
 
   if (options.function)
-    await fx(options)
+    await makeFunction(options)
 
   if (options.language)
-    await language(options)
+    await makeLanguage(options)
 
   // if (options.migration)
   //   await migration(options)
 
   if (options.notification)
-    await notification(options)
+    await makeNotification(options)
 
   if (options.page)
-    await page(options)
+    await makePage(options)
 
   if (options.stack)
-    await stack(options)
+    makeStack(options)
 }
 
 /**
@@ -42,7 +43,7 @@ export async function make(options: MakeOptions) {
   return invoke(options)
 }
 
-export async function component(options: MakeOptions) {
+export async function makeComponent(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your component...')
@@ -73,11 +74,11 @@ console.log('Hello World component created')
   })
 }
 
-export async function database(options: MakeOptions) {
+export function makeDatabase(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
-    await createDatabase(options)
+    createDatabase(options)
     log.success(`Created the ${italic(name)} database`)
   }
   catch (error) {
@@ -86,16 +87,16 @@ export async function database(options: MakeOptions) {
   }
 }
 
-export async function createDatabase(options: MakeOptions) {
+export function createDatabase(options: MakeOptions) {
   // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
-export async function factory(options: MakeOptions) {
+export function factory(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
-    await createDatabase(options)
+    createDatabase(options)
     log.success(`Created the ${italic(name)} factory`)
   }
   catch (error) {
@@ -104,12 +105,12 @@ export async function factory(options: MakeOptions) {
   }
 }
 
-export async function createFactory(options: MakeOptions) {
+export function createFactory(options: MakeOptions) {
   // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
-export async function notification(options: MakeOptions) {
+export async function makeNotification(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
@@ -122,11 +123,11 @@ export async function notification(options: MakeOptions) {
   }
 }
 
-export async function page(options: MakeOptions) {
+export async function makePage(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your page...')
-    createPage(options)
+    await createPage(options)
     log.success(`Created the ${name} page`)
   }
   catch (error) {
@@ -154,7 +155,7 @@ console.log('Hello World page created')
   })
 }
 
-export async function fx(options: MakeOptions) {
+export async function makeFunction(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your function...')
@@ -187,11 +188,11 @@ export {
   })
 }
 
-export async function language(options: MakeOptions) {
+export async function makeLanguage(options: MakeOptions) {
   try {
     const name = options.name
     log.info('Creating your translation file...')
-    createLanguage(options)
+    await createLanguage(options)
     log.success(`Created the ${name} translation file`)
   }
   catch (error) {
@@ -210,13 +211,13 @@ export async function createLanguage(options: MakeOptions) {
   })
 }
 
-export async function stack(options: MakeOptions) {
+export function makeStack(options: MakeOptions) {
   try {
     const name = options.name
     log.info(`Creating your ${name} stack...`)
     const path = resolve(process.cwd(), name)
 
-    await spawn(`giget stacks ${path}`)
+    // await spawn(`giget stacks ${path}`)
     log.success('Successfully scaffolded your project')
     log.info(`cd ${path} && pnpm install`)
   }

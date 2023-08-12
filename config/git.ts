@@ -1,4 +1,4 @@
-import { defineGit } from 'stacks/utils'
+import { defineGit } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Git Configuration**

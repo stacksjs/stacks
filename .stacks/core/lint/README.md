@@ -20,7 +20,7 @@ Easily get your project linted. It "just works."
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/lint
+bun install -d @stacksjs/lint
 ```
 
 Now, you can easily access it in your project:
@@ -36,7 +36,7 @@ To view the full documentation, please visit [https://stacksjs.dev/lint](https:/
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -55,7 +55,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

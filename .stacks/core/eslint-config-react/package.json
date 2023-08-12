@@ -1,0 +1,31 @@
+{
+  "name": "@stacksjs/eslint-config-react",
+  "version": "0.0.0",
+  "description": "",
+  "author": "Chris Breuer <chris@ow3.org> (https://github.com/stacksjs/)",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
+  "keywords": [
+    "eslint-config"
+  ],
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "lint": "eslint . --config=index.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=7.4.0"
+  },
+  "dependencies": {
+    "@stacksjs/eslint-config-ts": "workspace:*",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "react": "^18.2.0",
+    "typescript": "^5.1.6"
+  }
+}

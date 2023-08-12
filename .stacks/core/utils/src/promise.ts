@@ -1,4 +1,3 @@
-import type { Fn } from '@stacksjs/types'
 import { remove } from '@stacksjs/arrays'
 
 export interface SingletonPromiseReturn<T> {
@@ -9,6 +8,8 @@ export interface SingletonPromiseReturn<T> {
    */
   reset: () => Promise<void>
 }
+
+// export { peek } from 'bun'
 
 /**
  * Promise with `resolve` and `reject` methods of itself
@@ -103,22 +104,14 @@ export function createControlledPromise<T>(): ControlledPromise<T> {
     resolve = _resolve
     reject = _reject
   }) as ControlledPromise<T>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   promise.resolve = resolve
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   promise.reject = reject
   return promise
 }
 
 /**
- * Promised `setTimeout`.
- *
- * @category Promise
+ * Create a promise that will be resolved after `ms` milliseconds.
  */
-export function sleep(ms: number, callback?: Fn<any>) {
-  return new Promise<void>(resolve =>
-
-    setTimeout(async () => {
-      await callback?.()
-      resolve()
-    }, ms),
-  )
-}
+// export { sleep, sleepSync } from 'bun'

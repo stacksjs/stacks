@@ -2,8 +2,8 @@ import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { actionsPath, functionsPath } from '@stacksjs/path'
-import type { ActionOptions, CommandResult } from '@stacksjs/types'
-import { err } from '@stacksjs/error-handling'
+import { type ActionOptions, type StacksError, type Subprocess } from '@stacksjs/types'
+import { type Result, err } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
   if (!options)
@@ -23,7 +23,7 @@ function parseOptions(options?: ActionOptions) {
   return parsedOptions.filter(Boolean).join(' ').replace('----=', '')
 }
 
-export type ActionResult = CommandResult
+// export type ActionResult = CommandResult
 
 /**
  * Run an Action the Stacks way.
@@ -32,20 +32,18 @@ export type ActionResult = CommandResult
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<CommandResult> {
+export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, StacksError>> {
   if (!hasAction(action))
-    return err(`The specified action "${action}" does not exist`)
+    return err(new Error(`The specified action "${action}" does not exist`))
 
   // we need to parse options here because they need to bw passed to the action
   const opts = parseOptions(options)
-  const cmd = `npx tsx ${actionsPath(`${action}.ts ${opts}`)}`
+  const cmd = `bun --bun ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
     log.debug('running command:', italic(cmd))
 
-  return options?.showSpinner
-    ? await runCommands([cmd], options) as CommandResult
-    : await runCommand(cmd, options)
+  return await runCommand(cmd, options)
 }
 
 /**
@@ -55,7 +53,8 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
+// export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
+export async function runActions(actions: string[], options?: ActionOptions) {
   if (!actions.length)
     return err('No actions were specified')
 
@@ -64,7 +63,7 @@ export async function runActions(actions: string[], options?: ActionOptions): Pr
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const commands = actions.map(action => `npx tsx ${actionsPath(`${action}.ts`)}`)
+  const commands = actions.map(action => `bunx ${actionsPath(`${action}.ts`)}`)
 
   return await runCommands(commands, options)
 }

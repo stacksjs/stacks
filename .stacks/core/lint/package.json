@@ -2,7 +2,6 @@
   "name": "@stacksjs/lint",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -26,11 +25,13 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -40,18 +41,27 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@ow3/eslint-config": "^0.47.3",
-    "@types/eslint": "^8.44.2",
-    "eslint": "^8.47.0",
+    "@stacksjs/eslint-config": "workspace:*",
+    "@types/eslint": "^8.44.0",
+    "eslint": "^8.46.0",
+    "eslint-plugin-stacksjs": "workspace:*",
     "lint-staged": "^13.2.3",
-    "publint": "^0.2.0"
+    "publint": "^0.1.16"
+  },
+  "dependencies": {
+    "@stacksjs/eslint-config": "workspace:*",
+    "@types/eslint": "^8.44.0",
+    "eslint": "^8.46.0",
+    "lint-staged": "^13.2.3",
+    "publint": "^0.1.16"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "eslint-plugin-import": "^2.27.5"
   }
 }

@@ -1,4 +1,4 @@
-import type { Model } from './model'
+import { type Model } from './model'
 
 export type DatabaseClient = any
 
@@ -29,6 +29,8 @@ export interface DatabaseOptions {
 
   migrations: string
 }
+
+export type DatabaseConfig = DatabaseOptions
 
 export interface FactoryOptions {
   name: string

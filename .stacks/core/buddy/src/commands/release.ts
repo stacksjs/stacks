@@ -1,7 +1,7 @@
+import process from 'node:process'
 import { Action } from '@stacksjs/types'
-import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { intro, outro } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import { type CLI, type ReleaseOptions } from '@stacksjs/types'
+import { intro, log, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
 const descriptions = {
@@ -9,19 +9,19 @@ const descriptions = {
   verbose: 'Enable verbose output',
 }
 
-export async function release(buddy: CLI) {
+export function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
     .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, { ...options, shell: true })
+      const result = await runAction(Action.Release, options)
 
       if (result.isErr()) {
         log.error('Failed to release', result.error)
         process.exit()
       }
 
-      outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
+      await outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
     })
 }

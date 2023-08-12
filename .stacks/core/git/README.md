@@ -1,35 +1,31 @@
-# Stacks Datetime
+# Stacks Git
 
-Easily work with dates.
+Git helpers and more.
 
 ## ☘️ Features
 
-- Display & visualize dates in a human-friendly way
-- Easily convert dates to different formats & timezones
-- Simply calculate the difference between 2 dates
-- Modify dates with ease
+- wip
 
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/datetime
+bun install -d @stacksjs/git
 ```
 
 Now, you can easily access it in your project:
 
 ```js
-import { now, useDateFormat } from '@stacksjs/datetime'
+import { changelogen } from '@stacksjs/git'
 
-const formatted = useDateFormat(now(), 'YYYY-MM-DD HH:mm:ss')
-console.log(formatted) // 2022-11-01 17:06:01
+// changelogen()
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/datetime](https://stacksjs.dev/datetime).
+To view the full documentation, please visit [https://stacksjs.dev/git](https://stacksjs.dev/git).
 
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -48,7 +44,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

@@ -1,4 +1,4 @@
-import { defineLibrary } from 'stacks/utils'
+import { defineLibrary } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Library Configuration**
@@ -9,8 +9,7 @@ import { defineLibrary } from 'stacks/utils'
  */
 export default defineLibrary({
   name: 'hello-world',
-  packageRegistry: 'npm',
-  parentName: '@stacksjs', // hmm... maybe orgName?
+  owner: '@stacksjs', // you may or may not add the @ prefix here (it is added automatically)
   repository: 'stacksjs/stacks',
   license: 'MIT',
   author: 'Chris Breuer',

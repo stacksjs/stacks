@@ -2,7 +2,6 @@
   "name": "@stacksjs/path",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -22,15 +21,16 @@
     "paths",
     "utilities",
     "functions",
+    "bun",
     "stacks"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -40,15 +40,14 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
     "pathe": "^1.1.1"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "@stacksjs/development": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
-import type { NestedStackProps } from 'aws-cdk-lib'
+import { type NestedStackProps } from 'aws-cdk-lib'
 import { NestedStack, aws_route53 as route53 } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
+import { type Construct } from 'constructs'
 import { app } from '@stacksjs/config'
 
 export class DnsStack extends NestedStack {

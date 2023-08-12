@@ -2,9 +2,11 @@
 import { markdownTable } from 'markdown-table'
 import filesize from 'filesize'
 import { fs } from '@stacksjs/storage'
-import type { PackageManifest } from '@vueuse/metadata'
+import { type PackageManifest } from '@vueuse/metadata'
 import { getExportsSize } from '../src/export-size'
-import { version } from '../package.json'
+import pkgjson from '../package.json'
+
+const { version } = pkgjson
 
 export const packages: PackageManifest[] = [
   {
@@ -47,8 +49,8 @@ export const packages: PackageManifest[] = [
 async function run() {
   // made shared library imported can resolve correctly
   // const packagesRoot = resolve(__dirname, '../../..', 'core')
-  // await fs.writeFile(join(packagesRoot, 'shared/index.mjs'), 'export * from "./dist/index.mjs"', 'utf-8')
-  // await fs.writeFile(join(packagesRoot, 'core/index.mjs'), 'export * from "./dist/index.mjs"', 'utf-8')
+  // await fs.writeFile(join(packagesRoot, 'shared/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')
+  // await fs.writeFile(join(packagesRoot, 'core/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')
   // await fs.copy(join(packagesRoot, 'shared/dist'), join(packagesRoot, 'core/dist/node_modules/@vueuse/shared'), { overwrite: true })
 
   let md = '# Export size\n\n'
@@ -64,6 +66,7 @@ async function run() {
   md += '\n\n'
 
   for (const pkg of [...packages.slice(2), packages[1]]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { exports, packageJSON } = await getExportsSize({
       pkg: `./packages/${pkg.name}/dist`,
       output: false,
@@ -72,11 +75,12 @@ async function run() {
       includes: ['@vueuse/shared'],
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     md += `<kbd>${packageJSON.name}</kbd>\n\n`
 
     md += markdownTable([
       ['Function', 'min+gzipped'],
-      // eslint-disable-next-line ow3/no-cjs-exports
+      // eslint-disable-next-line stacksjs/no-cjs-exports
       ...exports.map((i) => {
         mdJSON[i.name] = filesize(i.minzipped)
         return [`\`${i.name}\``, filesize(i.minzipped)]
@@ -91,4 +95,4 @@ async function run() {
   await fs.writeJSON('../export-size.json', mdJSON, { spaces: 2 })
 }
 
-run()
+await run()

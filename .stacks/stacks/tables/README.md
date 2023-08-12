@@ -31,10 +31,11 @@ Read more about these features in their respective [docs](https://ow3.org/docs).
 
 ## 💡 Get Started
 
-To get started, you simply need to install the `@ow3/table-vue` npm package.
+To get started, you simply need to install the `@stacksjs/table-vue` npm package.
 
 ```bash
-npm install @ow3/table-vue
+npm install @stacksjs/table-vue
+bun add @stacksjs/table-vue
 ```
 
 Next up, we need to make use of the components.
@@ -100,7 +101,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Open Web Discord Server](https://discord.ow3.org)
+[Join the Open Web Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

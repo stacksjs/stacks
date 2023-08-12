@@ -2,7 +2,6 @@
   "name": "@stacksjs/desktop",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -33,11 +32,13 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -47,11 +48,12 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
-    "dev": "vite dev ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
-    "dev:desktop": "tauri dev",
-    "build:desktop": "tauri build",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "build:app": "vite build ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
+    "dev:app": "tauri dev",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
     "@stacksjs/build": "workspace:*",
@@ -60,6 +62,16 @@
     "@tauri-apps/cli": "1.4.0",
     "unified-network": "0.6.4",
     "unstorage": "^1.9.0",
+    "vue": "3.3.4",
+    "vue3-highlightjs": "^1.0.5"
+  },
+  "dependencies": {
+    "@stacksjs/build": "workspace:*",
+    "@stacksjs/server": "workspace:*",
+    "@tauri-apps/api": "1.4.0",
+    "@tauri-apps/cli": "1.4.0",
+    "unified-network": "0.6.4",
+    "unstorage": "^1.8.0",
     "vue": "3.3.4",
     "vue3-highlightjs": "^1.0.5"
   },

@@ -1,4 +1,7 @@
-import type { CliOptions, CommandResult } from '@stacksjs/types'
+import { type CliOptions } from '@stacksjs/types'
+import cac from 'cac'
+import { execSync } from './exec'
+import { runCommand } from './run'
 
 type CommandOptionTuple = [string, string, { default: boolean }]
 interface CommandOptionObject {
@@ -11,7 +14,7 @@ interface Options {
   name: string
   description: string
   options: CommandOptions
-  run: (options: CliOptions) => Promise<CommandResult>
+  run: (options?: CliOptions) => Promise<any>
   onFail: (error: Error) => void
   onSuccess: () => void
 }
@@ -34,5 +37,14 @@ export class Command {
   }
 }
 
-export { cac as command } from 'cac'
-export { execaCommand as spawn } from 'execa'
+export const command = {
+  run: async (command: string, options?: CliOptions) => {
+    return runCommand(command, options)
+  },
+
+  runSync: (command: string, options?: CliOptions) => {
+    return execSync(command, options)
+  },
+
+  cli: cac,
+}

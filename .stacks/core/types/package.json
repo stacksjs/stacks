@@ -2,7 +2,6 @@
   "name": "@stacksjs/types",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -24,12 +23,13 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
     "./*": "./*"
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -39,10 +39,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "mkdist",
-    "dev": "unbuild --stub",
-    "prepublishOnly": "mkdist",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
     "neverthrow": "^6.0.0"
@@ -51,36 +49,35 @@
     "@mdit-vue/plugin-component": "^0.12.0",
     "@mdit-vue/plugin-frontmatter": "^0.12.0",
     "@mdit-vue/types": "^0.12.0",
-    "@novu/stateless": "^0.17.1",
+    "@novu/stateless": "^0.16.4",
     "@rollup/pluginutils": "^5.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/crypto-js": "^4.1.1",
-    "@types/eslint": "^8.44.2",
+    "@types/eslint": "^8.44.0",
     "@types/fs-extra": "^11.0.1",
     "@types/markdown-it-link-attributes": "^3.0.1",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.17.5",
+    "@types/node": "^18.16.19",
     "@types/nprogress": "^0.2.0",
-    "@vinejs/vine": "^1.6.0",
+    "@vinejs/vine": "^1.5.1",
+    "bun-types": "canary",
     "cac": "^6.7.14",
-    "execa": "^7.2.0",
     "markdown-it": "^13.0.1",
-    "meilisearch": "^0.34.1",
+    "meilisearch": "^0.33.0",
     "neverthrow": "^6.0.0",
-    "ora": "^7.0.1",
-    "unocss": "^0.55.0",
+    "ora": "^6.3.1",
+    "unocss": "^0.53.5",
     "unplugin-auto-import": "^0.16.6",
     "unplugin-vue-components": "^0.25.1",
-    "vite": "^4.4.9",
-    "vite-plugin-inspect": "^0.7.37",
+    "vite": "^4.4.6",
+    "vite-plugin-inspect": "^0.7.33",
     "vite-plugin-pwa": "^0.16.4",
     "vite-plugin-vue-layouts": "^0.8.0",
-    "vite-ssg": "^0.23.1",
-    "vitepress": "1.0.0-rc.4",
+    "vite-ssg": "^0.23.0",
+    "vitepress": "1.0.0-beta.5",
     "vue": "^3.3.4"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "typescript": "^5.1.6"
   }
 }

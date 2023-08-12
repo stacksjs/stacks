@@ -1,4 +1,4 @@
-import { defineSearchEngine } from 'stacks/utils'
+import { defineSearchEngine } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Search Engine Options**

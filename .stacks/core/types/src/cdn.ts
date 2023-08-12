@@ -13,3 +13,5 @@ export interface CdnOptions {
    */
   driver: string
 }
+
+export type CdnConfig = CdnOptions

@@ -1,5 +1,5 @@
-import { defineServices } from 'stacks/utils'
-import { env } from 'stacks/validation'
+import { env } from '@stacksjs/env'
+import { defineServices } from '../.stacks/core/config/src/helpers'
 
 /**
  * **Services**

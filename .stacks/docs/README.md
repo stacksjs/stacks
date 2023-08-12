@@ -7,7 +7,7 @@ This folder contains the generated Stacks documentation.
 To generate the documentation, run the following command:
 
 ```bash
-pnpm run dev
-pnpm run build
-pnpm run deploy
+bun --bun run dev
+bun --bun run build
+bun --bun run deploy
 ```

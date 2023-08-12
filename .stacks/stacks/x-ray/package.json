@@ -2,7 +2,6 @@
   "name": "@stacksjs/x-ray",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.6.12",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -27,7 +26,7 @@
     "type safe",
     "stacks"
   ],
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -39,10 +38,9 @@
   "scripts": {
     "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",
-    "dev": "echo 'wip'",
     "serve:tauri": "vite",
-    "prepublishOnly": "unbuild",
-    "typecheck": "tsc --noEmit"
+    "prepublishOnly": "bun --bun run build",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
     "@stacksjs/desktop": "workspace:*",

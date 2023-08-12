@@ -1,6 +1,6 @@
 import { faker } from '@stacksjs/faker'
 import { validate } from '@stacksjs/validation'
-import { defineModel } from '@stacksjs/utils'
+import { defineModel } from '@stacksjs/config'
 
 export default defineModel({
   name: 'User', // defaults to the sanitized file name

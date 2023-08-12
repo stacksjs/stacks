@@ -8,7 +8,7 @@ This folder contains GitHub configurations for the project, including the follow
     - `typecheck`s the code
     - Auto fixes & applies code style updates via a PR
     - Runs tests (unit & end-to-end)
-    - Runs on `ubuntu-latest` with `node-versions` set to `[18x]`
+    - Runs on `ubuntu-latest` with `bun-versions` set to `[x]`
   - [Release][Release] - automates the release process & changelog generation
 - [Stale][Stale] - Automates managing stale GitHub issues
 - Renovate
@@ -28,7 +28,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

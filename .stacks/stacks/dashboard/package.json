@@ -2,7 +2,6 @@
   "name": "@stacksjs/dashboard",
   "type": "module",
   "version": "0.51.0",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -25,7 +24,7 @@
     "requests",
     "stacks"
   ],
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -35,11 +34,12 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build ../../views/desktop/dashboard -c ../../vite/src/desktop.ts",
+    "build": "bun --bun build.ts",
+    "build:app": "vite build ../../views/desktop/dashboard -c ../../vite/src/desktop.ts",
     "dev": "vite serve ../../views/desktop/dashboard -c ../../core/vite/src/desktop.ts",
-    "dev:desktop": "tauri dev",
-    "prepublishOnly": "unbuild",
-    "typecheck": "tsc --noEmit"
+    "dev:app": "tauri dev",
+    "prepublishOnly": "bun --bun run build",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

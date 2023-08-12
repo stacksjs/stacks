@@ -2,7 +2,6 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "version": "0.57.4",
-  "packageManager": "pnpm@8.6.12",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -25,16 +24,17 @@
     "utilities",
     "functions",
     "playwright",
-    "vitest",
     "stacks"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "bun": "./src/index.ts"
+    },
+    "./*": {
+      "bun": "./*"
     }
   },
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
@@ -44,18 +44,17 @@
     "README.md"
   ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "typecheck": "tsc --noEmit"
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.37.0",
-    "@vitest/coverage-istanbul": "^0.34.1",
-    "@vitest/ui": "^0.34.1",
-    "vitest": "^0.34.1"
+    "@playwright/test": "^1.36.0"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.36.0"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "unbuild": "^1.2.1"
+    "@stacksjs/development": "workspace:*"
   }
 }

@@ -1,11 +1,12 @@
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { kebabCase } from '@stacksjs/strings'
-import type { LibraryType } from '@stacksjs/path'
+import { type LibraryType } from '@stacksjs/path'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { determineResetPreset } from '@stacksjs/utils'
-import { library } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
+import library from '~/config/library'
 
 /**
  * Based on the config values, this method
@@ -35,7 +36,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating the Vue component library entry point.', err))
+    log.error('There was an error generating the Vue component library entry point.', err)
     process.exit(ExitCode.FatalError)
   })
 
@@ -49,7 +50,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating the Web Component library entry point', err))
+    log.error('There was an error generating the Web Component library entry point', err)
     process.exit(ExitCode.FatalError)
   })
 
@@ -63,7 +64,7 @@ export async function createFunctionLibraryEntryPoint(type: LibraryType = 'funct
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(new Error('There was an error generating Function library entry point', err))
+    log.error('There was an error generating Function library entry point', err)
     process.exit(ExitCode.FatalError)
   })
 

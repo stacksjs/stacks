@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, MakeOptions } from '@stacksjs/types'
+import { type CLI, type MakeOptions } from '@stacksjs/types'
 import { intro, italic, outro, prompt, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
@@ -8,17 +11,16 @@ import {
   createModel,
   createNotification,
   invoke,
-  component as makeComponent,
-  database as makeDatabase,
-  factory as makeFactory,
-  fx as makeFunction,
-  language as makeLanguage,
-  page as makePage,
-  stack as makeStack,
+  makeComponent,
+  makeDatabase,
+  // makeFactory,
+  makeFunction,
+  makeLanguage,
+  makePage,
+  makeStack,
+} from '@stacksjs/actions'
 
-} from '@stacksjs/actions/make'
-
-export async function make(buddy: CLI) {
+export function make(buddy: CLI) {
   const descriptions = {
     model: 'Create a new model',
     component: 'Create a new component',
@@ -105,7 +107,7 @@ export async function make(buddy: CLI) {
     .command('make:database', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -114,14 +116,14 @@ export async function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeDatabase(options)
+      makeDatabase(options)
     })
 
   buddy
     .command('make:factory', descriptions.factory)
     .option('-n, --name', 'The name of the factory')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -130,7 +132,7 @@ export async function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeFactory(options)
+      // makeFactory(options)
     })
 
   buddy
@@ -194,11 +196,11 @@ export async function make(buddy: CLI) {
       const result = await createNotification(options)
 
       if (!result) {
-        outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
         process.exit()
       }
 
-      outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
+      await outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -206,7 +208,7 @@ export async function make(buddy: CLI) {
     .command('make:stack', descriptions.stack)
     .option('-n, --name', 'The name of the stack')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -215,7 +217,7 @@ export async function make(buddy: CLI) {
         process.exit()
       }
 
-      await makeStack(options)
+      makeStack(options)
     })
 
   buddy
@@ -247,7 +249,7 @@ export async function make(buddy: CLI) {
         process.exit()
       }
 
-      await runCommand(`npx prisma migrate ${options.env} --name=${name} --schema=${path}`)
+      await runCommand(`bunx prisma migrate ${options.env} --name=${name} --schema=${path}`)
       log.success(path, name)
     })
 }

@@ -9,7 +9,7 @@ This package contains the Stacks Validation system.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/validation
+bun install -d @stacksjs/validation
 ```
 
 Now, you can use it in your project:
@@ -25,7 +25,7 @@ To view the full documentation, please visit [https://stacksjs.dev/validation](h
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -44,7 +44,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 📄 License
 

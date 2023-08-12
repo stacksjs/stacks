@@ -10,7 +10,7 @@ Easily work with objects.
 ## 🤖 Usage
 
 ```bash
-pnpm i -D @stacksjs/objects
+bun install -d @stacksjs/objects
 ```
 
 Now, you can easily access it in your project:
@@ -34,7 +34,7 @@ To view the full documentation, please visit [https://stacksjs.dev/objects](http
 ## 🧪 Testing
 
 ```bash
-pnpm test
+bun test
 ```
 
 ## 📈 Changelog
@@ -53,7 +53,7 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord Server](https://discord.ow3.org)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
 ## 🙏🏼 Credits
 

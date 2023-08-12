@@ -70,6 +70,8 @@ export function ensureSuffix(suffix: string, str: string) {
 export function template(str: string, ...args: any[]): string {
   return str.replace(/{(\d+)}/g, (match, key) => {
     const index = Number(key)
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Number.isNaN(index) ? match : args[index]
   })
 }

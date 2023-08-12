@@ -1,6 +1,8 @@
-import type { Client } from 'memjs'
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
+import { type Client } from 'memjs'
 import Memcached from 'memjs'
-import { describe, expect, it } from 'vitest'
+import { expect, it } from '@stacksjs/testing'
 
 const client: Client = Memcached.Client.create('127.0.0.1:11211')
 

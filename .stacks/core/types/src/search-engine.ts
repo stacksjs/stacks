@@ -1,5 +1,5 @@
-import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
-import type { MaybePromise } from '.'
+import { type EnqueuedTask, type Hits, type Index, type IndexOptions, type IndexesResults, type MeiliSearch, type DocumentOptions as RecordOptions, type Settings as SearchEngineSettings, type SearchParams, type SearchResponse } from 'meilisearch'
+import { type MaybePromise } from '.'
 
 type Search = any
 type Page = any
@@ -30,63 +30,7 @@ export interface SearchEngineOptions {
   }
 }
 
-export interface ServicesOptions {
-  algolia?: {
-    appId: string
-    apiKey: string
-  }
-
-  meilisearch?: {
-    appId: string
-    apiKey: string
-  }
-
-  stripe?: {
-    appId: string
-    apiKey: string
-  }
-
-  planetscale?: {
-    appId: string
-    apiKey: string
-  }
-
-  supabase?: {
-    appId: string
-    apiKey: string
-  }
-
-  aws?: {
-    appId: string
-    apiKey: string
-  }
-
-  novu?: {
-    key: string
-  }
-}
-
-export interface StorageOptions {
-  /**
-   * **Storage Driver**
-   *
-   * The storage driver to utilize.
-   *
-   * @default string 's3'
-   * @see https://stacksjs.dev/docs/storage
-   */
-  driver: 's3' | 'local'
-
-  /**
-   * **Storage Name**
-   *
-   * The name of the storage bucket.
-   *
-   * @default string `${app.url}-${region}-${accountId}`
-   * @see https://stacksjs.dev/docs/storage
-   */
-  name: string
-}
+export type SearchEngineConfig = SearchEngineOptions
 
 export interface MeiliSearchOptions {
   apiKey: string

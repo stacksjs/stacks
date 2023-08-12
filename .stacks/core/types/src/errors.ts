@@ -8,3 +8,4 @@ export declare class ValidationError extends Error {
 }
 
 export type StacksError = Error | ValidationError
+export type CommandError = Error | ValidationError

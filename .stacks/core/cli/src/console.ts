@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { log } from '@stacksjs/logging'
+import prompts from 'prompts'
 
 export class Prompt {
   private required: boolean
@@ -16,61 +19,63 @@ export class Prompt {
     return this.required
   }
 
-  async select(message: string, options: any) {
+  async select(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'select', required: true })
 
     return log.prompt(message, { ...options, type: 'select' })
   }
 
-  async checkbox(message: string, options: any) {
+  async checkbox(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'multiselect', required: true })
 
     return log.prompt(message, { ...options, type: 'multiselect' })
   }
 
-  async confirm(message: string, options: any) {
+  async confirm(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'confirm', required: true })
 
     return log.prompt(message, { ...options, type: 'confirm' })
   }
 
-  async input(message: string, options: any) {
+  async input(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'text', required: true })
 
     return log.prompt(message, { ...options, type: 'text' })
   }
 
-  async password(message: string, options: any) {
+  async password(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'password', required: true })
 
     return log.prompt(message, { ...options, type: 'password' })
   }
 
-  async number(message: string, options: any) {
+  async number(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'numeral', required: true })
 
     return log.prompt(message, { ...options, type: 'numeral' })
   }
 
-  async multiselect(message: string, options: any) {
+  async multiselect(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'multiselect', required: true })
 
     return log.prompt(message, { ...options, type: 'multiselect' })
   }
 
-  async autocomplete(message: string, options: any) {
+  async autocomplete(message: any, options: any) {
     if (this.isRequired())
       return log.prompt(message, { ...options, type: 'autocomplete', required: true })
 
     return log.prompt(message, { ...options, type: 'autocomplete' })
   }
 }
+
+export { prompts, log }
 
 export const prompt = new Prompt()
