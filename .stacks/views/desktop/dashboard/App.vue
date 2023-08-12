@@ -3,7 +3,8 @@ import { onMounted } from 'vue'
 import { listen } from '@tauri-apps/api/event'
 
 onMounted(async () => {
-  const unlisten = await listen<string>('settings', (event) => {
+  await listen<string>('settings', (event) => {
+    // eslint-disable-next-line no-console
     console.log(`Got error in window ${event.windowLabel}, payload: ${event.payload}`)
   })
 

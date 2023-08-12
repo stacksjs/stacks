@@ -24,5 +24,5 @@ export {
   createMigration,
   createModel,
   createNotification,
-  createPage
+  createPage,
 } from './make'

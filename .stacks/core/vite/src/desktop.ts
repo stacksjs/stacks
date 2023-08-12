@@ -1,10 +1,12 @@
 import { type ViteConfig } from '@stacksjs/types'
-import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
 import pkgjson from '../package.json'
-import { autoImports, cssEngine, inspect, uiEngine } from './stacks'
+import { cssEngine, inspect, uiEngine } from './stacks'
+import { pages } from './plugin/pages'
+import { layouts } from './plugin/layouts'
 import { type ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
 import library from '~/config/library'
@@ -35,12 +37,12 @@ export const vueComponentsConfig: ViteConfig = {
 
   plugins: [
     // preview(),
-    pages({
-      routesFolder: ['../../stacks/dashboard/src/pages'],
-    }),
-    layouts({
-      layoutsDirs: '../../../stacks/dashboard/src/layouts',
-    }),
+    // pages({
+    //   routesFolder: ['../../stacks/dashboard/src/pages'],
+    // }),
+    // layouts({
+    //   layoutsDirs: '../../../stacks/dashboard/src/layouts',
+    // }),
     uiEngine(),
     cssEngine(),
     inspect(),

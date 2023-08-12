@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-constant-condition */
 <script setup lang="ts">
 import { ref } from 'vue'
 
