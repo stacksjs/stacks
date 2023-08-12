@@ -19,7 +19,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
       console.log()
     }
 
-    log.info(`Preparing to run the  ${bgCyan(italic(bold(` ${command} `)))}  command`)
+    log.info(`Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}`)
 
     if (options?.showPerformance === false || options?.quiet)
       return resolve(0)
