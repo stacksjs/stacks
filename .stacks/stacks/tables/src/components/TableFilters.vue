@@ -165,7 +165,7 @@
           <div class="flex justify-end">
             <button
               type="button"
-              class="border border-transparent rounded-full font-medium bg-indigo-600 shadow-sm text-xs text-white py-1.5 px-3 inline-flex items-center hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="border border-transparent rounded-full font-medium bg-blue-600 shadow-sm text-xs text-white py-1.5 px-3 inline-flex items-center hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               @click="applyFilters"
             >
               Apply filters
@@ -580,7 +580,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.text-indigo-600 {
+.text-blue-600 {
   --tw-text-opacity: 1;
   color: rgb(79 70 229 / var(--tw-text-opacity));
 }
@@ -611,7 +611,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
-.focus\:border-indigo-300:focus {
+.focus\:border-blue-300:focus {
   --tw-border-opacity: 1;
   border-color: rgb(165 180 252 / var(--tw-border-opacity));
 }
@@ -663,7 +663,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
 
-.focus\:ring-indigo-200:focus {
+.focus\:ring-blue-200:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(199 210 254 / var(--tw-ring-opacity));
 }

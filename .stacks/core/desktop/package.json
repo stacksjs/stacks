@@ -49,8 +49,8 @@
   ],
   "scripts": {
     "build": "bun --bun build.ts",
-    "build:app": "vite build ../../views/desktop -c ../vite/src/desktop.ts",
-    "dev": "vite serve ../../views/desktop -c ../vite/src/desktop.ts",
+    "build:app": "vite build ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
+    "dev": "vite serve ../../views/desktop/dashboard -c ../vite/src/desktop.ts",
     "dev:app": "tauri dev",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
@@ -61,7 +61,7 @@
     "@tauri-apps/api": "1.4.0",
     "@tauri-apps/cli": "1.4.0",
     "unified-network": "0.6.4",
-    "unstorage": "^1.8.0",
+    "unstorage": "^1.9.0",
     "vue": "3.3.4",
     "vue3-highlightjs": "^1.0.5"
   },

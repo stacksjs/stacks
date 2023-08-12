@@ -31,13 +31,13 @@
     <td class="relative w-12 px-6 sm:px-8 sm:w-16">
       <div
         v-if="table.selectedRows?.includes(hit.id)"
-        class="bg-indigo-600 inset-y-0 left-0 w-0.5 absolute"
+        class="bg-blue-600 inset-y-0 left-0 w-0.5 absolute"
       />
       <input
         v-model="table.selectedRows"
         :value="hit.id"
         type="checkbox"
-        class="absolute w-4 h-4 -mt-2 text-indigo-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-indigo-500"
+        class="absolute w-4 h-4 -mt-2 text-blue-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-blue-500"
       >
     </td>
 

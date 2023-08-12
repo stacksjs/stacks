@@ -1,7 +1,11 @@
-import { createApp } from 'vue'
-
-// import Previewer from 'virtual:vue-component-preview'
-import App from './src/App.vue'
+import { ViteSSG } from 'vite-ssg'
+import { routes } from 'vue-router/auto/routes'
+import { setupLayouts } from 'virtual:generated-layouts'
+import VueHighlightJS from 'vue3-highlightjs'
+import App from './App.vue'
+import '@unocss/reset/tailwind.css'
+import 'highlight.js/styles/atom-one-light.css'
+import '../../../stacks/dashboard/src/styles/main.css'
 
 // prepare the messages object from the yaml language files
 // const messages = Object.fromEntries(
@@ -13,7 +17,13 @@ import App from './src/App.vue'
 //     }),
 // )
 
-const app = createApp(App)
-
-// app.use(Previewer)
-app.mount('#app')
+export const createApp = ViteSSG(
+  App,
+  {
+    routes: setupLayouts(routes),
+    base: import.meta.env.BASE_URL,
+  },
+  (ctx) => {
+    ctx.app.use(VueHighlightJS)
+  },
+)

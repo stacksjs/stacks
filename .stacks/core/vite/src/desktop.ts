@@ -13,10 +13,10 @@ import app from '~/config/app'
 const { version } = pkgjson
 
 export const vueComponentsConfig: ViteConfig = {
-  root: frameworkPath('views/desktop'),
+  root: frameworkPath('views/desktop/dashboard'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: storagePath('public'),
+  publicDir: projectStoragePath('public'),
 
   server: {
     https: true,
@@ -35,9 +35,14 @@ export const vueComponentsConfig: ViteConfig = {
 
   plugins: [
     // preview(),
+    pages({
+      routesFolder: ['../../stacks/dashboard/src/pages'],
+    }),
+    layouts({
+      layoutsDirs: '../../../stacks/dashboard/src/layouts',
+    }),
     uiEngine(),
     cssEngine(),
-    autoImports(),
     inspect(),
     mkcert({
       hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],

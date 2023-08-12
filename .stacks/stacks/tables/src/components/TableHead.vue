@@ -12,13 +12,13 @@
         class="relative w-12 px-6 sm:px-8 sm:w-16"
       >
         <!-- <input type="checkbox"
-          class="absolute w-4 h-4 -mt-2 text-indigo-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-indigo-500"
+          class="absolute w-4 h-4 -mt-2 text-blue-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-blue-500"
           :checked="indeterminate || table.selectedRows?.length === hits.length" :indeterminate="indeterminate"
           @change="table.selectedRows = ($event?.target as any).checked ? hits.map((h) => h.id) : []"
         > -->
         <!-- <input
           type="checkbox"
-          class="absolute w-4 h-4 -mt-2 text-indigo-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-indigo-500"
+          class="absolute w-4 h-4 -mt-2 text-blue-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-blue-500"
           :checked="indeterminate || selectedRows?.length === hits?.length"
           :indeterminate="indeterminate"
           @change="selectedRows = []"

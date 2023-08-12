@@ -100,7 +100,7 @@
             <div class="h-5 w-5 i-heroicons-solid-chevron-left" />
           </a> -->
 
-          <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
+          <!-- Current: "z-10 bg-blue-50 border-blue-500 text-blue-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
           <!-- <a v-for="page in views" :key="page" href="#" aria-current="page"
             :class="[table.currentPage === page && 'border bg-yellow-500 border-yellow-500 text-gray-900 z-10']"
             class="border border-gray-300 text-gray-500 font-medium text-sm py-2 px-4 relative inline-flex items-center underline-transparent"

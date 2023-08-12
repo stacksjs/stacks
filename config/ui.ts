@@ -17,7 +17,7 @@ export default {
   classPrefix: 'stx-',
   reset: 'tailwind',
 
-  icons: ['heroicon-outline', 'heroicon-solid'],
+  icons: ['heroicons'],
 
   fonts: {
     email: {

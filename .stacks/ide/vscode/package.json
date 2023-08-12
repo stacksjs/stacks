@@ -26,7 +26,7 @@
   ],
   "icon": "logo.png",
   "engines": {
-    "vscode": "^1.80.1"
+    "vscode": "^1.81.1"
   },
   "scripts": {
     "package": "vsce package",
@@ -58,6 +58,6 @@
     "foxundermoon.shell-format"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.19.0"
+    "@vscode/vsce": "^2.20.1"
   }
 }
