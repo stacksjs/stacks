@@ -1,5 +1,5 @@
 import { type CliOptions, type CommandError, type Subprocess } from '@stacksjs/types'
-import { type Result, errAsync } from '@stacksjs/error-handling'
+import { type Result, errAsync, okAsync } from '@stacksjs/error-handling'
 import { exec } from './exec'
 
 /**

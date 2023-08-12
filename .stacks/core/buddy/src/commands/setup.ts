@@ -1,10 +1,10 @@
 import { runCommand } from '@stacksjs/cli'
-import { type CLI, type CliOptions } from '@stacksjs/types'
+import type { CLI, CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI) {
   const descriptions = {
-    ensure: 'This command checks whether Node is installed. bun is checked via `only-allow` preinstall hook',
-    setup: 'This command installs Node & bun',
+    ensure: 'This command checks whether Bun is installed. If not, it installs it',
+    setup: 'This command installs Bun',
     verbose: 'Enable verbose output',
   }
 

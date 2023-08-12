@@ -61,9 +61,9 @@
       "import": "./core/analytics/dist/index.js"
     },
     "./arrays": {
-      "bun": "./core/utils/arrays/src/index.ts",
-      "types": "./core/utils/arrays/dist/index.d.ts",
-      "import": "./core/utils/arrays/dist/index.js"
+      "bun": "./core/arrays/src/index.ts",
+      "types": "./core/arrays/dist/index.d.ts",
+      "import": "./core/arrays/dist/index.js"
     },
     "./auth": {
       "bun": "./core/auth/src/index.ts",
@@ -96,9 +96,9 @@
       "import": "./core/cli/dist/index.js"
     },
     "./collections": {
-      "bun": "./core/utils/collections/src/index.ts",
-      "types": "./core/utils/collections/dist/index.d.ts",
-      "import": "./core/utils/collections/dist/index.js"
+      "bun": "./core/collections/src/index.ts",
+      "types": "./core/collections/dist/index.d.ts",
+      "import": "./core/collections/dist/index.js"
     },
     "./config": {
       "bun": "./core/config/src/index.ts",
@@ -136,9 +136,9 @@
       "import": "./core/docs/dist/index.js"
     },
     "./email": {
-      "bun": "./core/notifications/email/src/index.ts",
-      "types": "./core/notifications/email/dist/index.d.ts",
-      "import": "./core/notifications/email/dist/index.js"
+      "bun": "./core/email/src/index.ts",
+      "types": "./core/email/dist/index.d.ts",
+      "import": "./core/email/dist/index.js"
     },
     "./error-handling": {
       "bun": "./core/error-handling/src/index.ts",
@@ -156,9 +156,9 @@
       "import": "./core/faker/dist/index.js"
     },
     "./git": {
-      "bun": "./core/utils/git/src/index.ts",
-      "types": "./core/utils/git/dist/index.d.ts",
-      "import": "./core/utils/git/dist/index.js"
+      "bun": "./core/git/src/index.ts",
+      "types": "./core/git/dist/index.d.ts",
+      "import": "./core/git/dist/index.js"
     },
     "./health": {
       "bun": "./core/health/src/index.ts",
@@ -201,9 +201,9 @@
       "import": "./core/payments/dist/index.js"
     },
     "./push": {
-      "bun": "./core/notifications/push/src/index.ts",
-      "types": "./core/notifications/push/dist/index.d.ts",
-      "import": "./core/notifications/push/dist/index.js"
+      "bun": "./core/push/src/index.ts",
+      "types": "./core/push/dist/index.d.ts",
+      "import": "./core/push/dist/index.js"
     },
     "./query-builder": {
       "bun": "./core/query-builder/src/index.ts",
@@ -256,14 +256,14 @@
       "import": "./core/signals/dist/index.js"
     },
     "./slug": {
-      "bun": "./core/utils/slug/src/index.ts",
-      "types": "./core/utils/slug/dist/index.d.ts",
-      "import": "./core/utils/slug/dist/index.js"
+      "bun": "./core/slug/src/index.ts",
+      "types": "./core/slug/dist/index.d.ts",
+      "import": "./core/slug/dist/index.js"
     },
     "./sms": {
-      "bun": "./core/notifications/sms/src/index.ts",
-      "types": "./core/notifications/sms/dist/index.d.ts",
-      "import": "./core/notifications/sms/dist/index.js"
+      "bun": "./core/sms/src/index.ts",
+      "types": "./core/sms/dist/index.d.ts",
+      "import": "./core/sms/dist/index.js"
     },
     "./storage": {
       "bun": "./core/storage/src/index.ts",
@@ -271,9 +271,9 @@
       "import": "./core/storage/dist/index.js"
     },
     "./strings": {
-      "bun": "./core/utils/strings/src/index.ts",
-      "types": "./core/utils/strings/dist/index.d.ts",
-      "import": "./core/utils/strings/dist/index.js"
+      "bun": "./core/strings/src/index.ts",
+      "types": "./core/strings/dist/index.d.ts",
+      "import": "./core/strings/dist/index.js"
     },
     "./testing": {
       "bun": "./core/testing/src/index.ts",

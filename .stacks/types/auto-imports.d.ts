@@ -330,7 +330,7 @@ declare global {
   const isPositive: typeof import('../core/validation/src/is')['isPositive']
   const isPositiveOrNegative: typeof import('../core/validation/src/is')['isPositiveOrNegative']
   const isPrimitive: typeof import('../core/validation/src/is')['isPrimitive']
-  const isProjectCreated: typeof import('../core/utils/src/helpers')['isProjectCreated']
+  const isProjectInitialized: typeof import('../core/utils/src/helpers')['isProjectInitialized']
   const isPromise: typeof import('../core/validation/src/is')['isPromise']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -1086,7 +1086,7 @@ declare module 'vue' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly isProjectCreated: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectCreated']>
+    readonly isProjectInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -1835,7 +1835,7 @@ declare module '@vue/runtime-core' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly isProjectCreated: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectCreated']>
+    readonly isProjectInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>

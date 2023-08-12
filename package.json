@@ -115,5 +115,8 @@
     ".stacks/vcs/*",
     ".stacks/views/*",
     ".stacks"
-  ]
+  ],
+  "dependencies": {
+    "stacks": "workspace:*"
+  }
 }

@@ -1,23 +1,25 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
-import { frameworkVersion, initProject, isProjectCreated } from '@stacksjs/utils'
+import { initProject, isProjectInitialized } from '@stacksjs/utils'
+import pkg from '../package.json'
 import * as cmd from './commands'
 
-const cli = command.cli('buddy')
+const { version } = pkg
 
 // setup global error handlers
 process.on('uncaughtException', handleError)
 process.on('unhandledRejection', handleError)
 
 async function main() {
+  const cli = command.cli('buddy')
   // the following commands are not dependent on the project being initialized
   // await installIfVersionMismatch()
   cmd.setup(cli)
   cmd.key(cli)
 
   // before running any commands, check if the project is already initialized
-  if (!await isProjectCreated())
+  if (!await isProjectInitialized())
     await initProject()
 
   cmd.preinstall(cli)
