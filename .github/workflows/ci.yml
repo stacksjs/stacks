@@ -41,10 +41,10 @@ jobs:
         run: bun install
 
       - name: Set Application Key
-        run: bun buddy key:generate
+        run: ./buddy key:generate
 
       - name: Lint
-        run: bun buddy lint
+        run: ./buddy lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -66,10 +66,10 @@ jobs:
         run: bun install
 
       - name: Set Application Key
-        run: bun buddy key:generate
+        run: ./buddy key:generate
 
       - name: Typecheck
-        run: bun buddy test:types
+        run: ./buddy test:types
 
   test:
     runs-on: ${{ matrix.os }}
@@ -94,7 +94,7 @@ jobs:
         uses: niden/actions-memcached@v7
 
       - name: Set Application Key
-        run: bun buddy key:generate
+        run: ./buddy key:generate
 
       - name: Test Suite
         run: bun --bun run test
@@ -121,7 +121,7 @@ jobs:
         run: bun install
 
       - name: Set Application Key
-        run: bun buddy key:generate
+        run: ./buddy key:generate
 
       - name: Prepare Git User
         run: |
