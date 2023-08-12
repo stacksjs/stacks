@@ -2,14 +2,16 @@
 
 import process from 'node:process'
 import { type AddressInfo } from 'node:net'
-import { type CliOptions, type Manifest, type NpmScript, type StacksError, type Subprocess } from '@stacksjs/types'
+import type { CliOptions, Manifest, NpmScript, StacksError, Subprocess } from '@stacksjs/types'
+import { Action } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
+import { runAction } from '@stacksjs/actions'
 import { italic, log, runCommand } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
 import { readPackageJson } from '@stacksjs/storage'
-import { type Result } from '@stacksjs/error-handling'
-import { err } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { semver } from './versions'
 import ui from '~/config/ui'
 import dependencies from '~/config/deps'
@@ -21,7 +23,7 @@ export async function packageManager() {
 }
 
 export async function initProject(): Promise<Result<Subprocess, StacksError>> {
-  if (env.APP_ENV !== 'production')
+  if (app.env !== 'production')
     log.info('Project not yet initialized, generating application key...')
   else
     handleError(new Error('Please run `buddy key:generate` to generate an application key'))
@@ -40,10 +42,11 @@ export async function isProjectInitialized() {
   if (storage.isFile('.env'))
     return await isAppKeySet()
 
-  // TODO: need to re-enable this
-  // copy the .env.example to become the .env file
-  // if (storage.isFile('.env.example'))
-  //   await spawn('cp .env.example .env', { stdio: 'inherit', cwd: projectPath() })
+  // copy the .env.example file to .env
+  if (storage.isFile('.env.example'))
+    await runCommand('cp .env.example .env', { cwd: projectPath() })
+  else
+    console.error('no .env.example file found')
 
   return await isAppKeySet()
 }

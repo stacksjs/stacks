@@ -80,7 +80,7 @@ export function writeTextFile(file: TextFile): Promise<void> {
 }
 
 /**
- * Determine whether a path is a file.
+ * Determine whether a path exists.
  */
 export function isFile(path: string): boolean {
   return fs.existsSync(projectPath(path))
