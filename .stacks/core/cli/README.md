@@ -53,7 +53,7 @@ async function install() {
     setTimeout(() => {
       spin.text = italic('This may take a few moments...')
     }, 5000)
-    await spawn('pnpm install')
+    await spawn('bun install')
     spin.stop()
   }
   catch (error) {

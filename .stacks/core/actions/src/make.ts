@@ -219,7 +219,7 @@ export function makeStack(options: MakeOptions) {
 
     // await spawn(`giget stacks ${path}`)
     log.success('Successfully scaffolded your project')
-    log.info(`cd ${path} && pnpm install`)
+    log.info(`cd ${path} && bun install`)
   }
   catch (error) {
     log.error('There was an error creating your stack', error)

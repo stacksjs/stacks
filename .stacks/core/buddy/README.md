@@ -150,7 +150,7 @@ buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 
-buddy upgrade # auto-upgrades deps, framework, node.js, and/or pnpm
+buddy upgrade # auto-upgrades deps, framework, and Bun
 buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine

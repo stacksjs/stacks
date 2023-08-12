@@ -14,10 +14,10 @@ It's easy to get started. The only prerequisite is a basic understanding HTML, s
 bunx stacks new hello-world
 cd hello-world
 
-pnpm i # install deps for all packages
-pnpm dev # stubs the packages for local use
-pnpm dev:vite-vue # starts the dev server
-pnpm build # builds the packages for production-ready use
+bun i # install deps for all packages
+bun dev # stubs the packages for local use
+bun dev:vite-vue # starts the dev server
+bun build # builds the packages for production-ready use
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.

@@ -16,7 +16,7 @@ cd hello-world
 
 buddy install # install deps for all packages
 buddy dev:components # starts the component dev server
-pnpm build:components # builds the component library for production-ready use
+buddy build:components # builds the component library for production-ready use
 ```
 
 Additionally, the `package.json` contains some useful snippets you likely want to be aware of.

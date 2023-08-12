@@ -55,7 +55,7 @@ result.isErr() // false
 ### Example #2
 
 ```js
-const command = 'rimraf ./pnpm-lock.yaml ./node_modules/ ./.stacks/**/node_modules'
+const command = 'rimraf ./bun.lockb ./node_modules ./.stacks/**/dist'
 const result = await runCommand(command, options)
 
 if (result.isOk()) {

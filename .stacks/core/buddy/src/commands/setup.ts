@@ -3,8 +3,8 @@ import { type CLI, type CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI) {
   const descriptions = {
-    ensure: 'This command checks whether Node is installed. pnpm is checked via `only-allow` preinstall hook',
-    setup: 'This command installs Node & pnpm',
+    ensure: 'This command checks whether Node is installed. bun is checked via `only-allow` preinstall hook',
+    setup: 'This command installs Node & bun',
     verbose: 'Enable verbose output',
   }
 
@@ -12,13 +12,13 @@ export function setup(buddy: CLI) {
     .command('ensure', descriptions.ensure)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
-      await runCommand('pnpm install', options)
+      await runCommand('bun install', options)
     })
 
   buddy
     .command('setup', descriptions.setup)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
-      await runCommand('pnpm env use', options)
+      await runCommand('bun env use', options)
     })
 }

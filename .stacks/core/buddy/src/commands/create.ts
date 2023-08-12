@@ -98,7 +98,7 @@ async function ensureEnv(path: string, options: CreateOptions) {
 
 async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
-  let result = await runCommand('pnpm install', { ...options, cwd: path })
+  let result = await runCommand('bun install', { ...options, cwd: path })
 
   if (result?.isErr()) {
     log.error(result.error)

@@ -3,7 +3,6 @@ node_modules
 .DS_STORE
 .cache
 .temp
-.pnpm-debug.log
 .env
 *.local
 .env.production

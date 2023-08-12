@@ -13,13 +13,11 @@ export function version(buddy: CLI) {
       await intro('buddy version')
 
       const pkg = await storage.readPackageJson('./package.json')
-      const nodeVersion = pkg.engines.node.replace('>=v', '')
-      const pnpmVersion = pkg.engines.pnpm.replace('>=', '')
+      const bunVersion = 'wip'
       const stacksVersion = pkg.version
 
       log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion}`))
-      log.info(green(bold('node: ')) + dim(`   ${nodeVersion}`))
-      log.info(green(bold('pnpm: ')) + dim(`   ${pnpmVersion}`))
+      log.info(green(bold('Bun: ')) + dim(`   ${bunVersion}`))
 
       // redis (or other cache/s), mysql (or other database/s),
     })

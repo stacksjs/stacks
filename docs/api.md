@@ -39,7 +39,4 @@
 # bun buddy test:coverage # runs test coverage
 
 # bun buddy example # run an example script (follow prompts)
-
-# bun buddy preinstall # the preinstall hook that ensures proper node & pnpm versions are installed
-# bun buddy postinstall # the postinstall hook that ensures git hooks are configured after initial install
 ```

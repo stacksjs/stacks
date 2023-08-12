@@ -16,9 +16,9 @@
     "dev-wip": "vite --config ../core/vite/src/desktop.ts",
     "dev:tauri": "VITE_NETWORK_PROCESSOR=tauri vite --config ../core/vite/src/desktop.ts",
     "dev:native": "tauri dev",
-    "serve": "pnpm dev",
-    "serve:tauri": "pnpm dev:tauri",
-    "serve:native": "pnpm dev:native",
+    "serve": "bun dev",
+    "serve:tauri": "bun dev:tauri",
+    "serve:native": "bun dev:native",
     "build-wip": "VITE_NETWORK_PROCESSOR=tauri vite build --config ../core/vite/src/desktop.ts && tauri build",
     "preview": "vite --config ../core/vite/src/desktop.ts preview"
   },

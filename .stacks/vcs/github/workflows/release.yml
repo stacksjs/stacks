@@ -11,43 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Set Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Set Application Key
         run: bun buddy key:generate
 
-      - name: Publish fonts to npm
-        run: pnpm --filter './.stacks/fonts/**' publish --access public --no-git-checks
+      - name: Prepublish # these packages are required for the "Publish framework" step
+        run: pnpm --filter='./.stacks' build
+
+      - name: Publish framework
+        run: pnpm --filter='./.stacks' publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish framework to npm
-        run: pnpm -r publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      - name: Publish dummy libraries to npm
-        run: bun --bun run generate:entries && pnpm --filter './.stacks/components/vue' --filter './.stacks/components/web' --filter './.stacks/functions' publish --access public --no-git-checks
+      - name: Publish dummy libraries
+        run: pnpm --filter='./.stacks' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './.stacks/vscode' release
+        run: pnpm --filter './.stacks/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

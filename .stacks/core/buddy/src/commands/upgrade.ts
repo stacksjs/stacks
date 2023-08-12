@@ -8,11 +8,10 @@ import { isString } from '@stacksjs/validation'
 
 export function upgrade(buddy: CLI) {
   const descriptions = {
-    command: 'Upgrade dependencies, framework, package manager, and/or Node.js',
+    command: 'Upgrade dependencies, framework, package manager, JS/TS runtime',
     framework: 'Upgrade the Stacks framework',
     dependencies: 'Upgrade your dependencies',
-    packageManager: 'Upgrade your package manager, i.e. pnpm',
-    node: 'Upgrade Node to the version defined in ./node-version',
+    bun: 'Upgrade Bun to the latest version',
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',
@@ -23,8 +22,7 @@ export function upgrade(buddy: CLI) {
     .command('upgrade', descriptions.command)
     .option('-c, --framework', descriptions.framework, { default: false })
     .option('-d, --dependencies', descriptions.dependencies, { default: false })
-    .option('-p, --package-manager', descriptions.packageManager, { default: false })
-    .option('-n, --node', descriptions.node, { default: false })
+    .option('-b, --bun', descriptions.bun, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -84,14 +82,14 @@ export function upgrade(buddy: CLI) {
     })
 
   buddy
-    .command('upgrade:bun', descriptions.node)
+    .command('upgrade:bun', descriptions.bun)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
-      const perf = await intro('buddy upgrade:node')
+      const perf = await intro('buddy upgrade:bun')
       const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:node command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
+        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
         process.exit()
       }
 
