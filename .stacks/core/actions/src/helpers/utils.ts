@@ -63,7 +63,7 @@ export async function runActions(actions: string[], options?: ActionOptions) {
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const commands = actions.map(action => `bunx ${actionsPath(`${action}.ts`)}`)
+  const commands = actions.map(action => `bun ${actionsPath(`${action}.ts`)}`)
 
   return await runCommands(commands, options)
 }
