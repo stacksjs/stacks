@@ -12,15 +12,15 @@
     "index.js"
   ],
   "peerDependencies": {
-    "eslint": ">=7.4.0"
+    "eslint": ">=7.32.0"
   },
   "dependencies": {
     "@stacksjs/eslint-config-basic": "workspace:*",
     "@stacksjs/eslint-config-ts": "workspace:*",
-    "eslint-plugin-vue": "^9.15.1",
+    "eslint-plugin-vue": "^9.17.0",
     "local-pkg": "^0.4.3"
   },
   "devDependencies": {
-    "eslint": "^8.45.0"
+    "eslint": "^8.47.0"
   }
 }
