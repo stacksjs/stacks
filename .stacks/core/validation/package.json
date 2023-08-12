@@ -44,10 +44,10 @@
   },
   "peerDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@vinejs/vine": "^1.5.1"
+    "@vinejs/vine": "^1.6.0"
   },
   "dependencies": {
-    "@vinejs/vine": "^1.5.1"
+    "@vinejs/vine": "^1.6.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

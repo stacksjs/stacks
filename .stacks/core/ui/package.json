@@ -52,28 +52,28 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@iconify-json/heroicons-outline": "^1.1.6",
-    "@iconify-json/heroicons-solid": "^1.1.7",
+    "@iconify-json/heroicons-outline": "^1.1.7",
+    "@iconify-json/heroicons-solid": "^1.1.8",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.53.5",
-    "pinia": "^2.1.4",
-    "unocss": "^0.53.5",
+    "@unocss/transformer-compile-class": "^0.55.0",
+    "pinia": "^2.1.6",
+    "unocss": "^0.55.0",
     "vue": "^3.3.4",
-    "vue-tsc": "^1.8.5"
+    "vue-tsc": "^1.8.8"
   },
   "dependencies": {
-    "@iconify-json/heroicons-outline": "^1.1.6",
-    "@iconify-json/heroicons-solid": "^1.1.7",
+    "@iconify-json/heroicons-outline": "^1.1.7",
+    "@iconify-json/heroicons-solid": "^1.1.8",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@unocss/transformer-compile-class": "^0.53.5",
-    "pinia": "^2.1.4",
-    "unocss": "^0.53.5",
+    "@unocss/transformer-compile-class": "^0.55.0",
+    "pinia": "^2.1.6",
+    "unocss": "^0.55.0",
     "vue": "^3.3.4",
-    "vue-tsc": "^1.8.5"
+    "vue-tsc": "^1.8.8"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

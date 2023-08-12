@@ -26,10 +26,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^6.0.0"
+    "@typescript-eslint/utils": "^6.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20.4.2",
+    "@types/node": "^20.4.10",
     "unbuild": "latest"
   }
 }

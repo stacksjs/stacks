@@ -53,31 +53,31 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.4.6",
+    "@maizzle/framework": "^4.5.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.4.6",
-    "@novu/stateless": "^0.16.4",
+    "@maizzle/framework": "^4.5.0",
+    "@novu/stateless": "^0.17.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "optionalDependencies": {
-    "@novu/emailjs": "^0.16.4",
-    "@novu/mailgun": "^0.16.4",
-    "@novu/mailjet": "^0.16.4",
-    "@novu/mandrill": "^0.16.4",
-    "@novu/netcore": "^0.16.4",
-    "@novu/node": "^0.16.4",
-    "@novu/nodemailer": "^0.16.4",
-    "@novu/postmark": "^0.16.4",
-    "@novu/sendgrid": "^0.16.4",
-    "@novu/ses": "^0.16.4"
+    "@novu/emailjs": "^0.17.1",
+    "@novu/mailgun": "^0.17.1",
+    "@novu/mailjet": "^0.17.1",
+    "@novu/mandrill": "^0.17.1",
+    "@novu/netcore": "^0.17.1",
+    "@novu/node": "^0.17.1",
+    "@novu/nodemailer": "^0.17.1",
+    "@novu/postmark": "^0.17.1",
+    "@novu/sendgrid": "^0.17.1",
+    "@novu/ses": "^0.17.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

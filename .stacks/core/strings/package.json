@@ -69,10 +69,10 @@
     "pluralize": "^8.0.0",
     "slugify": "^1.6.6",
     "title-case": "^3.0.3",
-    "validator": "^13.9.0"
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@types/validator": "^13.7.17"
+    "@types/validator": "^13.11.1"
   }
 }
