@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "bcryptjs": "^2.4.3",

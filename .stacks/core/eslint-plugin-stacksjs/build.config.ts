@@ -7,7 +7,7 @@ export default defineBuildConfig({
   externals: [
     'bun:test',
   ],
-  declaration: true,
+  declaration: false,
   clean: true,
   rollup: {
     emitCJS: true,
