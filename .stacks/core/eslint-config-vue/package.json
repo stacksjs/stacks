@@ -22,5 +22,8 @@
   },
   "devDependencies": {
     "eslint": "^8.47.0"
+  },
+  "scripts": {
+    "build": "echo 'no build needed'"
   }
 }

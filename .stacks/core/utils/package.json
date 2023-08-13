@@ -50,6 +50,7 @@
     "size": "tsx scripts/export-size.ts"
   },
   "peerDependencies": {
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -72,6 +73,7 @@
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

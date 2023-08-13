@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.0",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/eslint-plugin-stacksjs",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -16,9 +16,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bunx unbuild",
+    "build": "bun --bun unbuild",
     "build-bun": "bun --bun build.ts",
-    "stub": "bunx unbuild --stub",
+    "stub": "bun --bun unbuild --stub",
     "test": "bun --bun test",
     "prepublishOnly": "bun --bun run build"
   },

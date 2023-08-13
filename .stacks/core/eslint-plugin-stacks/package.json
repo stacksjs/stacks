@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "ESLint plugin for Stacks.",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/eslint-plugin-stacksjs",
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -18,13 +18,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "bunx unbuild",
+    "build": "bun --bun unbuild",
     "build-bun": "bun --bun build.ts",
-    "stub": "bunx unbuild --stub",
+    "stub": "bun --bun unbuild --stub",
     "test": "bun --bun test",
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@typescript-eslint/utils": "^6.3.0"
   },
   "devDependencies": {

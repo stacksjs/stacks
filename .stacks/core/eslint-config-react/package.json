@@ -4,7 +4,7 @@
   "description": "",
   "author": "Chris Breuer <chris@ow3.org> (https://github.com/stacksjs/)",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/lint/eslint",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/eslint-config-react",
   "keywords": [
     "eslint-config"
   ],
@@ -13,7 +13,8 @@
     "index.js"
   ],
   "scripts": {
-    "lint": "eslint . --config=index.js"
+    "lint": "eslint . --config=index.js",
+    "build": "echo 'no build needed'"
   },
   "peerDependencies": {
     "eslint": ">=7.32.0"
