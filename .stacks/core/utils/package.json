@@ -79,6 +79,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/semver": "^7.5.0",
