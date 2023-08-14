@@ -81,7 +81,7 @@
     "@novu/mandrill": "^0.17.1",
     "@novu/netcore": "^0.17.1",
     "@novu/nexmo": "^0.17.1",
-    "@novu/node": "^0.17.1",
+    "@novu/node": "^0.17.2",
     "@novu/nodemailer": "^0.17.1",
     "@novu/plivo": "^0.17.1",
     "@novu/postmark": "^0.17.1",
