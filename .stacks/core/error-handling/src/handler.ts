@@ -38,7 +38,10 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: StacksError, options?: any): StacksError {
+export function handleError(err: StacksError | string, options?: any): StacksError {
+  if (typeof err === 'string')
+    return ErrorHandler.handle(new Error(err), options)
+
   return ErrorHandler.handle(err, options)
 }
 

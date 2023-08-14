@@ -13,7 +13,7 @@ function parseOptions(options?: ActionOptions) {
     if (key.length === 1)
       return `-${key}=${value}`
 
-    if (typeof value === 'boolean' && value) // if the value is a boolean and true, just return the key
+    if (typeof value === 'boolean' && value) // if the value is `true`, just return the key
       return `--${key}`
 
     return `--${key}=${value}`

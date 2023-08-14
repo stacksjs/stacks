@@ -33,9 +33,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     cwd: options?.cwd || import.meta.dir,
     onExit(subprocess, exitCode, signalCode, error) {
       if (exitCode !== ExitCode.Success && exitCode) {
-        handleError(new Error(
-          `Failed to execute command: ${cmd.join(' ')}`,
-        ))
+        handleError(`Failed to execute command: ${cmd.join(' ')}`)
       }
     },
   })

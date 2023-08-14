@@ -71,4 +71,4 @@ dirs.map(async (folder) => {
 
 log.success('Build complete')
 
-process.exit(ExitCode.Success)
+// process.exit(ExitCode.Success)

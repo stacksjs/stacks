@@ -1,1 +1,1 @@
-export * from 'eslint-plugin-stacksjs'
+export * from '../../eslint-plugin-stacksjs/src/index'
