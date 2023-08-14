@@ -10,10 +10,24 @@
         x-data="Components.menu({ open: false })"
         x-init="init()"
         class="relative"
+      >
+        <!-- <div
+        x-data="Components.menu({ open: false })"
+        x-init="init()"
+        class="relative"
         @keydown.escape.stop="open = false; focusButton()"
         @click.away="onClickAway($event)"
-      >
+      > -->
         <button
+          id="sort-menu-button"
+          type="button"
+          class="flex items-center gap-x-1 text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
+          x-ref="button"
+          aria-expanded="false"
+          aria-haspopup="true"
+          x-bind:aria-expanded="open.toString()"
+        >
+          <!-- <button
           id="sort-menu-button"
           type="button"
           class="flex items-center gap-x-1 text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
@@ -26,13 +40,13 @@
           @keydown.enter.prevent="onButtonEnter()"
           @keydown.arrow-up.prevent="onArrowUp()"
           @keydown.arrow-down.prevent="onArrowDown()"
-        >
+        > -->
           Sort by
 
           <div class="i-heroicons-chevron-up-down h-5 w-5 text-gray-500" />
         </button>
 
-        <div
+        <!-- <div
           x-show="open"
           x-transition:enter="transition ease-out duration-100"
           x-transition:enter-start="transform opacity-0 scale-95"
@@ -54,8 +68,35 @@
           @keydown.tab="open = false"
           @keydown.enter.prevent="open = false; focusButton()"
           @keyup.space.prevent="open = false; focusButton()"
+        > -->
+        <div
+          x-show="open"
+          x-transition:enter="transition ease-out duration-100"
+          x-transition:enter-start="transform opacity-0 scale-95"
+          x-transition:enter-end="transform opacity-100 scale-100"
+          x-transition:leave="transition ease-in duration-75"
+          x-transition:leave-start="transform opacity-100 scale-100"
+          x-transition:leave-end="transform opacity-0 scale-95"
+          class="absolute right-0 z-10 mt-2.5 w-40 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+          x-ref="menu-items"
+          x-description="Dropdown menu, show/hide based on menu state."
+          x-bind:aria-activedescendant="activeDescendant"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="sort-menu-button"
+          tabindex="-1"
+          style="display: none;"
         >
           <a
+            id="sort-menu-item-0"
+            href="#"
+            class="block px-3 py-1 text-sm leading-6 text-gray-900"
+            x-state:on="Active"
+            x-state:off="Not Active"
+            role="menuitem"
+            tabindex="-1"
+          >Name</a>
+          <!-- <a
             id="sort-menu-item-0"
             href="#"
             class="block px-3 py-1 text-sm leading-6 text-gray-900"
@@ -68,8 +109,22 @@
             @mousemove="onMouseMove($event, 0)"
             @mouseleave="onMouseLeave($event)"
             @click="open = false; focusButton()"
-          >Name</a>
+          >Name</a> -->
           <a
+            id="sort-menu-item-1"
+            href="#"
+            class="block px-3 py-1 text-sm leading-6 text-gray-900"
+            role="menuitem"
+            tabindex="-1"
+          >Date updated</a>
+          <a
+            id="sort-menu-item-2"
+            href="#"
+            class="block px-3 py-1 text-sm leading-6 text-gray-900"
+            role="menuitem"
+            tabindex="-1"
+          >Environment</a>
+          <!-- <a
             id="sort-menu-item-1"
             href="#"
             class="block px-3 py-1 text-sm leading-6 text-gray-900"
@@ -92,7 +147,7 @@
             @mousemove="onMouseMove($event, 2)"
             @mouseleave="onMouseLeave($event)"
             @click="open = false; focusButton()"
-          >Environment</a>
+          >Environment</a> -->
         </div>
       </div>
     </header>

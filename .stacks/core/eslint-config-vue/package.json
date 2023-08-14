@@ -11,6 +11,9 @@
   "files": [
     "index.js"
   ],
+  "scripts": {
+    "build": "echo 'no build needed'"
+  },
   "peerDependencies": {
     "eslint": ">=7.32.0"
   },
@@ -22,8 +25,5 @@
   },
   "devDependencies": {
     "eslint": "^8.47.0"
-  },
-  "scripts": {
-    "build": "echo 'no build needed'"
   }
 }

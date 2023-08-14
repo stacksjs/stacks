@@ -10,7 +10,7 @@ export function inspire(buddy: CLI) {
     .option('--two', 'Show two quotes', { default: false })
     .action(async () => {
       const perf = await intro('buddy inspire')
-      const result = await runAction(Action.Inspire)
+      const result = runAction(Action.Inspire)
 
       if (result.isErr()) {
         await outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)

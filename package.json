@@ -118,5 +118,8 @@
   ],
   "dependencies": {
     "stacks": "workspace:*"
+  },
+  "devDependencies": {
+    "unplugin-vue-router": "^0.6.4"
   }
 }

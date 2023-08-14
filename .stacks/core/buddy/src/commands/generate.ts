@@ -81,8 +81,8 @@ export function generate(buddy: CLI) {
   buddy
     .command('generate:entries', descriptions.entries)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: GeneratorOptions) => {
-      await generateLibEntries(options)
+    .action((options: GeneratorOptions) => {
+      generateLibEntries(options)
     })
 
   buddy

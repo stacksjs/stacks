@@ -2,7 +2,7 @@
 
 import process from 'node:process'
 import { type AddressInfo } from 'node:net'
-import type { CliOptions, Manifest, NpmScript, StacksError, Subprocess } from '@stacksjs/types'
+import type { CliOptions, Manifest, NpmScript, StacksError, SyncSubprocess } from '@stacksjs/types'
 import { Action } from '@stacksjs/types'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { parse } from 'yaml'
@@ -22,13 +22,13 @@ export async function packageManager() {
   return packageManager
 }
 
-export async function initProject(): Promise<Result<Subprocess, StacksError>> {
+export function initProject(): Result<SyncSubprocess, StacksError> {
   if (app.env !== 'production')
     log.info('Project not yet initialized, generating application key...')
   else
-    handleError(new Error('Please run `buddy key:generate` to generate an application key'))
+    handleError('Please run `buddy key:generate` to generate an application key')
 
-  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
+  const result = runAction(Action.KeyGenerate, { cwd: projectPath() })
 
   if (result.isErr())
     return err(handleError(result.error))
@@ -44,14 +44,14 @@ export async function ensureProjectIsInitialized() {
 
   // copy the .env.example file to .env
   if (storage.isFile('.env.example'))
-    await runCommand('cp .env.example .env', { cwd: projectPath() })
+    runCommand('cp .env.example .env', { cwd: projectPath() })
   else
     console.error('no .env.example file found')
 
   return await isAppKeySet()
 }
 
-export async function installIfVersionMismatch() {
+export function installIfVersionMismatch() {
   const deps = dependencies
 
   const requiredBunVersion = deps['bun.sh'] || '0.7.1'
@@ -59,7 +59,7 @@ export async function installIfVersionMismatch() {
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
     log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
-    await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
+    runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
 
@@ -136,11 +136,11 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<SyncSubprocess, StacksError>> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
-    return await runCommand(`bun --bun run ${script}`, options)
+    return runCommand(`bun --bun run ${script}`, options)
 
   log.error(`The specified npm script "${script}" does not exist in the package.json file`)
   process.exit()

@@ -28,9 +28,9 @@ export function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
+    .action((options: DevOptions) => {
       // const perf = await intro('buddy dev')
-      // const result = await runAction(Action.Dev, options)
+      // const result = runAction(Action.Dev, options)
 
       if (hasNoOptions(options)) {
         // const answer = await prompt.require()
@@ -59,11 +59,11 @@ export function dev(buddy: CLI) {
       }
       else {
         if (options.components)
-          await runComponentsDevServer(options)
+          runComponentsDevServer(options)
         else if (options.functions)
-          await runFunctionsDevServer(options)
+          runFunctionsDevServer(options)
         else if (options.pages)
-          await runPagesDevServer(options)
+          runPagesDevServer(options)
         // else if (options.docs)
       }
       // await startDevelopmentServer(options)
@@ -76,7 +76,7 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runCommand(NpmScript.DevComponents, options)
+      const result = runCommand(NpmScript.DevComponents, options)
 
       if (options.verbose)
         log.info('buddy dev:components result', result)
@@ -97,7 +97,7 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:docs')
-      const result = await runAction(Action.DevDocs, options)
+      const result = runAction(Action.DevDocs, options)
 
       // check if result is an array
       if (Array.isArray(result)) {
@@ -121,22 +121,22 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
-      await runDesktopDevServer(options)
+    .action((options: DevOptions) => {
+      runDesktopDevServer(options)
     })
 
   buddy
     .command('dev:functions', descriptions.functions)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
-      await runFunctionsDevServer(options)
+    .action((options: DevOptions) => {
+      runFunctionsDevServer(options)
     })
 
   buddy
     .command('dev:views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
-      await runPagesDevServer(options)
+    .action((options: DevOptions) => {
+      runPagesDevServer(options)
     })
 }
 

@@ -46,7 +46,7 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
     await deleteFolder(tempUpdatePath)
 
   log.info('Downloading framework updates...')
-  await runCommand(`giget stacks ${tempFolderName}`, options)
+  runCommand(`giget stacks ${tempFolderName}`, options)
   const version = (await storage.readJsonFile(projectPath(`${tempFolderName}/.stacks/version`))).data
   log.success('Your framework updated correctly to version: ', version)
 }
@@ -54,7 +54,7 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 // export async function updateDependencies(options: UpgradeOptions) {
 export async function updateDependencies() {
   const perf = await intro('buddy upgrade:dependencies')
-  // const result = await runCommand(NpmScript.UpgradeDependencies, options)
+  // const result = runCommand(NpmScript.UpgradeDependencies, options)
 
   // if (result.isErr()) {
   //   outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

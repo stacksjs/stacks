@@ -1,6 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --external @typescript-eslint/utils --external @typescript-eslint/utils/dist/ts-eslint --format esm --target bun', {
+const result = runCommand('bun build ./src/index.ts --outdir dist --external @typescript-eslint/utils --external @typescript-eslint/utils/dist/ts-eslint --format esm --target bun', {
   cwd: import.meta.dir,
 })
 

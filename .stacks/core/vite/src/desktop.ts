@@ -1,25 +1,27 @@
 import { type ViteConfig } from '@stacksjs/types'
-import { frameworkPath, projectPath, projectStoragePath } from '@stacksjs/path'
+import * as p from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
-import mkcert from 'vite-plugin-mkcert'
+
+// import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
 import pkgjson from '../package.json'
+import app from '../../../../config/app'
 import { cssEngine, inspect, uiEngine } from './stacks'
 import { type ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
-import library from '~/config/library'
-import app from '~/config/app'
+
+// import library from '../../../../config/library'
 
 const { version } = pkgjson
 
 export const vueComponentsConfig: ViteConfig = {
-  root: frameworkPath('views/desktop/dashboard'),
-  envDir: projectPath(),
+  root: p.frameworkPath('views/desktop/dashboard'),
+  envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: projectStoragePath('public'),
+  publicDir: p.projectStoragePath('public'),
 
   server: {
-    https: true,
+    // https: true,
     host: app.url,
     open: true,
   },
@@ -30,7 +32,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', '@stacksjs/env'],
   },
 
   plugins: [
@@ -44,13 +46,13 @@ export const vueComponentsConfig: ViteConfig = {
     uiEngine(),
     cssEngine(),
     inspect(),
-    mkcert({
-      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
-      autoUpgrade: true,
-      savePath: frameworkPath('certs/components'),
-      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-    }),
+    // mkcert({
+    //   hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
+    //   autoUpgrade: true,
+    //   savePath: p.frameworkPath('certs/components'),
+    //   keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
+    //   certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
+    // }),
 
     // @ts-expect-error TODO: fix this
     {

@@ -40,15 +40,15 @@ export function create(buddy: CLI) {
 
       isFolderCheck(path)
       onlineCheck()
-      const result = await download(name, path, options)
+      const result = download(name, path, options)
 
       if (result?.isErr()) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
 
-      await ensureEnv(path, options)
-      await install(path, options)
+      ensureEnv(path, options)
+      install(path, options)
 
       if (startTime) {
         const time = performance.now() - startTime
@@ -81,40 +81,40 @@ function onlineCheck() {
   }
 }
 
-async function download(name: string, path: string, options: CreateOptions) {
+function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`giget stacks ${name}`, options)
+  const result = runCommand(`giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result
 }
 
-async function ensureEnv(path: string, options: CreateOptions) {
+function ensureEnv(path: string, options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
   // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-  await runCommand('fnm use', { ...options, cwd: path })
+  runCommand('fnm use', { ...options, cwd: path })
   log.success('Environment is ready')
 }
 
-async function install(path: string, options: CreateOptions) {
+function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
-  let result = await runCommand('bun install', { ...options, cwd: path })
+  let result = runCommand('bun install', { ...options, cwd: path })
 
   if (result?.isErr()) {
     log.error(result.error)
     process.exit()
   }
 
-  result = await runCommand('cp .env.example .env', { ...options, cwd: path })
+  result = runCommand('cp .env.example .env', { ...options, cwd: path })
 
   if (result?.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 
-  await runAction(Action.KeyGenerate, { ...options, cwd: path })
+  runAction(Action.KeyGenerate, { ...options, cwd: path })
 
-  result = await runCommand('git init', { ...options, cwd: path })
+  result = runCommand('git init', { ...options, cwd: path })
 
   if (result?.isErr()) {
     log.error(result.error)

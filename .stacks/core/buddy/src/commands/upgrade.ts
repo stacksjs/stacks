@@ -52,7 +52,7 @@ export function upgrade(buddy: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      const result = await runAction(Action.Upgrade, { ...options })
+      const result = runAction(Action.Upgrade, { ...options })
 
       if (result.isErr()) {
         await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
@@ -67,9 +67,9 @@ export function upgrade(buddy: CLI) {
     .command('upgrade:framework', descriptions.framework)
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:framework --verbose')
-    .action(async (options: UpgradeOptions) => {
+    .action((options: UpgradeOptions) => {
       // const perf = await intro('buddy update:framework')
-      await runAction(Action.Upgrade, options)
+      runAction(Action.Upgrade, options)
     })
 
   buddy
@@ -77,8 +77,8 @@ export function upgrade(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('upgrade:deps')
     .example('buddy upgrade:dependencies --verbose')
-    .action(async (options: UpgradeOptions) => {
-      await runAction(Action.Upgrade, options)
+    .action((options: UpgradeOptions) => {
+      runAction(Action.Upgrade, options)
     })
 
   buddy
@@ -86,7 +86,7 @@ export function upgrade(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:bun')
-      const result = await runAction(Action.UpgradeBun, options)
+      const result = runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
         await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
@@ -99,8 +99,8 @@ export function upgrade(buddy: CLI) {
   buddy
     .command('upgrade:all', descriptions.all)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: UpgradeOptions) => {
-      await runAction(Action.Upgrade, options)
+    .action((options: UpgradeOptions) => {
+      runAction(Action.Upgrade, options)
     })
 }
 

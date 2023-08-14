@@ -1,6 +1,5 @@
 import { type CliOptions } from '@stacksjs/types'
 import cac from 'cac'
-import { execSync } from './exec'
 import { runCommand } from './run'
 
 type CommandOptionTuple = [string, string, { default: boolean }]
@@ -38,12 +37,12 @@ export class Command {
 }
 
 export const command = {
-  run: async (command: string, options?: CliOptions) => {
+  run: (command: string, options?: CliOptions) => {
     return runCommand(command, options)
   },
 
   runSync: (command: string, options?: CliOptions) => {
-    return execSync(command, options)
+    return runCommand(command, options)
   },
 
   cli: cac,

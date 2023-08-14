@@ -12,7 +12,7 @@ export default createEslintRule<Options, MessageIds>({
     type: 'problem',
     docs: {
       description: 'Prevent importing modules in the `node_modules` folder by relative or absolute path',
-      recommended: 'error',
+      recommended: 'strict',
     },
     schema: [],
     messages: {

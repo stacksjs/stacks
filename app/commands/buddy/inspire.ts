@@ -23,7 +23,7 @@ export default new Command({
 
     await intro('buddy inspire')
 
-    return await runAction(Action.Inspire)
+    return runAction(Action.Inspire)
   },
 
   // optional

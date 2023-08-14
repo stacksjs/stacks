@@ -3,7 +3,7 @@ import { ExitCode } from '@stacksjs/types'
 import { log, runCommands } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 
-const results = await runCommands([
+const results = runCommands([
   'bun buddy clean',
   'bun install -y',
 ], { cwd: frameworkPath() })

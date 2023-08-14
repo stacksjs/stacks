@@ -10,7 +10,7 @@ export default createEslintRule<Options, MessageIds>({
     type: 'problem',
     docs: {
       description: 'Do not use CJS exports',
-      recommended: false,
+      // recommended: false,
     },
     schema: [],
     messages: {

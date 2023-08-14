@@ -105,7 +105,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
               return handler(evt)
 
             console.error('No event provided')
-            return handler({})
+            return 'No event provided'
           })
       }
 

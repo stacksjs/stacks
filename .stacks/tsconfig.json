@@ -34,7 +34,6 @@
       "bun-types"
     ],
     "paths": {
-      "~/*": ["../*"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
       "buddy": ["./core/buddy/src/index.ts"],
@@ -48,8 +47,15 @@
       "~/lang/*": ["../lang/*"],
       "~/models/*": ["../app/models/*"],
       "~/resources/*": ["../resources/*"],
-      "~/views/*": ["../resources/views/*"]
+      "~/views/*": ["../resources/views/*"],
+      "~/*": ["../*"]
     }
+  },
+  "vueCompilerOptions": {
+    "plugins": [
+      "@vue-macros/volar/define-models",
+      "@vue-macros/volar/define-slots"
+    ]
   },
   "include": [
     "./playwright.config.ts",
@@ -90,6 +96,7 @@
     "../commitlint.config.cjs",
     "../**/dist",
     "../**/fixtures",
+    "./**/eslint-plugin-stacksjs",
     "./node_modules",
     "./**/node_modules",
     "../node_modules",

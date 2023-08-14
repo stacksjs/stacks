@@ -11,7 +11,7 @@ export function prepublish(buddy: CLI) {
   buddy
     .command('prepublish', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: PrepublishOptions) => {
-      await runAction(Action.Prepublish, options)
+    .action((options: PrepublishOptions) => {
+      runAction(Action.Prepublish, options)
     })
 }

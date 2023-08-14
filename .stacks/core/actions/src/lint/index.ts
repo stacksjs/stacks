@@ -3,8 +3,8 @@ import { runCommands } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode, NpmScript } from '@stacksjs/types'
 
-export default async function lintAction() {
-  const result = await runCommands([
+export default function lintAction() {
+  const result = runCommands([
     NpmScript.Lint,
     NpmScript.LintPackageJson,
   ], { cwd: projectPath(), verbose: true })
