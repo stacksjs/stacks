@@ -105,7 +105,7 @@
     "unplugin-vue-components": "^0.25.1",
     "vite": "^4.4.9",
     "vite-plugin-full-reload": "^1.0.5",
-    "vite-plugin-inspect": "^0.7.37",
+    "vite-plugin-inspect": "^0.7.38",
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.4",
     "vite-plugin-vue-layouts": "^0.8.0",

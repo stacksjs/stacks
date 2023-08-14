@@ -27,7 +27,7 @@
     "@typescript-eslint/utils": "^6.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20.4.10",
+    "@types/node": "^20.5.0",
     "unbuild": "latest"
   }
 }

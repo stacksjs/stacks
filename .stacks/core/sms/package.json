@@ -64,7 +64,7 @@
   "optionalDependencies": {
     "@novu/gupshup": "^0.17.1",
     "@novu/nexmo": "^0.17.1",
-    "@novu/node": "^0.17.1",
+    "@novu/node": "^0.17.2",
     "@novu/plivo": "^0.17.1",
     "@novu/sms77": "^0.17.1",
     "@novu/sns": "^0.17.1",

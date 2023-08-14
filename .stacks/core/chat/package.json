@@ -61,7 +61,7 @@
   "optionalDependencies": {
     "@novu/discord": "^0.17.1",
     "@novu/ms-teams": "^0.17.1",
-    "@novu/node": "^0.17.1",
+    "@novu/node": "^0.17.2",
     "@novu/slack": "^0.17.1",
     "@novu/stateless": "^0.17.1"
   },
