@@ -1,6 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/ui --external @stacksjs/utils --external @stacksjs/logging --external meilisearch --external bun --target bun', {
+const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/ui --external @stacksjs/utils --external @stacksjs/logging --external @stacksjs/validation --external meilisearch --external bun --target bun', {
   cwd: import.meta.dir,
 })
 

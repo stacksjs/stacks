@@ -1,6 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { ExitCode } from '@stacksjs/types'
-import { type CliOptions, type StacksError, type Subprocess, type SyncSubprocess } from '@stacksjs/types'
+import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from './console'
 
@@ -42,9 +42,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (exited === ExitCode.Success)
     return ok(proc)
 
-  return err(handleError(new Error(
-    `Failed to execute command: ${cmd.join(' ')}`,
-  )))
+  return err(handleError(`Failed to execute command: ${cmd.join(' ')}`))
 }
 
 /**

@@ -3,7 +3,10 @@
  */
 
 import { type Hits, type SearchResponse } from 'meilisearch'
-import { isString } from '@stacksjs/validation'
+
+// export function isString(val: unknown): val is string {
+//   return typeof val === 'string'
+// }
 
 // this interface is primarily used to persist data to localStorage, in a unified way
 export interface SearchEngineStore {

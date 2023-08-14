@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
-import { initProject, ensureProjectIsInitialized } from '@stacksjs/utils'
+import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import pkg from '../package.json'
 import * as cmd from './commands'
 

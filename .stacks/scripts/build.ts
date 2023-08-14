@@ -1,8 +1,6 @@
 import process from 'node:process'
-import { p } from '@stacksjs/utils'
 import { glob } from '@stacksjs/storage'
-import { corePath, projectPath } from '@stacksjs/path'
-import { Arr } from '@stacksjs/arrays'
+import { corePath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { italic, log, runCommand } from '@stacksjs/cli'
 

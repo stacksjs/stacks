@@ -231,6 +231,7 @@ declare global {
   const email: typeof import('../src/index')['email']
   const emailPath: typeof import('../core/path/src/index')['emailPath']
   const encrypt: typeof import('../core/security/src/crypt')['encrypt']
+  const ensureProjectIsInitialized: typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']
   const env: typeof import('../core/env/src/index')['env']
   const equal: typeof import('../core/utils/src/currency')['equal']
   const err: typeof import('../core/error-handling/src/index')['err']
@@ -356,7 +357,6 @@ declare global {
   const isPositive: typeof import('../core/validation/src/is')['isPositive']
   const isPositiveOrNegative: typeof import('../core/validation/src/is')['isPositiveOrNegative']
   const isPrimitive: typeof import('../core/validation/src/is')['isPrimitive']
-  const ensureProjectIsInitialized: typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']
   const isPromise: typeof import('../core/validation/src/is')['isPromise']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -1025,6 +1025,7 @@ declare module 'vue' {
     readonly email: UnwrapRef<typeof import('../src/index')['email']>
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
+    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -1147,7 +1148,6 @@ declare module 'vue' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -1809,6 +1809,7 @@ declare module '@vue/runtime-core' {
     readonly email: UnwrapRef<typeof import('../src/index')['email']>
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
+    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -1931,7 +1932,6 @@ declare module '@vue/runtime-core' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>

@@ -1,12 +1,15 @@
 /* eslint-disable no-console */
 import { ExitCode, type IntroOptions, type OutroOptions } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
 import pkgjson from '../package.json'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
 
 const { version } = pkgjson
+
+function isString(val: unknown): val is string {
+  return typeof val === 'string'
+}
 
 /**
  * Prints the intro message.
