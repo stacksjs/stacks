@@ -167,7 +167,6 @@ polacek
 postcssrc
 powertools
 prefetch
-preinstall
 prepublishing
 procfile
 publint

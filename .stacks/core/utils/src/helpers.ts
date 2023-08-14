@@ -38,7 +38,7 @@ export async function initProject(): Promise<Result<Subprocess, StacksError>> {
   return ok(result.value)
 }
 
-export async function isProjectInitialized() {
+export async function ensureProjectIsInitialized() {
   if (storage.isFile('.env'))
     return await isAppKeySet()
 

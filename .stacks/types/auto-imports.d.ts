@@ -356,7 +356,7 @@ declare global {
   const isPositive: typeof import('../core/validation/src/is')['isPositive']
   const isPositiveOrNegative: typeof import('../core/validation/src/is')['isPositiveOrNegative']
   const isPrimitive: typeof import('../core/validation/src/is')['isPrimitive']
-  const isProjectInitialized: typeof import('../core/utils/src/helpers')['isProjectInitialized']
+  const ensureProjectIsInitialized: typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']
   const isPromise: typeof import('../core/validation/src/is')['isPromise']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -520,7 +520,6 @@ declare global {
   const runMake: typeof import('../core/actions/src/index')['runMake']
   const runNpmScript: typeof import('../core/utils/src/helpers')['runNpmScript']
   const runPagesDevServer: typeof import('../core/actions/src/dev/index')['runPagesDevServer']
-  const runPreinstall: typeof import('../core/actions/src/index')['runPreinstall']
   const runtimePath: typeof import('../core/path/src/index')['runtimePath']
   const schedulerPath: typeof import('../core/path/src/index')['schedulerPath']
   const scriptsPath: typeof import('../core/path/src/index')['scriptsPath']
@@ -1148,7 +1147,7 @@ declare module 'vue' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly isProjectInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectInitialized']>
+    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -1311,7 +1310,6 @@ declare module 'vue' {
     readonly runMake: UnwrapRef<typeof import('../core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
     readonly runPagesDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runPagesDevServer']>
-    readonly runPreinstall: UnwrapRef<typeof import('../core/actions/src/index')['runPreinstall']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>
@@ -1933,7 +1931,7 @@ declare module '@vue/runtime-core' {
     readonly isPositive: UnwrapRef<typeof import('../core/validation/src/is')['isPositive']>
     readonly isPositiveOrNegative: UnwrapRef<typeof import('../core/validation/src/is')['isPositiveOrNegative']>
     readonly isPrimitive: UnwrapRef<typeof import('../core/validation/src/is')['isPrimitive']>
-    readonly isProjectInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['isProjectInitialized']>
+    readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
     readonly isPromise: UnwrapRef<typeof import('../core/validation/src/is')['isPromise']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -2096,7 +2094,6 @@ declare module '@vue/runtime-core' {
     readonly runMake: UnwrapRef<typeof import('../core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
     readonly runPagesDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runPagesDevServer']>
-    readonly runPreinstall: UnwrapRef<typeof import('../core/actions/src/index')['runPreinstall']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>

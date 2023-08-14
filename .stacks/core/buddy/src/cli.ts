@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
-import { initProject, isProjectInitialized } from '@stacksjs/utils'
+import { initProject, ensureProjectIsInitialized } from '@stacksjs/utils'
 import pkg from '../package.json'
 import * as cmd from './commands'
 
@@ -18,15 +18,13 @@ async function main() {
   cmd.setup(cli)
   cmd.key(cli)
 
-  // before running any commands, check if the project is already initialized
-  if (!await isProjectInitialized())
-    await initProject()
+  // before running any commands, ensure the project is already initialized
+  await ensureProjectIsInitialized()
 
-  // cmd.preinstall(cli)
   // cmd.prepublish(cli)
   // cmd.upgrade(cli)
   // cmd.generate(cli)
-  // cmd.dev(cli)
+  cmd.dev(cli)
   // cmd.build(cli)
   // cmd.changelog(cli)
   // cmd.clean(cli)
