@@ -1,5 +1,5 @@
 import { type ViteConfig } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath, projectStoragePath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
