@@ -116,6 +116,7 @@ latexmk
 leex
 lighthouserc
 lintstagedrc
+lockb
 macroable
 mailgun
 mailjet

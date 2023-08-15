@@ -41,7 +41,7 @@ export function runAction(action: string, options?: ActionOptions): Result<SyncS
   const cmd = `bun --bun ${actionsPath(`${action}.ts ${opts}`)}`
 
   if (options?.verbose)
-    log.debug('running command:', italic(cmd))
+    log.debug('Running action:', italic(action))
 
   return runCommand(cmd, options)
 }

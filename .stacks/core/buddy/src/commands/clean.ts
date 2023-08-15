@@ -18,11 +18,11 @@ export function clean(buddy: CLI) {
       const result = runAction(Action.Clean, options)
 
       if (result.isErr()) {
-        await outro('While running the clean command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the clean command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Cleaned up', { startTime: perf, useSeconds: true })
+      await outro('Cleaned up', { startTime: perf, useSeconds: true, successMessage: 'Cleaned up' })
       process.exit(ExitCode.Success)
     })
 }

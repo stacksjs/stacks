@@ -2,7 +2,7 @@
  * The parsed command-line arguments
  */
 
-export type { Subprocess, SyncSubprocess } from 'node:bun'
+export type { Subprocess, SyncSubprocess } from 'bun'
 
 export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
@@ -10,6 +10,7 @@ export interface OutroOptions extends CliOptions {
   useSeconds?: boolean
   isError?: boolean
   quiet?: boolean
+  successMessage?: string
 }
 
 export interface IntroOptions {

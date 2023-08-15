@@ -22,6 +22,6 @@ export function key(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Set random application key.', { startTime })
+      await outro('Random application key set.', { startTime })
     })
 }

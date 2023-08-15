@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
 
 import { logsPath } from '@stacksjs/path'
-import { type StacksError, type ValidationError } from '@stacksjs/types'
+import type { StacksError, ValidationError } from '@stacksjs/types'
 import { fs } from '@stacksjs/storage'
 import { italic, log } from '@stacksjs/cli'
 
@@ -33,8 +33,8 @@ export class ErrorHandler {
       })
   }
 
-  static writeErrorToConsole(err: StacksError, options?: any) {
-    log.error(err, options)
+  static writeErrorToConsole(err: string | StacksError, options?: any) {
+    console.error(err, options)
   }
 }
 

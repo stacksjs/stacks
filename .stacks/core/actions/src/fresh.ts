@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import { log, runCommands } from '@stacksjs/cli'
+import { runCommands } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
 const results = runCommands([
@@ -10,7 +10,7 @@ const results = runCommands([
 
 for (const result of results) {
   if (result.isErr()) {
-    log.error(result.error)
+    handleError(result.error)
     process.exit(ExitCode.FatalError)
   }
 }

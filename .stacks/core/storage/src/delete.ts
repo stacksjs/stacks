@@ -100,7 +100,7 @@ export function deleteFile(path: string): Promise<Result<string, Error>> {
 
 export async function deleteGlob(path: string): Promise<Result<string, Error>> {
   if (!path.includes('*'))
-    return err(new Error(`Path ${path} does not contain a glob`))
+    return err(handleError(`Path ${path} does not contain a glob`))
 
   const directories = await glob([path], { onlyDirectories: true })
 
@@ -127,5 +127,5 @@ export async function del(path: string): Promise<Result<string, Error>> {
   if (path.includes('*'))
     return await deleteGlob(path)
 
-  return err(new Error(`Path ${path} cannot be deleted due to an unhandled condition. Please report this issue.`))
+  return err(handleError(`Path ${path} cannot be deleted due to an unhandled condition. Please report this issue.`))
 }

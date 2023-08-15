@@ -24,6 +24,7 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }

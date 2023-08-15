@@ -1,4 +1,4 @@
 {
   "extends": "@stacksjs",
-  "ignorePatterns": ["**/README.md"]
+  "ignorePatterns": ["**/README.md", "**/eslint-plugin-stacksjs"]
 }

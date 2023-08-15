@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { type CLI, type CreateOptions } from '@stacksjs/types'
-import { bold, cyan, green, intro, log, runCommand } from '@stacksjs/cli'
+import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
@@ -52,7 +52,7 @@ export function create(buddy: CLI) {
 
       if (startTime) {
         const time = performance.now() - startTime
-        log.success(green(`Done in ${time}ms`))
+        log.success(dim(`[${time.toFixed(2)}ms] Completed`))
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))

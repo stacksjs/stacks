@@ -24,7 +24,7 @@ export async function move(
 
         if (result.isErr()) {
           log.error(result.error)
-          return err(new Error(result.error.message, result.error))
+          return err(handleError(result.error.message, result.error))
         }
       })
 
@@ -39,14 +39,13 @@ export async function move(
 
     if (result.isErr()) {
       log.error(result.error)
-      return err(new Error(result.error.message, result.error))
+      return err(handleError(result.error))
     }
 
     return ok({ message: 'File moved successfully' })
   }
   catch (error: any) {
-    log.error(error)
-    return err(new Error(error))
+    return err(handleError(error))
   }
 }
 

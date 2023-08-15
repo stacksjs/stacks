@@ -1,6 +1,8 @@
 import { type CliOptions, type CommandError, type SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, ok } from '@stacksjs/error-handling'
 import { execSync } from './exec'
+import { italic } from './utilities'
+import { log } from './console'
 
 /**
  * Run a command.
@@ -29,7 +31,7 @@ import { execSync } from './exec'
  */
 export function runCommand(command: string, options?: CliOptions): Result<SyncSubprocess, CommandError> {
   if (options?.verbose)
-    console.log(`Running command: ${command}`)
+    log.debug('Running command:', italic(command))
 
   const result = execSync(command, options)
 

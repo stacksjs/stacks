@@ -66,7 +66,3 @@ dirs.forEach((folder) => {
 // }
 
 // log.success('Moved built source files in the dist folder')
-
-log.success('Build complete')
-
-// process.exit(ExitCode.Success)

@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { glob } from '@stacksjs/storage'
 import { corePath } from '@stacksjs/path'
+import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { dim, italic, log, runCommand } from '@stacksjs/cli'
 
@@ -23,7 +24,7 @@ dirs.forEach((folder) => {
   })
 
   if (result.isErr()) {
-    log.error(`Failed to build ${italic(folder)}`)
+    handleError(`Failed to build ${italic(folder)}`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -66,7 +67,3 @@ dirs.forEach((folder) => {
 // }
 
 // log.success('Moved built source files in the dist folder')
-
-log.success('Build complete')
-
-// process.exit(ExitCode.Success)

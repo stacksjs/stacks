@@ -46,10 +46,13 @@
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },

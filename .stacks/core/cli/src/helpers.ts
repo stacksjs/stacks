@@ -3,7 +3,7 @@ import { ExitCode, type IntroOptions, type OutroOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import pkgjson from '../package.json'
 import { spinner } from './spinner'
-import { bgCyan, bold, cyan, dim, green, italic, red } from './utilities'
+import { bgCyan, bold, cyan, dim, italic } from './utilities'
 
 const { version } = pkgjson
 
@@ -35,6 +35,8 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
  * Prints the outro message.
  */
 export function outro(text: string, options: OutroOptions, error?: Error | string) {
+  const successMessage = options?.successMessage
+
   return new Promise((resolve) => {
     if (options.isError) {
       if (error)
@@ -44,7 +46,9 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       if (options?.type === 'info')
         log.info(text)
 
-      log.success(text)
+      // the following condition triggers in the case of "Cleaned up" messages
+      if (options?.successMessage !== text)
+        log.success(text)
     }
 
     if (options.startTime) {
@@ -59,9 +63,9 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
         return resolve(ExitCode.Success)
 
       if (options.isError)
-        log.error(red(`in ${time}${options.useSeconds ? 's' : 'ms'}`))
+        log.error(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] Failed`)
       else
-        log.success(green(`Done in ${time}${options.useSeconds ? 's' : 'ms'}`))
+        log.success((`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] ${successMessage ?? 'Complete'}`))
     }
 
     return resolve(ExitCode.Success)
