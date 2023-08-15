@@ -40,9 +40,6 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Set Application Key
-        run: ./buddy key:generate
-
       - name: Lint
         run: ./buddy lint
 

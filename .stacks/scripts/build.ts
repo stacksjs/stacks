@@ -13,8 +13,6 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-// Create an array of all build processes
-
 dirs.forEach((folder) => {
   log.info('')
   log.info('🏗️  Building...')
