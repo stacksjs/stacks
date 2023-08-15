@@ -1,12 +1,12 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { log, runCommands } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 
 const results = runCommands([
-  'bun buddy clean',
-  'bun install -y',
-], { cwd: frameworkPath() })
+  'buddy clean',
+  'bun install',
+], { cwd: projectPath() })
 
 for (const result of results) {
   if (result.isErr()) {

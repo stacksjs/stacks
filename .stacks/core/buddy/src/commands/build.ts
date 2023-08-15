@@ -32,7 +32,7 @@ export function build(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-s, --stacks', descriptions.stacks, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: BuildOptions) => {
+    .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
         let answers = await prompt.require()
           .multiselect(descriptions.select, {
@@ -115,7 +115,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:core', 'Automagically build the Stacks core.')
     .option('--verbose', descriptions.verbose, { default: true })
-    .action((options: BuildOptions) => {
+    .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:core')
       const result = runAction(Action.BuildCore, options)
 
@@ -131,7 +131,7 @@ export function build(buddy: CLI) {
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.stacks, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: BuildOptions) => {
+    .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:stacks')
       const result = runAction(Action.BuildStacks, options)
 

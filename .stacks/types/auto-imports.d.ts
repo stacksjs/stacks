@@ -848,7 +848,6 @@ declare module 'vue' {
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
     readonly Validator: UnwrapRef<typeof import('../core/validation/src/validate')['Validator']>
-    readonly VueHighlight: UnwrapRef<typeof import('../core/desktop/src/index')['VueHighlight']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/index')['actionsPath']>
@@ -1632,7 +1631,6 @@ declare module '@vue/runtime-core' {
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
     readonly Validator: UnwrapRef<typeof import('../core/validation/src/validate')['Validator']>
-    readonly VueHighlight: UnwrapRef<typeof import('../core/desktop/src/index')['VueHighlight']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/index')['actionsPath']>

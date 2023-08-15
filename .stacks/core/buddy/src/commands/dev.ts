@@ -14,7 +14,7 @@ export function dev(buddy: CLI) {
   const descriptions = {
     components: 'Start the Components development server',
     desktop: 'Start the Desktop development server',
-    functions: 'Start the Functions development server',
+    api: 'Start the local API development server',
     docs: 'Start the Documentation development server',
     pages: 'Start the Pages development server',
     select: 'Which development server are you trying to start?',
@@ -24,7 +24,7 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev', 'Start the development server for any of the following')
     .option('-c, --components', descriptions.components)
-    .option('-f, --functions', descriptions.functions)
+    .option('-a, --api', descriptions.api)
     .option('-d, --docs', descriptions.docs)
     .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
@@ -60,7 +60,7 @@ export function dev(buddy: CLI) {
       else {
         if (options.components)
           runComponentsDevServer(options)
-        else if (options.functions)
+        else if (options.api)
           runFunctionsDevServer(options)
         else if (options.pages)
           runPagesDevServer(options)
@@ -126,7 +126,7 @@ export function dev(buddy: CLI) {
     })
 
   buddy
-    .command('dev:functions', descriptions.functions)
+    .command('dev:functions', descriptions.api)
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: DevOptions) => {
       runFunctionsDevServer(options)
@@ -141,5 +141,5 @@ export function dev(buddy: CLI) {
 }
 
 function hasNoOptions(options: DevOptions) {
-  return !options.components && !options.all && !options.docs && !options.functions && !options.pages
+  return !options.components && !options.all && !options.docs && !options.api && !options.pages
 }

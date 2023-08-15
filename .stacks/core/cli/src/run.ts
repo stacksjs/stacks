@@ -28,7 +28,9 @@ import { execSync } from './exec'
  * ```
  */
 export function runCommand(command: string, options?: CliOptions): Result<SyncSubprocess, CommandError> {
-  // console.log(`Running command: ${command}`)
+  if (options?.verbose)
+    console.log(`Running command: ${command}`)
+
   const result = execSync(command, options)
 
   if (result.isErr())
