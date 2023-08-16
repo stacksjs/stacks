@@ -498,6 +498,7 @@ declare global {
   const realtimeWip: typeof import('../core/realtime/src/drivers/index')['realtimeWip']
   const ref: typeof import('vue')['ref']
   const relative: typeof import('../core/path/src/index')['relative']
+  const relativeActionsPath: typeof import('../core/path/src/index')['relativeActionsPath']
   const renderHeadToString: typeof import('../core/utils/src/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/index')['replPath']
   const resolve: typeof import('../core/path/src/index')['resolve']
@@ -1287,6 +1288,7 @@ declare module 'vue' {
     readonly realtimeWip: UnwrapRef<typeof import('../core/realtime/src/drivers/index')['realtimeWip']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly relative: UnwrapRef<typeof import('../core/path/src/index')['relative']>
+    readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/index')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/index')['replPath']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/index')['resolve']>
@@ -2070,6 +2072,7 @@ declare module '@vue/runtime-core' {
     readonly realtimeWip: UnwrapRef<typeof import('../core/realtime/src/drivers/index')['realtimeWip']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly relative: UnwrapRef<typeof import('../core/path/src/index')['relative']>
+    readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/index')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/index')['replPath']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/index')['resolve']>
