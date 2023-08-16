@@ -96,6 +96,12 @@
     "bud": "bun buddy",
     "stx": "bun buddy"
   },
+  "dependencies": {
+    "stacks": "workspace:*"
+  },
+  "devDependencies": {
+    "unplugin-vue-router": "^0.6.4"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
@@ -115,11 +121,5 @@
     ".stacks/vcs/*",
     ".stacks/views/*",
     ".stacks"
-  ],
-  "dependencies": {
-    "stacks": "workspace:*"
-  },
-  "devDependencies": {
-    "unplugin-vue-router": "^0.6.4"
-  }
+  ]
 }

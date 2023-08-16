@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/types'
-import { type CLI, type ReleaseOptions } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
+import type { CLI, ReleaseOptions } from '@stacksjs/types'
 import { intro, log, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
 
@@ -19,7 +19,7 @@ export function release(buddy: CLI) {
 
       if (result.isErr()) {
         log.error('Failed to release', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })

@@ -32,7 +32,7 @@ async function main() {
   // cmd.deploy(cli)
   cmd.fresh(cli)
   // cmd.lint(cli)
-  // cmd.release(cli)
+  cmd.release(cli)
   // cmd.make(cli)
   // cmd.migrate(cli)
   // cmd.seed(cli)

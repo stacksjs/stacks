@@ -43,11 +43,8 @@ export function runAction(action: string, options?: ActionOptions): Result<SyncS
   if (options?.verbose)
     log.debug('Running action:', italic(action))
 
-  if (options?.cwd)
-    return runCommand(cmd, options)
-
   return runCommand(cmd, {
-    cwd: p.projectPath(),
+    cwd: options?.cwd ?? p.projectPath(),
     ...options
   })
 }
