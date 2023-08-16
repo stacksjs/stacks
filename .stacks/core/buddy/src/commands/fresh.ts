@@ -1,7 +1,8 @@
 import process from 'node:process'
-import { type CLI, type FreshOptions } from '@stacksjs/types'
+import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
 import { Action, ExitCode } from '@stacksjs/types'
 
 export function fresh(buddy: CLI) {
@@ -18,7 +19,7 @@ export function fresh(buddy: CLI) {
       const result = runAction(Action.Fresh, options)
 
       if (result.isErr()) {
-        await outro('While running the `fresh` command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the `fresh` command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 

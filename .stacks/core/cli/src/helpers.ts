@@ -1,15 +1,12 @@
 /* eslint-disable no-console */
 import { ExitCode, type IntroOptions, type OutroOptions } from '@stacksjs/types'
+import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import pkgjson from '../package.json'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, italic } from './utilities'
 
 const { version } = pkgjson
-
-function isString(val: unknown): val is string {
-  return typeof val === 'string'
-}
 
 /**
  * Prints the intro message.
@@ -40,7 +37,7 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
   return new Promise((resolve) => {
     if (options.isError) {
       if (error)
-        log.error(isString(error) ? new Error(error) : error)
+        handleError(error)
     }
     else {
       if (options?.type === 'info')

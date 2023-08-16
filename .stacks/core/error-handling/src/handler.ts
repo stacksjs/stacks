@@ -8,9 +8,13 @@ import { italic, log } from '@stacksjs/cli'
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static handle(err: StacksError, options?: any) {
+  static handle(err: string | StacksError, options?: any) {
+    if (typeof err === 'string')
+      err = new Error(err)
+
     this.writeErrorToConsole(err, options)
     this.writeErrorToFile(err)
+
     return err
   }
 

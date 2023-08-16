@@ -19,6 +19,10 @@ export function actionsPath(path?: string) {
   return corePath(`actions/src/${path || ''}`)
 }
 
+export function relativeActionsPath(path?: string) {
+  return relative(projectPath(), actionsPath(path))
+}
+
 /**
  * Returns the path to the `ai` directory. The AI directory
  * contains the core Stacks' AI logic which currently
@@ -411,6 +415,7 @@ export function xRayPath(path?: string) {
 export const path = {
   aiPath,
   actionsPath,
+  relativeActionsPath,
   aliasPath,
   analyticsPath,
   arraysPath,
