@@ -1,5 +1,25 @@
 <template>
-  <main class="lg:pr-96">
+  <div class="px-4 mb-4 sm:px-6 lg:px-8 mt-8">
+    <div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-start text-xl font-medium text-gray-900 sm:mx-none sm:mr-auto dark:text-gray-100">
+          <h1 class="font-semibold text-2xl dark:text-gray-200 text-gray-700">stacks.dev</h1>
+        </div>
+        <div class="flex items-center">
+
+          <button
+            type="button"
+            class="primary-button items-center flex"
+          >
+            <div class="i-heroicons-cloud-arrow-up w-6 h-6 mr-2"></div>
+            <span class="text-sm">Deploy</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  <main>
     <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-600">
       <h1 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
         Deployments
@@ -195,7 +215,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -238,7 +258,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-blue-gray-600 dark:text-blue-300">
           Production
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -281,7 +301,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -324,7 +344,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -367,7 +387,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-blue-gray-600 dark:text-blue-300">
           Production
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -410,7 +430,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -453,7 +473,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -496,7 +516,7 @@
             </p>
           </div>
         </div>
-        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+        <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
           Preview
         </div>
         <div class="i-heroicons-chevron-right-20-solid w-5 h-5 text-gray-400" />
@@ -504,7 +524,7 @@
     </ul>
   </main>
 
-  <aside class="lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-gray-300 dark:border-gray-600">
+  <!-- <aside class="lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-gray-300 dark:border-gray-600">
     <header class="flex items-center justify-between border-b border-gray-300 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-600">
       <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
         Activity feed
@@ -671,5 +691,5 @@
         </p>
       </li>
     </ul>
-  </aside>
+  </aside> -->
 </template>

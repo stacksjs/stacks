@@ -11,7 +11,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
       class="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
     >
       <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
           <img
             src="/meilisearch.svg"
             alt="Tuple"
@@ -88,7 +88,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
         </dl>
       </li>
       <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
           <img
             src="/stripe.png"
             alt="Tuple"
@@ -164,7 +164,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
         </dl>
       </li>
       <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
           <img
             src="/planetscale.png"
             alt="Tuple"
@@ -240,7 +240,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
         </dl>
       </li>
       <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+        <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
           <img
             src="/aws.webp"
             alt="Tuple"

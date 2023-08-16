@@ -29,7 +29,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-from"
                   type="text"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="no-reply@stacks.dev"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -43,7 +44,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-to"
                   type="text"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="chris@stacks.dev"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -57,8 +59,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-driver"
                   type="text"
-                  name="name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="SMTP"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -72,8 +74,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-host"
                   type="text"
-                  name="name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="127.0.0.1"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -87,8 +89,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-port"
                   type="text"
-                  name="name"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="2525"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -102,7 +104,8 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
                 <input
                   id="mail-username"
                   type="text"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  value="stacks-inbox"
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>
@@ -115,8 +118,9 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
               <div class="mt-2">
                 <input
                   id="mail-password"
-                  type="text"
-                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+                  type="password"
+                  value=""
+                  class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
                 >
               </div>
             </div>

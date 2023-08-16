@@ -1,6 +1,6 @@
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
-    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800 mt-16">
+    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800 mt-16">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -52,7 +52,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-800">
                 <tr>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 dark:text-gray-100">
                     Component A
@@ -182,7 +182,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800 mt-16">
+    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800 mt-16">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -234,7 +234,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-800">
                 <tr>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 dark:text-gray-100">
                     Function A

@@ -11,10 +11,10 @@
         <section>
           <div>
             <div
-              class="overflow-hidden bg-gray-200 divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-gray-600 dark:divide-gray-600 sm:grid sm:grid-cols-2 sm:gap-px sm:divide-y-0"
+              class="overflow-hidden bg-gray-200 divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-blue-gray-600 dark:divide-gray-600 sm:grid sm:grid-cols-2 sm:gap-px sm:divide-y-0"
             >
               <div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -39,7 +39,7 @@
                     Your site is up. We last checked less than a minute ago.
                   </p><div>
                     <!----><dl
-                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-3 md:divide-y-0 md:divide-x"
+                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-blue-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-3 md:divide-y-0 md:divide-x"
                     >
                       <div
                         class="p-2 sm:p-3"
@@ -94,7 +94,7 @@
                   </div>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -119,7 +119,7 @@
                   </p>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -143,7 +143,7 @@
                     Your certificate is healthy. We last checked 3 minutes ago.
                   </p><!----><div>
                     <dl
-                      class="mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:divide-gray-500 dark:bg-gray-700 dark:border-gray-500"
+                      class="mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:divide-gray-500 dark:bg-blue-gray-700 dark:border-gray-500"
                     >
                       <div
                         class="p-2 sm:p-3"
@@ -168,7 +168,7 @@
                 </div>
               </div>
               <div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -192,7 +192,7 @@
                     Your site has no broken links.
                   </p><!----><div>
                     <dl
-                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-gray-700 dark:border-gray-500 dark:divide-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
+                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-blue-gray-700 dark:border-gray-500 dark:divide-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
                     >
                       <div
                         class="p-2 sm:p-3"
@@ -231,7 +231,7 @@
                   </div>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -256,7 +256,7 @@
                   </p>
                   <div>
                     <dl
-                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
+                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-blue-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
                     >
                       <div
                         class="p-2 sm:p-3"
@@ -297,7 +297,7 @@
                   </div>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -322,7 +322,7 @@
                   </p>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -346,7 +346,7 @@
                     Your application seems to be healthy. We last checked 10 minutes ago.
                   </p><!----><div>
                     <dl
-                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
+                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:bg-blue-gray-700 dark:divide-gray-500 dark:border-gray-500 md:grid-cols-2 md:divide-y-0 md:divide-x"
                     >
                       <div
                         class="p-2 sm:p-3"
@@ -385,7 +385,7 @@
                   </div>
                 </div>
               </div><div
-                class="relative p-6 bg-white dark:bg-gray-800 group"
+                class="relative p-6 bg-white dark:bg-blue-gray-800 group"
               >
                 <div
                   class="flex items-center space-x-2"
@@ -409,7 +409,7 @@
                     DNS records found. We last checked an hour ago.
                   </p><div>
                     <dl
-                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:border-gray-500 dark:bg-gray-700 dark:divide-gray-500 lg md:grid-cols-2 md:divide-y-0 md:divide-x"
+                      class="grid grid-cols-1 mt-5 overflow-hidden bg-white border divide-y divide-gray-200 dark:divide-gray-600 rounded-lg dark:border-gray-500 dark:bg-blue-gray-700 dark:divide-gray-500 lg md:grid-cols-2 md:divide-y-0 md:divide-x"
                     >
                       <div
                         class="p-2 sm:p-3"

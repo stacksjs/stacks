@@ -3,7 +3,7 @@
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
       <!-- Sidebar component, swap this element with another sidebar if you like -->
-      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:bg-gray-900 bg-white px-6 pb-4">
+      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 bg-white px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center">
           <img
             class="h-12 rounded-md mt-4 w-auto"
@@ -27,7 +27,7 @@
                     to="/"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-home text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-home text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Dashboard
                   </router-link>
                 </li>
@@ -36,7 +36,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-clock text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Deployments
                   </router-link>
                 </li>
@@ -45,7 +45,7 @@
                     to="/commands"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Commands
                   </router-link>
                 </li>
@@ -54,7 +54,7 @@
                     to="/dns"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6 dark:text-gray-200" />
                     DNS
                   </router-link>
                 </li>
@@ -63,7 +63,7 @@
                     to="/environment"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Environment
                   </router-link>
                 </li>
@@ -72,7 +72,7 @@
                     to="/dependencies"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cube text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-cube text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Dependencies
                   </router-link>
                 </li>
@@ -81,7 +81,7 @@
                     to="/queue"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Queue
                   </router-link>
                 </li>
@@ -90,7 +90,7 @@
                     to="/library"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Library
                   </router-link>
                 </li>
@@ -99,7 +99,7 @@
                     to="/health"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-heart text-gray-500 w-6 h-6" />
+                    <div class="i-heroicons-heart text-gray-500 w-6 h-6 dark:text-gray-200" />
                     Health
                   </router-link>
                 </li>
@@ -179,7 +179,7 @@
                 to="/settings/cache"
                 class="sidebar-links group"
               >
-                <div class="i-heroicons-cog text-gray-500 w-6 h-6" />
+                <div class="i-heroicons-cog text-gray-500 w-6 h-6 dark:text-gray-200" />
                 Settings
               </router-link>
             </li>
@@ -192,10 +192,10 @@
 
 <style scoped>
 .sidebar-links {
-  @apply text-blue-gray-600 dark:text-blue-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
+  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
 }
 
 .router-link-active, .router-link-exact-active {
-  @apply dark:bg-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 p-2 flex items-center text-sm rounded-md !important
+  @apply dark:bg-blue-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 p-2 flex items-center text-sm rounded-md !important
 }
 </style>

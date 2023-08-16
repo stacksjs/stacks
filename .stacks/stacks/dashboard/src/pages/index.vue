@@ -103,7 +103,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-gray-600 dark:text-gray-300">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
               Preview
             </div>
 
@@ -146,7 +146,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-gray-600 dark:text-blue-300">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-blue-600 bg-blue-500/10 ring-blue-600/30 dark:bg-blue-gray-600 dark:text-blue-300">
               Production
             </div>
 
@@ -189,7 +189,7 @@
                 </p>
               </div>
             </div>
-            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-gray-600 dark:text-gray-300">
+            <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-blue-gray-600 dark:text-gray-300">
               Preview
             </div>
 
@@ -280,7 +280,7 @@
             class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
           >
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/tuple.svg"
                   alt="Tuple"
@@ -342,7 +342,7 @@
               </div>
             </li>
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/savvycal.svg"
                   alt="SavvyCal"
@@ -400,7 +400,7 @@
               </div>
             </li>
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
                   src="https://tailwindui.com/img/logos/48x48/reform.svg"
                   alt="Reform"

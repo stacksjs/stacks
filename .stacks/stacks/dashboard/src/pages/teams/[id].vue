@@ -1,6 +1,6 @@
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
-    <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800">
+    <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">
       <div
         class="sm:flex sm:items-center"
       >
@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="py-2">
-        <div class="bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400 flex flex-row rounded-lg p-4 text-sm">
+        <div class="bg-gray-50 text-gray-600 dark:bg-blue-gray-700 dark:text-gray-400 flex flex-row rounded-lg p-4 text-sm">
           <div class="i-heroicons-information-circle text-gray-400 h-6 w-6 flex-shrink-0" />
           <div class="ml-4 mt-0.5 flex flex-grow">
             <p class="">
@@ -28,7 +28,7 @@
           <div class="mt-1 flex flex-col">
             <input
               type="text"
-              class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
+              class="block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm required:border-red-500 dark:bg-blue-gray-800 dark:text-gray-200 dark:text-gray-100 dark:border-gray-600 focus:border-none focus:ring-2 focus:ring-blue-500"
               list="artisanCommands"
               autocorrect="off"
             >
@@ -47,7 +47,7 @@
       </div>
     </form>
 
-    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800 mt-16">
+    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800 mt-16">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -87,7 +87,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-800">
                 <tr>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 dark:text-gray-100">
                     John Doe

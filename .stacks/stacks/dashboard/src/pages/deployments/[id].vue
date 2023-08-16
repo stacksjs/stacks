@@ -6,7 +6,7 @@ const flag = ref(false)
 
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
-    <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-gray-800">
+    <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
       <div class="px-4 sm:px-0">
         <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
           Latest Deployment
@@ -115,7 +115,7 @@ const flag = ref(false)
       </div>
     </div>
 
-    <div class="rounded-lg mt-12   bg-white px-6 py-8 text-sm dark:bg-gray-800">
+    <div class="rounded-lg mt-12   bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
       <h2 class="text-2xl font-bold leading-10 tracking-tight text-gray-900  dark:text-gray-100">
         Deployment Details
       </h2>

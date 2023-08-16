@@ -51,7 +51,7 @@ onUnmounted(() => {
     >
       <div
         v-show="status"
-        class="max-w-md px-4 pt-5 pb-4 max-h-[32rem] overflow-y-auto overflow-hidden transition-all transform bg-white rounded-lg shadow-xl md:max-w-xl dark:bg-gray-700 sm:w-full sm:p-6"
+        class="max-w-md px-4 pt-5 pb-4 max-h-[32rem] overflow-y-auto overflow-hidden transition-all transform bg-white rounded-lg shadow-xl md:max-w-xl dark:bg-blue-gray-700 sm:w-full sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-headline"

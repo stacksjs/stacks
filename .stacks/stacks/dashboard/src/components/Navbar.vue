@@ -23,7 +23,7 @@ watch(theme, (currentVal) => {
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+  <div class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-blue-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
     <button
       type="button"
       class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -53,7 +53,7 @@ watch(theme, (currentVal) => {
         <div class="i-heroicons-magnifying-glass pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
         <input
           id="search-field"
-          class="block h-full w-full border-none dark:bg-gray-900 py-0 pl-8 pr-0 dark:text-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="block h-full w-full border-none dark:bg-blue-gray-900 py-0 pl-8 pr-0 dark:text-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
           placeholder="Search..."
           type="search"
           name="search"
@@ -114,7 +114,7 @@ watch(theme, (currentVal) => {
             -->
           <div
             v-if="profileModal"
-            class="absolute right-0 z-10 mt-2.5 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-gray-700"
+            class="absolute right-0 z-10 mt-2.5 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-700"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="user-menu-button"
@@ -167,13 +167,17 @@ watch(theme, (currentVal) => {
               <select
                 id="small"
                 v-model="theme"
-                class="text-sm text-gray-500 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class="text-sm text-gray-500 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-blue-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               >
                 <option value="light">Light</option>
 
                 <option
                   value="dark"
                 >Dark</option>
+
+                <option
+                  value="light"
+                >Auto</option>
               </select>
             </a>
             <hr>

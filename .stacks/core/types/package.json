@@ -72,7 +72,6 @@
     "vite": "^4.4.9",
     "vite-plugin-inspect": "^0.7.38",
     "vite-plugin-pwa": "^0.16.4",
-    "vite-plugin-vue-layouts": "^0.8.0",
     "vite-ssg": "^0.23.1",
     "vitepress": "1.0.0-rc.4",
     "vue": "^3.3.4"

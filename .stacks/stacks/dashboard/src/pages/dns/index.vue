@@ -15,7 +15,7 @@ function openAddDnsSection() {
 
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
-    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-gray-800">
+    <div class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">
       <div class="flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -77,7 +77,7 @@ function openAddDnsSection() {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-800">
                 <tr>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0 dark:text-gray-100">
                     A
@@ -200,7 +200,7 @@ function openAddDnsSection() {
 
     <div
       v-if="addDnsSection"
-      class="bg-white rounded-bl-md rounded-br-md px-6 py-4 dark:bg-gray-800"
+      class="bg-white rounded-bl-md rounded-br-md px-6 py-4 dark:bg-blue-gray-800"
     >
       <div class="flex justify-between">
         <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -220,7 +220,7 @@ function openAddDnsSection() {
             class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100"
           >Type</label>
           <div class="mt-2">
-            <select class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-gray-100">
+            <select class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-gray-100">
               <option value="A">
                 A
               </option>
@@ -244,7 +244,7 @@ function openAddDnsSection() {
               id="name"
               type="text"
               name="name"
-              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-gray-100"
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-gray-100"
             >
           </div>
         </div>
@@ -259,7 +259,7 @@ function openAddDnsSection() {
               id="name"
               type="text"
               name="name"
-              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-gray-100"
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-gray-100"
             >
           </div>
         </div>

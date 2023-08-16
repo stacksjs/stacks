@@ -6,7 +6,7 @@ import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
 import pkgjson from '../package.json'
 import app from '../../../../config/app'
-import { cssEngine, inspect, uiEngine } from './stacks'
+import { cssEngine, inspect, uiEngine, pages, layouts } from './stacks'
 import { type ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
 
@@ -22,7 +22,7 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     // https: true,
-    host: app.url,
+    host: '127.0.0.1',
     open: true,
   },
 
@@ -32,17 +32,17 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@stacksjs/env'],
+    exclude: ['vue'],
   },
 
   plugins: [
     // preview(),
-    // pages({
-    //   routesFolder: ['../../stacks/dashboard/src/pages'],
-    // }),
-    // layouts({
-    //   layoutsDirs: '../../../stacks/dashboard/src/layouts',
-    // }),
+    pages({
+      routesFolder: ['../../stacks/dashboard/src/pages'],
+    }),
+    layouts({
+      layoutsDirs: '../../../stacks/dashboard/src/layouts',
+    }),
     uiEngine(),
     cssEngine(),
     inspect(),
