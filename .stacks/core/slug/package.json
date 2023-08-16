@@ -44,12 +44,14 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
