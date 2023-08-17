@@ -27,7 +27,7 @@
                     to="/"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-home text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-home text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Dashboard
                   </router-link>
                 </li>
@@ -36,7 +36,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Deployments
                   </router-link>
                 </li>
@@ -45,7 +45,7 @@
                     to="/commands"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Commands
                   </router-link>
                 </li>
@@ -54,7 +54,7 @@
                     to="/dns"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     DNS
                   </router-link>
                 </li>
@@ -63,7 +63,7 @@
                     to="/environment"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Environment
                   </router-link>
                 </li>
@@ -72,7 +72,7 @@
                     to="/dependencies"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cube text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-cube text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Dependencies
                   </router-link>
                 </li>
@@ -81,7 +81,7 @@
                     to="/queue"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Queue
                   </router-link>
                 </li>
@@ -90,7 +90,7 @@
                     to="/library"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Library
                   </router-link>
                 </li>
@@ -99,7 +99,7 @@
                     to="/health"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-heart text-gray-500 w-6 h-6 dark:text-gray-200" />
+                    <div class="i-heroicons-heart text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Health
                   </router-link>
                 </li>
@@ -133,55 +133,6 @@
                   </router-link>
                 </li>
               </ul>
-            </li>
-            <li>
-              <div class="text-xs font-semibold leading-6 text-gray-400">
-                Your teams
-              </div>
-              <ul
-                role="list"
-                class="-mx-2 mt-2 space-y-1"
-              >
-                <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-                  <router-link
-                    to="/teams/1"
-                    class="sidebar-links"
-                  >
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">H</span>
-                    <span class="truncate">Team A</span>
-                  </router-link>
-                </li>
-                <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-                  <router-link
-                    to="/teams/2"
-                    class="sidebar-links"
-                  >
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">H</span>
-                    <span class="truncate">Team B</span>
-                  </router-link>
-                </li>
-                <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-                  <router-link
-                    to="/teams/3"
-                    class="sidebar-links"
-                  >
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">H</span>
-                    <span class="truncate">Team C</span>
-                  </router-link>
-                </li>
-              </ul>
-            </li>
-            <li class="mt-auto -mx-2">
-              <router-link
-                to="/settings/cache"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-cog text-gray-500 w-6 h-6 dark:text-gray-200" />
-                Settings
-              </router-link>
             </li>
           </ul>
         </nav>

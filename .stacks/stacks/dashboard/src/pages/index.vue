@@ -1,3 +1,9 @@
+
+<script setup lang="ts">
+import Alert from '../components/Modals/Popups/Alert.vue'
+import BaseModal from '../components/Modals/BaseModal.vue'
+</script>
+
 <template>
   <main>
     <div class="relative isolate overflow-hidden">
@@ -461,5 +467,92 @@
         </div>
       </div>
     </div>
+
+    <Alert
+      v-if="false"
+      type="warning"
+      title="Warning!"
+      description="Are you sure you want to delete this event?"
+      confirmation-text="Confirm"
+      abort-text="Cancel"
+    />
+
+    <BaseModal
+      v-if="false"
+      @close-modal=""
+    >
+      <template #modal-body>
+        <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
+          <button
+            type="button"
+            class="text-gray-400 rounded-md dark:text-gray-200 dark-hover:text-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          >
+            <span class="sr-only">Close</span>
+            <!-- Heroicon name: outline/x-mark -->
+            <svg
+              class="w-6 h-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="sm:flex sm:items-start">
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3
+              id="modal-title"
+              class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+            >
+              Search Engine Instance
+            </h3>
+            <div class="mt-2">
+              <p
+                id="subtitle"
+                class="mb-2 text-xs text-green-800 dark:text-green-600"
+              >
+                baseUrl
+              </p>
+
+              <a
+                id="title"
+                target="_new"
+                href="#"
+                class="text-lg text-blue-800 dark:text-blue-400"
+              >
+
+                test title
+              </a>
+
+              <p
+                id="title"
+                class="mt-2 text-sm text-gray-800 dark:text-gray-200"
+              >
+
+                test desc
+              </p>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #modal-actions>
+        <button
+          type="button"
+          class="secondary-button"
+        >
+          Close
+        </button>
+      </template>
+    </BaseModal>
   </main>
 </template>

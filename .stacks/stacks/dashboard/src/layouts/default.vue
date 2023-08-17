@@ -2,6 +2,7 @@
 import Sidebar from '../components/Sidebar.vue'
 import MobileSidebar from '../components/MobileSidebar.vue'
 import Navbar from '../components/Navbar.vue'
+import Toast from '../components/Modals/Popups/Toast.vue'
 </script>
 
 <template>
@@ -19,6 +20,8 @@ import Navbar from '../components/Navbar.vue'
       >
         <RouterView />
       </main>
+
+      <Toast />
     </div>
   </div>
 </template>

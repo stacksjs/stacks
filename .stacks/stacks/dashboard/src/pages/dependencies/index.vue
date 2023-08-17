@@ -1,3 +1,7 @@
+<script lang="ts" setup>
+import AppButton from '../../components/Buttons/AppButton.vue'
+</script>
+
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8">
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">
@@ -23,12 +27,8 @@
       </div>
       <div>
         <div class="mt-4 flex justify-end">
-          <button
-            type="button"
-            class="primary-button"
-          >
-            Add
-          </button>
+
+          <AppButton passed-class="primary-button" loading-text="Adding..." button-text="Add" />
         </div>
       </div>
     </form>

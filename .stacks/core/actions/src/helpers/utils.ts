@@ -45,7 +45,7 @@ export function runAction(action: string, options?: ActionOptions): Result<SyncS
 
   return runCommand(cmd, {
     cwd: options?.cwd ?? p.projectPath(),
-    ...options
+    ...options,
   })
 }
 

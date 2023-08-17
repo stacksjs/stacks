@@ -74,7 +74,6 @@
       <div>
         <div class="flex items-center justify-between">
           <div class="flex items-start text-xl font-medium text-gray-900 sm:mx-none sm:mr-auto dark:text-gray-100">
-            <div class="i-heroicons-plus flex-shrink-0 w-6 h-6 mr-3 text-gray-400 dark:text-gray-100 group-hover:text-blue-gray-500 dark:text-gray-400" />
             <span>Events</span>
           </div>
           <div class="flex items-center">
@@ -85,9 +84,9 @@
                   type="button"
                   aria-expanded="true"
                   aria-haspopup="true"
-                  class="bg-neutral-50 text-white py-2 px-2 rounded inline-flex border border-gray-300 hover:bg-blue-gray-50"
+                  class="secondary-button"
                 >
-                  <div class="i-heroicons-funnel w-5 h-5 text-gray-700 " />
+                  <div class="i-heroicons-funnel w-5 h-5 text-gray-700 dark:text-gray-100" />
                 </button>
                 <!---->
               </div>
@@ -95,7 +94,7 @@
 
             <button
               type="button"
-              class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-50"
+              class="secondary-button"
             >
               <div class="i-heroicons-plus-small w-5 h-5 mr-1" />
               <span class="text-sm">User</span>

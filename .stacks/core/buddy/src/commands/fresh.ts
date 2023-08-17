@@ -2,7 +2,6 @@ import process from 'node:process'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
 import { Action, ExitCode } from '@stacksjs/types'
 
 export function fresh(buddy: CLI) {

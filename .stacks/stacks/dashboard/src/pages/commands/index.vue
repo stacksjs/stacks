@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppButton from '../../components/Buttons/AppButton.vue'
+
 import { ref } from 'vue'
 
 interface DummyRefItem {
@@ -47,12 +49,7 @@ function toggleDropdown(index: number) {
       </div>
       <div>
         <div class="mt-4 flex justify-end">
-          <button
-            type="button"
-            class="primary-button"
-          >
-            Submit
-          </button>
+          <AppButton passed-class="primary-button" loading-text="Submitting..." button-text="Submit"/>
         </div>
       </div>
     </form>

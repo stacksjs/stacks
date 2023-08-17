@@ -13,4 +13,3 @@ export function pages(options?: Options) {
 
   return VueRouter(newOptions)
 }
-

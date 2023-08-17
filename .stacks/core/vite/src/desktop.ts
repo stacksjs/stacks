@@ -6,7 +6,7 @@ import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
 import pkgjson from '../package.json'
 import app from '../../../../config/app'
-import { cssEngine, inspect, uiEngine, pages, layouts } from './stacks'
+import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
 import { type ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
 

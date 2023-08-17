@@ -1,5 +1,5 @@
-/* eslint-disable vue/no-constant-condition */
 <script setup lang="ts">
+import AppButton from '../../components/Buttons/AppButton.vue'  
 import { ref } from 'vue'
 
 const addDnsSection = ref(false)
@@ -23,15 +23,12 @@ function openAddDnsSection() {
           </h1>
         </div>
 
-        <button
-          type="button"
-          class="primary-button inline-flex items-center"
-          @click="openAddDnsSection"
-        >
-          <div class="i-heroicons-plus w-5 h-5" />
+        <AppButton @click="openAddDnsSection" passed-class="primary-button" loading-text="DNS" button-text="DNS">
 
-          DNS
-        </button>
+          <template #icon>
+            <div class="i-heroicons-plus w-5 h-5" />
+          </template>
+        </AppButton>
       </div>
       <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

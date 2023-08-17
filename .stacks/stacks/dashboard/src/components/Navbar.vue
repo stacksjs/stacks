@@ -151,12 +151,18 @@ watch(theme, (currentVal) => {
               class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
-            >Settings</a>
-            <hr>
+            >Teams</a>
             <a
               id="user-menu-item-0"
               href="#"
-              class="flex px-3 py-2 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600"
+              class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
+              role="menuitem"
+              tabindex="-1"
+            >Settings</a>
+            <a
+              id="user-menu-item-0"
+              href="#"
+              class="flex px-3 py-2 border-t border-b text-sm my-1 leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600"
               role="menuitem"
               tabindex="-1"
             >
@@ -180,7 +186,6 @@ watch(theme, (currentVal) => {
                 >Auto</option>
               </select>
             </a>
-            <hr>
             <a
               id="user-menu-item-1"
               href="#"

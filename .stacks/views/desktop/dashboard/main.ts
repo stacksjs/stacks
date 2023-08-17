@@ -4,11 +4,10 @@ import { setupLayouts } from 'virtual:generated-layouts'
 import VueHighlightJS from 'vue3-highlightjs'
 import App from './App.vue'
 import '@unocss/reset/tailwind.css'
-import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
 import '../../../stacks/dashboard/src/styles/main.css'
 
- ViteSSG(
+ViteSSG(
   App,
   {
     routes: setupLayouts(routes),
