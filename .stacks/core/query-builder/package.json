@@ -51,8 +51,8 @@
   },
   "optionalDependencies": {
     "mysql2": "^3.6.0",
-    "pg": "^8.11.2",
-    "pg-cursor": "^2.10.2"
+    "pg": "^8.11.3",
+    "pg-cursor": "^2.10.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
