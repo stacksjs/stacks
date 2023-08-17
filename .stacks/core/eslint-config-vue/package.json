@@ -15,7 +15,7 @@
     "build": "echo 'no build needed'"
   },
   "peerDependencies": {
-    "eslint": ">=7.32.0"
+    "eslint": ">=8.47.0"
   },
   "dependencies": {
     "@stacksjs/eslint-config-basic": "workspace:*",
