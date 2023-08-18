@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// import { stripe } from '../../../../core/payments/src/'
 import Sidebar from '../components/Sidebar.vue'
 import MobileSidebar from '../components/MobileSidebar.vue'
 import Navbar from '../components/Navbar.vue'

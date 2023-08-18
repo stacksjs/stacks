@@ -100,8 +100,8 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "vite-plugin-vue-layouts": "^0.8.0",
-    "unplugin-vue-router": "^0.6.4"
+    "unplugin-vue-router": "^0.6.4",
+    "vite-plugin-vue-layouts": "^0.8.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"

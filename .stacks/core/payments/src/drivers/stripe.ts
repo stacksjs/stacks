@@ -1,137 +1,121 @@
-// import type { ChargeOptions, CustomerOptions, DisputeOptions, EventOptions } from '@stacksjs/types'
-// import { isString } from '@stacksjs/utils'
-// import Stripe from 'stripe'
-// import { services } from '@stacksjs/config'
+import Stripe from 'stripe';
 
-// const apiKey = services?.stripe?.apiKey
+import { services } from '@stacksjs/config'
 
-// if (!isString(apiKey)) {
-//   console.error('Stripe API key is not defined')
-//   process.exit(1)
-// }
+const apiKey = services?.stripe?.apiKey || ''
 
-// const stripe = new Stripe(apiKey, {
-//   apiVersion: '2022-11-15',
-// })
+const stripe = new Stripe(apiKey, {
+  apiVersion: '2022-11-15',
+});
 
-// const balance = async () => {
-//   return {
-//     retrieve: async () => {
-//       await stripe.balance.retrieve()
-//     },
-//   }
-// }
 
-// const balanceTransactions = async (txn: string, limit: number) => {
-//   return {
-//     retrieve: async () => {
-//       await stripe.balanceTransactions.retrieve(txn)
-//     },
-//     list: async () => {
-//       await stripe.balanceTransactions.list({
-//         limit,
-//       })
-//     },
-//   }
-// }
+export const paymentIntent = function() {
+   async function create(params: Stripe.PaymentIntentCreateParams) {
+    return await stripe.paymentIntents.create(params);
+  }
+  
+   async function retrieve(stripeId: string) {
+    return await stripe.paymentIntents.retrieve(stripeId);
+  }
+  
+   async function update(stripeId: string, params: Stripe.PaymentIntentCreateParams) {
+    return await stripe.paymentIntents.update(stripeId, params);
+  }
+  
+   async function cancel(stripeId: string) {
+    return await stripe.paymentIntents.cancel(stripeId);
+  }
 
-// const dispute = async (options: DisputeOptions) => {
-//   return {
-//     retrieve: async () => {
-//       await stripe.disputes.retrieve(options.dp_id)
-//     },
-//     update: async () => {
-//       await stripe.disputes.update(
-//         options.dp_id,
-//         { ...options.metadata },
-//       )
-//     },
-//     close: async () => {
-//       await stripe.disputes.close(options.dp_id)
-//     },
-//     list: async () => {
-//       await stripe.disputes.list(options.listOptions)
-//     },
-//   }
-// }
+  return { create, retrieve, update, cancel }
+}
 
-// const charge = async (amount: number, options?: ChargeOptions) => {
-//   return {
-//     create: async () => {
-//       await stripe.charges.create({
-//         amount,
-//         ...options,
-//       })
-//     },
-//     retrieve: async () => {
-//       await stripe.charges.retrieve(options?.chargeId)
-//     },
-//     update: async () => {
-//       await stripe.charges.update(
-//         options?.chargeId,
-//         { metadata: options?.metadata },
-//       )
-//     },
-//     capture: async () => {
-//       await stripe.charges.capture(options?.chargeId)
-//     },
-//     list: async () => {
-//       await stripe.charges.list({
-//         limit: options?.limit,
-//       })
-//     },
-//     search: async () => {
-//       await stripe.charges.search({
-//         ...options?.searchOptions,
-//       })
-//     },
-//   }
-// }
+export const balance = function(){
+  async function retrieve () {
+    return await stripe.balance.retrieve()
+  }
 
-// const customer = async (options: CustomerOptions) => {
-//   return {
-//     create: async () => {
-//       await stripe.customers.create(options)
-//     },
-//     retrieve: async () => {
-//       await stripe.customers.retrieve(options.address)
-//     },
-//     update: async () => {
-//       await stripe.customers.update(
-//         options.address,
-//         { ...options.metadata },
-//       )
-//     },
-//     delete: async () => {
-//       await stripe.customers.del(options.address)
-//     },
-//     list: async () => {
-//       await stripe.customers.list(options.listOptions)
-//     },
-//     search: async () => {
-//       await stripe.customers.search(options.searchOptions)
-//     },
-//   }
-// }
+  return { retrieve }
+}()
 
-// const events = async (options: EventOptions) => {
-//   return {
-//     retrieve: async () => {
-//       await stripe.events.retrieve(options.event_id)
-//     },
-//     list: async () => {
-//       await stripe.events.list(options.listOptions)
-//     },
-//   }
-// }
+export const customer = function() {
+   async function create (params: Stripe.CustomerCreateParams) {
+    return await stripe.customers.create(params);
+  };
 
-// export {
-//   balance,
-//   balanceTransactions,
-//   charge,
-//   customer,
-//   dispute,
-//   events,
-// }
+   async function update(stripeId: string, params: Stripe.CustomerCreateParams) {
+    return await stripe.customers.update(stripeId, params);
+  };
+
+   async function retrieve (stripeId: string) {
+    return await stripe.customers.retrieve(stripeId);
+  };
+
+  return { create, update, retrieve }
+}()
+
+export const charge = function () {
+  async function create (params: Stripe.ChargeCreateParams) {
+    return await stripe.charges.create(params);
+  }
+
+  async function update (stripeId: string, params: Stripe.ChargeCreateParams) {
+    return await stripe.charges.update(stripeId, params);
+  }
+
+  async function capture (stripeId: string) {
+    return await stripe.charges.capture(stripeId);
+  }
+
+  async function retrieve (stripeId: string) {
+    return await stripe.charges.retrieve(stripeId);
+  }
+
+  return { create, update, retrieve, capture }
+}()
+
+
+export const balanceTransactions = function () {
+    async function retrieve (stripeId: string) {
+      await stripe.balanceTransactions.retrieve(stripeId)
+    }
+
+    async function list (limit: number) {
+      await stripe.balanceTransactions.list({ limit, })
+    }
+  
+    return { retrieve, list }
+}()
+
+export const dispute = function () {
+  async function retrieve (stripeId: string) {
+    return await stripe.disputes.retrieve(stripeId)
+  }
+
+  async function update (stripeId: string, params: Stripe.DisputeUpdateParams) {
+    return await stripe.disputes.update(stripeId, params)
+  }
+
+  async function close (stripeId: string) {
+    return await stripe.disputes.close(stripeId)
+  }
+
+  async function list (limit: number) {
+    return await stripe.disputes.list({ limit })
+  }
+
+  return { retrieve, update, close, list }
+}()
+
+export const events = function () {
+  async function retrieve (stripeId: string)  {
+    await stripe.events.retrieve(stripeId)
+  }
+
+  async function list (limit: number) {
+    await stripe.events.list({ limit })
+  }
+
+  return { retrieve, list }
+}()
 
 export const stripeWip = 1
