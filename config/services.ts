@@ -10,8 +10,10 @@ import { defineServices } from '../.stacks/core/config/src/helpers'
  */
 export default defineServices({
   aws: {
-    appId: env.AWS_ACCESS_KEY_ID || '',
-    apiKey: env.AWS_SECRET_ACCESS_KEY || '',
+    accountId: env.AWS_ACCOUNT_ID ?? '',
+    appId: env.AWS_ACCESS_KEY_ID ?? '',
+    apiKey: env.AWS_SECRET_ACCESS_KEY ?? '',
+    defaultRegion: env.AWS_DEFAULT_REGION ?? '',
   },
 
   algolia: {

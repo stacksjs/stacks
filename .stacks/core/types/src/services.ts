@@ -25,8 +25,10 @@ export interface ServicesOptions {
   }
 
   aws?: {
+    accountId: string
     appId: string
     apiKey: string
+    defaultRegion: string
   }
 
   novu?: {

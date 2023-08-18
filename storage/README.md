@@ -1,3 +1,3 @@
 # The Storage Folder
 
-wip
+- [ ] Handle dynamic root folders inside the ./storage/* folder

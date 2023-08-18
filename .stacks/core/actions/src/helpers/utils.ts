@@ -66,7 +66,7 @@ export function runActions(actions: string[], options?: ActionOptions) {
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const commands = actions.map(action => `bun ${p.actionsPath(`${action}.ts`)}`)
+  const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`${action}.ts`)}`)
 
   return runCommands(commands, options)
 }

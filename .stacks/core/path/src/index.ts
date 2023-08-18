@@ -288,6 +288,10 @@ export function projectStoragePath(path?: string) {
   return projectPath(`storage/${path || ''}`)
 }
 
+export function publicPath(path?: string) {
+  return projectStoragePath(`public/${path || ''}`)
+}
+
 export function pushPath(path?: string) {
   return notificationsPath(`push/${path || ''}`)
 }

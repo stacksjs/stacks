@@ -95,6 +95,7 @@
     "../tests/**/*"
   ],
   "exclude": [
+    "../**/cdk.out",
     "./libs/examples",
     "../commitlint.config.cjs",
     "../**/dist",

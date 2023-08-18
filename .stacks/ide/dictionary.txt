@@ -24,6 +24,7 @@ bundleconfig
 bunx
 cardano
 cback
+certificatemanager
 changelist
 changelogen
 changelogithub
@@ -243,5 +244,6 @@ vstyle
 vue-demi
 vueform
 vueuse
+wafv
 wmaurer
 zixuanchen

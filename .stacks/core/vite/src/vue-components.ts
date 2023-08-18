@@ -19,7 +19,7 @@ const config = {
   publicDir: p.storagePath('public'),
 
   server: {
-    host: app.url || 'stacks.test',
+    host: app.url ?? 'stacks.test',
   },
 
   resolve: {
