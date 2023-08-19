@@ -6,8 +6,6 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
     address?: string
   }
 
-  domain?: string
-
   mailboxes?: {
     [key: string]: string
     // 'username': string
