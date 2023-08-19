@@ -1,5 +1,5 @@
 import { app } from '@stacksjs/config'
-import { publicPath } from '@stacksjs/path'
+// import { publicPath } from '@stacksjs/path'
 import {
   Duration,
   Fn,
@@ -35,20 +35,22 @@ export class StacksCloud extends Stack {
       validation: acm.CertificateValidation.fromDns(zone), // Use DNS validation
     })
 
-    const websiteBucket = new s3.Bucket(this, 'WebsiteBucket', {
+    const webBucket = new s3.Bucket(this, 'WebBucket', {
+      bucketName: `stacksjs.com-${app.env}-web`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     })
 
     // Create an S3 bucket for CloudFront access logs
-    const logBucket = new s3.Bucket(this, 'LogBucket', {
+    const logsBucket = new s3.Bucket(this, 'LogBucket', {
+      bucketName: `stacksjs.com-${app.env}-logs`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
     })
 
-    logBucket.addLifecycleRule({
+    logsBucket.addLifecycleRule({
       enabled: true,
       expiration: Duration.days(30),
       id: 'rule',
@@ -93,7 +95,7 @@ export class StacksCloud extends Stack {
       certificate,
       originShieldEnabled: true,
       enableLogging: true,
-      logBucket,
+      logBucket: logsBucket,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       enabled: true,
@@ -102,7 +104,7 @@ export class StacksCloud extends Stack {
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(websiteBucket, {
+        origin: new origins.S3Origin(webBucket, {
           originAccessIdentity,
         }),
         compress: true,
@@ -149,8 +151,8 @@ export class StacksCloud extends Stack {
 
     // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset(publicPath())],
-      destinationBucket: websiteBucket,
+      sources: [s3deploy.Source.asset('../../../storage/public')],
+      destinationBucket: webBucket,
       distribution,
       distributionPaths: ['/*'],
     })
@@ -158,15 +160,22 @@ export class StacksCloud extends Stack {
     // Prints out the web endpoint to the terminal
     // eslint-disable-next-line no-new
     new Output(this, 'AppUrl', {
-      value: distribution.domainName,
+      value: `https://stacksjs.com`,
       description: 'The URL of the deployed application',
+    })
+
+    // Prints out the web endpoint to the terminal
+    // eslint-disable-next-line no-new
+    new Output(this, 'VanityUrl', {
+      value: distribution.domainName,
+      description: 'The vanity URL of the deployed application',
     })
 
     // Output the nameservers of the hosted zone
     // eslint-disable-next-line no-new
-    new Output(this, 'Nameservers', {
-      value: Fn.join(', ', zone.hostedZoneNameServers),
-      description: 'Nameservers for the application domain',
-    })
+    // new Output(this, 'Nameservers', {
+    //   value: Fn.join(', ', zone.hostedZoneNameServers),
+    //   description: 'Nameservers for the application domain',
+    // })
   }
 }

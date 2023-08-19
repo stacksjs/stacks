@@ -5,7 +5,10 @@ This package assists you in setting up & maintaining your application's cloud in
 ## ☘️ Features
 
 - Cloud Creation & Management
-- Domain Management
+- Web Application Firewall (WAF) Management
+- CDN Management
+- SSL Certificate Management
+- Domain & DNS Management
 - Stacks Buddy Commands
 
 ### TODO

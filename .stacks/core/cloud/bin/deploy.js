@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib'
 import { app as a, services as s } from '@stacksjs/config'
-import { StacksCloud } from '../cloud.js'
+import { StacksCloud } from '../src/cloud.js'
 
 const app = new cdk.App()
 const cloudName = `${a.name ?? 'Stacks'}Cloud`
