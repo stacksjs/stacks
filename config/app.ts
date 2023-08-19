@@ -1,4 +1,4 @@
-import { type AppConfig, type AppOptions } from '@stacksjs/types'
+import type { AppConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
 /**
@@ -19,4 +19,4 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-} satisfies AppConfig as AppOptions
+} satisfies AppConfig

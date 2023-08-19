@@ -1,5 +1,5 @@
 // import { defineUi } from '../.stacks/core/config/src/helpers'
-import { type UiConfig, type UiOptions } from '@stacksjs/types'
+import type { UiConfig } from '@stacksjs/types'
 
 /**
  * **UI Engine Options**
@@ -40,4 +40,4 @@ export default {
       text: 'Hubot',
     },
   },
-} satisfies UiConfig as UiOptions
+} satisfies UiConfig
