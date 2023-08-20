@@ -29,7 +29,7 @@ async function main() {
   // cmd.changelog(cli)
   cmd.clean(cli)
   // cmd.commit(cli)
-  // cmd.deploy(cli)
+  cmd.deploy(cli)
   cmd.fresh(cli)
   // cmd.lint(cli)
   cmd.release(cli)
