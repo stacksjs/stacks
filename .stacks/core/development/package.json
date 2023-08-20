@@ -66,6 +66,6 @@
     "typescript": "^5.1.6"
   },
   "devDependencies": {
-    "@total-typescript/ts-reset": "^0.4.2"
+    "@total-typescript/ts-reset": "^0.5.1"
   }
 }
