@@ -1,6 +1,6 @@
 import { type CliOptions, type CommandError, type SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, ok } from '@stacksjs/error-handling'
-import { execSync } from './exec'
+import { execSync, exec } from './exec'
 import { italic } from './utilities'
 import { log } from './console'
 
@@ -12,7 +12,7 @@ import { log } from './console'
  * @returns The result of the command.
  * @example
  * ```ts
- * const result = runCommand('ls')
+ * const result = await runCommand('ls')
  *
  * if (result.isErr())
  *   console.error(result.error)
@@ -21,7 +21,7 @@ import { log } from './console'
  * ```
  * @example
  * ```ts
- * const result = runCommand('ls', { cwd: '/home' })
+ * const result = await runCommand('ls', { cwd: '/home' })
  *
  * if (result.isErr())
  *   console.error(result.error)
@@ -29,11 +29,11 @@ import { log } from './console'
  *   console.log(result)
  * ```
  */
-export function runCommand(command: string, options?: CliOptions): Result<SyncSubprocess, CommandError> {
+export async function runCommand(command: string, options?: CliOptions): Promise<Result<SyncSubprocess, CommandError>> {
   if (options?.verbose)
-    log.debug('Running command:', italic(command))
+    log.debug('Running command:', italic(command), 'with options:', options)
 
-  const result = execSync(command, options)
+  const result = await exec(command, options)
 
   if (result.isErr())
     return err(result.error)
@@ -48,11 +48,11 @@ export function runCommand(command: string, options?: CliOptions): Result<SyncSu
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export function runCommands(commands: string[], options?: CliOptions) {
+export async function runCommands(commands: string[], options?: CliOptions) {
   const results = []
 
   for (const command of commands)
-    results.push(runCommand(command, options))
+    results.push(await runCommand(command, options))
 
   return results
 }

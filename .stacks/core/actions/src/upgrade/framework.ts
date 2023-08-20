@@ -4,7 +4,7 @@
 // import { determineDebugLevel, loop } from '@stacksjs/utils'
 // import { frameworkPath, projectPath } from '@stacksjs/path'
 //
-// // runCommand(NpmScript.UpgradeFramework, parseArgs())
+// // await runCommand(NpmScript.UpgradeFramework, parseArgs())
 //
 // await checkForUncommittedChanges('./.stacks', options)
 // await downloadFrameworkUpdate(options)

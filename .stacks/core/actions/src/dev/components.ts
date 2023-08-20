@@ -9,7 +9,7 @@ import { NpmScript } from '@stacksjs/types'
 
 // const options: DeployOptions = parseOptions()
 
-runCommand(NpmScript.DevComponents, {
+await runCommand(NpmScript.DevComponents, {
   cwd: frameworkPath(),
   // ...options,
 })

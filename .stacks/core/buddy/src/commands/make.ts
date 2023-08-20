@@ -228,7 +228,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify the model name')
+        log.error('You need to specify a model name')
         process.exit()
       }
 
@@ -239,18 +239,16 @@ export function make(buddy: CLI) {
     .command('make:migration', descriptions.migration)
     .option('-n, --name', 'The name of the migration')
     .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
-    .action((options: MakeOptions) => {
-      const path = frameworkPath('database/schema.prisma')
+    .action(async (options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 
       if (!name) {
-        log.error('You need to specify the migration name')
+        log.error('You need to specify a migration name')
         process.exit()
       }
 
-      runCommand(`bunx prisma migrate ${options.env} --name=${name} --schema=${path}`)
-      log.success(path, name)
+      log.info(path, name)
     })
 }
 

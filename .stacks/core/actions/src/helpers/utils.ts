@@ -32,7 +32,7 @@ function parseOptions(options?: ActionOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export function runAction(action: string, options?: ActionOptions): Result<SyncSubprocess, StacksError> {
+export async function runAction(action: string, options?: ActionOptions): Promise<Result<SyncSubprocess, StacksError>> {
   if (!hasAction(action))
     return err(handleError(`The specified action "${action}" does not exist`))
 
@@ -43,7 +43,7 @@ export function runAction(action: string, options?: ActionOptions): Result<SyncS
   if (options?.verbose)
     log.debug('Running action:', italic(action))
 
-  return runCommand(cmd, {
+  return await runCommand(cmd, {
     cwd: options?.cwd ?? p.projectPath(),
     ...options,
   })

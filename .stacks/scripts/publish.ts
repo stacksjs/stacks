@@ -27,6 +27,6 @@ Bun.spawn(['bun', 'server.ts'], {
 //   'If things work properly, see http://localhost:5173',
 // )
 
-// runCommand('bun publish --access public')
+// await runCommand('bun publish --access public')
 
 log.success(`Successfully released v${version}`)

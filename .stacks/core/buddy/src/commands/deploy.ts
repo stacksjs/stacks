@@ -15,7 +15,7 @@ export function deploy(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       const perf = await intro('buddy deploy')
-      const result = runAction(Action.Deploy, options)
+      const result = await runAction(Action.Deploy, options)
 
       if (result.isErr()) {
         await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
@@ -31,7 +31,7 @@ export function deploy(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       const perf = await intro('buddy deploy:domains')
-      const result = runAction(Action.Deploy, { ...options, domains: true, verbose: options.verbose })
+      const result = await runAction(Action.Deploy, { ...options, domains: true, verbose: options.verbose })
 
       if (result.isErr()) {
         await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

@@ -15,7 +15,7 @@ export function key(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
       const startTime = await intro('buddy key:generate')
-      const result = runAction(Action.KeyGenerate, options)
+      const result = await runAction(Action.KeyGenerate, options)
 
       if (result.isErr()) {
         log.error('Failed to set random application key.', result.error as Error)

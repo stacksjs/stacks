@@ -12,10 +12,10 @@
 //   await updateDependencies(options)
 
 // if (options?.packageManager || options?.all)
-//   runAction(Action.UpgradePackageManager, options)
+//   await runAction(Action.UpgradePackageManager, options)
 //
 // if (options?.node || options?.all)
-//   runAction(Action.UpgradeNode, options)
+//   await runAction(Action.UpgradeNode, options)
 //
 // else
 //   process.exit(ExitCode.InvalidArgument)

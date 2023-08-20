@@ -37,12 +37,12 @@ export class Command {
 }
 
 export const command = {
-  run: (command: string, options?: CliOptions) => {
-    return runCommand(command, options)
+  run: async (command: string, options?: CliOptions) => {
+    return await runCommand(command, options)
   },
 
-  runSync: (command: string, options?: CliOptions) => {
-    return runCommand(command, options)
+  runSync: async (command: string, options?: CliOptions) => {
+    return await runCommand(command, options)
   },
 
   cli: cac,

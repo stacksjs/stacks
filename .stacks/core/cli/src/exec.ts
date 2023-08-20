@@ -67,8 +67,8 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
   const cmd = Array.isArray(command) ? command : command.split(' ')
   const proc = Bun.spawnSync(cmd, {
     ...options,
-    stdout: options?.stdout || 'inherit',
-    cwd: options?.cwd || import.meta.dir,
+    stdout: options?.stdout ?? 'inherit',
+    cwd: options?.cwd ?? import.meta.dir,
     onExit(subprocess: any, exitCode: any, signalCode: any, error: any) {
       if (exitCode !== ExitCode.Success)
         log.error(error)

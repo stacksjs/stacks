@@ -56,7 +56,7 @@ result.isErr() // false
 
 ```js
 const command = 'rimraf ./bun.lockb ./node_modules ./.stacks/**/dist'
-const result = runCommand(command, options)
+const result = await runCommand(command, options)
 
 if (result.isOk()) {
   log.success('Cleaned up')

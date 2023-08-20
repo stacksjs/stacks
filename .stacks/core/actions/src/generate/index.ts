@@ -40,8 +40,8 @@ export function generate(options: GeneratorOptions) {
   return invoke(options)
 }
 
-export function generateLibEntries(options: GeneratorOptions) {
-  const result = runAction(Action.GenerateLibraryEntries, { ...options, verbose: true, cwd: projectPath() })
+export async function generateLibEntries(options: GeneratorOptions) {
+  const result = await runAction(Action.GenerateLibraryEntries, { ...options, verbose: true, cwd: projectPath() })
 
   if (result.isErr()) {
     log.error('There was an error generating your library entry points', result.error)
@@ -81,7 +81,7 @@ export async function generateVsCodeCustomData(options?: GeneratorOptions) {
     process.exit()
   }
 
-  runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated the custom-elements.json file')
 }
 
@@ -93,7 +93,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions) {
     process.exit()
   }
 
-  runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated IDE helpers')
 }
 
@@ -105,7 +105,7 @@ export async function generateComponentMeta(options?: GeneratorOptions) {
     process.exit()
   }
 
-  runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
   log.success('Successfully generated component meta information')
 }
 
@@ -125,7 +125,7 @@ export function generateMigrations() {
 
   // await migrate(path, { database: database.driver })
 
-  // runCommand(`bunx prisma migrate dev --schema=${path}`)
+  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
 
   log.success('Successfully updated migrations')
 }

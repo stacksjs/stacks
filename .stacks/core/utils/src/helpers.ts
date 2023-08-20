@@ -22,13 +22,13 @@ export async function packageManager() {
   return packageManager
 }
 
-export function initProject(): Result<SyncSubprocess, StacksError> {
+export async function initProject(): Promise<Result<SyncSubprocess, StacksError>> {
   if (app.env !== 'production')
     log.info('Project not yet initialized, generating application key...')
   else
     handleError('Please run `buddy key:generate` to generate an application key')
 
-  const result = runAction(Action.KeyGenerate, { cwd: projectPath() })
+  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
   if (result.isErr())
     return err(handleError(result.error))
@@ -44,14 +44,14 @@ export async function ensureProjectIsInitialized() {
 
   // copy the .env.example file to .env
   if (storage.isFile('.env.example'))
-    runCommand('cp .env.example .env', { cwd: projectPath() })
+    await runCommand('cp .env.example .env', { cwd: projectPath() })
   else
     console.error('no .env.example file found')
 
   return await isAppKeySet()
 }
 
-export function installIfVersionMismatch() {
+export async function installIfVersionMismatch() {
   const deps = dependencies
 
   const requiredBunVersion = deps['bun.sh'] || '0.7.1'
@@ -59,7 +59,7 @@ export function installIfVersionMismatch() {
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
     log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
-    runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
+    await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
   }
 }
 
@@ -140,7 +140,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions): Pro
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
-    return runCommand(`bun --bun run ${script}`, options)
+    return await runCommand(`bun --bun run ${script}`, options)
 
   return err(handleError(`The ${script} script does not exist in the package.json file.`))
 }

@@ -15,7 +15,7 @@ export function seed(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SeedOptions) => {
       const perf = await intro('buddy seed')
-      const result = runAction(Action.Seed, options)
+      const result = await runAction(Action.Seed, options)
 
       if (result.isErr()) {
         await outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)

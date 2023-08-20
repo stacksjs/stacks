@@ -15,7 +15,7 @@ export function tinker(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
       const perf = await intro('buddy tinker')
-      const result = runAction(Action.Tinker, options)
+      const result = await runAction(Action.Tinker, options)
 
       if (result.isErr()) {
         await outro('While running the tinker command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error || undefined)

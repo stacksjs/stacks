@@ -18,7 +18,7 @@ dirs.forEach((folder) => {
   log.info('🏗️  Building...')
   log.info(`📦 ${italic(dim(folder))}`)
 
-  const result = runCommand('bun --bun run build', {
+  const result = await runCommand('bun --bun run build', {
     cwd: folder,
   })
 
@@ -34,7 +34,7 @@ dirs.forEach((folder) => {
 // run the tsc command
 // log.info('Generating type definitions...')
 
-// const tscResult = runCommand('bun --bun tsc', projectPath())
+// const tscResult = await runCommand('bun --bun tsc', projectPath())
 
 // if (tscResult.isErr()) {
 //   log.error(tscResult.error)
@@ -45,7 +45,7 @@ dirs.forEach((folder) => {
 
 // move type definitions to the dist folder
 // log.info('Moving type definitions to dist folder...')
-// const moveResult = runCommand('bun --bun move-dts-files.ts', {
+// const moveResult = await runCommand('bun --bun move-dts-files.ts', {
 //   cwd: import.meta.dir
 // })
 
@@ -58,7 +58,7 @@ dirs.forEach((folder) => {
 
 // move core/*/dist/src/* to core/*/dist/*
 // log.info('Moving built source files to dist folder...')
-// const moveSrcResult = runCommand('bun --bun move-built-src-files.ts', import.meta.dir)
+// const moveSrcResult = await runCommand('bun --bun move-built-src-files.ts', import.meta.dir)
 
 // if (moveSrcResult.isErr()) {
 //   log.error(moveSrcResult.error)

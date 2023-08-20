@@ -17,7 +17,7 @@ export function changelog(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy changelog')
-      const result = runAction(Action.Changelog, options)
+      const result = await runAction(Action.Changelog, options)
 
       if (result.isErr()) {
         await outro('While running the changelog command, there was an issue', { ...options, startTime: perf, useSeconds: true, isError: true }, result.error as Error)
