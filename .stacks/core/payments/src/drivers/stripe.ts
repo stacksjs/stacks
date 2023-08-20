@@ -5,7 +5,7 @@ import { services } from '@stacksjs/config'
 const apiKey = services?.stripe?.apiKey || ''
 
 const stripe = new Stripe(apiKey, {
-  apiVersion: '2022-11-15',
+  apiVersion: '2023-08-16',
 });
 
 
