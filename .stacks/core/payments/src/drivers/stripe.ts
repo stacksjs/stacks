@@ -1,14 +1,12 @@
 import Stripe from 'stripe';
 
-import { services } from '@stacksjs/config'
-
-const apiKey = services.stripe?.apiKey ?? ''
+const apiKey = ''
 
 const stripe = new Stripe(apiKey, {
   apiVersion: '2023-08-16',
 });
 
-
+// TODO: learn about subscriptions
 export const paymentIntent = function() {
    async function create(params: Stripe.PaymentIntentCreateParams) {
     return await stripe.paymentIntents.create(params);
@@ -27,7 +25,7 @@ export const paymentIntent = function() {
   }
 
   return { create, retrieve, update, cancel }
-}
+}()
 
 export const balance = function(){
   async function retrieve() {

@@ -152,13 +152,12 @@ watch(theme, (currentVal) => {
               role="menuitem"
               tabindex="-1"
             >Teams</a>
-            <a
-              id="user-menu-item-0"
-              href="#"
+            <router-link
+              to="/settings/billing"
               class="block px-3 py-1 text-sm leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:text-gray-300"
               role="menuitem"
               tabindex="-1"
-            >Settings</a>
+            >Billing Settings</router-link>
             <a
               id="user-menu-item-0"
               href="#"

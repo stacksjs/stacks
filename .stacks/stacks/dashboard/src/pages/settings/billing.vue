@@ -1,5 +1,62 @@
 <script setup lang="ts">
+import { paymentIntent } from '../../../../../core/payments/src/drivers/stripe'
 import SettingsHeader from '../../components/SettingsHeader.vue'
+import { loadStripe } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
+import { ref } from 'vue'
+
+
+let elements;
+
+const loading = ref(true);
+
+// TODO: learn about subscriptions
+async function initialize() {
+  const stripe: Stripe = await loadStripe('');
+
+  // const items = [{ id: 'stacks-monthly-sub' }]
+
+  const response = await paymentIntent.create({
+    amount: calculateOrderAmount(),
+    currency: "usd",
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
+
+  const clientSecret: string | null = response.client_secret
+
+  elements = stripe.elements({
+    clientSecret,
+  });
+
+  // const linkAuthenticationElement = elements.create("linkAuthentication");
+  // linkAuthenticationElement.mount("#link-authentication-element");
+
+  // linkAuthenticationElement.on('change', (event) => {
+  //   emailAddress = event.value.email;
+  // });
+
+  const paymentElementOptions = {
+    layout: "tabs",
+  };
+
+  const paymentElement = elements.create("payment", paymentElementOptions);
+  paymentElement.mount("#payment-element");
+
+  loading.value = false
+}
+
+async function payPlan() {
+  await initialize()
+}
+
+const calculateOrderAmount = () => {
+  // Replace this constant with a calculation of the order's amount
+  // Calculate the order total on the server to prevent
+  // people from directly manipulating the amount on the client
+  return 2000;
+};
 </script>
 
 <template>
@@ -39,6 +96,7 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
 
           <button
             type="button"
+            @click="payPlan()"
             class="rounded-md ml-4  bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             Change Plan
@@ -46,108 +104,20 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
         </div>
       </div>
 
-      <div class="bg-white shadow-md px-8 py-6 rounded-md w-2/3">
-        <h2 class="text-lg font-medium text-gray-900">
-          Payment
-        </h2>
-
-        <fieldset class="mt-4">
-          <legend class="sr-only">
-            Payment type
-          </legend>
-          <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
-            <div class="flex items-center">
-              <input
-                id="credit-card"
-                name="payment-type"
-                type="radio"
-                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              >
-              <label
-                for="credit-card"
-                class="ml-3 block text-sm font-medium text-gray-700"
-              >Credit card</label>
-            </div>
-            <div class="flex items-center">
-              <input
-                id="paypal"
-                name="payment-type"
-                type="radio"
-                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              >
-              <label
-                for="paypal"
-                class="ml-3 block text-sm font-medium text-gray-700"
-              >PayPal</label>
-            </div>
+      <div v-show="!loading" class="bg-white shadow-md px-8 py-6 rounded-md w-2/3">
+        <form id="payment-form">
+          <div id="link-authentication-element">
+          <!--Stripe.js injects the Link Authentication Element-->
           </div>
-        </fieldset>
-
-        <div class="mt-6 grid grid-cols-4 gap-x-4 gap-y-6">
-          <div class="col-span-4">
-            <label
-              for="card-number"
-              class="block text-sm font-medium text-gray-700"
-            >Card number</label>
-            <div class="mt-1">
-              <input
-                id="card-number"
-                type="text"
-                name="card-number"
-                autocomplete="cc-number"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              >
-            </div>
+          <div id="payment-element">
+            <!--Stripe.js injects the Payment Element-->
           </div>
-
-          <div class="col-span-4">
-            <label
-              for="name-on-card"
-              class="block text-sm font-medium text-gray-700"
-            >Name on card</label>
-            <div class="mt-1">
-              <input
-                id="name-on-card"
-                type="text"
-                name="name-on-card"
-                autocomplete="cc-name"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              >
-            </div>
-          </div>
-
-          <div class="col-span-3">
-            <label
-              for="expiration-date"
-              class="block text-sm font-medium text-gray-700"
-            >Expiration date (MM/YY)</label>
-            <div class="mt-1">
-              <input
-                id="expiration-date"
-                type="text"
-                name="expiration-date"
-                autocomplete="cc-exp"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              >
-            </div>
-          </div>
-
-          <div>
-            <label
-              for="cvc"
-              class="block text-sm font-medium text-gray-700"
-            >CVC</label>
-            <div class="mt-1">
-              <input
-                id="cvc"
-                type="text"
-                name="cvc"
-                autocomplete="csc"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              >
-            </div>
-          </div>
-        </div>
+          <button class="primary-button" id="submit">
+            <div class="spinner hidden" id="spinner"></div>
+            <span id="button-text">Pay now</span>
+          </button>
+          <div id="payment-message" class="hidden"></div>
+        </form>
       </div>
     </div>
 
@@ -213,3 +183,25 @@ import SettingsHeader from '../../components/SettingsHeader.vue'
     </div>
   </div>
 </template>
+
+<style>
+#payment-message {
+  color: rgb(105, 115, 134);
+  font-size: 16px;
+  line-height: 20px;
+  padding-top: 12px;
+  text-align: center;
+}
+
+#payment-element {
+  margin-bottom: 24px;
+}
+
+#payment-form {
+  width: 30vw;
+  min-width: 500px;
+  align-self: center;
+  border-radius: 7px;
+  padding: 40px;
+}
+</style>
