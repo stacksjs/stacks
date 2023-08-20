@@ -36,7 +36,7 @@ export class StacksCloud extends Stack {
     })
 
     const webBucket = new s3.Bucket(this, 'WebBucket', {
-      bucketName: `stacksjs.com-${app.env}-web`,
+      bucketName: `stacksjs.com-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
