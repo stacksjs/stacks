@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 
 import { services } from '@stacksjs/config'
 
-const apiKey = services?.stripe?.apiKey || ''
+const apiKey = services.stripe?.apiKey ?? ''
 
 const stripe = new Stripe(apiKey, {
   apiVersion: '2023-08-16',
