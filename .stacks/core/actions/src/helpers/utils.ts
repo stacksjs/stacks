@@ -1,5 +1,5 @@
 import * as storage from '@stacksjs/storage'
-import { italic, runCommand, runCommands } from '@stacksjs/cli'
+import { italic, runCommand, runCommands, underline } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { type ActionOptions, type StacksError, type SyncSubprocess } from '@stacksjs/types'
@@ -41,7 +41,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
   const cmd = `bun --bun ${`${path} ${opts}`}`
 
   if (options?.verbose)
-    log.debug('Running action:', italic(action))
+    log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))
 
   return await runCommand(cmd, {
     cwd: options?.cwd ?? p.projectPath(),
