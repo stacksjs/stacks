@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { Action, ExitCode, NpmScript } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
 import {
   runAction,
   runComponentsDevServer,
@@ -9,6 +9,7 @@ import {
 } from '@stacksjs/actions'
 import { type CLI, type DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { vitePath } from '@stacksjs/path'
 
 export function dev(buddy: CLI) {
   const descriptions = {
@@ -76,7 +77,7 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runCommand(NpmScript.DevComponents, options)
+      const result = await runCommand(`bunx --bun vite --config ${vitePath('src/vue-components.ts')}`, options)
 
       if (options.verbose)
         log.info('buddy dev:components result', result)
