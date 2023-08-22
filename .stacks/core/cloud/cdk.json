@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts /Users/ChrisBreuer/Code/stacks/.stacks/core/cloud/bin/deploy.js",
+  "app": "npx ts-node --prefer-ts-exts ./bin/deploy.js",
   "watch": {
     "include": [
       "**"

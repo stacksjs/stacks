@@ -4,7 +4,7 @@ import { app as a, services as s } from '@stacksjs/config'
 import { StacksCloud } from '../src/cloud.js'
 
 const app = new cdk.App()
-const cloudName = `${a.name ?? 'Stacks'}Cloud`
+const cloudName = `StacksCloud`
 
 // eslint-disable-next-line no-new
 new StacksCloud(app, cloudName, {
