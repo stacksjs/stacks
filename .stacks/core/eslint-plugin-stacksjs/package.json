@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@antfu/eslint-config": "latest",
-    "@typescript-eslint/utils": "^6.4.0"
+    "@typescript-eslint/utils": "^6.4.1"
   },
   "devDependencies": {
     "@types/node": "^20.5.1",
