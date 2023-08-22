@@ -53,13 +53,13 @@ export class Router {
     const params = this.extractParams(route, url)
     const middleware = this.getMiddleware(route)
 
-    if (middleware.before)
-      await middleware.before(params)
+    // if (middleware.before)
+    //   await middleware.before(params)
 
     const result = await route.callback(params)
 
-    if (middleware.after)
-      await middleware.after(params)
+    // if (middleware.after)
+    //   await middleware.after(params)
 
     return result
   }

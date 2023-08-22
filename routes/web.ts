@@ -6,6 +6,8 @@
 
 // route.view('/welcome', 'welcome')
 
+// import CreateUser from './resources/functions/api/CreateUser'
+
 // route.group({ prefix: '/users' }, () => {
 //   route.before(async (params) => {
 //     console.log(`[${now()}] ${params.method} ${params.url}`)
@@ -21,3 +23,5 @@
 //     return `User ${name} (${email}) created`
 //   })
 // })
+
+// route.post('createPaymentIntent', CreateUser)

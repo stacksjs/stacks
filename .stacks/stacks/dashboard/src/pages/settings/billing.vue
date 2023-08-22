@@ -16,13 +16,15 @@ async function initialize() {
 
   // const items = [{ id: 'stacks-monthly-sub' }]
 
-  const response = await paymentIntent.create({
-    amount: calculateOrderAmount(),
-    currency: "usd",
-    automatic_payment_methods: {
-      enabled: true,
-    },
-  })
+  fetch.post('createPaymentIntent')
+
+  // const response = await paymentIntent.create({
+  //   amount: calculateOrderAmount(),
+  //   currency: "usd",
+  //   automatic_payment_methods: {
+  //     enabled: true,
+  //   },
+  // })
 
   const clientSecret: string | null = response.client_secret
 

@@ -1,7 +1,15 @@
-import { defineEventHandler } from 'h3'
+// route.group({ prefix: '/users' }, () => {
+//   route.before(async (params) => {
+//     console.log(`[${now()}] ${params.method} ${params.url}`)
+//   })
 
-// import HelloWorld from '../components/dist/index.js'
+//   route.get('/:id', ({ id }) => {
+//     // Retrieve user from database
+//     return `User with ID ${id}`
+//   })
 
-// console.log('HelloWorld', HelloWorld)
-
-export default defineEventHandler(() => '<h1>I love Stacks!</h1>')
+//   route.post('/', ({ name, email }) => {
+//     // Save user to database
+//     return `User ${name} (${email}) created`
+//   })
+// })
