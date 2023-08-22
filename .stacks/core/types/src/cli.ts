@@ -158,7 +158,6 @@ export enum NpmScript {
   BuildStacks = 'build:stacks',
   Clean = 'rimraf bun.lockb node_modules/ .stacks/**/dist',
   Dev = 'dev',
-  DevComponents = 'bunx --bun vite --config ../../vite/src/vue-components.ts', // when run using runCommand, it's run out of ./core/cli/src
   DevDocs = 'bunx vitepress dev ./docs/src',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',

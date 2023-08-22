@@ -481,6 +481,7 @@ declare global {
   const projectPath: typeof import('../core/path/src/index')['projectPath']
   const projectStoragePath: typeof import('../core/path/src/index')['projectStoragePath']
   const provide: typeof import('vue')['provide']
+  const publicPath: typeof import('../core/path/src/index')['publicPath']
   const pushPath: typeof import('../core/path/src/index')['pushPath']
   const put: typeof import('../core/storage/src/files')['put']
   const query: typeof import('../core/search-engine/src/index')['query']
@@ -1271,6 +1272,7 @@ declare module 'vue' {
     readonly projectPath: UnwrapRef<typeof import('../core/path/src/index')['projectPath']>
     readonly projectStoragePath: UnwrapRef<typeof import('../core/path/src/index')['projectStoragePath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly publicPath: UnwrapRef<typeof import('../core/path/src/index')['publicPath']>
     readonly pushPath: UnwrapRef<typeof import('../core/path/src/index')['pushPath']>
     readonly put: UnwrapRef<typeof import('../core/storage/src/files')['put']>
     readonly query: UnwrapRef<typeof import('../core/search-engine/src/index')['query']>
@@ -2055,6 +2057,7 @@ declare module '@vue/runtime-core' {
     readonly projectPath: UnwrapRef<typeof import('../core/path/src/index')['projectPath']>
     readonly projectStoragePath: UnwrapRef<typeof import('../core/path/src/index')['projectStoragePath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly publicPath: UnwrapRef<typeof import('../core/path/src/index')['publicPath']>
     readonly pushPath: UnwrapRef<typeof import('../core/path/src/index')['pushPath']>
     readonly put: UnwrapRef<typeof import('../core/storage/src/files')['put']>
     readonly query: UnwrapRef<typeof import('../core/search-engine/src/index')['query']>

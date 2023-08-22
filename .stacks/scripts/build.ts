@@ -3,7 +3,7 @@ import { glob } from '@stacksjs/storage'
 import { corePath } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
-import { dim, italic, log, runCommand } from '@stacksjs/cli'
+import { dim, italic, log, runCommandSync } from '@stacksjs/cli'
 
 log.info('Building core packages')
 
@@ -19,7 +19,7 @@ dirs.forEach((folder) => {
   log.info('🏗️  Building...')
   log.info(`📦 ${italic(dim(folder))}`)
 
-  const result = await runCommand('bun --bun run build', {
+  const result = runCommandSync('bun --bun run build', {
     cwd: folder,
   })
 

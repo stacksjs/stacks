@@ -13,7 +13,7 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-dirs.forEach((folder) => {
+dirs.forEach(async (folder) => {
   log.info('')
   log.info('🏗️  Building...')
   log.info(`📦 ${italic(dim(folder))}`)
