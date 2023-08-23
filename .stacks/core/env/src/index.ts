@@ -123,24 +123,30 @@ export interface FrontendEnv {
 export type EnvKeys = keyof Env
 export type FrontendEnvKeys = keyof FrontendEnv
 
+let cache: { [key: string]: any } = {};
+
 const handler = {
   get(target: NodeJS.ProcessEnv, prop: string) {
-    console.log('get is called', prop)
-    process.env = loadEnv(process.env.NODE_ENV || 'development', projectPath(), '')
-    return target[prop];
+    if (prop in cache) {
+      return cache[prop];
+    }
+    const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') }
+    cache[prop] = newEnv[prop];
+    return newEnv[prop];
+  },
+
+  set(target: NodeJS.ProcessEnv, prop: string, value: string) {
+    if (prop in target) {
+      const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') };
+      newEnv[prop] = value;
+      cache[prop] = value;
+      return true;
+    } else {
+      throw new Error(`Cannot set property ${prop} because it doesn't exist in the env object, or it's a const.`);
+    }
   }
 };
 
 export { loadEnv }
 
-// env('APP_NAME', 'Stacks')
-// env().APP_NAME
-// env.APP_NAME
-// config.app.name
-
-// export function env(key?: EnvKeys): string {
-//   return process.env[key] ?? process.env
-// }
-
-export const env: Partial<Env> = new Proxy(process.env, handler); // fancy way to not have to call env() everywhere
-
+export let env: Partial<Env> = new Proxy(process.env, handler); // fancy way to not have to call env() everywhere
