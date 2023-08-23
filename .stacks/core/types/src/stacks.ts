@@ -1,23 +1,24 @@
-import {
-  type AppOptions,
-  type BinaryOptions,
-  type CacheOptions,
-  type CdnOptions,
-  type DatabaseOptions,
-  type DependenciesOptions,
-  type DnsOptions,
-  type DocsOptions,
-  type EmailOptions,
-  type GitOptions,
-  type HashingOptions,
-  type LibraryOptions,
-  type NotificationOptions,
-  type PaymentOptions,
-  type QueueOptions,
-  type SearchEngineOptions,
-  type ServicesOptions,
-  type StorageOptions,
-  type UiOptions,
+import type {
+  AppOptions,
+  BinaryOptions,
+  CacheOptions,
+  CdnOptions,
+  DatabaseOptions,
+  DependenciesOptions,
+  DnsOptions,
+  DocsOptions,
+  EmailOptions,
+  GitOptions,
+  HashingOptions,
+  LibraryOptions,
+  NotificationOptions,
+  PaymentOptions,
+  QueueOptions,
+  SecurityOptions,
+  SearchEngineOptions,
+  ServicesOptions,
+  StorageOptions,
+  UiOptions,
 } from './'
 
 /**
@@ -162,6 +163,15 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   queue: Partial<QueueOptions>
+
+  /**
+   * **Search Engine Options**
+   *
+   * This configuration defines all of your Search Engine options. Because Stacks is fully-typed,
+   * you may hover any of the options below and the definitions will be provided. In case
+   * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  security: Partial<SecurityOptions>
 
   /**
    * **Search Engine Options**

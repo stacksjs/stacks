@@ -14,6 +14,9 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
+// sort dirs alphabetically
+dirs.sort()
+
 dirs.forEach((folder) => {
   log.info('')
   log.info('🏗️  Building...')

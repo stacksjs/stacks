@@ -16,6 +16,7 @@ import payment from '~/config/payment'
 import notification from '~/config/notification'
 import storage from '~/config/storage'
 import searchEngine from '~/config/search-engine'
+import security from '~/config/security'
 import services from '~/config/services'
 import ui from '~/config/ui'
 
@@ -36,6 +37,7 @@ const defaults: ResolvedStacksOptions = {
   queue,
   payment,
   searchEngine,
+  security,
   services,
   storage,
   ui,
@@ -59,6 +61,7 @@ export {
   queue,
   payment,
   searchEngine,
+  security,
   services,
   storage,
   ui,

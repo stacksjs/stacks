@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts ./bin/deploy.js",
+  "app": "npx ts-node --prefer-ts-exts ./deploy.js",
   "watch": {
     "include": [
       "**"

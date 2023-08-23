@@ -28,7 +28,7 @@ export interface ServicesOptions {
     accountId: string
     appId: string
     apiKey: string
-    defaultRegion: string
+    region: string
   }
 
   novu?: {

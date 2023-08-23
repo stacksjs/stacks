@@ -36,7 +36,7 @@ export class StacksCloud extends Stack {
     })
 
     const webBucket = new s3.Bucket(this, 'WebBucket', {
-      bucketName: `stacksjs.com-${app.env}`,
+      bucketName: `stacksjs.com-23123123424324`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -44,7 +44,7 @@ export class StacksCloud extends Stack {
 
     // Create an S3 bucket for CloudFront access logs
     const logsBucket = new s3.Bucket(this, 'LogBucket', {
-      bucketName: `stacksjs.com-${app.env}-logs`,
+      bucketName: `stacksjs.com34534545-logs`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -151,7 +151,7 @@ export class StacksCloud extends Stack {
 
     // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('../../../storage/public')],
+      sources: [s3deploy.Source.asset('dist')],
       destinationBucket: webBucket,
       distribution,
       distributionPaths: ['/*'],
