@@ -48,7 +48,7 @@
   },
   "peerDependencies": {
     "@stacksjs/dns": "workspace:*",
-    "aws-cdk-lib": "^2.92.0",
+    "aws-cdk-lib": "^2.93.0",
     "constructs": "^10.2.69"
   },
   "dependencies": {
@@ -56,7 +56,7 @@
     "@aws-lambda-powertools/metrics": "^1.12.1",
     "@aws-lambda-powertools/tracer": "^1.12.1",
     "@stacksjs/dns": "workspace:*",
-    "aws-cdk-lib": "^2.92.0",
+    "aws-cdk-lib": "^2.93.0",
     "constructs": "^10.2.69"
   },
   "devDependencies": {
