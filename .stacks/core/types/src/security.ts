@@ -13,7 +13,7 @@ export interface SecurityOptions {
     rules: {
       name: string
       priority: number
-      action: 'allow' | 'block'
+      action: { block?: {}, allow?: {} }
       visibilityConfig: {
         sampledRequestsEnabled: boolean
         cloudWatchMetricsEnabled: boolean

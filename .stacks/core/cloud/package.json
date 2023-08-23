@@ -60,6 +60,7 @@
     "constructs": "^10.2.69"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/env": "workspace:*"
   }
 }

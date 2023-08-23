@@ -83,7 +83,7 @@ export function dev(buddy: CLI) {
         log.info('buddy dev:components result', result)
 
       if (result.isErr()) {
-        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
+        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 
@@ -111,7 +111,7 @@ export function dev(buddy: CLI) {
 
       // check if result is an error
       else if (result.isErr()) {
-        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error ?? undefined)
+        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 

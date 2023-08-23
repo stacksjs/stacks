@@ -10,8 +10,8 @@ import type { EmailConfig } from '../.stacks/core/types/src'
  */
 export default {
   from: {
-    name: env.MAIL_FROM_NAME ?? 'Stacks',
-    address: env.MAIL_FROM_ADDRESS ?? 'no-reply@stacksjs.com',
+    name: env.MAIL_FROM_NAME || 'Stacks',
+    address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.com',
   },
 
   mailboxes: {

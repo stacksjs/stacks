@@ -1,4 +1,4 @@
-import { app } from '@stacksjs/config'
+import { app, security } from '@stacksjs/config'
 // import { publicPath } from '@stacksjs/path'
 import {
   Duration,
@@ -65,24 +65,7 @@ export class StacksCloud extends Stack {
         cloudWatchMetricsEnabled: true,
         metricName: 'webAclMetric',
       },
-      rules: [
-        {
-          action: { block: {} },
-          name: 'RateLimitRule',
-          priority: 0,
-          statement: {
-            rateBasedStatement: {
-              aggregateKeyType: 'IP',
-              limit: 2000,
-            },
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: 'rateLimitRuleMetric',
-          },
-        },
-      ],
+      rules: security.appFirewall.rules,
     })
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')

@@ -9,10 +9,10 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  name: env.APP_NAME ?? 'Stacks',
-  env: env.APP_ENV ?? 'development',
-  url: env.APP_URL ?? 'stacks.test',
-  debug: env.APP_DEBUG ?? false,
+  name: env.APP_NAME || 'Stacks',
+  env: env.APP_ENV || 'development',
+  url: env.APP_URL || 'stacks.test',
+  debug: env.APP_DEBUG || false,
   key: env.APP_KEY,
 
   timezone: 'UTC',

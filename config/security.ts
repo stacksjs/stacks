@@ -7,7 +7,7 @@ import { defineSecurity } from '../.stacks/core/config/src/helpers'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
 export default defineSecurity({
   appFirewall: {
     immunity: 300, // CAPTCHA immunity time 300 seconds
@@ -22,19 +22,19 @@ export default defineSecurity({
     rules: [
       // rule to limit requests to 100 per 5 minutes
       {
-        name: 'limit-ip',
-        priority: 1,
-        action: 'block',
+        action: { block: {} },
+        name: 'RateLimitRule',
+        priority: 0,
+        statement: {
+          rateBasedStatement: {
+            aggregateKeyType: 'IP',
+            limit: 1000,
+          },
+        },
         visibilityConfig: {
           sampledRequestsEnabled: true,
           cloudWatchMetricsEnabled: true,
-          metricName: 'limit-ip',
-        },
-        statement: {
-          rateBasedStatement: {
-            limit: 1000,
-            aggregateKeyType: 'IP',
-          },
+          metricName: 'rateLimitRuleMetric',
         },
       },
 
@@ -43,7 +43,7 @@ export default defineSecurity({
         name: 'AWSManagedRulesAmazonIpReputationList',
         priority: 2,
         // use rule action
-        action: 'allow',
+        action: { allow: {} },
         visibilityConfig: {
           sampledRequestsEnabled: true,
           cloudWatchMetricsEnabled: true,
@@ -62,7 +62,7 @@ export default defineSecurity({
         name: 'AWSManagedRulesKnownBadInputsRuleSet',
         priority: 3,
         // use rule action
-        action: 'allow',
+        action: { allow: {} },
         visibilityConfig: {
           sampledRequestsEnabled: true,
           cloudWatchMetricsEnabled: true,
@@ -81,7 +81,7 @@ export default defineSecurity({
         name: 'AWSManagedRulesAccountTakeoverProtectionRuleSet',
         priority: 4,
         // use rule action
-        action: 'allow',
+        action: { allow: {} },
         visibilityConfig: {
           sampledRequestsEnabled: true,
           cloudWatchMetricsEnabled: true,
@@ -100,7 +100,7 @@ export default defineSecurity({
         name: 'AWSManagedRulesAdminProtectionRuleSet',
         priority: 5,
         // use rule action
-        action: 'allow',
+        action: { allow: {} },
         visibilityConfig: {
           sampledRequestsEnabled: true,
           cloudWatchMetricsEnabled: true,

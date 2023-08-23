@@ -1,4 +1,6 @@
 import process from 'node:process'
+import { loadEnv } from 'vite'
+import { projectPath } from '@stacksjs/path'
 
 export interface Env {
   APP_NAME: string
@@ -121,6 +123,24 @@ export interface FrontendEnv {
 export type EnvKeys = keyof Env
 export type FrontendEnvKeys = keyof FrontendEnv
 
-export const env: Partial<Env> = process.env
+const handler = {
+  get(target: NodeJS.ProcessEnv, prop: string) {
+    console.log('get is called', prop)
+    process.env = loadEnv(process.env.NODE_ENV || 'development', projectPath(), '')
+    return target[prop];
+  }
+};
 
-// export { loadEnv } from 'vite'
+export { loadEnv }
+
+// env('APP_NAME', 'Stacks')
+// env().APP_NAME
+// env.APP_NAME
+// config.app.name
+
+// export function env(key?: EnvKeys): string {
+//   return process.env[key] ?? process.env
+// }
+
+export const env: Partial<Env> = new Proxy(process.env, handler); // fancy way to not have to call env() everywhere
+
