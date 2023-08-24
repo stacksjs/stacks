@@ -1,27 +1,25 @@
-// import { route } from '@stacksjs/router'
+import { route } from '../.stacks/core/router/src/index.ts'
+import { request } from '../request.ts'
 
-// route.get('/', () => {
-//   return 'Hello, world!'
-// })
+route.get('/users/list', getBlogs)
+// route.post('/blogs', getBlogs)
 
-// route.view('/welcome', 'welcome')
+route.get('/users', getUsers)
 
-// import CreateUser from './resources/functions/api/CreateUser'
+route.group({ prefix: '/users' }, () => {
+  route.get('/get', getUsers)
 
-// route.group({ prefix: '/users' }, () => {
-//   route.before(async (params) => {
-//     console.log(`[${now()}] ${params.method} ${params.url}`)
-//   })
+  route.get('/delete', getUsers)
+})
 
-//   route.get('/:id', ({ id }) => {
-//     // Retrieve user from database
-//     return `User with ID ${id}`
-//   })
+function getUsers() {
+  return 'hello world'
+}
 
-//   route.post('/', ({ name, email }) => {
-//     // Save user to database
-//     return `User ${name} (${email}) created`
-//   })
-// })
+// function getUserId() {
+//   return request.getParams('id')
+// }
 
-// route.post('createPaymentIntent', CreateUser)
+function getBlogs() {
+  return request.all()
+}

@@ -30,11 +30,12 @@ export interface NitroEventHandler {
 }
 
 // need to refactor before, after, view to be a part of some other type
-export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'before' | 'after' | 'view'
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view';
 
-export type RouteCallback = (params: Record<string, any>) => any
+export type RouteCallback = (params?: Record<string, any>) => any
 
 export interface Route {
+  uri: string
   method: HttpMethod
   pattern: RegExp
   callback: RouteCallback
