@@ -17,11 +17,10 @@ if (!account || !region) {
   process.exit(1)
 }
 
-let bucketName = `stacks-cloud-${a.env}-assets-${account}-${region}`;
+let bucketName = `stacks-cloud-assets-${a.env}-${account}-${region}`;
 
 // eslint-disable-next-line no-new
 new StacksCloud(app, cloudName, {
-  toolkitStackName: `${cloudName}-toolkit`,
   description: 'This stack includes all of your Stacks cloud resources.',
   env: {
     account,
@@ -31,5 +30,6 @@ new StacksCloud(app, cloudName, {
   synthesizer: new cdk.DefaultStackSynthesizer({
     qualifier: a.env,
     fileAssetsBucketName: bucketName,
+    // bootstrapBucketName: bucketName,
   }),
 })

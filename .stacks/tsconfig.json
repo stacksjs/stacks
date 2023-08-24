@@ -17,6 +17,7 @@
     "moduleDetection": "force",
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "isolatedModules": true,
     "strictNullChecks": true,

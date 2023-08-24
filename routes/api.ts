@@ -1,3 +1,5 @@
+// the only difference between web and api routes is that the API middleware is associated by default
+
 // route.group({ prefix: '/users' }, () => {
 //   route.before(async (params) => {
 //     console.log(`[${now()}] ${params.method} ${params.url}`)
