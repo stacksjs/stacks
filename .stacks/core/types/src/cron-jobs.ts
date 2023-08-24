@@ -8,7 +8,6 @@ export interface JobOptions {
   name?: string
   // eslint-disable-next-line @typescript-eslint/ban-types
   run: string | Function
-  schedule?: string
   description?: string
   timezone?: string
   tries?: number
