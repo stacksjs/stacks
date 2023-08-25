@@ -45,11 +45,11 @@
   },
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.26.1"
+    "kysely": "^0.26.2"
   },
   "dependencies": {
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.26.1"
+    "kysely": "^0.26.2"
   },
   "optionalDependencies": {
     "mysql2": "^3.6.0",
