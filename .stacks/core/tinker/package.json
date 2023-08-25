@@ -24,14 +24,13 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts"
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
     },
-    "./cli": {
-      "bun": "./src/cli.ts",
-      "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.mjs"
-    },
-    "./*": "./*"
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

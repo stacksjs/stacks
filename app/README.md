@@ -2,8 +2,10 @@
 
 The `app` folder is divided into the following subfolders:
 
-- `cli` - Place your custom commands here.
-- `docs` - Place your markdown documentation here.
+- `actions` - Place your actions here.
+- `commands` - Place your commands here.
+- `events` - Place your events here.
+- `jobs` - Place your jobs here.
 - `models` - Place your models here.
 - `notifications` - Place your notifications here.
-- `pages` - Place your pages here. _Think of it as `views` in a traditional MVC application._
+- `schedule.ts` - Your scheduler. Schedule your jobs, actions and commands here.

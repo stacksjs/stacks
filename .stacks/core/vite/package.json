@@ -25,12 +25,12 @@
     ".": {
       "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     },
     "./plugin": {
       "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     },
     "./desktop": {
       "bun": "./src/desktop.ts",

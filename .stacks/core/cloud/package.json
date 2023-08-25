@@ -26,10 +26,12 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts"
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./*"
+      "bun": "./src/*",
+      "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
@@ -42,6 +44,8 @@
     "README.md"
   ],
   "scripts": {
+    "bootstrap": "cdk bootstrap --profile stacks",
+    "deploy": "cdk deploy --profile stacks",
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"

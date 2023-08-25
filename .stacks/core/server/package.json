@@ -30,7 +30,8 @@
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./*"
+      "bun": "./src/*",
+      "import": "./dist/*"
     }
   },
   "module": "dist/index.js",

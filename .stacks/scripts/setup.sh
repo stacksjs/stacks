@@ -264,11 +264,11 @@ gum_func() {
 
 welcome() {
   gum_func format -- <<-EoMD
-		# Hi 👋 let’s set up Stacks
+		# Howdy! 👋 Let’s set up Stacks 👋
 
-		* Stacks uses tea to manage your environments.
-		* Your local environment is placed here: \`$TEA_DESTDIR\`
-		* (Stacks won’t touch anything else)
+		* Stacks uses tea to manage your local environment.
+		* It is placed here: \`$TEA_DESTDIR\`
+		* _(Stacks does not touch anything else)_
 
 		> docs https://docs.stacksjs.dev/getting-started
 		EoMD

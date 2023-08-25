@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   buttonText: string
@@ -13,8 +13,7 @@ const {
   passedClass,
 } = defineProps<Props>()
 
-
-const loading = ref(false);
+const loading = ref(false)
 
 const buttonString = computed(() => {
   return loading.value ? loadingText : buttonText

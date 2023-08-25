@@ -13,9 +13,8 @@ import AppButton from '../../components/Buttons/AppButton.vue'
         </div>
         <div class="flex items-center">
           <AppButton passed-class="primary-button" loading-text="Deploying..." button-text="Deploy">
-
             <template #icon>
-              <div class="i-heroicons-cloud-arrow-up w-6 h-6 mr-2"></div>
+              <div class="i-heroicons-cloud-arrow-up w-6 h-6 mr-2" />
             </template>
           </AppButton>
         </div>

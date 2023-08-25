@@ -29,12 +29,12 @@
     ".": {
       "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     },
     "./unocss": {
       "bun": "./src/unocss.ts",
       "types": "./dist/unocss.d.ts",
-      "import": "./dist/unocss.mjs"
+      "import": "./dist/unocss.js"
     }
   },
   "module": "dist/index.js",

@@ -18,7 +18,7 @@ export function deploy(buddy: CLI) {
       const result = await runAction(Action.Deploy, options)
 
       if (result.isErr()) {
-        await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 

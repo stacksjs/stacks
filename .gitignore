@@ -9,12 +9,9 @@ node_modules
 updates
 tests/unit/coverage
 dist*
-storage/logs/*
+storage/app/docs/*
+!.gitkeep
 
 .fleet
 .idea
 .vscode
-
-# CDK asset staging directory
-.cdk.staging
-cdk.out

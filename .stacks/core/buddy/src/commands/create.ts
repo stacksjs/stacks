@@ -47,8 +47,8 @@ export function create(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      ensureEnv(path, options)
-      install(path, options)
+      await ensureEnv(path, options)
+      await install(path, options)
 
       if (startTime) {
         const time = performance.now() - startTime

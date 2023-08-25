@@ -123,30 +123,31 @@ export interface FrontendEnv {
 export type EnvKeys = keyof Env
 export type FrontendEnvKeys = keyof FrontendEnv
 
-let cache: { [key: string]: any } = {};
+const cache: { [key: string]: any } = {}
 
 const handler = {
   get(target: NodeJS.ProcessEnv, prop: string) {
-    if (prop in cache) {
-      return cache[prop];
-    }
+    if (prop in cache)
+      return cache[prop]
+
     const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') }
-    cache[prop] = newEnv[prop];
-    return newEnv[prop];
+    cache[prop] = newEnv[prop]
+    return newEnv[prop]
   },
 
   set(target: NodeJS.ProcessEnv, prop: string, value: string) {
     if (prop in target) {
-      const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') };
-      newEnv[prop] = value;
-      cache[prop] = value;
-      return true;
-    } else {
-      throw new Error(`Cannot set property ${prop} because it doesn't exist in the env object, or it's a const.`);
+      const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') }
+      newEnv[prop] = value
+      cache[prop] = value
+      return true
     }
-  }
-};
+    else {
+      throw new Error(`Cannot set property ${prop} because it doesn't exist in the env object, or it's a const.`)
+    }
+  },
+}
 
 export { loadEnv }
 
-export let env: Partial<Env> = new Proxy(process.env, handler); // fancy way to not have to call env() everywhere
+export const env: Partial<Env> = new Proxy(process.env, handler) // fancy way to not have to call env() everywhere

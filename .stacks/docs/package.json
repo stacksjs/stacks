@@ -31,11 +31,9 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "bun --bun run copy-src && vitepress dev src",
-    "build": "bun --bun run copy-src && vitepress build",
-    "preview": "bun --bun run copy-src && vitepress preview",
-    "deploy": "bun --bun run copy-src && wip",
-    "copy-src": "rimraf ./src/* && cp -R ../../docs/* ./src"
+    "dev": "bunx vitepress dev",
+    "build": "bunx vitepress build",
+    "preview": "bunx vitepress preview"
   },
   "dependencies": {
     "@stacksjs/docs": "workspace:*",

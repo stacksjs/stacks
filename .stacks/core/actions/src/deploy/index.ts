@@ -2,6 +2,6 @@
 import { cloudPath } from '@stacksjs/path'
 import { runCommand } from '@stacksjs/cli'
 
-await runCommand('bunx cdk deploy', {
+await runCommand('bun run deploy', {
   cwd: cloudPath(),
 })

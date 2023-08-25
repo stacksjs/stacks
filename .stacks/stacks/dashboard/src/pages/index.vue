@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import Alert from '../components/Modals/Popups/Alert.vue'
 import BaseModal from '../components/Modals/BaseModal.vue'
@@ -537,7 +536,6 @@ import BaseModal from '../components/Modals/BaseModal.vue'
                 id="title"
                 class="mt-2 text-sm text-gray-800 dark:text-gray-200"
               >
-
                 test desc
               </p>
             </div>

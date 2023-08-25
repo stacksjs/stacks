@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import BaseModal from '../BaseModal.vue'
 import AppButton from '../../Buttons/AppButton.vue'
-
-import { computed } from 'vue'
 
 const {
   title,
@@ -16,10 +15,10 @@ const emit = defineEmits(['cancel', 'confirm'])
 
 interface Props {
   title: string
-  description: String
-  type: String
-  confirmationText: String
-  abortText: String
+  description: string
+  type: string
+  confirmationText: string
+  abortText: string
 }
 
 const buttonBackground = computed(() => {

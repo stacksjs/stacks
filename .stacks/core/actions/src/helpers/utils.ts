@@ -56,8 +56,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-// export async function runActions(actions: string[], options?: ActionOptions): Promise<CommandResult | CommandResult[]> {
-export function runActions(actions: string[], options?: ActionOptions) {
+export async function runActions(actions: string[], options?: ActionOptions) {
   if (!actions.length)
     return err('No actions were specified')
 
@@ -68,7 +67,7 @@ export function runActions(actions: string[], options?: ActionOptions) {
 
   const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`${action}.ts`)}`)
 
-  return runCommands(commands, options)
+  return await runCommands(commands, options)
 }
 
 export function hasAction(action: string) {

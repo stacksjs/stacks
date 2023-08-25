@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppButton from '../../components/Buttons/AppButton.vue'  
 import { ref } from 'vue'
+import AppButton from '../../components/Buttons/AppButton.vue'
 
 const addDnsSection = ref(false)
 
@@ -23,8 +23,7 @@ function openAddDnsSection() {
           </h1>
         </div>
 
-        <AppButton @click="openAddDnsSection" passed-class="primary-button" loading-text="DNS" button-text="DNS">
-
+        <AppButton passed-class="primary-button" loading-text="DNS" button-text="DNS" @click="openAddDnsSection">
           <template #icon>
             <div class="i-heroicons-plus w-5 h-5" />
           </template>

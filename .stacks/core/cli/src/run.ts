@@ -1,6 +1,6 @@
 import { type CliOptions, type CommandError, type SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, ok } from '@stacksjs/error-handling'
-import { execSync, exec } from './exec'
+import { exec, execSync } from './exec'
 import { italic, underline } from './utilities'
 import { log } from './console'
 

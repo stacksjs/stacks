@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { paymentIntent } from '../../../../../core/payments/src/drivers/stripe'
-import SettingsHeader from '../../components/SettingsHeader.vue'
-import { loadStripe } from '@stripe/stripe-js';
-import type { Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js'
+import type { Stripe } from '@stripe/stripe-js'
 import { ref } from 'vue'
+import SettingsHeader from '../../components/SettingsHeader.vue'
 
+let elements
 
-let elements;
-
-const loading = ref(true);
+const loading = ref(true)
 
 // TODO: learn about subscriptions
 async function initialize() {
-  const stripe: Stripe = await loadStripe('');
+  const stripe: Stripe = await loadStripe('')
 
   // const items = [{ id: 'stacks-monthly-sub' }]
 
@@ -30,7 +28,7 @@ async function initialize() {
 
   elements = stripe.elements({
     clientSecret,
-  });
+  })
 
   // const linkAuthenticationElement = elements.create("linkAuthentication");
   // linkAuthenticationElement.mount("#link-authentication-element");
@@ -40,11 +38,11 @@ async function initialize() {
   // });
 
   const paymentElementOptions = {
-    layout: "tabs",
-  };
+    layout: 'tabs',
+  }
 
-  const paymentElement = elements.create("payment", paymentElementOptions);
-  paymentElement.mount("#payment-element");
+  const paymentElement = elements.create('payment', paymentElementOptions)
+  paymentElement.mount('#payment-element')
 
   loading.value = false
 }
@@ -53,12 +51,12 @@ async function payPlan() {
   await initialize()
 }
 
-const calculateOrderAmount = () => {
+function calculateOrderAmount() {
   // Replace this constant with a calculation of the order's amount
   // Calculate the order total on the server to prevent
   // people from directly manipulating the amount on the client
-  return 2000;
-};
+  return 2000
+}
 </script>
 
 <template>
@@ -98,8 +96,8 @@ const calculateOrderAmount = () => {
 
           <button
             type="button"
-            @click="payPlan()"
             class="rounded-md ml-4  bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            @click="payPlan()"
           >
             Change Plan
           </button>
@@ -109,16 +107,16 @@ const calculateOrderAmount = () => {
       <div v-show="!loading" class="bg-white shadow-md px-8 py-6 rounded-md w-2/3">
         <form id="payment-form">
           <div id="link-authentication-element">
-          <!--Stripe.js injects the Link Authentication Element-->
+          <!-- Stripe.js injects the Link Authentication Element -->
           </div>
           <div id="payment-element">
-            <!--Stripe.js injects the Payment Element-->
+            <!-- Stripe.js injects the Payment Element -->
           </div>
-          <button class="primary-button" id="submit">
-            <div class="spinner hidden" id="spinner"></div>
+          <button id="submit" class="primary-button">
+            <div id="spinner" class="spinner hidden" />
             <span id="button-text">Pay now</span>
           </button>
-          <div id="payment-message" class="hidden"></div>
+          <div id="payment-message" class="hidden" />
         </form>
       </div>
     </div>

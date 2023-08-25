@@ -5,6 +5,6 @@ const options = parseArgs()
 // eslint-disable-next-line no-console
 console.log('options are:', options)
 
-// runCommands([
+// await runCommands([
 //   'bunx tinker',
 // ], { verbose: true })

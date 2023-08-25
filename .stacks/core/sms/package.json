@@ -29,10 +29,12 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts"
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./*"
+      "bun": "./src/*",
+      "import": "./dist/*"
     }
   },
   "module": "dist/index.js",

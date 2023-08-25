@@ -27,7 +27,6 @@ import AppButton from '../../components/Buttons/AppButton.vue'
       </div>
       <div>
         <div class="mt-4 flex justify-end">
-
           <AppButton passed-class="primary-button" loading-text="Adding..." button-text="Add" />
         </div>
       </div>

@@ -284,7 +284,7 @@ export function projectConfigPath(path?: string) {
   return projectPath(`config/${path || ''}`)
 }
 
-export function projectStoragePath(path?: string) {
+export function projectStoragePath(path?: string): string {
   return projectPath(`storage/${path || ''}`)
 }
 
@@ -471,6 +471,7 @@ export const path = {
   pathPath,
   paymentsPath,
   projectPath,
+  projectStoragePath,
   pushPath,
   queryBuilderPath,
   queuePath,

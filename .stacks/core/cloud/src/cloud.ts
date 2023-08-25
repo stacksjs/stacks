@@ -1,8 +1,7 @@
-import { app, security } from '@stacksjs/config'
-// import { publicPath } from '@stacksjs/path'
+import type { Construct } from 'constructs'
+import type { StackProps } from 'aws-cdk-lib'
 import {
   Duration,
-  Fn,
   CfnOutput as Output,
   RemovalPolicy,
   Stack,
@@ -15,10 +14,12 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
+import { app } from '../../config/src'
+
+// import { publicPath } from '@stacksjs/path'
 
 export class StacksCloud extends Stack {
-  // constructor(scope: Construct, id: string, props?: StackProps) {
-  constructor(scope, id, props) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
     if (!app.url)
@@ -30,27 +31,25 @@ export class StacksCloud extends Stack {
 
     const certificate = new acm.Certificate(this, 'WebsiteCertificate', {
       domainName: 'stacksjs.com',
-      hostedZone: zone, // the Route53 hosted zone
-      region: 'us-east-1', // CloudFront only accepts certificates in us-east-1,
       validation: acm.CertificateValidation.fromDns(zone), // Use DNS validation
     })
 
     const webBucket = new s3.Bucket(this, 'WebBucket', {
-      bucketName: `stacksjs.com-23123123424324`,
+      bucketName: 'stacksjs.com-23123123424324',
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     })
 
     // Create an S3 bucket for CloudFront access logs
-    const logsBucket = new s3.Bucket(this, 'LogBucket', {
-      bucketName: `stacksjs.com34534545-logs`,
+    const logBucket = new s3.Bucket(this, 'LogBucket', {
+      bucketName: 'stacksjs.com34534545-logs',
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
     })
 
-    logsBucket.addLifecycleRule({
+    logBucket.addLifecycleRule({
       enabled: true,
       expiration: Duration.days(30),
       id: 'rule',
@@ -65,20 +64,20 @@ export class StacksCloud extends Stack {
         cloudWatchMetricsEnabled: true,
         metricName: 'webAclMetric',
       },
-      rules: security.appFirewall.rules,
+      // rules: security.appFirewall?.rules,
     })
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
 
-    // create a CDN to deploy your website
+    // // create a CDN to deploy your website
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: ['stacksjs.com'],
       defaultRootObject: 'index.html',
       comment: `CDN for ${app.name}`,
       certificate,
-      originShieldEnabled: true,
+      // originShieldEnabled: true,
       enableLogging: true,
-      logBucket: logsBucket,
+      logBucket,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       enabled: true,
@@ -127,14 +126,13 @@ export class StacksCloud extends Stack {
       zone,
       recordName: 'www',
       domainName: 'stacksjs.com',
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     })
 
     // housekeeping for uploading the data in the bucket
 
     // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('dist')],
+      sources: [s3deploy.Source.asset('../../../storage/public')],
       destinationBucket: webBucket,
       distribution,
       distributionPaths: ['/*'],
@@ -143,19 +141,18 @@ export class StacksCloud extends Stack {
     // Prints out the web endpoint to the terminal
     // eslint-disable-next-line no-new
     new Output(this, 'AppUrl', {
-      value: `https://stacksjs.com`,
+      value: 'https://stacksjs.com',
       description: 'The URL of the deployed application',
     })
 
     // Prints out the web endpoint to the terminal
     // eslint-disable-next-line no-new
     new Output(this, 'VanityUrl', {
-      value: distribution.domainName,
+      value: `https://${distribution.domainName}`,
       description: 'The vanity URL of the deployed application',
     })
 
     // Output the nameservers of the hosted zone
-    // eslint-disable-next-line no-new
     // new Output(this, 'Nameservers', {
     //   value: Fn.join(', ', zone.hostedZoneNameServers),
     //   description: 'Nameservers for the application domain',

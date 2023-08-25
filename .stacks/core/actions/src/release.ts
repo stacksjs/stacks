@@ -5,7 +5,7 @@ import { log } from '@stacksjs/logging'
 import { runActions } from './'
 import app from '~/config/app'
 
-runActions([
+await runActions([
   Action.GenerateLibraryEntries, // generates the package/library entry points
   Action.LintFix, // ensure there are no lint errors
   // Action.Test, // run the tests

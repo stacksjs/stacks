@@ -15,7 +15,6 @@ export const vueComponentsConfig: ViteConfig = {
   publicDir: storagePath('public'),
 
   server: {
-    https: true,
     host: app.url,
     open: true,
   },

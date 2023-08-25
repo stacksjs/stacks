@@ -3,9 +3,8 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { type CLI, type MakeOptions } from '@stacksjs/types'
-import { intro, italic, outro, prompt, runCommand } from '@stacksjs/cli'
+import { intro, italic, outro, prompt } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { frameworkPath } from '@stacksjs/path'
 import { isString } from '@stacksjs/validation'
 import {
   createModel,
@@ -239,7 +238,7 @@ export function make(buddy: CLI) {
     .command('make:migration', descriptions.migration)
     .option('-n, --name', 'The name of the migration')
     .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
-    .action(async (options: MakeOptions) => {
+    .action((options: MakeOptions) => {
       const name = buddy.args[0] || options.name
       options.name = name
 

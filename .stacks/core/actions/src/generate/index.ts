@@ -13,7 +13,7 @@ export async function invoke(options?: GeneratorOptions) {
     await generateTypes(options)
 
   else if (options?.entries)
-    generateLibEntries(options)
+    await generateLibEntries(options)
 
   else if (options?.webTypes)
     await generateWebTypes(options)

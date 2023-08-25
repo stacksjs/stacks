@@ -1,8 +1,53 @@
-import { frameworkPath } from '../.stacks/core/path/src'
-import { type DocsConfig } from '../.stacks/core/types/src/docs'
+import { path as p } from '../.stacks/core/path/src'
+import type { DocsConfig } from '../.stacks/core/types/src/docs'
 import services from './services'
 
-// import type { PluginOption } from 'vite'
+const nav = [
+  { text: 'Config', link: '/config', activeMatch: '/config' },
+  {
+    text: 'Changelog',
+    link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
+  },
+  { text: 'Blog', link: 'https://updates.ow3.org' },
+]
+
+const sidebarGuide = [
+  {
+    text: 'Introduction',
+    collapsible: true,
+    items: [
+      { text: 'What is Stacks?', link: '/guide/what-is-stacks' },
+      { text: 'Getting Started', link: '/guide/getting-started' },
+      { text: 'Configuration', link: '/guide/config' },
+    ],
+  },
+
+  {
+    text: 'Digging Deeper',
+    collapsible: true,
+    items: [
+      { text: 'How To?', link: '/guide/stacks' },
+      { text: 'Workflows / CI', link: '/guide/ci' },
+      { text: 'VS Code', link: '/guide/vs-code' },
+      { text: 'Apps', link: '/guide/apps' },
+      { text: 'Examples', link: '/guide/examples' },
+      { text: 'Packages', link: '/guide/packages' },
+      { text: 'Testing', link: '/guide/testing' },
+      { text: 'Single File Components', link: '/guide/sfcs' },
+    ],
+  },
+
+  {
+    text: 'Starters',
+    collapsible: true,
+    items: [
+      { text: 'Vue Starter', link: '/starter/vue' },
+      { text: 'Web Component Starter', link: '/starter/web-components' },
+      { text: 'Composable Starter', link: '/starter/web-components' },
+      { text: 'TypeScript Starter', link: '/starter/web-components' },
+    ],
+  },
+]
 
 /**
  * **Documentation Options**
@@ -14,24 +59,25 @@ import services from './services'
 export default {
   vite: {
     server: {
-      port: 3335,
+      host: 'docs.stacks.test',
+      port: 3333,
+      open: true,
     },
-    root: frameworkPath('docs'),
-    // plugins: [
-    //   CustomHmr(),
-    // ],
   },
-  outDir: frameworkPath('docs/dist'),
+
+  srcDir: p.projectPath('docs'),
+  outDir: p.projectStoragePath('app/docs'),
+  cacheDir: p.projectStoragePath('app/cache/docs'),
   lang: 'en-US',
   title: 'Stacks',
   description: 'Composability-First. UI/FX Framework.',
   lastUpdated: true,
 
   themeConfig: {
-    nav: nav(),
+    nav,
 
     sidebar: {
-      '/guide/': sidebarGuide(),
+      '/guide/': sidebarGuide,
     },
 
     editLink: {
@@ -58,73 +104,3 @@ export default {
     },
   },
 } satisfies DocsConfig
-
-// function CustomHmr(): PluginOption {
-//   return {
-//     name: 'custom-hmr',
-//     enforce: 'post',
-//     // HMR
-//     handleHotUpdate({ file, server }) {
-//       // eslint-disable-next-line no-console
-//       console.log('file', file)
-//       // eslint-disable-next-line no-console
-//       console.log('server', server)
-//
-//       // console.log('reloading json file...')
-//
-//       server.ws.send({
-//         type: 'full-reload',
-//         path: '*',
-//       })
-//     },
-//   }
-// }
-
-function nav() {
-  return [
-    { text: 'Config', link: '/config', activeMatch: '/config' },
-    {
-      text: 'Changelog',
-      link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
-    },
-    { text: 'Blog', link: 'https://updates.ow3.org' },
-  ]
-}
-
-function sidebarGuide() {
-  return [
-    {
-      text: 'Introduction',
-      collapsible: true,
-      items: [
-        { text: 'What is Stacks?', link: '/guide/what-is-stacks' },
-        { text: 'Getting Started', link: '/guide/getting-started' },
-        { text: 'Configuration', link: '/guide/config' },
-      ],
-    },
-    {
-      text: 'Digging Deeper',
-      collapsible: true,
-      items: [
-        { text: 'How To?', link: '/guide/stacks' },
-        { text: 'Workflows / CI', link: '/guide/ci' },
-        { text: 'VS Code', link: '/guide/vs-code' },
-        { text: 'Apps', link: '/guide/apps' },
-        { text: 'Examples', link: '/guide/examples' },
-        { text: 'Packages', link: '/guide/packages' },
-        { text: 'Testing', link: '/guide/testing' },
-        { text: 'Single File Components', link: '/guide/sfcs' },
-      ],
-    },
-    {
-      text: 'Starters',
-      collapsible: true,
-      items: [
-        { text: 'Vue Starter', link: '/starter/vue' },
-        { text: 'Web Component Starter', link: '/starter/web-components' },
-        { text: 'Composable Starter', link: '/starter/web-components' },
-        { text: 'TypeScript Starter', link: '/starter/web-components' },
-      ],
-    },
-  ]
-}

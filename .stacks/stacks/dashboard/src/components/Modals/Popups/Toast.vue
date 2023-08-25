@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import ToastWrapper from '../ToastWrapper.vue'
-import { watch, ref } from 'vue'
 
 const show = ref(false)
 
@@ -108,7 +108,7 @@ watch(
 
       <div class="ml-3 w-0 flex-1 pt-0.5">
         <p class="text-sm font-medium text-left text-gray-900 dark:text-gray-100">
-         sample title
+          sample title
         </p>
       </div>
     </template>

@@ -29,7 +29,7 @@ export function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-p, --views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: DevOptions) => {
+    .action(async (options: DevOptions) => {
       // const perf = await intro('buddy dev')
       // const result = await runAction(Action.Dev, options)
 
@@ -60,11 +60,11 @@ export function dev(buddy: CLI) {
       }
       else {
         if (options.components)
-          runComponentsDevServer(options)
+          await runComponentsDevServer(options)
         else if (options.api)
-          runFunctionsDevServer(options)
+          await runFunctionsDevServer(options)
         else if (options.pages)
-          runPagesDevServer(options)
+          await runPagesDevServer(options)
         // else if (options.docs)
       }
       // await startDevelopmentServer(options)
@@ -122,22 +122,22 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: DevOptions) => {
-      runDesktopDevServer(options)
+    .action(async (options: DevOptions) => {
+      await runDesktopDevServer(options)
     })
 
   buddy
     .command('dev:functions', descriptions.api)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: DevOptions) => {
-      runFunctionsDevServer(options)
+    .action(async (options: DevOptions) => {
+      await runFunctionsDevServer(options)
     })
 
   buddy
     .command('dev:views', descriptions.pages)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: DevOptions) => {
-      runPagesDevServer(options)
+    .action(async (options: DevOptions) => {
+      await runPagesDevServer(options)
     })
 }
 
