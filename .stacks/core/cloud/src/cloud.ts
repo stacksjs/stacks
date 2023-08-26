@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 import type { Construct } from 'constructs'
 import type { StackProps } from 'aws-cdk-lib'
 import {
@@ -169,7 +170,6 @@ export class StacksCloud extends Stack {
     })
 
     // Create a Route53 record pointing to the CloudFront distribution
-    // eslint-disable-next-line no-new
     new route53.ARecord(this, 'AliasRecord', {
       recordName: domainName,
       zone,
@@ -177,21 +177,18 @@ export class StacksCloud extends Stack {
     })
 
     // Create a Route53 record pointing to the Docs CloudFront distribution
-    // eslint-disable-next-line no-new
     new route53.ARecord(this, 'DocsAliasRecord', {
       recordName: `${app.subdomains.docs}.${domainName}`,
       zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
     })
 
-    // eslint-disable-next-line no-new
     new route53.CnameRecord(this, 'WwwCnameRecord', {
       zone,
       recordName: 'www',
       domainName,
     })
 
-    // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
       sources: [s3deploy.Source.asset('../../../storage/public')],
       destinationBucket: webBucket,
@@ -199,30 +196,26 @@ export class StacksCloud extends Stack {
       distributionPaths: ['/*'],
     })
 
-    // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployDocs', {
       sources: [s3deploy.Source.asset('../../../storage/app/docs')],
-      destinationBucket: webBucket,
-      distribution,
+      destinationBucket: docsBucket,
+      distribution: docsDistribution,
       distributionPaths: ['/*'],
     })
 
     // Prints out the web endpoint to the terminal
-    // eslint-disable-next-line no-new
     new Output(this, 'AppUrl', {
       value: `https://${domainName}`,
       description: 'The URL of the deployed application',
     })
 
     // Prints out the web endpoint to the terminal
-    // eslint-disable-next-line no-new
     new Output(this, 'DocsUrl', {
       value: `https://${app.subdomains.docs}.${app.url}`,
       description: 'The URL of the deployed documentation',
     })
 
     // Prints out the web endpoint to the terminal
-    // eslint-disable-next-line no-new
     new Output(this, 'VanityUrl', {
       value: `https://${distribution.domainName}`,
       description: 'The vanity URL of the deployed application',
