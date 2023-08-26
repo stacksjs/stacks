@@ -12,6 +12,7 @@ type CommandOptions = CommandOptionTuple | CommandOptionObject[]
 interface Options {
   name: string
   description: string
+  active: boolean
   options: CommandOptions
   run: (options?: CliOptions) => Promise<any>
   onFail: (error: Error) => void

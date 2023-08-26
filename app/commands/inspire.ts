@@ -6,6 +6,7 @@ import { type CliOptions } from '@stacksjs/types'
 export default new Command({
   name: 'inspire',
   description: 'Inspire yourself with a random quote',
+  active: true, // default is true
 
   options: [ // alternatively, `options: ['--two, -t', 'Show two quotes', { default: false }]`
     {

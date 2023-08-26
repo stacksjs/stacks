@@ -44,12 +44,11 @@ export interface Route {
 }
 
 export type Middleware = () => void;
-type MiddlewareFunction = () => void;
 
 export interface Middlewares {
-  logger: MiddlewareFunction;
-  auth: MiddlewareFunction;
-  [key: string]: MiddlewareFunction;
+  logger: Middleware;
+  auth: Middleware;
+  [key: string]: Middleware;
 }
 
 export interface RouteGroupOptions {

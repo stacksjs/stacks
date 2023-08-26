@@ -131,6 +131,7 @@ meemalabs
 meilisearch
 memjs
 mergeable
+Middlewares
 mikestead
 minzipped
 mkdist
