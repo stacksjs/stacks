@@ -40,14 +40,19 @@ export interface Route {
   pattern: RegExp
   callback: RouteCallback
   paramNames: string[]
+  middleware?: string | string[]
 }
 
-export interface Middleware {
-  before?: RouteCallback
-  after?: RouteCallback
+export type Middleware = () => void;
+type MiddlewareFunction = () => void;
+
+export interface Middlewares {
+  logger: MiddlewareFunction;
+  auth: MiddlewareFunction;
+  [key: string]: MiddlewareFunction;
 }
 
 export interface RouteGroupOptions {
   prefix?: string
-  middleware?: Middleware[]
+  middleware?: string | string[]
 }
