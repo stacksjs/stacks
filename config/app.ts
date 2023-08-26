@@ -12,6 +12,10 @@ export default {
   name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'development',
   url: env.APP_URL || 'stacks.test',
+  subdomains: {
+    docs: env.APP_SUBDOMAIN_DOCS || 'docs',
+    api: env.APP_SUBDOMAIN_API || 'api',
+  },
   debug: env.APP_DEBUG || false,
   key: env.APP_KEY,
 

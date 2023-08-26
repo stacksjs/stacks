@@ -25,17 +25,31 @@ export class StacksCloud extends Stack {
     if (!app.url)
       throw new Error('./config app.url is not defined')
 
+    const domainName = app.url
+
     const zone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: 'stacksjs.com',
+      zoneName: domainName,
     })
 
     const certificate = new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName: 'stacksjs.com',
-      validation: acm.CertificateValidation.fromDns(zone), // Use DNS validation
+      domainName,
+      validation: acm.CertificateValidation.fromDns(zone),
+    })
+
+    const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
+      domainName: `${app.subdomains.docs}.${domainName}`,
+      validation: acm.CertificateValidation.fromDns(zone),
     })
 
     const webBucket = new s3.Bucket(this, 'WebBucket', {
-      bucketName: 'stacksjs.com-23123123424324',
+      bucketName: `${domainName}-${app.env}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    const docsBucket = new s3.Bucket(this, 'DocsBucket', {
+      bucketName: `docs.${domainName}-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -43,7 +57,7 @@ export class StacksCloud extends Stack {
 
     // Create an S3 bucket for CloudFront access logs
     const logBucket = new s3.Bucket(this, 'LogBucket', {
-      bucketName: 'stacksjs.com34534545-logs',
+      bucketName: `${domainName}-logs-${app.env}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -69,11 +83,11 @@ export class StacksCloud extends Stack {
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
 
-    // // create a CDN to deploy your website
+    // create a CDN to deploy your website
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: ['stacksjs.com'],
+      domainNames: [domainName],
       defaultRootObject: 'index.html',
-      comment: `CDN for ${app.name}`,
+      comment: `CDN for ${app.url}`,
       certificate,
       // originShieldEnabled: true,
       enableLogging: true,
@@ -112,12 +126,61 @@ export class StacksCloud extends Stack {
       // ],
     })
 
+    const docsDistribution = new cloudfront.Distribution(this, 'DocsDistribution', {
+      domainNames: [`${app.subdomains.docs}.${app.url}`],
+      defaultRootObject: 'index.html',
+      comment: `CDN for ${app.subdomains.docs}.${app.url}`,
+      certificate: docsCertificate,
+      // originShieldEnabled: true,
+      enableLogging: true,
+      logBucket,
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+      enabled: true,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      webAclId: webAcl.attrArn,
+      enableIpv6: true,
+
+      defaultBehavior: {
+        origin: new origins.S3Origin(docsBucket, {
+          originAccessIdentity,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+
+      // errorResponses: [
+      //   {
+      //     httpStatus: 403,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      //   {
+      //     httpStatus: 404,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      // ],
+    })
+
     // Create a Route53 record pointing to the CloudFront distribution
     // eslint-disable-next-line no-new
     new route53.ARecord(this, 'AliasRecord', {
-      recordName: 'stacksjs.com',
+      recordName: domainName,
       zone,
-      // recordName: domainName,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+    })
+
+    // Create a Route53 record pointing to the Docs CloudFront distribution
+    // eslint-disable-next-line no-new
+    new route53.ARecord(this, 'DocsAliasRecord', {
+      recordName: `${app.subdomains.docs}.${domainName}`,
+      zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     })
 
@@ -125,10 +188,8 @@ export class StacksCloud extends Stack {
     new route53.CnameRecord(this, 'WwwCnameRecord', {
       zone,
       recordName: 'www',
-      domainName: 'stacksjs.com',
+      domainName,
     })
-
-    // housekeeping for uploading the data in the bucket
 
     // eslint-disable-next-line no-new
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
@@ -138,11 +199,26 @@ export class StacksCloud extends Stack {
       distributionPaths: ['/*'],
     })
 
+    // eslint-disable-next-line no-new
+    new s3deploy.BucketDeployment(this, 'DeployDocs', {
+      sources: [s3deploy.Source.asset('../../../storage/app/docs')],
+      destinationBucket: webBucket,
+      distribution,
+      distributionPaths: ['/*'],
+    })
+
     // Prints out the web endpoint to the terminal
     // eslint-disable-next-line no-new
     new Output(this, 'AppUrl', {
-      value: 'https://stacksjs.com',
+      value: `https://${domainName}`,
       description: 'The URL of the deployed application',
+    })
+
+    // Prints out the web endpoint to the terminal
+    // eslint-disable-next-line no-new
+    new Output(this, 'DocsUrl', {
+      value: `https://${app.subdomains.docs}.${app.url}`,
+      description: 'The URL of the deployed documentation',
     })
 
     // Prints out the web endpoint to the terminal
