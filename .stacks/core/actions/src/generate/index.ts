@@ -2,11 +2,10 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/types'
 import { type GeneratorOptions } from '@stacksjs/types'
-import { dumpYaml, runNpmScript } from '@stacksjs/utils'
-import { files } from '@stacksjs/storage'
+import { runNpmScript } from '@stacksjs/utils'
+// import { files } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
-import dependencies from '~/config/deps'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)
@@ -131,16 +130,11 @@ export function generateMigrations() {
 }
 
 export function generateTeaConfig() {
-  // define your dependencies
-  const deps = dependencies
-
-  // convert the object to yaml
-  const yamlStr = dumpYaml({ deps })
 
   // write the yaml string to a file in your project root
-  files.put(projectPath('./tea.yaml'), yamlStr)
+  // files.put(projectPath('./tea.yaml'), yamlStr)
 
-  log.success('Successfully generated `./tea.yaml` based on your `./config/deps` file')
+  log.success('Successfully generated `./tea.yaml` based on your configs')
 }
 
 export async function generateSeeder() {

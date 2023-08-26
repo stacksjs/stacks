@@ -7,7 +7,7 @@ This is where you create your components.
 
 ## 💡 Get Started
 
-It's easy to get started. The only prerequisite is a basic understanding HTML, sprinkled with *minimal* JavaScript. In other words, there is virtually no learning curve.
+It's easy to get started. The only prerequisite is a basic understanding of HTML, sprinkled with *minimal* JavaScript. In other words, there is virtually no learning curve.
 
 ```bash
 # you may use this GitHub template or the following command:

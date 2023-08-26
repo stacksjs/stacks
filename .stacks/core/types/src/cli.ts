@@ -158,7 +158,7 @@ export enum NpmScript {
   BuildStacks = 'build:stacks',
   Clean = 'rimraf bun.lockb node_modules/ .stacks/**/dist',
   Dev = 'dev',
-  DevDocs = 'bunx vitepress dev ./docs/src',
+  DevDocs = 'bunx vitepress dev',
   DevDesktop = 'dev:desktop',
   DevPages = 'dev:pages',
   DevFunctions = 'dev:functions',

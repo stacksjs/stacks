@@ -6,7 +6,7 @@
   "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/eslint-plugin-stacksjs",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }
   },

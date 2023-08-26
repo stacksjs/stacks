@@ -4,7 +4,6 @@ import binary from '~/config/binary'
 import cache from '~/config/cache'
 import cdn from '~/config/cdn'
 import database from '~/config/database'
-import dependencies from '~/config/deps'
 import dns from '~/config/dns'
 import docs from '~/config/docs'
 import email from '~/config/email'
@@ -26,7 +25,6 @@ const defaults: ResolvedStacksOptions = {
   cache,
   cdn,
   database,
-  dependencies,
   dns,
   docs,
   email,
@@ -50,7 +48,6 @@ export {
   cache,
   cdn,
   database,
-  dependencies,
   dns,
   docs,
   email,
