@@ -144,4 +144,4 @@ export interface NotificationOptions {
   }
 }
 
-export type NotificationConfig = NotificationOptions
+export type NotificationConfig = Partial<NotificationOptions>

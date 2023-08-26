@@ -1,5 +1,5 @@
 import { env } from '@stacksjs/env'
-import { defineCache } from '../.stacks/core/config/src/helpers'
+import type { CacheConfig } from '@stacksjs/types'
 
 /**
  * **Cache Configuration**
@@ -8,7 +8,7 @@ import { defineCache } from '../.stacks/core/config/src/helpers'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineCache({
+export default {
   driver: env.CACHE_DRIVER || 'redis',
   prefix: env.CACHE_PREFIX || 'stacks',
   ttl: env.CACHE_TTL || 3600,
@@ -44,4 +44,4 @@ export default defineCache({
       port: env.REDIS_PORT || 6379,
     },
   },
-})
+} satisfies CacheConfig

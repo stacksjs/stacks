@@ -2,7 +2,7 @@ export interface PaymentOptions {
   driver: 'stripe'
 }
 
-export type PaymentConfig = PaymentOptions
+export type PaymentConfig = Partial<PaymentOptions>
 
 export interface ChargeOptions {
   currency?: string

@@ -1,4 +1,4 @@
-import { defineQueue } from '../.stacks/core/config/src/helpers'
+import type { QueueConfig } from '@stacksjs/types'
 
 /**
  * **Queue Options**
@@ -7,7 +7,7 @@ import { defineQueue } from '../.stacks/core/config/src/helpers'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineQueue({
+export default {
   default: 'sync',
 
   connections: {
@@ -39,4 +39,4 @@ export default defineQueue({
       region: 'us-east-1',
     },
   },
-})
+} satisfies QueueConfig

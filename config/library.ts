@@ -1,4 +1,4 @@
-import { defineLibrary } from '../.stacks/core/config/src/helpers'
+import type { LibraryConfig } from '@stacksjs/types'
 
 /**
  * **Library Configuration**
@@ -7,7 +7,7 @@ import { defineLibrary } from '../.stacks/core/config/src/helpers'
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineLibrary({
+export default {
   name: 'hello-world',
   owner: '@stacksjs', // you may or may not add the @ prefix here (it is added automatically)
   repository: 'stacksjs/stacks',
@@ -54,4 +54,4 @@ export default defineLibrary({
       'dark',
     ],
   },
-})
+} satisfies LibraryConfig

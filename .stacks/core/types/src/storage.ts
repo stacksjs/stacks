@@ -20,4 +20,4 @@ export interface StorageOptions {
   name: string
 }
 
-export type StorageConfig = StorageOptions
+export type StorageConfig = Partial<StorageOptions>

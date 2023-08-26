@@ -1,4 +1,4 @@
-import { defineSearchEngine } from '../.stacks/core/config/src/helpers'
+import type { SearchEngineConfig } from '@stacksjs/types'
 
 /**
  * **Search Engine Options**
@@ -7,6 +7,6 @@ import { defineSearchEngine } from '../.stacks/core/config/src/helpers'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineSearchEngine({
+export default {
   driver: 'meilisearch',
-})
+} satisfies SearchEngineConfig

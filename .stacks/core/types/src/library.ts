@@ -78,7 +78,7 @@ export interface LibraryOptions {
   functions: LibraryBuildOptions
 }
 
-export type LibraryConfig = LibraryOptions
+export type LibraryConfig = Partial<LibraryOptions>
 
 /**
  * The list of available options to build your library.

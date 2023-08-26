@@ -1,5 +1,5 @@
 import { env } from '@stacksjs/env'
-import type { EmailConfig } from '../.stacks/core/types/src'
+import type { EmailConfig } from '@stacksjs/types'
 
 /**
  * **Email Configuration**
@@ -17,4 +17,4 @@ export default {
   mailboxes: {
     hi: 'your@mailbox.com', // enables hi@stacksjs.com and forwards incoming mail to your@mailbox.com
   },
-} satisfies Partial<EmailConfig>
+} satisfies EmailConfig

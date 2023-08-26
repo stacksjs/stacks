@@ -13,4 +13,4 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
   }
 }
 
-export type EmailConfig = EmailOptions
+export type EmailConfig = Partial<EmailOptions>

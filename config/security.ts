@@ -1,4 +1,4 @@
-import { defineSecurity } from '../.stacks/core/config/src/helpers'
+import type { SecurityConfig } from '@stacksjs/types'
 
 /**
  * **Services**
@@ -7,7 +7,7 @@ import { defineSecurity } from '../.stacks/core/config/src/helpers'
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineSecurity({
+export default {
   appFirewall: {
     immunity: 300, // CAPTCHA immunity time 300 seconds
     challenge: {
@@ -114,4 +114,4 @@ export default defineSecurity({
       // },
     ],
   },
-})
+} satisfies SecurityConfig

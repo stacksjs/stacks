@@ -1,4 +1,3 @@
-// import { defineUi } from '../.stacks/core/config/src/helpers'
 import type { UiConfig } from '@stacksjs/types'
 
 /**

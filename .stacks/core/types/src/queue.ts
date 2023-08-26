@@ -33,4 +33,4 @@ export interface QueueOptions {
   }
 }
 
-export type QueueConfig = QueueOptions
+export type QueueConfig = Partial<QueueOptions>

@@ -1,4 +1,4 @@
-import { defineStorage } from '../.stacks/core/config/src/helpers'
+import type { StorageConfig } from '@stacksjs/types'
 import app from './app'
 
 /**
@@ -8,7 +8,7 @@ import app from './app'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineStorage({
+export default {
   driver: 's3',
   name: app.name || 'my-custom-bucket-name',
-})
+} satisfies StorageConfig

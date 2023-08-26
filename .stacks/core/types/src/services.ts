@@ -36,4 +36,4 @@ export interface ServicesOptions {
   }
 }
 
-export type ServicesConfig = ServicesOptions
+export type ServicesConfig = Partial<ServicesOptions>

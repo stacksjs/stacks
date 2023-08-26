@@ -133,9 +133,7 @@ buddy build:web-components # builds framework agnostic Web Component library (i.
 buddy build:views # builds views
 
 # when deploying your app/s
-buddy deploy:docs
-buddy deploy:functions
-buddy deploy:views
+buddy deploy
 
 # select the example to run (follow CLI prompts)
 buddy example

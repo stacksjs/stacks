@@ -17,8 +17,6 @@ import {
 } from 'aws-cdk-lib'
 import { app } from '../../config/src'
 
-// import { publicPath } from '@stacksjs/path'
-
 export class StacksCloud extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -42,8 +40,15 @@ export class StacksCloud extends Stack {
       validation: acm.CertificateValidation.fromDns(zone),
     })
 
-    const webBucket = new s3.Bucket(this, 'WebBucket', {
+    const publicBucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${domainName}-${app.env}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
+      bucketName: `${domainName}-private-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -101,7 +106,7 @@ export class StacksCloud extends Stack {
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(webBucket, {
+        origin: new origins.S3Origin(publicBucket, {
           originAccessIdentity,
         }),
         compress: true,
@@ -190,10 +195,16 @@ export class StacksCloud extends Stack {
     })
 
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('../../../storage/public')],
-      destinationBucket: webBucket,
+      sources: [s3deploy.Source.asset('../../../storage/app/docs')],
+      // sources: [s3deploy.Source.asset('../../../storage/public')],
+      destinationBucket: publicBucket,
       distribution,
       distributionPaths: ['/*'],
+    })
+
+    new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
+      sources: [s3deploy.Source.asset('../../../storage/private')],
+      destinationBucket: privateBucket,
     })
 
     new s3deploy.BucketDeployment(this, 'DeployDocs', {

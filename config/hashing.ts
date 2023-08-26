@@ -1,4 +1,4 @@
-import { defineHashing } from '../.stacks/core/config/src/helpers'
+import type { HashingConfig } from '@stacksjs/types'
 
 /**
  * **Hashing Configuration**
@@ -7,7 +7,7 @@ import { defineHashing } from '../.stacks/core/config/src/helpers'
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineHashing({
+export default {
   driver: 'bcrypt',
 
   bcrypt: {
@@ -19,4 +19,4 @@ export default defineHashing({
     threads: 1,
     time: 1,
   },
-})
+} satisfies HashingConfig

@@ -1,5 +1,5 @@
 import { env } from '@stacksjs/env'
-import { defineDatabase } from '../.stacks/core/config/src/helpers'
+import type { DatabaseConfig } from '@stacksjs/types'
 
 /**
  * **Database Configuration**
@@ -8,7 +8,7 @@ import { defineDatabase } from '../.stacks/core/config/src/helpers'
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default defineDatabase({
+export default {
   default: env.DB_CONNECTION || 'mysql',
 
   connections: {
@@ -32,4 +32,4 @@ export default defineDatabase({
   },
 
   migrations: 'migrations',
-})
+} satisfies DatabaseConfig

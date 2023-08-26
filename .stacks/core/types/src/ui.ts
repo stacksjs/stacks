@@ -182,7 +182,7 @@ export interface UiOptions {
   // icons: Record<string, () => Promise<any>>
 }
 
-export type UiConfig = UiOptions
+export type UiConfig = Partial<UiOptions>
 
 export type Shortcuts = UserShortcuts
 

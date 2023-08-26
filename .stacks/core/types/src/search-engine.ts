@@ -30,7 +30,7 @@ export interface SearchEngineOptions {
   }
 }
 
-export type SearchEngineConfig = SearchEngineOptions
+export type SearchEngineConfig = Partial<SearchEngineOptions>
 
 export interface MeiliSearchOptions {
   apiKey: string
