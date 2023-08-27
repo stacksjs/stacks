@@ -1,6 +1,12 @@
+import * as c from 'kolorist'
 import { path as p } from '../.stacks/core/path/src'
 import type { DocsConfig } from '../.stacks/core/types/src/docs'
-import services from './services'
+import type { ViteDevServer as DevServer } from '../.stacks/core/vite/src'
+import pkgjson from '../package.json'
+import services from '../config/services'
+import app from '../config/app'
+
+const { version } = pkgjson
 
 const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },
@@ -51,6 +57,10 @@ const sidebar = {
   ],
 }
 
+// const env = loadEnv('development', p.projectPath(), '')
+
+// process.env = { ...process.env, ...loadEnv('local', p.projectPath(), '') }
+
 /**
  * **Documentation Options**
  *
@@ -60,11 +70,39 @@ const sidebar = {
  */
 export default {
   vite: {
+    envDir: p.projectPath(),
+    envPrefix: 'FRONTEND_',
     server: {
       host: 'docs.stacks.test',
       port: 3333,
       open: true,
     },
+
+    plugins: [
+      {
+        name: 'stacks-plugin',
+        configureServer(server: DevServer) {
+        // const base = server.config.base || '/'
+        // const _print = server.printUrls
+          server.printUrls = () => {
+            // eslint-disable-next-line no-console
+            console.log('app.url', app.url)
+            const urlObj = new URL(app.url)
+            const domainParts = urlObj.hostname.split('.')
+            domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test'
+            const newHostname = domainParts.join('.')
+            const docsDomain = `docs.${newHostname}`
+            const docsUrl = `https://${docsDomain}`
+            const stacksVersion = `alpha-${version}`
+
+            // eslint-disable-next-line no-console
+            console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
+            // eslint-disable-next-line no-console
+            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
+          }
+        },
+      },
+    ],
   },
 
   srcDir: p.projectPath('docs'),

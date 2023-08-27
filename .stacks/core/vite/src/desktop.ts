@@ -75,13 +75,14 @@ export const vueComponentsConfig: ViteConfig = {
           //   }
           // }
 
-          const appUrl = app.url
-          const frontendUrl = `https://${appUrl}`
-          const backendUrl = `https://api.${appUrl}`
-          const dashboardUrl = `https://admin.${appUrl}`
-          const libraryUrl = `https://libs.${appUrl}`
-          const docsUrl = `https://docs.${appUrl}`
-          const inspectUrl = `https://${appUrl}/__inspect/`
+          const urlObj = new URL(app.url);
+          const domainParts = urlObj.hostname.split('.');
+          domainParts[domainParts.length - 1] = 'test'; // replace TLD with 'test'
+          const newHostname = domainParts.join('.');
+
+          const appUrl = newHostname
+          const docsSubdomain = app.subdomains.docs
+          const docsUrl = `https://${docsSubdomain}.${appUrl}`
 
           // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
           const stacksVersion = `alpha-${version}`
@@ -89,17 +90,7 @@ export const vueComponentsConfig: ViteConfig = {
           // eslint-disable-next-line no-console
           console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
           // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.green(backendUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
-          // eslint-disable-next-line no-console
           console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
-          // eslint-disable-next-line no-console
-          console.log(`  ${c.green('➜')}  ${c.dim('Inspect')}: ${c.green(inspectUrl)}`)
         }
       },
     },

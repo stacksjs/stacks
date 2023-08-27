@@ -1,7 +1,7 @@
 {
   "name": "your-project-name",
   "type": "module",
-  "version": "0.0.0",
+  "version": "alpha-v0.0.0",
   "private": true,
   "description": "Your project description placeholder.",
   "author": "Chris Breuer",
@@ -100,8 +100,8 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "vite-plugin-vue-layouts": "^0.8.0",
-    "unplugin-vue-router": "^0.6.4"
+    "unplugin-vue-router": "^0.6.4",
+    "vite-plugin-vue-layouts": "^0.8.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
