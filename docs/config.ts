@@ -58,15 +58,14 @@ const sidebar = {
 }
 
 const appUrl = app.url
+const docsSubdomain = app.subdomains.docs
 const protocolPattern = /^https?:\/\//i
-const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${appUrl}:3333`
+const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${docsSubdomain}.${appUrl}:3333`
 const urlObj = new URL(urlForParsing)
 const domainParts = urlObj.hostname.split('.')
 domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test' for local dev
 const host = domainParts.join('.')
-// const host = 'stacksjs.com'
-const docsDomain = `docs.${host}`
-const docsUrl = `http://${docsDomain}`
+const docsUrl = `http://${host}`
 
 /**
  * **Documentation Options**
