@@ -31,7 +31,7 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "bunx vitepress dev",
+    "dev": "bun --bun vitepress dev",
     "build": "bunx vitepress build",
     "preview": "bunx vitepress preview"
   },

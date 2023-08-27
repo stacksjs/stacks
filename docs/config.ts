@@ -57,9 +57,16 @@ const sidebar = {
   ],
 }
 
-// const env = loadEnv('development', p.projectPath(), '')
-
-// process.env = { ...process.env, ...loadEnv('local', p.projectPath(), '') }
+const appUrl = app.url
+const protocolPattern = /^https?:\/\//i
+const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${appUrl}:3333`
+const urlObj = new URL(urlForParsing)
+const domainParts = urlObj.hostname.split('.')
+domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test' for local dev
+const host = domainParts.join('.')
+// const host = 'stacksjs.com'
+const docsDomain = `docs.${host}`
+const docsUrl = `http://${docsDomain}`
 
 /**
  * **Documentation Options**
@@ -73,7 +80,7 @@ export default {
     envDir: p.projectPath(),
     envPrefix: 'FRONTEND_',
     server: {
-      host: 'docs.stacks.test',
+      host,
       port: 3333,
       open: true,
     },
@@ -82,21 +89,10 @@ export default {
       {
         name: 'stacks-plugin',
         configureServer(server: DevServer) {
-        // const base = server.config.base || '/'
-        // const _print = server.printUrls
-          server.printUrls = () => {
-            // eslint-disable-next-line no-console
-            console.log('app.url', app.url)
-            const urlObj = new URL(app.url)
-            const domainParts = urlObj.hostname.split('.')
-            domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test'
-            const newHostname = domainParts.join('.')
-            const docsDomain = `docs.${newHostname}`
-            const docsUrl = `https://${docsDomain}`
-            const stacksVersion = `alpha-${version}`
-
-            // eslint-disable-next-line no-console
-            console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
+          // const base = server.config.base || '/'
+          // const _print = server.printUrls
+          server.printUrls = () => { // eslint-disable-next-line no-console
+            console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
             // eslint-disable-next-line no-console
             console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
           }

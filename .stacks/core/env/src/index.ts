@@ -130,15 +130,16 @@ const handler = {
     if (prop in cache)
       return cache[prop]
 
-    const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') }
+    const newEnv = loadEnv('development', projectPath(), '') as (NodeJS.ProcessEnv & Env)
+    process.env = newEnv
     cache[prop] = newEnv[prop]
     return newEnv[prop]
   },
 
   set(target: NodeJS.ProcessEnv, prop: string, value: string) {
+    // const newEnv = loadEnv('development', projectPath(), '')
     if (prop in target) {
-      const newEnv = { ...process.env, ...loadEnv('development', projectPath(), '') }
-      newEnv[prop] = value
+      process.env[prop] = value
       cache[prop] = value
       return true
     }
@@ -150,4 +151,4 @@ const handler = {
 
 export { loadEnv }
 
-export const env: Partial<Env> = new Proxy(process.env, handler) // fancy way to not have to call env() everywhere
+export const env: Env = new Proxy(process.env, handler) // fancy way to call `env` instead of `env()`
