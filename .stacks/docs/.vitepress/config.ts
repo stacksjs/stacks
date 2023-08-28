@@ -4,6 +4,6 @@
  * path for the VitePress config.
  */
 
-import docs from '../../../docs/config'
+import docs from '@stacksjs/docs'
 
 export default docs

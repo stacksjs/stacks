@@ -1,10 +1,6 @@
-import * as c from 'kolorist'
 import { path as p } from '../.stacks/core/path/src'
 import type { DocsConfig } from '../.stacks/core/types/src/docs'
-import type { ViteDevServer as DevServer } from '../.stacks/core/vite/src'
 import pkgjson from '../package.json'
-import services from '../config/services'
-import app from '../config/app'
 
 const { version } = pkgjson
 
@@ -57,16 +53,6 @@ const sidebar = {
   ],
 }
 
-const appUrl = app.url
-const docsSubdomain = app.subdomains.docs
-const protocolPattern = /^https?:\/\//i
-const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${docsSubdomain}.${appUrl}:3333`
-const urlObj = new URL(urlForParsing)
-const domainParts = urlObj.hostname.split('.')
-domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test' for local dev
-const host = domainParts.join('.')
-const docsUrl = `http://${host}`
-
 /**
  * **Documentation Options**
  *
@@ -75,37 +61,12 @@ const docsUrl = `http://${host}`
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  vite: {
-    envDir: p.projectPath(),
-    envPrefix: 'FRONTEND_',
-    server: {
-      host,
-      port: 3333,
-      open: true,
-    },
-
-    plugins: [
-      {
-        name: 'stacks-plugin',
-        configureServer(server: DevServer) {
-          // const base = server.config.base || '/'
-          // const _print = server.printUrls
-          server.printUrls = () => { // eslint-disable-next-line no-console
-            console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
-            // eslint-disable-next-line no-console
-            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
-          }
-        },
-      },
-    ],
-  },
-
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('app/docs'),
   cacheDir: p.projectStoragePath('app/cache/docs'),
   lang: 'en-US',
   title: 'Stacks',
-  description: 'Composability-First. UI/FX Framework.',
+  description: 'Rapid application, cloud & library framework.',
   lastUpdated: true,
 
   themeConfig: {
@@ -117,18 +78,18 @@ export default {
       text: 'Edit this page on GitHub',
     },
 
-    socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-      { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      { icon: 'discord', link: 'https://discord.com/' },
-    ],
+    // socialLinks: [
+    //   { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
+    //   { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
+    //   { icon: 'discord', link: 'https://discord.gg/stacksjs' },
+    // ],
 
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2023-present Stacks',
     },
 
-    algolia: services.algolia,
+    // algolia: services.algolia,
 
     carbonAds: {
       code: '',
