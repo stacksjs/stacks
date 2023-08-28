@@ -1,4 +1,5 @@
 import { URL } from 'node:url'
+import { extname } from 'node:path'
 import { type Route } from '@stacksjs/types'
 import { request } from './request'
 import middlewares from './app/middleware/'
@@ -7,8 +8,6 @@ export function handleRequest(routes: Route[]) {
   Bun.serve({
     fetch(req) {
       const url = new URL(req.url)
-
-      console.log(req)
 
       const foundRoute: Route = routes.find((route: Route) => {
         const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
@@ -56,16 +55,27 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-function execute(route: Route, request: any): Response {
+async function execute(route: Route, request: any): Promise<Response> {
   if (route?.method !== request.method)
     return new Response('Method not allowed', { status: 405 })
+
+  // Check if it's a path to an HTM L file
+  if (isString(route.callback) && extname(route.callback) === '.html') {
+    try {
+      const fileContent = Bun.file(route.callback)
+
+      return new Response(fileContent, { headers: { 'Content-Type': 'text/html' } })
+    }
+    catch (error) {
+      return new Response('Error reading the HTML file', { status: 500 })
+    }
+  }
 
   if (isString(route.callback))
     return new Response(route.callback)
 
   if (isFunction(route.callback)) {
     const result = (route.callback)()
-
     return new Response(JSON.stringify(result))
   }
 

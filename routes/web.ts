@@ -11,7 +11,7 @@ import { request } from '../request.ts'
 // })
 
 // TODO: Add a way to register a view.
-route.view('welcome')
+route.view('/welcome', 'index.html')
 
 function getUsers() {
   return request.getParams('id')

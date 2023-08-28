@@ -1,9 +1,6 @@
 import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
 import { handleRequest } from '../../../../server'
 
-export interface RouteCallback {
-  (): void
-}
 
 export class Router {
   private routes: Route[] = []
@@ -25,6 +22,12 @@ export class Router {
     this.addRoute('POST', url, callback)
     handleRequest(this.getRoutes())
   }
+
+  public view(url: string, callback: RouteCallback): void {
+    this.addRoute('GET', url, callback)
+    handleRequest(this.getRoutes())
+  }
+
 
   public delete(url: string, callback: RouteCallback): void {
     this.addRoute('DELETE', url, callback)
@@ -63,8 +66,6 @@ export class Router {
 
     // Restore the original routes array.
     this.routes = originalRoutes
-
-    console.log(this.routes)
   }
 
   // before(callback: RouteCallback): void {
