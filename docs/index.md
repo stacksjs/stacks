@@ -2,12 +2,12 @@
 layout: home
 
 title: Stacks
-titleTemplate: Component-First. UI & Build Framework.
+titleTemplate: Modern TypeScript Fullstack Development.
 
 hero:
   name: Stacks
-  text: The Modern Component Library.
-  tagline: The Stacks Framework helps kick-start & maintain development of your next library. Without a learning curve, or breaking a sweat.
+  text: Rapid app, cloud & library framework.
+  tagline: Developing using TypeScript has never been easier. Develop, test, build, deploy & publish your apps, libraries, and APIs with ease.
   actions:
     - theme: brand
       text: Get Started
@@ -18,19 +18,21 @@ hero:
 
 features:
   - title: Best-in-Class DX
-    details: Developing component libraries has never been easier. Feel the speed of Vite. Experience a deep VS Code integration.
-  - title: Component-First Design
-    details: In a zero-config way, Stacks automagically builds & distributes Web Component & Vue (2 & 3) libraries for you.
-  - title: Modern CSS Engine
-    details: Pre-configured UnoCSS allows to create & manage your style guides with ease, Tailwind CSS, Windi CSS, or Bootstrap.
+    details: Developing using TypeScript has never been easier. And neither has been the management of your projects.
+  - title: App Development
+    details: Whether it is a performant web app or a Tauri desktop app, let Stacks handle the heavy-lifting for you. Maybe both?
+  - title: Cloud Development
+    details: The framework manages & deploys a production-ready serverless cloud for you. Inside your own account.
+  - title: Library Development
+    details: In a zero-config way, the framework automagically builds & distributes component & function libraries for you.
+  - title: API Development
+    details: Building scalable APIs has never been easier. Get ready for the power of Stacks.
+  - title: Progressive UI Engine
+    details: “An approachable, performant and versatile framework for building web user interfaces.” — Vue
+  - title: Atomic CSS Engine
+    details: Pre-configured UnoCSS allows to create & manage your style guides with ease—Tailwind CSS, Windi CSS, Bootstrap, ... pick your flavor.
+  - title: Supercharged CI/CD
+    details: Focus on coding, not publishing. Automatically runs your CI, fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
   - title: “Be a Good Commitizen”
-    details: Pre-configured commitlint setup to simplify semantic git commits, versioning, changelog generations, and npm releases.
-  - title: Built With Testing In Mind
-    details: Pre-configured unit & e2e-testing powered by Bun.
-  - title: Renovate Your Code
-    details: Optimized & automated PR dependency updates.
-  - title: Supercharged Actions
-    details: Automatically runs your CI, fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
-  - title: Beautiful Next-Gen Docs
-    details: A slightly opinionated, pretty starting point to develop & present your library. Built with the powers of VitePress.
+    details: Semantic git commits, versioning, changelog generations, and npm releases—we got ya.
 ---

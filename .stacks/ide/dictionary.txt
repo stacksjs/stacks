@@ -22,6 +22,7 @@ browserslist
 bumpp
 bundleconfig
 bunx
+caddyserver
 cardano
 cback
 certificatemanager
@@ -188,6 +189,7 @@ safelist
 sasl
 scanlon
 scrollback
+seedable
 sendemail
 sendgrid
 sfc

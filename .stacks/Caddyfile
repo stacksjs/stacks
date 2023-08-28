@@ -1,0 +1,11 @@
+docs.stacksjs.localhost {
+  reverse_proxy docs.stacksjs.test:3333
+}
+
+api.stacksjs.localhost {
+  reverse_proxy api.stacksjs.test:3333
+}
+
+lib.stacksjs.localhost {
+  reverse_proxy lib.stacksjs.test:3333
+}

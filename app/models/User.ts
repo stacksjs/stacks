@@ -11,6 +11,7 @@ export default defineModel({
   seedable: { // defaults to a count of 10
     count: 10,
   },
+
   // authenticatable: true, // defaults to false, also accepts AuthSettings or TokenSettings
 
   fields: {
@@ -41,6 +42,13 @@ export default defineModel({
       },
 
       factory: () => faker.internet.password(),
+    },
+  },
+
+  attributes: { // optional accessors & mutators
+    firstName: {
+      get: (value: string) => value.toUpperCase(),
+      set: (value: string) => value.toLowerCase(),
     },
   },
 })

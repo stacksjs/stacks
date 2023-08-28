@@ -1,7 +1,10 @@
 # this is the tea config for core stacks development
 dependencies:
-  bun.sh: ^0.7.1
+  npmjs.com: ^9.7.2
+  bun.sh: ^0.8.1
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
-  aws.amazon.com/cli: ^2.12.7
+  aws.amazon.com/cli: ^2.13.7
+  aws.amazon.com/cdk: ^2.93.0
+  caddyserver.com: ^2.7.4
 #  mysql.com: ^8.0.33

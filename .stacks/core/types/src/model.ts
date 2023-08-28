@@ -13,6 +13,10 @@ export interface TimestampOptions {
   deletedAt?: string
 }
 
+export interface SoftDeleteOptions {
+  deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
+}
+
 interface Base {}
 
 /**
@@ -41,7 +45,14 @@ export interface ModelOptions extends Base {
   useSearch: boolean | SearchEngineSettings
   useSearchEngine: boolean | SearchEngineSettings
   useTimestamps: boolean | TimestampOptions
-  // useSoftDeletes: boolean | SoftDeleteOptions
+  useSoftDeletes: boolean | SoftDeleteOptions
+
+  attributes: {
+    [key: string]: {
+      get: (value: any) => any
+      set: (value: any) => any
+    }
+  }
 }
 
 export interface Fields {

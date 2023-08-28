@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { path as p } from '@stacksjs/path'
-import { app, docs } from '@stacksjs/config'
+import { docs } from '@stacksjs/config'
 import { docsEngine } from '../../vite/src/plugin/docs'
 
 const defaultConfig = {
@@ -9,7 +9,7 @@ const defaultConfig = {
     envDir: p.projectPath(),
     envPrefix: 'FRONTEND_',
     server: {
-      host,
+      host: 'docs.stacks.test',
       port: 3333,
       open: true,
     },
