@@ -26,10 +26,10 @@
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
-    "@typescript-eslint/utils": "^6.4.1"
+    "@typescript-eslint/utils": "^6.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.5.6",
+    "@types/node": "^20.5.7",
     "unbuild": "latest"
   }
 }
