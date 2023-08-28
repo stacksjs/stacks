@@ -32,6 +32,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./plugin/*": {
+      "bun": "./src/*"
+    },
     "./desktop": {
       "bun": "./src/desktop.ts",
       "types": "./dist/desktop.d.ts",

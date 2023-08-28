@@ -1,8 +1,5 @@
 import { path as p } from '../.stacks/core/path/src'
 import type { DocsConfig } from '../.stacks/core/types/src/docs'
-import pkgjson from '../package.json'
-
-const { version } = pkgjson
 
 const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },
@@ -78,22 +75,22 @@ export default {
       text: 'Edit this page on GitHub',
     },
 
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2023-present Stacks',
+    },
+
     // socialLinks: [
     //   { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
     //   { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
     //   { icon: 'discord', link: 'https://discord.gg/stacksjs' },
     // ],
 
-    footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2023-present Stacks',
-    },
-
     // algolia: services.algolia,
 
-    carbonAds: {
-      code: '',
-      placement: '',
-    },
+    // carbonAds: {
+    //   code: '',
+    //   placement: '',
+    // },
   },
 } satisfies DocsConfig

@@ -100,22 +100,13 @@ export function dev(buddy: CLI) {
       const perf = await intro('buddy dev:docs')
       const result = await runAction(Action.DevDocs, options)
 
-      // check if result is an array
-      if (Array.isArray(result)) {
-        // check if any of the items in the array is an error
-        // if (result.some(item => item.isErr())) {
-        //   await outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
-        //   process.exit()
-        // }
-      }
-
-      // check if result is an error
-      else if (result.isErr()) {
-        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+      if (result.isErr()) {
+        await outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 
-      await outro('Finished running dev:docs.', { startTime: perf, useSeconds: true })
+      console.log('')
+      await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

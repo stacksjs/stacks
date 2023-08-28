@@ -18,27 +18,30 @@ interface Base {}
 /**
  * Model.
  */
-export interface Model extends Base {
-  name?: string // defaults to the file name of the model
-  table?: string // defaults to the lowercase, plural name of the model
-  useUuid?: boolean
+export interface ModelOptions extends Base {
+  name: string // defaults to the file name of the model
+  table: string // defaults to the lowercase, plural name of the model
+  useUuid: boolean
   fields: Fields
-  hasOne?: string
-  hasMany?: string
-  belongsToMany?: string
-  hasThrough?: {
+  hasOne: string // hasOne: 'Post
+  hasMany: {
+    model: string // should be typed as ModelName
+    foreignKey: string
+  }
+  belongsToMany: {}
+  hasThrough: {
     model: string // should be typed as ModelName
     through: string
     using: string
   }
-  authenticatable?: boolean | AuthOptions
-  seedable?: boolean | SeedOptions
-  searchable?: boolean | SearchEngineSettings
-  useSeed?: boolean | SeedOptions
-  useSearch?: boolean | SearchEngineSettings
-  useSearchEngine?: boolean | SearchEngineSettings
-  useTimestamps?: boolean | TimestampOptions
-  // useSoftDeletes?: boolean | SoftDeleteOptions
+  authenticatable: boolean | AuthOptions
+  seedable: boolean | SeedOptions
+  searchable: boolean | SearchEngineSettings
+  useSeed: boolean | SeedOptions
+  useSearch: boolean | SearchEngineSettings
+  useSearchEngine: boolean | SearchEngineSettings
+  useTimestamps: boolean | TimestampOptions
+  // useSoftDeletes: boolean | SoftDeleteOptions
 }
 
 export interface Fields {
@@ -54,3 +57,5 @@ export interface Fields {
     // validation?: String | Number | Boolean | Date
   }
 }
+
+export type Model = Partial<ModelOptions>
