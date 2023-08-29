@@ -68,7 +68,7 @@ async function seed() {
   //   }
 
   //     return model
-  //   // return db.insertInto('User').values(records).build(sql`RETURNING *`)
+  //   // return db.insertInto('users').values(records).build(sql`RETURNING *`)
   // })
 
   // const { rows } = await db.transaction().execute()
