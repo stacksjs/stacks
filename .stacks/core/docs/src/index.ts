@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 import { path as p } from '@stacksjs/path'
 import { app, docs } from '@stacksjs/config'
-import { docsEngine } from '../../vite/src/plugin/docs'
+import { docsEngine } from '@stacksjs/vite'
 
 const defaultConfig = {
   title: `${app.name} Documentation`,

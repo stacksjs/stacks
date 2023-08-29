@@ -1,5 +1,5 @@
 import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
-import { handleRequest } from '../../../../server'
+import { handleRequest } from './server'
 
 export class Router {
   private routes: Route[] = []

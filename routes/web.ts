@@ -1,5 +1,5 @@
 import { route } from '../.stacks/core/router/src/index.ts'
-import { request } from '../request.ts'
+import { request } from '../.stacks/request.ts'
 
 // route.get('/users/list', getBlogs)
 // route.post('/blogs', getBlogs)

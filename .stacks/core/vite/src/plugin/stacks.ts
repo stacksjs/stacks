@@ -1,7 +1,7 @@
 import { type ViteDevServer as DevServer, type Plugin } from 'vite'
 import { kolorist as c } from '@stacksjs/cli'
+import { app } from '@stacksjs/config'
 import { version } from '../../package.json'
-import app from '~/config/app'
 
 // https://github.com/hannoeru/vite-plugin-pages
 export function stacks(): Plugin {

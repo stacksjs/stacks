@@ -1,6 +1,6 @@
-import { ViteDevServer as DevServer } from '../'
 import { app } from '@stacksjs/config'
 import { kolorist as c } from '@stacksjs/cli'
+import type { ViteDevServer as DevServer } from '../'
 import pkg from '../../../../package.json'
 
 export function docsEngine() {
@@ -13,7 +13,9 @@ export function docsEngine() {
   const domainParts = urlObj.hostname.split('.')
   domainParts[domainParts.length - 1] = 'localhost' // replace TLD with 'localhost' for local dev
   const host = domainParts.join('.')
-  const docsUrl = `http://${host}`
+  const docsUrl = `https://${host}`
+
+  console.log('docssssUrl', docsUrl)
 
   return {
     name: 'stacks-plugin',
@@ -25,6 +27,6 @@ export function docsEngine() {
         // eslint-disable-next-line no-console
         console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
       }
-    }
+    },
   }
 }

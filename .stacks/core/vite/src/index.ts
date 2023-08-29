@@ -10,6 +10,7 @@ export * as vueComponents from './vue-components'
 export * as webComponents from './web-components'
 export * from './stacks'
 export * as stacks from './stacks'
+export { docsEngine } from './plugin/docs'
 
 function loadEnv(...args: Parameters<typeof viteLoadEnv>): Env {
   return viteLoadEnv(...args) as unknown as Env

@@ -1,5 +1,4 @@
 import { defu } from 'defu'
-
 import type { Options } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
 

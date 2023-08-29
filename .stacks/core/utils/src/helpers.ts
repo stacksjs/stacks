@@ -9,7 +9,6 @@ import { parse } from 'yaml'
 import { runAction } from '@stacksjs/actions'
 import { italic, log, runCommand } from '@stacksjs/cli'
 import * as storage from '@stacksjs/storage'
-import { readPackageJson } from '@stacksjs/storage'
 import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { semver } from './versions'
@@ -17,7 +16,7 @@ import ui from '~/config/ui'
 import app from '~/config/app'
 
 export async function packageManager() {
-  const { packageManager } = await readPackageJson(frameworkPath('package.json'))
+  const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))
   return packageManager
 }
 

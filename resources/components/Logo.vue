@@ -1,12 +1,12 @@
 <template>
   <img
     v-if="!isDark"
-    src="../../.stacks/art/logo.svg"
+    src="../../storage/public/logo-dark.svg"
     class="h-16"
   >
   <img
     v-else
-    src="../../.stacks/art/logo-dark.svg"
+    src="../../storage/public/logo-dark.svg"
     class="h-16"
   >
 </template>

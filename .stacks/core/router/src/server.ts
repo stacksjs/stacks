@@ -1,8 +1,8 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
 import { type Route } from '@stacksjs/types'
+import middlewares from '../../../../app/middleware'
 import { request } from './request'
-import middlewares from './app/middleware/'
 
 export function handleRequest(routes: Route[]) {
   Bun.serve({

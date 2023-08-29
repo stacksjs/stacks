@@ -1,8 +1,8 @@
 import AutoImport from 'unplugin-auto-import/vite'
 import { defu } from 'defu'
-import { type AutoImportsOptions } from '@stacksjs/types'
+import type { AutoImportsOptions } from '@stacksjs/types'
 import { frameworkPath, resourcesPath } from '@stacksjs/path'
-import { type Plugin } from 'vite'
+import type { Plugin } from 'vite'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {

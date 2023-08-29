@@ -1,14 +1,12 @@
-import { type ViteConfig } from '@stacksjs/types'
+import type { ViteConfig } from '@stacksjs/types'
 import * as p from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
+import { app } from '@stacksjs/config'
 import pkgjson from '../package.json'
-import app from '../../../../config/app'
 import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
-import { type ViteDevServer as DevServer } from './'
+import type { ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
-
-// import library from '../../../../config/library'
 
 const { version } = pkgjson
 
@@ -20,7 +18,7 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     // https: true,
-    host: '127.0.0.1',
+    host: 'desktop.stacksjs.test',
   },
 
   resolve: {
