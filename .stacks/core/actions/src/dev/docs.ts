@@ -3,5 +3,5 @@ import { frameworkPath } from '@stacksjs/path'
 
 await runCommand('bun run dev', {
   cwd: frameworkPath('docs'),
-  verbose: true,
+  // verbose: true,
 })

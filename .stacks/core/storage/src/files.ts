@@ -67,16 +67,15 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
 /**
  * Writes the given text to the specified file.
  */
-export function writeTextFile(file: TextFile): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(file.path, file.data, (err: any) => {
-      if (err)
-        reject(err)
+export async function writeFile(file: TextFile): Promise<number> {
+  return await Bun.write(file.path, file.data)
+}
 
-      else
-        resolve()
-    })
-  })
+/**
+ * Writes the given text to the specified file.
+ */
+export async function writeTextFile(file: TextFile): Promise<number> {
+  return await Bun.write(file.path, file.data)
 }
 
 /**

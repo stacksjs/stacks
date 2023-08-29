@@ -5,6 +5,12 @@ export type DatabaseClient = any
 export interface DatabaseOptions {
   default: string
 
+  /**
+   * The name of the database to use.
+   * @default stacks
+   */
+  name: string
+
   connections: {
     mysql: {
       url?: string

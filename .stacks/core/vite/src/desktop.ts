@@ -23,7 +23,6 @@ export const vueComponentsConfig: ViteConfig = {
   server: {
     // https: true,
     host: '127.0.0.1',
-    open: true,
   },
 
   resolve: {

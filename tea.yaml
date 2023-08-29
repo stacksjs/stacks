@@ -6,4 +6,3 @@ dependencies:
   aws.amazon.com/cli: ^2.13.7
   aws.amazon.com/cdk: ^2.93.0
   caddyserver.com: ^2.7.4
-#  mysql.com: ^8.0.33

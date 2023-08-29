@@ -32,8 +32,8 @@
   ],
   "scripts": {
     "dev": "bun --bun vitepress dev",
-    "build": "bunx vitepress build",
-    "preview": "bunx vitepress preview"
+    "build": "bun --bun vitepress build",
+    "preview": "bun --bun vitepress preview"
   },
   "dependencies": {
     "@stacksjs/docs": "workspace:*",

@@ -23,9 +23,15 @@
 //   })
 // }
 
+// if (database.driver === 'sqlite') {
+//   dialect = new SqliteDialect()
+// }
+
 // const db = new QueryBuilder({
 //   dialect,
 // })
+
+// const user = User.find(1)
 
 // export async function find(tableName: string, id: number) {
 //   const result = await db

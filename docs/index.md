@@ -22,7 +22,7 @@ features:
   - title: App Development
     details: Whether it is a performant web app or a Tauri desktop app, let Stacks handle the heavy-lifting for you. Maybe both?
   - title: Cloud Development
-    details: The framework manages & deploys a production-ready serverless cloud for you. Inside your own account.
+    details: The framework manages & deploys a production-ready serverless cloud for you, including zero-downtime deployments. Inside your own account.
   - title: Library Development
     details: In a zero-config way, the framework automagically builds & distributes component & function libraries for you.
   - title: API Development

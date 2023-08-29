@@ -16,7 +16,7 @@ export const vueComponentsConfig: ViteConfig = {
 
   server: {
     host: app.url,
-    open: true,
+    open: false,
   },
 
   resolve: {

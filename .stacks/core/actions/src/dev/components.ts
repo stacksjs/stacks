@@ -4,7 +4,7 @@ import { frameworkPath, vitePath } from '@stacksjs/path'
 // import { parseOptions, runCommand } from '@stacksjs/cli'
 // import type { DeployOptions } from '@stacksjs/types'
 
-// console.log('running devd components')
+// console.log('running dev components')
 
 // const options: DeployOptions = parseOptions()
 

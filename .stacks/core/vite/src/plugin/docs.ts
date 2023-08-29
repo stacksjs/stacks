@@ -11,7 +11,7 @@ export function docsEngine() {
   const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${docsSubdomain}.${appUrl}:3333`
   const urlObj = new URL(urlForParsing)
   const domainParts = urlObj.hostname.split('.')
-  domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test' for local dev
+  domainParts[domainParts.length - 1] = 'localhost' // replace TLD with 'localhost' for local dev
   const host = domainParts.join('.')
   const docsUrl = `http://${host}`
 
