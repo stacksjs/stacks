@@ -62,6 +62,8 @@
     "@unocss/transformer-compile-class": "^0.55.3",
     "pinia": "^2.1.6",
     "unocss": "^0.55.3",
+    "unplugin-vue-router": "^0.6.4",
+    "vite-plugin-vue-layouts": "^0.8.0",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.8"
   },
@@ -75,6 +77,8 @@
     "@unocss/transformer-compile-class": "^0.55.3",
     "pinia": "^2.1.6",
     "unocss": "^0.55.3",
+    "unplugin-vue-router": "^0.6.4",
+    "vite-plugin-vue-layouts": "^0.8.0",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.8"
   },

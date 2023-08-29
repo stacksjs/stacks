@@ -1,8 +1,6 @@
 import { type ViteConfig } from '@stacksjs/types'
 import * as p from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
-
-// import mkcert from 'vite-plugin-mkcert'
 import * as c from 'kolorist'
 import pkgjson from '../package.json'
 import app from '../../../../config/app'
@@ -45,13 +43,6 @@ export const vueComponentsConfig: ViteConfig = {
     uiEngine(),
     cssEngine(),
     inspect(),
-    // mkcert({
-    //   hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
-    //   autoUpgrade: true,
-    //   savePath: p.frameworkPath('certs/components'),
-    //   keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-    //   certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-    // }),
 
     // @ts-expect-error TODO: fix this
     {

@@ -99,10 +99,6 @@
   "dependencies": {
     "stacks": "workspace:*"
   },
-  "devDependencies": {
-    "unplugin-vue-router": "^0.6.4",
-    "vite-plugin-vue-layouts": "^0.8.0"
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
   },
@@ -112,8 +108,8 @@
     }
   },
   "workspaces": [
-    ".stacks/core/*",
     ".stacks/api",
+    ".stacks/core/*",
     ".stacks/docs",
     ".stacks/fonts/*",
     ".stacks/ide/*",

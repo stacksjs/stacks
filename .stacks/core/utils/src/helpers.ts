@@ -14,7 +14,6 @@ import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { semver } from './versions'
 import ui from '~/config/ui'
-import dependencies from '~/config/deps'
 import app from '~/config/app'
 
 export async function packageManager() {
@@ -52,9 +51,7 @@ export async function ensureProjectIsInitialized() {
 }
 
 export async function installIfVersionMismatch() {
-  const deps = dependencies
-
-  const requiredBunVersion = deps['bun.sh'] || '0.7.1'
+  const requiredBunVersion = '0.8.1'
   const installedBunVersion = process.version
 
   if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {

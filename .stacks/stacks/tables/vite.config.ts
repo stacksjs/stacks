@@ -1,7 +1,6 @@
 import process from 'node:process'
 import { defineConfig, loadEnv } from 'vite'
 import { type BuildOptions as ViteBuildOptions } from 'vite'
-import mkcert from 'vite-plugin-mkcert'
 import Components from 'unplugin-vue-components/vite'
 import { type ViteConfig } from '../../core/types/src'
 import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '../../core/path/src'
@@ -39,14 +38,7 @@ export const vueComponentsConfig: ViteConfig = {
       // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: 'src/components.d.ts',
-    }),
-    mkcert({
-      hosts: ['localhost', 'stacks.test', 'api.stacks.test', 'admin.stacks.test', 'libs.stacks.test', 'docs.stacks.test'],
-      autoUpgrade: true,
-      savePath: frameworkPath('certs/components'),
-      keyFileName: library.name ? `library-${library.name}-key.pem` : 'library-key.pem',
-      certFileName: library.name ? `library-${library.name}-cert.pem` : 'library-cert.pem',
-    }),
+    })
   ],
 
   build: vueComponentsBuildOptions(),

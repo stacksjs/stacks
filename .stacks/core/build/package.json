@@ -58,7 +58,6 @@
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "vite-plugin-mkcert": "^1.16.0"
+    "@stacksjs/development": "workspace:*"
   }
 }
