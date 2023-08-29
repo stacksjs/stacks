@@ -12,9 +12,6 @@ export async function invoke(options: MakeOptions) {
   if (options.database)
     makeDatabase(options)
 
-  if (options.factory)
-    factory(options)
-
   if (options.function)
     await makeFunction(options)
 
