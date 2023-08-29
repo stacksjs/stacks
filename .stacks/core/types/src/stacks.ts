@@ -4,7 +4,6 @@ import type {
   CacheOptions,
   CdnOptions,
   DatabaseOptions,
-  DependenciesOptions,
   DnsOptions,
   DocsOptions,
   EmailOptions,

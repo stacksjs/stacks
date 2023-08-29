@@ -15,4 +15,3 @@ generateMigrationFile({
     DROP TABLE users;
   `,
 })
-

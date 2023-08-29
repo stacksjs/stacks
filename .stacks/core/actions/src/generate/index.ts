@@ -3,6 +3,7 @@ import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/types'
 import { type GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
+
 // import { files } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
@@ -130,7 +131,6 @@ export function generateMigrations() {
 }
 
 export function generateTeaConfig() {
-
   // write the yaml string to a file in your project root
   // files.put(projectPath('./tea.yaml'), yamlStr)
 

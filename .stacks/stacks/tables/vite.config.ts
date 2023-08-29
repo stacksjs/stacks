@@ -3,7 +3,7 @@ import { defineConfig, loadEnv } from 'vite'
 import { type BuildOptions as ViteBuildOptions } from 'vite'
 import Components from 'unplugin-vue-components/vite'
 import { type ViteConfig } from '../../core/types/src'
-import { frameworkPath, libraryEntryPath, libsPath, projectPath, storagePath } from '../../core/path/src'
+import { libraryEntryPath, libsPath, projectPath, storagePath } from '../../core/path/src'
 import { app, library } from '../../core/config/src'
 import { alias } from '../../core/alias/src'
 import { autoImports, cssEngine, uiEngine } from '../../core/vite/src'
@@ -38,7 +38,7 @@ export const vueComponentsConfig: ViteConfig = {
       // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: 'src/components.d.ts',
-    })
+    }),
   ],
 
   build: vueComponentsBuildOptions(),

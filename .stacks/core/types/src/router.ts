@@ -43,12 +43,12 @@ export interface Route {
   middleware?: string | string[]
 }
 
-export type Middleware = () => void;
+export type Middleware = () => void
 
 export interface Middlewares {
-  logger: Middleware;
-  auth: Middleware;
-  [key: string]: Middleware;
+  logger: Middleware
+  auth: Middleware
+  [key: string]: Middleware
 }
 
 export interface RouteGroupOptions {

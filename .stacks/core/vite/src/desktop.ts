@@ -65,10 +65,10 @@ export const vueComponentsConfig: ViteConfig = {
           //   }
           // }
 
-          const urlObj = new URL(app.url);
-          const domainParts = urlObj.hostname.split('.');
-          domainParts[domainParts.length - 1] = 'test'; // replace TLD with 'test'
-          const newHostname = domainParts.join('.');
+          const urlObj = new URL(app.url)
+          const domainParts = urlObj.hostname.split('.')
+          domainParts[domainParts.length - 1] = 'test' // replace TLD with 'test'
+          const newHostname = domainParts.join('.')
 
           const appUrl = newHostname
           const docsSubdomain = app.subdomains.docs
