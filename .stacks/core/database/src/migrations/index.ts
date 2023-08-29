@@ -64,6 +64,7 @@ export function generateMigrationFile(options: MigrationOptions) {
       \`,
     })
   `
+  // TODO: use Bun.write
   fs.writeFileSync(filePath, fileContent)
 
   console.log(`Created migration file: ${fileName}`)
