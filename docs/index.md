@@ -7,7 +7,7 @@ titleTemplate: Modern TypeScript Fullstack Development.
 hero:
   name: Stacks
   text: Rapid app, cloud & library framework.
-  tagline: Developing using TypeScript has never been easier. Develop, test, build, deploy & publish your apps, libraries, and APIs with ease.
+  tagline: TypeScript has never been greater. Build modern clouds, apps & framework-agnostic libraries, faster.
   actions:
     - theme: brand
       text: Get Started
