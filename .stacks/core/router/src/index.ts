@@ -1,6 +1,7 @@
 import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
 import { handleRequest } from './server'
-
+import { projectPath } from '@stacksjs/path'
+import { readTextFile } from '@stacksjs/storage'
 export class Router {
   private routes: Route[] = []
 
@@ -14,32 +15,31 @@ export class Router {
 
   public get(url: string, callback: RouteCallback): void {
     this.addRoute('GET', url, callback)
-    handleRequest(this.getRoutes())
   }
 
   public post(url: string, callback: RouteCallback): void {
     this.addRoute('POST', url, callback)
-    handleRequest(this.getRoutes())
   }
 
   public view(url: string, callback: RouteCallback): void {
     this.addRoute('GET', url, callback)
-    handleRequest(this.getRoutes())
+  }
+  
+  public redirect(url: string, callback: RouteCallback): void {
+    this.addRoute('GET', url, callback)
+    handleRequest(this.getRoutes(), true)
   }
 
   public delete(url: string, callback: RouteCallback): void {
     this.addRoute('DELETE', url, callback)
-    handleRequest(this.getRoutes())
   }
 
   public patch(url: string, callback: RouteCallback): void {
     this.addRoute('PATCH', url, callback)
-    handleRequest(this.getRoutes())
   }
 
   public put(url: string, callback: RouteCallback): void {
     this.addRoute('PUT', url, callback)
-    handleRequest(this.getRoutes())
   }
 
   public group(options: RouteGroupOptions, callback: () => void): void {
@@ -74,9 +74,11 @@ export class Router {
   //   this.routes.push({ method: 'after', pattern: /^$/, callback, paramNames: [] })
   // }
 
-  public getRoutes(): Route[] {
+  public async getRoutes(): Route[] {
+    const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
+
     return this.routes
   }
 }
 
-export const route = new Router()
+export const route: Router = new Router() satisfies Router

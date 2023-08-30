@@ -3,13 +3,17 @@ import { extname } from 'node:path'
 import { type Route } from '@stacksjs/types'
 import middlewares from '../../../../app/middleware'
 import { request } from './request'
+import { route } from './index'
 
-export function handleRequest(routes: Route[]) {
+
+const routesList: Route[] = route.getRoutes()
+
+export function handleRequest(): void {
   Bun.serve({
     fetch(req) {
       const url = new URL(req.url)
 
-      const foundRoute: Route = routes.find((route: Route) => {
+      const foundRoute: Route = routesList.find((route: Route) => {
         const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
 
         return pattern.test(url.pathname)
@@ -55,7 +59,13 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-async function execute(route: Route, request: any): Promise<Response> {
+function execute(route: Route, request: any): Response {
+  if (route?.method === 'GET' && isRedirect) {
+    const callback = String(route.callback)
+
+    return Response.redirect(callback, 301)
+  }
+
   if (route?.method !== request.method)
     return new Response('Method not allowed', { status: 405 })
 

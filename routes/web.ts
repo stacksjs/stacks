@@ -1,8 +1,8 @@
 import { route } from '../.stacks/core/router/src/index.ts'
-import { request } from '../.stacks/request.ts'
+import { request } from '../.stacks/core/router/src/request.ts'
 
-// route.get('/users/list', getBlogs)
-// route.post('/blogs', getBlogs)
+route.get('/users/list', getBlogs)
+// route.post('/blogs', 'hello world')
 
 // route.group({ prefix: '/users', middleware: 'auth' }, () => {
 //   route.get('/get/:id', getUsers)
@@ -11,7 +11,8 @@ import { request } from '../.stacks/request.ts'
 // })
 
 // TODO: Add a way to register a view.
-route.view('/welcome', 'index.html')
+// route.view('/welcome', 'hello world')
+route.redirect('/wel', '/welcome')
 
 function getUsers() {
   return request.getParams('id')
