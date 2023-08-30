@@ -24,7 +24,7 @@ export class Router {
   public view(url: string, callback: RouteCallback): void {
     this.addRoute('GET', url, callback)
   }
-  
+
   public redirect(url: string, callback: RouteCallback): void {
     this.addRoute('GET', url, callback)
     handleRequest(this.getRoutes(), true)
@@ -75,7 +75,11 @@ export class Router {
   // }
 
   public async getRoutes(): Promise<Route[]> {
-    const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
+    // const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
+
+    await import(projectPath('routes/web.ts'))
+    await import(projectPath('routes/api.ts'))
+
     // run routes/web.ts
     // const webRoutesPath = projectPath('routes/web.ts')
     // await runCommand(`bun ${webRoutesPath}`)
