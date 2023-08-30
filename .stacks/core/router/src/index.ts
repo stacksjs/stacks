@@ -1,45 +1,44 @@
-import type { Route, RouteCallback, RouteGroupOptions } from '@stacksjs/types'
-import { handleRequest } from './server'
+import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 
+import type { StatusCode, RedirectCode } from '@stacksjs/types'
 export class Router {
   private routes: Route[] = []
 
-  private addRoute(method: Route['method'], uri: string, callback: RouteCallback | string | object): void {
+  private addRoute(method: Route['method'], uri: string, callback: RouteCallback | string | object, statusCode: StatusCode): void {
     const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (match) => {
       return '([a-zA-Z0-9-]+)'
     })}$`)
 
-    this.routes.push({ method, uri, callback, pattern })
+    this.routes.push({ method, uri, callback, pattern, statusCode })
   }
 
   public get(url: string, callback: RouteCallback): void {
-    this.addRoute('GET', url, callback)
+    this.addRoute('GET', url, callback, 200)
   }
 
   public post(url: string, callback: RouteCallback): void {
-    this.addRoute('POST', url, callback)
+    this.addRoute('POST', url, callback, 201)
   }
 
   public view(url: string, callback: RouteCallback): void {
-    this.addRoute('GET', url, callback)
+    this.addRoute('GET', url, callback, 200)
   }
 
-  public redirect(url: string, callback: RouteCallback): void {
-    this.addRoute('GET', url, callback)
-    handleRequest(this.getRoutes(), true)
+  public redirect(url: string, callback: RouteCallback, status?: RedirectCode): void {
+    this.addRoute('GET', url, callback, 302)
   }
 
   public delete(url: string, callback: RouteCallback): void {
-    this.addRoute('DELETE', url, callback)
+    this.addRoute('DELETE', url, callback, 204)
   }
 
   public patch(url: string, callback: RouteCallback): void {
-    this.addRoute('PATCH', url, callback)
+    this.addRoute('PATCH', url, callback, 202)
   }
 
   public put(url: string, callback: RouteCallback): void {
-    this.addRoute('PUT', url, callback)
+    this.addRoute('PUT', url, callback, 202)
   }
 
   public group(options: RouteGroupOptions, callback: () => void): void {
@@ -57,6 +56,9 @@ export class Router {
     // For each route added by the callback, adjust the URI and add to the original routes array.
     this.routes.forEach((r) => {
       r.uri = `${prefix}${r.uri}`
+
+      if (middleware.length)
+        r.middleware = middleware
       // Assuming you have a middleware property for each route.
 
       originalRoutes.push(r)
@@ -78,7 +80,6 @@ export class Router {
     // const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
 
     await import(projectPath('routes/web.ts'))
-    await import(projectPath('routes/api.ts'))
 
     // run routes/web.ts
     // const webRoutesPath = projectPath('routes/web.ts')

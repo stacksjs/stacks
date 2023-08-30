@@ -41,7 +41,12 @@ export interface Route {
   callback: RouteCallback
   paramNames: string[]
   middleware?: string | string[]
+  statusCode?: StatusCode
 }
+
+export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
+
+export type RedirectCode = 301 | 302
 
 export type Middleware = () => void
 

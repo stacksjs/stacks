@@ -1,27 +1,23 @@
 import { route } from '../.stacks/core/router/src/index.ts'
 import { request } from '../.stacks/core/router/src/request.ts'
 
-route.get('/users/list', getBlogs)
-// route.post('/blogs', 'hello world')
+route.get('/blogs', 'hello blogs')
 
-// route.group({ prefix: '/users', middleware: 'auth' }, () => {
-//   route.get('/get/:id', getUsers)
+route.group({ prefix: '/users', middleware: 'auth' }, () => {
+  route.get('/get/:id', getUsers)
 
-//   // route.get('/delete', getUsers)
-// })
+  route.get('/delete', getBlogs)
+})
 
 // TODO: Add a way to register a view.
-// route.view('/welcome', 'hello world')
-route.redirect('/wel', '/welcome')
+route.redirect('/user', '/welcome')
+route.get('/welcome', 'hello world')
+route.get('/users', 'hello users')
 
 function getUsers() {
   return request.getParams('id')
 }
 
-// function getUserId() {
-//   return request.getParams('id')
-// }
-
 function getBlogs() {
-  return request.all()
+  return 'hello blogs function'
 }

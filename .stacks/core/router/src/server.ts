@@ -1,37 +1,34 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
-import { type Route } from '@stacksjs/types'
+import { StatusCode, type Route } from '@stacksjs/types'
 import middlewares from '../../../../app/middleware'
 import { request } from './request'
 import { route } from './index'
 
+const routesList: Route[] = await route.getRoutes()
 
-const routesList: Route[] = route.getRoutes()
+Bun.serve({
+  async fetch(req) {
+    const url = new URL(req.url)
 
-export function handleRequest(): void {
-  Bun.serve({
-    fetch(req) {
-      const url = new URL(req.url)
+    const foundRoute: Route = routesList.find((route: Route) => {
+      const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
 
-      const foundRoute: Route = routesList.find((route: Route) => {
-        const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
+      return pattern.test(url.pathname)
+    }) as Route
 
-        return pattern.test(url.pathname)
-      }) as Route
+    if (url.pathname === '/favicon.ico')
+      return new Response('')
 
-      if (url.pathname === '/favicon.ico')
-        return new Response('')
+    if (!foundRoute)
+      return new Response('Not found', { status: 404 })
 
-      if (!foundRoute)
-        return new Response('Not found', { status: 404 })
+    addRouteParamsandQuery(url, foundRoute)
+    executeMiddleware(foundRoute)
 
-      addRouteParamsandQuery(url, foundRoute)
-      executeMiddleware(foundRoute)
-
-      return execute(foundRoute, req)
-    },
-  })
-}
+    return execute(foundRoute, req, { statusCode: foundRoute.statusCode })
+  },
+})
 
 function addRouteParamsandQuery(url: URL, route: Route): void {
   if (!isObjectNotEmpty(url.searchParams))
@@ -41,8 +38,8 @@ function addRouteParamsandQuery(url: URL, route: Route): void {
 }
 
 function executeMiddleware(route: Route): void {
-  const { middleware } = route
-
+  const { middleware = null } = route
+  
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
     if (isString(middleware)) {
       const fn = middlewares[middleware]
@@ -59,11 +56,17 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-function execute(route: Route, request: any): Response {
-  if (route?.method === 'GET' && isRedirect) {
+function execute(route: Route, request: any, { statusCode }: { statusCode: StatusCode }) {
+  if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(route.callback)
 
-    return Response.redirect(callback, 301)
+    const response = Response.redirect(callback, statusCode)
+
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   }
 
   if (route?.method !== request.method)
