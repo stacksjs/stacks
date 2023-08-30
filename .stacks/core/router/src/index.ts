@@ -1,7 +1,7 @@
-import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
+import type { Route, RouteCallback, RouteGroupOptions } from '@stacksjs/types'
 import { handleRequest } from './server'
 import { projectPath } from '@stacksjs/path'
-import { readTextFile } from '@stacksjs/storage'
+
 export class Router {
   private routes: Route[] = []
 
@@ -90,4 +90,4 @@ export class Router {
   }
 }
 
-export const route: Router = new Router() satisfies Router
+export const route = new Router()

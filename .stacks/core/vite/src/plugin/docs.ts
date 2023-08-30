@@ -15,8 +15,6 @@ export function docsEngine() {
   const host = domainParts.join('.')
   const docsUrl = `https://${host}`
 
-  console.log('docssssUrl', docsUrl)
-
   return {
     name: 'stacks-plugin',
     configureServer(server: DevServer) {

@@ -1,4 +1,3 @@
-import { path as p } from '@stacksjs/path'
 import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
@@ -28,7 +27,9 @@ const sidebar = {
       items: [
         { text: 'APIs', link: '/guide/apis' },
         { text: 'Apps', link: '/guide/apps' },
+        { text: 'Buddy', link: '/guide/buddy' },
         { text: 'CI / CD', link: '/guide/ci' },
+        { text: 'Composability', link: '/guide/composability' },
         { text: 'Cloud', link: '/guide/cloud' },
         { text: 'Libraries', link: '/guide/libraries' },
         { text: 'Testing', link: '/guide/testing' },
@@ -45,9 +46,6 @@ const sidebar = {
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  srcDir: p.projectPath('docs'),
-  outDir: p.projectStoragePath('app/docs'),
-  cacheDir: p.projectStoragePath('app/cache/docs'),
   lang: 'en-US',
   title: 'Stacks',
   description: 'Rapid application, cloud & library framework.',
