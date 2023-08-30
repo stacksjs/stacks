@@ -74,8 +74,13 @@ export class Router {
   //   this.routes.push({ method: 'after', pattern: /^$/, callback, paramNames: [] })
   // }
 
-  public async getRoutes(): Route[] {
+  public async getRoutes(): Promise<Route[]> {
     const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
+    // run routes/web.ts
+    // const webRoutesPath = projectPath('routes/web.ts')
+    // await runCommand(`bun ${webRoutesPath}`)
+
+    // set this.routes to a mapped array of routes that matches the pattern
 
     return this.routes
   }
