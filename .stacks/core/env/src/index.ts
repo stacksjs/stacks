@@ -131,7 +131,6 @@ const handler = {
       return cache[prop]
 
     const newEnv = loadEnv('development', projectPath(), '') as (NodeJS.ProcessEnv & Env)
-    process.env = newEnv
     cache[prop] = newEnv[prop]
     return newEnv[prop]
   },

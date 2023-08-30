@@ -96,6 +96,7 @@
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/docs": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",

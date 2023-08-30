@@ -194,21 +194,24 @@ export class StacksCloud extends Stack {
       domainName,
     })
 
+    const docsSource = '../../../storage/app/docs'
+    const websiteSource = app.docMode ? docsSource : '../../../storage/app/public'
+    const privateSource = '../../../storage/private'
+
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('../../../storage/app/docs')],
-      // sources: [s3deploy.Source.asset('../../../storage/public')],
+      sources: [s3deploy.Source.asset(websiteSource)],
       destinationBucket: publicBucket,
       distribution,
       distributionPaths: ['/*'],
     })
 
     new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
-      sources: [s3deploy.Source.asset('../../../storage/private')],
+      sources: [s3deploy.Source.asset(privateSource)],
       destinationBucket: privateBucket,
     })
 
     new s3deploy.BucketDeployment(this, 'DeployDocs', {
-      sources: [s3deploy.Source.asset('../../../storage/app/docs')],
+      sources: [s3deploy.Source.asset(docsSource)],
       destinationBucket: docsBucket,
       distribution: docsDistribution,
       distributionPaths: ['/*'],

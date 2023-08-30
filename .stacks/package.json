@@ -469,7 +469,8 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/vite": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",
@@ -515,6 +516,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/vite": "workspace:*"
   }
 }

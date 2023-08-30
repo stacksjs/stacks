@@ -23,4 +23,5 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
+  docMode: false,
 } satisfies AppConfig

@@ -113,6 +113,15 @@ export interface AppOptions {
   cipher: string
 
   // inspect: <InspectOptions>{},
+
+  /**
+   * **Documentation Mode**
+   *
+   * $appUrl becomes your Documentation URL.
+   *
+   * @default false
+   */
+  docMode: boolean
 }
 
 export type AppConfig = Partial<AppOptions>

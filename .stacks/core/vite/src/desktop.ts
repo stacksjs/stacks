@@ -3,6 +3,7 @@ import * as p from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import * as c from 'kolorist'
 import { app } from '@stacksjs/config'
+import { server } from '@stacksjs/server'
 import pkgjson from '../package.json'
 import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
 import type { ViteDevServer as DevServer } from './'
@@ -16,10 +17,9 @@ export const vueComponentsConfig: ViteConfig = {
   envPrefix: 'FRONTEND_',
   publicDir: p.projectStoragePath('public'),
 
-  server: {
-    // https: true,
-    host: 'desktop.stacksjs.test',
-  },
+  server: server({
+    type: 'desktop',
+  }),
 
   resolve: {
     dedupe: ['vue'],

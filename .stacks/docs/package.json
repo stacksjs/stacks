@@ -31,9 +31,9 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "dev": "bun --bun vitepress dev",
-    "build": "bun --bun vitepress build",
-    "preview": "bun --bun vitepress preview"
+    "dev": "bunx vitepress dev",
+    "build": "bunx rimraf ./node_modules && bunx vitepress build",
+    "preview": "bunx vitepress preview"
   },
   "dependencies": {
     "@stacksjs/docs": "workspace:*",

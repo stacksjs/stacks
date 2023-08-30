@@ -2,18 +2,16 @@
 
 import { logsPath } from '@stacksjs/path'
 import type { StacksError, ValidationError } from '@stacksjs/types'
-import { fs } from '@stacksjs/storage'
-import { italic, log } from '@stacksjs/cli'
 
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static handle(err: string | StacksError, options?: any) {
+  static async handle(err: string | StacksError, options?: any) {
     if (typeof err === 'string')
       err = new Error(err)
 
     this.writeErrorToConsole(err, options)
-    this.writeErrorToFile(err)
+    await this.writeErrorToFile(err)
 
     return err
   }
@@ -23,7 +21,7 @@ export class ErrorHandler {
     return err
   }
 
-  static writeErrorToFile(err: StacksError) {
+  static async writeErrorToFile(err: StacksError) {
     let formattedError: string
 
     if (isErrorOfTypeValidation(err))
@@ -31,10 +29,12 @@ export class ErrorHandler {
     else
       formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
 
-    fs.appendFile(this.logFile, formattedError, 'utf8')
-      .catch((err) => {
-        log.error(`Failed to write error to ./storage/logs/errors.log: ${italic(err.message)}`, err)
-      })
+    const file = Bun.file(this.logFile)
+    const writer = file.writer()
+    const text = await file.text()
+    writer.write(`${text}\n`);
+    writer.write(`${formattedError}\n`);
+    writer.end();
   }
 
   static writeErrorToConsole(err: string | StacksError, options?: any) {
@@ -42,11 +42,11 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: StacksError | string, options?: any): StacksError {
+export async function handleError(err: StacksError | string, options?: any): Promise<StacksError> {
   if (typeof err === 'string')
-    return ErrorHandler.handle(new Error(err), options)
+    return await ErrorHandler.handle(new Error(err), options)
 
-  return ErrorHandler.handle(err, options)
+  return await ErrorHandler.handle(err, options)
 }
 
 function isErrorOfTypeValidation(err: any): err is ValidationError {

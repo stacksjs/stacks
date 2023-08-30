@@ -13,7 +13,9 @@ export const webComponentsExampleConfig: ViteConfig = {
     alias,
   },
 
-  server,
+  server: server({
+    type: 'example',
+  }),
 
   // plugins: [
   //   uiEngine(true),

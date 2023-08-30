@@ -14,7 +14,9 @@ export const webComponentsConfig: ViteConfig = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  server,
+  server: server({
+    type: 'library',
+  }),
 
   resolve: {
     alias,

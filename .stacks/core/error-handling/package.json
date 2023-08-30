@@ -48,11 +48,12 @@
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "neverthrow": "^6.0.0"
   },
   "devDependencies": {

@@ -61,6 +61,8 @@ export function dev(buddy: CLI) {
       else {
         if (options.components)
           await runComponentsDevServer(options)
+        if (options.docs)
+          await runDocsDevServer(options)
         else if (options.api)
           await runFunctionsDevServer(options)
         else if (options.pages)

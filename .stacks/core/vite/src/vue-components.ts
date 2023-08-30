@@ -1,4 +1,5 @@
 import { alias } from '@stacksjs/alias'
+import { server } from '@stacksjs/server'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import { type ViteConfig } from '@stacksjs/types'
@@ -15,10 +16,10 @@ const config = {
   envPrefix: 'FRONTEND_',
   publicDir: p.storagePath('public'),
 
-  server: {
-    host: 'stacks.test',
-    port: 3333,
-  },
+  server: server({
+    type: 'library',
+  }),
+
 
   resolve: {
     dedupe: ['vue'],
