@@ -23,7 +23,7 @@ for dir in $dirs; do
 
   # Check if the directory is one of the two specified
   ## This is because eslint requires cjs builds which we use unbuild for
-  if [[ "$dir" == *"/eslint-plugin-stacks" ]] || [[ "$dir" == *"/eslint-plugin-stacksjs" ]]; then
+  if [ "$dir" = *"/eslint-plugin-stacks" ] || [ "$dir" = *"/eslint-plugin-stacksjs" ]; then
     # Run the bun unbuild command
     bun --bun unbuild
   else
