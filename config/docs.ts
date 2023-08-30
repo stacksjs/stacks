@@ -1,5 +1,5 @@
-import { path as p } from '../.stacks/core/path/src'
-import type { DocsConfig } from '../.stacks/core/types/src/docs'
+import { path as p } from '@stacksjs/path'
+import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },
