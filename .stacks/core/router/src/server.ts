@@ -65,11 +65,7 @@ function execute(route: Route, request: any, { statusCode }: { statusCode?: Stat
 
     const response = Response.redirect(callback, statusCode)
 
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    response.headers.set('Pragma', 'no-cache')
-    response.headers.set('Expires', '0')
-
-    return response
+    return noCache(response);
   }
 
   if (route?.method !== request.method)
@@ -100,6 +96,13 @@ function execute(route: Route, request: any, { statusCode }: { statusCode?: Stat
 
   // If no known type matched, return a generic error.
   return new Response('Unknown callback type.', { status: 500 })
+}
+
+function noCache(response: Response) {
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+  return response;
 }
 
 function isString(val: unknown): val is string {
