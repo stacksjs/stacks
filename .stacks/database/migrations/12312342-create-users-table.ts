@@ -1,14 +1,18 @@
 import { Kysely, sql } from 'kysely'
+import { db } from '@stacksjs/database'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
-    .createTable('person')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('first_name', 'varchar', (col) => col.notNull())
-    .addColumn('last_name', 'varchar')
-    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+    .createTable('users')
+    .addColumn('id', 'integer', (col) => col.primaryKey())
+    .addColumn('name', 'varchar(255)')
+    .addColumn('email', 'varchar(255)', (col) => col.notNull())
+    .addColumn('password', 'varchar(255)', (col) => col.notNull())
     .addColumn('created_at', 'timestamp', (col) =>
       col.defaultTo(sql`now()`).notNull()
     )
     .execute()
 }
+
+await up(db)
+process.exit(0)
