@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 
 import { logsPath } from '@stacksjs/path'
 import type { StacksError, ValidationError } from '@stacksjs/types'
@@ -32,9 +32,9 @@ export class ErrorHandler {
     const file = Bun.file(this.logFile)
     const writer = file.writer()
     const text = await file.text()
-    writer.write(`${text}\n`);
-    writer.write(`${formattedError}\n`);
-    writer.end();
+    writer.write(`${text}\n`)
+    writer.write(`${formattedError}\n`)
+    writer.end()
   }
 
   static writeErrorToConsole(err: string | StacksError, options?: any) {

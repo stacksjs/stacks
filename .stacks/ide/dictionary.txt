@@ -148,6 +148,7 @@ npmjs
 npmrc
 nprogress
 nuxt
+oclif
 openai
 openweb
 openweblabs

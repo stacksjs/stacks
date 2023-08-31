@@ -46,9 +46,11 @@
   "scripts": {
     "bootstrap": "cdk bootstrap --profile stacks",
     "deploy": "cdk deploy --profile stacks",
-    "build": "bun --bun build.ts",
+    "build": "bun build.ts",
+    "build-layer": "bun scripts/build-layer.ts",
+    "publish-layer": "bun scripts/publish-layer.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/dns": "workspace:*",
@@ -59,13 +61,16 @@
     "@aws-lambda-powertools/logger": "^1.12.1",
     "@aws-lambda-powertools/metrics": "^1.12.1",
     "@aws-lambda-powertools/tracer": "^1.12.1",
+    "@aws-sdk/client-cloudfront": "^3.398.0",
     "@stacksjs/dns": "workspace:*",
     "aws-cdk-lib": "^2.93.0",
-    "@aws-sdk/client-cloudfront": "^3.398.0",
+    "aws4fetch": "^1.0.17",
     "constructs": "^10.2.69"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/env": "workspace:*"
+    "@stacksjs/env": "workspace:*",
+    "jszip": "^3.10.1",
+    "oclif": "^3.6.5"
   }
 }

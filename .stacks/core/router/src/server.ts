@@ -1,6 +1,6 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
-import { StatusCode, type Route } from '@stacksjs/types'
+import type { Route, StatusCode } from '@stacksjs/types'
 import middlewares from '../../../../app/middleware'
 import { request } from './request'
 import { route } from './index'
@@ -39,7 +39,7 @@ function addRouteParamsandQuery(url: URL, route: Route): void {
 
 function executeMiddleware(route: Route): void {
   const { middleware = null } = route
-  
+
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
     if (isString(middleware)) {
       const fn = middlewares[middleware]
@@ -62,11 +62,11 @@ function execute(route: Route, request: any, { statusCode }: { statusCode: Statu
 
     const response = Response.redirect(callback, statusCode)
 
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
 
-    return response;
+    return response
   }
 
   if (route?.method !== request.method)

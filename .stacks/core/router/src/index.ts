@@ -1,7 +1,6 @@
-import { type Route, type RouteCallback, type RouteGroupOptions } from '@stacksjs/types'
+import type { RedirectCode, Route, RouteCallback, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 
-import type { StatusCode, RedirectCode } from '@stacksjs/types'
 export class Router {
   private routes: Route[] = []
 

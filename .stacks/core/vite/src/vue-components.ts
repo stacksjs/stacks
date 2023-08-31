@@ -20,7 +20,6 @@ const config = {
     type: 'library',
   }),
 
-
   resolve: {
     dedupe: ['vue'],
     alias,

@@ -23,16 +23,19 @@ for dir in $dirs; do
 
   # Check if the directory is one of the two specified
   ## This is because eslint requires cjs builds which we use unbuild for
-  if [ "$dir" = *"/eslint-plugin-stacks" ] || [ "$dir" = *"/eslint-plugin-stacksjs" ]; then
+  case "$dir" in
+  *"/eslint-plugin-stacks" | *"/eslint-plugin-stacksjs")
     # Run the bun unbuild command
     bun --bun unbuild
-  else
+    ;;
+  *)
     # Extract the command from build.ts
     cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build.ts)
 
     # Run the extracted command
     eval $cmd
-  fi
+    ;;
+  esac
 
   # Check if the build command was successful
   if [ $? -ne 0 ]; then

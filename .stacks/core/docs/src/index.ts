@@ -36,7 +36,7 @@ const defaultConfig = {
     }),
 
     resolve: {
-      alias
+      alias,
     },
 
     plugins: [
