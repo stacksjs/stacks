@@ -55,7 +55,7 @@
   "peerDependencies": {
     "@stacksjs/dns": "workspace:*",
     "aws-cdk-lib": "^2.93.0",
-    "constructs": "^10.2.69"
+    "constructs": "^10.2.70"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^1.12.1",
@@ -65,12 +65,12 @@
     "@stacksjs/dns": "workspace:*",
     "aws-cdk-lib": "^2.93.0",
     "aws4fetch": "^1.0.17",
-    "constructs": "^10.2.69"
+    "constructs": "^10.2.70"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^3.6.5"
+    "oclif": "^3.12.0"
   }
 }
