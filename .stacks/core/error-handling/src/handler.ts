@@ -6,12 +6,12 @@ import type { StacksError, ValidationError } from '@stacksjs/types'
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static async handle(err: string | StacksError, options?: any) {
+  static handle(err: string | StacksError, options?: any) {
     if (typeof err === 'string')
       err = new Error(err)
 
     this.writeErrorToConsole(err, options)
-    await this.writeErrorToFile(err)
+    this.writeErrorToFile(err)
 
     return err
   }
@@ -42,11 +42,11 @@ export class ErrorHandler {
   }
 }
 
-export async function handleError(err: StacksError | string, options?: any): Promise<StacksError> {
+export function handleError(err: StacksError | string, options?: any): StacksError {
   if (typeof err === 'string')
-    return await ErrorHandler.handle(new Error(err), options)
+    return ErrorHandler.handle(new Error(err), options)
 
-  return await ErrorHandler.handle(err, options)
+  return ErrorHandler.handle(err, options)
 }
 
 function isErrorOfTypeValidation(err: any): err is ValidationError {

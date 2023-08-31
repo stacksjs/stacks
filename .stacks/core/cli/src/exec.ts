@@ -2,7 +2,6 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import { log } from './console'
 
 /**
  * Execute a command.
@@ -29,12 +28,14 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
   const proc = Bun.spawn(cmd, {
     ...options,
-    stdout: options?.stdout || 'inherit',
+    stdout: options?.stdout || 'pipe',
+    stderr: options?.stderr || 'inherit',
     cwd: options?.cwd || import.meta.dir,
-    onExit(subprocess, exitCode, signalCode, error) {
-      // if (exitCode !== ExitCode.Success && exitCode)
-      //   handleError(`Failed to execute command: ${cmd.join(' ')}`)
-    },
+    // onExit(subprocess, exitCode, signalCode, error) {
+    //   console.log('onExit', { subprocess, exitCode, signalCode, error })
+    //   // if (exitCode !== ExitCode.Success && exitCode)
+    //   //   handleError(`Failed to execute command: ${cmd.join(' ')}`)
+    // },
   })
 
   const exited = await proc.exited
@@ -69,10 +70,11 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
     ...options,
     stdout: options?.stdout ?? 'inherit',
     cwd: options?.cwd ?? import.meta.dir,
-    onExit(subprocess: any, exitCode: any, signalCode: any, error: any) {
-      if (exitCode !== ExitCode.Success)
-        log.error(error)
-    },
+    env:  { ...process.env, ...options?.env },
+    // onExit(subprocess: any, exitCode: any, signalCode: any, error: any) {
+    //   if (exitCode !== ExitCode.Success)
+    //     log.error(error)
+    // },
   })
 
   if (proc.success)

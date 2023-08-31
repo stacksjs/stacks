@@ -2,7 +2,7 @@ import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands, underline } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import { type ActionOptions, type StacksError, type SyncSubprocess } from '@stacksjs/types'
+import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { type Result, err, handleError } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
@@ -32,19 +32,19 @@ function parseOptions(options?: ActionOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<Result<SyncSubprocess, StacksError>> {
+export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, StacksError>> {
   if (!hasAction(action))
     return err(handleError(`The specified action "${action}" does not exist`))
 
   const opts = parseOptions(options)
   const path = p.relativeActionsPath(`${action}.ts`)
-  const cmd = `bun --bun ${`${path} ${opts}`}`
+  const cmd = `bun ${`${path} ${opts}`}`
 
   if (options?.verbose)
     log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))
 
   return await runCommand(cmd, {
-    cwd: options?.cwd ?? p.projectPath(),
+    cwd: options?.cwd || p.projectPath(),
     ...options,
   })
 }

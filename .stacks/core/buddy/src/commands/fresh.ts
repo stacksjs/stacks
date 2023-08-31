@@ -15,10 +15,10 @@ export function fresh(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy fresh')
-      const result = await runAction(Action.Fresh, options)
+      const result = await runAction(Action.Fresh, { ...options, stdout: 'inherit' })
 
       if (result.isErr()) {
-        await outro('While running the `fresh` command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running `buddy fresh`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 

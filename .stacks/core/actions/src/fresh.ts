@@ -1,16 +1,19 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import { runCommands } from '@stacksjs/cli'
+import { runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
+import { cleanProject } from '@stacksjs/utils'
 
-const results = await runCommands([
-  'buddy clean',
-  'bun install',
-], { cwd: projectPath() })
+console.log('Cleaning project...')
+await cleanProject()
 
-for (const result of results) {
-  if (result.isErr()) {
-    handleError(result.error)
-    process.exit(ExitCode.FatalError)
-  }
+console.log('Installing dependencies...')
+
+const result = await runCommand('bun install', {
+  cwd: projectPath()
+})
+
+if (result.isErr()) {
+  handleError(result.error)
+  process.exit(ExitCode.FatalError)
 }

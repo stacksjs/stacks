@@ -116,6 +116,7 @@
     ".stacks/fonts/*",
     ".stacks/ide/*",
     ".stacks/libs/*",
+    ".stacks/scripts/*",
     ".stacks/stacks/*",
     ".stacks/vcs/*",
     ".stacks/views/*",

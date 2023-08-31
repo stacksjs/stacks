@@ -16,9 +16,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun --bun unbuild",
+    "build": "bunx unbuild",
     "build-bun": "bun --bun build.ts",
-    "stub": "bun --bun unbuild --stub",
+    "stub": "bunx unbuild --stub",
     "test": "bun --bun test",
     "prepublishOnly": "bun --bun run build"
   },

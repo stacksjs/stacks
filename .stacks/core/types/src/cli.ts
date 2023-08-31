@@ -1,8 +1,75 @@
-/**
- * The parsed command-line arguments
- */
+import type { BunFile } from 'bun'
 
-export type { Subprocess, SyncSubprocess } from 'node:bun'
+type ArrayBufferView = TypedArray | DataView;
+
+export type { Subprocess, SyncSubprocess } from 'bun'
+export type Readable =
+  | 'pipe'
+  | 'inherit'
+  | 'ignore'
+  | null // equivalent to 'ignore'
+  | undefined // to use default
+  | BunFile
+  | ArrayBufferView
+  | number;
+
+export type Writable =
+  | 'pipe'
+  | 'inherit'
+  | 'ignore'
+  | null // equivalent to 'ignore'
+  | undefined // to use default
+  | BunFile
+  | ArrayBufferView
+  | number
+  | ReadableStream
+  | Blob
+  | Response
+  | Request;
+
+export type In = Readable
+export type Out = Writable
+export type Err = Writable
+
+/**
+ * The file descriptor for the standard input. It may be:
+ *
+ * - `"ignore"`, `null`, `undefined`: The process will have no standard input
+ * - `"pipe"`: The process will have a new {@link FileSink} for standard input
+ * - `"inherit"`: The process will inherit the standard input of the current process
+ * - `ArrayBufferView`, `Blob`: The process will read from the buffer
+ * - `number`: The process will read from the file descriptor
+ *
+ * @default "ignore"
+ */
+export type stdin = 'ignore' | 'inherit' | 'pipe' | ArrayBufferView | number | null | undefined
+
+/**
+ * The file descriptor for the standard output. It may be:
+ *
+ * - `"pipe"`, `undefined`: The process will have a {@link ReadableStream} for standard output/error
+ * - `"ignore"`, `null`: The process will have no standard output/error
+ * - `"inherit"`: The process will inherit the standard output/error of the current process
+ * - `ArrayBufferView`: The process write to the preallocated buffer. Not implemented.
+ * - `number`: The process will write to the file descriptor
+ *
+ * @default "pipe"
+ */
+export type stdout = 'ignore' | 'inherit' | 'pipe' | ArrayBufferView | number
+
+/**
+ * The file descriptor for the standard error. It may be:
+ *
+ * - `"pipe"`, `undefined`: The process will have a {@link ReadableStream} for standard output/error
+ * - `"ignore"`, `null`: The process will have no standard output/error
+ * - `"inherit"`: The process will inherit the standard output/error of the current process
+ * - `ArrayBufferView`: The process write to the preallocated buffer. Not implemented.
+ * - `number`: The process will write to the file descriptor
+ *
+ * @default "inherit" for `spawn`
+ * "pipe" for `spawnSync`
+ */
+export type stderr = 'ignore' | 'inherit' | 'pipe' | ArrayBufferView | number
 
 export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
@@ -53,7 +120,22 @@ export interface CliOptions {
   */
   cwd?: string
 
-  stdout?: 'inherit' | 'pipe' | 'ignore' | number
+  /**
+   * @default 'pipe'
+   */
+  stdin?: stdin
+
+  /**
+   * @default 'pipe'
+   */
+  stdout?: stdout
+
+  /**
+   * @default 'inherit'
+   */
+  stderr?: stderr
+
+  env?: Record<string, string | undefined>
 }
 
 export type CliConfig = CliOptions

@@ -26,7 +26,7 @@ for dir in $dirs; do
   case "$dir" in
   *"/eslint-plugin-stacks" | *"/eslint-plugin-stacksjs")
     # Run the bun unbuild command
-    bun --bun unbuild
+    bunx --bun unbuild
     ;;
   *)
     # Extract the command from build.ts

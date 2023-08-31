@@ -19,7 +19,11 @@ export const log = {
   success: (msg: string) => logger.log(bold(green(msg))),
   error: (err: string | StacksError, options?: any) => handleError(err, options),
   warn: (...args: any[]) => logger.warn(...args),
-  debug: (...args: any[]) => logger.debug(...args),
+  debug: (...args: any[]) => {
+    if (process.env.DEBUG) {
+      logger.debug(...args)
+    }
+  },
   prompt: prompts,
   dump,
   dd,
