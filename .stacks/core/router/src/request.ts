@@ -5,30 +5,23 @@ interface RequestData {
 type RouteParams = { [key: string]: string } | null
 
 export class Request {
-  private query: { [key: string]: string } = {}
+  private query: RequestData = {}
   private params: RouteParams = null
 
   public addQuery(url: URL): void {
-    const query = url.searchParams
-
-    const paramObject: RequestData = {}
-
-    for (const [key, value] of query.entries())
-      paramObject[key] = value
-
-    this.query = paramObject
+    this.query = Object.fromEntries(url.searchParams)
   }
 
   public get(element: string): string | number | undefined {
     return this.query[element]
   }
 
-  public all(): { [key: string]: string } {
+  public all(): RequestData {
     return this.query
   }
 
   public has(element: string): boolean {
-    return Object.prototype.hasOwnProperty.call(this.query, element)
+    return element in this.query
   }
 
   public isEmpty(): boolean {
@@ -41,7 +34,7 @@ export class Request {
 
     if (match?.groups)
       this.params = match?.groups
-  };
+  }
 
   public getParams(key: string): number | string | null {
     return this.params ? (this.params[key] || null) : null
