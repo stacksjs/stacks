@@ -11,11 +11,11 @@ Bun.serve({
   async fetch(req) {
     const url = new URL(req.url)
 
-    const foundRoute: Route = routesList.find((route: Route) => {
+    const foundRoute: Route | undefined = routesList.find((route: Route) => {
       const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
 
       return pattern.test(url.pathname)
-    }) as Route
+    })
 
     if (url.pathname === '/favicon.ico')
       return new Response('')
@@ -23,14 +23,14 @@ Bun.serve({
     if (!foundRoute)
       return new Response('Not found', { status: 404 })
 
-    addRouteParamsandQuery(url, foundRoute)
+    addRouteParamsAndQuery(url, foundRoute)
     executeMiddleware(foundRoute)
 
-    return execute(foundRoute, req, { statusCode: foundRoute.statusCode })
+    return execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
   },
 })
 
-function addRouteParamsandQuery(url: URL, route: Route): void {
+function addRouteParamsAndQuery(url: URL, route: Route): void {
   if (!isObjectNotEmpty(url.searchParams))
     request.addQuery(url)
 
@@ -56,7 +56,10 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-function execute(route: Route, request: any, { statusCode }: { statusCode: StatusCode }) {
+function execute(route: Route, request: any, { statusCode }: { statusCode?: StatusCode }) {
+  if (!statusCode)
+    statusCode = 200
+
   if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(route.callback)
 
