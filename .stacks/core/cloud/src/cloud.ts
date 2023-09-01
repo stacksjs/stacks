@@ -19,35 +19,45 @@ import { projectPath } from '@stacksjs/path'
 import { app } from '@stacksjs/config'
 
 export class StacksCloud extends Stack {
+  domainName: string
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
     if (!app.url)
       throw new Error('./config app.url is not defined')
 
-    const domainName = app.url
+    this.domainName = app.url
 
     const zone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: domainName,
+      zoneName: this.domainName,
     })
 
     const certificate = new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName,
+      domainName: this.domainName,
       validation: acm.CertificateValidation.fromDns(zone),
     })
 
     const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${domainName}-${app.env}`,
+      bucketName: `${this.domainName}-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     })
 
     const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${domainName}-private-${app.env}`,
+      bucketName: `${this.domainName}-private-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+    })
+
+    // Create an S3 bucket for CloudFront access logs
+    const logBucket = new s3.Bucket(this, 'LogBucket', {
+      bucketName: `${this.domainName}-logs-${app.env}`,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
     })
 
     // Create WAF WebAcl
@@ -66,7 +76,7 @@ export class StacksCloud extends Stack {
 
     // create a CDN to deploy your website
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: [domainName],
+      domainNames: [this.domainName],
       defaultRootObject: 'index.html',
       comment: `CDN for ${app.url}`,
       certificate,
@@ -109,7 +119,7 @@ export class StacksCloud extends Stack {
 
     // Create a Route53 record pointing to the CloudFront distribution
     new route53.ARecord(this, 'AliasRecord', {
-      recordName: domainName,
+      recordName: this.domainName,
       zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     })
@@ -117,7 +127,7 @@ export class StacksCloud extends Stack {
     new route53.CnameRecord(this, 'WwwCnameRecord', {
       zone,
       recordName: 'www',
-      domainName,
+      domainName: this.domainName,
     })
 
     const docsSource = '../../../storage/app/docs'
@@ -137,101 +147,11 @@ export class StacksCloud extends Stack {
     })
 
     if (shouldDeployDocs()) {
-      const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
-        domainName: `${app.subdomains.docs}.${domainName}`,
-        validation: acm.CertificateValidation.fromDns(zone),
-      })
-
-      const docsBucket = new s3.Bucket(this, 'DocsBucket', {
-        bucketName: `docs.${domainName}-${app.env}`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      })
-
-      // Create an S3 bucket for CloudFront access logs
-      const logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${domainName}-logs-${app.env}`,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-        objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
-      })
-
-      logBucket.addLifecycleRule({
-        enabled: true,
-        expiration: Duration.days(30), // TODO: make this configurable
-        id: 'rule',
-      })
-
-      const docsDistribution = new cloudfront.Distribution(this, 'DocsDistribution', {
-        domainNames: [`${app.subdomains.docs}.${app.url}`],
-        defaultRootObject: 'index.html',
-        comment: `CDN for ${app.subdomains.docs}.${app.url}`,
-        certificate: docsCertificate,
-        // originShieldEnabled: true,
-        enableLogging: true,
-        logBucket,
-        httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-        priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-        enabled: true,
-        minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-        webAclId: webAcl.attrArn,
-        enableIpv6: true,
-
-        defaultBehavior: {
-          origin: new origins.S3Origin(docsBucket, {
-            originAccessIdentity,
-          }),
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
-          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        },
-
-        // errorResponses: [
-        //   {
-        //     httpStatus: 403,
-        //     responsePagePath: '/index.html',
-        //     responseHttpStatus: 200,
-        //     ttl: cdk.Duration.minutes(0),
-        //   },
-        //   {
-        //     httpStatus: 404,
-        //     responsePagePath: '/index.html',
-        //     responseHttpStatus: 200,
-        //     ttl: cdk.Duration.minutes(0),
-        //   },
-        // ],
-      })
-      // Create a Route53 record pointing to the Docs CloudFront distribution
-      new route53.ARecord(this, 'DocsAliasRecord', {
-        recordName: `${app.subdomains.docs}.${domainName}`,
-        zone,
-        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
-      })
-
-      new s3deploy.BucketDeployment(this, 'DeployDocs', {
-        sources: [s3deploy.Source.asset(docsSource)],
-        destinationBucket: docsBucket,
-        distribution: docsDistribution,
-        distributionPaths: ['/*'],
-      })
-
-      new Output(this, 'DocsBucketName', {
-        value: docsBucket.bucketName,
-        description: 'The name of the docs bucket',
-      })
-
-      // Prints out the web endpoint to the terminal
-      new Output(this, 'DocsUrl', {
-        value: `https://${app.subdomains.docs}.${app.url}`,
-        description: 'The URL of the deployed documentation',
-     })
+      this.deployDocs(zone, originAccessIdentity, webAcl, docsSource, logBucket)
     }
     // Prints out the web endpoint to the terminal
     new Output(this, 'AppUrl', {
-      value: `https://${domainName}`,
+      value: `https://${this.domainName}`,
       description: 'The URL of the deployed application',
     })
 
@@ -246,6 +166,98 @@ export class StacksCloud extends Stack {
     //   value: Fn.join(', ', zone.hostedZoneNameServers),
     //   description: 'Nameservers for the application domain',
     // })
+  }
+
+  deployDocs(
+    zone: route53.PublicHostedZone,
+    originAccessIdentity: cloudfront.OriginAccessIdentity,
+    webAcl: wafv2.CfnWebACL,
+    docsSource: string,
+    logBucket: s3.Bucket
+  ) {
+    const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
+      domainName: `${app.subdomains.docs}.${this.domainName}`,
+      validation: acm.CertificateValidation.fromDns(zone),
+    })
+
+    const docsBucket = new s3.Bucket(this, 'DocsBucket', {
+      bucketName: `docs.${this.domainName}-${app.env}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    logBucket.addLifecycleRule({
+      enabled: true,
+      expiration: Duration.days(30), // TODO: make this configurable
+      id: 'rule',
+    })
+
+    const docsDistribution = new cloudfront.Distribution(this, 'DocsDistribution', {
+      domainNames: [`${app.subdomains.docs}.${app.url}`],
+      defaultRootObject: 'index.html',
+      comment: `CDN for ${app.subdomains.docs}.${app.url}`,
+      certificate: docsCertificate,
+      // originShieldEnabled: true,
+      enableLogging: true,
+      logBucket,
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+      enabled: true,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      webAclId: webAcl.attrArn,
+      enableIpv6: true,
+
+      defaultBehavior: {
+        origin: new origins.S3Origin(docsBucket, {
+          originAccessIdentity,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+
+      // errorResponses: [
+      //   {
+      //     httpStatus: 403,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      //   {
+      //     httpStatus: 404,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      // ],
+    })
+    // Create a Route53 record pointing to the Docs CloudFront distribution
+    new route53.ARecord(this, 'DocsAliasRecord', {
+      recordName: `${app.subdomains.docs}.${this.domainName}`,
+      zone,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
+    })
+
+    new s3deploy.BucketDeployment(this, 'DeployDocs', {
+      sources: [s3deploy.Source.asset(docsSource)],
+      destinationBucket: docsBucket,
+      distribution: docsDistribution,
+      distributionPaths: ['/*'],
+    })
+
+    new Output(this, 'DocsBucketName', {
+      value: docsBucket.bucketName,
+      description: 'The name of the docs bucket',
+    })
+
+    // Prints out the web endpoint to the terminal
+    new Output(this, 'DocsUrl', {
+      value: `https://${app.subdomains.docs}.${app.url}`,
+      description: 'The URL of the deployed documentation',
+    })
   }
 }
 
