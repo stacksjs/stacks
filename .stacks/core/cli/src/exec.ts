@@ -69,6 +69,7 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
   const proc = Bun.spawnSync(cmd, {
     ...options,
     stdout: options?.stdout ?? 'inherit',
+    stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? import.meta.dir,
     env:  { ...process.env, ...options?.env },
     // onExit(subprocess: any, exitCode: any, signalCode: any, error: any) {
