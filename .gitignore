@@ -10,6 +10,7 @@ updates
 tests/unit/coverage
 dist*
 storage/app/docs/*
+storage/app/cloud/*
 !.gitkeep
 
 .fleet

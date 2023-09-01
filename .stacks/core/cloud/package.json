@@ -47,8 +47,8 @@
     "bootstrap": "cdk bootstrap --profile stacks",
     "deploy": "cdk deploy --profile stacks",
     "build": "bun build.ts",
-    "build-layer": "bun scripts/build-layer.ts",
-    "publish-layer": "bun scripts/publish-layer.ts",
+    "build-layer": "bun ./src/runtime/aws/scripts/build-layer.ts",
+    "publish-layer": "bun ./src/runtime/aws/scripts/publish-layer.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

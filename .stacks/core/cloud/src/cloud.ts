@@ -9,13 +9,15 @@ import {
   aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,
+  aws_lambda as lambda,
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
-import { projectPath } from '@stacksjs/path'
+import { hasFiles } from '@stacksjs/storage'
+import { path as p } from '@stacksjs/path'
 import { app } from '@stacksjs/config'
 
 export class StacksCloud extends Stack {
@@ -131,7 +133,7 @@ export class StacksCloud extends Stack {
     })
 
     const docsSource = '../../../storage/app/docs'
-    const websiteSource = app.docMode ? docsSource : '../../../storage/app/public'
+    const websiteSource = app.docMode ? docsSource : '../../../storage/public'
     const privateSource = '../../../storage/private'
 
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
@@ -145,6 +147,14 @@ export class StacksCloud extends Stack {
       sources: [s3deploy.Source.asset(privateSource)],
       destinationBucket: privateBucket,
     })
+
+    const layer = new lambda.LayerVersion(this, 'Stacks', {
+      code: lambda.Code.fromAsset(p.projectStoragePath('app/cloud/bun-lambda-layer.zip')),
+      compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2, lambda.Runtime.PROVIDED],
+      compatibleArchitectures: [lambda.Architecture.ARM_64],
+      license: 'MIT',
+      description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
+    });
 
     if (shouldDeployDocs()) {
       this.deployDocs(zone, originAccessIdentity, webAcl, docsSource, logBucket)
@@ -248,10 +258,10 @@ export class StacksCloud extends Stack {
       distributionPaths: ['/*'],
     })
 
-    new Output(this, 'DocsBucketName', {
-      value: docsBucket.bucketName,
-      description: 'The name of the docs bucket',
-    })
+    // new Output(this, 'DocsBucketName', {
+    //   value: docsBucket.bucketName,
+    //   description: 'The name of the docs bucket',
+    // })
 
     // Prints out the web endpoint to the terminal
     new Output(this, 'DocsUrl', {
@@ -262,5 +272,5 @@ export class StacksCloud extends Stack {
 }
 
 function shouldDeployDocs() {
-  return hasFiles(projectPath('docs'))
+  return hasFiles(p.projectPath('docs'))
 }

@@ -3,12 +3,12 @@ process.stdout.getWindowSize = () => [80, 80]
 process.stderr.getWindowSize = () => [80, 80]
 
 import { createReadStream, createWriteStream } from 'node:fs'
-import { join } from 'node:path'
+import { path as p } from '@stacksjs/path'
 import { Command, Flags } from '@oclif/core'
 import JSZip from 'jszip'
 
 export class BuildCommand extends Command {
-  static summary = 'Build a custom Lambda layer for Bun.'
+  static summary = 'Build a custom Lambda layer for Stacks & Bun.'
 
   static flags = {
     arch: Flags.string({
@@ -31,7 +31,7 @@ export class BuildCommand extends Command {
     layer: Flags.string({
       description: 'The name of the Lambda layer.',
       multiple: true,
-      default: ['bun'],
+      default: ['stacks'],
     }),
     region: Flags.string({
       description: 'The region to publish the layer.',
@@ -82,7 +82,7 @@ export class BuildCommand extends Command {
     const cwd = bun.name.split('/')[0]
     archive = archive.folder(cwd) ?? archive
     for (const filename of ['bootstrap', 'runtime.ts']) {
-      const path = join(__dirname, '..', filename)
+      const path = p.join(__dirname, '..', filename)
       archive.file(filename, createReadStream(path))
     }
     this.log('Saving...', output)
@@ -94,7 +94,7 @@ export class BuildCommand extends Command {
           level: 9,
         },
       })
-      .pipe(createWriteStream(output))
+      .pipe(createWriteStream(p.projectStoragePath(`app/cloud/${output}`)))
     this.log('Saved')
   }
 }
