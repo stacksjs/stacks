@@ -24,6 +24,15 @@ export default defineModel({
       factory: () => faker.person.fullName(),
     },
 
+    status: {
+      validator: {
+        rule: validate.enum(['active', 'inactive']),
+        message: 'Status must be either active or inactive',
+      },
+
+      factory: () => faker.random.arrayElement(['active', 'inactive']),
+    },
+
     email: {
       unique: true,
 

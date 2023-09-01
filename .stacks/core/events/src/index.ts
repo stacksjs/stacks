@@ -148,7 +148,18 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  * ```
  */
 
-const events = mitt
+// TODO: need to create an action that auto generates this Events type from the ./app/events
+type Events = {
+  'user:registered': { name: string }
+  'user:logged-in': { name: string }
+  'user:logged-out': { name: string }
+  'user:updated': { name: string }
+  'user:deleted': { name: string }
+  'user:password-reset': { name: string }
+  'user:password-changed': { name: string }
+}
+
+const events = mitt<Events>
 const emitter = events()
 const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events()

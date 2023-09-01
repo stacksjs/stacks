@@ -1,4 +1,4 @@
-import { defineEvents } from '@stacksjs/config'
+// import type { Events } from '@stacksjs/types'
 
 /**
  * **Events Configuration**
@@ -13,6 +13,7 @@ import { defineEvents } from '@stacksjs/config'
 //   email: string
 // }
 
-export default defineEvents({
-  // 'user:registered': (user: User) => user,
-})
+// export default {
+//   'user:registered': User,
+//   'user:registered': await import(./send-welcome-email),
+// } satisfies Events

@@ -1,10 +1,9 @@
 import type { Middlewares } from '@stacksjs/types'
 
+const logger = await import('./logger')
+
 export default <Middlewares> {
-  logger: () => {
-    // eslint-disable-next-line no-console
-    console.log('logger middleware')
-  },
+  logger: () => logger,
   auth: () => {
     // eslint-disable-next-line no-console
     console.log('auth middleware')
