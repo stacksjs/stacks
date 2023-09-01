@@ -1,13 +1,11 @@
 import { route } from '../.stacks/core/router/src/index.ts'
 import { request } from '../.stacks/core/router/src/request.ts'
 
-route.get('/blogs', 'hello blogs')
-
-route.group({ prefix: '/users', middleware: 'auth' }, () => {
+route.group(() => {
   route.get('/get/:id', getUsers)
 
   route.get('/delete', getBlogs)
-})
+}).middleware('auth').prefix('/users')
 
 // TODO: Add a way to register a view.
 route.redirect('/user', '/welcome')

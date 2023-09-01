@@ -97,8 +97,6 @@
     "stx": "bun buddy"
   },
   "dependencies": {
-    "kysely-bun-sqlite": "^0.1.1",
-    "mysql2": "^3.6.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {

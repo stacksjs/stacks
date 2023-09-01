@@ -1,9 +1,3 @@
-import { logger } from './logger'
-import { metrics } from './metrics'
-import { tracer } from './tracer'
-
-export {
-  logger,
-  metrics,
-  tracer,
-}
+export { Logger } from './logger'
+export { Metrics } from './metrics'
+export { Tracer } from './tracer'

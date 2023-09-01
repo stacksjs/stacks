@@ -44,17 +44,14 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.26.3"
   },
   "dependencies": {
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.26.3"
-  },
-  "optionalDependencies": {
-    "mysql2": "^3.6.0",
-    "pg": "^8.11.3",
-    "pg-cursor": "^2.10.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -1,3 +1,1 @@
-import { Tracer } from '@aws-lambda-powertools/tracer'
-
-export const tracer = new Tracer()
+export { Tracer } from '@aws-lambda-powertools/tracer'

@@ -1,3 +1,5 @@
+<!-- Thank you Bun ❤️ -->
+
 # bun-lambda
 
 A custom runtime layer that runs Bun on AWS Lambda.

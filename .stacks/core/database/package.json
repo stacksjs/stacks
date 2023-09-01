@@ -56,7 +56,9 @@
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
+  },
+  "optionalDependencies": {
     "mysql2": "^3.6.0"
   },
   "dependencies": {
@@ -66,8 +68,7 @@
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "mysql2": "^3.6.0"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

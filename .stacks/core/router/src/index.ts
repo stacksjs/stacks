@@ -1,10 +1,23 @@
-import type { RedirectCode, Route, RouteCallback, RouteGroupOptions, StatusCode } from '@stacksjs/types'
+import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 
-export class Router {
+export interface Router {
+  get(url: Route['url'], callback: Route['callback']): this
+  post(url: Route['url'], callback: Route['callback']): this
+  view(url: Route['url'], callback: Route['callback']): this
+  redirect(url: Route['url'], callback: Route['callback'], status?: RedirectCode): this
+  delete(url: Route['url'], callback: Route['callback']): this
+  patch(url: Route['url'], callback: Route['callback']): this
+  put(url: Route['url'], callback: Route['callback']): this
+  group(options: RouteGroupOptions, callback: () => void): this
+  middleware(middleware: Route['middleware']): this
+  getRoutes(): Promise<Route[]>
+}
+
+export class Router implements Router {
   private routes: Route[] = []
 
-  private addRoute(method: Route['method'], uri: string, callback: RouteCallback | string | object, statusCode: StatusCode): void {
+  private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
     const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (match) => {
       return '([a-zA-Z0-9-]+)'
     })}$`)
@@ -12,35 +25,47 @@ export class Router {
     this.routes.push({ method, uri, callback, pattern, statusCode })
   }
 
-  public get(url: string, callback: RouteCallback): void {
+  public get(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('GET', url, callback, 200)
+    return this
   }
 
-  public post(url: string, callback: RouteCallback): void {
+  public post(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('POST', url, callback, 201)
+    return this
   }
 
-  public view(url: string, callback: RouteCallback): void {
+  public view(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('GET', url, callback, 200)
+    return this
   }
 
-  public redirect(url: string, callback: RouteCallback, status?: RedirectCode): void {
+  public redirect(url: Route['url'], callback: Route['callback'], status?: RedirectCode): this {
     this.addRoute('GET', url, callback, 302)
+    return this
   }
 
-  public delete(url: string, callback: RouteCallback): void {
+  public delete(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('DELETE', url, callback, 204)
+    return this
   }
 
-  public patch(url: string, callback: RouteCallback): void {
+  public patch(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('PATCH', url, callback, 202)
+    return this
   }
 
-  public put(url: string, callback: RouteCallback): void {
+  public put(url: Route['url'], callback: Route['callback']): this {
     this.addRoute('PUT', url, callback, 202)
+    return this
   }
 
-  public group(options: RouteGroupOptions, callback: () => void): void {
+  public group(options: RouteGroupOptions | (() => void), callback?: () => void): this {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+
     const { prefix = '', middleware = [] } = options
 
     // Save a reference to the original routes array.
@@ -61,19 +86,28 @@ export class Router {
       // Assuming you have a middleware property for each route.
 
       originalRoutes.push(r)
+      return this
     })
 
     // Restore the original routes array.
     this.routes = originalRoutes
+
+    return this
   }
 
-  // before(callback: RouteCallback): void {
-  //   this.routes.unshift({ method: 'before', pattern: /^$/, callback, paramNames: [] })
-  // }
+  public middleware(middleware: Route['middleware']): this {
+    // @ts-ignore
+    this.routes[this.routes.length - 1].middleware = middleware
 
-  // after(callback: RouteCallback): void {
-  //   this.routes.push({ method: 'after', pattern: /^$/, callback, paramNames: [] })
-  // }
+    return this
+  }
+
+  public prefix(prefix: string): this {
+    // @ts-ignore
+    this.routes[this.routes.length - 1].prefix = prefix
+
+    return this
+  }
 
   public async getRoutes(): Promise<Route[]> {
     // const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data

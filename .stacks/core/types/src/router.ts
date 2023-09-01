@@ -36,6 +36,7 @@ export type RouteCallback = (params?: Record<string, any>) => any | string | obj
 
 export interface Route {
   uri: string
+  url: string // used synonymously with uri
   method: HttpMethod
   pattern: RegExp
   callback: RouteCallback
@@ -58,5 +59,5 @@ export interface Middlewares {
 
 export interface RouteGroupOptions {
   prefix?: string
-  middleware?: string | string[]
+  middleware?: Route['middleware']
 }
