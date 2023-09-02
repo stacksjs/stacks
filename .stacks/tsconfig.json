@@ -64,7 +64,7 @@
     "../*.d.ts",
     "../**/*.ts",
     "../**/*.d.ts",
-    "./database/**/*",
+    "../storage/framework/database/**/*",
     "./views/**/*",
     "./stacks/**/*",
     "./scripts/**/*",
