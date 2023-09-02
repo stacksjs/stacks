@@ -1,5 +1,4 @@
 import type { StorageConfig } from '@stacksjs/types'
-import app from './app'
 
 /**
  * **Storage Options**
@@ -10,5 +9,4 @@ import app from './app'
  */
 export default {
   driver: 's3',
-  name: app.name || 'my-custom-bucket-name',
 } satisfies StorageConfig

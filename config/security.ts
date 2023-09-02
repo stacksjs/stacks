@@ -115,5 +115,5 @@ export default {
         // },
       ],
     },
-  }
+  },
 } satisfies SecurityConfig

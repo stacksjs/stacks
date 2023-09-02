@@ -8,7 +8,7 @@ import type { BinaryConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  name: 'Stacks CLI',
-  command: 'stacks', // enables `stacks <command> <options>`
+  name: 'Buddy CLI',
+  command: 'buddy', // enables `buddy <command> <options>`
   description: 'This is an example command to illustrate how to create your own commands. Check out `../app/commands` for more.',
 } satisfies BinaryConfig
