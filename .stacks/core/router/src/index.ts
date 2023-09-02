@@ -22,7 +22,24 @@ export class Router implements Router {
       return '([a-zA-Z0-9-]+)'
     })}$`)
 
-    this.routes.push({ method, uri, callback, pattern, statusCode })
+    let routeCallback: Route['callback']
+
+    if (typeof callback === 'string' || typeof callback === 'object') {
+      // Convert string or object to RouteCallback
+      routeCallback = () => callback
+    } else {
+      routeCallback = callback
+    }
+
+    this.routes.push({
+      method,
+      url: uri,
+      uri,
+      callback: routeCallback,
+      pattern,
+      statusCode,
+      paramNames: []
+    })
   }
 
   public get(url: Route['url'], callback: Route['callback']): this {
@@ -61,9 +78,15 @@ export class Router implements Router {
   }
 
   public group(options: RouteGroupOptions | (() => void), callback?: () => void): this {
+    let cb: () => void
+
     if (typeof options === 'function') {
-      callback = options
+      cb = options
       options = {}
+    }
+    else {
+      if (!callback) throw new Error('Missing callback function for route group.')
+      cb = callback
     }
 
     const { prefix = '', middleware = [] } = options
@@ -75,7 +98,7 @@ export class Router implements Router {
     this.routes = []
 
     // Execute the callback. This will add routes to the new this.routes array.
-    callback()
+    cb()
 
     // For each route added by the callback, adjust the URI and add to the original routes array.
     this.routes.forEach((r) => {
