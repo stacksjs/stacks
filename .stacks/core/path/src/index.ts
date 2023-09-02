@@ -59,12 +59,16 @@ export function arraysPath(path?: string) {
   return corePath(`arrays/${path || ''}`)
 }
 
+export function appPath(path?: string) {
+  return projectPath(`app/${path || ''}`)
+}
+
 export function authPath(path?: string) {
   return corePath(`auth/${path || ''}`)
 }
 
-export function appPath(path?: string) {
-  return projectPath(`app/${path || ''}`)
+export function frameworkStoragePath(path?: string) {
+  return storagePath(`framework/${path || ''}`)
 }
 
 /**
@@ -453,6 +457,7 @@ export const path = {
   examplesPath,
   fakerPath,
   frameworkPath,
+  frameworkStoragePath,
   storagePath,
   functionsPath,
   gitPath,

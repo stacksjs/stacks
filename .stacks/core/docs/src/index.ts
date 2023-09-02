@@ -21,8 +21,8 @@ export function docsUrl() {
 const defaultConfig = {
   title: `${app.name} Documentation`,
   srcDir: p.projectPath('docs'),
-  outDir: p.projectStoragePath('app/docs'),
-  cacheDir: p.projectStoragePath('app/cache/docs'),
+  outDir: p.projectStoragePath('framework/docs'),
+  cacheDir: p.projectStoragePath('framework/cache/docs'),
   sitemap: {
     hostname: docsUrl(),
   },

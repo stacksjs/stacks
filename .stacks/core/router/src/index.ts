@@ -45,38 +45,38 @@ export class Router implements Router {
     })
   }
 
-  public get(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('GET', url, callback, 200)
+  public get(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('GET', path, callback, 200)
     return this
   }
 
-  public post(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('POST', url, callback, 201)
+  public post(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('POST', path, callback, 201)
     return this
   }
 
-  public view(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('GET', url, callback, 200)
+  public view(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('GET', path, callback, 200)
     return this
   }
 
-  public redirect(url: Route['url'], callback: Route['callback'], status?: RedirectCode): this {
-    this.addRoute('GET', url, callback, 302)
+  public redirect(path: Route['url'], callback: Route['callback'], status?: RedirectCode): this {
+    this.addRoute('GET', path, callback, 302)
     return this
   }
 
-  public delete(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('DELETE', url, callback, 204)
+  public delete(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('DELETE', path, callback, 204)
     return this
   }
 
-  public patch(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PATCH', url, callback, 202)
+  public patch(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('PATCH', path, callback, 202)
     return this
   }
 
-  public put(url: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PUT', url, callback, 202)
+  public put(path: Route['url'], callback: Route['callback']): this {
+    this.addRoute('PUT', path, callback, 202)
     return this
   }
 

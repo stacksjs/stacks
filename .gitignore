@@ -9,9 +9,9 @@ node_modules
 updates
 tests/unit/coverage
 dist*
-storage/app/api/*
-storage/app/cloud/*
-storage/app/docs/*
+storage/framework/api/*
+storage/framework/cloud/*
+storage/framework/docs/*
 !.gitkeep
 
 .fleet
