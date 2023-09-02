@@ -1,4 +1,4 @@
-// import type { Events } from '@stacksjs/types'
+import type { Events } from '@stacksjs/types'
 
 /**
  * **Events Configuration**
@@ -8,6 +8,6 @@
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 
-// export default {
-//   'user:registered': await import('./actions/SendWelcomeEmail.ts'),
-// } satisfies Events
+export default {
+  'user:registered': await import('./actions/SendWelcomeEmail.ts'),
+} satisfies Events
