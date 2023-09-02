@@ -132,7 +132,7 @@ export class StacksCloud extends Stack {
       domainName: this.domainName,
     })
 
-    const docsSource = '../../../storage/app/docs'
+    const docsSource = '../../../storage/framework/docs'
     const websiteSource = app.docMode ? docsSource : '../../../storage/public'
     const privateSource = '../../../storage/private'
 

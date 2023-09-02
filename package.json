@@ -108,16 +108,13 @@
     }
   },
   "workspaces": [
-    ".stacks/api",
     ".stacks/core/*",
-    ".stacks/docs",
     ".stacks/fonts/*",
     ".stacks/ide/*",
-    ".stacks/libs/*",
     ".stacks/scripts/*",
     ".stacks/stacks/*",
     ".stacks/vcs/*",
-    ".stacks/views/*",
-    ".stacks"
+    ".stacks",
+    "storage/framework/*"
   ]
 }

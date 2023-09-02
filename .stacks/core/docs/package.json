@@ -41,6 +41,9 @@
     "README.md"
   ],
   "scripts": {
+    "dev:docs": "bunx vitepress dev",
+    "build:docs": "bunx rimraf ./node_modules && bunx vitepress build",
+    "preview:docs": "bunx vitepress preview",
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"

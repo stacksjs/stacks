@@ -78,7 +78,7 @@
     "./core/utils/scripts/*",
     "./core/**/build.ts",
     "./core/**/build.config.ts",
-    "./docs/.vitepress/*",
+    "./core/docs/.vitepress/*",
     "./types/*",
     "./types/**/*",
     "../app/*",
