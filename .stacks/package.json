@@ -36,7 +36,7 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
+      "bun": "./stacks.ts",
       "types": "./core/buddy/dist/index.d.ts",
       "import": "./core/buddy/dist/index.js"
     },
