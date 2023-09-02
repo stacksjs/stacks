@@ -8,12 +8,6 @@
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 
-// interface User {
-//   name: string
-//   email: string
-// }
-
 // export default {
-//   'user:registered': User,
-//   'user:registered': await import(./send-welcome-email),
+//   'user:registered': await import('./actions/SendWelcomeEmail.ts'),
 // } satisfies Events

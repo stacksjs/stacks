@@ -1,2 +1,7 @@
-// eslint-disable-next-line no-console
-console.log('logger middleware')
+export default new Middleware({
+  name: 'logger',
+  priority: 1,
+  handle() {
+    console.log('logger middleware')
+  },
+})
