@@ -35,6 +35,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
 
 export interface Route {
+  name: string
   uri: string
   url: string // used synonymously with uri
   method: HttpMethod

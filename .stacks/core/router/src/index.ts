@@ -10,6 +10,7 @@ export interface Router {
   patch(url: Route['url'], callback: Route['callback']): this
   put(url: Route['url'], callback: Route['callback']): this
   group(options: RouteGroupOptions, callback: () => void): this
+  name(name: string): this
   middleware(middleware: Route['middleware']): this
   getRoutes(): Promise<Route[]>
 }
@@ -18,6 +19,7 @@ export class Router implements Router {
   private routes: Route[] = []
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
+    const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
     const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (match) => {
       return '([a-zA-Z0-9-]+)'
     })}$`)
@@ -32,6 +34,7 @@ export class Router implements Router {
     }
 
     this.routes.push({
+      name,
       method,
       url: uri,
       uri,
@@ -114,6 +117,13 @@ export class Router implements Router {
 
     // Restore the original routes array.
     this.routes = originalRoutes
+
+    return this
+  }
+
+  public name(name: string): this {
+    // @ts-ignore
+    this.routes[this.routes.length - 1].name = name
 
     return this
   }

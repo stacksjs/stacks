@@ -56,7 +56,11 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-function execute(route: Route, request: any, { statusCode }: { statusCode?: StatusCode }) {
+type Options = {
+  statusCode?: StatusCode
+}
+
+function execute(route: Route, request: Request, { statusCode }: Options) {
   if (!statusCode)
     statusCode = 200
 
