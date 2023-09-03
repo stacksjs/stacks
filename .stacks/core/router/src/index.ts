@@ -29,7 +29,8 @@ export class Router implements Router {
     if (typeof callback === 'string' || typeof callback === 'object') {
       // Convert string or object to RouteCallback
       routeCallback = () => callback
-    } else {
+    }
+    else {
       routeCallback = callback
     }
 
@@ -41,7 +42,7 @@ export class Router implements Router {
       callback: routeCallback,
       pattern,
       statusCode,
-      paramNames: []
+      paramNames: [],
     })
   }
 
@@ -88,7 +89,8 @@ export class Router implements Router {
       options = {}
     }
     else {
-      if (!callback) throw new Error('Missing callback function for route group.')
+      if (!callback)
+        throw new Error('Missing callback function for route group.')
       cb = callback
     }
 
@@ -122,21 +124,21 @@ export class Router implements Router {
   }
 
   public name(name: string): this {
-    // @ts-ignore
+    // @ts-expect-error
     this.routes[this.routes.length - 1].name = name
 
     return this
   }
 
   public middleware(middleware: Route['middleware']): this {
-    // @ts-ignore
+    // @ts-expect-error
     this.routes[this.routes.length - 1].middleware = middleware
 
     return this
   }
 
   public prefix(prefix: string): this {
-    // @ts-ignore
+    // @ts-expect-error
     this.routes[this.routes.length - 1].prefix = prefix
 
     return this

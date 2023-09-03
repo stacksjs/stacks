@@ -10,7 +10,7 @@ await cleanProject()
 console.log('Installing dependencies...')
 
 const result = await runCommand('bun install', {
-  cwd: projectPath()
+  cwd: projectPath(),
 })
 
 if (result.isErr()) {

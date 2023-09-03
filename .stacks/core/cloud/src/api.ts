@@ -1,5 +1,5 @@
 import type { Server, ServerWebSocket } from 'bun'
-import { Tracer } from './drivers/aws';
+import { Tracer } from './drivers/aws'
 
 const tracer = new Tracer({ serviceName: 'stacks-api' })
 

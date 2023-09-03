@@ -58,9 +58,6 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
-  "optionalDependencies": {
-    "mysql2": "^3.6.0"
-  },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/faker": "workspace:*",
@@ -69,6 +66,9 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
+  },
+  "optionalDependencies": {
+    "mysql2": "^3.6.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

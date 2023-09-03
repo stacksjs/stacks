@@ -149,7 +149,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 // TODO: need to create an action that auto generates this Events type from the ./app/events
-type Events = {
+interface Events {
   'user:registered': { name: string }
   'user:logged-in': { name: string }
   'user:logged-out': { name: string }

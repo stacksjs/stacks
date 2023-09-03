@@ -1,6 +1,6 @@
 import type { BunFile } from 'bun'
 
-type ArrayBufferView = TypedArray | DataView;
+type ArrayBufferView = TypedArray | DataView
 
 export type { Subprocess, SyncSubprocess } from 'bun'
 export type Readable =
@@ -11,7 +11,7 @@ export type Readable =
   | undefined // to use default
   | BunFile
   | ArrayBufferView
-  | number;
+  | number
 
 export type Writable =
   | 'pipe'
@@ -25,7 +25,7 @@ export type Writable =
   | ReadableStream
   | Blob
   | Response
-  | Request;
+  | Request
 
 export type In = Readable
 export type Out = Writable

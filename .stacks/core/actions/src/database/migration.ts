@@ -1,5 +1,4 @@
 // import { generateMigrationFile } from '@stacksjs/database'
-import { projectPath } from "@stacksjs/path"
 import User from '../../../../../app/models/User'
 
 // generateMigrationFile({
@@ -20,20 +19,20 @@ import User from '../../../../../app/models/User'
 
 const fields = User.fields
 
-const file = Bun.file("user-migration.ts");
-const writer = file.writer();
+const file = Bun.file('user-migration.ts')
+const writer = file.writer()
 
-writer.write("import { Kysely, sql } from 'kysely'\n");
-writer.write("import { db } from '@stacksjs/database'\n");
-writer.write(" \n");
-writer.write("export async function up(db: Kysely<any>): Promise<void> { \n");
+writer.write('import { Kysely, sql } from \'kysely\'\n')
+writer.write('import { db } from \'@stacksjs/database\'\n')
+writer.write(' \n')
+writer.write('export async function up(db: Kysely<any>): Promise<void> { \n')
 
-writer.write("  await db.schema \n");
-writer.write(`  .createTable('${User.table}') \n`);
+writer.write('  await db.schema \n')
+writer.write(`  .createTable('${User.table}') \n`)
 
-writer.write(".addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull()) \n")
+writer.write('.addColumn(\'created_at\', \'timestamp\', (col) => col.defaultTo(sql`now()`).notNull()) \n')
 
-writer.end();
+writer.end()
 
 // // Rules
 // if (fields)
@@ -41,7 +40,7 @@ writer.end();
 
 //   const regex = /rule:.*$/gm;
 //   let match;
-  
+
 //   while ((match = regex.exec(code)) !== null) {
 //     console.log(match[0]); // Outputs: 'rule: validate.string().minLength(3).maxLength(255).nullable()', etc.
 //   }

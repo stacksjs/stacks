@@ -1,10 +1,9 @@
 // export * from './migrations'
 // export * from './seeder''
 
-import { Kysely } from 'kysely'
-import { MysqlDialect } from 'kysely'
+import { Kysely, MysqlDialect } from 'kysely'
 import { createPool } from 'mysql2'
-import { Database } from "bun:sqlite";
+import type { Database } from 'bun:sqlite'
 
 const dialect = new MysqlDialect({
   pool: createPool({
@@ -16,7 +15,7 @@ const dialect = new MysqlDialect({
     connectionLimit: 10,
   }),
 })
-  
+
 export const db = new Kysely<Database>({
   dialect,
 })

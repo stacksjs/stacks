@@ -20,9 +20,8 @@ export const log = {
   error: (err: string | StacksError, options?: any) => handleError(err, options),
   warn: (...args: any[]) => logger.warn(...args),
   debug: (...args: any[]) => {
-    if (process.env.DEBUG) {
+    if (process.env.DEBUG)
       logger.debug(...args)
-    }
   },
   prompt: prompts,
   dump,

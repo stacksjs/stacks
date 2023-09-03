@@ -1,11 +1,11 @@
 // HACK: https://github.com/oven-sh/bun/issues/2081
-process.stdout.getWindowSize = () => [80, 80]
-process.stderr.getWindowSize = () => [80, 80]
-
 import { createReadStream, createWriteStream } from 'node:fs'
 import { path as p } from '@stacksjs/path'
 import { Command, Flags } from '@oclif/core'
 import JSZip from 'jszip'
+
+process.stdout.getWindowSize = () => [80, 80]
+process.stderr.getWindowSize = () => [80, 80]
 
 export class BuildCommand extends Command {
   static summary = 'Build a custom Lambda layer for Stacks & Bun.'

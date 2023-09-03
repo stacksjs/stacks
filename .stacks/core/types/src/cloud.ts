@@ -50,6 +50,24 @@ export interface CloudOptions {
       }
     }[]
   }
+
+  cdn: {
+    enableLogging: boolean
+    allowedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS' | 'ALL'
+    cachedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS'
+    minTtl: number
+    defaultTtl: number
+    maxTtl: number
+    compress: boolean
+    priceClass: 'PriceClass_100' | 'PriceClass_200' | 'PriceClass_All'
+    originShieldRegion: string
+    cookieBehavior: 'none' | 'allowList' | 'all'
+    allowList: {
+      cookies: string[]
+      headers: string[]
+      queryStrings: string[]
+    }
+  }
 }
 
 export type CloudConfig = Partial<CloudOptions>

@@ -56,7 +56,7 @@ function executeMiddleware(route: Route): void {
   }
 }
 
-type Options = {
+interface Options {
   statusCode?: StatusCode
 }
 
@@ -69,7 +69,7 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
 
     const response = Response.redirect(callback, statusCode)
 
-    return noCache(response);
+    return noCache(response)
   }
 
   if (route?.method !== request.method)
@@ -103,10 +103,10 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
 }
 
 function noCache(response: Response) {
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-  return response;
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+  return response
 }
 
 function isString(val: unknown): val is string {
