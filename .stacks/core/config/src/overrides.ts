@@ -1,0 +1,43 @@
+import type { StacksConfig } from '@stacksjs/types'
+import app from '~/config/app'
+import binary from '~/config/binary'
+import cache from '~/config/cache'
+import cloud from '~/config/cloud'
+import database from '~/config/database'
+import dns from '~/config/dns'
+import docs from '~/config/docs'
+import email from '~/config/email'
+import git from '~/config/git'
+import hashing from '~/config/hashing'
+import library from '~/config/library'
+import queue from '~/config/queue'
+import payment from '~/config/payment'
+import notification from '~/config/notification'
+import storage from '~/config/storage'
+import searchEngine from '~/config/search-engine'
+import security from '~/config/security'
+import services from '~/config/services'
+import ui from '~/config/ui'
+
+// this will override the default config options
+export const userConfig: StacksConfig = {
+  app,
+  binary,
+  cache,
+  cloud,
+  database,
+  dns,
+  docs,
+  email,
+  git,
+  hashing,
+  library,
+  notification,
+  queue,
+  payment,
+  searchEngine,
+  security,
+  services,
+  storage,
+  ui,
+}
