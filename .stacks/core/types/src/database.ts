@@ -36,7 +36,7 @@ export interface DatabaseOptions {
   migrations: string
 }
 
-export type DatabaseConfig = DatabaseOptions
+export type DatabaseConfig = Partial<DatabaseOptions>
 
 export interface FactoryOptions {
   name: string

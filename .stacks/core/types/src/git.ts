@@ -128,6 +128,6 @@ interface Hooks {
   'post-index-change'?: string
 }
 
-export type GitConfig = GitOptions
+export type GitConfig = Partial<GitOptions>
 
 export interface GitHooks extends Hooks {}

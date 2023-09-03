@@ -48,4 +48,4 @@ export interface DnsOptions {
   txt?: TxtRecord[]
 }
 
-export type DnsConfig = DnsOptions
+export type DnsConfig = Partial<DnsOptions>

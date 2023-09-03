@@ -1,8 +1,8 @@
-import type { ResolvedStacksOptions } from '@stacksjs/types'
+import type { StacksConfig } from '@stacksjs/types'
 import app from '~/config/app'
 import binary from '~/config/binary'
 import cache from '~/config/cache'
-import cdn from '~/config/cdn'
+import cloud from '~/config/cloud'
 import database from '~/config/database'
 import dns from '~/config/dns'
 import docs from '~/config/docs'
@@ -19,11 +19,11 @@ import security from '~/config/security'
 import services from '~/config/services'
 import ui from '~/config/ui'
 
-const defaults: ResolvedStacksOptions = {
+const defaults: StacksConfig = {
   app,
   binary,
   cache,
-  cdn,
+  cloud,
   database,
   dns,
   docs,
@@ -46,7 +46,7 @@ export {
   app,
   binary,
   cache,
-  cdn,
+  cloud,
   database,
   dns,
   docs,

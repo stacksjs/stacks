@@ -75,4 +75,4 @@ export interface CacheOptions {
   }
 }
 
-export type CacheConfig = CacheOptions
+export type CacheConfig = Partial<CacheOptions>
