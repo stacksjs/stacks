@@ -26,7 +26,7 @@ export interface AppOptions {
    *
    * @default "development"
    */
-  env: 'dev' | 'development' | 'staging' | 'prod' | 'production'
+  env: 'local' | 'dev' | 'development' | 'staging' | 'prod' | 'production'
 
   /**
    * **Application URL**

@@ -1,4 +1,4 @@
-import { type IEmailOptions } from '@novu/stateless'
+import type { IEmailOptions } from '@novu/stateless'
 
 export type EmailOptions = Omit<IEmailOptions, 'from'> & {
   from: {
@@ -6,7 +6,7 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
     address?: string
   }
 
-  mailboxes?: {
+  mailboxes: {
     [key: string]: string
     // 'username': string
     // 'forwardTo': string

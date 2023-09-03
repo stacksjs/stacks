@@ -41,11 +41,12 @@ export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecor
    * @see https://stacksjs.dev/docs/dns
    */
 export interface DnsOptions {
-  a?: ARecord[]
-  aaaa?: AAAARecord[]
-  cname?: CNameRecord[]
-  mx?: MXRecord[]
-  txt?: TxtRecord[]
+  driver: 'aws'
+  a: ARecord[]
+  aaaa: AAAARecord[]
+  cname: CNameRecord[]
+  mx: MXRecord[]
+  txt: TxtRecord[]
 }
 
 export type DnsConfig = Partial<DnsOptions>

@@ -5,6 +5,7 @@ export interface BinaryOptions {
   name: string
   command: string
   description: string
+  source: string
   // path: string // TODO: add this for a configurable path where the commands are located
 }
 
