@@ -64,16 +64,16 @@
     "@stacksjs/types": "workspace:*"
   },
   "optionalDependencies": {
-    "@novu/gupshup": "^0.18.0",
-    "@novu/nexmo": "^0.18.0",
-    "@novu/node": "^0.18.0",
-    "@novu/plivo": "^0.18.0",
-    "@novu/sms77": "^0.18.0",
-    "@novu/sns": "^0.18.0",
-    "@novu/stateless": "^0.18.0",
-    "@novu/telnyx": "^0.18.0",
-    "@novu/termii": "^0.18.0",
-    "@novu/twilio": "^0.18.0"
+    "@novu/gupshup": "^0.19.0",
+    "@novu/nexmo": "^0.19.0",
+    "@novu/node": "^0.19.0",
+    "@novu/plivo": "^0.19.0",
+    "@novu/sms77": "^0.19.0",
+    "@novu/sns": "^0.19.0",
+    "@novu/stateless": "^0.19.0",
+    "@novu/telnyx": "^0.19.0",
+    "@novu/termii": "^0.19.0",
+    "@novu/twilio": "^0.19.0"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
