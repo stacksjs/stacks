@@ -8,15 +8,16 @@ import type { HashingConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'bcrypt',
+  driver: 'argon2',
 
   bcrypt: {
     rounds: 10,
+    cost: 4, // number between 4-31
   },
 
-  argon: {
-    memory: 65536,
+  argon2: {
+    memory: 65536, // memory usage in kibibytes
     threads: 1,
-    time: 1,
+    time: 1, // the number of iterations
   },
 } satisfies HashingConfig

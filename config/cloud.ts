@@ -14,5 +14,21 @@ export default {
   storage: {
     useFileSystem: true,
   },
-  // cdn: {}
+  cdn: {
+    enableLogging: true,
+    compress: true,
+    allowedMethods: 'ALL',
+    cachedMethods: 'GET_HEAD',
+    originShieldRegion: 'us-east-1',
+    minTtl: 0,
+    defaultTtl: 86400,
+    maxTtl: 31536000,
+    priceClass: 'PriceClass_All',
+    cookieBehavior: 'none',
+    allowList: {
+      cookies: [],
+      headers: [],
+      queryStrings: [],
+    },
+  },
 } satisfies CloudConfig

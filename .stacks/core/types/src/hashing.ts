@@ -21,7 +21,7 @@ export interface HashingOptions {
    *
    * @see https://stacksjs.dev/docs/hashing
    */
-  driver: 'argon' | 'bcrypt'
+  driver: 'argon2' | 'argon2id' | 'argon2i' | 'argon2d' | 'bcrypt'
 
   /**
    * **Bcrypt Option**
@@ -43,7 +43,7 @@ export interface HashingOptions {
    *
    * @see https://stacksjs.dev/docs/hashing
    */
-  argon?: ArgonOptions
+  argon2?: ArgonOptions
 }
 
 export type HashingConfig = Partial<HashingOptions>
@@ -64,7 +64,14 @@ export interface BcryptOptions {
    * @default number 10
    * @see https://stacksjs.dev/docs/hashing
    */
-  rounds?: number
+  rounds: number
+
+  /**
+   * Bcrypt cost. This is a number between 4-31.
+   * @default number 4
+   * @see https://stacksjs.dev/docs/hashing
+   */
+  cost: number
 }
 
 /**
