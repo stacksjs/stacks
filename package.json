@@ -29,6 +29,7 @@
     "upgrade:framework": "bun buddy upgrade:framework",
     "upgrade:bun": "bun buddy upgrade:bun",
     "dev": "bun buddy dev",
+    "dev:view": "vite serve ./storage/framework/web -c ./.stacks/core/vite/src/views.ts",
     "dev:components": "bun buddy dev:components",
     "dev:desktop": "bun buddy dev:desktop",
     "dev:docs": "bun buddy dev:docs",

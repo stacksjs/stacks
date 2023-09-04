@@ -1,3 +1,3 @@
 <template>
-  <span>Welcome to stacks!</span>
+  <span class="text-gray-800">Welcome to stacks!</span>
 </template>

@@ -1,13 +1,15 @@
 import { type ViteConfig } from '@stacksjs/types'
-import { functionsPath, projectPath } from '@stacksjs/path'
+import { resourcesPath, projectPath } from '@stacksjs/path'
+
+import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine, pwa } from './stacks'
+
 import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'
 
-// import { autoImports, components, cssEngine, inspect, layouts, pages, pwa, uiEngine } from '.'
-// import generateSitemap from 'vite-ssg-sitemap'
+import generateSitemap from 'vite-ssg-sitemap'
 
 export const pagesConfig: ViteConfig = {
-  root: functionsPath(),
+  root: projectPath('storage/framework/web/'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
 
@@ -17,23 +19,27 @@ export const pagesConfig: ViteConfig = {
 
   plugins: [
     // preview(),
-    // uiEngine(),
-    // pages(),
-    // cssEngine(),
-    // components(),
-    // layouts(),
-    // // i18n(),
-    // autoImports(),
+    uiEngine(),
+    pages({
+      routesFolder: [resourcesPath('views')],
+    }),
+    cssEngine(),
+    components(),
+    layouts({
+      layoutsDirs: resourcesPath('layouts'),
+    }),
+    // i18n(),
+    autoImports(),
     // pwa(),
-    // inspect(),
+    inspect(),
   ],
 
   // https://github.com/antfu/vite-ssg
-  // ssgOptions: {
-  //   script: 'async',
-  //   formatting: 'minify',
-  //   onFinished() { generateSitemap() },
-  // },
+  ssgOptions: {
+    script: 'async',
+    formatting: 'minify',
+    onFinished() { generateSitemap() },
+  },
 
   ssr: {
     // TODO: workaround until they support native ESM
