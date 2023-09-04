@@ -10,5 +10,5 @@ import type { PaymentConfig } from '@stacksjs/types'
 export default {
   driver: 'stripe',
 
-  // ... other
+  // wip
 } satisfies PaymentConfig

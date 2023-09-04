@@ -19,8 +19,8 @@ import security from '~/config/security'
 import services from '~/config/services'
 import ui from '~/config/ui'
 
-// this will override the default config options
-export const userConfig: StacksConfig = {
+// this "user config" will override the default config options
+export default {
   app,
   binary,
   cache,
@@ -40,4 +40,4 @@ export const userConfig: StacksConfig = {
   services,
   storage,
   ui,
-}
+} satisfies StacksConfig

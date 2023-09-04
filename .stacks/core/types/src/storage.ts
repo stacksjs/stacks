@@ -7,7 +7,7 @@ export interface StorageOptions {
    * @default string 's3'
    * @see https://stacksjs.dev/docs/storage
    */
-  driver: 's3' | 'local'
+  driver: 's3' | 'efs' | 'local'
 }
 
 export type StorageConfig = Partial<StorageOptions>
