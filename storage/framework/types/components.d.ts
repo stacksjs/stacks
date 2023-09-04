@@ -17,6 +17,5 @@ declare module 'vue' {
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     ToggleDark: typeof import('./../../resources/components/Buttons/ToggleDark.vue')['default']
-    Undefined: typeof import('./../../resources/views/index.vue')['default']
   }
 }
