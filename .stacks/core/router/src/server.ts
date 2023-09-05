@@ -1,6 +1,6 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
-import type { Route, StatusCode } from '@stacksjs/types'
+import type { Route, StatusCode, MiddlewareType } from '@stacksjs/types'
 import { middlewares }  from './middleware'
 import { request } from './request'
 import { route } from './index'
@@ -40,17 +40,24 @@ function addRouteParamsAndQuery(url: URL, route: Route): void {
 function executeMiddleware(route: Route): void {
   const { middleware = null } = route
 
+
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
     if (isString(middleware)) {
-      const fn = middlewares[middleware]
-      if (fn)
-        fn() // Invoke only if it exists and is not undefined.
+      const middlewareItem: MiddlewareType = middlewares.find((middlewareItem: MiddlewareType) => {
+        return middlewareItem.name === middleware
+      })
+
+      if (middlewareItem)
+        middlewareItem.handle() // Invoke only if it exists and is not undefined.
     }
     else {
       middleware.forEach((m) => {
-        const fn = middlewares[m]
-        if (fn)
-          fn() // Again, invoke only if it exists.
+        const middlewareItem: MiddlewareType = middlewares.find((middlewareItem: MiddlewareType) => {
+          return middlewareItem.name === m
+        })
+
+        if (middlewareItem)
+          middlewareItem.handle() // Again, invoke only if it exists.
       })
     }
   }
