@@ -1,6 +1,6 @@
 import type { ZlibCompressionOptions } from 'bun'
 
-type ZipOptions = ZlibCompressionOptions
+type ZipOptions = ZlibCompressionOptions & { output?: string }
 
 export async function zip(paths: string | string[], options?: ZipOptions) {
   const data = []
@@ -12,7 +12,10 @@ export async function zip(paths: string | string[], options?: ZipOptions) {
     data.push(new Uint8Array(arrayBuffer))
   }
 
-  return gzipSync(Buffer.concat(data), options) // compressed
+  const arr = gzipSync(Buffer.concat(data), options) // compressed
+
+  let output = options?.output || 'dist.zip'
+  Bun.write(options?.output || 'dist.zip', arr)
 }
 
 export async function unzip(paths: string | string[]) {
