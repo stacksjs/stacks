@@ -98,7 +98,8 @@
     "stx": "bun buddy"
   },
   "dependencies": {
-    "stacks": "workspace:*"
+    "stacks": "workspace:*",
+    "unhead": "^1.5.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": "eslint --fix"

@@ -7,15 +7,15 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Counter: typeof import('./../../resources/components/Buttons/Counter.vue')['default']
-    Demo: typeof import('./../../resources/components/Demo.vue')['default']
-    HelloWorld: typeof import('./../../resources/components/HelloWorld.vue')['default']
-    Logo: typeof import('./../../resources/components/Logo.vue')['default']
-    README: typeof import('./../../resources/components/README.md')['default']
+    Counter: typeof import('./../../../resources/components/Buttons/Counter.vue')['default']
+    HelloWorld: typeof import('./../../../resources/components/HelloWorld.vue')['default']
+    Logo: typeof import('./../../../resources/components/Logo.vue')['default']
+    Playground: typeof import('./../../../resources/components/Playground.vue')['default']
+    README: typeof import('./../../../resources/components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
-    ToggleDark: typeof import('./../../resources/components/Buttons/ToggleDark.vue')['default']
+    ToggleDark: typeof import('./../../../resources/components/Buttons/ToggleDark.vue')['default']
   }
 }

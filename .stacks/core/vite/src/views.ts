@@ -1,7 +1,7 @@
 import { type ViteConfig } from '@stacksjs/types'
 import { resourcesPath, projectPath } from '@stacksjs/path'
 
-import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine, pwa } from './stacks'
+import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine } from './stacks'
 
 import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'

@@ -19,10 +19,10 @@ route.redirect('/user', '/welcome')
 route.get('/welcome', 'hello world')
 route.get('/users', 'hello users')
 
-// function getUsers() {
-//   return request.getParams('id')
-// }
+function getUsers() {
+  return request.getParams('id')
+}
 
-// function getBlogs() {
-//   return 'hello blogs function'
-// }
+function getBlogs() {
+  return 'hello blogs function'
+}

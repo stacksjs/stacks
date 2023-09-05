@@ -5,8 +5,5 @@ console.log(route)
 </script>
 
 <template>
-  <HelloWorld
-    greeting="Jane Doe"
-    :show-buttons="true"
-  />
+  <span class="text-gray-800">Welcome to users!</span>
 </template>

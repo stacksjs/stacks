@@ -13,7 +13,7 @@ export function components(options?: ComponentOptions): Plugin {
       p.componentsPath(),
       // viewsPath(),
     ],
-    dts: p.frameworkPath('types/components.d.ts'),
+    dts: p.projectStoragePath('framework/types/components.d.ts'),
   }
 
   const newOptions = defu(options, defaultOptions)

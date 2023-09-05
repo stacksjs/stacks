@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
 import type { Route, StatusCode } from '@stacksjs/types'
-import middlewares from '../../../../app/middleware'
+import { middlewares }  from './middleware'
 import { request } from './request'
 import { route } from './index'
 
