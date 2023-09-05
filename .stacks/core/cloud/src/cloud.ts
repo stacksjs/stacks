@@ -166,8 +166,8 @@ export class StacksCloud extends Stack {
     })
 
     const layer = new lambda.LayerVersion(this, 'Stacks', {
-      code: lambda.Code.fromAsset(p.projectStoragePath('app/cloud/bun-lambda-layer.zip')),
-      compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2, lambda.Runtime.PROVIDED],
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
+      compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
       compatibleArchitectures: [lambda.Architecture.ARM_64],
       license: 'MIT',
       description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',

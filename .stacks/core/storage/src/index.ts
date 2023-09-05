@@ -5,5 +5,6 @@ export * from './fs'
 export * from './copy'
 export * from './glob'
 export * from './delete'
+export * from './zip'
 
 export * as storage from './storage'
