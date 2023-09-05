@@ -174,7 +174,7 @@ export class StacksCloud extends Stack {
     })
 
     new lambda.Function(this, 'StacksApi', {
-      code: lambda.Code.fromAsset(p.projectStoragePath('app/api/api.zip')),
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/api/lambda.zip')),
       handler: 'index.handler',
       runtime: lambda.Runtime.PROVIDED_AL2,
       layers: [layer],
