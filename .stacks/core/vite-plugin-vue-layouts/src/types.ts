@@ -1,7 +1,7 @@
 /**
  * Plugin options.
  */
-export interface Options {
+export interface LayoutOptions {
   /**
    * Relative path to the directory to search for page components.
    * @default 'src/layouts'
@@ -31,9 +31,9 @@ export type FileContainer = {
   path: string
   files: string[]
 }
-export type UserOptions = Partial<Options>
+export type UserOptions = Partial<LayoutOptions>
 
-export interface ResolvedOptions extends Options {}
+export interface ResolvedOptions extends LayoutOptions {}
 
 export interface clientSideOptions {
   /**
