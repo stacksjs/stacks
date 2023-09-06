@@ -57,7 +57,7 @@
     "@stacksjs/ui": "workspace:*"
   },
   "dependencies": {
-    "meilisearch": "^0.34.1"
+    "meilisearch": "^0.34.2"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
