@@ -47,9 +47,11 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "unplugin-vue-router": "^0.6.4",
     "vue-router": "^4.2.4"
   },
   "dependencies": {
+    "unplugin-vue-router": "^0.6.4",
     "vue-router": "^4.2.4"
   },
   "devDependencies": {

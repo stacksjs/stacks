@@ -5,7 +5,7 @@ import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'
 import generateSitemap from 'vite-ssg-sitemap'
 
-export const pagesConfig: ViteConfig = {
+export const pagesConfig = {
   root: p.projectStoragePath('framework/web'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
@@ -14,21 +14,26 @@ export const pagesConfig: ViteConfig = {
     alias,
   },
 
+  server: {
+    host: 'stacks.test',
+    port: 3333,
+  },
+
   plugins: [
     // preview(),
     uiEngine(),
-    pages({
-      routesFolder: [p.resourcesPath('views')],
-    }),
-    cssEngine(),
-    components(),
-    layouts({
-      layoutsDirs: p.resourcesPath('layouts'),
-    }),
-    // i18n(),
-    autoImports(),
-    // pwa(),
-    inspect(),
+    // pages({
+    //   routesFolder: [p.resourcesPath('views')],
+    // }),
+    // cssEngine(),
+    // components(),
+    // layouts({
+    //   layoutsDirs: p.resourcesPath('layouts'),
+    // }),
+    // // i18n(),
+    // autoImports(),
+    // // pwa(),
+    // inspect(),
   ],
 
   // https://github.com/antfu/vite-ssg
@@ -42,7 +47,7 @@ export const pagesConfig: ViteConfig = {
     // TODO: workaround until they support native ESM
     noExternal: ['workbox-window', /vue-i18n/],
   },
-}
+} satisfies ViteConfig
 
 export default defineConfig(({ command }) => {
   if (command === 'serve')
