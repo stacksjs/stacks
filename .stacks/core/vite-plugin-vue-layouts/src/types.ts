@@ -1,7 +1,7 @@
 /**
  * Plugin options.
  */
-interface Options {
+export interface Options {
   /**
    * Relative path to the directory to search for page components.
    * @default 'src/layouts'

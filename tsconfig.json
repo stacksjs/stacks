@@ -1,6 +1,3 @@
 {
-  "extends": "./.stacks/tsconfig.json",
-  "compilerOptions": {
-    "types": ["vite-plugin-pages/client"]
-  }
+  "extends": "./.stacks/tsconfig.json"
 }

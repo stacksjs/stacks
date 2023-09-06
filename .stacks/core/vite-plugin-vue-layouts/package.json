@@ -27,6 +27,9 @@
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
+    "./client": {
+      "types": "./client.d.ts"
+    },
     "./*": {
       "bun": "./src/*",
       "import": "./dist/*"
