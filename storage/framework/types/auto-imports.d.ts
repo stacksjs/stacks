@@ -57,6 +57,7 @@ declare global {
   const analyticsPath: typeof import('../../../.stacks/core/path/src/index')['analyticsPath']
   const and: typeof import('../../../.stacks/core/utils/src/math')['and']
   const appPath: typeof import('../../../.stacks/core/path/src/index')['appPath']
+  const archive: typeof import('../../../.stacks/core/storage/src/zip')['archive']
   const arrays: typeof import('../../../.stacks/src/index')['arrays']
   const arraysPath: typeof import('../../../.stacks/core/path/src/index')['arraysPath']
   const assert: typeof import('../../../.stacks/core/utils/src/base')['assert']
@@ -101,6 +102,7 @@ declare global {
   const collectionsPath: typeof import('../../../.stacks/core/path/src/index')['collectionsPath']
   const compare: typeof import('../../../.stacks/core/utils/src/currency')['compare']
   const componentsPath: typeof import('../../../.stacks/core/path/src/index')['componentsPath']
+  const compress: typeof import('../../../.stacks/core/storage/src/zip')['compress']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('../../../.stacks/core/utils/src/vendors')['computedAsync']
   const computedEager: typeof import('../../../.stacks/core/utils/src/vendors')['computedEager']
@@ -160,6 +162,7 @@ declare global {
   const debounce: typeof import('../../../.stacks/core/utils/src/debounce')['debounce']
   const debouncedRef: typeof import('../../../.stacks/core/utils/src/vendors')['debouncedRef']
   const debouncedWatch: typeof import('../../../.stacks/core/utils/src/vendors')['debouncedWatch']
+  const decompress: typeof import('../../../.stacks/core/storage/src/zip')['decompress']
   const decrypt: typeof import('../../../.stacks/core/security/src/crypt')['decrypt']
   const deepMerge: typeof import('../../../.stacks/core/objects/src/index')['deepMerge']
   const defaultDocument: typeof import('../../../.stacks/core/utils/src/vendors')['defaultDocument']
@@ -193,6 +196,7 @@ declare global {
   const defineStorage: typeof import('../../../.stacks/core/utils/src/config')['defineStorage']
   const defineStore: typeof import('pinia')['defineStore']
   const defineUi: typeof import('../../../.stacks/core/utils/src/config')['defineUi']
+  const deflateSync: typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']
   const del: typeof import('../../../.stacks/core/storage/src/delete')['del']
   const deleteEmptyFolder: typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']
   const deleteEmptyFolders: typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']
@@ -287,7 +291,9 @@ declare global {
   const goToPrevPage: typeof import('../../../.stacks/core/search-engine/src/index')['goToPrevPage']
   const greaterThan: typeof import('../../../.stacks/core/utils/src/currency')['greaterThan']
   const greaterThanOrEqual: typeof import('../../../.stacks/core/utils/src/currency')['greaterThanOrEqual']
+  const gunzipSync: typeof import('../../../.stacks/core/storage/src/zip')['gunzipSync']
   const gupshup: typeof import('../../../.stacks/core/sms/src/drivers/index')['gupshup']
+  const gzipSync: typeof import('../../../.stacks/core/storage/src/zip')['gzipSync']
   const h: typeof import('vue')['h']
   const handleError: typeof import('../../../.stacks/core/error-handling/src/handler')['handleError']
   const hasAction: typeof import('../../../.stacks/core/actions/src/helpers/utils')['hasAction']
@@ -306,6 +312,7 @@ declare global {
   const ignorableWatch: typeof import('../../../.stacks/core/utils/src/vendors')['ignorableWatch']
   const increment: typeof import('../../../resources/functions/counter')['increment']
   const index: typeof import('../../../.stacks/core/search-engine/src/index')['index']
+  const inflateSync: typeof import('../../../.stacks/core/storage/src/zip')['inflateSync']
   const initProject: typeof import('../../../.stacks/core/utils/src/helpers')['initProject']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
@@ -593,9 +600,11 @@ declare global {
   const typesPath: typeof import('../../../.stacks/core/path/src/index')['typesPath']
   const ui: typeof import('../../../.stacks/core/ui/src/index')['ui']
   const uiPath: typeof import('../../../.stacks/core/path/src/index')['uiPath']
+  const unarchive: typeof import('../../../.stacks/core/storage/src/zip')['unarchive']
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('../../../.stacks/core/utils/src/vendors')['unrefElement']
   const until: typeof import('../../../.stacks/core/utils/src/vendors')['until']
+  const unzip: typeof import('../../../.stacks/core/storage/src/zip')['unzip']
   const updateConfigFile: typeof import('../../../.stacks/core/storage/src/helpers')['updateConfigFile']
   const useAbs: typeof import('../../../.stacks/core/utils/src/math')['useAbs']
   const useActiveElement: typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']
@@ -795,6 +804,7 @@ declare global {
   const writeJsonFile: typeof import('../../../.stacks/core/storage/src/files')['writeJsonFile']
   const writeTextFile: typeof import('../../../.stacks/core/storage/src/files')['writeTextFile']
   const xRayPath: typeof import('../../../.stacks/core/path/src/index')['xRayPath']
+  const zip: typeof import('../../../.stacks/core/storage/src/zip')['zip']
 }
 // for type re-export
 declare global {
@@ -858,6 +868,7 @@ declare module 'vue' {
     readonly analyticsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['and']>
     readonly appPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['appPath']>
+    readonly archive: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../../../.stacks/src/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['arraysPath']>
     readonly assert: UnwrapRef<typeof import('../../../.stacks/core/utils/src/base')['assert']>
@@ -902,6 +913,7 @@ declare module 'vue' {
     readonly collectionsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['collectionsPath']>
     readonly compare: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['compare']>
     readonly componentsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['componentsPath']>
+    readonly compress: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['compress']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['computedEager']>
@@ -961,6 +973,7 @@ declare module 'vue' {
     readonly debounce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['debouncedWatch']>
+    readonly decompress: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['decompress']>
     readonly decrypt: UnwrapRef<typeof import('../../../.stacks/core/security/src/crypt')['decrypt']>
     readonly deepMerge: UnwrapRef<typeof import('../../../.stacks/core/objects/src/index')['deepMerge']>
     readonly defaultDocument: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['defaultDocument']>
@@ -994,6 +1007,7 @@ declare module 'vue' {
     readonly defineStorage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineStorage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly defineUi: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineUi']>
+    readonly deflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']>
     readonly del: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['del']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']>
@@ -1088,7 +1102,9 @@ declare module 'vue' {
     readonly goToPrevPage: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['goToPrevPage']>
     readonly greaterThan: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['greaterThan']>
     readonly greaterThanOrEqual: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['greaterThanOrEqual']>
+    readonly gunzipSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['gunzipSync']>
     readonly gupshup: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['gupshup']>
+    readonly gzipSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['gzipSync']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleError: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/handler')['handleError']>
     readonly hasAction: UnwrapRef<typeof import('../../../.stacks/core/actions/src/helpers/utils')['hasAction']>
@@ -1107,6 +1123,7 @@ declare module 'vue' {
     readonly ignorableWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['index']>
+    readonly inflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['initProject']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
@@ -1394,9 +1411,11 @@ declare module 'vue' {
     readonly typesPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['typesPath']>
     readonly ui: UnwrapRef<typeof import('../../../.stacks/core/ui/src/index')['ui']>
     readonly uiPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['uiPath']>
+    readonly unarchive: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['unarchive']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['until']>
+    readonly unzip: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['unzip']>
     readonly updateConfigFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/helpers')['updateConfigFile']>
     readonly useAbs: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']>
@@ -1596,6 +1615,7 @@ declare module 'vue' {
     readonly writeJsonFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['writeJsonFile']>
     readonly writeTextFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['writeTextFile']>
     readonly xRayPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['xRayPath']>
+    readonly zip: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['zip']>
   }
 }
 declare module '@vue/runtime-core' {
@@ -1653,6 +1673,7 @@ declare module '@vue/runtime-core' {
     readonly analyticsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['and']>
     readonly appPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['appPath']>
+    readonly archive: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../../../.stacks/src/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['arraysPath']>
     readonly assert: UnwrapRef<typeof import('../../../.stacks/core/utils/src/base')['assert']>
@@ -1697,6 +1718,7 @@ declare module '@vue/runtime-core' {
     readonly collectionsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['collectionsPath']>
     readonly compare: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['compare']>
     readonly componentsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['componentsPath']>
+    readonly compress: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['compress']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['computedEager']>
@@ -1756,6 +1778,7 @@ declare module '@vue/runtime-core' {
     readonly debounce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['debouncedWatch']>
+    readonly decompress: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['decompress']>
     readonly decrypt: UnwrapRef<typeof import('../../../.stacks/core/security/src/crypt')['decrypt']>
     readonly deepMerge: UnwrapRef<typeof import('../../../.stacks/core/objects/src/index')['deepMerge']>
     readonly defaultDocument: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['defaultDocument']>
@@ -1789,6 +1812,7 @@ declare module '@vue/runtime-core' {
     readonly defineStorage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineStorage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly defineUi: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineUi']>
+    readonly deflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']>
     readonly del: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['del']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']>
@@ -1883,7 +1907,9 @@ declare module '@vue/runtime-core' {
     readonly goToPrevPage: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['goToPrevPage']>
     readonly greaterThan: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['greaterThan']>
     readonly greaterThanOrEqual: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['greaterThanOrEqual']>
+    readonly gunzipSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['gunzipSync']>
     readonly gupshup: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['gupshup']>
+    readonly gzipSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['gzipSync']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly handleError: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/handler')['handleError']>
     readonly hasAction: UnwrapRef<typeof import('../../../.stacks/core/actions/src/helpers/utils')['hasAction']>
@@ -1902,6 +1928,7 @@ declare module '@vue/runtime-core' {
     readonly ignorableWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['index']>
+    readonly inflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['initProject']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
@@ -2189,9 +2216,11 @@ declare module '@vue/runtime-core' {
     readonly typesPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['typesPath']>
     readonly ui: UnwrapRef<typeof import('../../../.stacks/core/ui/src/index')['ui']>
     readonly uiPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['uiPath']>
+    readonly unarchive: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['unarchive']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['until']>
+    readonly unzip: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['unzip']>
     readonly updateConfigFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/helpers')['updateConfigFile']>
     readonly useAbs: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']>
@@ -2391,5 +2420,6 @@ declare module '@vue/runtime-core' {
     readonly writeJsonFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['writeJsonFile']>
     readonly writeTextFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['writeTextFile']>
     readonly xRayPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['xRayPath']>
+    readonly zip: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['zip']>
   }
 }

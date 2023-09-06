@@ -1,16 +1,13 @@
 import { type ViteConfig } from '@stacksjs/types'
-import { resourcesPath, projectPath } from '@stacksjs/path'
-
+import { path as p } from '@stacksjs/path'
 import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine } from './stacks'
-
 import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'
-
 import generateSitemap from 'vite-ssg-sitemap'
 
 export const pagesConfig: ViteConfig = {
-  root: projectPath('storage/framework/web/'),
-  envDir: projectPath(),
+  root: p.projectStoragePath('framework/web'),
+  envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
   resolve: {
@@ -21,12 +18,12 @@ export const pagesConfig: ViteConfig = {
     // preview(),
     uiEngine(),
     pages({
-      routesFolder: [resourcesPath('views')],
+      routesFolder: [p.resourcesPath('views')],
     }),
     cssEngine(),
     components(),
     layouts({
-      layoutsDirs: resourcesPath('layouts'),
+      layoutsDirs: p.resourcesPath('layouts'),
     }),
     // i18n(),
     autoImports(),

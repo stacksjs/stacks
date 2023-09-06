@@ -1,4 +1,4 @@
-import { glob } from '@stacksjs/storage'
+import { glob } from '../../storage/src/glob'
 import { ResolvedOptions } from './types'
 import { extensionsToGlob, debug } from './utils'
 
