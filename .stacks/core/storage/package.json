@@ -51,6 +51,7 @@
   },
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
@@ -59,6 +60,7 @@
   },
   "dependencies": {
     "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
