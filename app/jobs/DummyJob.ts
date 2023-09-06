@@ -1,4 +1,3 @@
-import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 
 export default new Job({
@@ -7,7 +6,7 @@ export default new Job({
   // `run: 'demo-job'` is another option where `demo-job` refers to ./resources/functions/demo-job.ts
   tries: 3, // defaults to 3, in case of failures
   backoff: 3, // defaults to 3-second delays between retries
-  action: 'SendWelcomeEmail'
+  action: 'SendWelcomeEmail',
   // handle: () => { // or `action: () => {`
   //   log.info('This cron job runs every 5th minute')
   // },

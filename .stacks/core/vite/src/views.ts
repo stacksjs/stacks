@@ -5,6 +5,8 @@ import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'
 import generateSitemap from 'vite-ssg-sitemap'
 
+import UnoCSS from 'unocss/vite'
+
 export const pagesConfig = {
   root: p.projectStoragePath('framework/web'),
   envDir: p.projectPath(),
@@ -15,25 +17,24 @@ export const pagesConfig = {
   },
 
   server: {
-    host: 'stacks.test',
+    host: '127.0.0.1',
     port: 3333,
   },
 
   plugins: [
     // preview(),
     uiEngine(),
-    // pages({
-    //   routesFolder: [p.resourcesPath('views')],
-    // }),
+    pages({
+      dirs: p.resourcesPath('views'),
+    }),
+    UnoCSS(),
     // cssEngine(),
-    // components(),
-    // layouts({
-    //   layoutsDirs: p.resourcesPath('layouts'),
-    // }),
-    // // i18n(),
-    // autoImports(),
-    // // pwa(),
-    // inspect(),
+    components(),
+    layouts({
+      layoutsDirs: p.resourcesPath('layouts'),
+    }),
+    autoImports(),
+    inspect(),
   ],
 
   // https://github.com/antfu/vite-ssg

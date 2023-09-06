@@ -4,7 +4,7 @@ import transformerCompileClass from '@unocss/transformer-compile-class'
 import * as UiEngine from 'vue'
 import * as Store from 'pinia'
 import { ui } from '@stacksjs/config'
-import UnocssConfig from './unocss'
+import UnocssConfig from './uno.config'
 
 export {
   CssEngine,

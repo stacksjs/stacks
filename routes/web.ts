@@ -5,9 +5,8 @@ import { route } from '../.stacks/core/router/src/index.ts'
 //   route.get('/delete', getBlogs)
 // }).middleware('auth').prefix('/users')
 
-// TODO: Add a way to register a view.
 // route.redirect('/user', '/welcome')
-route.get('/welcome', 'hello world')
+route.get('/welcome', () => 'hello world')
   .middleware('logger')
 // route.get('/users', 'hello users')
 

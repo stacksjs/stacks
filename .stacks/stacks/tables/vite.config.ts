@@ -30,7 +30,7 @@ export const vueComponentsConfig: ViteConfig = {
   plugins: [
     // preview(),
     uiEngine(),
-    cssEngine(),
+    // cssEngine(),
     autoImports(),
     Components({
       // allow auto load markdown components under `./src/components/`
