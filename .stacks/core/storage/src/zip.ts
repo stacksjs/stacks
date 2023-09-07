@@ -1,14 +1,6 @@
 import { runCommand } from '@stacksjs/cli'
 import type { ZlibCompressionOptions } from 'bun'
 
-export function archive(paths: string | string[]) {
-  return zip(paths)
-}
-
-export function unarchive(paths: string | string[]) {
-  return unzip(paths)
-}
-
 type ZipOptions = {
   cwd?: string
 }
@@ -28,6 +20,14 @@ export async function unzip(paths: string | string[]) {
     return runCommand(`unzip ${paths.join(' ')}`)
 
   return runCommand(`unzip ${paths}`)
+}
+
+export function archive(paths: string | string[]) {
+  return zip(paths)
+}
+
+export function unarchive(paths: string | string[]) {
+  return unzip(paths)
 }
 
 export function compress(paths: string[]) {
