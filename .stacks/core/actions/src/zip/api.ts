@@ -2,15 +2,17 @@
 import { zip } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 
-const paths = [
-  p.cloudPath('src/drivers/aws/runtime/bootstrap'),
-  p.cloudPath('src/drivers/aws/runtime/runtime.ts'),
-  p.cloudPath('src/drivers/aws/runtime/hello.ts'),
-]
-
 console.log('Zipping your API for Lambda usage...')
 
+const paths = [
+  'bootstrap',
+  'runtime.ts',
+  'hello.ts',
+]
+
 // zip all the paths into a single file
-await zip(paths, { level: 9, output: p.projectStoragePath('framework/api/lambda.zip') })
+await zip(paths, p.projectStoragePath('framework/api/lambda.zip'), {
+  cwd: p.cloudPath('src/drivers/aws/runtime')
+})
 
 console.log('Zipped your API')
