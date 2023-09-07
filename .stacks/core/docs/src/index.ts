@@ -7,8 +7,8 @@ import { docsEngine } from '@stacksjs/vite'
 import { server } from '@stacksjs/server'
 
 export function docsUrl() {
-  const appUrl = app.url
-  const docsSubdomain = app.subdomains.docs
+  const appUrl = app.url || 'stacks.test'
+  const docsSubdomain = app.subdomains?.docs || 'docs'
   const protocolPattern = /^https?:\/\//i
   const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${docsSubdomain}.${appUrl}:3333`
   const urlObj = new URL(urlForParsing)

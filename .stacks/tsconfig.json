@@ -30,7 +30,6 @@
       "vite/client",
       // "vue/ref-macros",
       "vite-plugin-pages/client",
-      "@stacksjs/vite-plugin-vue-layouts/client",
       "vite-plugin-pwa/client",
       "bun-types"
     ],
