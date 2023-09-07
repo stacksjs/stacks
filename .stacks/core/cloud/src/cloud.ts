@@ -165,7 +165,7 @@ export class StacksCloud extends Stack {
       destinationBucket: privateBucket,
     })
 
-    const layer = new lambda.LayerVersion(this, 'Stacks', {
+    const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
       compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
       compatibleArchitectures: [lambda.Architecture.ARM_64],

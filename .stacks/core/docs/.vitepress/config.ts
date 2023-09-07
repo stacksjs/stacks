@@ -5,6 +5,6 @@
  */
 
 // keep the relative path
-import docs from '@stacksjs/docs'
+import docs from '../src'
 
 export default docs
