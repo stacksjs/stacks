@@ -210,7 +210,7 @@ export class StacksCloud extends Stack {
     logBucket?: s3.Bucket,
   ) {
     const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
-      domainName: `${app.subdomains.docs}.${this.domainName}`,
+      domainName: `${app.subdomains?.docs}.${this.domainName}`,
       validation: acm.CertificateValidation.fromDns(zone),
     })
 

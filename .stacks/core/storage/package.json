@@ -51,6 +51,7 @@
   },
   "peerDependencies": {
     "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
