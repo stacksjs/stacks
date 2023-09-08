@@ -16,8 +16,6 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
-import { runCommand } from '@stacksjs/cli'
-import { handleError } from '@stacksjs/error-handling'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
@@ -211,19 +209,6 @@ export class StacksCloud extends Stack {
     docsSource: string,
     logBucket?: s3.Bucket,
   ) {
-    // build the docs locally
-    console.log('Building docs...')
-    const result = await runCommand('bun run build', {
-      cwd: p.frameworkPath('docs'),
-    })
-
-    if (result.isErr()) {
-      handleError(result.error)
-      process.exit(1)
-    }
-
-    console.log('Successfully built the logs')
-
     const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
       domainName: `${app.subdomains?.docs}.${this.domainName}`,
       validation: acm.CertificateValidation.fromDns(zone),

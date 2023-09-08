@@ -34,13 +34,13 @@ features:
     details: A sleek admin app, out-of-the-box. For developers & clients. Our product is your product.
   - title: Scalable APIs
     icon: 📡
-    details: Building scalable APIs has never been easier. Thanks to Stacks, you may focus on your business logic.
+    details: Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.
   - title: Authentication
     icon: 🔐
     details: Stacks provides a secure authentication system out-of-the-box. Easy to use and configure.
   - title: Built-in CI / CD
     icon: 🤖
-    details: Focus on coding, not publishing. Fixes code style issues, tags releases, creates changelogs, runs your test suite, and more.
+    details: Focus on coding, not publishing. Automates linting, version tagging, changelog generation, test execution, and more.
   - title: Global CDN
     icon: 🌐
     details: “Securely deliver content with low latency and high transfer speeds,” AWS. Your assets, zero-config.
@@ -49,10 +49,10 @@ features:
     details: Leverage the power of queues. Defer time-consuming tasks using managed serverless queues.
   - title: Notifications
     icon: 📨
-    details: Send notifications to your users via email, SMS, Slack, Discord, and more. Stacks makes it easy.
-  - title: Payments
+    details: Send notifications to your users via email, SMS, Slack, Discord, Push and more.
+  - title: Billing & Payments
     icon: 💳
-    details: Accept payments from your users using Stripe. One-off payments, subscriptions, and more via Stacks.
+    details: Accept payments from your users using Stripe. One-off payments, subscriptions, and more.
   - title: Search Engine
     icon: 🔍
     details: “Build an intuitive search experience in a snap,” Meilisearch.
