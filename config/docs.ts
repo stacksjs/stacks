@@ -7,6 +7,45 @@ const nav = [
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
   },
   { text: 'Blog', link: 'https://updates.ow3.org' },
+  {
+    text: 'Resources',
+    items: [
+      { text: 'Team', link: '/team' },
+      { text: 'Releases', link: '/releases' },
+      {
+        items: [
+          {
+            text: 'Twitter',
+            link: 'https://twitter.com/vite_js',
+          },
+          {
+            text: 'Discord Chat',
+            link: 'https://chat.vitejs.dev',
+          },
+          {
+            text: 'Awesome Vite',
+            link: 'https://github.com/vitejs/awesome-vite',
+          },
+          {
+            text: 'DEV Community',
+            link: 'https://dev.to/t/vite',
+          },
+          {
+            text: 'Rollup Plugins Compat',
+            link: 'https://vite-rollup-plugins.patak.dev/',
+          },
+          {
+            text: 'Changelog',
+            link: 'https://github.com/vitejs/vite/blob/main/packages/vite/CHANGELOG.md',
+          },
+          {
+            text: 'Contributing',
+            link: 'https://github.com/vitejs/vite/blob/main/CONTRIBUTING.md',
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 const sidebar = {
@@ -65,11 +104,11 @@ export default {
       copyright: 'Copyright © 2023-present Stacks',
     },
 
-    // socialLinks: [
-    //   { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-    //   { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-    //   { icon: 'discord', link: 'https://discord.gg/stacksjs' },
-    // ],
+    socialLinks: [
+      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
+      { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
+      { icon: 'discord', link: 'https://discord.gg/stacksjs' },
+    ],
 
     // algolia: services.algolia,
 

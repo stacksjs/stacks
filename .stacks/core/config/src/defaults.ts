@@ -176,12 +176,6 @@ export default {
         copyright: 'Copyright © 2023-present Stacks',
       },
 
-      // socialLinks: [
-      //   { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-      //   { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      //   { icon: 'discord', link: 'https://discord.gg/stacksjs' },
-      // ],
-
       // algolia: services.algolia,
 
       // carbonAds: {

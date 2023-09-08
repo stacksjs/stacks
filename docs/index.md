@@ -6,7 +6,7 @@ titleTemplate: Modern TypeScript Fullstack Development.
 
 hero:
   name: Stacks
-  text: Build & ship faster.
+  text: Build. Ship. Faster.
   tagline: Rapid application, cloud & library development framework. For the best full-stack teams.
   actions:
     - theme: brand
@@ -31,13 +31,13 @@ features:
     details: Automatic zero-downtime deployments of production-ready serverless clouds. Self-hosted.
   - title: Modern Administration
     icon: 📊
-    details: A sleek admin app, out-of-the-box. For developers & clients. Our product is your product.
+    details: A sleek admin app, out-of-the-box. For developers & your clients. Our product is your product.
   - title: Scalable APIs
     icon: 📡
     details: Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.
-  - title: Authentication
+  - title: Secure Authentication
     icon: 🔐
-    details: Stacks provides a secure authentication system out-of-the-box. Easy to use and configure.
+    details: Robust API & web authentication, ensuring the security of your user data. User-friendly, zero-config & ready-to-go.
   - title: Built-in CI / CD
     icon: 🤖
     details: Focus on coding, not publishing. Automates linting, version tagging, changelog generation, test execution, and more.
@@ -55,14 +55,14 @@ features:
     details: Accept payments from your users using Stripe. One-off payments, subscriptions, and more.
   - title: Search Engine
     icon: 🔍
-    details: “Build an intuitive search experience in a snap,” Meilisearch.
+    details: Powerful & fast. “Build an intuitive search experience in a snap,” Meilisearch.
   - title: Progressive UI Engine
     icon: ⚙️
     details: “An approachable, performant and versatile framework for building web UIs,” Vue.
   - title: Atomic CSS Engine
     icon: 🎨
-    details: “Instant on-demand atomic CSS engine,” UnoCSS. Easily create & manage your style guides.
-  - title: Built-in Testing
+    details: “Instant on-demand atomic CSS engine,” UnoCSS. Easily create & manage your styles.
+  - title: Streamlined Testing
     icon: 🧪
-    details: A fast built-in testing framework. Unit & feature tests—it’s actually easy & fun.
+    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
 ---
