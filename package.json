@@ -110,6 +110,7 @@
   },
   "workspaces": [
     ".stacks/core/*",
+    ".stacks/docs/*",
     ".stacks/fonts/*",
     ".stacks/ide/*",
     ".stacks/scripts/*",

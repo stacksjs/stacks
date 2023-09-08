@@ -40,14 +40,6 @@
       "buddy/*": ["./core/buddy/src/*"],
       "eslint-plugin-stacks": ["./eslint-plugin-stacksjs/src/index.ts"],
       "eslint-plugin-stacksjs": ["./eslint-plugin-stacksjs/src/index.ts"],
-      // "~/app/*": ["../app/*"],
-      // "~/config/*": ["../config/*"],
-      "~/components/*": ["../resources/components/*"],
-      "~/functions/*": ["../resources/functions/*"],
-      // "~/lang/*": ["../lang/*"],
-      "~/models/*": ["../app/models/*"],
-      // "~/resources/*": ["../resources/*"],
-      "~/views/*": ["../resources/views/*"],
       "~/*": ["../*"]
     }
   },
@@ -70,6 +62,8 @@
     "./stacks/**/*",
     "./scripts/**/*",
     "./scripts/*",
+    "./docs/*",
+    "./docs/.vitepress/*",
     "./libs/**/*",
     "./core/*/src",
     "./core/*/tests/*",
@@ -96,17 +90,13 @@
     "../types/**/*",
     "../tests/*",
     "../tests/**/*",
-    "../**/.vitepress/*",
   ],
   "exclude": [
     "../**/cdk.out",
-    "./libs/examples",
     "../commitlint.config.cjs",
     "../**/dist",
     "../**/fixtures",
     "./**/eslint-plugin-stacksjs",
-    "./node_modules",
-    "./**/node_modules",
     "../node_modules",
     "../**/node_modules"
   ]
