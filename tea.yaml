@@ -4,7 +4,6 @@ dependencies:
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.13.7
-  aws.amazon.com/cdk: ^2.93.0
   caddyserver.com: ^2.7.4
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0

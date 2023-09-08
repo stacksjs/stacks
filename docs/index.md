@@ -32,7 +32,7 @@ features:
   - title: Atomic CSS Engine
     details: Pre-configured UnoCSS allows to create & manage your style guides with ease—Tailwind CSS, Windi CSS, Bootstrap, ... pick your flavor.
   - title: CI/CD Automation
-    details: Focus on coding, not publishing. Automatically runs your CI, fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.
+    details: Focus on coding, not publishing. Automatically runs your CI, fixes code style issues, tags releases & creates its changelogs, runs the test suite, and more.
   - title: Semantic Versioning
     details: Semantic git commits, versioning, changelog generations, and npm releases—we got ya.
 ---

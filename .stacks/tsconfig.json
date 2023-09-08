@@ -95,7 +95,8 @@
     "../types/*",
     "../types/**/*",
     "../tests/*",
-    "../tests/**/*"
+    "../tests/**/*",
+    "../**/.vitepress/*",
   ],
   "exclude": [
     "../**/cdk.out",

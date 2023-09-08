@@ -50,12 +50,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/storage": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
     "local-pkg": "^0.4.3"
   },
   "devDependencies": {
