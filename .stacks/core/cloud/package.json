@@ -54,6 +54,8 @@
   },
   "peerDependencies": {
     "@stacksjs/dns": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "aws-cdk-lib": "^2.95.0",
     "constructs": "^10.2.70"
   },
@@ -62,6 +64,8 @@
     "@aws-lambda-powertools/metrics": "^1.12.1",
     "@aws-lambda-powertools/tracer": "^1.12.1",
     "@aws-sdk/client-cloudfront": "^3.408.0",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "aws-cdk-lib": "^2.95.0",
     "aws4fetch": "^1.0.17",

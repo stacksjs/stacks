@@ -16,6 +16,8 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
+import { runCommand } from '@stacksjs/cli'
+import { handleError } from '@stacksjs/error-handling'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
@@ -202,13 +204,24 @@ export class StacksCloud extends Stack {
     // })
   }
 
-  deployDocs(
+  async deployDocs(
     zone: route53.PublicHostedZone,
     originAccessIdentity: cloudfront.OriginAccessIdentity,
     webAcl: wafv2.CfnWebACL,
     docsSource: string,
     logBucket?: s3.Bucket,
   ) {
+    // build the docs locally
+    const result = await runCommand('bun run build', {
+      cwd: p.frameworkPath('docs'),
+    })
+
+    if (result.isErr()) {
+      handleError(result.error)
+      process.exit(1)
+    }
+
+
     const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
       domainName: `${app.subdomains?.docs}.${this.domainName}`,
       validation: acm.CertificateValidation.fromDns(zone),
@@ -230,9 +243,9 @@ export class StacksCloud extends Stack {
     }
 
     const docsDistribution = new cloudfront.Distribution(this, 'DocsDistribution', {
-      domainNames: [`${app.subdomains.docs}.${app.url}`],
+      domainNames: [`${app.subdomains?.docs}.${app.url}`],
       defaultRootObject: 'index.html',
-      comment: `CDN for ${app.subdomains.docs}.${app.url}`,
+      comment: `CDN for ${app.subdomains?.docs}.${app.url}`,
       certificate: docsCertificate,
       // originShieldEnabled: true,
       enableLogging: true,
@@ -272,7 +285,7 @@ export class StacksCloud extends Stack {
     })
     // Create a Route53 record pointing to the Docs CloudFront distribution
     new route53.ARecord(this, 'DocsAliasRecord', {
-      recordName: `${app.subdomains.docs}.${this.domainName}`,
+      recordName: `${app.subdomains?.docs}.${this.domainName}`,
       zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
     })
@@ -291,7 +304,7 @@ export class StacksCloud extends Stack {
 
     // Prints out the web endpoint to the terminal
     new Output(this, 'DocsUrl', {
-      value: `https://${app.subdomains.docs}.${app.url}`,
+      value: `https://${app.subdomains?.docs}.${app.url}`,
       description: 'The URL of the deployed documentation',
     })
   }
