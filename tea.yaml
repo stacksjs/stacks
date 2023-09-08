@@ -1,6 +1,6 @@
 dependencies:
   npmjs.com: ^9.7.2
-  bun.sh: ^0.8.1
+  bun.sh: ^1.0.0
   sqlite.org: ^3.42.0
   redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.13.7

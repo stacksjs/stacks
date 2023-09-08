@@ -44,9 +44,7 @@ export default {
   cloud: {
     driver: 'aws',
 
-    storage: {
-      useFileSystem: true,
-    },
+    storage: {},
 
     firewall: {
       immunity: 0,
@@ -93,6 +91,12 @@ export default {
         headers: [],
         queryStrings: [],
       },
+    },
+
+    deploy: {
+      docs: true,
+      api: true,
+      fileSystem: true,
     },
   },
 

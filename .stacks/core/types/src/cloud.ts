@@ -1,24 +1,7 @@
 export interface CloudOptions {
   driver: 'aws'
 
-  storage: {
-    /**
-     * Whether or not to also attach a file system to the cloud.
-     * This is in addition to the S3 storage. Disable this
-     * if you do not need to access the file system.
-     *
-     * @default true
-     * @example
-     * ```ts
-     * export default {
-     *   storage: {
-     *     useFileSystem: false
-     *   }
-     * }
-     * ```
-     */
-    useFileSystem: boolean
-  }
+  storage: {}
 
   firewall: {
     immunity: number
@@ -67,6 +50,12 @@ export interface CloudOptions {
       headers: string[]
       queryStrings: string[]
     }
+  }
+
+  deploy: {
+    docs: boolean
+    api: boolean
+    fileSystem: boolean
   }
 }
 

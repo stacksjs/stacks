@@ -11,9 +11,7 @@ import security from './security'
 export default {
   driver: 'aws',
   firewall: security.app.firewall,
-  storage: {
-    useFileSystem: true,
-  },
+  storage: {},
   cdn: {
     enableLogging: true,
     compress: true,
@@ -30,5 +28,10 @@ export default {
       headers: [],
       queryStrings: [],
     },
+  },
+  deploy: {
+    docs: true, // enables docs
+    api: true, // enables api
+    fileSystem: true, // enables file system
   },
 } satisfies CloudConfig
