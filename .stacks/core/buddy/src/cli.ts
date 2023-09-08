@@ -31,6 +31,7 @@ async function main() {
   // cmd.commit(cli)
   cmd.deploy(cli)
   cmd.fresh(cli)
+  cmd.install(cli)
   // cmd.lint(cli)
   cmd.release(cli)
   // cmd.make(cli)

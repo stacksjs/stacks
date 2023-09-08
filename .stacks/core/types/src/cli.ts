@@ -220,6 +220,7 @@ export interface CommitOptions extends CliOptions { }
 export interface KeyOptions extends CliOptions { }
 export interface FreshOptions extends CliOptions { }
 export interface InspireOptions extends CliOptions { }
+export interface InstallOptions extends CliOptions { }
 export interface ReleaseOptions extends CliOptions { }
 export interface PreinstallOptions extends CliOptions { }
 export interface PrepublishOptions extends CliOptions { }
