@@ -1,9 +1,11 @@
 import { StacksOptions } from '@stacksjs/types'
 import defaults from './defaults'
 import overrides from './overrides'
-import { defu } from 'defu'
 
-export const config: StacksOptions = defu(overrides, defaults)
+export const config = {
+  ...defaults,
+  ...overrides
+}
 
 export const {
   app,
@@ -25,7 +27,7 @@ export const {
   services,
   storage,
   ui
-} = config
+}: StacksOptions = config
 
 export { defaults, overrides }
 

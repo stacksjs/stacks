@@ -10,7 +10,8 @@ hero:
   tagline: Rapid application, cloud & library development framework. For the best full-stack teams.
   actions:
     - theme: brand
-      text: Get Started
+      text: Coming Soon
+      # text: Get Started
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub

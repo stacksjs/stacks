@@ -2,44 +2,6 @@ import type { StacksOptions } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 // import { userConfig as overrides } from './overrides'
 
-const nav = [
-  { text: 'Config', link: '/config', activeMatch: '/config' },
-  {
-    text: 'Changelog',
-    link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
-  },
-  { text: 'Blog', link: 'https://updates.ow3.org' },
-]
-
-const sidebar = {
-  '/guide/': [
-    {
-      text: 'Introduction',
-      collapsible: true,
-      items: [
-        { text: 'What is Stacks?', link: '/guide/what-is-stacks' },
-        { text: 'Getting Started', link: '/guide/getting-started' },
-        { text: 'Configuration', link: '/guide/config' },
-      ],
-    },
-
-    {
-      text: 'Digging Deeper',
-      collapsible: true,
-      items: [
-        { text: 'APIs', link: '/guide/apis' },
-        { text: 'Apps', link: '/guide/apps' },
-        { text: 'Buddy', link: '/guide/buddy' },
-        { text: 'CI / CD', link: '/guide/ci' },
-        { text: 'Composability', link: '/guide/composability' },
-        { text: 'Cloud', link: '/guide/cloud' },
-        { text: 'Libraries', link: '/guide/libraries' },
-        { text: 'Testing', link: '/guide/testing' },
-      ],
-    },
-  ],
-}
-
 export default {
   app: {
     name: 'Stacks',
@@ -163,9 +125,6 @@ export default {
     lastUpdated: true,
 
     themeConfig: {
-      nav,
-      sidebar,
-
       editLink: {
         pattern: 'https://github.com/stacksjs/stacks/edit/main/docs/docs/:path',
         text: 'Edit this page on GitHub',
