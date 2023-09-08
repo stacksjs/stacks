@@ -212,6 +212,7 @@ export class StacksCloud extends Stack {
     logBucket?: s3.Bucket,
   ) {
     // build the docs locally
+    console.log('Building docs...')
     const result = await runCommand('bun run build', {
       cwd: p.frameworkPath('docs'),
     })
@@ -221,6 +222,7 @@ export class StacksCloud extends Stack {
       process.exit(1)
     }
 
+    console.log('Successfully built the logs')
 
     const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
       domainName: `${app.subdomains?.docs}.${this.domainName}`,

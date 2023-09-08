@@ -58,7 +58,7 @@ features:
     details: “Build an intuitive search experience in a snap,” Meilisearch.
   - title: Progressive UI Engine
     icon: ⚙️
-    details: “An approachable, performant and versatile framework for building web user interfaces,” Vue.
+    details: “An approachable, performant and versatile framework for building web UIs,” Vue.
   - title: Atomic CSS Engine
     icon: 🎨
     details: “Instant on-demand atomic CSS engine,” UnoCSS. Easily create & manage your style guides.
