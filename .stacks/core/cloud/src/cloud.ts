@@ -30,7 +30,7 @@ export class StacksCloud extends Stack {
   domain: string
   apiDomain: string
   apiVanityUrl?: string
-  vanityUrl?: string
+  vanityUrl: string
   docsSource: string
   websiteSource: string
   privateSource: string
@@ -57,65 +57,22 @@ export class StacksCloud extends Stack {
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
+
     this.zone = this.manageZone()
     this.certificate = this.manageCertificate()
     this.storage = this.manageStorage()
     this.firewall = this.manageFirewall()
-    this.cdn = this.manageCdn()
 
+    const { cdn, originAccessIdentity, cdnCachePolicy } = this.manageCdn()
+    this.cdn = cdn
+    this.originAccessIdentity = originAccessIdentity
+    this.cdnCachePolicy = cdnCachePolicy
+    this.vanityUrl = `https://${this.cdn.domainName}`
+
+    // needs to run after the cdn is created because it links the distribution
     this.manageDns()
-
-    new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
-      sources: [s3deploy.Source.asset(this.privateSource)],
-      destinationBucket: privateBucket,
-    })
-
+    this.deploy()
     this.addOutputs()
-  }
-
-  generateAdditionalBehaviors(options: BehaviorOptions): Record<string, cloudfront.BehaviorOptions> {
-    let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
-
-    if (this.shouldDeployApi()) {
-      this.deployApi()
-
-      behaviorOptions = {
-        '/api/*': {
-          origin: new origins.HttpOrigin(this.apiDomain, {
-            originPath: '/',
-          }),
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-          cachePolicy: this.apiCachePolicy(),
-        }
-      }
-    }
-
-    if (this.shouldDeployDocs()) {
-      const docsBucket = new s3.Bucket(this, 'DocsBucket', {
-        bucketName: `docs.${this.domain}-${app.env}`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      })
-
-      behaviorOptions = {
-        ...behaviorOptions,
-        '/docs/*': {
-          origin: new origins.S3Origin(docsBucket, {
-            originAccessIdentity: options.originAccessIdentity,
-          }),
-          compress: true,
-          allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
-          cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        },
-      }
-    }
-
-    return behaviorOptions
   }
 
   shouldDeployDocs() {
@@ -247,15 +204,16 @@ export class StacksCloud extends Stack {
     })
 
     new Output(this, 'VanityUrl', {
-      // value: `https://${distribution.domainName}`,
       value: this.vanityUrl,
       description: 'The vanity URL of the deployed application',
     })
 
-    new Output(this, 'ServerVanityUrl', {
-      value: this.apiVanityUrl,
-      description: 'The vanity URL of the deployed Stacks server.',
-    })
+    if (this.apiVanityUrl) {
+      new Output(this, 'ServerVanityUrl', {
+        value: this.apiVanityUrl,
+        description: 'The vanity URL of the deployed Stacks server.',
+      })
+    }
 
     // Output the nameservers of the hosted zone
     // new Output(this, 'Nameservers', {
@@ -276,13 +234,6 @@ export class StacksCloud extends Stack {
       zone: this.zone,
       recordName: 'www',
       domainName: this.domain,
-    })
-
-    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset(this.websiteSource)],
-      destinationBucket: this.storage.publicBucket,
-      distribution: this.cdn,
-      distributionPaths: ['/*'],
     })
   }
 
@@ -347,8 +298,8 @@ export class StacksCloud extends Stack {
   }
 
   manageCdn() {
-    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
-    this.cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
+    const cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
       comment: 'Custom Stacks CDN Cache Policy',
       cachePolicyName: 'cdnCachePolicy',
       minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
@@ -356,8 +307,7 @@ export class StacksCloud extends Stack {
       maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
     })
-
-    return new cloudfront.Distribution(this, 'Distribution', {
+    const cdn = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [this.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${app.url}`,
@@ -386,6 +336,67 @@ export class StacksCloud extends Stack {
         docsBucket: this.storage.privateBucket,
         originAccessIdentity: this.originAccessIdentity,
       }),
+    })
+
+    return { cdn, originAccessIdentity, cdnCachePolicy }
+  }
+
+  generateAdditionalBehaviors(options: BehaviorOptions): Record<string, cloudfront.BehaviorOptions> {
+    let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
+
+    if (this.shouldDeployApi()) {
+      this.deployApi()
+
+      behaviorOptions = {
+        '/api/*': {
+          origin: new origins.HttpOrigin(this.apiDomain, {
+            originPath: '/',
+          }),
+          compress: true,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+          cachePolicy: this.apiCachePolicy(),
+        }
+      }
+    }
+
+    if (this.shouldDeployDocs()) {
+      const docsBucket = new s3.Bucket(this, 'DocsBucket', {
+        bucketName: `docs.${this.domain}-${app.env}`,
+        versioned: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+      })
+
+      behaviorOptions = {
+        ...behaviorOptions,
+        '/docs/*': {
+          origin: new origins.S3Origin(docsBucket, {
+            originAccessIdentity: options.originAccessIdentity,
+          }),
+          compress: true,
+          allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
+          cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        },
+      }
+    }
+
+    return behaviorOptions
+  }
+
+  deploy() {
+    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
+      sources: [s3deploy.Source.asset(this.websiteSource)],
+      destinationBucket: this.storage.publicBucket,
+      distribution: this.cdn,
+      distributionPaths: ['/*'],
+    })
+
+    new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
+      sources: [s3deploy.Source.asset(this.privateSource)],
+      destinationBucket: this.storage.privateBucket,
     })
   }
 }
