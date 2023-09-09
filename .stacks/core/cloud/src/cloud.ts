@@ -340,19 +340,13 @@ export class StacksCloud extends Stack {
       cachePolicyName: 'StacksApiCachePolicy',
       // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
-      cookieBehavior: getCookieBehavior(cloud.cdn?.cookieBehavior),
+      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
     })
 
-    const originRequestPolicy = new cloudfront.OriginRequestPolicy(this, 'StacksApiOriginRequestPolicy', {
-      originRequestPolicyName: 'StacksApiOriginRequestPolicy',
-      comment: 'A custom origin request policy for the Stacks API',
-      cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
-      headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
-      queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.none(),
-    });
-
     // create a CDN to deploy your website
-    const apiDistribution = new cloudfront.Distribution(this, 'Distribution', {
+    const apiDistribution = new cloudfront.Distribution(this, 'ApiDistribution', {
       domainNames: [this.apiDomain],
       comment: `Stacks API Distribution for ${this.apiDomain}`,
       certificate: apiCertificate,
@@ -374,7 +368,6 @@ export class StacksCloud extends Stack {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: customApiCachePolicy,
-        originRequestPolicy,
       },
 
       // errorResponses: [
@@ -393,7 +386,7 @@ export class StacksCloud extends Stack {
       // ],
     })
 
-    new route53.ARecord(this, 'AliasRecord', {
+    new route53.ARecord(this, 'ApiAliasRecord', {
       recordName: this.apiDomain,
       zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(apiDistribution)),
