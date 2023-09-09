@@ -29,9 +29,22 @@ type BehaviorOptions = {
 export class StacksCloud extends Stack {
   domain: string
   apiDomain: string
+  apiVanityUrl?: string
+  vanityUrl?: string
   docsSource: string
   websiteSource: string
   privateSource: string
+  zone: route53.IHostedZone
+  storage: {
+    publicBucket: s3.Bucket
+    privateBucket: s3.Bucket
+    logBucket: s3.Bucket | undefined
+  }
+  cdn: cloudfront.Distribution
+  certificate: acm.Certificate
+  firewall: wafv2.CfnWebACL
+  originAccessIdentity: cloudfront.OriginAccessIdentity
+  cdnCachePolicy: cloudfront.CachePolicy
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -44,244 +57,21 @@ export class StacksCloud extends Stack {
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
+    this.zone = this.manageZone()
+    this.certificate = this.manageCertificate()
+    this.storage = this.manageStorage()
+    this.firewall = this.manageFirewall()
+    this.cdn = this.manageCdn()
 
-
-    const zone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: this.domain,
-    })
-
-    const certificate = new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName: this.domain,
-      validation: acm.CertificateValidation.fromDns(zone),
-    })
-
-    const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${this.domain}-${app.env}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
-
-    const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${this.domain}-private-${app.env}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
-
-    // Create an S3 bucket for CloudFront access logs
-    let logBucket: s3.Bucket | undefined
-
-    if (cloud.cdn?.enableLogging) {
-      logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${app.env}`,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-        objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
-      })
-    }
-
-    // Create WAF WebAcl
-    const webAcl = new wafv2.CfnWebACL(this, 'WebAcl', {
-      scope: 'CLOUDFRONT',
-      defaultAction: { allow: {} }, // Default action is to allow requests
-      visibilityConfig: {
-        sampledRequestsEnabled: true,
-        cloudWatchMetricsEnabled: true,
-        metricName: 'webAclMetric',
-      },
-      // rules: security.appFirewall?.rules,
-    })
-
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
-
-    const customCdnCachePolicy = new cloudfront.CachePolicy(this, 'CustomCdnCachePolicy', {
-      comment: 'Custom Stacks CDN Cache Policy',
-      cachePolicyName: 'CustomCdnCachePolicy',
-      minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
-      defaultTtl: cloud.cdn?.defaultTtl ? Duration.seconds(cloud.cdn.defaultTtl) : undefined,
-      maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
-      cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
-    })
-
-    // create a CDN to deploy your website
-    const distribution = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: [this.domain],
-      defaultRootObject: 'index.html',
-      comment: `CDN for ${app.url}`,
-      certificate,
-      enableLogging: cloud.cdn?.enableLogging,
-      logBucket: cloud.cdn?.enableLogging ? logBucket : undefined,
-      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-      enabled: true,
-      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-      webAclId: webAcl.attrArn,
-      enableIpv6: true,
-
-      defaultBehavior: {
-        origin: new origins.S3Origin(publicBucket, {
-          originAccessIdentity,
-        }),
-        compress: cloud.cdn?.compress,
-        allowedMethods: this.allowedMethods(),
-        cachedMethods: this.cachedMethods(),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: customCdnCachePolicy,
-      },
-
-      additionalBehaviors: this.generateAdditionalBehaviors({
-        docsBucket: privateBucket,
-        originAccessIdentity,
-      }),
-    })
-
-    // Create a Route53 record pointing to the CloudFront distribution
-    new route53.ARecord(this, 'AliasRecord', {
-      recordName: this.domain,
-      zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
-    })
-
-    new route53.CnameRecord(this, 'WwwCnameRecord', {
-      zone,
-      recordName: 'www',
-      domainName: this.domain,
-    })
-
-    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset(websiteSource)],
-      destinationBucket: publicBucket,
-      distribution,
-      distributionPaths: ['/*'],
-    })
+    this.manageDns()
 
     new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
-      sources: [s3deploy.Source.asset(privateSource)],
+      sources: [s3deploy.Source.asset(this.privateSource)],
       destinationBucket: privateBucket,
     })
 
-    // Prints out the web endpoint to the terminal
-    new Output(this, 'AppUrl', {
-      value: `https://${this.domain}`,
-      description: 'The URL of the deployed application',
-    })
-
-    // Prints out the web endpoint to the terminal
-    new Output(this, 'VanityUrl', {
-      value: `https://${distribution.domainName}`,
-      description: 'The vanity URL of the deployed application',
-    })
-
-    // Output the nameservers of the hosted zone
-    // new Output(this, 'Nameservers', {
-    //   value: Fn.join(', ', zone.hostedZoneNameServers),
-    //   description: 'Nameservers for the application domain',
-    // })
+    this.addOutputs()
   }
-
-  // async deployDocs(
-  //   zone: route53.PublicHostedZone,
-  //   originAccessIdentity: cloudfront.OriginAccessIdentity,
-  //   webAcl: wafv2.CfnWebACL,
-  //   docsSource: string,
-  //   logBucket?: s3.Bucket,
-  // ) {
-  //   if (logBucket) {
-  //     logBucket.addLifecycleRule({
-  //       enabled: true,
-  //       expiration: Duration.days(30), // TODO: make this configurable
-  //       id: 'rule',
-  //     })
-  //   }
-  //   // Create a Route53 record pointing to the Docs CloudFront distribution
-  //   new route53.ARecord(this, 'DocsAliasRecord', {
-  //     recordName: `${app.subdomains?.docs}.${this.domain}`,
-  //     zone,
-  //     target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
-  //   })
-
-  //   new s3deploy.BucketDeployment(this, 'DeployDocs', {
-  //     sources: [s3deploy.Source.asset(docsSource)],
-  //     destinationBucket: docsBucket,
-  //     distribution: docsDistribution,
-  //     distributionPaths: ['/*'],
-  //   })
-
-  //   // new Output(this, 'DocsBucketName', {
-  //   //   value: docsBucket.bucketName,
-  //   //   description: 'The name of the docs bucket',
-  //   // })
-
-  //   // Prints out the web endpoint to the terminal
-  //   new Output(this, 'DocsUrl', {
-  //     value: `https://${app.subdomains?.docs}.${app.url}`,
-  //     description: 'The URL of the deployed documentation',
-  //   })
-  // }
-
-  // async deployApi(
-  //   zone: route53.HostedZone,
-  //   originAccessIdentity: cloudfront.OriginAccessIdentity,
-  //   webAcl: wafv2.CfnWebACL,
-  //   logBucket?: s3.Bucket
-  // ) {
-  //   // const apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
-  //   //   domainName: `${app.subdomains?.api}.${this.domain}`,
-  //   //   validation: acm.CertificateValidation.fromDns(zone),
-  //   // })
-
-  //   // const filteredEnv = Object.fromEntries(
-  //   //   Object.entries(env)
-  //   //     .filter(([key, value]) => key.startsWith('STACKS_') && value !== undefined)
-  //   // )
-
-  //   // create a CDN to deploy your website
-  //   // const apiDistribution = new cloudfront.Distribution(this, 'ApiDistribution', {
-  //   //   domainNames: [this.apiDomain],
-  //   //   comment: `Stacks API Distribution for ${this.apiDomain}`,
-  //   //   certificate: apiCertificate,
-  //   //   enableLogging: cloud.cdn?.enableLogging,
-  //   //   logBucket: cloud.cdn?.enableLogging ? logBucket : undefined,
-  //   //   httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-  //   //   priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-  //   //   enabled: true,
-  //   //   minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-  //   //   webAclId: webAcl.attrArn,
-  //   //   enableIpv6: true,
-
-  //   //   defaultBehavior: {
-  //   //     origin: new origins.HttpOrigin(apiUrl.url, {
-  //   //       originPath: '/',
-  //   //     }),
-  //   //     compress: true,
-  //   //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //   //     cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //   //     cachePolicy: customApiCachePolicy,
-  //   //   },
-
-  //   //   // errorResponses: [
-  //   //   //   {
-  //   //   //     httpStatus: 403,
-  //   //   //     responsePagePath: '/index.html',
-  //   //   //     responseHttpStatus: 200,
-  //   //   //     ttl: cdk.Duration.minutes(0),
-  //   //   //   },
-  //   //   //   {
-  //   //   //     httpStatus: 404,
-  //   //   //     responsePagePath: '/index.html',
-  //   //   //     responseHttpStatus: 200,
-  //   //   //     ttl: cdk.Duration.minutes(0),
-  //   //   //   },
-  //   //   // ],
-  //   // })
-
-  //   // new route53.ARecord(this, 'ApiAliasRecord', {
-  //   //   recordName: this.apiDomain,
-  //   //   zone,
-  //   //   target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(apiDistribution)),
-  //   // })
-  // }
 
   generateAdditionalBehaviors(options: BehaviorOptions): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
@@ -377,11 +167,7 @@ export class StacksCloud extends Stack {
       },
     })
 
-    new Output(this, 'ServerVanityUrl', {
-      value: apiUrl.url,
-      // value: `https://api.${this.domain}`,
-      description: 'The URL of the deployed Stacks server.',
-    })
+    this.apiVanityUrl = api.url
 
     return api
   }
@@ -452,5 +238,154 @@ export class StacksCloud extends Stack {
       default:
         return cloudfront.CachedMethods.CACHE_GET_HEAD
     }
+  }
+
+  addOutputs() {
+    new Output(this, 'AppUrl', {
+      value: `https://${this.domain}`,
+      description: 'The URL of the deployed application',
+    })
+
+    new Output(this, 'VanityUrl', {
+      // value: `https://${distribution.domainName}`,
+      value: this.vanityUrl,
+      description: 'The vanity URL of the deployed application',
+    })
+
+    new Output(this, 'ServerVanityUrl', {
+      value: this.apiVanityUrl,
+      description: 'The vanity URL of the deployed Stacks server.',
+    })
+
+    // Output the nameservers of the hosted zone
+    // new Output(this, 'Nameservers', {
+    //   value: Fn.join(', ', zone.hostedZoneNameServers),
+    //   description: 'Nameservers for the application domain',
+    // })
+  }
+
+  manageDns() {
+    // Create a Route53 record pointing to the CloudFront distribution
+    new route53.ARecord(this, 'AliasRecord', {
+      recordName: this.domain,
+      zone: this.zone,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.cdn)),
+    })
+
+    new route53.CnameRecord(this, 'WwwCnameRecord', {
+      zone: this.zone,
+      recordName: 'www',
+      domainName: this.domain,
+    })
+
+    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
+      sources: [s3deploy.Source.asset(this.websiteSource)],
+      destinationBucket: this.storage.publicBucket,
+      distribution: this.cdn,
+      distributionPaths: ['/*'],
+    })
+  }
+
+  manageZone() {
+    return new route53.PublicHostedZone(this, 'HostedZone', {
+      zoneName: this.domain,
+    })
+  }
+
+  manageCertificate() {
+    return new acm.Certificate(this, 'WebsiteCertificate', {
+      domainName: this.domain,
+      validation: acm.CertificateValidation.fromDns(this.zone),
+    })
+  }
+
+  manageStorage() {
+    const publicBucket = new s3.Bucket(this, 'PublicBucket', {
+      bucketName: `${this.domain}-${app.env}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
+      bucketName: `${this.domain}-private-${app.env}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    // Create an S3 bucket for CloudFront access logs
+    let logBucket: s3.Bucket | undefined
+
+    if (cloud.cdn?.enableLogging) {
+      logBucket = new s3.Bucket(this, 'LogBucket', {
+        bucketName: `${this.domain}-logs-${app.env}`,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+        objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
+      })
+    }
+
+    return {
+      publicBucket,
+      privateBucket,
+      logBucket,
+    }
+  }
+
+  manageFirewall() {
+    return new wafv2.CfnWebACL(this, 'WebAcl', {
+      scope: 'CLOUDFRONT',
+      defaultAction: { allow: {} }, // Default action is to allow requests
+      visibilityConfig: {
+        sampledRequestsEnabled: true,
+        cloudWatchMetricsEnabled: true,
+        metricName: 'webAclMetric',
+      },
+      // rules: security.appFirewall?.rules,
+    })
+  }
+
+  manageCdn() {
+    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
+    this.cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
+      comment: 'Custom Stacks CDN Cache Policy',
+      cachePolicyName: 'cdnCachePolicy',
+      minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
+      defaultTtl: cloud.cdn?.defaultTtl ? Duration.seconds(cloud.cdn.defaultTtl) : undefined,
+      maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
+      cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
+    })
+
+    return new cloudfront.Distribution(this, 'Distribution', {
+      domainNames: [this.domain],
+      defaultRootObject: 'index.html',
+      comment: `CDN for ${app.url}`,
+      certificate: this.certificate,
+      enableLogging: cloud.cdn?.enableLogging,
+      logBucket: cloud.cdn?.enableLogging ? this.storage.logBucket : undefined,
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+      enabled: true,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      webAclId: this.firewall.attrArn,
+      enableIpv6: true,
+
+      defaultBehavior: {
+        origin: new origins.S3Origin(this.storage.publicBucket, {
+          originAccessIdentity: this.originAccessIdentity,
+        }),
+        compress: cloud.cdn?.compress,
+        allowedMethods: this.allowedMethods(),
+        cachedMethods: this.cachedMethods(),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: this.cdnCachePolicy,
+      },
+
+      additionalBehaviors: this.generateAdditionalBehaviors({
+        docsBucket: this.storage.privateBucket,
+        originAccessIdentity: this.originAccessIdentity,
+      }),
+    })
   }
 }
