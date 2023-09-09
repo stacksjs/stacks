@@ -150,4 +150,4 @@ const handler = {
 
 export { loadEnv }
 
-export const env: Env = new Proxy(process.env, handler) // fancy way to call `env` instead of `env()`
+export const env = new Proxy(process.env, handler) // fancy way to call `env` instead of `env()`

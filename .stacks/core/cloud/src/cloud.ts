@@ -19,9 +19,11 @@ import {
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
+import { env } from '@stacksjs/env'
 
 export class StacksCloud extends Stack {
-  domainName: string
+  domain: string
+  apiDomain: string
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -29,26 +31,27 @@ export class StacksCloud extends Stack {
     if (!app.url)
       throw new Error('./config app.url is not defined')
 
-    this.domainName = app.url
+    this.domain = app.url
+    this.apiDomain = `${app.subdomains?.api || 'api'}.${app.url}`
 
     const zone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: this.domainName,
+      zoneName: this.domain,
     })
 
     const certificate = new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName: this.domainName,
+      domainName: this.domain,
       validation: acm.CertificateValidation.fromDns(zone),
     })
 
     const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${this.domainName}-${app.env}`,
+      bucketName: `${this.domain}-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     })
 
     const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${this.domainName}-private-${app.env}`,
+      bucketName: `${this.domain}-private-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -59,7 +62,7 @@ export class StacksCloud extends Stack {
 
     if (cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domainName}-logs-${app.env}`,
+        bucketName: `${this.domain}-logs-${app.env}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -91,7 +94,7 @@ export class StacksCloud extends Stack {
 
     // create a CDN to deploy your website
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: [this.domainName],
+      domainNames: [this.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${app.url}`,
       certificate,
@@ -138,7 +141,7 @@ export class StacksCloud extends Stack {
 
     // Create a Route53 record pointing to the CloudFront distribution
     new route53.ARecord(this, 'AliasRecord', {
-      recordName: this.domainName,
+      recordName: this.domain,
       zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     })
@@ -146,7 +149,7 @@ export class StacksCloud extends Stack {
     new route53.CnameRecord(this, 'WwwCnameRecord', {
       zone,
       recordName: 'www',
-      domainName: this.domainName,
+      domainName: this.domain,
     })
 
     const docsSource = '../../../storage/framework/docs'
@@ -165,27 +168,15 @@ export class StacksCloud extends Stack {
       destinationBucket: privateBucket,
     })
 
-    const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
-      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
-      compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
-      compatibleArchitectures: [lambda.Architecture.ARM_64],
-      license: 'MIT',
-      description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
-    })
-
-    new lambda.Function(this, 'StacksApi', {
-      code: lambda.Code.fromAsset(p.projectStoragePath('framework/api/lambda.zip')),
-      handler: 'index.handler',
-      runtime: lambda.Runtime.PROVIDED_AL2,
-      layers: [layer],
-    })
+    if (shouldDeployApi())
+      this.deployApi(zone, originAccessIdentity, webAcl, logBucket)
 
     if (shouldDeployDocs())
       this.deployDocs(zone, originAccessIdentity, webAcl, docsSource, logBucket)
 
     // Prints out the web endpoint to the terminal
     new Output(this, 'AppUrl', {
-      value: `https://${this.domainName}`,
+      value: `https://${this.domain}`,
       description: 'The URL of the deployed application',
     })
 
@@ -210,12 +201,12 @@ export class StacksCloud extends Stack {
     logBucket?: s3.Bucket,
   ) {
     const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
-      domainName: `${app.subdomains?.docs}.${this.domainName}`,
+      domainName: `${app.subdomains?.docs}.${this.domain}`,
       validation: acm.CertificateValidation.fromDns(zone),
     })
 
     const docsBucket = new s3.Bucket(this, 'DocsBucket', {
-      bucketName: `docs.${this.domainName}-${app.env}`,
+      bucketName: `docs.${this.domain}-${app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -272,7 +263,7 @@ export class StacksCloud extends Stack {
     })
     // Create a Route53 record pointing to the Docs CloudFront distribution
     new route53.ARecord(this, 'DocsAliasRecord', {
-      recordName: `${app.subdomains?.docs}.${this.domainName}`,
+      recordName: `${app.subdomains?.docs}.${this.domain}`,
       zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
     })
@@ -295,10 +286,133 @@ export class StacksCloud extends Stack {
       description: 'The URL of the deployed documentation',
     })
   }
+
+  async deployApi(
+    zone: route53.HostedZone,
+    originAccessIdentity: cloudfront.OriginAccessIdentity,
+    webAcl: wafv2.CfnWebACL,
+    logBucket?: s3.Bucket
+  ) {
+    const apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
+      domainName: `${app.subdomains?.api}.${this.domain}`,
+      validation: acm.CertificateValidation.fromDns(zone),
+    })
+
+    const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
+      compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
+      compatibleArchitectures: [lambda.Architecture.ARM_64],
+      license: 'MIT',
+      description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
+    })
+
+    // const filteredEnv = Object.fromEntries(
+    //   Object.entries(env)
+    //     .filter(([key, value]) => key.startsWith('STACKS_') && value !== undefined)
+    // )
+
+    const stacksServerFunction = new lambda.Function(this, 'StacksServer', {
+      description: 'The Stacks API',
+      tracing: lambda.Tracing.ACTIVE,
+      environment: {
+        TEST_ENV: 'test',
+      },
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/api/lambda.zip')),
+      handler: 'index.handler',
+      runtime: lambda.Runtime.PROVIDED_AL2,
+      layers: [layer],
+    })
+
+    const apiUrl = new lambda.FunctionUrl(this, 'StacksServerUrl', {
+      function: stacksServerFunction,
+      authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
+      cors: {
+        allowedOrigins: ['*'],
+      },
+      // url: `https://${this.domain}/api`,
+      // path: 'api',
+      // domainName: this.domain,
+      // zone,
+    })
+
+    const customApiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
+      comment: 'Custom Stacks API Cache Policy',
+      cachePolicyName: 'StacksApiCachePolicy',
+      // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
+      defaultTtl: Duration.seconds(0),
+      cookieBehavior: getCookieBehavior(cloud.cdn?.cookieBehavior),
+    })
+
+    const originRequestPolicy = new cloudfront.OriginRequestPolicy(this, 'StacksApiOriginRequestPolicy', {
+      originRequestPolicyName: 'StacksApiOriginRequestPolicy',
+      comment: 'A custom origin request policy for the Stacks API',
+      cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
+      headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
+      queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.none(),
+    });
+
+    // create a CDN to deploy your website
+    const apiDistribution = new cloudfront.Distribution(this, 'Distribution', {
+      domainNames: [this.apiDomain],
+      comment: `Stacks API Distribution for ${this.apiDomain}`,
+      certificate: apiCertificate,
+      enableLogging: cloud.cdn?.enableLogging,
+      logBucket: cloud.cdn?.enableLogging ? logBucket : undefined,
+      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+      enabled: true,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      webAclId: webAcl.attrArn,
+      enableIpv6: true,
+
+      defaultBehavior: {
+        origin: new origins.HttpOrigin(apiUrl.url, {
+          originPath: '/',
+          originShieldRegion: cloud.cdn?.originShieldRegion,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: customApiCachePolicy,
+        originRequestPolicy,
+      },
+
+      // errorResponses: [
+      //   {
+      //     httpStatus: 403,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      //   {
+      //     httpStatus: 404,
+      //     responsePagePath: '/index.html',
+      //     responseHttpStatus: 200,
+      //     ttl: cdk.Duration.minutes(0),
+      //   },
+      // ],
+    })
+
+    new route53.ARecord(this, 'AliasRecord', {
+      recordName: this.apiDomain,
+      zone,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(apiDistribution)),
+    })
+
+    new Output(this, 'ServerVanityUrl', {
+      value: apiUrl.url,
+      // value: `https://api.${this.domain}`,
+      description: 'The URL of the deployed Stacks server.',
+    })
+  }
 }
 
 function shouldDeployDocs() {
   return hasFiles(p.projectPath('docs'))
+}
+
+function shouldDeployApi() {
+  return cloud.deploy?.api
 }
 
 function allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
