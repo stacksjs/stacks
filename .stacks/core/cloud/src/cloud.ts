@@ -21,18 +21,30 @@ import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 
+type BehaviorOptions = {
+  docsBucket?: s3.Bucket
+  originAccessIdentity?: cloudfront.OriginAccessIdentity
+}
+
 export class StacksCloud extends Stack {
   domain: string
   apiDomain: string
+  docsSource: string
+  websiteSource: string
+  privateSource: string
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
     if (!app.url)
-      throw new Error('./config app.url is not defined')
+      throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
     this.domain = app.url
     this.apiDomain = `${app.subdomains?.api || 'api'}.${app.url}`
+    this.docsSource = '../../../storage/framework/docs'
+    this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
+    this.privateSource = '../../../storage/private'
+
 
     const zone = new route53.PublicHostedZone(this, 'HostedZone', {
       zoneName: this.domain,
@@ -89,7 +101,7 @@ export class StacksCloud extends Stack {
       minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
       defaultTtl: cloud.cdn?.defaultTtl ? Duration.seconds(cloud.cdn.defaultTtl) : undefined,
       maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
-      cookieBehavior: getCookieBehavior(cloud.cdn?.cookieBehavior),
+      cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
     })
 
     // create a CDN to deploy your website
@@ -110,33 +122,18 @@ export class StacksCloud extends Stack {
       defaultBehavior: {
         origin: new origins.S3Origin(publicBucket, {
           originAccessIdentity,
-          originShieldRegion: cloud.cdn?.originShieldRegion,
         }),
         compress: cloud.cdn?.compress,
-        allowedMethods: cloud.cdn?.allowedMethods
-          ? allowedMethodsFromString(cloud.cdn.allowedMethods)
-          : cloudfront.AllowedMethods.ALLOW_GET_HEAD,
-        cachedMethods: cloud.cdn?.cachedMethods
-          ? allowedMethodsFromString(cloud.cdn.cachedMethods)
-          : cloudfront.CachedMethods.CACHE_GET_HEAD,
+        allowedMethods: this.allowedMethods(),
+        cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: customCdnCachePolicy,
       },
 
-      // errorResponses: [
-      //   {
-      //     httpStatus: 403,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      //   {
-      //     httpStatus: 404,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      // ],
+      additionalBehaviors: this.generateAdditionalBehaviors({
+        docsBucket: privateBucket,
+        originAccessIdentity,
+      }),
     })
 
     // Create a Route53 record pointing to the CloudFront distribution
@@ -152,10 +149,6 @@ export class StacksCloud extends Stack {
       domainName: this.domain,
     })
 
-    const docsSource = '../../../storage/framework/docs'
-    const websiteSource = app.docMode ? docsSource : '../../../storage/public'
-    const privateSource = '../../../storage/private'
-
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
       sources: [s3deploy.Source.asset(websiteSource)],
       destinationBucket: publicBucket,
@@ -167,12 +160,6 @@ export class StacksCloud extends Stack {
       sources: [s3deploy.Source.asset(privateSource)],
       destinationBucket: privateBucket,
     })
-
-    if (shouldDeployApi())
-      this.deployApi(zone, originAccessIdentity, webAcl, logBucket)
-
-    if (shouldDeployDocs())
-      this.deployDocs(zone, originAccessIdentity, webAcl, docsSource, logBucket)
 
     // Prints out the web endpoint to the terminal
     new Output(this, 'AppUrl', {
@@ -193,111 +180,175 @@ export class StacksCloud extends Stack {
     // })
   }
 
-  async deployDocs(
-    zone: route53.PublicHostedZone,
-    originAccessIdentity: cloudfront.OriginAccessIdentity,
-    webAcl: wafv2.CfnWebACL,
-    docsSource: string,
-    logBucket?: s3.Bucket,
-  ) {
-    const docsCertificate = new acm.Certificate(this, 'DocsCertificate', {
-      domainName: `${app.subdomains?.docs}.${this.domain}`,
-      validation: acm.CertificateValidation.fromDns(zone),
-    })
+  // async deployDocs(
+  //   zone: route53.PublicHostedZone,
+  //   originAccessIdentity: cloudfront.OriginAccessIdentity,
+  //   webAcl: wafv2.CfnWebACL,
+  //   docsSource: string,
+  //   logBucket?: s3.Bucket,
+  // ) {
+  //   if (logBucket) {
+  //     logBucket.addLifecycleRule({
+  //       enabled: true,
+  //       expiration: Duration.days(30), // TODO: make this configurable
+  //       id: 'rule',
+  //     })
+  //   }
+  //   // Create a Route53 record pointing to the Docs CloudFront distribution
+  //   new route53.ARecord(this, 'DocsAliasRecord', {
+  //     recordName: `${app.subdomains?.docs}.${this.domain}`,
+  //     zone,
+  //     target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
+  //   })
 
-    const docsBucket = new s3.Bucket(this, 'DocsBucket', {
-      bucketName: `docs.${this.domain}-${app.env}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
+  //   new s3deploy.BucketDeployment(this, 'DeployDocs', {
+  //     sources: [s3deploy.Source.asset(docsSource)],
+  //     destinationBucket: docsBucket,
+  //     distribution: docsDistribution,
+  //     distributionPaths: ['/*'],
+  //   })
 
-    if (logBucket) {
-      logBucket.addLifecycleRule({
-        enabled: true,
-        expiration: Duration.days(30), // TODO: make this configurable
-        id: 'rule',
-      })
+  //   // new Output(this, 'DocsBucketName', {
+  //   //   value: docsBucket.bucketName,
+  //   //   description: 'The name of the docs bucket',
+  //   // })
+
+  //   // Prints out the web endpoint to the terminal
+  //   new Output(this, 'DocsUrl', {
+  //     value: `https://${app.subdomains?.docs}.${app.url}`,
+  //     description: 'The URL of the deployed documentation',
+  //   })
+  // }
+
+  // async deployApi(
+  //   zone: route53.HostedZone,
+  //   originAccessIdentity: cloudfront.OriginAccessIdentity,
+  //   webAcl: wafv2.CfnWebACL,
+  //   logBucket?: s3.Bucket
+  // ) {
+  //   // const apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
+  //   //   domainName: `${app.subdomains?.api}.${this.domain}`,
+  //   //   validation: acm.CertificateValidation.fromDns(zone),
+  //   // })
+
+  //   // const filteredEnv = Object.fromEntries(
+  //   //   Object.entries(env)
+  //   //     .filter(([key, value]) => key.startsWith('STACKS_') && value !== undefined)
+  //   // )
+
+  //   // create a CDN to deploy your website
+  //   // const apiDistribution = new cloudfront.Distribution(this, 'ApiDistribution', {
+  //   //   domainNames: [this.apiDomain],
+  //   //   comment: `Stacks API Distribution for ${this.apiDomain}`,
+  //   //   certificate: apiCertificate,
+  //   //   enableLogging: cloud.cdn?.enableLogging,
+  //   //   logBucket: cloud.cdn?.enableLogging ? logBucket : undefined,
+  //   //   httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
+  //   //   priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+  //   //   enabled: true,
+  //   //   minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+  //   //   webAclId: webAcl.attrArn,
+  //   //   enableIpv6: true,
+
+  //   //   defaultBehavior: {
+  //   //     origin: new origins.HttpOrigin(apiUrl.url, {
+  //   //       originPath: '/',
+  //   //     }),
+  //   //     compress: true,
+  //   //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //   //     cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //   //     cachePolicy: customApiCachePolicy,
+  //   //   },
+
+  //   //   // errorResponses: [
+  //   //   //   {
+  //   //   //     httpStatus: 403,
+  //   //   //     responsePagePath: '/index.html',
+  //   //   //     responseHttpStatus: 200,
+  //   //   //     ttl: cdk.Duration.minutes(0),
+  //   //   //   },
+  //   //   //   {
+  //   //   //     httpStatus: 404,
+  //   //   //     responsePagePath: '/index.html',
+  //   //   //     responseHttpStatus: 200,
+  //   //   //     ttl: cdk.Duration.minutes(0),
+  //   //   //   },
+  //   //   // ],
+  //   // })
+
+  //   // new route53.ARecord(this, 'ApiAliasRecord', {
+  //   //   recordName: this.apiDomain,
+  //   //   zone,
+  //   //   target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(apiDistribution)),
+  //   // })
+  // }
+
+  generateAdditionalBehaviors(options: BehaviorOptions): Record<string, cloudfront.BehaviorOptions> {
+    let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
+
+    if (this.shouldDeployApi()) {
+      this.deployApi()
+
+      behaviorOptions = {
+        '/api/*': {
+          origin: new origins.HttpOrigin(this.apiDomain, {
+            originPath: '/',
+          }),
+          compress: true,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+          cachePolicy: this.apiCachePolicy(),
+        }
+      }
     }
 
-    const docsDistribution = new cloudfront.Distribution(this, 'DocsDistribution', {
-      domainNames: [`${app.subdomains?.docs}.${app.url}`],
-      defaultRootObject: 'index.html',
-      comment: `CDN for ${app.subdomains?.docs}.${app.url}`,
-      certificate: docsCertificate,
-      // originShieldEnabled: true,
-      enableLogging: true,
-      logBucket,
-      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-      enabled: true,
-      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-      webAclId: webAcl.attrArn,
-      enableIpv6: true,
+    if (this.shouldDeployDocs()) {
+      const docsBucket = new s3.Bucket(this, 'DocsBucket', {
+        bucketName: `docs.${this.domain}-${app.env}`,
+        versioned: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+      })
 
-      defaultBehavior: {
-        origin: new origins.S3Origin(docsBucket, {
-          originAccessIdentity,
-        }),
-        compress: true,
-        allowedMethods: allowedMethodsFromString(cloud.cdn?.allowedMethods),
-        cachedMethods: cachedMethodsFromString(cloud.cdn?.cachedMethods),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-      },
+      behaviorOptions = {
+        ...behaviorOptions,
+        '/docs/*': {
+          origin: new origins.S3Origin(docsBucket, {
+            originAccessIdentity: options.originAccessIdentity,
+          }),
+          compress: true,
+          allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
+          cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        },
+      }
+    }
 
-      // errorResponses: [
-      //   {
-      //     httpStatus: 403,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      //   {
-      //     httpStatus: 404,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      // ],
-    })
-    // Create a Route53 record pointing to the Docs CloudFront distribution
-    new route53.ARecord(this, 'DocsAliasRecord', {
-      recordName: `${app.subdomains?.docs}.${this.domain}`,
-      zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(docsDistribution)),
-    })
+    return behaviorOptions
+  }
 
-    new s3deploy.BucketDeployment(this, 'DeployDocs', {
-      sources: [s3deploy.Source.asset(docsSource)],
-      destinationBucket: docsBucket,
-      distribution: docsDistribution,
-      distributionPaths: ['/*'],
-    })
+  shouldDeployDocs() {
+    return hasFiles(p.projectPath('docs'))
+  }
 
-    // new Output(this, 'DocsBucketName', {
-    //   value: docsBucket.bucketName,
-    //   description: 'The name of the docs bucket',
-    // })
+  shouldDeployApi() {
+    return cloud.deploy?.api
+  }
 
-    // Prints out the web endpoint to the terminal
-    new Output(this, 'DocsUrl', {
-      value: `https://${app.subdomains?.docs}.${app.url}`,
-      description: 'The URL of the deployed documentation',
+  apiCachePolicy() {
+   return new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
+      comment: 'Custom Stacks API Cache Policy',
+      cachePolicyName: 'StacksApiCachePolicy',
+      // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
+      defaultTtl: Duration.seconds(0),
+      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
     })
   }
 
-  async deployApi(
-    zone: route53.HostedZone,
-    originAccessIdentity: cloudfront.OriginAccessIdentity,
-    webAcl: wafv2.CfnWebACL,
-    logBucket?: s3.Bucket
-  ) {
-    const apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
-      domainName: `${app.subdomains?.api}.${this.domain}`,
-      validation: acm.CertificateValidation.fromDns(zone),
-    })
-
+  deployApi() {
     const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
       compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
@@ -305,11 +356,6 @@ export class StacksCloud extends Stack {
       license: 'MIT',
       description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
     })
-
-    // const filteredEnv = Object.fromEntries(
-    //   Object.entries(env)
-    //     .filter(([key, value]) => key.startsWith('STACKS_') && value !== undefined)
-    // )
 
     const stacksServerFunction = new lambda.Function(this, 'StacksServer', {
       description: 'The Stacks API',
@@ -323,73 +369,12 @@ export class StacksCloud extends Stack {
       layers: [layer],
     })
 
-    const apiUrl = new lambda.FunctionUrl(this, 'StacksServerUrl', {
+    const api = new lambda.FunctionUrl(this, 'StacksServerUrl', {
       function: stacksServerFunction,
       authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
       cors: {
         allowedOrigins: ['*'],
       },
-      // url: `https://${this.domain}/api`,
-      // path: 'api',
-      // domainName: this.domain,
-      // zone,
-    })
-
-    const customApiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
-      comment: 'Custom Stacks API Cache Policy',
-      cachePolicyName: 'StacksApiCachePolicy',
-      // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
-      defaultTtl: Duration.seconds(0),
-      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
-      queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
-    })
-
-    // create a CDN to deploy your website
-    const apiDistribution = new cloudfront.Distribution(this, 'ApiDistribution', {
-      domainNames: [this.apiDomain],
-      comment: `Stacks API Distribution for ${this.apiDomain}`,
-      certificate: apiCertificate,
-      enableLogging: cloud.cdn?.enableLogging,
-      logBucket: cloud.cdn?.enableLogging ? logBucket : undefined,
-      httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-      enabled: true,
-      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-      webAclId: webAcl.attrArn,
-      enableIpv6: true,
-
-      defaultBehavior: {
-        origin: new origins.HttpOrigin(apiUrl.url, {
-          originPath: '/',
-          originShieldRegion: cloud.cdn?.originShieldRegion,
-        }),
-        compress: true,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: customApiCachePolicy,
-      },
-
-      // errorResponses: [
-      //   {
-      //     httpStatus: 403,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      //   {
-      //     httpStatus: 404,
-      //     responsePagePath: '/index.html',
-      //     responseHttpStatus: 200,
-      //     ttl: cdk.Duration.minutes(0),
-      //   },
-      // ],
-    })
-
-    new route53.ARecord(this, 'ApiAliasRecord', {
-      recordName: this.apiDomain,
-      zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(apiDistribution)),
     })
 
     new Output(this, 'ServerVanityUrl', {
@@ -397,57 +382,75 @@ export class StacksCloud extends Stack {
       // value: `https://api.${this.domain}`,
       description: 'The URL of the deployed Stacks server.',
     })
+
+    return api
   }
-}
 
-function shouldDeployDocs() {
-  return hasFiles(p.projectPath('docs'))
-}
-
-function shouldDeployApi() {
-  return cloud.deploy?.api
-}
-
-function allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
-  if (!methods)
-    return cloudfront.AllowedMethods.ALLOW_ALL
-
-  switch (methods) {
-    case 'ALL':
+  allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
+    if (!methods)
       return cloudfront.AllowedMethods.ALLOW_ALL
-    case 'GET_HEAD':
-      return cloudfront.AllowedMethods.ALLOW_GET_HEAD
-    case 'GET_HEAD_OPTIONS':
-      return cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
-    default:
-      return cloudfront.AllowedMethods.ALLOW_ALL
+
+    switch (methods) {
+      case 'ALL':
+        return cloudfront.AllowedMethods.ALLOW_ALL
+      case 'GET_HEAD':
+        return cloudfront.AllowedMethods.ALLOW_GET_HEAD
+      case 'GET_HEAD_OPTIONS':
+        return cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
+      default:
+        return cloudfront.AllowedMethods.ALLOW_ALL
+    }
   }
-}
 
-function cachedMethodsFromString(methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.CachedMethods {
-  if (!methods)
-    return cloudfront.CachedMethods.CACHE_GET_HEAD
+  cachedMethodsFromString(methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.CachedMethods {
+    if (!methods)
+      return cloudfront.CachedMethods.CACHE_GET_HEAD
 
-  switch (methods) {
-    case 'GET_HEAD':
-      return cloudfront.CachedMethods.CACHE_GET_HEAD
-    case 'GET_HEAD_OPTIONS':
-      return cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS
-    default:
-      return cloudfront.CachedMethods.CACHE_GET_HEAD
+    switch (methods) {
+      case 'GET_HEAD':
+        return cloudfront.CachedMethods.CACHE_GET_HEAD
+      case 'GET_HEAD_OPTIONS':
+        return cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS
+      default:
+        return cloudfront.CachedMethods.CACHE_GET_HEAD
+    }
   }
-}
 
-function getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
-  switch (behavior) {
-    case 'all':
-      return cloudfront.CacheCookieBehavior.all()
-    case 'none':
-      return cloudfront.CacheCookieBehavior.none()
-    case 'allowList':
-      // If you have a list of cookies, replace `myCookie` with your cookie
-      return cloudfront.CacheCookieBehavior.allowList(...cloud.cdn?.allowList.cookies || [])
-    default:
-      return undefined
+  getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
+    switch (behavior) {
+      case 'all':
+        return cloudfront.CacheCookieBehavior.all()
+      case 'none':
+        return cloudfront.CacheCookieBehavior.none()
+      case 'allowList':
+        // If you have a list of cookies, replace `myCookie` with your cookie
+        return cloudfront.CacheCookieBehavior.allowList(...cloud.cdn?.allowList.cookies || [])
+      default:
+        return undefined
+    }
+  }
+
+  allowedMethods(): cloudfront.AllowedMethods {
+    switch (cloud.cdn?.allowedMethods) {
+      case 'ALL':
+        return cloudfront.AllowedMethods.ALLOW_ALL
+      case 'GET_HEAD':
+        return cloudfront.AllowedMethods.ALLOW_GET_HEAD
+      case 'GET_HEAD_OPTIONS':
+        return cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
+      default:
+        return cloudfront.AllowedMethods.ALLOW_ALL
+    }
+  }
+
+  cachedMethods(): cloudfront.CachedMethods {
+    switch (cloud.cdn?.cachedMethods) {
+      case 'GET_HEAD':
+        return cloudfront.CachedMethods.CACHE_GET_HEAD
+      case 'GET_HEAD_OPTIONS':
+        return cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS
+      default:
+        return cloudfront.CachedMethods.CACHE_GET_HEAD
+    }
   }
 }
