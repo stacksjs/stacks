@@ -82,7 +82,7 @@ export class StacksCloud extends Stack {
 
   apiCachePolicy() {
     return new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
-      comment: 'Custom Stacks API Cache Policy',
+      comment: 'Stacks API Cache Policy',
       cachePolicyName: 'StacksApiCachePolicy',
       // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
@@ -109,8 +109,9 @@ export class StacksCloud extends Stack {
         TEST_ENV: 'test',
       },
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
-      handler: 'server',
+      handler: 'server.fetch',
       runtime: lambda.Runtime.PROVIDED_AL2,
+      architecture: lambda.Architecture.ARM_64,
       layers: [layer],
     })
 
@@ -274,7 +275,7 @@ export class StacksCloud extends Stack {
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
 
     const cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
-      comment: 'Custom Stacks CDN Cache Policy',
+      comment: 'Stacks CDN Cache Policy',
       cachePolicyName: 'cdnCachePolicy',
       minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
       defaultTtl: cloud.cdn?.defaultTtl ? Duration.seconds(cloud.cdn.defaultTtl) : undefined,

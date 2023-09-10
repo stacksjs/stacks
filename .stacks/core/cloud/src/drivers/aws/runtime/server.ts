@@ -12,7 +12,7 @@ export default {
       console.log('WebSocket upgraded')
       return
     }
-    return new Response('Hello from Bun on Lambda!', {
+    return new Response('Hello from Stacks on Lambda!', {
       status: 200,
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
