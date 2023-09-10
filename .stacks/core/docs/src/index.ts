@@ -49,9 +49,8 @@ export const sidebar = {
 
 export function docsUrl() {
   const appUrl = app.url || 'stacks.test'
-  const docsSubdomain = app.subdomains?.docs || 'docs'
   const protocolPattern = /^https?:\/\//i
-  const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${docsSubdomain}.${appUrl}:3333`
+  const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${appUrl}:3333/docs`
   const urlObj = new URL(urlForParsing)
   const domainParts = urlObj.hostname.split('.')
   domainParts[domainParts.length - 1] = 'localhost' // replace TLD with 'localhost' for local dev

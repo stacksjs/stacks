@@ -69,8 +69,7 @@ export const vueComponentsConfig: ViteConfig = {
           const newHostname = domainParts.join('.')
 
           const appUrl = newHostname
-          const docsSubdomain = app.subdomains.docs
-          const docsUrl = `https://${docsSubdomain}.${appUrl}`
+          const docsUrl = `https://${appUrl}/docs`
 
           // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
           const stacksVersion = `alpha-${version}`

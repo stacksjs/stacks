@@ -23,6 +23,7 @@ import { app, cloud } from '@stacksjs/config'
 export class StacksCloud extends Stack {
   domain: string
   apiDomain: string
+  docsDomain: string
   apiVanityUrl?: string
   vanityUrl: string
   docsSource: string
@@ -47,7 +48,8 @@ export class StacksCloud extends Stack {
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
     this.domain = app.url
-    this.apiDomain = `${app.subdomains?.api || 'api'}.${app.url}`
+    this.apiDomain = `${app.url}/api`
+    this.docsDomain = app.docMode ? app.url : `${app.url}/docs`
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
@@ -328,18 +330,12 @@ export class StacksCloud extends Stack {
       }
     }
 
-    if (this.shouldDeployDocs()) {
-      const docsBucket = new s3.Bucket(this, 'DocsBucket', {
-        bucketName: `docs.${this.domain}-${app.env}`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      })
-
+    // if docMode is used, we don't need to add a behavior for the docs
+    // because the docs will be the root of the site
+    if (this.shouldDeployDocs() && !app.docMode) {
       behaviorOptions = {
-        ...behaviorOptions,
         '/docs/*': {
-          origin: new origins.S3Origin(docsBucket, {
+          origin: new origins.S3Origin(this.storage.publicBucket, {
             originAccessIdentity: this.originAccessIdentity,
           }),
           compress: true,
@@ -348,6 +344,8 @@ export class StacksCloud extends Stack {
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         },
+
+        ...behaviorOptions,
       }
     }
 
@@ -374,6 +372,13 @@ export class StacksCloud extends Stack {
       new Output(this, 'ApiVanityUrl', {
         value: this.apiVanityUrl,
         description: 'The vanity URL of the deployed Stacks server.',
+      })
+    }
+
+    if (this.shouldDeployDocs()) {
+      new Output(this, 'DocsUrl', {
+        value: `https://${this.domain}/docs`,
+        description: 'The URL of the deployed documentation',
       })
     }
 

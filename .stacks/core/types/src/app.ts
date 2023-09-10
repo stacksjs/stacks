@@ -41,14 +41,6 @@ export interface AppOptions {
   url: string
 
   /**
-   * **Subdomains**
-   */
-  subdomains: {
-    docs: string
-    api: string
-  }
-
-  /**
    * **Application Debug Mode**
    *
    * When your application is in debug mode, detailed error messages with

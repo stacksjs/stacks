@@ -8,9 +8,6 @@ export interface Env {
   APP_KEY: string
   APP_URL: string
   APP_DEBUG: boolean
-  APP_SUBDOMAIN_API: string
-  APP_SUBDOMAIN_DOCS: string
-  APP_SUBDOMAIN_LIBRARY: string
   APP_BUCKET: string
 
   DB_CONNECTION: string

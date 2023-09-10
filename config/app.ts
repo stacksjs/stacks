@@ -12,10 +12,6 @@ export default {
   name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'development',
   url: env.APP_URL || 'stacks.test',
-  subdomains: {
-    docs: env.APP_SUBDOMAIN_DOCS || 'docs',
-    api: env.APP_SUBDOMAIN_API || 'api',
-  },
   debug: env.APP_DEBUG || false,
   key: env.APP_KEY,
 
@@ -23,5 +19,5 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-  docMode: true, // instead of example.com/docs, use example.com as main entry point for docs
+  docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
 } satisfies AppConfig

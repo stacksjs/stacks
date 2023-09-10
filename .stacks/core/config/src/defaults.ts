@@ -7,10 +7,6 @@ export default {
     name: 'Stacks',
     env: 'local',
     url: 'stacks.test',
-    subdomains: {
-      docs: 'docs',
-      api: 'api',
-    },
     debug: true,
     key: '',
     timezone: 'UTC',
