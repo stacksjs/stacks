@@ -1,10 +1,10 @@
-import { StacksOptions } from '@stacksjs/types'
+import type { StacksOptions } from '@stacksjs/types'
 import defaults from './defaults'
 import overrides from './overrides'
 
 export const config = {
   ...defaults,
-  ...overrides
+  ...overrides,
 }
 
 export const {
@@ -26,7 +26,7 @@ export const {
   searchEngine,
   services,
   storage,
-  ui
+  ui,
 }: StacksOptions = config
 
 export { defaults, overrides }

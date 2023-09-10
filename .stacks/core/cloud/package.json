@@ -44,10 +44,9 @@
   ],
   "scripts": {
     "bootstrap": "cdk bootstrap --profile stacks",
-    "deploy": "bunx vitepress build ../../docs && cdk deploy --profile stacks --require-approval never",
+    "deploy": "bunx vitepress build ../../docs && bun ../actions/src/zip/api.ts && cdk deploy --profile stacks --require-approval never",
     "build": "bun build.ts",
     "build-layer": "bun ./src/drivers/aws/runtime/scripts/build-layer.ts",
-    "publish-layer": "bun ./src/drivers/aws/runtime/scripts/publish-layer.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

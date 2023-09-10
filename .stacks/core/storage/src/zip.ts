@@ -1,13 +1,13 @@
 import { runCommand } from '@stacksjs/cli'
 import type { ZlibCompressionOptions } from 'bun'
 
-type ZipOptions = {
+interface ZipOptions {
   cwd?: string
 }
 
 export async function zip(from: string | string[], to?: string, options?: ZipOptions) {
-  const toPath = to || 'archive.zip';
-  const fromPath = Array.isArray(from) ? from.join(" ") : from;
+  const toPath = to || 'archive.zip'
+  const fromPath = Array.isArray(from) ? from.join(' ') : from
 
   if (Array.isArray(from))
     return runCommand(`zip -r ${toPath} ${fromPath}`, options)

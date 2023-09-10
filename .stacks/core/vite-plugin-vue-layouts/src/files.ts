@@ -1,6 +1,6 @@
 import { glob } from '@stacksjs/storage'
-import { ResolvedOptions } from './types'
-import { extensionsToGlob, debug } from './utils'
+import type { ResolvedOptions } from './types'
+import { debug, extensionsToGlob } from './utils'
 
 /**
  * Resolves the files that are valid pages for the given context.

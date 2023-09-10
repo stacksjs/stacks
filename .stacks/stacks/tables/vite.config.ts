@@ -6,7 +6,7 @@ import { type ViteConfig } from '../../core/types/src'
 import { libraryEntryPath, libsPath, projectPath, storagePath } from '../../core/path/src'
 import { app, library } from '../../core/config/src'
 import { alias } from '../../core/alias/src'
-import { autoImports, cssEngine, uiEngine } from '../../core/vite/src'
+import { autoImports, uiEngine } from '../../core/vite/src'
 
 export const vueComponentsConfig: ViteConfig = {
   envDir: projectPath(),

@@ -47,10 +47,10 @@ export interface Route {
 }
 
 export interface MiddlewareType {
-   name: string
-   priority: number
-   handle: Function
- }
+  name: string
+  priority: number
+  handle: Function
+}
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
 export type RedirectCode = Extract<StatusCode, 301 | 302>

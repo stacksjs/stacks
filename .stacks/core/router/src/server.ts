@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
 import { extname } from 'node:path'
-import type { Route, StatusCode, MiddlewareType } from '@stacksjs/types'
-import { middlewares }  from './middleware'
+import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
+import { middlewares } from './middleware'
 import { request } from './request'
 import { route } from './index'
 
@@ -39,7 +39,6 @@ function addRouteParamsAndQuery(url: URL, route: Route): void {
 
 function executeMiddleware(route: Route): void {
   const { middleware = null } = route
-
 
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
     if (isString(middleware)) {

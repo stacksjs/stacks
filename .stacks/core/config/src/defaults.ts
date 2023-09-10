@@ -1,5 +1,6 @@
 import type { StacksOptions } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
+
 // import { userConfig as overrides } from './overrides'
 
 export default {
@@ -105,7 +106,7 @@ export default {
       sqlite: {
         database: p.projectStoragePath('framework/database/stacks.sqlite'),
         prefix: '',
-      }
+      },
     },
   },
 
@@ -150,7 +151,7 @@ export default {
       address: 'no-reply@stacksjs.com',
     },
 
-    mailboxes: {}
+    mailboxes: {},
   },
 
   git: {

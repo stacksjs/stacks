@@ -1,4 +1,4 @@
-import { posix } from 'path'
+import { posix } from 'node:path'
 import { getPackageInfo } from 'local-pkg'
 
 function normalizePath(path: string) {

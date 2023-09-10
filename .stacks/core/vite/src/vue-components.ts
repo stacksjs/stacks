@@ -6,7 +6,6 @@ import { type ViteConfig } from '@stacksjs/types'
 import { components } from './plugin/components'
 import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
-import { cssEngine } from './plugin/css-engine'
 import { inspect } from './plugin/inspect'
 import { type ViteBuildOptions } from './'
 

@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import type { ModuleNode, Plugin, ResolvedConfig } from 'vite'
 import { createVirtualModuleCode } from './clientSide'
 import { getFilesFromPath } from './files'
@@ -7,10 +7,10 @@ import getClientCode from './RouteLayout'
 import { debug, normalizePath } from './utils'
 
 import type {
-  clientSideOptions,
   FileContainer,
   ResolvedOptions,
   UserOptions,
+  clientSideOptions,
 } from './types'
 
 const MODULE_IDS = ['layouts-generated', 'virtual:generated-layouts']
@@ -76,7 +76,7 @@ export default function Layout(userOptions: UserOptions = {}): Plugin {
         updateVirtualModule()
       })
 
-      watcher.on('change', async(path) => {
+      watcher.on('change', async (path) => {
         path = `/${normalizePath(path)}`
         const module = await moduleGraph.getModuleByUrl(path)
         reloadModule(module, path)

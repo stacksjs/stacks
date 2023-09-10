@@ -1,7 +1,7 @@
 import { kolorist as c } from '@stacksjs/cli'
+import { app } from '@stacksjs/config'
 import type { ViteDevServer } from '../'
 import pkg from '../../../../package.json'
-import { app } from '@stacksjs/config'
 
 const { version } = pkg
 

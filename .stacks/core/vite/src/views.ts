@@ -1,11 +1,11 @@
 import { type ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
-import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine } from './stacks'
 import { alias } from '@stacksjs/alias'
-import { defineConfig } from './'
 import generateSitemap from 'vite-ssg-sitemap'
 
 import UnoCSS from 'unocss/vite'
+import { autoImports, components, inspect, layouts, pages, uiEngine } from './stacks'
+import { defineConfig } from './'
 
 export const pagesConfig = {
   root: p.projectStoragePath('framework/web'),

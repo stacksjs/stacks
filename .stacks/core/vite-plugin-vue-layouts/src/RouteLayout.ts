@@ -1,4 +1,4 @@
-import { ResolvedOptions } from './types'
+import type { ResolvedOptions } from './types'
 
 function getClientCode(importCode: string, options: ResolvedOptions) {
   const code = `

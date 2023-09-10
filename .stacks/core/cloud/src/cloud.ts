@@ -35,6 +35,7 @@ export class StacksCloud extends Stack {
     privateBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
   }
+
   cdn: cloudfront.Distribution
   certificate: acm.Certificate
   firewall: wafv2.CfnWebACL
@@ -80,7 +81,7 @@ export class StacksCloud extends Stack {
   }
 
   apiCachePolicy() {
-   return new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
+    return new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
       comment: 'Custom Stacks API Cache Policy',
       cachePolicyName: 'StacksApiCachePolicy',
       // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
@@ -104,7 +105,7 @@ export class StacksCloud extends Stack {
       description: 'The Stacks Server',
       tracing: lambda.Tracing.ACTIVE,
       environment: {
-        // TODO: update this to use the correct env
+      // TODO: update this to use the correct env
         TEST_ENV: 'test',
       },
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
@@ -328,7 +329,7 @@ export class StacksCloud extends Stack {
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
           cachePolicy: this.apiCachePolicy(),
-        }
+        },
       }
     }
 

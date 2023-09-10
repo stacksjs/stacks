@@ -1,7 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { promisify } from 'node:util';
-import { MiddlewareType } from '@stacksjs/types';
+import fs from 'node:fs'
+import path from 'node:path'
+import { promisify } from 'node:util'
+import type { MiddlewareType } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareType {
   name: string
@@ -9,31 +9,32 @@ export class Middleware implements MiddlewareType {
   handle: Function
 
   constructor(data: MiddlewareType) {
-      this.name = data.name
-      this.priority = data.priority
-      this.handle = data.handle
+    this.name = data.name
+    this.priority = data.priority
+    this.handle = data.handle
   }
 }
 
-const readdir = promisify(fs.readdir);
+const readdir = promisify(fs.readdir)
 
 async function importMiddlewares(directory: any) {
-    const middlewares = [];
-    const files = await readdir(directory);
+  const middlewares = []
+  const files = await readdir(directory)
 
-    for (const file of files) {
-        // Skip non-JavaScript files
-        if (path.extname(file) !== '.ts') continue;
+  for (const file of files) {
+    // Skip non-JavaScript files
+    if (path.extname(file) !== '.ts')
+      continue
 
-        // Dynamically import the middleware
-        const imported = await import(path.join(directory, file));
-        middlewares.push(imported.default);
-    }
+    // Dynamically import the middleware
+    const imported = await import(path.join(directory, file))
+    middlewares.push(imported.default)
+  }
 
-    return middlewares;
+  return middlewares
 }
 
 // Example usage:
-const middlewareDirectory = path.join(__dirname, '../../../../app/middleware');
+const middlewareDirectory = path.join(__dirname, '../../../../app/middleware')
 
 export const middlewares = await importMiddlewares(middlewareDirectory)

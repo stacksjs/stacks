@@ -89,7 +89,7 @@
     "../types/*",
     "../types/**/*",
     "../tests/*",
-    "../tests/**/*",
+    "../tests/**/*"
   ],
   "exclude": [
     "../**/cdk.out",
