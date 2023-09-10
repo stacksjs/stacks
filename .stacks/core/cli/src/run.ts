@@ -36,6 +36,13 @@ export async function runCommand(command: string, options?: CliOptions): Promise
   return await exec(command, options)
 }
 
+export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
+  if (options?.verbose)
+    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+
+  return await exec(command, options)
+}
+
 /**
  * Run a command.
  *

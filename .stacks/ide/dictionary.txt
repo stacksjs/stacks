@@ -16,6 +16,7 @@ bazelignore
 bazelproject
 bazelrc
 booleanish
+Bootcamp
 breakline
 brotli
 browserslist

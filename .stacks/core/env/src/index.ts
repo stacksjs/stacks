@@ -128,8 +128,7 @@ const handler = {
     if (prop in cache)
       return cache[prop]
 
-    // TODO: make mode dynamic
-    const newEnv = loadEnv('development', projectPath(), '')
+    const newEnv = loadEnv('', projectPath(), '')
     cache[prop] = newEnv[prop]
     return newEnv[prop]
   },
