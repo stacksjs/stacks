@@ -326,51 +326,60 @@ export class StacksCloud extends Stack {
     if (this.shouldDeployApi()) {
       this.deployApi()
 
-      behaviorOptions = {
-        '/api': {
-          origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-            originPath: '/api',
-            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-          }),
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-          cachePolicy: this.setApiCachePolicy(),
-        },
-        '/api/*': {
-          origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-            originPath: '/api',
-            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-          }),
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-          cachePolicy: this.apiCachePolicy,
-        },
-      }
+      behaviorOptions = this.apiBehaviorOptions()
     }
 
     // if docMode is used, we don't need to add a behavior for the docs
     // because the docs will be the root of the site
     if (this.shouldDeployDocs() && !app.docMode) {
       behaviorOptions = {
-        '/docs/*': {
-          origin: new origins.S3Origin(this.storage.publicBucket, {
-            originAccessIdentity: this.originAccessIdentity,
-            originPath: '/docs',
-          }),
-          compress: true,
-          allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
-          cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        },
-
+        ...this.docsBehaviorOptions(),
         ...behaviorOptions,
       }
     }
 
     return behaviorOptions
+  }
+
+  apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
+    return {
+      '/api': {
+        origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+          originPath: '/api',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: this.setApiCachePolicy(),
+      },
+      '/api/*': {
+        origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+          originPath: '/api',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: this.apiCachePolicy,
+      },
+    }
+  }
+
+  docsBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
+    return {
+      '/docs/*': {
+        origin: new origins.S3Origin(this.storage.publicBucket, {
+          originAccessIdentity: this.originAccessIdentity,
+          originPath: '/docs',
+        }),
+        compress: true,
+        allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+    }
   }
 
   addOutputs(): void {
