@@ -22,7 +22,7 @@ import { app, cloud } from '@stacksjs/config'
 
 export class StacksCloud extends Stack {
   domain: string
-  apiDomain: string
+  apiPath: string
   docsDomain: string
   apiVanityUrl?: string
   vanityUrl: string
@@ -48,7 +48,7 @@ export class StacksCloud extends Stack {
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
     this.domain = app.url
-    this.apiDomain = `${app.url}/api`
+    this.apiPath = 'api'
     this.docsDomain = app.docMode ? app.url : `${app.url}/docs`
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
@@ -319,8 +319,9 @@ export class StacksCloud extends Stack {
 
       behaviorOptions = {
         '/api/*': {
-          origin: new origins.HttpOrigin(this.apiDomain, {
-            originPath: '/',
+          origin: new origins.HttpOrigin(this.domain, {
+            originPath: '/api',
+            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
           }),
           compress: true,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
@@ -337,6 +338,7 @@ export class StacksCloud extends Stack {
         '/docs/*': {
           origin: new origins.S3Origin(this.storage.publicBucket, {
             originAccessIdentity: this.originAccessIdentity,
+            originPath: '/docs',
           }),
           compress: true,
           allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
@@ -364,7 +366,7 @@ export class StacksCloud extends Stack {
     })
 
     new Output(this, 'ApiUrl', {
-      value: `https://${this.apiDomain}`,
+      value: `https://${this.domain}/${this.apiPath}`,
       description: 'The URL of the deployed application',
     })
 

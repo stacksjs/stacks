@@ -6,7 +6,7 @@ titleTemplate: Modern TypeScript Fullstack Development.
 
 hero:
   name: Stacks
-  text: Build. Ship. Faster.
+  text: Build. Ship. Faster
   tagline: Rapid application, cloud & library development framework. For the best full-stack teams.
   actions:
     - theme: brand

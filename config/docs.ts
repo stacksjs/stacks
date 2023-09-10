@@ -16,31 +16,23 @@ const nav = [
         items: [
           {
             text: 'Twitter',
-            link: 'https://twitter.com/vite_js',
+            link: 'https://twitter.com/stacksjs',
           },
           {
             text: 'Discord Chat',
-            link: 'https://chat.vitejs.dev',
+            link: 'https://discord.gg/stacksjs',
           },
           {
-            text: 'Awesome Vite',
-            link: 'https://github.com/vitejs/awesome-vite',
-          },
-          {
-            text: 'DEV Community',
-            link: 'https://dev.to/t/vite',
-          },
-          {
-            text: 'Rollup Plugins Compat',
-            link: 'https://vite-rollup-plugins.patak.dev/',
+            text: 'Awesome Stacks',
+            link: 'https://github.com/stacksjs/awesome-stacks',
           },
           {
             text: 'Changelog',
-            link: 'https://github.com/vitejs/vite/blob/main/packages/vite/CHANGELOG.md',
+            link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
           },
           {
             text: 'Contributing',
-            link: 'https://github.com/vitejs/vite/blob/main/CONTRIBUTING.md',
+            link: 'https://github.com/stacksjs/stacks/blob/main/.github/CONTRIBUTING.md',
           },
         ],
       },

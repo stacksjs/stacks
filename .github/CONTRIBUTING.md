@@ -1,5 +1,7 @@
 # Contributing
 
+WIP: Updates to here are in progress.
+
 First off, thank you for taking the time to contribute to the Stacks ecosystem ❤️
 
 > **Note**

@@ -9,6 +9,7 @@ export interface Env {
   APP_URL: string
   APP_DEBUG: boolean
   APP_BUCKET: string
+  API_PATH: string
 
   DB_CONNECTION: string
   DB_HOST: string
