@@ -63,7 +63,7 @@
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unocss/transformer-compile-class": "^0.55.7",
     "pinia": "^2.1.6",
-    "unhead": "^1.5.5",
+    "unhead": "^1.6.1",
     "unocss": "^0.55.7",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.10"
@@ -79,7 +79,7 @@
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unocss/transformer-compile-class": "^0.55.7",
     "pinia": "^2.1.6",
-    "unhead": "^1.5.5",
+    "unhead": "^1.6.1",
     "unocss": "^0.55.7",
     "vue": "^3.3.4",
     "vue-tsc": "^1.8.10"
