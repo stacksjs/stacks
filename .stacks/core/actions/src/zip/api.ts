@@ -7,7 +7,7 @@ console.log('Zipping your API for Lambda usage...')
 const from = [
   p.cloudPath('src/drivers/aws/runtime/bootstrap'),
   p.cloudPath('src/drivers/aws/runtime/runtime.ts'),
-  p.cloudPath('src/drivers/aws/runtime/hello.ts'),
+  p.cloudPath('src/drivers/aws/runtime/server.ts'),
 ]
 
 const to = p.projectStoragePath('framework/cloud/lambda.zip')

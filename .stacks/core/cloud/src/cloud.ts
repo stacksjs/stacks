@@ -101,14 +101,14 @@ export class StacksCloud extends Stack {
     })
 
     const stacksServerFunction = new lambda.Function(this, 'StacksServer', {
-      description: 'The Stacks API',
+      description: 'The Stacks Server',
       tracing: lambda.Tracing.ACTIVE,
       environment: {
         // TODO: update this to use the correct env
         TEST_ENV: 'test',
       },
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
-      handler: 'index.handler',
+      handler: 'server',
       runtime: lambda.Runtime.PROVIDED_AL2,
       layers: [layer],
     })
