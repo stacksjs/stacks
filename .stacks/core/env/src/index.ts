@@ -124,17 +124,17 @@ export type FrontendEnvKeys = keyof FrontendEnv
 const cache: { [key: string]: any } = {}
 
 const handler = {
-  get(target: NodeJS.ProcessEnv, prop: string) {
+  get(target: any, prop: string) {
     if (prop in cache)
       return cache[prop]
 
-    const newEnv = loadEnv('development', projectPath(), '') as (NodeJS.ProcessEnv & Env)
+    // TODO: make mode dynamic
+    const newEnv = loadEnv('development', projectPath(), '')
     cache[prop] = newEnv[prop]
     return newEnv[prop]
   },
 
   set(target: NodeJS.ProcessEnv, prop: string, value: string) {
-    // const newEnv = loadEnv('development', projectPath(), '')
     if (prop in target) {
       process.env[prop] = value
       cache[prop] = value

@@ -20,6 +20,7 @@ import {
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
+import { env } from '@stacksjs/env'
 
 export class StacksCloud extends Stack {
   domain: string
@@ -109,13 +110,14 @@ export class StacksCloud extends Stack {
       description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
     })
 
+    let environment = { ...env }
+    let keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR']
+    keysToRemove.forEach(key => delete environment[key])
+
     const stacksServerFunction = new lambda.Function(this, 'StacksServer', {
       description: 'The Stacks Server',
       tracing: lambda.Tracing.ACTIVE,
-      environment: {
-      // TODO: update this to use the correct env
-        TEST_ENV: 'test',
-      },
+      environment,
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
       handler: 'server.fetch',
       runtime: lambda.Runtime.PROVIDED_AL2,
