@@ -19,12 +19,6 @@ import {
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { app, cloud } from '@stacksjs/config'
-import { env } from '@stacksjs/env'
-
-type BehaviorOptions = {
-  docsBucket?: s3.Bucket
-  originAccessIdentity?: cloudfront.OriginAccessIdentity
-}
 
 export class StacksCloud extends Stack {
   domain: string
@@ -95,7 +89,7 @@ export class StacksCloud extends Stack {
     })
   }
 
-  deployApi() {
+  deployApi(): lambda.FunctionUrl {
     const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
       compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
@@ -195,31 +189,6 @@ export class StacksCloud extends Stack {
       default:
         return cloudfront.CachedMethods.CACHE_GET_HEAD
     }
-  }
-
-  addOutputs() {
-    new Output(this, 'AppUrl', {
-      value: `https://${this.domain}`,
-      description: 'The URL of the deployed application',
-    })
-
-    new Output(this, 'VanityUrl', {
-      value: this.vanityUrl,
-      description: 'The vanity URL of the deployed application',
-    })
-
-    if (this.apiVanityUrl) {
-      new Output(this, 'ServerVanityUrl', {
-        value: this.apiVanityUrl,
-        description: 'The vanity URL of the deployed Stacks server.',
-      })
-    }
-
-    // Output the nameservers of the hosted zone
-    // new Output(this, 'Nameservers', {
-    //   value: Fn.join(', ', zone.hostedZoneNameServers),
-    //   description: 'Nameservers for the application domain',
-    // })
   }
 
   manageDns() {
@@ -341,7 +310,7 @@ export class StacksCloud extends Stack {
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
-  generateAdditionalBehaviors(options: BehaviorOptions): Record<string, cloudfront.BehaviorOptions> {
+  generateAdditionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
@@ -372,7 +341,7 @@ export class StacksCloud extends Stack {
         ...behaviorOptions,
         '/docs/*': {
           origin: new origins.S3Origin(docsBucket, {
-            originAccessIdentity: options.originAccessIdentity,
+            originAccessIdentity: this.originAccessIdentity,
           }),
           compress: true,
           allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
@@ -384,6 +353,31 @@ export class StacksCloud extends Stack {
     }
 
     return behaviorOptions
+  }
+
+  addOutputs(): void {
+    new Output(this, 'AppUrl', {
+      value: `https://${this.domain}`,
+      description: 'The URL of the deployed application',
+    })
+
+    new Output(this, 'VanityUrl', {
+      value: this.vanityUrl,
+      description: 'The vanity URL of the deployed application',
+    })
+
+    if (this.apiVanityUrl) {
+      new Output(this, 'ServerVanityUrl', {
+        value: this.apiVanityUrl,
+        description: 'The vanity URL of the deployed Stacks server.',
+      })
+    }
+
+    // Output the nameservers of the hosted zone
+    // new Output(this, 'Nameservers', {
+    //   value: Fn.join(', ', zone.hostedZoneNameServers),
+    //   description: 'Nameservers for the application domain',
+    // })
   }
 
   deploy() {
