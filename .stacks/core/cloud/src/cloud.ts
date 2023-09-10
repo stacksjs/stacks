@@ -15,6 +15,7 @@ import {
   aws_s3_deployment as s3deploy,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
+  Fn,
 } from 'aws-cdk-lib'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
@@ -24,7 +25,7 @@ export class StacksCloud extends Stack {
   domain: string
   apiPath: string
   docsDomain: string
-  apiVanityUrl?: string
+  apiVanityUrl: string
   vanityUrl: string
   docsSource: string
   websiteSource: string
@@ -41,6 +42,7 @@ export class StacksCloud extends Stack {
   firewall: wafv2.CfnWebACL
   originAccessIdentity: cloudfront.OriginAccessIdentity
   cdnCachePolicy: cloudfront.CachePolicy
+  apiCachePolicy: cloudfront.CachePolicy | undefined
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -54,6 +56,7 @@ export class StacksCloud extends Stack {
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
+    this.apiVanityUrl = ''
 
     this.zone = this.manageZone()
     this.certificate = this.manageCertificate()
@@ -80,8 +83,11 @@ export class StacksCloud extends Stack {
     return cloud.deploy?.api
   }
 
-  apiCachePolicy() {
-    return new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
+  setApiCachePolicy() {
+    if (this.apiCachePolicy)
+      return this.apiCachePolicy
+
+    this.apiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
       cachePolicyName: 'StacksApiCachePolicy',
       // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
@@ -90,9 +96,11 @@ export class StacksCloud extends Stack {
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
     })
+
+    return this.apiCachePolicy
   }
 
-  deployApi(): lambda.FunctionUrl {
+  deployApi() {
     const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
       compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
@@ -124,8 +132,6 @@ export class StacksCloud extends Stack {
     })
 
     this.apiVanityUrl = api.url
-
-    return api
   }
 
   allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
@@ -321,15 +327,25 @@ export class StacksCloud extends Stack {
       this.deployApi()
 
       behaviorOptions = {
-        '/api/*': {
-          origin: new origins.HttpOrigin(this.domain, {
+        '/api': {
+          origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
             originPath: '/api',
             protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
           }),
           compress: true,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-          cachePolicy: this.apiCachePolicy(),
+          cachePolicy: this.setApiCachePolicy(),
+        },
+        '/api/*': {
+          origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+            originPath: '/api',
+            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+          }),
+          compress: true,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+          cachePolicy: this.apiCachePolicy,
         },
       }
     }
