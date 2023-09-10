@@ -303,13 +303,13 @@ export class StacksCloud extends Stack {
         cachePolicy: this.cdnCachePolicy,
       },
 
-      additionalBehaviors: this.generateAdditionalBehaviors(),
+      additionalBehaviors: this.additionalBehaviors(),
     })
 
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
-  generateAdditionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
+  additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
