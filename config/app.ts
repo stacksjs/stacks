@@ -23,5 +23,5 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-  docMode: true,
+  docMode: true, // instead of example.com/docs, use example.com as main entry point for docs
 } satisfies AppConfig

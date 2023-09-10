@@ -268,6 +268,7 @@ export class StacksCloud extends Stack {
 
   manageCdn() {
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
+
     const cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
       comment: 'Custom Stacks CDN Cache Policy',
       cachePolicyName: 'cdnCachePolicy',
@@ -276,6 +277,7 @@ export class StacksCloud extends Stack {
       maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
     })
+
     const cdn = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [this.domain],
       defaultRootObject: 'index.html',
@@ -301,10 +303,7 @@ export class StacksCloud extends Stack {
         cachePolicy: this.cdnCachePolicy,
       },
 
-      additionalBehaviors: this.generateAdditionalBehaviors({
-        docsBucket: this.storage.privateBucket,
-        originAccessIdentity: this.originAccessIdentity,
-      }),
+      additionalBehaviors: this.generateAdditionalBehaviors(),
     })
 
     return { cdn, originAccessIdentity, cdnCachePolicy }
@@ -361,13 +360,18 @@ export class StacksCloud extends Stack {
       description: 'The URL of the deployed application',
     })
 
-    new Output(this, 'VanityUrl', {
+    new Output(this, 'AppVanityUrl', {
       value: this.vanityUrl,
       description: 'The vanity URL of the deployed application',
     })
 
+    new Output(this, 'ApiUrl', {
+      value: `https://${this.apiDomain}`,
+      description: 'The URL of the deployed application',
+    })
+
     if (this.apiVanityUrl) {
-      new Output(this, 'ServerVanityUrl', {
+      new Output(this, 'ApiVanityUrl', {
         value: this.apiVanityUrl,
         description: 'The vanity URL of the deployed Stacks server.',
       })
