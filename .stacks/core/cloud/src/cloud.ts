@@ -368,6 +368,17 @@ export class StacksCloud extends Stack {
 
   docsBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
     return {
+      '/docs': {
+        origin: new origins.S3Origin(this.storage.publicBucket, {
+          originAccessIdentity: this.originAccessIdentity,
+          originPath: '/docs',
+        }),
+        compress: true,
+        allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
       '/docs/*': {
         origin: new origins.S3Origin(this.storage.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
