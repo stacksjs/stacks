@@ -104,9 +104,10 @@ export class StacksCloud extends Stack {
       description: 'The Stacks API',
       tracing: lambda.Tracing.ACTIVE,
       environment: {
+        // TODO: update this to use the correct env
         TEST_ENV: 'test',
       },
-      code: lambda.Code.fromAsset(p.projectStoragePath('framework/api/lambda.zip')),
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
       handler: 'index.handler',
       runtime: lambda.Runtime.PROVIDED_AL2,
       layers: [layer],

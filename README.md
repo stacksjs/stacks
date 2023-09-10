@@ -110,9 +110,9 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-sh <(curl stacksjs.dev) my-project
+sh <(curl stacksjs.com) my-project
 
-# alternatively, if Bun >= v0.7 is installed already,
+# alternatively, if Bun >= v1.0 is installed already,
 # you may also get started via:
 bunx stacks new my-project
 ```
