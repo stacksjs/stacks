@@ -16,7 +16,7 @@
     "build": "echo 'no build needed'"
   },
   "peerDependencies": {
-    "eslint": ">=8.48.0",
+    "eslint": ">=8.49.0",
     "typescript": ">=5.2.2"
   },
   "dependencies": {
@@ -26,6 +26,6 @@
     "eslint-plugin-jest": "^27.2.3"
   },
   "devDependencies": {
-    "eslint": "^8.48.0"
+    "eslint": "^8.49.0"
   }
 }

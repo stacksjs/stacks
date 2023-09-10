@@ -17,7 +17,7 @@
     "lint": "eslint . --config=index.js"
   },
   "peerDependencies": {
-    "eslint": ">=8.48.0"
+    "eslint": ">=8.49.0"
   },
   "dependencies": {
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -36,6 +36,6 @@
     "yaml-eslint-parser": "^1.2.2"
   },
   "devDependencies": {
-    "eslint": "^8.48.0"
+    "eslint": "^8.49.0"
   }
 }
