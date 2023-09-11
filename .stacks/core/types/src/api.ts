@@ -19,6 +19,8 @@ export interface ApiOptions {
    * @example string "/api/v2"
    */
   path: string
+
+  warm: number
 }
 
 export type ApiConfig = Partial<ApiOptions>

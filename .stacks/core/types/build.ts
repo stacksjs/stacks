@@ -1,6 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --target node', {
+const result = await runCommand('bun build ./src/index.ts --outdir dist --external @stacksjs/validation --format esm --target node', {
   cwd: import.meta.dir,
 })
 

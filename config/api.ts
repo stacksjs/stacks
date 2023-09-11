@@ -1,5 +1,4 @@
 import type { ApiConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
 
 /**
  * **API Configuration**
@@ -9,5 +8,9 @@ import { env } from '@stacksjs/env'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  path: env.API_PATH || '/api',
+  // description: 'Stacks API',
+  // path: env.API_PATH || '/api',
+  // memorySize: env.API_MEMORY_SIZE || 512,
+  warm: 10,
+  // timeout: 30,
 } satisfies ApiConfig

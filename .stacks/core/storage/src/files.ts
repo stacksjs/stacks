@@ -1,4 +1,5 @@
-import { type JsonFile, type PackageJson, type TextFile } from '@stacksjs/types'
+import type { BunFile } from 'bun'
+import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
@@ -21,15 +22,23 @@ export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile
  */
 export async function readPackageJson(name: string, cwd?: string) {
   const file = await readJsonFile(name, cwd)
-  const data = file.data as PackageJson
+  return file.data as PackageJson
+}
 
-  return data
+type Path = BunFile | PathLike
+type Data = Blob | TypedArray | ArrayBufferLike | string | BlobPart[]
+
+/**
+ * Writes the given text to the specified file.
+ */
+export async function writeFile(path: Path, data: Data): Promise<number> {
+  return await Bun.write(path, data)
 }
 
 /**
  * Writes the given data to the specified JSON file.
  */
-export async function writeJsonFile(file: JsonFile): Promise<void> {
+export async function writeJsonFile(file: JsonFile): Promise<number> {
   let json = JSON.stringify(file.data, undefined, file.indent)
 
   if (file.newline)
@@ -62,13 +71,6 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
       }
     })
   })
-}
-
-/**
- * Writes the given text to the specified file.
- */
-export async function writeFile(file: TextFile): Promise<number> {
-  return await Bun.write(file.path, file.data)
 }
 
 /**

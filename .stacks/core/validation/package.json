@@ -49,17 +49,16 @@
   },
   "peerDependencies": {
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@vinejs/vine": "^1.6.0"
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@vinejs/vine": "^1.6.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/path": "workspace:*",
     "@stacksjs/vite": "workspace:*"
   }
 }

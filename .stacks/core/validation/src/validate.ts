@@ -14,4 +14,6 @@ const RuleObject: Validator['object'] = (...args) => validator.object(...args)
 const RuleAny: Validator['any'] = (...args) => validator.any(...args)
 // const email = () => validator.string().email()
 
+export type { Infer } from '@vinejs/vine/types'
+export { VineString, VineBoolean, VineEnum, VineNumber } from '@vinejs/vine'
 export { validate, validator, Validator, RuleString, RuleNumber, RuleBoolean, RuleArray, RuleObject, RuleAny }
