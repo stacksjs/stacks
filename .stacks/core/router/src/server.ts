@@ -8,27 +8,31 @@ import { route } from './index'
 const routesList: Route[] = await route.getRoutes()
 
 Bun.serve({
-  async fetch(req) {
-    const url = new URL(req.url)
-
-    const foundRoute: Route | undefined = routesList.find((route: Route) => {
-      const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
-
-      return pattern.test(url.pathname)
-    })
-
-    if (url.pathname === '/favicon.ico')
-      return new Response('')
-
-    if (!foundRoute)
-      return new Response('Not found', { status: 404 })
-
-    addRouteParamsAndQuery(url, foundRoute)
-    executeMiddleware(foundRoute)
-
-    return execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
+  async fetch(req: Request) {
+    return serverResponse(req)
   },
 })
+
+export function serverResponse(req: Request) {
+  const url = new URL(req.url)
+
+  const foundRoute: Route | undefined = routesList.find((route: Route) => {
+    const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
+
+    return pattern.test(url.pathname)
+  })
+
+  if (url.pathname === '/favicon.ico')
+  return new Response('')
+
+  if (!foundRoute)
+    return new Response('Not found', { status: 404 })
+
+  addRouteParamsAndQuery(url, foundRoute)
+  executeMiddleware(foundRoute)
+
+  return execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
+}
 
 function addRouteParamsAndQuery(url: URL, route: Route): void {
   if (!isObjectNotEmpty(url.searchParams))

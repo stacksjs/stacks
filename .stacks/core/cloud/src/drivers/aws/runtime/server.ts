@@ -1,5 +1,7 @@
 import type { Server, ServerWebSocket } from 'bun'
 
+import { serverResponse } from '../../../../../router/src/server'
+
 export default {
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
     console.log('Request', {
@@ -12,12 +14,8 @@ export default {
       console.log('WebSocket upgraded')
       return
     }
-    return new Response('Hello from Stacks on Lambda!', {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8',
-      },
-    })
+    
+    return serverResponse(request)
   },
   websocket: {
     async open(ws: ServerWebSocket): Promise<void> {
