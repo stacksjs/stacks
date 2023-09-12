@@ -1,16 +1,21 @@
 import { ViteSSG } from 'vite-ssg'
-import { routes } from 'vue-router/auto/routes'
 import { setupLayouts } from 'virtual:generated-layouts'
 import VueHighlightJS from 'vue3-highlightjs'
 import App from './App.vue'
+import generatedRoutes from '~pages'
 import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
-import '../../../stacks/dashboard/src/styles/main.css'
+
+import '../../../../.stacks/stacks/dashboard/src/styles/main.css'
+
+import 'uno.css'
+
+const routes = setupLayouts(generatedRoutes)
 
 ViteSSG(
   App,
   {
-    routes: setupLayouts(routes),
+    routes,
     base: import.meta.env.BASE_URL,
   },
   (ctx) => {

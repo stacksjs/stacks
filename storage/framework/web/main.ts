@@ -2,15 +2,14 @@ import { createHead } from 'unhead'
 
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
-
 import type { UserModule } from '@stacksjs/types'
-
 import App from './App.vue'
 import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
 import generatedRoutes from '~pages'
 
-import 'uno.css'
+// main.ts
+import 'virtual:uno.css'
 
 const routes = setupLayouts(generatedRoutes)
 

@@ -7,7 +7,6 @@ export function pages(options?: UserOptions) {
   const defaultOptions = {
     extensions: ['vue', 'md'],
   }
-
   const newOptions = defu(options, defaultOptions)
 
   return Pages(newOptions)

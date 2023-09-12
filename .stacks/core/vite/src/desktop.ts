@@ -1,43 +1,39 @@
-import type { ViteConfig } from '@stacksjs/types'
-import * as p from '@stacksjs/path'
+import { type ViteConfig } from '@stacksjs/types'
+import { path as p } from '@stacksjs/path'
+import { cssEngine, inspect, autoImports, components, layouts, pages, uiEngine } from './stacks'
 import { alias } from '@stacksjs/alias'
-import * as c from 'kolorist'
-import { app } from '@stacksjs/config'
-import { server } from '@stacksjs/server'
-import pkgjson from '../package.json'
-import { cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
-import type { ViteDevServer as DevServer } from './'
 import { defineConfig } from './'
+import generateSitemap from 'vite-ssg-sitemap'
 
-const { version } = pkgjson
+import UnoCSS from 'unocss/vite'
 
-export const vueComponentsConfig: ViteConfig = {
-  root: p.frameworkPath('views/desktop/dashboard'),
+export const pagesConfig = {
+  root: p.projectStoragePath('framework/desktop/dashboard'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: p.projectStoragePath('public'),
-
-  server: server({
-    type: 'desktop',
-  }),
+  publicDir: p.projectPath('public'),
 
   resolve: {
-    dedupe: ['vue'],
     alias,
   },
 
-  optimizeDeps: {
-    exclude: ['vue'],
+  server: {
+    host: '127.0.0.1',
+    port: 3333,
   },
 
   plugins: [
-    // preview(),
+    uiEngine(),
     pages({
-      routesFolder: ['../../stacks/dashboard/src/pages'],
+      dirs: p.frameworkPath('stacks/dashboard/src/pages'),
+    }),
+    UnoCSS({
+      configFile: p.corePath('vite/src/uno.config.ts')
     }),
     layouts({
-      layoutsDirs: '../../../stacks/dashboard/src/layouts',
+      layoutsDirs: p.frameworkPath('stacks/dashboard/src/layouts'),
     }),
+<<<<<<< Updated upstream
     uiEngine(),
     cssEngine(),
     inspect(),
@@ -81,14 +77,27 @@ export const vueComponentsConfig: ViteConfig = {
         }
       },
     },
+=======
+>>>>>>> Stashed changes
   ],
-}
+
+  // https://github.com/antfu/vite-ssg
+  ssgOptions: {
+    script: 'async',
+    formatting: 'minify',
+    onFinished() { generateSitemap() },
+  },
+
+  ssr: {
+    // TODO: workaround until they support native ESM
+    noExternal: ['workbox-window', /vue-i18n/],
+  },
+} satisfies ViteConfig
 
 export default defineConfig(({ command }) => {
-  // process.env = { ...process.env, ...loadEnv(mode, projectPath(), '') }
-
   if (command === 'serve')
-    return vueComponentsConfig
+    return pagesConfig
 
-  return vueComponentsConfig
+  // command === 'build'
+  return pagesConfig
 })

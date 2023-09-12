@@ -39,27 +39,6 @@ import type {
 
 declare module 'vue-router/auto/routes' {
   export interface RouteNamedMap {
-    '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
-    '/commands/': RouteRecordInfo<'/commands/', '/commands', Record<never, never>, Record<never, never>>,
-    '/dependencies/': RouteRecordInfo<'/dependencies/', '/dependencies', Record<never, never>, Record<never, never>>,
-    '/deployments/': RouteRecordInfo<'/deployments/', '/deployments', Record<never, never>, Record<never, never>>,
-    '/deployments/[id]': RouteRecordInfo<'/deployments/[id]', '/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
-    '/dns/': RouteRecordInfo<'/dns/', '/dns', Record<never, never>, Record<never, never>>,
-    '/environment/': RouteRecordInfo<'/environment/', '/environment', Record<never, never>, Record<never, never>>,
-    '/health/': RouteRecordInfo<'/health/', '/health', Record<never, never>, Record<never, never>>,
-    '/library/': RouteRecordInfo<'/library/', '/library', Record<never, never>, Record<never, never>>,
-    '/models/': RouteRecordInfo<'/models/', '/models', Record<never, never>, Record<never, never>>,
-    '/models/events': RouteRecordInfo<'/models/events', '/models/events', Record<never, never>, Record<never, never>>,
-    '/models/users': RouteRecordInfo<'/models/users', '/models/users', Record<never, never>, Record<never, never>>,
-    '/queue/': RouteRecordInfo<'/queue/', '/queue', Record<never, never>, Record<never, never>>,
-    '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
-    '/settings/cache': RouteRecordInfo<'/settings/cache', '/settings/cache', Record<never, never>, Record<never, never>>,
-    '/settings/database': RouteRecordInfo<'/settings/database', '/settings/database', Record<never, never>, Record<never, never>>,
-    '/settings/mail': RouteRecordInfo<'/settings/mail', '/settings/mail', Record<never, never>, Record<never, never>>,
-    '/settings/queue': RouteRecordInfo<'/settings/queue', '/settings/queue', Record<never, never>, Record<never, never>>,
-    '/settings/services': RouteRecordInfo<'/settings/services', '/settings/services', Record<never, never>, Record<never, never>>,
-    '/settings/storage': RouteRecordInfo<'/settings/storage', '/settings/storage', Record<never, never>, Record<never, never>>,
-    '/teams/[id]': RouteRecordInfo<'/teams/[id]', '/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
   }
 }
 
