@@ -37,9 +37,5 @@ export default defineConfig({
     transformerDirectives(),
     transformerVariantGroup(),
   ],
-<<<<<<< Updated upstream
   safelist: 'prose m-auto text-left'.split(' '),
-=======
-  safelist: 'prose prose-sm m-auto text-left'.split(' '),
->>>>>>> Stashed changes
 })
