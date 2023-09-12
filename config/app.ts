@@ -12,7 +12,7 @@ export default {
   name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'development',
   url: env.APP_URL || 'stacks.test',
-  debug: env.APP_DEBUG || false,
+  debug: env.DEBUG || false,
   key: env.APP_KEY,
 
   timezone: 'UTC',

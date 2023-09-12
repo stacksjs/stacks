@@ -4,9 +4,7 @@ import filesize from 'filesize'
 import { fs } from '@stacksjs/storage'
 import { type PackageManifest } from '@vueuse/metadata'
 import { getExportsSize } from '../src/export-size'
-import pkgjson from '../package.json'
-
-const { version } = pkgjson
+import { version } from '../package.json'
 
 export const packages: PackageManifest[] = [
   {

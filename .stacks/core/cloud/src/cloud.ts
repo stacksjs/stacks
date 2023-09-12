@@ -15,17 +15,20 @@ import {
   aws_s3_deployment as s3deploy,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
+  aws_secretsmanager as secretsmanager,
   Fn,
 } from 'aws-cdk-lib'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
-import { app, cloud } from '@stacksjs/config'
+import { app, cloud, docs } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { env } from '@stacksjs/env'
+import { EnvKey } from '~/storage/framework/stacks/env'
 
 export class StacksCloud extends Stack {
-  domain: string
+  domain: string = ''
   apiPath: string
-  docsDomain: string
+  docsPath?: string
   apiVanityUrl: string
   vanityUrl: string
   docsSource: string
@@ -51,9 +54,9 @@ export class StacksCloud extends Stack {
     if (!app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
-    this.domain = app.url
+    this.domain = app.url || 'stacksjs.com'
     this.apiPath = 'api'
-    this.docsDomain = app.docMode ? app.url : `${app.url}/docs`
+    this.docsPath = app.docMode ? undefined : docs.base
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
@@ -110,14 +113,24 @@ export class StacksCloud extends Stack {
       description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
     })
 
-    let environment = { ...env }
-    let keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR']
-    keysToRemove.forEach(key => delete environment[key])
+    let keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
+    keysToRemove.forEach(key => delete env[key as EnvKey])
 
-    const stacksServerFunction = new lambda.Function(this, 'StacksServer', {
+    const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
+      secretName: `${app.name}-${app.env}-secrets`,
+      description: 'Secrets for the Stacks application',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify(env),
+        generateStringKey: Object.keys(env).join(',').length.toString(),
+      },
+    })
+
+    const serverFunction = new lambda.Function(this, 'StacksServer', {
       description: 'The Stacks Server',
+      memorySize: 512,
+      // filesystem: lambda.FileSystem.fromEfsAccessPoint(efsAccessPoint, '/mnt/efs'),
+      timeout: Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
-      environment,
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
       handler: 'server.fetch',
       runtime: lambda.Runtime.PROVIDED_AL2,
@@ -125,8 +138,11 @@ export class StacksCloud extends Stack {
       layers: [layer],
     })
 
+    secrets.grantRead(serverFunction)
+    serverFunction.addEnvironment('SECRETS_ARN', secrets.secretArn);
+
     const api = new lambda.FunctionUrl(this, 'StacksServerUrl', {
-      function: stacksServerFunction,
+      function: serverFunction,
       authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
       cors: {
         allowedOrigins: ['*'],
@@ -220,12 +236,15 @@ export class StacksCloud extends Stack {
   }
 
   manageZone() {
+    console.log('Creating hosted zone', this.domain)
     return new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: this.domain,
+      zoneName: 'stacksjs.com',
     })
   }
 
   manageCertificate() {
+    log.error(`Creating certificate for ${this.domain} in ${app.env} environment`)
+
     return new acm.Certificate(this, 'WebsiteCertificate', {
       domainName: this.domain,
       validation: acm.CertificateValidation.fromDns(this.zone),
@@ -344,22 +363,21 @@ export class StacksCloud extends Stack {
   }
 
   apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
+    const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+      originPath: path,
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    })
+
     return {
       '/api': {
-        origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-          originPath: '/api',
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-        }),
+        origin: origin(),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: this.setApiCachePolicy(),
       },
       '/api/*': {
-        origin: new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-          originPath: '/api',
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-        }),
+        origin: origin('/api/*'),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
@@ -420,7 +438,7 @@ export class StacksCloud extends Stack {
 
     if (this.shouldDeployDocs()) {
       new Output(this, 'DocsUrl', {
-        value: `https://${this.domain}/docs`,
+        value: `https://${this.domain}/${this.apiPath}`,
         description: 'The URL of the deployed documentation',
       })
     }

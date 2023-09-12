@@ -10,10 +10,10 @@ declare module 'bun' {
     const APP_ENV: 'development' | 'staging' | 'production'
     const APP_KEY: string
     const APP_URL: string
-    const DEBUG: string
+    const DEBUG: boolean
     const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'planetscale'
     const DB_HOST: string
-    const DB_PORT: string
+    const DB_PORT: number
     const DB_DATABASE: string
     const DB_USERNAME: string
     const DB_PASSWORD: string
@@ -23,7 +23,7 @@ declare module 'bun' {
     const AWS_DEFAULT_REGION: string
     const MAIL_MAILER: 'smtp' | 'mailgun' | 'ses' | 'postmark' | 'sendmail' | 'log'
     const MAIL_HOST: string
-    const MAIL_PORT: string
+    const MAIL_PORT: number
     const MAIL_USERNAME: string
     const MAIL_PASSWORD: string
     const MAIL_ENCRYPTION: string

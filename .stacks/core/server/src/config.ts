@@ -26,7 +26,7 @@ export function config(options: ServerOptions) {
   }
 
   return {
-    host: options.host || 'stacks.localhost',
+    host: options.host || 'stacks.test',
     port: options.port || 3333,
     open: options.open || false,
   }

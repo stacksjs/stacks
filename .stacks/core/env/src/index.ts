@@ -1,5 +1,11 @@
+import envConfig from '~/config/env'
+import { EnvKey } from '~/storage/framework/stacks/env'
+import { ValidationEnum, ValidationBoolean, ValidationNumber } from '@stacksjs/validation'
+import p from 'node:process'
+import { Env } from '@stacksjs/types'
+
 interface EnumObject {
-  [key: string]: string[];
+  [key: string]: string[]
 }
 
 export const enums: EnumObject = {
@@ -11,15 +17,24 @@ export const enums: EnumObject = {
 }
 
 const handler = {
-  get: (target: typeof Bun.env, key: string) => {
-    // @ts-ignore
-    const value = target[key]
-    if (enums[key]?.includes(value)) return value
-    if (value === 'true') return true
-    if (value === 'false') return false
-    if (!isNaN(Number(value))) return Number(value)
+  get: (target: typeof Bun.env, key: EnvKey) => {
+    const value = envConfig[key]
+
+    if (value instanceof ValidationEnum)
+      return process[key]
+
+    if (value instanceof ValidationBoolean)
+      return !!process[key]
+
+    if (value instanceof ValidationNumber)
+      return Number(process[key])
+
     return value
   }
 }
 
-export const env = new Proxy(Bun.env, handler)
+export const process = typeof Bun !== 'undefined'
+  ? Bun.env as Env
+  : p.env as unknown as Env
+
+export const env = new Proxy(process, handler)

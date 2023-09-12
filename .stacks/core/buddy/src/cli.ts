@@ -2,7 +2,7 @@ import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { command } from '@stacksjs/cli'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
-import pkg from '../package.json'
+import { version } from '../package.json'
 import * as cmd from './commands'
 
 // setup global error handlers
@@ -11,7 +11,6 @@ process.on('unhandledRejection', handleError)
 
 async function main() {
   const cli = command.cli('buddy')
-  const { version } = pkg
 
   // the following commands are not dependent on the project being initialized
   // await installIfVersionMismatch()

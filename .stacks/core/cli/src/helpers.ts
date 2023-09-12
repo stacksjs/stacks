@@ -2,11 +2,9 @@
 import { ExitCode, type IntroOptions, type OutroOptions } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import pkgjson from '../package.json'
+import { version } from '../package.json'
 import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, italic } from './utilities'
-
-const { version } = pkgjson
 
 /**
  * Prints the intro message.

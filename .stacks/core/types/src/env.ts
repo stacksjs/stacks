@@ -1,12 +1,12 @@
 import { Infer, validate } from '@stacksjs/validation'
-import type { VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
+import type { ValidationNumber, ValidationBoolean, ValidationEnum, ValidationString } from '@stacksjs/validation'
 import env from '~/config/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 export const envSchema = validate.object(env)
 export type Env = Infer<typeof envSchema>
 
-export type EnvValue = VineString | VineNumber | VineBoolean | VineEnum<readonly string[]>
+export type EnvValue = ValidationString | ValidationNumber | ValidationBoolean | ValidationEnum<readonly string[]>
 export type EnvOptions = Env
 export type EnvConfig = Partial<Record<EnvKey, EnvValue>>
 

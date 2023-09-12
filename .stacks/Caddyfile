@@ -1,3 +1,11 @@
 stacks.localhost {
-  reverse_proxy stacksjs.test:3333
+  route {
+    @docs {
+      path /docs/*
+    }
+
+    handle @docs {
+      reverse_proxy docs.stacks.test:3333
+    }
+  }
 }

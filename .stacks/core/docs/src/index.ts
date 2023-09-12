@@ -5,9 +5,7 @@ import { path as p } from '@stacksjs/path'
 import { app, docs } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { kolorist as c } from '@stacksjs/cli'
-import pkg from '../../../../package.json'
-
-const { version } = pkg
+import { version } from '../../../../package.json'
 
 export const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },
@@ -47,26 +45,17 @@ export const sidebar = {
   ],
 }
 
-export function docsUrl() {
-  const appUrl = app.url || 'stacks.test'
-  const protocolPattern = /^https?:\/\//i
-  const urlForParsing = protocolPattern.test(appUrl) ? appUrl : `http://${appUrl}:3333/docs`
-  const urlObj = new URL(urlForParsing)
-  const domainParts = urlObj.hostname.split('.')
-  domainParts[domainParts.length - 1] = 'localhost' // replace TLD with 'localhost' for local dev
-  const host = domainParts.join('.')
-
-  return `https://${host}`
-}
-
 export const frameworkDefaults = {
+  base: '/docs/',
+  cleanUrls: true,
   title: `${app.name} Documentation`,
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('framework/docs'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
-  sitemap: {
-    hostname: docsUrl(),
-  },
+  assetsDir: p.resourcesPath('assets'),
+  // sitemap: {
+  //   hostname: 'stacks.test',
+  // },
 
   themeConfig: {
     nav,
@@ -94,8 +83,8 @@ export const frameworkDefaults = {
           server.printUrls = () => { // eslint-disable-next-line no-console
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
             // eslint-disable-next-line no-console
-            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.test:3333')}`)
-            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl())}`)
+            // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.test:3333/docs')}`)
+            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
           }
         },
       },

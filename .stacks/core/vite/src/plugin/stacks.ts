@@ -51,10 +51,10 @@ export function stacks(): Plugin {
 
         const appUrl = app.url
         const frontendUrl = `https://${appUrl}`
-        const backendUrl = `https://api.${appUrl}`
+        const backendUrl = `https://${appUrl}/api`
         const dashboardUrl = `https://admin.${appUrl}`
         const libraryUrl = `https://libs.${appUrl}`
-        const docsUrl = `https://docs.${appUrl}`
+        const docsUrl = `https://${appUrl}/docs`
         const inspectUrl = `https://${appUrl}/__inspect/`
 
         // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top

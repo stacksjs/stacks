@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 
 import { logsPath } from '@stacksjs/path'
-import type { StacksError, ValidationError } from '@stacksjs/types'
+import type { StacksError } from '@stacksjs/types'
 
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
@@ -22,13 +22,7 @@ export class ErrorHandler {
   }
 
   static async writeErrorToFile(err: StacksError) {
-    let formattedError: string
-
-    if (isErrorOfTypeValidation(err))
-      formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.messages}\n`
-    else
-      formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-
+    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
     const file = Bun.file(this.logFile)
     const writer = file.writer()
     const text = await file.text()
