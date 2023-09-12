@@ -56,7 +56,7 @@
     "@stacksjs/config": "workspace:*"
   },
   "optionalDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.409.0",
+    "@aws-sdk/client-dynamodb": "^3.410.0",
     "@types/memjs": "^1.3.0",
     "memcached": "^2.2.2",
     "memjs": "^1.3.1",
