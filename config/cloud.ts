@@ -34,6 +34,7 @@ export default {
     api: true, // enables api
     fileSystem: true, // enables file system
   },
+
   // queues: false,
   // queue-concurrency: 50
 } satisfies CloudConfig
