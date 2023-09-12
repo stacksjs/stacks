@@ -1,5 +1,9 @@
+import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
-import { envKeys } from '~/storage/framework/stacks/env'
+import { enums, env as e } from '@stacksjs/env'
+import { envKeys, EnvKey } from '~/storage/framework/stacks/env'
+
+console.log('Generating env files...')
 
 // generate ./storage/framework/types/env.d.ts file from .env
 const envTypes = `
@@ -11,12 +15,20 @@ const envTypes = `
 declare module 'bun' {
   namespace env {
     ${envKeys.map((key) => {
-      const value = Bun.env[key]
+      console.log(`  - ${key}`)
+      const value = e[key]
+      console.log(`    - ${value}`)
       let type = 'string'
-      if (value === 'true' || value === 'false')
-        type = 'boolean'
-      else if (!Number.isNaN(Number(value)))
-        type = 'number'
+      if (typeof value === 'string') {
+        if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+          type = 'boolean'
+        } else if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+          type = 'number'
+        } else if (enums[key]) {
+          // @ts-ignore
+          type = enums[key].map(item => `'${item}'`).join(' | ')
+        }
+      }
 
       return `const ${key}: ${type}`
     }).join('\n    ')}
@@ -24,7 +36,9 @@ declare module 'bun' {
 }
 `
 
-await storage.writeFile('framework/types/env.d.ts', envTypes)
+await storage.writeFile(p.projectStoragePath('framework/types/env.d.ts'), envTypes)
+
+console.log('  - ./storage/framework/stacks/env.ts')
 
 // generate ./storage/framework/stacks/env.ts file based on Bun.env
 const env = `
@@ -40,4 +54,6 @@ export const envKeys = [
 export type EnvKey = typeof envKeys[number]
 `
 
-await storage.writeFile('framework/stacks/env.ts', env)
+await storage.writeFile(p.projectStoragePath('framework/stacks/env.ts'), env)
+
+console.log('  - ./storage/framework/stacks/env.d.ts')
