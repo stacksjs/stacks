@@ -8,6 +8,7 @@ export const config: StacksOptions = {
 }
 
 export const {
+  api,
   app,
   binary,
   cache,

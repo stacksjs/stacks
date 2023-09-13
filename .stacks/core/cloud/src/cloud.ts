@@ -20,14 +20,14 @@ import {
 } from 'aws-cdk-lib'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
-import { app, cloud, docs } from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { env } from '@stacksjs/env'
 import { EnvKey } from '~/storage/framework/stacks/env'
 
 export class StacksCloud extends Stack {
-  domain: string = ''
-  apiPath: string
+  domain: string
+  apiPrefix: string
   docsPath?: string
   apiVanityUrl: string
   vanityUrl: string
@@ -51,14 +51,14 @@ export class StacksCloud extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
-    if (!app.url)
-      throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
+    if (!config.app.url)
+      throw new Error('Your ./config config.app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
-    this.domain = app.url || 'stacksjs.com'
-    this.apiPath = 'api'
-    this.docsPath = app.docMode ? undefined : docs.base
+    this.domain = config.app.url || 'stacksjs.com'
+    this.apiPrefix = config.api.prefix || 'api'
+    this.docsPath = config.app.docMode ? undefined : config.docs.base
     this.docsSource = '../../../storage/framework/docs'
-    this.websiteSource = app.docMode ? this.docsSource : '../../../storage/public'
+    this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
@@ -84,7 +84,7 @@ export class StacksCloud extends Stack {
   }
 
   shouldDeployApi() {
-    return cloud.deploy?.api
+    return config.cloud.deploy?.api
   }
 
   setApiCachePolicy() {
@@ -94,7 +94,7 @@ export class StacksCloud extends Stack {
     this.apiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
       cachePolicyName: 'StacksApiCachePolicy',
-      // minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
+      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
@@ -117,7 +117,7 @@ export class StacksCloud extends Stack {
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
-      secretName: `${app.name}-${app.env}-secrets`,
+      secretName: `${config.app.name}-${config.app.env}-secrets`,
       description: 'Secrets for the Stacks application',
       generateSecretString: {
         secretStringTemplate: JSON.stringify(env),
@@ -190,14 +190,14 @@ export class StacksCloud extends Stack {
         return cloudfront.CacheCookieBehavior.none()
       case 'allowList':
         // If you have a list of cookies, replace `myCookie` with your cookie
-        return cloudfront.CacheCookieBehavior.allowList(...cloud.cdn?.allowList.cookies || [])
+        return cloudfront.CacheCookieBehavior.allowList(...config.cloud.cdn?.allowList.cookies || [])
       default:
         return undefined
     }
   }
 
   allowedMethods(): cloudfront.AllowedMethods {
-    switch (cloud.cdn?.allowedMethods) {
+    switch (config.cloud.cdn?.allowedMethods) {
       case 'ALL':
         return cloudfront.AllowedMethods.ALLOW_ALL
       case 'GET_HEAD':
@@ -210,7 +210,7 @@ export class StacksCloud extends Stack {
   }
 
   cachedMethods(): cloudfront.CachedMethods {
-    switch (cloud.cdn?.cachedMethods) {
+    switch (config.cloud.cdn?.cachedMethods) {
       case 'GET_HEAD':
         return cloudfront.CachedMethods.CACHE_GET_HEAD
       case 'GET_HEAD_OPTIONS':
@@ -236,31 +236,34 @@ export class StacksCloud extends Stack {
   }
 
   manageZone() {
-    console.log('Creating hosted zone', this.domain)
     return new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: 'stacksjs.com',
+      zoneName: this.domain,
     })
   }
 
   manageCertificate() {
-    log.error(`Creating certificate for ${this.domain} in ${app.env} environment`)
+    log.error(`Creating certificate for ${this.domain} in ${config.app.env} environment`)
+    console.log('this domain', this.domain)
+    console.log('this domain type', typeof this.domain)
+
+    const domainName = typeof this.domain === 'object' ? this.domain.url : this.domain
 
     return new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName: this.domain,
+      domainName,
       validation: acm.CertificateValidation.fromDns(this.zone),
     })
   }
 
   manageStorage() {
     const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${this.domain}-${app.env}`,
+      bucketName: `${this.domain}-${config.app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     })
 
     const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${this.domain}-private-${app.env}`,
+      bucketName: `${this.domain}-private-${config.app.env}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -269,9 +272,9 @@ export class StacksCloud extends Stack {
     // Create an S3 bucket for CloudFront access logs
     let logBucket: s3.Bucket | undefined
 
-    if (cloud.cdn?.enableLogging) {
+    if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${app.env}`,
+        bucketName: `${this.domain}-logs-${config.app.env}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -304,19 +307,19 @@ export class StacksCloud extends Stack {
     const cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
       cachePolicyName: 'cdnCachePolicy',
-      minTtl: cloud.cdn?.minTtl ? Duration.seconds(cloud.cdn.minTtl) : undefined,
-      defaultTtl: cloud.cdn?.defaultTtl ? Duration.seconds(cloud.cdn.defaultTtl) : undefined,
-      maxTtl: cloud.cdn?.maxTtl ? Duration.seconds(cloud.cdn.maxTtl) : undefined,
-      cookieBehavior: this.getCookieBehavior(cloud.cdn?.cookieBehavior),
+      minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
+      defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
+      maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
+      cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
 
     const cdn = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [this.domain],
       defaultRootObject: 'index.html',
-      comment: `CDN for ${app.url}`,
+      comment: `CDN for ${config.app.url}`,
       certificate: this.certificate,
-      enableLogging: cloud.cdn?.enableLogging,
-      logBucket: cloud.cdn?.enableLogging ? this.storage.logBucket : undefined,
+      enableLogging: config.cloud.cdn?.enableLogging,
+      logBucket: config.cloud.cdn?.enableLogging ? this.storage.logBucket : undefined,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       enabled: true,
@@ -328,7 +331,7 @@ export class StacksCloud extends Stack {
         origin: new origins.S3Origin(this.storage.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
-        compress: cloud.cdn?.compress,
+        compress: config.cloud.cdn?.compress,
         allowedMethods: this.allowedMethods(),
         cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -352,7 +355,7 @@ export class StacksCloud extends Stack {
 
     // if docMode is used, we don't need to add a behavior for the docs
     // because the docs will be the root of the site
-    if (this.shouldDeployDocs() && !app.docMode) {
+    if (this.shouldDeployDocs() && !config.app.docMode) {
       behaviorOptions = {
         ...this.docsBehaviorOptions(),
         ...behaviorOptions,
@@ -394,8 +397,8 @@ export class StacksCloud extends Stack {
           originPath: '/docs',
         }),
         compress: true,
-        allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
-        cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
@@ -405,8 +408,8 @@ export class StacksCloud extends Stack {
           originPath: '/docs',
         }),
         compress: true,
-        allowedMethods: this.allowedMethodsFromString(cloud.cdn?.allowedMethods),
-        cachedMethods: this.cachedMethodsFromString(cloud.cdn?.cachedMethods),
+        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
@@ -425,7 +428,7 @@ export class StacksCloud extends Stack {
     })
 
     new Output(this, 'ApiUrl', {
-      value: `https://${this.domain}/${this.apiPath}`,
+      value: `https://${this.domain}/${this.apiPrefix}`,
       description: 'The URL of the deployed application',
     })
 
@@ -438,7 +441,7 @@ export class StacksCloud extends Stack {
 
     if (this.shouldDeployDocs()) {
       new Output(this, 'DocsUrl', {
-        value: `https://${this.domain}/${this.apiPath}`,
+        value: `https://${this.domain}/${this.apiPrefix}`,
         description: 'The URL of the deployed documentation',
       })
     }
