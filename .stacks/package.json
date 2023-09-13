@@ -491,6 +491,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",

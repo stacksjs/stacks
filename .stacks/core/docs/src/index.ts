@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 import type { UserConfig } from 'vitepress'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
-import { app, docs } from '@stacksjs/config'
+import { docs } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { kolorist as c } from '@stacksjs/cli'
 import { version } from '../../../../package.json'
@@ -48,7 +48,6 @@ export const sidebar = {
 export const frameworkDefaults = {
   base: '/docs/',
   cleanUrls: true,
-  title: `${app.name} Documentation`,
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('framework/docs'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
@@ -56,11 +55,6 @@ export const frameworkDefaults = {
   // sitemap: {
   //   hostname: 'stacks.test',
   // },
-
-  themeConfig: {
-    nav,
-    sidebar,
-  },
 
   vite: {
     envDir: p.projectPath(),

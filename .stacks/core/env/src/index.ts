@@ -37,4 +37,4 @@ export const process = typeof Bun !== 'undefined'
   ? Bun.env as Env
   : p.env as unknown as Env
 
-export const env = new Proxy(process, handler)
+export const env: Env = new Proxy(process, handler)

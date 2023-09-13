@@ -51,11 +51,20 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/dns": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "aws-cdk-lib": "^2.95.1",
     "constructs": "^10.2.70"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@aws-lambda-powertools/logger": "^1.12.1",
     "@aws-lambda-powertools/metrics": "^1.12.1",
     "@aws-lambda-powertools/tracer": "^1.12.1",

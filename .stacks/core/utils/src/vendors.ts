@@ -205,13 +205,8 @@ export {
 
 export type {
   // Head,
-  HeadClient,
   HeadObject,
   HeadObjectPlain,
-  HookBeforeDomUpdate,
-  HookEntriesResolved,
-  HookTagsResolved,
-  LegacyHeadOptions,
 } from '@vueuse/head'
 
 export {

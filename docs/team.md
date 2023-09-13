@@ -23,7 +23,7 @@ import { core, emeriti } from './_data/team'
     </template>
   </VPTeamPageTitle>
   <VPTeamMembers :members="core" />
-  <VPTeamPageSection>
+  <!-- <VPTeamPageSection>
     <template #title>Team Emeriti</template>
     <template #lead>
       Here we honor some no-longer-active team members who have made valuable
@@ -32,5 +32,5 @@ import { core, emeriti } from './_data/team'
     <template #members>
       <VPTeamMembers size="small" :members="emeriti" />
     </template>
-  </VPTeamPageSection>
+  </VPTeamPageSection> -->
 </VPTeamPage>
