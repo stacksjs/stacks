@@ -9,6 +9,8 @@ export const envKeys = [
   'APP_ENV',
   'APP_KEY',
   'APP_URL',
+  'API_PREFIX',
+  'DOCS_PREFIX',
   'DEBUG',
   'DB_CONNECTION',
   'DB_HOST',

@@ -1,4 +1,5 @@
 import type {
+  ApiConfig,
   AppConfig,
   BinaryConfig,
   CacheConfig,
@@ -28,6 +29,15 @@ import type {
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export interface StacksOptions {
+  /**
+   * **API Options**
+   *
+   * This configuration defines all of your API options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  api: ApiConfig
+
   /**
    * **Application Options**
    *

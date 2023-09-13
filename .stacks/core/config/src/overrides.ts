@@ -1,4 +1,5 @@
 import type { StacksConfig } from '@stacksjs/types'
+import api from '~/config/api'
 import app from '~/config/app'
 import binary from '~/config/binary'
 import cache from '~/config/cache'
@@ -21,6 +22,7 @@ import ui from '~/config/ui'
 
 // this "user config" will override the default config options
 export default {
+  api,
   app,
   binary,
   cache,

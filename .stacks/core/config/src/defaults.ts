@@ -4,6 +4,15 @@ import { path as p } from '@stacksjs/path'
 // import { userConfig as overrides } from './overrides'
 
 export default {
+  api: {
+    prefix: 'api',
+    description: 'Stacks API',
+    prewarm: true,
+    memorySize: 512,
+    timeout: 30,
+    // version: 'v1',
+  },
+
   app: {
     name: 'Stacks',
     env: 'local',

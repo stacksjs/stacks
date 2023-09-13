@@ -2,7 +2,7 @@ import type { StacksOptions } from '@stacksjs/types'
 import defaults from './defaults'
 import overrides from './overrides'
 
-export const config = {
+export const config: StacksOptions = {
   ...defaults,
   ...overrides,
 }

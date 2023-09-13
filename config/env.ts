@@ -15,6 +15,9 @@ export default {
   APP_URL: validate.string(),
   DEBUG: validate.boolean(),
 
+  API_PREFIX: validate.string(),
+  DOCS_PREFIX: validate.string(),
+
   DB_CONNECTION: validate.enum(['mysql', 'sqlite', 'postgres', 'planetscale']),
   DB_HOST: validate.string(),
   DB_PORT: validate.number(),

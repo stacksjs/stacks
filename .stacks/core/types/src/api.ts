@@ -7,20 +7,57 @@
  */
 export interface ApiOptions {
   /**
-   * **API Path**
+   * **API Description**
    *
-   * This is the path that will be used for all API routes. For example, if you set this
-   * to `api`, then your routes will be `/api/user`, `/api/posts`, etc.
+   * This value defines the description for your API.
+   *
+   * @default "Stacks API"
+   */
+  description: string
+
+  /**
+   * **API Prefix**
+   *
+   * This value defines the prefix for all of your API routes. For example, if you set
+   * this value to `api`, all of your API routes will be prefixed with `/api`. This
+   * value is useful for when you want to version your API.
    *
    * @default string "api"
-   * @example string "api"
    * @example string "api/v1"
-   * @example string "api/v2/"
-   * @example string "/api/v2"
    */
-  path: string
+  prefix: string
 
-  warm: number
+  /**
+   * **API Prewarm**
+   *
+   * This configuration determines the prewarming behavior of your API. Prewarming eliminates
+   * cold starts in your API. If this value is set to `true`, the API will be prewarmed
+   * every 5 minutes. If you provide a number, Stacks will prewarm the
+   * specified number of containers every 5 minutes.
+   *
+   * @default true
+   * @example false
+   * @example 10
+   */
+  prewarm: boolean | number
+
+  /**
+   * **API Memory Size**
+   *
+   * This value defines the memory size for your API.
+   *
+   * @default 512
+   */
+  memorySize: number
+
+  /**
+   * **API Timeout**
+   *
+   * This value defines the timeout for your API.
+   *
+   * @default 30
+   */
+  timeout: number
 }
 
 export type ApiConfig = Partial<ApiOptions>

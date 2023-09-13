@@ -10,6 +10,8 @@ declare module 'bun' {
     const APP_ENV: 'development' | 'staging' | 'production'
     const APP_KEY: string
     const APP_URL: string
+    const API_PREFIX: string
+    const DOCS_PREFIX: string
     const DEBUG: boolean
     const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'planetscale'
     const DB_HOST: string
