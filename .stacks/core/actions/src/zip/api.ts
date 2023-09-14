@@ -17,4 +17,4 @@ await zip(from, to, {
   cwd: p.cloudPath('src/drivers/aws/runtime'),
 })
 
-console.log('zipped your API')
+console.log('✓ zipped your API')

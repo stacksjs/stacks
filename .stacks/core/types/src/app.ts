@@ -26,7 +26,7 @@ export interface AppOptions {
    *
    * @default "development"
    */
-  env: 'local' | 'dev' | 'development' | 'staging' | 'prod' | 'production'
+  env: string
 
   /**
    * **Application URL**
@@ -117,3 +117,4 @@ export interface AppOptions {
 }
 
 export type AppConfig = Partial<AppOptions>
+

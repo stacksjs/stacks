@@ -23,7 +23,7 @@ features:
     details: One framework that does it all. Building TypeScript apps & libraries has never been simpler.
   - title: App Development
     icon: 🖥️
-    details: Performant web apps or a Tauri desktop app, let Stacks handle the heavy-lifting for you.
+    details: Performant Web or Tauri desktop applications, let Stacks handle the heavy-lifting for you.
   - title: Library Development
     icon: 📚
     details: Automagically builds & distributes your component & function libraries, via npm.
@@ -32,7 +32,7 @@ features:
     details: Automatic zero-downtime deployments of production-ready serverless clouds. Self-hosted.
   - title: Modern Administration
     icon: 📊
-    details: A sleek admin app, out-of-the-box. For developers & your clients. Our product is your product.
+    details: A sleek admin dashboard, out-of-the-box. For devs & your clients. Our product is your product.
   - title: Scalable APIs
     icon: 📡
     details: Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.

@@ -1,15 +1,14 @@
-import envConfig from '~/config/env'
 import { EnvKey } from '~/storage/framework/stacks/env'
 import { ValidationEnum, ValidationBoolean, ValidationNumber } from '@stacksjs/validation'
 import p from 'node:process'
-import { Env } from '@stacksjs/types'
+import { Env } from '@stacksjs/env'
 
 interface EnumObject {
   [key: string]: string[]
 }
 
 export const enums: EnumObject = {
-  APP_ENV: ['development', 'staging', 'production'],
+  APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
   DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'planetscale'],
   MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
   SEARCH_ENGINE_DRIVER: ['meilisearch', 'algolia', 'typesense'],
@@ -17,24 +16,28 @@ export const enums: EnumObject = {
 }
 
 const handler = {
-  get: (target: typeof Bun.env, key: EnvKey) => {
-    const value = envConfig[key]
+  get: (target: Env, key: EnvKey) => {
+    const value = target[key] as any
 
     if (value instanceof ValidationEnum)
-      return process[key]
+      return target[key] as string
 
     if (value instanceof ValidationBoolean)
-      return !!process[key]
+      return !!target[key] as boolean
 
     if (value instanceof ValidationNumber)
-      return Number(process[key])
+      return Number(target[key]) as number
 
-    return value
+    return value as string
   }
 }
 
-export const process = typeof Bun !== 'undefined'
-  ? Bun.env as Env
-  : p.env as unknown as Env
+export function process() {
+  return typeof Bun !== 'undefined'
+    ? Bun.env
+    : p.env as unknown as Env
+}
 
-export const env: Env = new Proxy(process, handler)
+export const env: Env = new Proxy(process(), handler) as Env
+
+export * from './types'

@@ -80,6 +80,7 @@ const sidebar = {
         { text: 'Buddy', link: '/guide/buddy' },
         { text: 'CI / CD', link: '/guide/ci' },
         { text: 'Cloud', link: '/guide/cloud' },
+        { text: 'Dashboard', link: '/guide/dashboard' },
         {
           text: 'Libraries',
           collapsible: true,
@@ -159,6 +160,11 @@ const sidebar = {
         },
         { text: 'Testing', link: '/guide/testing' },
       ],
+    },
+
+    {
+      text: 'Terminology',
+      link: '/terminology',
     },
   ],
 }

@@ -21,29 +21,28 @@ import {
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
-import { log } from '@stacksjs/logging'
 import { env } from '@stacksjs/env'
 import { EnvKey } from '~/storage/framework/stacks/env'
 
 export class StacksCloud extends Stack {
   domain: string
   apiPrefix: string
-  docsPath?: string
+  docsPrefix?: string
   apiVanityUrl: string
   vanityUrl: string
   docsSource: string
   websiteSource: string
   privateSource: string
-  zone: route53.IHostedZone
-  storage: {
+  zone!: route53.IHostedZone
+  storage!: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
   }
 
   cdn: cloudfront.Distribution
-  certificate: acm.Certificate
-  firewall: wafv2.CfnWebACL
+  certificate!: acm.Certificate
+  firewall!: wafv2.CfnWebACL
   originAccessIdentity: cloudfront.OriginAccessIdentity
   cdnCachePolicy: cloudfront.CachePolicy
   apiCachePolicy: cloudfront.CachePolicy | undefined
@@ -52,20 +51,20 @@ export class StacksCloud extends Stack {
     super(scope, id, props)
 
     if (!config.app.url)
-      throw new Error('Your ./config config.app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
+      throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
 
-    this.domain = config.app.url || 'stacksjs.com'
+    this.domain = config.app.url
     this.apiPrefix = config.api.prefix || 'api'
-    this.docsPath = config.app.docMode ? undefined : config.docs.base
+    this.docsPrefix = config.app.docMode ? undefined : config.docs.base
     this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
-    this.zone = this.manageZone()
-    this.certificate = this.manageCertificate()
-    this.storage = this.manageStorage()
-    this.firewall = this.manageFirewall()
+    this.manageZone()
+    this.manageCertificate()
+    this.manageStorage()
+    this.manageFirewall()
 
     const { cdn, originAccessIdentity, cdnCachePolicy } = this.manageCdn()
     this.cdn = cdn
@@ -236,20 +235,14 @@ export class StacksCloud extends Stack {
   }
 
   manageZone() {
-    return new route53.PublicHostedZone(this, 'HostedZone', {
+    this.zone = new route53.PublicHostedZone(this, 'HostedZone', {
       zoneName: this.domain,
     })
   }
 
   manageCertificate() {
-    log.error(`Creating certificate for ${this.domain} in ${config.app.env} environment`)
-    console.log('this domain', this.domain)
-    console.log('this domain type', typeof this.domain)
-
-    const domainName = typeof this.domain === 'object' ? this.domain.url : this.domain
-
-    return new acm.Certificate(this, 'WebsiteCertificate', {
-      domainName,
+    this.certificate = new acm.Certificate(this, 'WebsiteCertificate', {
+      domainName: this.domain,
       validation: acm.CertificateValidation.fromDns(this.zone),
     })
   }
@@ -281,7 +274,7 @@ export class StacksCloud extends Stack {
       })
     }
 
-    return {
+    this.storage = {
       publicBucket,
       privateBucket,
       logBucket,
@@ -289,7 +282,7 @@ export class StacksCloud extends Stack {
   }
 
   manageFirewall() {
-    return new wafv2.CfnWebACL(this, 'WebAcl', {
+    this.firewall = new wafv2.CfnWebACL(this, 'WebAcl', {
       scope: 'CLOUDFRONT',
       defaultAction: { allow: {} }, // Default action is to allow requests
       visibilityConfig: {

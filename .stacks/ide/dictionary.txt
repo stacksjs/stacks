@@ -63,6 +63,7 @@ demi
 deps
 dessant
 destructurable
+devs
 dinero
 docgen
 dotenv

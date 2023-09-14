@@ -27,7 +27,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
   const proc = Bun.spawn(cmd, {
     ...options,
-    stdout: options?.stdout || 'pipe',
+    stdout: options?.stdout || 'inherit',
     stderr: options?.stderr || 'inherit',
     cwd: options?.cwd || import.meta.dir,
     // onExit(subprocess, exitCode, signalCode, error) {

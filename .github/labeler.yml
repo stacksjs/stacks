@@ -125,7 +125,7 @@ dns:
 docs:
   - '.stacks/core/docs/**'
   - '.stacks/docs/**'
-  - resources/docs/**
+  - docs/**
   - config/docs.ts
 
 email:
