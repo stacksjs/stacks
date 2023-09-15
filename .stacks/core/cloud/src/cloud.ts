@@ -10,6 +10,8 @@ import {
   aws_cloudfront as cloudfront,
   aws_lambda as lambda,
   aws_cloudfront_origins as origins,
+  aws_efs as efs,
+  aws_ec2 as ec2,
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
@@ -38,7 +40,10 @@ export class StacksCloud extends Stack {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
+    fileSystem?: efs.FileSystem | undefined
+    accessPoint?: efs.AccessPoint | undefined
   }
+  vpc!: ec2.Vpc
 
   cdn: cloudfront.Distribution
   certificate!: acm.Certificate
@@ -65,6 +70,7 @@ export class StacksCloud extends Stack {
     this.manageCertificate()
     this.manageStorage()
     this.manageFirewall()
+    this.manageFileSystem()
 
     const { cdn, originAccessIdentity, cdnCachePolicy } = this.manageCdn()
     this.cdn = cdn
@@ -125,9 +131,10 @@ export class StacksCloud extends Stack {
     })
 
     const serverFunction = new lambda.Function(this, 'StacksServer', {
+      functionName: `${config.app.name}-${config.app.env}-server`,
       description: 'The Stacks Server',
       memorySize: 512,
-      // filesystem: lambda.FileSystem.fromEfsAccessPoint(efsAccessPoint, '/mnt/efs'),
+      filesystem: lambda.FileSystem.fromEfsAccessPoint(this.storage.accessPoint!, '/mnt/efs'),
       timeout: Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
@@ -291,6 +298,30 @@ export class StacksCloud extends Stack {
         metricName: 'webAclMetric',
       },
       // rules: security.appFirewall?.rules,
+    })
+  }
+
+
+  manageFileSystem() {
+    this.vpc = new ec2.Vpc(this, 'StacksVpc', {
+      maxAzs: 2,
+      natGateways: 1,
+    })
+
+    this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
+      vpc: this.vpc,
+      fileSystemName: `${config.app.name}-${config.app.env}-efs`,
+      removalPolicy: RemovalPolicy.DESTROY,
+      lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
+    })
+
+    this.storage.accessPoint = new efs.AccessPoint(this, 'StacksAccessPoint', {
+      fileSystem: this.storage.fileSystem,
+      path: '/public',
+      posixUser: {
+        uid: '1000',
+        gid: '1000',
+      },
     })
   }
 
