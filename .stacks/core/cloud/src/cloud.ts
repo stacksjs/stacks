@@ -72,6 +72,7 @@ export class StacksCloud extends Stack {
     this.manageFirewall()
     this.manageFileSystem()
 
+    // this also deploys your API
     const { cdn, originAccessIdentity, cdnCachePolicy } = this.manageCdn()
     this.cdn = cdn
     this.originAccessIdentity = originAccessIdentity
@@ -134,6 +135,7 @@ export class StacksCloud extends Stack {
       functionName: `${config.app.name}-${config.app.env}-server`,
       description: 'The Stacks Server',
       memorySize: 512,
+      vpc: this.vpc,
       filesystem: lambda.FileSystem.fromEfsAccessPoint(this.storage.accessPoint!, '/mnt/efs'),
       timeout: Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
@@ -303,9 +305,9 @@ export class StacksCloud extends Stack {
 
 
   manageFileSystem() {
-    this.vpc = new ec2.Vpc(this, 'StacksVpc', {
+    this.vpc = new ec2.Vpc(this, 'Network', {
       maxAzs: 2,
-      natGateways: 1,
+      // natGateways: 1,
     })
 
     this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
