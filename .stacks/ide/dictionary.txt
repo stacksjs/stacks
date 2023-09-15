@@ -10,6 +10,7 @@ astro
 automagically
 automations
 autosize
+awsdns
 backoff
 bazel
 bazelignore
@@ -137,6 +138,7 @@ mergeable
 Middlewares
 mikestead
 minzipped
+mkdirs
 mkdist
 mult
 netcore
@@ -213,6 +215,7 @@ synctex
 tauri
 tazerc
 telnyx
+templating
 termii
 terserrc
 textlint

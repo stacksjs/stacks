@@ -38,7 +38,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   const opts = parseOptions(options)
   const path = p.relativeActionsPath(`${action}.ts`)
-  const cmd = `bun ${`${path} ${opts}`}`
+  const cmd = `bun --bun ${`${path} ${opts}`}`
 
   if (options?.verbose)
     log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))

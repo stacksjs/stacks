@@ -32,7 +32,17 @@ type Data = Blob | TypedArray | ArrayBufferLike | string | BlobPart[]
  * Writes the given text to the specified file.
  */
 export async function writeFile(path: Path, data: Data): Promise<number> {
-  return await Bun.write(path, data)
+
+  if (typeof path === 'string') {
+      const dirPath = dirname(path);
+      if (!existsSync(dirPath)) {
+        createFolder(dirPath);
+      }
+
+    return await Bun.write(Bun.file(path), data);
+  }
+
+  return await Bun.write(path, data);
 }
 
 /**

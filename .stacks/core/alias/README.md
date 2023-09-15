@@ -1,32 +1,23 @@
-# Stacks AI
+# Stacks Alias
 
-This package contains a pretty wrapper for the OpenAI API.
+The Stacks aliases.
 
 ## ☘️ Features
 
-- 🔎 Pretty API wrapper
 - 🤷🏼‍♂️ git Diff Interpreter
-- 🪐 GitHub integration
-- 💨 Zero-config
-- 🐶 Buddy CLI commands
-
-## TODO
-
-- [ ] Driver: OpenAI
 
 ## 🤖 Usage
 
 ```bash
-bun install -d @stacksjs/ai
+bun install -d @stacksjs/alias
 ```
 
 You may now use:
 
 ```ts
-import { useAI } from '@stacksjs/ai'
+import { alias } from '@stacksjs/alias'
 
-const client = useAI()
-// client...
+console.log(alias)
 ```
 
 Learn more in the docs.

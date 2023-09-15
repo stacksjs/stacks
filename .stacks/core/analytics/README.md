@@ -1,32 +1,25 @@
-# Stacks AI
+# Stacks Analytics
 
-This package contains a pretty wrapper for the OpenAI API.
+This package integrates analytics features into your application.
 
 ## ☘️ Features
 
-- 🔎 Pretty API wrapper
-- 🤷🏼‍♂️ git Diff Interpreter
-- 🪐 GitHub integration
-- 💨 Zero-config
-- 🐶 Buddy CLI commands
-
-## TODO
-
-- [ ] Driver: OpenAI
+- [ ] Stacks Dashboard integration
 
 ## 🤖 Usage
 
 ```bash
-bun install -d @stacksjs/ai
+bun install -d @stacksjs/analytics
 ```
 
 You may now use:
 
 ```ts
-import { useAI } from '@stacksjs/ai'
+import { analytics } from '@stacksjs/analytics'
 
-const client = useAI()
-// client...
+// analytics.track('event', {
+//   property: 'value'
+// })
 ```
 
 Learn more in the docs.

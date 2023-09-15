@@ -1,14 +1,14 @@
 # Stacks AI
 
-This package contains a pretty wrapper for the OpenAI API.
+This package contains a set of tools to help you build AI-powered applications.
 
 ## ☘️ Features
 
-- 🔎 Pretty API wrapper
 - 🤷🏼‍♂️ git Diff Interpreter
-- 🪐 GitHub integration
-- 💨 Zero-config
+- 🪐 GitHub PR integration
+- 🎨 UI Generator
 - 🐶 Buddy CLI commands
+- 💨 Zero-config
 
 ## TODO
 

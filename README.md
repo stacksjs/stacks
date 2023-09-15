@@ -36,7 +36,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🧩 **Components** _a primitive to develop user interfaces_
 - 🤖 **Functions** _a primitive to develop business logic (and grant your UI superpowers)_
 - 🌐 **Web** _"a routing & templating engine that makes sense" using components—SSG & PWA ready_
-- 🖥️ **Desktop** _components as desktop elements_
+- 🖥️ **Desktop** _automagically build a desktop app out of your web app_
 - 📚 **Library** _auto-builds component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
@@ -110,7 +110,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-sh <(curl stacksjs.com) my-project
+sh <(curl stacksjs.org) my-project
 
 # alternatively, if Bun >= v1.0 is installed already,
 # you may also get started via:
@@ -250,6 +250,13 @@ buddy key:generate # generates your application key
 # generate your TypeScript declarations
 buddy types:generate # generates types for your components, functions, & views
 buddy types:fix # auto-fixes types for your components, functions, & views
+
+buddy domains # alias for `buddy domains:list`
+buddy domains:add stacksjs.org # adds a domain
+buddy domains:remove stacksjs.org # removes a domain
+buddy domains:list # lists all domains
+buddy domains:update # apply ./config/dns.ts updates
+buddy domains:purchase stacksjs.org # purchase a new domain
 
 # test your stack
 buddy test # runs test suite (unit & e2e)

@@ -214,6 +214,9 @@ export type ExamplesOptions = {
 export type TestOptions = CliOptions & {
   showReport?: boolean
 }
+export type DomainsOptions = CliOptions & {
+  domain?: boolean
+}
 
 export interface CleanOptions extends CliOptions { }
 export interface CommitOptions extends CliOptions { }
@@ -293,6 +296,8 @@ export enum Action {
   Dev = 'dev/index',
   DevDocs = 'dev/docs',
   Deploy = 'deploy/index',
+  DomainsAdd = 'domains/add',
+  DomainsRemove = 'domains/remove',
   Fresh = 'fresh',
   GenerateLibraryEntries = 'generate/lib-entries',
   Inspire = 'inspire',

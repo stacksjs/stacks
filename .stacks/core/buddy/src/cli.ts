@@ -29,6 +29,7 @@ async function main() {
   cmd.clean(cli)
   // cmd.commit(cli)
   cmd.deploy(cli)
+  cmd.domains(cli)
   cmd.fresh(cli)
   cmd.install(cli)
   // cmd.lint(cli)

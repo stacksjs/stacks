@@ -7,7 +7,7 @@ import {
   runFunctionsDevServer,
   runPagesDevServer,
 } from '@stacksjs/actions'
-import { type CLI, type DevOptions } from '@stacksjs/types'
+import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { vitePath } from '@stacksjs/path'
 

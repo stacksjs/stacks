@@ -1,32 +1,23 @@
-# Stacks AI
+# Stacks Faker
 
-This package contains a pretty wrapper for the OpenAI API.
+This package provides a simple API wrapper for generating fake data.
 
 ## ☘️ Features
 
-- 🔎 Pretty API wrapper
-- 🤷🏼‍♂️ git Diff Interpreter
-- 🪐 GitHub integration
-- 💨 Zero-config
-- 🐶 Buddy CLI commands
-
-## TODO
-
-- [ ] Driver: OpenAI
+-
 
 ## 🤖 Usage
 
 ```bash
-bun install -d @stacksjs/ai
+bun install -d @stacksjs/faker
 ```
 
 You may now use:
 
 ```ts
-import { useAI } from '@stacksjs/ai'
+import { faker } from '@stacksjs/faker'
 
-const client = useAI()
-// client...
+faker.name()
 ```
 
 Learn more in the docs.
