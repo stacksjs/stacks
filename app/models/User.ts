@@ -1,5 +1,4 @@
 import { faker } from '@stacksjs/faker'
-import { validate } from '@stacksjs/validation'
 import { defineModel } from '@stacksjs/config'
 
 export default defineModel({
@@ -16,19 +15,19 @@ export default defineModel({
 
   fields: {
     name: {
-      validator: {
-        rule: validate.string().minLength(3).maxLength(255).nullable(),
-        message: 'Name must be between 3 and 255 characters',
-      },
+      // validator: {
+      //   rule: validate.string().minLength(3).maxLength(255).nullable(),
+      //   message: 'Name must be between 3 and 255 characters',
+      // },
 
       factory: () => faker.person.fullName(),
     },
 
     status: {
-      validator: {
-        rule: validate.enum(['active', 'inactive']),
-        message: 'Status must be either active or inactive',
-      },
+      // validator: {
+      //   rule: validate.enum(['active', 'inactive']),
+      //   message: 'Status must be either active or inactive',
+      // },
 
       factory: () => faker.random.arrayElement(['active', 'inactive']),
     },
@@ -36,19 +35,19 @@ export default defineModel({
     email: {
       unique: true,
 
-      validator: {
-        rule: validate.string().email(),
-        message: 'Email must be a valid email address',
-      },
+      // validator: {
+      //   rule: validate.string().email(),
+      //   message: 'Email must be a valid email address',
+      // },
 
       factory: () => faker.internet.email(),
     },
 
     password: {
-      validator: {
-        rule: validate.string().minLength(6).maxLength(255),
-        message: 'Password must be between 6 and 255 characters',
-      },
+      // validator: {
+      //   rule: validate.string().minLength(6).maxLength(255),
+      //   message: 'Password must be between 6 and 255 characters',
+      // },
 
       factory: () => faker.internet.password(),
     },

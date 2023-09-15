@@ -23,7 +23,7 @@ export function serverResponse(req: Request) {
   })
 
   if (url.pathname === '/favicon.ico')
-  return new Response('')
+    return new Response('')
 
   if (!foundRoute)
     return new Response('Not found', { status: 404 })

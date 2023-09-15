@@ -98,6 +98,7 @@
     "stx": "bun buddy"
   },
   "dependencies": {
+    "kysely-wasm": "^0.3.8",
     "stacks": "workspace:*"
   },
   "lint-staged": {
