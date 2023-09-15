@@ -29,11 +29,22 @@ for dir in $dirs; do
     bunx --bun unbuild
     ;;
   *)
-    # Extract the command from build.ts
-    cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build.ts)
+    # Check if build.ts exists in the directory
+    if [ -f "build.ts" ]; then
+      # Extract the command from build.ts
+      cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build.ts)
+      # Run the extracted command
+      eval $cmd
+    fi
 
-    # Run the extracted command
-    eval $cmd
+    # Check if build-server.ts exists in the directory
+    # the cloud package needs this check
+    if [ -f "build-server.ts" ]; then
+      # Extract the command from build-server.ts
+      cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build-server.ts)
+      # Run the extracted command
+      eval $cmd
+    fi
     ;;
   esac
 
