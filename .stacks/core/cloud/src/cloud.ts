@@ -131,8 +131,9 @@ export class StacksCloud extends Stack {
       },
     })
 
+    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${config.app.env === 'local' ? 'development' : config.app.env}-server`;
     const serverFunction = new lambda.Function(this, 'StacksServer', {
-      functionName: `${config.app.name}-${config.app.env}-server`,
+      functionName,
       description: 'The Stacks Server',
       memorySize: 512,
       vpc: this.vpc,
