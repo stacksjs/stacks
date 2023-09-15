@@ -114,7 +114,7 @@
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.5",
     "vite-plugin-vue-markdown": "^0.23.8",
-    "vite-ssg": "^0.23.1",
+    "vite-ssg": "^0.23.2",
     "vite-ssg-sitemap": "^0.5.1"
   },
   "devDependencies": {

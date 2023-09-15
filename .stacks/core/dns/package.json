@@ -50,10 +50,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.95.1"
+    "aws-cdk-lib": "^2.96.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.95.1"
+    "aws-cdk-lib": "^2.96.2"
   }
 }
