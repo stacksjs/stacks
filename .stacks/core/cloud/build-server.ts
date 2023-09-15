@@ -1,6 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 
-const result = await runCommand('bun build ./src/drivers/aws/runtime/server.ts --outdir src/drivers/aws/runtime/dist --format esm --minify --target bun', {
+const result = await runCommand('bun build ./src/drivers/aws/runtime/server.ts --outdir src/drivers/aws/runtime --format esm --minify --target bun', {
   cwd: import.meta.dir,
 })
 

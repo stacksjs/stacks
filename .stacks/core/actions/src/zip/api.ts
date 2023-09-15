@@ -7,7 +7,7 @@ console.log('✓ zipping your API for Lambda usage...')
 const from = [
   'bootstrap',
   'runtime.ts',
-  'dist/server.js',
+  'server.js',
 ]
 
 const to = p.projectStoragePath('framework/cloud/lambda.zip')
