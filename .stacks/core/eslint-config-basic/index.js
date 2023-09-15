@@ -1,4 +1,7 @@
 // thanks to @antfu for his great eslint-config inspiration!
+// eslint-disable-next-line n/prefer-global/process
+const isInEditor = (process.env.VSCODE_PID || process.env.JETBRAINS_IDE) && !process.env.CI
+const offInEditor = isInEditor ? 'off' : 'error'
 
 module.exports = {
   env: {
@@ -14,6 +17,7 @@ module.exports = {
     'plugin:jsonc/recommended-with-jsonc',
     'plugin:yml/standard',
     'plugin:markdown/recommended',
+    'plugin:jsdoc/recommended',
   ],
   ignorePatterns: [
     '*.min.*',
@@ -53,6 +57,7 @@ module.exports = {
     'stacksjs',
     'no-only-tests',
     'unused-imports',
+    'jsdoc',
   ],
   settings: {
     'import/resolver': {
@@ -141,6 +146,14 @@ module.exports = {
             order: { type: 'asc' },
           },
           {
+            pathPattern: '^resolutions$',
+            order: { type: 'asc' },
+          },
+          {
+            pathPattern: '^pnpm.overrides$',
+            order: { type: 'asc' },
+          },
+          {
             pathPattern: '^exports.*$',
             order: [
               'types',
@@ -169,6 +182,7 @@ module.exports = {
       files: ['*.ts', '*.tsx', '*.mts', '*.cts'],
       rules: {
         'no-void': ['error', { allowAsStatement: true }],
+        'dot-notation': 'off',
       },
     },
     {
@@ -227,7 +241,7 @@ module.exports = {
     'quotes': ['error', 'single'],
     'quote-props': ['error', 'consistent-as-needed'],
 
-    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-imports': offInEditor,
     'unused-imports/no-unused-vars': [
       'warn',
       { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
@@ -396,6 +410,20 @@ module.exports = {
     // yml
     'yml/quotes': ['error', { prefer: 'single', avoidEscape: false }],
     'yml/no-empty-document': 'off',
+
+    // jsdoc
+    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-param': 'off',
+    'jsdoc/require-param-type': 'off',
+    'jsdoc/require-param-description': 'off',
+    'jsdoc/require-yields': 'off',
+    'jsdoc/tag-lines': 'off',
+    'jsdoc/check-values': 'off',
+    'jsdoc/check-tag-names': 'off',
+    'jsdoc/no-undefined-types': 'off',
+    'jsdoc/require-returns': 'off',
+    'jsdoc/require-returns-type': 'off',
+    'jsdoc/require-throws': 'off',
 
     // stacksjs
     'stacksjs/no-import-node-modules-by-path': 'error',

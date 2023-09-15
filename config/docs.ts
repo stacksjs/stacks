@@ -56,13 +56,27 @@ const sidebar = {
       collapsible: true,
       items: [
         { text: 'Introduction', link: '/bootcamp/intro' },
-        { text: 'Build an API', link: '/bootcamp/api' },
-        { text: 'Build a Frontend', link: '/bootcamp/frontend' },
-        { text: 'Build a Documentation', link: '/bootcamp/docs' },
-        { text: 'Build a Component Library', link: '/bootcamp/components' },
-        { text: 'Build a Function Library', link: '/bootcamp/functions' },
-        { text: 'Build a CLI', link: '/bootcamp/cli' },
-        { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
+        { text: 'Linting & Formatting', link: '/bootcamp/linting' },
+        { text: 'Semantic Commits', link: '/bootcamp/sematic-commits' },
+        {
+          text: 'Let’s Build',
+          items: [
+            { text: 'Build an API', link: '/bootcamp/api' },
+            { text: 'Build a Frontend', link: '/bootcamp/frontend' },
+            { text: 'Build a Documentation', link: '/bootcamp/docs' },
+            {
+              text: 'Build a Library',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Component Library', link: '/bootcamp/library/components' },
+                { text: 'Function Library', link: '/bootcamp/library/functions' },
+              ],
+            },
+            { text: 'Build a CLI', link: '/bootcamp/cli' },
+            { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
+          ],
+        },
         { text: 'Extend the Dashboard', link: '/bootcamp/dashboard' },
         { text: 'How to deploy?', link: '/bootcamp/deploy' },
         { text: 'How to test?', link: '/bootcamp/test' },
@@ -75,6 +89,7 @@ const sidebar = {
       text: 'Digging Deeper',
       collapsible: true,
       items: [
+        { text: 'Actions', link: '/guide/actions' },
         { text: 'APIs', link: '/guide/apis' },
         { text: 'Apps', link: '/guide/apps' },
         { text: 'Buddy', link: '/guide/buddy' },
@@ -92,6 +107,7 @@ const sidebar = {
             { text: 'Composability', link: '/guide/libraries/composability' },
           ],
         },
+        { text: 'Model-View-Actions', link: '/guide/model-view-actions' },
         {
           text: 'Packages',
           collapsible: true,

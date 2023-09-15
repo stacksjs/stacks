@@ -434,7 +434,7 @@ export class StacksCloud extends Stack {
 
     if (this.shouldDeployDocs()) {
       new Output(this, 'DocsUrl', {
-        value: `https://${this.domain}/${this.apiPrefix}`,
+        value: `https://${this.domain}/${this.docsPrefix}`,
         description: 'The URL of the deployed documentation',
       })
     }
