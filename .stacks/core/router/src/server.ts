@@ -7,11 +7,13 @@ import { route } from './index'
 
 const routesList: Route[] = await route.getRoutes()
 
-Bun.serve({
-  async fetch(req: Request) {
-    return serverResponse(req)
-  },
-})
+export function serve() {
+  Bun.serve({
+    async fetch(req: Request) {
+      return serverResponse(req)
+    },
+  })
+}
 
 export function serverResponse(req: Request) {
   const url = new URL(req.url)

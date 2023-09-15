@@ -432,7 +432,8 @@ export class StacksCloud extends Stack {
       })
     }
 
-    if (this.shouldDeployDocs()) {
+    // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
+    if (this.shouldDeployDocs() && this.docsPrefix) {
       new Output(this, 'DocsUrl', {
         value: `https://${this.domain}/${this.docsPrefix}`,
         description: 'The URL of the deployed documentation',

@@ -53,6 +53,7 @@
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -63,6 +64,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/validation": "workspace:*",
+    "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@aws-lambda-powertools/logger": "^1.12.1",
