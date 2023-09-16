@@ -1,6 +1,7 @@
 export interface CloudOptions {
   driver: 'aws'
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   storage: {}
 
   firewall: {
@@ -15,6 +16,7 @@ export interface CloudOptions {
     rules: {
       name: string
       priority: number
+      // eslint-disable-next-line @typescript-eslint/ban-types
       action: { block?: {}; allow?: {} }
       visibilityConfig: {
         sampledRequestsEnabled: boolean

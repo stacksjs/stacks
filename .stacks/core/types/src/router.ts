@@ -49,6 +49,7 @@ export interface Route {
 export interface MiddlewareType {
   name: string
   priority: number
+  // eslint-disable-next-line @typescript-eslint/ban-types
   handle: Function
 }
 

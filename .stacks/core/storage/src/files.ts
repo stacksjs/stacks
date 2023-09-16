@@ -34,8 +34,8 @@ type Data = Blob | TypedArray | ArrayBufferLike | string | BlobPart[]
 export async function writeFile(path: Path, data: Data): Promise<number> {
   if (typeof path === 'string') {
     const dirPath = dirname(path)
-    if (!existsSync(dirPath))
-      createFolder(dirPath)
+    if (!await existsSync(dirPath))
+      await createFolder(dirPath)
 
     return await Bun.write(Bun.file(path), data)
   }

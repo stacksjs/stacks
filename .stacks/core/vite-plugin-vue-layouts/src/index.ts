@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import process from 'node:process'
 import type { ModuleNode, Plugin, ResolvedConfig } from 'vite'
 import { createVirtualModuleCode } from './clientSide'
 import { getFilesFromPath } from './files'
@@ -76,10 +77,15 @@ export default function Layout(userOptions: UserOptions = {}): Plugin {
         updateVirtualModule()
       })
 
-      watcher.on('change', async (path) => {
+      watcher.on('change', (path) => {
         path = `/${normalizePath(path)}`
-        const module = await moduleGraph.getModuleByUrl(path)
-        reloadModule(module, path)
+        moduleGraph.getModuleByUrl(path)
+          .then((module) => {
+            reloadModule(module, path)
+          })
+          .catch((error) => {
+            console.error('Error while getting module by URL:', error)
+          })
       })
     },
     resolveId(id) {

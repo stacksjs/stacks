@@ -14,6 +14,7 @@ export interface SecurityOptions {
       rules: {
         name: string
         priority: number
+        // eslint-disable-next-line @typescript-eslint/ban-types
         action: { block?: {}; allow?: {} }
         visibilityConfig: {
           sampledRequestsEnabled: boolean

@@ -46,7 +46,7 @@ export function gunzipSync(data: Uint8Array) {
   return Bun.gunzipSync(data) // decompressed
 }
 
-export async function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions) {
+export function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions) {
   return Bun.deflateSync(data, options) // compressed
 }
 

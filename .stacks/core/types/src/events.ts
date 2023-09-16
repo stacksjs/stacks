@@ -13,8 +13,8 @@
  * useEvent('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
  * events.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
  * useEvents.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.dev' })
- * ````
-
+ * ```
+ *
  * @example To capture an event, you may use any of the following approaches:
  * ```ts
  * listen('user:registered', (user) => sendWelcomeEmail(user))

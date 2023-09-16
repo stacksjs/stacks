@@ -7,7 +7,7 @@ import type { UserConfig } from 'vitepress'
 import { version } from '../../package.json'
 
 // import { frameworkDefaults } from '../../core/docs/src'
-import { default as userConfig } from '../../../config/docs'
+import userConfig from '../../../config/docs'
 
 // this is the resolved user config
 export default {
@@ -18,7 +18,7 @@ export default {
   outDir: p.projectStoragePath('framework/docs'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
   assetsDir: p.resourcesPath('assets'),
-  // @ts-expect-error
+  // @ts-expect-error - this may not be specified so we need to set a default
   lastUpdated: true,
 
   // sitemap: {
@@ -47,6 +47,7 @@ export default {
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
             // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.test:3333/docs')}`)
+            // eslint-disable-next-line no-console
             console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
           }
         },

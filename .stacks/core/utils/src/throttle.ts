@@ -1,9 +1,9 @@
 /**
  * Throttle a function.
  *
- * @param fn: Function
- * @param wait = 300
- * @returns
+ * @param {Function} fn
+ * @param {number} [wait]
+ * @returns {Function}
  *
  * @example
  * ```ts
