@@ -1,5 +1,6 @@
 // HACK: https://github.com/oven-sh/bun/issues/2081
 import { createReadStream, createWriteStream } from 'node:fs'
+import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { Command, Flags } from '@oclif/core'
 import JSZip from 'jszip'
@@ -26,7 +27,8 @@ export class BuildCommand extends Command {
     }),
     output: Flags.file({
       exists: false,
-      default: async () => 'bun-lambda-layer.zip',
+      // eslint-disable-next-line @typescript-eslint/require-await
+      default: async () => ['bun-lambda-layer.zip'],
     }),
     layer: Flags.string({
       description: 'The name of the Lambda layer.',
