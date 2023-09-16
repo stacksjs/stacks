@@ -1,58 +1,94 @@
 import User from '../../../../../app/models/User'
 
-const fields: any = User.fields
+const fields = (User as any).fields // Assuming you have a specific type for fields
 
-const fieldkeys = Object.keys(fields)
+export interface ModelElement {
+  field: string
+  default: string | number | boolean | Date | undefined | null
+  fieldArray: FieldArrayElement[]
+}
 
-const input = [
-  {
-    field: 'name',
-    rule: 'validate.string().maxLength(50).nullable()',
-  },
-  {
-    field: 'status',
-    rule: 'validate.string().maxLength(50).nullable()',
-  },
-  {
-    field: 'email',
-    rule: 'validate.string().maxLength(50).nullable()',
-  },
-  {
-    field: 'password',
-    rule: 'validate.string().maxLength(50).nullable()',
-  },
-]
+export interface FieldArrayElement {
+  entity: string
+  charValue?: string | null
+  // Add other properties as needed
+}
+const rules: string[] = []
+const defaults: string[] = []
 
-const modelEntity = input.map((item) => {
-  // Split the input string by "validate."
-  const parts = item.rule.split('validate.')
+async function extractModelRule() {
+  const modelFile = Bun.file('../../../../../app/models/User.ts') // Assuming Bun is imported properly
 
-  // Extract the string after "validate."
-  const extractedString = parts[1]
+  const code = await modelFile.text()
 
-  if (extractedString) {
-    // Split the input string by periods (.)
-    const extractedParts = extractedString.split('.')
+  const regex = /rule:.*$/gm
 
-    const regex = /\(([^)]+)\)/
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(code)) !== null) rules.push(match[0])
+}
 
-    const fieldArray = extractedParts.map((input) => {
-      // Use the regular expression to extract values inside parentheses
-      const match = regex.exec(input)
-      const value = match ? match[1] : null
+async function extractModelDefault() {
+  const modelFile = Bun.file('../../../../../app/models/User.ts') // Assuming Bun is imported properly
 
-      // Remove the parentheses from the string
-      const field = input.replace(regex, '').replace(/\(|\)/g, '')
+  const code = await modelFile.text()
 
-      return { entity: field, charValue: value }
-    })
+  const regex = /default:.*$/gm
 
-    return { field: item.field, fieldArray }
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(code)) !== null) defaults.push(match[0].replace(/,/g, ''))
+}
+
+await extractModelRule()
+await extractModelDefault()
+
+const fieldKeys = Object.keys(fields)
+
+const input: ModelElement[] = fieldKeys.map((field, index) => {
+  const fieldExist = User.fields[field]
+  let defaultValue = ''
+
+  if (fieldExist)
+    defaultValue = fieldExist?.validator?.default
+
+  return {
+    field,
+    default: defaultValue,
+    fieldArray: parseRule(rules[index])
   }
 })
 
+function parseRule(rule: string): FieldArrayElement[] {
+  const parts = rule.split('rule: validator.')
+
+  if (parts.length !== 2)
+    return []
+
+  if (!parts[1])
+    parts[1] = ''
+
+  const extractedString = parts[1].replace(/,/g, '')
+
+  if (!extractedString)
+    return []
+
+  const extractedParts = extractedString.split('.')
+  const regex = /\(([^)]+)\)/
+
+  return extractedParts.map((input) => {
+    const match = regex.exec(input)
+    const value = match ? match[1] : null
+    const field = input.replace(regex, '').replace(/\(|\)/g, '')
+    return { entity: field, charValue: value }
+  })
+}
+
+const modelEntity: ModelElement[] = input
+
+// You can now use the modelEntity array with type safety.
+
 const fieldAssociation: { [key: string]: string } = {
   string: 'varchar',
+  enum: 'varchar',
   number: 'integer',
   boolean: 'boolean',
   text: 'text',
@@ -60,7 +96,11 @@ const fieldAssociation: { [key: string]: string } = {
 
 const fieldEntity = [
   'maxLength',
-  'minLength',
 ]
 
-export { fieldEntity, fieldAssociation, modelEntity }
+const excludeFieldEntity = [
+  'minLength',
+  'enum',
+]
+
+export { fieldEntity, fieldAssociation, modelEntity, excludeFieldEntity }

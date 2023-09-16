@@ -63,6 +63,7 @@ export interface Fields {
     factory?: () => any
     validator?: {
       rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
+      default?: string | number | boolean | Date
       message: string
     }
     // validation?: String | Number | Boolean | Date
