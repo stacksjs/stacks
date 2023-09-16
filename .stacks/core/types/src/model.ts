@@ -30,7 +30,7 @@ export interface ModelOptions extends Base {
   hasOne: string // hasOne: 'Post
   hasMany: {
     model: string // should be typed as ModelName
-    foreignKey: string
+    foreignKey?: string
   }
   belongsToMany: {}
   hasThrough: {

@@ -1,11 +1,12 @@
 import { faker } from '@stacksjs/faker'
-import { validate } from '@stacksjs/validation'
+import { validator } from '@stacksjs/validation'
 import { defineModel } from '@stacksjs/config'
 
 export default defineModel({
   name: 'User', // defaults to the sanitized file name
   table: 'users', // defaults to the lowercase, plural name of the model
-
+  // primaryKey: 'id', // defaults to `id`
+  // autoIncrement: true, // defaults to true
   useUuid: true, // instead of `auto-incrementing id`, defaults to false
   searchable: true, // defaults to false, also accepts SearchEngineSettings
   seedable: { // defaults to a count of 10
@@ -17,7 +18,9 @@ export default defineModel({
   fields: {
     name: {
       validator: {
-        rule: validate.string().minLength(3).maxLength(255).nullable(),
+        // rule: validate.string('test').min(3).max(255),
+        rule: validator.string().minLength(3).maxLength(255),
+        default: 'test',
         message: 'Name must be between 3 and 255 characters',
       },
 
@@ -26,7 +29,7 @@ export default defineModel({
 
     status: {
       validator: {
-        rule: validate.enum(['active', 'inactive']),
+        rule: validator.enum(['active', 'inactive']),
         message: 'Status must be either active or inactive',
       },
 
@@ -37,7 +40,7 @@ export default defineModel({
       unique: true,
 
       validator: {
-        rule: validate.string().email(),
+        rule: validator.string().email(),
         message: 'Email must be a valid email address',
       },
 
@@ -46,7 +49,7 @@ export default defineModel({
 
     password: {
       validator: {
-        rule: validate.string().minLength(6).maxLength(255),
+        rule: validator.string().minLength(6).maxLength(255),
         message: 'Password must be between 6 and 255 characters',
       },
 
