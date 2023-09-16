@@ -2,7 +2,7 @@ import { TelnyxSmsProvider } from '@novu/telnyx'
 import { italic } from '@stacksjs/cli'
 import { type SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
-import notification from '~/config/notification'
+import { notification } from '@stacksjs/config'
 
 const from = notification.sms?.from
 const env = notification.sms?.drivers.telnyx
