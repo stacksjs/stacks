@@ -9,11 +9,6 @@ export async function invoke(options: CleanOptions) {
   log.success('Committed')
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export async function commit(options: CleanOptions) {
   return invoke(options)
 }

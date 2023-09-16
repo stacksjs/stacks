@@ -31,11 +31,6 @@ export async function invoke(options?: GeneratorOptions) {
     await generateComponentMeta(options)
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export function generate(options: GeneratorOptions) {
   return invoke(options)
 }

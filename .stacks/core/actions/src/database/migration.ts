@@ -56,4 +56,4 @@ writer.write('}\n\n')
 
 writer.write('process.exit(0)\n')
 
-writer.end()
+await writer.end()

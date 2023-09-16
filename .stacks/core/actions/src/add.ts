@@ -9,11 +9,6 @@ export async function invoke(options: AddOptions) {
     await addCalendar()
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export async function add(options: AddOptions) {
   return invoke(options)
 }
