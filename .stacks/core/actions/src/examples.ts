@@ -15,11 +15,6 @@ export async function invoke(options: ExamplesOptions) {
     log.error('An unsupported option was used. Please try again, check the documentation & report the issue, if needed.')
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export async function examples(options: ExamplesOptions) {
   return invoke(options)
 }

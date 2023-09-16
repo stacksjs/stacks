@@ -14,11 +14,6 @@ export async function invoke(options?: TypesOptions) {
   log.success('Types are set')
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export async function types(options: TypesOptions) {
   return invoke(options)
 }

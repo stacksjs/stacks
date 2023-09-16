@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
-
 import { logsPath } from '@stacksjs/path'
 import type { StacksError } from '@stacksjs/types'
 
@@ -28,7 +26,7 @@ export class ErrorHandler {
     const text = await file.text()
     writer.write(`${text}\n`)
     writer.write(`${formattedError}\n`)
-    writer.end()
+    await writer.end()
   }
 
   static writeErrorToConsole(err: string | StacksError, options?: any) {
@@ -41,8 +39,4 @@ export function handleError(err: StacksError | string, options?: any): StacksErr
     return ErrorHandler.handle(new Error(err), options)
 
   return ErrorHandler.handle(err, options)
-}
-
-function isErrorOfTypeValidation(err: any): err is ValidationError {
-  return err && typeof err.message === 'string'
 }

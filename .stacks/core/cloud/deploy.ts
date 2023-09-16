@@ -1,3 +1,4 @@
+import process from 'node:process'
 import * as cdk from 'aws-cdk-lib'
 import { StacksCloud } from './src/cloud'
 

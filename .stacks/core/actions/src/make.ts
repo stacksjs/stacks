@@ -31,11 +31,6 @@ export async function invoke(options: MakeOptions) {
     makeStack(options)
 }
 
-/**
- * An alias of the invoke method.
- * @param options
- * @returns
- */
 export async function make(options: MakeOptions) {
   return invoke(options)
 }

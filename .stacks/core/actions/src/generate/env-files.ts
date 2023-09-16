@@ -1,9 +1,10 @@
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { env as e, enums } from '@stacksjs/env'
+import { logger } from '@stacksjs/logging'
 import { envKeys } from '~/storage/framework/stacks/env'
 
-console.log('Generating type env files...')
+logger.log('Generating type env files...')
 
 // generate ./storage/framework/types/env.d.ts file from .env
 const envTypes = `
@@ -42,18 +43,22 @@ declare module 'bun' {
         if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
           type = 'boolean'
         }
- else if (!isNaN(Number.parseFloat(value)) && isFinite(Number(value))) {
+        else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
           type = 'number'
         }
- else if (enums[key]) {
-          // @ts-expect-error
+        else if (enums[key]) {
+          // @ts-expect-error enums[key] is defined
           type = enums[key].map(item => `'${item}'`).join(' | ')
         }
       }
 
-      else if (typeof value === 'number') { type = 'number' }
+      else if (typeof value === 'number') {
+        type = 'number'
+      }
 
-      else if (typeof value === 'boolean') { type = 'boolean' }
+      else if (typeof value === 'boolean') {
+        type = 'boolean'
+      }
 
       return `const ${key}: ${type}`
     }).join('\n    ')}
@@ -63,7 +68,7 @@ declare module 'bun' {
 
 await storage.writeFile(p.projectStoragePath('framework/types/env.d.ts'), envTypes)
 
-console.log('  - ./storage/framework/stacks/env.ts')
+logger.log('  - ./storage/framework/stacks/env.ts')
 
 // generate ./storage/framework/stacks/env.ts file based on Bun.env
 const env = `
@@ -81,4 +86,4 @@ export type EnvKey = typeof envKeys[number]
 
 await storage.writeFile(p.projectStoragePath('framework/stacks/env.ts'), env)
 
-console.log('  - ./storage/framework/stacks/env.d.ts')
+logger.log('  - ./storage/framework/stacks/env.d.ts')

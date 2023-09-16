@@ -1,9 +1,11 @@
+import process from 'node:process'
 import { createHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
 import { projectStoragePath } from '@stacksjs/path'
 import { italic } from '@stacksjs/cli'
+import { logger } from '@stacksjs/logging'
 
-console.log('Adding your domain...', app.url)
+logger.log('Adding your domain...', app.url)
 
 if (!app.url) {
   handleError('./config app.url is not defined')
@@ -19,9 +21,9 @@ if (result.isErr()) {
 
 const nameservers = result.value
 
-console.log('')
-console.log('✅ Added your domain')
-console.log(`  Nameservers: ${nameservers.join(', ')}`)
-console.log(`  Cached in: ${projectStoragePath('framework/cache/nameservers.txt')}`)
-console.log('')
-console.log(italic('Please update your domain nameservers to the above values.'))
+logger.log('')
+logger.log('✅ Added your domain')
+logger.log(`  Nameservers: ${nameservers.join(', ')}`)
+logger.log(`  Cached in: ${projectStoragePath('framework/cache/nameservers.txt')}`)
+logger.log('')
+logger.log(italic('Please update your domain nameservers to the above values.'))

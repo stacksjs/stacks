@@ -1,8 +1,10 @@
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { deleteHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
+import { logger } from '@stacksjs/logging'
 
-console.log(`Removing domain: ${app.url}`)
+logger.log(`Removing domain: ${app.url}`)
 
 if (!app.url) {
   handleError('./config app.url is not defined')
@@ -16,5 +18,5 @@ if (result.isErr()) {
   process.exit(1)
 }
 
-console.log('')
-console.log('✅ Removed your domain')
+logger.log('')
+logger.log('✅ Removed your domain')
