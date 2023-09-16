@@ -1,4 +1,4 @@
-import { Middleware } from '../../.stacks/core/router/src/middleware'
+import { Middleware } from '@stackjs/router'
 
 export default new Middleware({
   name: 'logger',

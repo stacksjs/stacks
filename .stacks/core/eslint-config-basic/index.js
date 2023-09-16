@@ -51,6 +51,7 @@ module.exports = {
     '!.vscode',
     // force exclude
     '**/.vitepress/cache',
+    '**/storage/framework',
   ],
   plugins: [
     'html',

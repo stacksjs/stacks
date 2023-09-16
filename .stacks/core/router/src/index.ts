@@ -1,7 +1,7 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 
-export interface Router {
+export interface RouterInterface {
   get(url: Route['url'], callback: Route['callback']): this
   post(url: Route['url'], callback: Route['callback']): this
   view(url: Route['url'], callback: Route['callback']): this
@@ -15,7 +15,7 @@ export interface Router {
   getRoutes(): Promise<Route[]>
 }
 
-export class Router implements Router {
+export class Router implements RouterInterface {
   private routes: Route[] = []
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
@@ -124,21 +124,21 @@ export class Router implements Router {
   }
 
   public name(name: string): this {
-    // @ts-expect-error
+    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].name = name
 
     return this
   }
 
   public middleware(middleware: Route['middleware']): this {
-    // @ts-expect-error
+    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].middleware = middleware
 
     return this
   }
 
   public prefix(prefix: string): this {
-    // @ts-expect-error
+    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].prefix = prefix
 
     return this
