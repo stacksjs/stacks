@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 
+// eslint-disable-next-line no-console
 console.log(route)
 </script>
 

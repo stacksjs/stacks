@@ -1,4 +1,7 @@
-import type { Server, ServerWebSocket } from 'bun'
+/* eslint-disable no-console */
+import type { Server } from 'bun'
+
+// import type { Server } from 'bun'
 
 export default {
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
@@ -20,14 +23,14 @@ export default {
     })
   },
   websocket: {
-    async open(ws: ServerWebSocket): Promise<void> {
-      console.log('WebSocket opened')
-    },
-    async message(ws: ServerWebSocket, message: string): Promise<void> {
-      console.log('WebSocket message', message)
-    },
-    async close(ws: ServerWebSocket, code: number, reason?: string): Promise<void> {
-      console.log('WebSocket closed', { code, reason })
-    },
+    // async open(ws: ServerWebSocket): Promise<void> {
+    //   console.log('WebSocket opened')
+    // },
+    // async message(ws: ServerWebSocket, message: string): Promise<void> {
+    //   console.log('WebSocket message', message)
+    // },
+    // async close(ws: ServerWebSocket, code: number, reason?: string): Promise<void> {
+    //   console.log('WebSocket closed', { code, reason })
+    // },
   },
 }

@@ -53,7 +53,7 @@ const input: ModelElement[] = fieldKeys.map((field, index) => {
   return {
     field,
     default: defaultValue,
-    fieldArray: parseRule(rules[index])
+    fieldArray: parseRule(rules[index]),
   }
 })
 

@@ -1,9 +1,9 @@
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import { validator } from '@stacksjs/validation'
+import env from '../../../../config/env'
+import type { EnvKey } from '~/storage/framework/stacks/env'
 
 // import type { Validate } from '@stacksjs/validation'
-import { default as env } from '../../../../config/env'
-import type { EnvKey } from '~/storage/framework/stacks/env'
 
 // we need to get this just into right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]
@@ -36,6 +36,7 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
       throw new Error(`Invalid env value for ${key}`)
   }
   const envKey = key as EnvKeys
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   acc[envKey] = validatorType as any
   return acc
 }, {} as EnvMap)

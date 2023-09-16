@@ -92,6 +92,7 @@ globalFroms
 grammarly
 gruntfuggly
 gupshup
+gzipped
 heex
 heroicon
 heroicons

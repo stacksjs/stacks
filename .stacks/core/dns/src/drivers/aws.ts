@@ -39,6 +39,7 @@ export async function deleteHostedZone(domainName: string) {
 
   // Delete the hosted zone
   await route53.deleteHostedZone({ Id: hostedZone.Id })
+  // eslint-disable-next-line no-console
   console.log(`Deleted Hosted Zone for domain: ${domainName}`)
   return ok('success')
 }
@@ -66,9 +67,11 @@ export async function createHostedZone(domainName: string) {
   if (!nameServers)
     return err((`No nameservers found for domain: ${domainName}`))
 
-  storage.writeFile(p.projectStoragePath('framework/cache/nameservers.txt'), nameServers.join('\n'))
+  await storage.writeFile(p.projectStoragePath('framework/cache/nameservers.txt'), nameServers.join('\n'))
 
+  // eslint-disable-next-line no-console
   console.log(`Created Hosted Zone for domain: ${domainName}`)
+  // eslint-disable-next-line no-console
   console.log(`Nameservers: ${nameServers.join(', ')}`)
 
   return ok(nameServers)

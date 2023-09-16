@@ -61,8 +61,8 @@ export function dev(buddy: CLI) {
       else {
         if (options.components)
           await runComponentsDevServer(options)
-        if (options.docs)
-          await runDocsDevServer(options)
+        // if (options.docs)
+        //   await runDocsDevServer(options)
         else if (options.api)
           await runFunctionsDevServer(options)
         else if (options.pages)
@@ -107,6 +107,7 @@ export function dev(buddy: CLI) {
         process.exit()
       }
 
+      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

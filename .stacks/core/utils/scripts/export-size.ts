@@ -66,10 +66,10 @@ async function run() {
   for (const pkg of [...packages.slice(2), packages[1]]) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { exports, packageJSON } = await getExportsSize({
-      pkg: `./packages/${pkg.name}/dist`,
+      pkg: `./packages/${pkg?.name}/dist`,
       output: false,
       bundler: 'rollup',
-      external: ['vue-demi', ...(pkg.external || [])],
+      external: ['vue-demi', ...(pkg?.external || [])],
       includes: ['@vueuse/shared'],
     })
 
@@ -80,7 +80,9 @@ async function run() {
       ['Function', 'min+gzipped'],
       // eslint-disable-next-line stacksjs/no-cjs-exports
       ...exports.map((i) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         mdJSON[i.name] = filesize(i.minzipped)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`\`${i.name}\``, filesize(i.minzipped)]
       }),
     ])
