@@ -32,14 +32,14 @@ export interface AAAARecord {
 export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecord
 
 /**
-   * **DNS Options**
-   *
-   * This configuration defines all of your DNS options. Because Stacks is fully-typed,
-   * you may hover any of the options below and the definitions will be provided. In case
-   * you have any questions, feel free to reach out via Discord or GitHub Discussions.
-   *
-   * @see https://stacksjs.dev/docs/dns
-   */
+ * **DNS Options**
+ *
+ * This configuration defines all of your DNS options. Because Stacks is fully-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ *
+ * @see https://stacksjs.dev/docs/dns
+ */
 export interface DnsOptions {
   driver: 'aws'
   a: ARecord[]

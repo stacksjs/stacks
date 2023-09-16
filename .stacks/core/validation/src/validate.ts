@@ -6,13 +6,13 @@ Validator.macro('money', () => {
 })
 
 export const validator: Validator = v
-
+// validator.string().email()
 type SchemaString = string
 type SchemaNumber = number
 type SchemaBoolean = boolean
 type SchemaEnum = string[]
 
-export type SchemaType = SchemaString | SchemaNumber | SchemaBoolean | SchemaEnum;
+export type SchemaType = SchemaString | SchemaNumber | SchemaBoolean | SchemaEnum
 
 export const validate = {
   string: (defaultValue: string = ''): SchemaString => defaultValue,

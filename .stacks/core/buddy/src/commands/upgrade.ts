@@ -55,7 +55,7 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.Upgrade, { ...options })
 
       if (result.isErr()) {
-        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 
@@ -89,7 +89,7 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error as Error) // FIXME: should not have to cast
+        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error) // FIXME: should not have to cast
         process.exit()
       }
 

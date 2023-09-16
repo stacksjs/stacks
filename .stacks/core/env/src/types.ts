@@ -1,4 +1,6 @@
-import { Infer, validator, VineString, VineBoolean, VineEnum, VineNumber } from '@stacksjs/validation'
+import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
+import { validator } from '@stacksjs/validation'
+
 // import type { Validate } from '@stacksjs/validation'
 import { default as env } from '../../../../config/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
@@ -8,9 +10,9 @@ type EnvValue = string | boolean | number | readonly string[]
 type EnvType = typeof env
 type EnvKeys = keyof EnvType
 type EnvMap = { [K in EnvKeys]: EnvType[K] extends string ? VineString :
-                EnvType[K] extends number ? VineNumber :
-                EnvType[K] extends boolean ? VineBoolean :
-                EnvType[K] extends readonly string[] ? VineEnum<string[]> : unknown }
+  EnvType[K] extends number ? VineNumber :
+    EnvType[K] extends boolean ? VineBoolean :
+      EnvType[K] extends readonly string[] ? VineEnum<string[]> : unknown }
 
 type ValidatorType = VineString | VineNumber | VineBoolean | VineEnum<string[]>
 

@@ -20,7 +20,7 @@ export function lint(buddy: CLI) {
       const result = await runAction(Action.Lint, { ...options })
       // console.log('res', result)
       if (result.isErr()) {
-        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error as Error)
+        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error)
         process.exit()
       }
 
@@ -35,7 +35,7 @@ export function lint(buddy: CLI) {
       const result = await runAction(Action.LintFix, { ...options })
 
       if (result.isErr()) {
-        log.error('There was an error lint fixing your code.', result.error as Error)
+        log.error('There was an error lint fixing your code.', result.error)
         process.exit()
       }
 

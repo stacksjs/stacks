@@ -113,11 +113,11 @@ export interface CliOptions {
 
   /**
    * **Current Work Directory**
-  *
-  * Based on the `cwd` value, that's where the command...
-  *
-  * @default projectPath()
-  */
+   *
+   * Based on the `cwd` value, that's where the command...
+   *
+   * @default projectPath()
+   */
   cwd?: string
 
   /**

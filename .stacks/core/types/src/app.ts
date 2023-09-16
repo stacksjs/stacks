@@ -117,4 +117,3 @@ export interface AppOptions {
 }
 
 export type AppConfig = Partial<AppOptions>
-

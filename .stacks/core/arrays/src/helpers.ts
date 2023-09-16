@@ -25,7 +25,7 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
 }
 
 /**
-  * Flatten `Arrayable<T>` to `Array<T>`
+ * Flatten `Arrayable<T>` to `Array<T>`
  *
  * @category Array
  * @example

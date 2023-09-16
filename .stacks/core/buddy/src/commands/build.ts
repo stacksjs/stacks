@@ -136,7 +136,7 @@ export function build(buddy: CLI) {
       const result = await runAction(Action.BuildStacks, options)
 
       if (result.isErr()) {
-        log.error('Failed to build Stacks.', result.error as Error)
+        log.error('Failed to build Stacks.', result.error)
         process.exit()
       }
 

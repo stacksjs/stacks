@@ -1,11 +1,11 @@
 import { type ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
-import { layouts, pages, uiEngine } from './stacks'
 import { alias } from '@stacksjs/alias'
-import { defineConfig } from './'
 import generateSitemap from 'vite-ssg-sitemap'
 
 import UnoCSS from 'unocss/vite'
+import { layouts, pages, uiEngine } from './stacks'
+import { defineConfig } from './'
 
 export const pagesConfig = {
   root: p.projectStoragePath('framework/desktop/dashboard'),
@@ -28,7 +28,7 @@ export const pagesConfig = {
       dirs: p.frameworkPath('stacks/dashboard/src/pages'),
     }),
     UnoCSS({
-      configFile: p.corePath('vite/src/uno.config.ts')
+      configFile: p.corePath('vite/src/uno.config.ts'),
     }),
     layouts({
       layoutsDirs: p.frameworkPath('stacks/dashboard/src/layouts'),

@@ -13,4 +13,4 @@ export default new Action({
     // // Return a message
     // return `Welcome email sent to ${email}`;
   },
-});
+})

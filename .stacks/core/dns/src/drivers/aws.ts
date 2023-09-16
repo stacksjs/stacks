@@ -1,5 +1,5 @@
 import { Route53 } from '@aws-sdk/client-route-53'
-import { ok, err } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { storage } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 
@@ -30,9 +30,9 @@ export async function deleteHostedZone(domainName: string) {
         ChangeBatch: {
           Changes: [{
             Action: 'DELETE',
-            ResourceRecordSet: recordSet
-          }]
-        }
+            ResourceRecordSet: recordSet,
+          }],
+        },
       })
     }
   }

@@ -28,7 +28,7 @@ export const pagesConfig = {
       dirs: p.resourcesPath('views'),
     }),
     UnoCSS({
-      configFile: p.corePath('vite/src/uno.config.ts')
+      configFile: p.corePath('vite/src/uno.config.ts'),
     }),
     // cssEngine(),
     components(),

@@ -3,28 +3,28 @@ import type { Construct } from 'constructs'
 import type { StackProps } from 'aws-cdk-lib'
 import {
   Duration,
+  Fn,
   CfnOutput as Output,
   RemovalPolicy,
   Stack,
   aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
+  aws_ec2 as ec2,
+  aws_efs as efs,
   aws_lambda as lambda,
   aws_cloudfront_origins as origins,
-  aws_efs as efs,
-  aws_ec2 as ec2,
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
+  aws_secretsmanager as secretsmanager,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
-  aws_secretsmanager as secretsmanager,
-  Fn,
 } from 'aws-cdk-lib'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
-import { EnvKey } from '~/storage/framework/stacks/env'
+import type { EnvKey } from '~/storage/framework/stacks/env'
 
 export class StacksCloud extends Stack {
   domain: string
@@ -43,6 +43,7 @@ export class StacksCloud extends Stack {
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
   }
+
   vpc!: ec2.Vpc
 
   cdn: cloudfront.Distribution
@@ -119,7 +120,7 @@ export class StacksCloud extends Stack {
       description: 'Bun is an incredibly fast JavaScript runtime, bundler, transpiler, and package manager.',
     })
 
-    let keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
+    const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
@@ -131,7 +132,7 @@ export class StacksCloud extends Stack {
       },
     })
 
-    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${config.app.env === 'local' ? 'development' : config.app.env}-server`;
+    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${config.app.env === 'local' ? 'development' : config.app.env}-server`
     const serverFunction = new lambda.Function(this, 'StacksServer', {
       functionName,
       description: 'The Stacks Server',
@@ -148,7 +149,7 @@ export class StacksCloud extends Stack {
     })
 
     secrets.grantRead(serverFunction)
-    serverFunction.addEnvironment('SECRETS_ARN', secrets.secretArn);
+    serverFunction.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
     const api = new lambda.FunctionUrl(this, 'StacksServerUrl', {
       function: serverFunction,
@@ -303,7 +304,6 @@ export class StacksCloud extends Stack {
       // rules: security.appFirewall?.rules,
     })
   }
-
 
   manageFileSystem() {
     this.vpc = new ec2.Vpc(this, 'Network', {

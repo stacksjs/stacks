@@ -1,6 +1,6 @@
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
-import { enums, env as e } from '@stacksjs/env'
+import { env as e, enums } from '@stacksjs/env'
 import { envKeys } from '~/storage/framework/stacks/env'
 
 console.log('Generating type env files...')
@@ -22,7 +22,8 @@ declare module 'bun' {
         if (enums[key]) {
           type = enums[key]?.map(item => `'${item}'`).join(' | ')
           value = enums[key]?.[0] // default to the first enum value
-        } else {
+        }
+ else {
           switch (type) {
             case 'number':
               value = '0'
@@ -40,19 +41,19 @@ declare module 'bun' {
       if (typeof value === 'string') {
         if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
           type = 'boolean'
-        } else if (!isNaN(parseFloat(value)) && isFinite(Number(value))) {
+        }
+ else if (!isNaN(Number.parseFloat(value)) && isFinite(Number(value))) {
           type = 'number'
-        } else if (enums[key]) {
-          // @ts-ignore
+        }
+ else if (enums[key]) {
+          // @ts-expect-error
           type = enums[key].map(item => `'${item}'`).join(' | ')
         }
       }
 
-      else if (typeof value === 'number')
-        type = 'number'
+      else if (typeof value === 'number') { type = 'number' }
 
-      else if (typeof value === 'boolean')
-        type = 'boolean'
+      else if (typeof value === 'boolean') { type = 'boolean' }
 
       return `const ${key}: ${type}`
     }).join('\n    ')}

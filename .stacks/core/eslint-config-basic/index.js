@@ -45,6 +45,7 @@ module.exports = {
     '*.key',
     'Dockerfile',
     // force include
+    '!.stacks',
     '!.github',
     '!.vitepress',
     '!.vscode',

@@ -21,7 +21,7 @@ const nameservers = result.value
 
 console.log('')
 console.log('✅ Added your domain')
-console.log('  Nameservers: ' + nameservers.join(', '))
-console.log('  Cached in: ' + projectStoragePath('framework/cache/nameservers.txt'))
+console.log(`  Nameservers: ${nameservers.join(', ')}`)
+console.log(`  Cached in: ${projectStoragePath('framework/cache/nameservers.txt')}`)
 console.log('')
 console.log(italic('Please update your domain nameservers to the above values.'))

@@ -1,38 +1,15 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "declaration": true,
-    "declarationMap": true,
     "incremental": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true,
-    "jsx": "preserve",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleDetection": "force",
-    "emitDeclarationOnly": true,
-    "esModuleInterop": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "isolatedModules": true,
-    "strictNullChecks": true,
-    "baseUrl": ".",
-    "outDir": "./dist/types",
+    "target": "esnext",
     "lib": [
       "esnext"
     ],
-    "types": [
-      "vite/client",
-      // "vue/ref-macros",
-      "vite-plugin-pages/client",
-      "vite-plugin-pwa/client",
-      "bun-types"
-    ],
+    "jsx": "preserve",
+    "moduleDetection": "force",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
     "paths": {
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
@@ -41,7 +18,30 @@
       "eslint-plugin-stacks": ["./eslint-plugin-stacksjs/src/index.ts"],
       "eslint-plugin-stacksjs": ["./eslint-plugin-stacksjs/src/index.ts"],
       "~/*": ["../*"]
-    }
+    },
+    "types": [
+      "vite/client",
+      // "vue/ref-macros",
+      "vite-plugin-pages/client",
+      "vite-plugin-pwa/client",
+      "bun-types"
+    ],
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types",
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
   },
   "vueCompilerOptions": {
     "plugins": [

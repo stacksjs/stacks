@@ -38,9 +38,9 @@ export class ErrorHandler {
 
 export function handleError(err: StacksError | string, options?: any): StacksError {
   if (typeof err === 'string')
-    return ErrorHandler.handle(new Error(err), options) as StacksError
+    return ErrorHandler.handle(new Error(err), options)
 
-  return ErrorHandler.handle(err, options) as StacksError
+  return ErrorHandler.handle(err, options)
 }
 
 function isErrorOfTypeValidation(err: any): err is ValidationError {

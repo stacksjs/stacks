@@ -1,7 +1,7 @@
-import { EnvKey } from '~/storage/framework/stacks/env'
-import { ValidationEnum, ValidationBoolean, ValidationNumber } from '@stacksjs/validation'
 import p from 'node:process'
-import { Env } from '@stacksjs/env'
+import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
+import type { Env } from '@stacksjs/env'
+import type { EnvKey } from '~/storage/framework/stacks/env'
 
 interface EnumObject {
   [key: string]: string[]
@@ -23,13 +23,13 @@ const handler = {
       return target[key] as string
 
     if (value instanceof ValidationBoolean)
-      return !!target[key] as boolean
+      return !!target[key]
 
     if (value instanceof ValidationNumber)
-      return Number(target[key]) as number
+      return Number(target[key])
 
     return value as string
-  }
+  },
 }
 
 export function process() {
@@ -38,6 +38,6 @@ export function process() {
     : p.env as unknown as Env
 }
 
-export const env: Env = new Proxy(process(), handler) as Env
+export const env: Env = new Proxy(process(), handler)
 
 export * from './types'
