@@ -2,7 +2,7 @@
 import { markdownTable } from 'markdown-table'
 import filesize from 'filesize'
 import { fs } from '@stacksjs/storage'
-import { type PackageManifest } from '@vueuse/metadata'
+import type { PackageManifest } from '@vueuse/metadata'
 import { getExportsSize } from '../src/export-size'
 import { version } from '../package.json'
 

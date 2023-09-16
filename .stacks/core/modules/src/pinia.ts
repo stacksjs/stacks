@@ -9,7 +9,7 @@ export const install: UserModule = ({ isClient, initialState, app }) => {
   // Refer to
   // https://github.com/antfu/vite-ssg/blob/main/README.md#state-serialization
   // for other serialization strategies.
-  if (isClient)
+  if (isClient) // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     pinia.state.value = (initialState.pinia) || {}
 
   else

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { bold, green, prompts } from '@stacksjs/cli'
 import { ray as debug } from 'node-ray'

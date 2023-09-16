@@ -20,20 +20,11 @@ export default defineModel({
       validator: {
         // rule: validate.string('test').min(3).max(255),
         rule: validator.string().minLength(3).maxLength(255),
-        default: 'test',
+        // default: 'test',
         message: 'Name must be between 3 and 255 characters',
       },
 
       factory: () => faker.person.fullName(),
-    },
-
-    status: {
-      validator: {
-        rule: validator.enum(['active', 'inactive']),
-        message: 'Status must be either active or inactive',
-      },
-
-      factory: () => faker.random.arrayElement(['active', 'inactive']),
     },
 
     email: {
@@ -54,13 +45,6 @@ export default defineModel({
       },
 
       factory: () => faker.internet.password(),
-    },
-  },
-
-  attributes: { // optional accessors & mutators
-    firstName: {
-      get: (value: string) => value.toUpperCase(),
-      set: (value: string) => value.toLowerCase(),
     },
   },
 })

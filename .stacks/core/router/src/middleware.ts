@@ -6,6 +6,7 @@ import type { MiddlewareType } from '@stacksjs/types'
 export class Middleware implements MiddlewareType {
   name: string
   priority: number
+  // eslint-disable-next-line @typescript-eslint/ban-types
   handle: Function
 
   constructor(data: MiddlewareType) {
@@ -22,10 +23,6 @@ async function importMiddlewares(directory: any) {
   const files = await readdir(directory)
 
   for (const file of files) {
-    // Skip non-JavaScript files
-    if (path.extname(file) !== '.ts')
-      continue
-
     // Dynamically import the middleware
     const imported = await import(path.join(directory, file))
     middlewares.push(imported.default)
