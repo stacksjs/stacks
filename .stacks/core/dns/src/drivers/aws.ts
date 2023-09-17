@@ -69,11 +69,6 @@ export async function createHostedZone(domainName: string) {
 
   await storage.writeFile(p.projectStoragePath('framework/cache/nameservers.txt'), nameServers.join('\n'))
 
-  // eslint-disable-next-line no-console
-  console.log(`Created Hosted Zone for domain: ${domainName}`)
-  // eslint-disable-next-line no-console
-  console.log(`Nameservers: ${nameServers.join(', ')}`)
-
   return ok(nameServers)
 }
 

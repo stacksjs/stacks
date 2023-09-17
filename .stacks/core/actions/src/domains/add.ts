@@ -1,21 +1,38 @@
 import process from 'node:process'
 import { createHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
+import { handleError } from '@stacksjs/error-handling'
 import { projectStoragePath } from '@stacksjs/path'
-import { italic } from '@stacksjs/cli'
+import { italic, parseOptions } from '@stacksjs/cli'
 import { logger } from '@stacksjs/logging'
 
-logger.log('Adding your domain...', app.url)
-
-if (!app.url) {
-  handleError('./config app.url is not defined')
-  process.exit(1)
+interface AddOptions {
+  domain?: string
+  verbose: boolean
 }
 
-const result = await createHostedZone(app.url)
+const parsedOptions = parseOptions()
+const options: AddOptions = {
+  domain: parsedOptions.domain as string,
+  verbose: parsedOptions.verbose as boolean,
+}
+
+if (!options.domain) {
+  if (app.url) {
+    options.domain = app.url
+  }
+  else {
+    handleError('there was no domain provided when')
+    process.exit(1)
+  }
+}
+
+logger.log(`Adding your domain: ${options.domain}`)
+
+const result = await createHostedZone(options.domain)
 
 if (result.isErr()) {
-  handleError('Failed to add domain', app.url)
+  handleError('Failed to add domain', result.error)
   process.exit(1)
 }
 

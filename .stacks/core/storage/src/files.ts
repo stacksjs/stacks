@@ -3,7 +3,7 @@ import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
-import { fs } from './fs'
+import { existsSync, fs } from './fs'
 
 /**
  * Reads a JSON file and returns the parsed data.
