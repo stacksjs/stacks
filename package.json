@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Your project description",
-  "author": "Chris Breuer",
+  "author": "your-name <your-email>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -21,13 +21,14 @@
   "scripts": {
     "buddy": "bun --bun .stacks/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
+    "setup": "./.stacks/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
     "clean": "bun run buddy clean",
-    "update": "bun run buddy update",
-    "update:dependencies": "bun run buddy update:dependencies",
-    "update:framework": "bun run buddy update:framework",
-    "update:package-manager": "bun run buddy update:package-manager",
-    "update:node": "bun run buddy update:node",
+    "upgrade": "bun run buddy upgrade",
+    "upgrade:dependencies": "bun run buddy update:dependencies",
+    "upgrade:framework": "bun run buddy update:framework",
+    "upgrade:package-manager": "bun run buddy update:package-manager",
+    "upgrade:bun": "bun run buddy update:node",
     "dev": "bun run buddy dev",
     "dev:components": "bun run buddy dev:components",
     "dev:desktop": "bun run buddy dev:desktop",
@@ -41,7 +42,6 @@
     "build:web-components": "bun run buddy build:web-components",
     "build:functions": "bun run buddy build:functions // needs to have option to ",
     "build:docs": "bun run buddy build:docs",
-    "build:pages": "bun run buddy build:pages // needs to auto-generate server",
     "build:stacks": "bun run buddy build:stacks",
     "prod": "bun run buddy build",
     "prod:components": "bun run buddy build:components",
@@ -49,13 +49,13 @@
     "prod:web-components": "bun run buddy build:web-components",
     "prod:functions": "bun run buddy build:functions // needs to have option to ",
     "prod:docs": "bun run buddy build:docs",
-    "prod:pages": "bun run buddy build:pages // needs to auto-generate server",
+    "prod:views": "bun run buddy build:views",
     "prod:stacks": "bun run buddy build:stacks",
     "prod:all": "bun run buddy build:all",
     "production": "bun run buddy build",
     "deploy": "bun run buddy deploy",
     "deploy:functions": "bun run buddy deploy:functions",
-    "deploy:pages": "bun run buddy deploy:functions",
+    "deploy:views": "bun run buddy deploy:functions",
     "deploy:docs": "bun run buddy deploy:docs",
     "deploy:all": "bun run buddy deploy:all",
     "example": "bun run buddy example",
@@ -65,7 +65,7 @@
     "lint:stacks": "bun run buddy lint:stacks",
     "lint:fix": "bun run buddy lint:fix",
     "serve": "bun run buddy serve",
-    "serve:pages": "bun run buddy serve:pages",
+    "serve:views": "bun run buddy serve:views",
     "serve:functions": "bun run buddy serve:functions",
     "make": "bun run buddy make",
     "make:component": "bun run buddy make:component",
@@ -98,7 +98,6 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "pg": "^8.11.3",
     "stacks": "workspace:*"
   },
   "lint-staged": {
@@ -108,5 +107,16 @@
     "commitizen": {
       "path": ".stacks/node_modules/cz-git"
     }
-  }
+  },
+  "workspaces": [
+    ".stacks/core/*",
+    ".stacks/docs/*",
+    ".stacks/fonts/*",
+    ".stacks/ide/*",
+    ".stacks/scripts/*",
+    ".stacks/stacks/*",
+    ".stacks/vcs/*",
+    ".stacks",
+    "storage/framework/*"
+  ]
 }
