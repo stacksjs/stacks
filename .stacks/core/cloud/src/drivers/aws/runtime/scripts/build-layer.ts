@@ -63,6 +63,7 @@ export class BuildCommand extends Command {
 
     this.debug('Response:', response.status, response.statusText)
     if (!response.ok) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const reason = await response.text()
       this.error(reason, { exit: 1 })
     }

@@ -140,7 +140,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  * events.emit('user:registered', { name: 'Chris'})
  * useEvents.emit('user:registered', { name: 'Chris'})
  * ````
-
+ *
  * @example To capture an event, you may use any of the following approaches:
  * ```ts
  * useListen('user:registered', (user) => console.log(user))

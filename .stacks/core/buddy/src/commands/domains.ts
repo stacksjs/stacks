@@ -6,15 +6,13 @@ import { Action, ExitCode } from '@stacksjs/types'
 
 export function domains(buddy: CLI) {
   const descriptions = {
-    add: 'Add a domain to your project',
-    domain: 'The domain to add',
-    remove: 'Removes a domain from your project',
+    add: 'Add a domain to your cloud',
+    remove: 'Remove a domain from your cloud',
     verbose: 'Enable verbose output',
   }
 
   buddy
-    .command('domains:add', descriptions.add)
-    .option('<domain>', descriptions.domain)
+    .command('domains:add <domain>', descriptions.add)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DomainsOptions) => {
       const perf = await intro('buddy domains:add')
@@ -30,12 +28,12 @@ export function domains(buddy: CLI) {
     })
 
   buddy
-    .command('domains:remove', descriptions.remove)
-    .option('<domain>', descriptions.domain)
+    .command('domains:remove <domain>', descriptions.remove)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DomainsOptions) => {
+    // TODO: .option('--yes', 'Skip the confirmation prompt', { default: false })
+    .action(async (domain: string, options: DomainsOptions) => {
       const perf = await intro('buddy domains:remove')
-      const result = await runAction(Action.DomainsRemove, options)
+      const result = await runAction(Action.DomainsRemove, { ...options, domain })
 
       if (result.isErr()) {
         await outro('While running the domains:remove command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)

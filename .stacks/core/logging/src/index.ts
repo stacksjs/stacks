@@ -3,14 +3,11 @@ import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { bold, green, prompts } from '@stacksjs/cli'
 import { ray as debug } from 'node-ray'
+import { ExitCode } from '@stacksjs/types'
 import type { StacksError } from '@stacksjs/types'
 
 export function dump(...args: any[]) {
   return debug(...args)
-}
-
-export function dd(...args: any[]) {
-  return dump(...args).showApp()
 }
 
 export const logger = console
@@ -26,4 +23,9 @@ export const log = {
   prompt: prompts,
   dump,
   dd,
+}
+
+export function dd(...args: any[]) {
+  args.forEach(arg => log.info(arg))
+  process.exit(ExitCode.Success)
 }

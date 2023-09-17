@@ -151,7 +151,7 @@ export type ActionOption = 'types' | 'domains' | 'count'
  */
 export type ActionOptions = {
   [key in ActionOption]?: boolean | number;
-} & CliOptions
+} & CliOptions & DomainsOptions
 
 export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'
 export type BuildOptions = {
@@ -215,7 +215,7 @@ export type TestOptions = CliOptions & {
   showReport?: boolean
 }
 export type DomainsOptions = CliOptions & {
-  domain?: boolean
+  domain?: string
 }
 
 export interface CleanOptions extends CliOptions { }
@@ -245,7 +245,7 @@ export enum NpmScript {
   Clean = 'rimraf bun.lockb node_modules/ .stacks/**/dist',
   Dev = 'dev',
   DevDesktop = 'dev:desktop',
-  DevPages = 'dev:pages',
+  DevViews = 'dev:views',
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
   Lint = 'eslint .',

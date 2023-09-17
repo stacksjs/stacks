@@ -32,7 +32,7 @@
     "dev:components": "pnpm buddy dev:components",
     "dev:desktop": "pnpm buddy dev:desktop",
     "dev:docs": "pnpm buddy dev:docs",
-    "dev:pages": "pnpm buddy dev:pages",
+    "dev:views": "pnpm buddy dev:views",
     "dev:functions": "pnpm buddy dev:functions // todo: opens the auto-generated web server of functions",
     "development": "pnpm buddy dev",
     "build": "pnpm buddy build",
