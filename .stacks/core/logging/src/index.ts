@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
-import { bold, green, prompts } from '@stacksjs/cli'
-import { ray as debug } from 'node-ray'
+import { bold, green } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { StacksError } from '@stacksjs/types'
 
@@ -13,7 +12,7 @@ export const log = {
   error: (err: string | StacksError, options?: any) => handleError(err, options),
   warn: (...args: any[]) => logger.warn(...args),
   debug: (...args: any[]) => logger.debug(...args),
-  prompt: prompts,
+  // prompt: prompts,
   dump,
   dd,
 }

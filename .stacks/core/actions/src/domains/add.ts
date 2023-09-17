@@ -3,7 +3,7 @@ import { createHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { projectStoragePath } from '@stacksjs/path'
-import { italic, parseOptions } from '@stacksjs/cli'
+import { italic, parseOptions, prompt } from '@stacksjs/cli'
 import { logger } from '@stacksjs/logging'
 
 interface AddOptions {
@@ -42,5 +42,3 @@ logger.log('')
 logger.log('✅ Added your domain')
 logger.log(`  Nameservers: ${nameservers.join(', ')}`)
 logger.log(`  Cached in: ${projectStoragePath('framework/cache/nameservers.txt')}`)
-logger.log('')
-logger.log(italic('Please update your domain nameservers to the above values.'))

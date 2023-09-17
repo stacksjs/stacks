@@ -2,6 +2,7 @@ import process from 'node:process'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
+import { logger } from '@stacksjs/logging'
 import { Action, ExitCode } from '@stacksjs/types'
 
 export function domains(buddy: CLI) {
@@ -23,7 +24,7 @@ export function domains(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Added your domain', { startTime: perf, useSeconds: true })
+      await outro('Added your domain.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
