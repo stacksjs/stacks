@@ -47,6 +47,7 @@ export interface DnsOptions {
   cname: CNameRecord[]
   mx: MXRecord[]
   txt: TxtRecord[]
+  nameservers: string[]
 }
 
 export type DnsConfig = Partial<DnsOptions>

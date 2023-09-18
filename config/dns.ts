@@ -28,9 +28,10 @@ export default {
       ttl: 300,
     },
   ],
-
   aaaa: [],
   cname: [],
   mx: [],
   txt: [],
+
+  nameservers: []
 } satisfies DnsConfig

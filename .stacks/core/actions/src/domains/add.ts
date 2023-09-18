@@ -49,7 +49,7 @@ nameservers.forEach((nameserver, index) => {
   logger.log(`  ${emojis[index]}  Nameserver: ${nameserver}`)
 })
 logger.log('')
-logger.log(italic(`cached in ${projectStoragePath('framework/cache/nameservers.txt')}`))
+logger.log(italic(`stored in ${projectConfigPath('dns.ts')}`))
 logger.log('')
 logger.log('Once the nameservers have been updated, re-run the following command:')
 logger.log('')
