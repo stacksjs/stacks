@@ -33,5 +33,5 @@ export default {
   mx: [],
   txt: [],
 
-  nameservers: []
+  nameservers: [],
 } satisfies DnsConfig

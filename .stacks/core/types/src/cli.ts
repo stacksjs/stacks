@@ -75,9 +75,8 @@ export interface OutroOptions extends CliOptions {
   type?: 'success' | 'error' | 'warning' | 'info'
   startTime?: number
   useSeconds?: boolean
-  isError?: boolean
   quiet?: boolean
-  successMessage?: string
+  message?: string
 }
 
 export interface IntroOptions {
@@ -216,6 +215,7 @@ export type TestOptions = CliOptions & {
 }
 export type DomainsOptions = CliOptions & {
   domain?: string
+  yes?: boolean
 }
 
 export interface CleanOptions extends CliOptions { }

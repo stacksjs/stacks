@@ -80,7 +80,7 @@ async function hasUserDomainBeenAddedToCloud(domainName?: string) {
   return false
 }
 
-async function addDomain(options: DeployOptions, startTime: number) {
+export async function addDomain(options: DeployOptions, startTime: number) {
   const result = await runAction(Action.DomainsAdd, options)
 
   if (result.isErr()) {

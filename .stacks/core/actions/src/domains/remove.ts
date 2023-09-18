@@ -35,6 +35,3 @@ if (result.isErr()) {
   handleError(result.error)
   process.exit(1)
 }
-
-logger.log('')
-logger.log('✅ Removed your domain')

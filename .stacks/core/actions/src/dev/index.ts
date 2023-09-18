@@ -1,5 +1,4 @@
 import { log } from '@stacksjs/logging'
-import { frameworkPath } from '@stacksjs/path'
 import { runCommand } from '@stacksjs/cli'
 import type { DevOptions } from '@stacksjs/types'
 import { Action, NpmScript } from '@stacksjs/types'

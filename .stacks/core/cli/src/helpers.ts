@@ -4,7 +4,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { version } from '../package.json'
 import { spinner } from './spinner'
-import { bgCyan, bold, cyan, dim, italic } from './utilities'
+import { bgCyan, bold, cyan, dim, gray, green, italic } from './utilities'
 
 /**
  * Prints the intro message.
@@ -30,21 +30,11 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
  * Prints the outro message.
  */
 export function outro(text: string, options: OutroOptions, error?: Error | string) {
-  const successMessage = options?.successMessage
+  const message = options?.message || text
 
   return new Promise((resolve) => {
-    if (options.isError) {
-      if (error)
-        handleError(error)
-    }
-    else {
-      if (options?.type === 'info')
-        log.info(text)
-
-      // the following condition triggers in the case of "Cleaned up" messages
-      if (options?.successMessage !== text)
-        log.success(text)
-    }
+    if (error)
+      handleError(error)
 
     if (options.startTime) {
       let time = performance.now() - options.startTime
@@ -57,10 +47,21 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       if (options.quiet === true)
         return resolve(ExitCode.Success)
 
-      if (options.isError)
+      if (error)
         log.error(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] Failed`)
+      else if (options.type === 'info')
+        log.info(`${dim(gray(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`))} ${message ?? 'Complete'}`)
       else
-        log.success((`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] ${successMessage ?? 'Complete'}`))
+        log.info(`${dim(gray(bold(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(message ?? 'Complete'))}`)
+    }
+
+    else {
+      if (options?.type === 'info')
+        log.info(text)
+
+      // the following condition triggers in the case of "Cleaned up" messages
+      else if (message !== text)
+        log.success(text)
     }
 
     return resolve(ExitCode.Success)

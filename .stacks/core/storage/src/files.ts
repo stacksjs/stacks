@@ -1,7 +1,7 @@
 import type { BunFile } from 'bun'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
-import { componentsPath, dirname, functionsPath, join, projectPath } from '@stacksjs/path'
+import { dirname, join, path as p } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 import { existsSync, fs } from './fs'
 
@@ -92,7 +92,7 @@ export async function writeTextFile(file: TextFile): Promise<number> {
  * Determine whether a path exists.
  */
 export function isFile(path: string): boolean {
-  return fs.existsSync(projectPath(path))
+  return fs.existsSync(path)
 }
 
 /**
@@ -103,11 +103,11 @@ export function hasFiles(folder: string): boolean {
 }
 
 export function hasComponents(): boolean {
-  return hasFiles(componentsPath())
+  return hasFiles(p.componentsPath())
 }
 
 export function hasFunctions(): boolean {
-  return hasFiles(functionsPath())
+  return hasFiles(p.functionsPath())
 }
 
 export function deleteFiles(dir: string, exclude: string[] = []) {
@@ -156,15 +156,7 @@ export function put(path: string, contents: string) {
 }
 
 export async function get(path: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, text) => {
-      if (err)
-        reject(err)
-
-      else
-        resolve(text)
-    })
-  })
+  return Bun.file(path).text()
 }
 
 export const files = {
