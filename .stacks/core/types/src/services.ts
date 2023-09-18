@@ -4,6 +4,11 @@ export interface ServicesOptions {
     apiKey: string
   }
 
+  godaddy?: {
+    apiKey: string
+    apiSecret: string
+  }
+
   meilisearch?: {
     appId: string
     apiKey: string

@@ -1,29 +1,26 @@
 {
-  "name": "@stacksjs/dns",
+  "name": "@stacksjs/whois",
   "type": "module",
   "version": "0.57.4",
-  "description": "Easily manage your DNS.",
+  "description": "Easily get whois info.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/dns#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/whois#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/core/dns"
+    "directory": "./.stacks/core/whois"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "dns",
+    "whois",
     "domain",
     "management",
-    "custom emails",
     "stacks",
     "aws",
-    "route53",
-    "framework",
     "typescript",
     "javascript"
   ],
@@ -50,24 +47,14 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-route-53": "^3.414.0",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.96.2"
+    "node-fetch": "^3.3.2",
+    "socks": "^2.7.1"
   },
   "dependencies": {
-    "@aws-sdk/client-route-53": "^3.414.0",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.96.2"
+    "node-fetch": "^3.3.2",
+    "socks": "^2.7.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.96.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

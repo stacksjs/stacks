@@ -21,6 +21,11 @@ export default {
     apiKey: '',
   },
 
+  godaddy: {
+    apiKey: '',
+    apiSecret: '',
+  },
+
   meilisearch: {
     appId: '',
     apiKey: '',

@@ -17,6 +17,7 @@ export const enums: EnumObject = {
 
 const handler = {
   get: (target: Env, key: EnvKey) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const value = target[key] as any
 
     if (value instanceof ValidationEnum)

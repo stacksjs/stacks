@@ -257,5 +257,6 @@ vue-demi
 vueform
 vueuse
 wafv
+whois
 wmaurer
 zixuanchen

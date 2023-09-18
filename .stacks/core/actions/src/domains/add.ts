@@ -3,7 +3,8 @@ import { createHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { projectStoragePath } from '@stacksjs/path'
-import { italic, parseOptions, prompt } from '@stacksjs/cli'
+import { italic, parseOptions } from '@stacksjs/cli'
+import { whois } from '@stacksjs/whois'
 import { logger } from '@stacksjs/logging'
 
 interface AddOptions {
@@ -52,6 +53,7 @@ logger.log(italic(`cached in ${projectStoragePath('framework/cache/nameservers.t
 logger.log('')
 logger.log('Once the nameservers have been updated, re-run the following command:')
 logger.log('')
-logger.log(`➡️  ${italic('buddy deploy')}`)
+logger.log(`  ➡️  ${italic('buddy deploy')}`)
 logger.log('')
-logger.log(italic('If you have any questions, please reach out to us via Discord.'))
+logger.log(`Your domain registrar is: ${(await whois(options.domain, true)).parsedData.Registrar}`)
+logger.log('If you have any questions, please reach out to us via Discord.')
