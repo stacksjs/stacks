@@ -142,6 +142,7 @@ minzipped
 mkdirs
 mkdist
 mult
+nameserver
 netcore
 neverthrow
 nexe

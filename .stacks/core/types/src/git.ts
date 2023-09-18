@@ -72,7 +72,7 @@ export interface GitOptions {
    * @example
    * ```ts
    * messages: {
-   *   type: 'Select the type of change that you\'re committing:',
+   *   type: 'Select the type of change that you’re committing:',
    *   scope: 'Denote the SCOPE of this change:',
    *   subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
    *   body: 'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',

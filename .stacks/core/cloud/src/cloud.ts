@@ -278,7 +278,7 @@ export class StacksCloud extends Stack {
 
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${config.app.env}`,
+        bucketName: `${this.domain}-logs-${config.app.env}-${Date.now()}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,

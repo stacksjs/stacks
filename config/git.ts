@@ -21,7 +21,7 @@ export default {
   ],
 
   messages: {
-    type: 'Select the type of change that you\'re committing:',
+    type: 'Select the type of change that you’re committing:',
     scope: 'Select the SCOPE of this change (optional):',
     customScope: 'Select the SCOPE of this change:',
     subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
@@ -43,7 +43,7 @@ export default {
     { value: 'test', name: 'test:     ✅  Adding missing tests or adjusting existing tests', emoji: ':white_check_mark:' },
     { value: 'build', name: 'build:    📦️  Changes that affect the build system or external dependencies', emoji: ':package:' },
     { value: 'ci', name: 'ci:       🎡  Changes to our CI configuration files and scripts', emoji: ':ferris_wheel:' },
-    { value: 'chore', name: 'chore:    🔨  Other changes that don\'t modify src or test files', emoji: ':hammer:' },
+    { value: 'chore', name: 'chore:    🔨  Other changes that don’t modify src or test files', emoji: ':hammer:' },
     { value: 'revert', name: 'revert:   ⏪️  Reverts a previous commit', emoji: ':rewind:' },
   ],
 } satisfies GitConfig

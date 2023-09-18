@@ -26,7 +26,8 @@ if (!options.domain) {
   }
 }
 
-logger.log(`Removing domain: ${options.domain}`)
+if (options.verbose)
+  logger.log(`Removing domain: ${options.domain}`)
 
 const result = await deleteHostedZone(options.domain)
 
