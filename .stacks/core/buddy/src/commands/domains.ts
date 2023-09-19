@@ -32,15 +32,13 @@ export function domains(buddy: CLI) {
       const opts = { ...options, domain }
       const startTime = await intro('buddy domains:remove')
 
-      // prompt for confirmation
       if (!opts.yes) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',
           message: `Are you sure you want to remove ${domain}?`,
         })
-
-        console.log('confirm', confirm)
 
         if (!confirm) {
           await outro('Cancelled the domains:remove command', { startTime, useSeconds: true, type: 'info' })
@@ -55,7 +53,7 @@ export function domains(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Removed your domain', { startTime, useSeconds: true })
+      await outro('Removed your domain.', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 }

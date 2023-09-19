@@ -5,6 +5,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { italic, parseOptions } from '@stacksjs/cli'
 import { whois } from '@stacksjs/whois'
 import { logger } from '@stacksjs/logging'
+import { projectConfigPath } from '@stacksjs/path'
 
 interface AddOptions {
   domain?: string
@@ -35,12 +36,11 @@ if (result.isErr()) {
 }
 
 const nameservers = result.value
+const registrar = (await whois(options.domain, true)).parsedData.Registrar
 
 logger.log('')
-logger.log('✅ Successfully added your domain.')
-logger.log('')
-logger.log('ℹ️  Please note, before you can you continue your deployment process,')
-logger.log('   you will need to update your nameservers to the following:')
+logger.log('ℹ️  Please note, before continuing your deployment process,')
+logger.log(`   update your ${registrar} nameservers to the following:`)
 
 const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
 logger.log('')
@@ -54,5 +54,3 @@ logger.log('Once the nameservers have been updated, re-run the following command
 logger.log('')
 logger.log(`  ➡️  ${italic('buddy deploy')}`)
 logger.log('')
-logger.log(`Your domain registrar is: ${(await whois(options.domain, true)).parsedData.Registrar}`)
-logger.log('If you have any questions, please reach out to us via Discord.')

@@ -40,9 +40,9 @@ export function deploy(buddy: CLI) {
       // and then exit the process with prompts for the user to update their nameservers
       else {
         console.log('')
-        console.log(`ℹ️  It appears to be your first ${italic(domain)} deployment.`)
+        console.log(`👋  It appears to be your first ${italic(domain)} deployment.`)
         console.log('')
-        console.log(italic('Let’s ensure your it is connected properly.'))
+        console.log(italic('Let’s ensure your it is all connected properly.'))
         console.log(italic('One moment...'))
         console.log('')
 
@@ -84,7 +84,7 @@ export async function addDomain(options: DeployOptions, startTime: number) {
   const result = await runAction(Action.DomainsAdd, options)
 
   if (result.isErr()) {
-    await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error)
+    await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }
 

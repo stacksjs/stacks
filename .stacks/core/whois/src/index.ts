@@ -430,8 +430,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
         outputData = shallowCopy(options.parseData)
 
       try {
-        console.error('?asd!')
-
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const parsedData = WhoIsParser.parseData(rawData, outputData)
         return {
           _raw: rawData,
