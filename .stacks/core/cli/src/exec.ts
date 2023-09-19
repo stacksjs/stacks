@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
@@ -30,11 +31,11 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     stdout: options?.stdout || 'inherit',
     stderr: options?.stderr || 'inherit',
     cwd: options?.cwd || import.meta.dir,
-    // onExit(subprocess, exitCode, signalCode, error) {
-    //   console.log('onExit', { subprocess, exitCode, signalCode, error })
-    //   // if (exitCode !== ExitCode.Success && exitCode)
-    //   //   handleError(`Failed to execute command: ${cmd.join(' ')}`)
-    // },
+    onExit(subprocess, exitCode, signalCode, error) {
+      // console.log('onExit', { subprocess, exitCode, signalCode, error })
+      if (exitCode !== ExitCode.Success && exitCode)
+        process.exit(exitCode)
+    },
   })
 
   const exited = await proc.exited
@@ -71,10 +72,11 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
     stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? import.meta.dir,
     // env: { ...Bun.env, ...options?.env },
-    // onExit(subprocess: any, exitCode: any, signalCode: any, error: any) {
-    //   if (exitCode !== ExitCode.Success)
-    //     log.error(error)
-    // },
+    onExit(subprocess, exitCode, signalCode, error) {
+      // console.log('onExit', { subprocess, exitCode, signalCode, error })
+      if (exitCode !== ExitCode.Success && exitCode)
+        process.exit(exitCode)
+    },
   })
 
   if (proc.success)

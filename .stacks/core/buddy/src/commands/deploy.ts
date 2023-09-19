@@ -42,7 +42,7 @@ export function deploy(buddy: CLI) {
         console.log('')
         console.log(`👋  It appears to be your first ${italic(domain)} deployment.`)
         console.log('')
-        console.log(italic('Let’s ensure your it is all connected properly.'))
+        console.log(italic('Let’s ensure it is all connected properly.'))
         console.log(italic('One moment...'))
         console.log('')
 
