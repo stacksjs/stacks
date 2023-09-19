@@ -18,7 +18,7 @@ export function tinker(buddy: CLI) {
       const result = await runAction(Action.Tinker, options)
 
       if (result.isErr()) {
-        await outro('While running the tinker command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error || undefined)
+        await outro('While running the tinker command, there was an issue', { startTime: perf, useSeconds: true }, result.error || undefined)
         process.exit()
       }
 

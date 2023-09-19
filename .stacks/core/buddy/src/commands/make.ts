@@ -195,7 +195,7 @@ export function make(buddy: CLI) {
       const result = await createNotification(options)
 
       if (!result) {
-        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true, isError: true })
+        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true })
         process.exit()
       }
 

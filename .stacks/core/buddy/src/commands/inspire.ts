@@ -13,7 +13,7 @@ export function inspire(buddy: CLI) {
       const result = await runAction(Action.Inspire)
 
       if (result.isErr()) {
-        await outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running the inspire command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit()
       }
 

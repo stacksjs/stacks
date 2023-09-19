@@ -97,7 +97,7 @@ export class BuildCommand extends Command {
           level: 9,
         },
       })
-      .pipe(createWriteStream(p.projectStoragePath(`app/cloud/${output}`)))
+      .pipe(createWriteStream(p.projectStoragePath(`framework/cloud/${output}`)))
     this.log('Saved')
   }
 }

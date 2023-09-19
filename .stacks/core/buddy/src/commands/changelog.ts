@@ -20,7 +20,7 @@ export function changelog(buddy: CLI) {
       const result = await runAction(Action.Changelog, options)
 
       if (result.isErr()) {
-        await outro('While running the changelog command, there was an issue', { ...options, startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running the changelog command, there was an issue', { ...options, startTime: perf, useSeconds: true }, result.error)
         process.exit()
       }
 

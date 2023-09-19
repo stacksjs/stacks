@@ -246,9 +246,18 @@ export class StacksCloud extends Stack {
   }
 
   manageZone() {
-    this.zone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: this.domain,
-    })
+    // lets see if the zone already exists
+    try {
+      this.zone = route53.PublicHostedZone.fromLookup(this, 'HostedZone', {
+        domainName: this.domain,
+      })
+    }
+    // if not, lets create it
+    catch (error) {
+      this.zone = new route53.PublicHostedZone(this, 'HostedZone', {
+        zoneName: this.domain,
+      })
+    }
   }
 
   manageCertificate() {
@@ -278,7 +287,7 @@ export class StacksCloud extends Stack {
 
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${config.app.env}-${Date.now()}`,
+        bucketName: `${this.domain}-logs-${config.app.env}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -366,6 +375,16 @@ export class StacksCloud extends Stack {
       },
 
       additionalBehaviors: this.additionalBehaviors(),
+
+      // Add custom error responses
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responsePagePath: '/index.html',
+          responseHttpStatus: 200,
+          ttl: Duration.seconds(0),
+        },
+      ],
     })
 
     return { cdn, originAccessIdentity, cdnCachePolicy }
@@ -473,12 +492,6 @@ export class StacksCloud extends Stack {
         description: 'The URL of the deployed documentation',
       })
     }
-
-    // Output the nameservers of the hosted zone
-    // new Output(this, 'Nameservers', {
-    //   value: Fn.join(', ', zone.hostedZoneNameServers),
-    //   description: 'Nameservers for the application domain',
-    // })
   }
 
   deploy() {

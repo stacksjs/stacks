@@ -3,7 +3,7 @@ import { zip } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { logger } from '@stacksjs/logging'
 
-logger.log('✓ zipping your API for Lambda usage...')
+logger.log('zipping your API for Lambda usage...')
 
 const from = [
   'bootstrap',
@@ -19,3 +19,4 @@ await zip(from, to, {
 })
 
 logger.log('✓ zipped your API')
+logger.log('')

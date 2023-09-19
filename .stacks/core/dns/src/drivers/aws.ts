@@ -1,9 +1,7 @@
 import { Route53 } from '@aws-sdk/client-route-53'
 import { err, ok } from '@stacksjs/error-handling'
-import { fs, storage } from '@stacksjs/storage'
+import { fs } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
-import { dd } from '@stacksjs/logging'
-import dns from '~/config/dns'
 
 // todo: need to consider that the domain may be in a non-AWS account
 // in which case, we need to ensure that the user's nameservers point to AWS
@@ -69,36 +67,28 @@ export async function createHostedZone(domainName: string) {
   if (!nameServers)
     return err((`No nameservers found for domain: ${domainName}`))
 
-  // dns.nameservers = nameServers
-  // dd('dns', dns)
-  // The path to the file
-  const filePath = p.projectConfigPath('dns.ts')
-
-  // Read the current file content
-  const fileContent = await Bun.file(filePath).text()
-
-  // Extract the current object
-  const start = fileContent.indexOf('export default {')
-  const end = fileContent.lastIndexOf('}') + 1
-  const currentObject = fileContent.slice(start, end).replace('export default ', '')
-  // The new object
-  const newObject = { nameservers: nameServers }
-
-  // Merge the current object with the new object
-  const updatedObject = { ...currentObject, ...newObject }
-
-  // Prepare the updated file content
-  const updatedFileContent = `${fileContent.slice(0, start)}export default ${JSON.stringify(updatedObject, null, 2)}${fileContent.slice(end)}`
-
-  // Write the updated object back to the file
-  fs.writeFileSync(filePath, updatedFileContent)
-
-  // update the nameservers in the dns config file
-  // const data = await storage.get(p.projectConfigPath('dns.ts'))
+  updateNameservers(nameServers)
 
   // await storage.writeFile(p.projectConfigPath('dns.ts'), JSON.stringify(dns))
 
   return ok(nameServers)
+}
+
+function updateNameservers(nameservers: string[]) {
+  try {
+    const path = p.projectConfigPath('dns.ts')
+    const fileContent = fs.readFileSync(path, 'utf-8')
+    const modifiedContent = fileContent.replace(
+      /nameservers: \[.*?\]/s,
+            `nameservers: [${nameservers.map(ns => `'${ns}'`).join(', ')}]`,
+    )
+    fs.writeFileSync(path, modifiedContent, 'utf-8')
+    // eslint-disable-next-line no-console
+    console.log('Nameservers updated successfully.')
+  }
+  catch (err) {
+    console.error('Error updating nameservers:', err)
+  }
 }
 
 // deleteHostedZone('stacksjs.com').catch(console.error)

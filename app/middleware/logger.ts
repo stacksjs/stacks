@@ -1,4 +1,4 @@
-// import { Middleware } from '@stackjs/router'
+// import { Middleware } from '@stacksjs/router'
 
 // export default new Middleware({
 //   name: 'logger',

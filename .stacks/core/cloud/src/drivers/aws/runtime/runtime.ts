@@ -1,4 +1,3 @@
-import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
 import { AwsClient } from 'aws4fetch'
 
@@ -23,11 +22,12 @@ function log(level: string, ...args: any[]): void {
   if (!args.length)
     return
 
-  const message = Bun.inspect(...args).replace(/\n/g, '\r')
+  const messages = args.map(arg => Bun.inspect(arg).replace(/\n/g, '\r'))
   if (requestId === undefined)
-    logger(level, message)
+    logger(level, ...messages)
+
   else
-    logger(level, `RequestId: ${requestId}`, message)
+    logger(level, `RequestId: ${requestId}`, ...messages)
 }
 
 console.log = (...args: any[]) => log('INFO', ...args)
@@ -297,7 +297,6 @@ function formatBody(body?: string, isBase64Encoded?: boolean): string | null {
 }
 
 interface HttpEventV1 {
-  readonly version: '1.0'
   readonly requestContext: {
     readonly requestId: string
     readonly domainName: string
@@ -313,15 +312,12 @@ interface HttpEventV1 {
 }
 
 function isHttpEventV1(event: any): event is HttpEventV1 {
-  return event.version === '1.0' && typeof event.requestContext === 'object'
+  return !event.Records && event.version !== '2.0' && event.version !== '0' && typeof event.requestContext === 'object'
 }
 
 function formatHttpEventV1(event: HttpEventV1): Request {
   const request = event.requestContext
   const headers = new Headers()
-  for (const [name, value] of Object.entries(event.headers))
-    headers.append(name, value)
-
   for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
     for (const value of values)
       headers.append(name, value)
@@ -329,9 +325,6 @@ function formatHttpEventV1(event: HttpEventV1): Request {
   const hostname = headers.get('Host') ?? request.domainName
   const proto = headers.get('X-Forwarded-Proto') ?? 'http'
   const url = new URL(request.path, `${proto}://${hostname}/`)
-  for (const [name, value] of new URLSearchParams(event.queryStringParameters))
-    url.searchParams.append(name, value)
-
   for (const [name, values] of Object.entries(event.multiValueQueryStringParameters ?? {})) {
     for (const value of values ?? [])
       url.searchParams.append(name, value)
@@ -361,7 +354,7 @@ interface HttpEventV2 {
 }
 
 function isHttpEventV2(event: any): event is HttpEventV2 {
-  return event.version === '2.0' && typeof event.requestContext === 'object'
+  return !event.Records && event.version === '2.0' && typeof event.requestContext === 'object'
 }
 
 function formatHttpEventV2(event: HttpEventV2): Request {
@@ -386,6 +379,10 @@ function formatHttpEventV2(event: HttpEventV2): Request {
     headers,
     body: formatBody(event.body, event.isBase64Encoded),
   })
+}
+
+function isHttpEvent(event: any): boolean {
+  return isHttpEventV1(event) || isHttpEventV2(event)
 }
 
 interface WebSocketEvent {
@@ -540,7 +537,7 @@ class LambdaServer implements Server {
         statusCode: 200,
       }
     }
-    if (!request?.headers.has('Host'))
+    if (!isHttpEvent(event.event))
       return response.text()
 
     return formatResponse(response)

@@ -4,7 +4,8 @@ import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as storage from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
-import { type UpgradeOptions } from '@stacksjs/types'
+import type { UpgradeOptions } from '@stacksjs/types'
+import { version } from '../../../package.json'
 
 // import { determineDebugLevel } from '@stacksjs/utils'
 
@@ -47,8 +48,7 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 
   log.info('Downloading framework updates...')
   await runCommand(`giget stacks ${tempFolderName}`, options)
-  const version = (await storage.readJsonFile(projectPath(`${tempFolderName}/.stacks/version`))).data
-  log.success('Your framework updated correctly to version: ', version)
+  log.success(`Your framework updated correctly to version: v${version}`)
 }
 
 // export async function updateDependencies(options: UpgradeOptions) {
@@ -57,7 +57,7 @@ export async function updateDependencies() {
   // const result = await runCommand(NpmScript.UpgradeDependencies, options)
 
   // if (result.isErr()) {
-  //   outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+  //   outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
   //   process.exit()
   // }
 

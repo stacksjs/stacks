@@ -18,7 +18,7 @@ export function fresh(buddy: CLI) {
       const result = await runAction(Action.Fresh, { ...options, stdout: 'inherit' })
 
       if (result.isErr()) {
-        await outro('While running `buddy fresh`, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running `buddy fresh`, there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 

@@ -18,7 +18,7 @@ export function seed(buddy: CLI) {
       const result = await runAction(Action.Seed, options)
 
       if (result.isErr()) {
-        await outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running the seed command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 

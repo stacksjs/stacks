@@ -20,7 +20,7 @@ export function lint(buddy: CLI) {
       const result = await runAction(Action.Lint, { ...options })
       // console.log('res', result)
       if (result.isErr()) {
-        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true, isError: true }, result.error)
+        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
         process.exit()
       }
 

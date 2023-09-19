@@ -3,7 +3,7 @@
 
 import { Kysely, MysqlDialect, SqliteDialect } from 'kysely'
 import { createPool } from 'mysql2'
-import { Database } from "bun:sqlite"
+import { Database } from 'bun:sqlite'
 
 const driver = 'sqlite'
 
@@ -11,7 +11,7 @@ export interface DatabaseType {
   user: any
 }
 
-const sqdb = new Database("mydb.sqlite", { create: true })
+const sqdb = new Database('mydb.sqlite', { create: true })
 
 let dialect
 

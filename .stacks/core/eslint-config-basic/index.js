@@ -52,7 +52,6 @@ module.exports = {
     // force exclude
     '**/.vitepress/cache',
     '**/storage/framework',
-    '**/runtime.ts', // TODO: remove this due to .stacks/core/cloud/src/drivers/aws/runtime/runtime.ts
     '**/server.js',
   ],
   plugins: [

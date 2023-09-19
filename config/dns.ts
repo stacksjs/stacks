@@ -18,13 +18,7 @@ export default {
 
     {
       name: 'www',
-      address: '192.0.2.2',
-      ttl: 300,
-    },
-
-    {
-      name: 'docs',
-      address: '192.0.2.2',
+      address: '@',
       ttl: 300,
     },
   ],

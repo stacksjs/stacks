@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import process from 'node:process'
-import { type CLI, type UpgradeOptions } from '@stacksjs/types'
+import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
@@ -55,7 +55,7 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.Upgrade, { ...options })
 
       if (result.isErr()) {
-        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error)
+        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit()
       }
 
@@ -89,7 +89,7 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true, isError: true }, result.error) // FIXME: should not have to cast
+        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
         process.exit()
       }
 
