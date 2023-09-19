@@ -5,7 +5,7 @@ import { fieldAssociation, fieldEntity, modelEntity } from './fields'
 const file = Bun.file('user-migration.ts')
 const writer = file.writer()
 
-const driver = 'mysql'
+const driver = 'sqlite'
 
 writer.write('import { Kysely, sql } from \'kysely\'\n')
 writer.write('import { db } from \'@stacksjs/database\'\n')
@@ -49,21 +49,16 @@ for (let modelIndex = 0; modelIndex < modelEntity.length; modelIndex++) {
     if (fieldAssociation[driver][fieldArrayElement.entity])
       entity += `${fieldAssociation[driver][fieldArrayElement.entity]}`
 
-    fieldEntity.forEach((entityField) => {
-      if (fieldArrayElement.entity === entityField)
-        entity += `(${fieldArrayElement.charValue})`
-    })
-
-    const isMaxLengthPresent = modelElement.fieldArray.some(item => item.entity === 'maxLength')
-
-    if (fieldAssociation[driver][fieldArrayElement.entity] === 'varchar' && !isMaxLengthPresent)
-      entity += '(255)'
+    // fieldEntity.forEach((entityField) => {
+    //   if (fieldArrayElement.entity === entityField)
+    //     entity += `(${fieldArrayElement.charValue})`
+    // })
   }
 
   writer.write(`    .addColumn('${modelElement.field}', '${entity}', (col) => col${characteristic})\n`)
 }
 
-writer.write('    .addColumn(\'created_at\', \'timestamp\', (col) => col.defaultTo(sql`now()`).notNull())\n')
+writer.write('    .addColumn(\'created_at\', \'timestamp\', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())\n')
 writer.write('    .execute()\n')
 writer.write('}\n\n')
 

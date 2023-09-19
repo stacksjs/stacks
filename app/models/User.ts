@@ -17,9 +17,9 @@ export default defineModel({
 
   fields: {
     name: {
+      default: 'test',
       validator: {
         rule: validator.string().minLength(3).maxLength(255),
-        // default: 'test',
         message: 'Name must be between 3 and 255 characters',
       },
 
@@ -28,6 +28,7 @@ export default defineModel({
 
     email: {
       unique: true,
+      default: 'test email',
       validator: {
         rule: validator.string().email(),
         message: 'Email must be a valid email address',

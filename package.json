@@ -98,6 +98,7 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
+    "better-sqlite3": "^8.6.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {

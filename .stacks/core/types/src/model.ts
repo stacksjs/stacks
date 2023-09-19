@@ -57,13 +57,12 @@ export interface ModelOptions extends Base {
 
 export interface Fields {
   [key: string]: {
-    default?: boolean
+    default?: string | number | boolean | Date
     unique?: boolean
     required?: boolean
     factory?: () => any
     validator?: {
       rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
-      default?: string | number | boolean | Date
       message: string
     }
     // validation?: String | Number | Boolean | Date
