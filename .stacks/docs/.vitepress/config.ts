@@ -17,7 +17,6 @@ export default {
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('framework/docs'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
-  assetsDir: p.resourcesPath('assets'),
   // @ts-expect-error - this may not be specified so we need to set a default
   lastUpdated: true,
 

@@ -56,8 +56,6 @@ const sidebar = {
       collapsible: true,
       items: [
         { text: 'Introduction', link: '/bootcamp/intro' },
-        { text: 'Linting & Formatting', link: '/bootcamp/linting' },
-        { text: 'Semantic Commits', link: '/bootcamp/sematic-commits' },
         {
           text: 'Let’s Build',
           items: [
@@ -77,6 +75,8 @@ const sidebar = {
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
           ],
         },
+        { text: 'Linting & Formatting', link: '/bootcamp/linting' },
+        { text: 'Semantic Commits', link: '/bootcamp/sematic-commits' },
         { text: 'Extend the Dashboard', link: '/bootcamp/dashboard' },
         { text: 'How to deploy?', link: '/bootcamp/deploy' },
         { text: 'How to test?', link: '/bootcamp/test' },
