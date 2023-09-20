@@ -19,6 +19,10 @@ await runCommand('bun run build-layer', {
   cwd: p.corePath('cloud'),
 })
 
+await runCommand('bun run build-edge', {
+  cwd: p.corePath('cloud'),
+})
+
 await runCommand('bun actions/src/zip/api.ts', {
   cwd: p.frameworkPath('core'),
 })

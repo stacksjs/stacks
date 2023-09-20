@@ -1,6 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @aws-lambda-powertools/metrics --external @aws-lambda-powertools/logger --external @aws-lambda-powertools/tracer --target bun', {
+const result = await runCommand('bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js && zip -r dist.zip dist/origin-request.js package.json', {
   cwd: import.meta.dir,
 })
 

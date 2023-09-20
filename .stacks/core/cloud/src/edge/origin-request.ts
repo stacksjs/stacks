@@ -10,7 +10,7 @@ const regexTrailingSlash = /.+\/$/ // e.g. "/some/" or "/some/page/" but not roo
 export function handler(event, context, callback) {
   const { request } = event.Records[0].cf
   const { uri } = request
-  const { suffix, appendToDirs, removeTrailingSlash } = config
+  const { suffix, appendToDirs } = config
 
   // Append ".html" to origin request
   if (suffix && uri.match(regexSuffixless)) {

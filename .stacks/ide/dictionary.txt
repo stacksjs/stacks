@@ -212,6 +212,7 @@ stacksjs
 strikethrough
 styleci
 stylelint
+suffixless
 supabase
 synctex
 tauri

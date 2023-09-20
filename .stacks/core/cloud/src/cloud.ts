@@ -349,6 +349,15 @@ export class StacksCloud extends Stack {
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
 
+    // this edge function ensures pretty docs urls
+    // and it will soon be reused for our Meema features
+    const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
+      description: 'The Stacks Origin Request function that prettifies URLs',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'dist/origin-request.handler',
+      code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip')),
+    })
+
     const cdn = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [this.domain],
       defaultRootObject: 'index.html',
@@ -367,6 +376,12 @@ export class StacksCloud extends Stack {
         origin: new origins.S3Origin(this.storage.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
+        edgeLambdas: [
+          {
+            eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+            functionVersion: originRequestFunction.currentVersion,
+          },
+        ],
         compress: config.cloud.cdn?.compress,
         allowedMethods: this.allowedMethods(),
         cachedMethods: this.cachedMethods(),
