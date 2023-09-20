@@ -77,7 +77,7 @@
     "constructs": "^10.2.70"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^3.5.0",
+    "@oclif/plugin-plugins": "^3.7.1",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
