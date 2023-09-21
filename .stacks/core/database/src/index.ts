@@ -1,7 +1,11 @@
 // export * from './migrations'
 // export * from './seeder''
 
-import { BunWorkerDialect } from 'kysely-bun-worker'
+import { storage } from '@stacksjs/storage'
+import { BunWorkerDialect } from './kysely-bun-worker'
+
+// eslint-disable-next-line no-console
+console.log('Hello from database!', storage)
 
 const dialect = new BunWorkerDialect({
   database: sqdb,
