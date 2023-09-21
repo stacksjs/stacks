@@ -98,7 +98,6 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "better-sqlite3": "^8.6.0",
     "stacks": "workspace:*"
   },
   "lint-staged": {
@@ -119,5 +118,9 @@
     ".stacks/vcs/*",
     ".stacks",
     "storage/framework/*"
-  ]
+  ],
+  "devDependencies": {
+    "kysely": "^0.26.3",
+    "kysely-wasm": "^0.4.0"
+  }
 }
