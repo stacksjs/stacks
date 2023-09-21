@@ -1,5 +1,6 @@
 import type { DatabaseConnection, Driver, QueryResult } from 'kysely'
 import { CompiledQuery } from 'kysely'
+import { path as p } from '@stacksjs/path'
 import type { EmitterOnce } from './mitt'
 import MittOnce from './mitt'
 import type { EventWithError, MainMsg, WorkerMsg } from './type'
@@ -17,7 +18,7 @@ export class BunWorkerDriver implements Driver {
 
   async init(): Promise<void> {
     this.worker = this.config?.worker ?? new Worker(
-      new URL('./worker', import.meta.url),
+      new URL('../src/kysely-bun-worker/worker', import.meta.url),
       { type: 'module' },
     )
     this.mitt = MittOnce<EventWithError>()

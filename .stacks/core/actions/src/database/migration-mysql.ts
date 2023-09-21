@@ -2,6 +2,9 @@ import User from '../../../../../app/models/User'
 import { fieldAssociation, fieldEntity, modelEntity } from './fields'
 
 const file = Bun.file('user-migration.ts')
+
+const driver = 'mysql'
+
 const writer = file.writer()
 
 writer.write('import { Kysely, sql } from \'kysely\'\n')

@@ -1,52 +1,39 @@
 // export * from './migrations'
 // export * from './seeder''
-
-import { storage } from '@stacksjs/storage'
+import { Kysely, MysqlDialect } from 'kysely'
+import { createPool } from 'mysql2'
 import { BunWorkerDialect } from './kysely-bun-worker'
 
-// eslint-disable-next-line no-console
-console.log('Hello from database!', storage)
+// const driver = config.database.default
+const driver = 'mysql'
 
-const dialect = new BunWorkerDialect({
-  database: sqdb,
+// const dbName = config.database.name
+
+export interface DatabaseType {
+  user: any
+}
+
+let dialect
+
+if (driver === 'sqlite') {
+  dialect = new BunWorkerDialect({
+    url: 'stacks.sqlite',
+  })
+}
+else {
+  dialect = new MysqlDialect({
+    pool: createPool({
+      database: 'stacks',
+      host: '127.0.0.1',
+      user: 'root',
+      password: '',
+      port: 3306,
+    }),
+  })
+}
+
+export const QueryBuilder = new Kysely<DatabaseType>({
+  dialect,
 })
 
-console.log(BunWorkerDialect)
-
-// import { Kysely, MysqlDialect, SqliteDialect } from 'kysely'
-// import { createPool } from 'mysql2'
-// import { Database } from "bun:sqlite"
-
-// const driver = 'sqlite'
-
-// export interface DatabaseType {
-//   user: any
-// }
-
-// const sqdb = new Database("mydb.sqlite", { create: true })
-
-// let dialect
-
-// if (driver === 'sqlite') {
-//   dialect = new SqliteDialect({
-//     database: sqdb,
-//   })
-// }
-// else {
-//   dialect = new MysqlDialect({
-//     pool: createPool({
-//       database: 'stacks',
-//       host: '127.0.0.1',
-//       user: 'root',
-//       password: '',
-//       port: 3306,
-//       connectionLimit: 10,
-//     }),
-//   })
-// }
-
-// console.log(dialect)
-
-// export const db = new Kysely<Database>({
-//   dialect,
-// })
+export const dbDialect = dialect
