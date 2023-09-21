@@ -11,6 +11,7 @@ import {
   aws_cloudfront as cloudfront,
   aws_ec2 as ec2,
   aws_efs as efs,
+  aws_iam as iam,
   aws_lambda as lambda,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
@@ -325,11 +326,38 @@ export class StacksCloud extends Stack {
       fileSystemName: `${config.app.name}-${config.app.env}-efs`,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
+      performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
+      throughputMode: efs.ThroughputMode.BURSTING,
+      enableAutomaticBackups: true,
+      encrypted: true,
+    })
+
+    const role = new iam.Role(this, 'InstanceRole', {
+      assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+    })
+
+    role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
+
+    new ec2.Instance(this, 'Instance', {
+      vpc: this.vpc,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      machineImage: new ec2.AmazonLinuxImage(),
+      role,
+      userData: ec2.UserData.custom(`
+    #!/bin/bash
+    yum update -y
+    yum install -y amazon-efs-utils
+    yum install -y git
+    yum install -y https://s3.us-east-1.amazonaws.com/amazon-ssm-us-east-1/latest/linux_amd64/amazon-ssm-agent.rpm
+    mkdir /mnt/efs
+    mount -t efs ${this.storage.fileSystem.fileSystemId}:/ /mnt/efs
+    git clone https://github.com/stacksjs/stacks.git /mnt/efs
+  `),
     })
 
     this.storage.accessPoint = new efs.AccessPoint(this, 'StacksAccessPoint', {
       fileSystem: this.storage.fileSystem,
-      path: '/public',
+      path: '/',
       posixUser: {
         uid: '1000',
         gid: '1000',

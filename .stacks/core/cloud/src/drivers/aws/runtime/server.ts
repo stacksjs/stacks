@@ -1,8 +1,6 @@
 import type { Server } from 'bun'
 import { serverResponse } from '@stacksjs/router'
 
-// import type { Server, ServerWebSocket } from 'bun'
-
 export default {
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
     // eslint-disable-next-line no-console
@@ -12,6 +10,7 @@ export default {
       headers: request.headers.toJSON(),
       body: request.body ? await request.text() : null,
     })
+
     if (server.upgrade(request)) {
       // eslint-disable-next-line no-console
       console.log('WebSocket upgraded')

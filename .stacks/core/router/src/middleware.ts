@@ -1,6 +1,6 @@
 import fs from 'node:fs'
-import path from 'node:path'
 import { promisify } from 'node:util'
+import { appPath } from '@stacksjs/path'
 import type { MiddlewareType } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareType {
@@ -32,6 +32,6 @@ async function importMiddlewares(directory: any) {
 }
 
 // Example usage:
-const middlewareDirectory = path.join(__dirname, '../../../../app/middleware')
+const middlewareDirectory = appPath('/app/middleware')
 
 export const middlewares = await importMiddlewares(middlewareDirectory)

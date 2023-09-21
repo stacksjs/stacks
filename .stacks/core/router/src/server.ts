@@ -9,7 +9,7 @@ const routesList: Route[] = await route.getRoutes()
 
 export function serve() {
   Bun.serve({
-    async fetch(req: Request) {
+    fetch(req: Request) {
       return serverResponse(req)
     },
   })
@@ -78,7 +78,6 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
 
   if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(route.callback)
-
     const response = Response.redirect(callback, statusCode)
 
     return noCache(response)
@@ -118,6 +117,7 @@ function noCache(response: Response) {
   response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   response.headers.set('Pragma', 'no-cache')
   response.headers.set('Expires', '0')
+
   return response
 }
 

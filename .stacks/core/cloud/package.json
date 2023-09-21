@@ -48,6 +48,8 @@
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
     "build-layer": "bun ./src/drivers/aws/runtime/scripts/build-layer.ts",
+    "publish-layer": "bun ./src/drivers/aws/runtime/scripts/publish-layer.ts",
+    "build-server": "bun --bun build-server.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
