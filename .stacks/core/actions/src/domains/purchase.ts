@@ -1,7 +1,8 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
-import { parseOptions } from '@stacksjs/cli'
+import { log, parseOptions } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
+import { purchaseDomain } from '@stacksjs/cloud'
 
 interface PurchaseOptions {
   domain: string
@@ -91,11 +92,12 @@ if (!options.domain) {
   process.exit(ExitCode.FatalError)
 }
 
-function purchaseDomain
-
-const result = await purchaseDomain(options.domain)
+const result = purchaseDomain(options.domain, options)
 
 if (result.isErr()) {
   handleError(result.error)
-  process.exit(1)
+  process.exit(ExitCode.FatalError)
 }
+
+log.info(result.value)
+process.exit(ExitCode.Success)

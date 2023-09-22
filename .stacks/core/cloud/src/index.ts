@@ -1,4 +1,5 @@
 import { log } from '@stacksjs/cli'
+import { err, ok } from '@stacksjs/error-handling'
 import aws from 'aws-sdk'
 
 export * from './drivers'
@@ -44,10 +45,10 @@ interface PurchaseOptions {
   verbose?: boolean
 }
 
-export function purchaseDomain(options: PurchaseOptions) {
+export function purchaseDomain(domain: string, options: PurchaseOptions) {
   const route53domains = new aws.Route53Domains({ region: 'us-east-1' })
   const params = {
-    DomainName: options.domain,
+    DomainName: domain,
     DurationInYears: options.years || 1,
     AutoRenew: options.autoRenew || true,
     AdminContact: {
@@ -94,10 +95,16 @@ export function purchaseDomain(options: PurchaseOptions) {
     PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
   }
 
-  route53domains.registerDomain(params, (err, data) => {
-    if (err)
-      handleError(err, err.stack)
-    else
-      log.info(data)
+  const result = route53domains.registerDomain(params, (error, data) => {
+    if (error)
+      return error
+
+    log.info(data)
+    return data
   })
+
+  if (result instanceof Error)
+    return err(result)
+
+  return ok(result)
 }
