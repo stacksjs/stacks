@@ -216,6 +216,42 @@ export type TestOptions = CliOptions & {
 export type DomainsOptions = CliOptions & {
   domain?: string
   yes?: boolean
+  years?: number
+  privacy?: boolean
+  autoRenew?: boolean
+  adminFirstName?: string
+  adminLastName?: string
+  adminOrganization?: string
+  adminAddress?: string
+  adminCity?: string
+  adminState?: string
+  adminCountry?: string
+  adminZip?: string
+  adminPhone?: string
+  adminEmail?: string
+  techFirstName?: string
+  techLastName?: string
+  techOrganization?: string
+  techAddress?: string
+  techCity?: string
+  techState?: string
+  techCountry?: string
+  techZip?: string
+  techPhone?: string
+  techEmail?: string
+  registrantFirstName?: string
+  registrantLastName?: string
+  registrantOrganization?: string
+  registrantAddress?: string
+  registrantCity?: string
+  registrantState?: string
+  registrantCountry?: string
+  registrantZip?: string
+  registrantPhone?: string
+  registrantEmail?: string
+  privacyAdmin?: boolean
+  privacyTech?: boolean
+  privacyRegistrant?: boolean
 }
 
 export interface CleanOptions extends CliOptions { }
@@ -301,6 +337,7 @@ export enum Action {
   DevDocs = 'dev/docs',
   Deploy = 'deploy/index',
   DomainsAdd = 'domains/add',
+  DomainsPurchase = 'domains/purchase',
   DomainsRemove = 'domains/remove',
   Fresh = 'fresh',
   GenerateLibraryEntries = 'generate/lib-entries',

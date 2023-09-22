@@ -37,6 +37,7 @@ export class StacksCloud extends Stack {
   websiteSource: string
   privateSource: string
   zone!: route53.IHostedZone
+  ec2Instance!: ec2.Instance
   storage!: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
@@ -338,7 +339,7 @@ export class StacksCloud extends Stack {
 
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
-    new ec2.Instance(this, 'Instance', {
+    this.ec2Instance = new ec2.Instance(this, 'Instance', {
       vpc: this.vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
       machineImage: new ec2.AmazonLinuxImage(),
@@ -529,6 +530,10 @@ export class StacksCloud extends Stack {
         description: 'The vanity URL of the deployed Stacks server.',
       })
     }
+
+    new Output(this, 'CloudInstanceId', {
+      value: this.ec2Instance.instanceId,
+    })
 
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
     if (this.shouldDeployDocs() && this.docsPrefix) {
