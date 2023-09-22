@@ -35,7 +35,7 @@ listen('foo', onFoo) // listen
 off('foo', onFoo) // unlisten
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/events](https://stacksjs.dev/events).
+To view the full documentation, please visit [https://stacksjs.org/events](https://stacksjs.org/events).
 
 ## 🧪 Testing
 

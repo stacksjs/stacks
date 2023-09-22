@@ -270,7 +270,7 @@ welcome() {
 		* It is placed here: \`$TEA_DESTDIR\`
 		* _(Stacks does not touch anything else)_
 
-		> docs https://docs.stacksjs.dev/getting-started
+		> docs https://docs.stacksjs.org/getting-started
 		EoMD
 
   echo #spacer
@@ -558,7 +558,7 @@ exec)
     echo #spacer
 
     gum_func format <<-EoMD >&2
-			> powered by [stacks](https://stacksjs.dev) & [tea](https://tea.xyz)
+			> powered by [stacks](https://stacksjs.org) & [tea](https://tea.xyz)
 			EoMD
 
     echo #spacer

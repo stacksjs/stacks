@@ -29,7 +29,7 @@ const collection = collect([{
 console.log(collection.avg('pages')) // 636
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/objects](https://stacksjs.dev/objects).
+To view the full documentation, please visit [https://stacksjs.org/objects](https://stacksjs.org/objects).
 
 ## 🧪 Testing
 

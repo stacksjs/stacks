@@ -157,7 +157,7 @@ export default {
   email: {
     from: {
       name: 'Stacks',
-      address: 'no-reply@stacksjs.com',
+      address: 'no-reply@stacksjs.org',
     },
 
     mailboxes: {},
@@ -225,7 +225,7 @@ export default {
     repository: 'stacksjs/stacks',
     license: 'MIT',
     author: 'Chris Breuer',
-    contributors: ['Chris Breuer <chris@stacksjs.com>'],
+    contributors: ['Chris Breuer <chris@stacksjs.org>'],
     defaultLanguage: 'en',
 
     vueComponents: {

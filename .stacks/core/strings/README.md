@@ -34,7 +34,7 @@ console.log(camelCase('hello world')) // => "helloWorld"
 console.log(plural('dog')) // => "dogs"
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/strings](https://stacksjs.dev/strings).
+To view the full documentation, please visit [https://stacksjs.org/strings](https://stacksjs.org/strings).
 
 ## 🧪 Testing
 

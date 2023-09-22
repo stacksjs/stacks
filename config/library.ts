@@ -13,7 +13,7 @@ export default {
   repository: 'stacksjs/stacks',
   license: 'MIT',
   author: 'Chris Breuer',
-  contributors: ['Chris Breuer <chris@stacksjs.dev>'],
+  contributors: ['Chris Breuer <chris@stacksjs.org>'],
   defaultLanguage: 'en',
 
   vueComponents: {

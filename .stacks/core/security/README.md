@@ -24,7 +24,7 @@ import { base64Encode, base64Verify, bcryptEncode, bcryptVerify, decrypt, encryp
 // and more...
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/security](https://stacksjs.dev/security).
+To view the full documentation, please visit [https://stacksjs.org/security](https://stacksjs.org/security).
 
 ## 🧪 Testing
 

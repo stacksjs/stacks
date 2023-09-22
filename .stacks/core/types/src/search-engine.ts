@@ -20,7 +20,7 @@ export interface SearchEngineOptions {
    * The search engine to utilize.
    *
    * @default string 'meilisearch'
-   * @see https://stacksjs.dev/docs/search-engine
+   * @see https://stacksjs.org/docs/search-engine
    */
   driver: 'meilisearch' | 'algolia'
 

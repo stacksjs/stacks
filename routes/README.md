@@ -2,7 +2,7 @@
 
 You may use routes to create API endpoints.
 
-To learn more about Stacks Routes, check out the [documentation](https://stacksjs.dev).
+To learn more about Stacks Routes, check out the [documentation](https://stacksjs.org).
 
 > **Note**
 > If your project does not require any routes, you can remove this folder._

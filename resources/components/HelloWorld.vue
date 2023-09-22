@@ -40,7 +40,7 @@ onMounted(() => {
 
                 <div class="ml-4 text-lg leading-7 font-semibold">
                   <a
-                    href="https://stacksjs.dev/docs"
+                    href="https://stacksjs.org/docs"
                     class="underline text-gray-900 dark:text-white"
                   >
                     Documentation

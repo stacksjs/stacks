@@ -31,7 +31,7 @@ import lint from '@stacksjs/lint'
 // ...
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/lint](https://stacksjs.dev/lint).
+To view the full documentation, please visit [https://stacksjs.org/lint](https://stacksjs.org/lint).
 
 ## 🧪 Testing
 

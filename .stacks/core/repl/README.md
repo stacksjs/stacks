@@ -20,7 +20,7 @@ import { repl } from '@stacksjs/repl'
 // wip
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/repl](https://stacksjs.dev/repl).
+To view the full documentation, please visit [https://stacksjs.org/repl](https://stacksjs.org/repl).
 
 ## 🧪 Testing
 

@@ -4,7 +4,7 @@ export const core = [
     name: 'Chris Breuer',
     title: 'Creator',
     org: 'Stacks',
-    orgLink: 'https://stacksjs.com/',
+    orgLink: 'https://stacksjs.org/',
     desc: 'Independent open source developer, builder in the Stacks ecosystem.',
     links: [
       { icon: 'github', link: 'https://github.com/chrisbbreuer' },
@@ -17,7 +17,7 @@ export const core = [
     name: 'Brian',
     title: 'A collaborative being',
     org: 'Stacks',
-    orgLink: 'https://stacksjs.com/',
+    orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
     links: [
       { icon: 'github', link: 'https://github.com/brianzzzasd' },

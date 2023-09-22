@@ -58,7 +58,7 @@ export function create(buddy: CLI) {
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
       // console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
       // console.log()
-      log.info('To learn more, visit https://stacksjs.dev')
+      log.info('To learn more, visit https://stacksjs.org')
 
       process.exit(ExitCode.Success)
     })

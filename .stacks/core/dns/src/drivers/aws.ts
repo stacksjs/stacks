@@ -91,5 +91,5 @@ function updateNameservers(nameservers: string[]) {
   }
 }
 
-// deleteHostedZone('stacksjs.com').catch(console.error)
-// createHostedZone('stacksjs.com').catch(console.error)
+// deleteHostedZone('stacksjs.org').catch(console.error)
+// createHostedZone('stacksjs.org').catch(console.error)

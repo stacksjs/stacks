@@ -11,10 +11,10 @@ import type { EmailConfig } from '@stacksjs/types'
 export default {
   from: {
     name: env.MAIL_FROM_NAME || 'Stacks',
-    address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.com',
+    address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
   },
 
   mailboxes: {
-    hi: 'your@mailbox.com', // enables hi@stacksjs.com and forwards incoming mail to your@mailbox.com
+    hi: 'your@mailbox.com', // enables hi@stacksjs.org and forwards incoming mail to your@mailbox.com
   },
 } satisfies EmailConfig

@@ -20,7 +20,7 @@ import { validate } from '@stacksjs/validation'
 // wip
 ```
 
-To view the full documentation, please visit [https://stacksjs.dev/validation](https://stacksjs.dev/validation).
+To view the full documentation, please visit [https://stacksjs.org/validation](https://stacksjs.org/validation).
 
 ## 🧪 Testing
 

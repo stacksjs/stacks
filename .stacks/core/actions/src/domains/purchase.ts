@@ -91,6 +91,8 @@ if (!options.domain) {
   process.exit(ExitCode.FatalError)
 }
 
+function purchaseDomain
+
 const result = await purchaseDomain(options.domain)
 
 if (result.isErr()) {

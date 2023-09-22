@@ -41,6 +41,18 @@ export interface AppOptions {
   url: string
 
   /**
+   * **Redirect URLs**
+   *
+   * A Redirect URL is a URL that permanently redirects to the Application URL.
+   * This is useful for when you have multiple domains that you want to redirect
+   * to your application. You can set this to a string or an array of strings.
+   *
+   * @default []
+   * @example "['stacksjs.org', 'stacksjs.org']"
+   */
+  redirectUrls: string | string[]
+
+  /**
    * **Application Debug Mode**
    *
    * When your application is in debug mode, detailed error messages with
