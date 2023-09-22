@@ -9,6 +9,6 @@ import { frameworkPath, vitePath } from '@stacksjs/path'
 // const options: DeployOptions = parseOptions()
 
 await runCommand(`bunx --bun vite --config ${vitePath('src/vue-components.ts')}`, {
-  cwd: frameworkPath(),
   // ...options,
+  cwd: frameworkPath(),
 })

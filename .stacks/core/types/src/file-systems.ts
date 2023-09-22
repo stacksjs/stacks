@@ -29,7 +29,7 @@ export interface PackageJson {
   // wip
 }
 
-export interface FileSystemsConfig {
+export interface FileSystemOptions {
   default: string
   disks: {
     local: {
@@ -66,3 +66,5 @@ export interface FileSystemsConfig {
     }
   }
 }
+
+export type FileSystemConfig = Partial<FileSystemOptions>

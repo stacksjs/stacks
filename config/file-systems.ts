@@ -29,7 +29,7 @@ export default {
 
     efs: {
       driver: 'local',
-      root: '/mnt/local',
+      root: '/mnt/efs',
     },
 
     s3: {

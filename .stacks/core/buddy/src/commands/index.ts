@@ -1,6 +1,7 @@
 export * from './build'
 export * from './changelog'
 export * from './clean'
+export * from './cloud'
 export * from './commit'
 export * from './create'
 export * from './deploy'

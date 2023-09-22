@@ -27,6 +27,7 @@ async function main() {
   // cmd.build(cli)
   // cmd.changelog(cli)
   cmd.clean(cli)
+  cmd.cloud(cli)
   // cmd.commit(cli)
   cmd.deploy(cli)
   cmd.domains(cli)
