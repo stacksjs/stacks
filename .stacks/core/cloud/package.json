@@ -64,9 +64,9 @@
     "constructs": "^10.2.70"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.13.0",
-    "@aws-lambda-powertools/metrics": "^1.13.0",
-    "@aws-lambda-powertools/tracer": "^1.13.0",
+    "@aws-lambda-powertools/logger": "^1.13.1",
+    "@aws-lambda-powertools/metrics": "^1.13.1",
+    "@aws-lambda-powertools/tracer": "^1.13.1",
     "@aws-sdk/client-cloudfront": "^3.414.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
@@ -80,10 +80,10 @@
     "constructs": "^10.2.70"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^3.7.1",
+    "@oclif/plugin-plugins": "^3.8.0",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^3.16.0"
+    "oclif": "^3.17.1"
   }
 }
