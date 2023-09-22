@@ -1,22 +1,28 @@
-import { dbDialect } from '@stacksjs/database'
+import { dbDialect, db } from '@stacksjs/database'
 import { Kysely } from 'kysely'
 
-class UserModel extends Kysely<any> {
-  constructor() {
-    super({ dialect: dbDialect })
-  }
+class UserModel {
+  // constructor() {
+  //   super({ dialect: dbDialect })
+  // }
 
   public async find(id: number) {
-    return await this.selectFrom('users')
+    return await db.selectFrom('users')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst()
   }
 
   public all() {
-    return this.selectFrom('users')
+    return db.selectFrom('users')
       .selectAll()
+  }
+
+  public get() {
+    return db.execute()
   }
 }
 
 export const User = new UserModel()
+
+User.all().get()
