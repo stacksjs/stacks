@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
+import { bgCyan, bold, dd, intro, italic, outro, prompts } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { addDomain } from './deploy'
 
@@ -58,7 +58,8 @@ export function domains(buddy: CLI) {
     .option('--privacy-registrant', 'Enable privacy protection for registrant', { default: config.dns.contactInfo?.privacyRegistrant || config.dns.contactInfo?.privacy })
     .option('--contact-type <type>', 'Contact type', { default: 'person' })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DomainsOptions) => {
+    .action(async (domain: string, options: DomainsOptions) => {
+      options.domain = domain
       const startTime = await intro('buddy domains:purchase')
       const result = await runAction(Action.DomainsPurchase, options)
 
@@ -67,8 +68,6 @@ export function domains(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      // prompt to set the domain the APP_URL
-      const domain = options.domain
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { confirm } = await prompts({
         name: 'confirm',

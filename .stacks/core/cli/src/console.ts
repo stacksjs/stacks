@@ -74,6 +74,7 @@ export class Prompt {
   }
 }
 
-export { prompts, log }
+const dd = log.dd
+export { prompts, log, dd }
 
 export const prompt = new Prompt()
