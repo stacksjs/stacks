@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { intro, outro, prompts } from '@stacksjs/cli'
+import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { addDomain } from './deploy'
 
@@ -82,9 +82,11 @@ export function domains(buddy: CLI) {
       }
 
       let message = `Great! Your domain ${domain} has been purchased.`
-      message += `\n\nAnd your APP_URL has been set to ${domain}. This change has not been applied deployed yet. The next time you run buddy deploy, your app will deploy to ${domain}.`
+      message += `\n\nAnd your APP_URL has been set to ${domain}.
+      \nThis change has not been applied deployed yet.
+      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${domain}.`
 
-      await outro(message, { startTime, useSeconds: true })
+      await outro(message, { startTime, useSeconds: true, type: 'info' })
       process.exit(ExitCode.Success)
     })
 
