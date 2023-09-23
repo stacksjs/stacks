@@ -4,6 +4,10 @@ import { path as p } from '@stacksjs/path'
 // import { userConfig as overrides } from './overrides'
 
 export default {
+  analytics: {
+    driver: undefined,
+  },
+
   api: {
     prefix: 'api',
     description: 'Stacks API',

@@ -42,6 +42,7 @@ interface PurchaseOptions {
   privacyAdmin: boolean
   privacyTech: boolean
   privacyRegistrant: boolean
+  contactType: string
   verbose: boolean
 }
 
@@ -52,6 +53,16 @@ const options: PurchaseOptions = {
   years: parsedOptions.years as number,
   privacy: parsedOptions.privacy as boolean,
   autoRenew: parsedOptions.autoRenew as boolean,
+  registrantFirstName: parsedOptions.registrantFirstName as string,
+  registrantLastName: parsedOptions.registrantLastName as string,
+  registrantOrganization: parsedOptions.registrantOrganization as string,
+  registrantAddress: parsedOptions.registrantAddress as string,
+  registrantCity: parsedOptions.registrantCity as string,
+  registrantState: parsedOptions.registrantState as string,
+  registrantCountry: parsedOptions.registrantCountry as string,
+  registrantZip: parsedOptions.registrantZip as string,
+  registrantPhone: parsedOptions.registrantPhone as string,
+  registrantEmail: parsedOptions.registrantEmail as string,
   adminFirstName: parsedOptions.adminFirstName as string,
   adminLastName: parsedOptions.adminLastName as string,
   adminOrganization: parsedOptions.adminOrganization as string,
@@ -72,23 +83,14 @@ const options: PurchaseOptions = {
   techZip: parsedOptions.techZip as string,
   techPhone: parsedOptions.techPhone as string,
   techEmail: parsedOptions.techEmail as string,
-  registrantFirstName: parsedOptions.registrantFirstName as string,
-  registrantLastName: parsedOptions.registrantLastName as string,
-  registrantOrganization: parsedOptions.registrantOrganization as string,
-  registrantAddress: parsedOptions.registrantAddress as string,
-  registrantCity: parsedOptions.registrantCity as string,
-  registrantState: parsedOptions.registrantState as string,
-  registrantCountry: parsedOptions.registrantCountry as string,
-  registrantZip: parsedOptions.registrantZip as string,
-  registrantPhone: parsedOptions.registrantPhone as string,
-  registrantEmail: parsedOptions.registrantEmail as string,
   privacyAdmin: parsedOptions.privacyAdmin as boolean,
   privacyTech: parsedOptions.privacyTech as boolean,
   privacyRegistrant: parsedOptions.privacyRegistrant as boolean,
+  contactType: parsedOptions.contactType as string,
 }
 
 if (!options.domain) {
-  handleError('there was no domain provided when')
+  handleError('You must provide a domain name to purchase.')
   process.exit(ExitCode.FatalError)
 }
 

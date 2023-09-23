@@ -33,6 +33,4 @@ export const {
 
 export { defaults, overrides }
 
-export * from './defaults'
-export * from './overrides'
 export * from './helpers'

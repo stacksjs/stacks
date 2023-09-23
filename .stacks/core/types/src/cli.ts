@@ -219,6 +219,16 @@ export type DomainsOptions = CliOptions & {
   years?: number
   privacy?: boolean
   autoRenew?: boolean
+  registrantFirstName?: string
+  registrantLastName?: string
+  registrantOrganization?: string
+  registrantAddress?: string
+  registrantCity?: string
+  registrantState?: string
+  registrantCountry?: string
+  registrantZip?: string
+  registrantPhone?: string
+  registrantEmail?: string
   adminFirstName?: string
   adminLastName?: string
   adminOrganization?: string
@@ -239,19 +249,10 @@ export type DomainsOptions = CliOptions & {
   techZip?: string
   techPhone?: string
   techEmail?: string
-  registrantFirstName?: string
-  registrantLastName?: string
-  registrantOrganization?: string
-  registrantAddress?: string
-  registrantCity?: string
-  registrantState?: string
-  registrantCountry?: string
-  registrantZip?: string
-  registrantPhone?: string
-  registrantEmail?: string
   privacyAdmin?: boolean
   privacyTech?: boolean
   privacyRegistrant?: boolean
+  contactType?: string
 }
 
 export interface CleanOptions extends CliOptions { }
