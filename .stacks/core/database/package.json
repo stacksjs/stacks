@@ -57,7 +57,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.4.0"
+    "kysely-bun-worker": "^0.4.2"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
@@ -67,7 +67,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.4.0"
+    "kysely-bun-worker": "^0.4.2"
   },
   "optionalDependencies": {
     "mysql2": "^3.6.1"
