@@ -53,13 +53,13 @@
   },
   "peerDependencies": {
     "@stacksjs/types": "workspace:*",
-    "@types/nprogress": "^0.2.0",
+    "@types/nprogress": "^0.2.1",
     "nprogress": "^0.2.0",
     "vue-i18n": "^9.4.1"
   },
   "dependencies": {
     "@stacksjs/types": "workspace:*",
-    "@types/nprogress": "^0.2.0",
+    "@types/nprogress": "^0.2.1",
     "nprogress": "^0.2.0",
     "vue-i18n": "^9.4.1"
   },

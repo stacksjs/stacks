@@ -60,7 +60,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk-lib": "^2.96.2",
+    "aws-cdk-lib": "^2.97.0",
     "constructs": "^10.2.70"
   },
   "dependencies": {
@@ -76,7 +76,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk-lib": "^2.96.2",
+    "aws-cdk-lib": "^2.97.0",
     "aws4fetch": "^1.0.17",
     "constructs": "^10.2.70"
   },

@@ -16,7 +16,7 @@
     "build": "echo 'no build needed'"
   },
   "peerDependencies": {
-    "eslint": ">=8.49.0"
+    "eslint": ">=8.50.0"
   },
   "dependencies": {
     "@stacksjs/eslint-config-vue": "workspace:*",
@@ -36,6 +36,6 @@
     "yaml-eslint-parser": "^1.2.2"
   },
   "devDependencies": {
-    "eslint": "^8.49.0"
+    "eslint": "^8.50.0"
   }
 }
