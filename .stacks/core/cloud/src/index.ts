@@ -102,7 +102,7 @@ export async function purchaseDomain(domain: string, options: PurchaseOptions) {
   try {
     return ok(await route53domains.registerDomain(params))
   }
-  catch (error) {
+  catch (error: any) {
     return err(error)
   }
 }

@@ -1,6 +1,6 @@
 import * as storage from '@stacksjs/storage'
 import { italic, runCommand, runCommands, underline } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
+import { dd, log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { type Result, err, handleError } from '@stacksjs/error-handling'
@@ -39,14 +39,18 @@ export async function runAction(action: string, options?: ActionOptions): Promis
   const opts = parseOptions(options)
   const path = p.relativeActionsPath(`${action}.ts`)
   const cmd = `bun --bun ${`${path} ${opts}`}`
-
-  if (options?.verbose)
-    log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))
-
-  return await runCommand(cmd, {
+  const o = {
     cwd: options?.cwd || p.projectPath(),
     ...options,
-  })
+  }
+
+  if (options?.verbose) {
+    log.debug('Running cmd:', underline(italic(cmd)))
+    log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))
+    log.debug('with action options of:', o)
+  }
+
+  return await runCommand(cmd, o)
 }
 
 /**

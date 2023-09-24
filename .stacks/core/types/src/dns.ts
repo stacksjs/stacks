@@ -88,7 +88,7 @@ export interface DnsOptions {
   mx: MXRecord[]
   txt: TxtRecord[]
   nameservers: string[]
-  contactInfo: ContactInfo
+  contactInfo: Partial<ContactInfo>
 }
 
 export type DnsConfig = Partial<DnsOptions>

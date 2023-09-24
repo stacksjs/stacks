@@ -8,7 +8,6 @@ import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
  *
  * @param command The command to execute.
  * @param options The options to pass to the command.
- * @param errorMsg The name of the error to throw if the command fails.
  * @returns The result of the command.
  * @example
  * ```ts

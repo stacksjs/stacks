@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
-import { command } from '@stacksjs/cli'
+import { cli } from '@stacksjs/cli'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import { version } from '../package.json'
 import * as cmd from './commands'
@@ -10,42 +10,39 @@ process.on('uncaughtException', handleError)
 process.on('unhandledRejection', handleError)
 
 async function main() {
-  const cli = command.cli('buddy')
+  const buddy = cli('buddy')
 
   // the following commands are not dependent on the project being initialized
   // await installIfVersionMismatch()
-  cmd.setup(cli)
-  cmd.key(cli)
+  cmd.setup(buddy)
+  cmd.key(buddy)
 
   // before running any commands, ensure the project is already initialized
   await ensureProjectIsInitialized()
 
-  // cmd.prepublish(cli)
-  // cmd.upgrade(cli)
-  // cmd.generate(cli)
-  cmd.dev(cli)
-  cmd.build(cli)
-  // cmd.changelog(cli)
-  cmd.clean(cli)
-  cmd.cloud(cli)
-  // cmd.commit(cli)
-  cmd.deploy(cli)
-  cmd.domains(cli)
-  cmd.fresh(cli)
-  cmd.install(cli)
-  // cmd.lint(cli)
-  cmd.release(cli)
-  // cmd.make(cli)
-  // cmd.migrate(cli)
-  // cmd.seed(cli)
-  // cmd.example(cli)
-  // cmd.test(cli)
-  // cmd.version(cli)
+  // cmd.prepublish(buddy)
+  // cmd.upgrade(buddy)
+  // cmd.generate(buddy)
+  cmd.dev(buddy)
+  cmd.build(buddy)
+  // cmd.changelog(buddy)
+  cmd.clean(buddy)
+  cmd.cloud(buddy)
+  // cmd.commit(buddy)
+  cmd.deploy(buddy)
+  cmd.domains(buddy)
+  cmd.fresh(buddy)
+  cmd.install(buddy)
+  // cmd.lint(buddy)
+  cmd.release(buddy)
+  // cmd.make(buddy)
+  // cmd.migrate(buddy)
+  // cmd.seed(buddy)
+  // cmd.example(buddy)
+  // cmd.test(buddy)
+  // cmd.version(buddy)
 
-  cli.help()
-  cli.version(version)
-
-  cli.parse()
+  buddy.parse()
 }
 
 await main()
