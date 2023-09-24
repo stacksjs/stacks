@@ -75,7 +75,7 @@
     "vite-plugin-inspect": "^0.7.38",
     "vite-plugin-pwa": "^0.16.5",
     "vite-ssg": "^0.23.3",
-    "vitepress": "1.0.0-rc.17",
+    "vitepress": "1.0.0-rc.20",
     "vue": "^3.3.4"
   },
   "devDependencies": {
