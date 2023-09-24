@@ -14,6 +14,7 @@ export function build(buddy: CLI) {
     webComponents: 'Build your framework agnostic web component library',
     elements: 'An alias to the -w flag',
     functions: 'Build your function library',
+    desktop: 'Build the Desktop Application',
     pages: 'Build your frontend',
     docs: 'Build your documentation',
     stacks: 'Build Stacks framework',
@@ -125,6 +126,24 @@ export function build(buddy: CLI) {
       }
 
       await outro('Stacks core built successfully', { startTime, useSeconds: true })
+    })
+
+  buddy
+    .command('build:desktop', descriptions.desktop)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      const perf = await intro('buddy build:desktop')
+      const result = await runAction(Action.BuildDesktop, options)
+
+      if (result.isErr()) {
+        await outro('While running the build:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('')
+      await outro('Exited', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 
   buddy

@@ -117,7 +117,18 @@ export function dev(buddy: CLI) {
     .command('dev:desktop', descriptions.desktop)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runDesktopDevServer(options)
+      const perf = await intro('buddy dev:desktop')
+      const result = await runAction(Action.DevDesktop, options)
+
+      if (result.isErr()) {
+        await outro('While running the dev:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('')
+      await outro('Exited', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
     })
 
   buddy

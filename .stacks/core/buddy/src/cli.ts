@@ -24,7 +24,7 @@ async function main() {
   // cmd.upgrade(cli)
   // cmd.generate(cli)
   cmd.dev(cli)
-  // cmd.build(cli)
+  cmd.build(cli)
   // cmd.changelog(cli)
   cmd.clean(cli)
   cmd.cloud(cli)

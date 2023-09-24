@@ -24,20 +24,6 @@ fn main() {
 
   tauri::Builder::default()
     .menu(menu)
-    .on_menu_event(|event| {
-      match event.menu_item_id() {
-        "quit" => {
-          std::process::exit(0);
-        }
-        "settings" => {
-          event::emit("error", Payload { message: "Tauri is awesome!".into() }).unwrap();
-        }
-        "close" => {
-          event.window().close().unwrap();
-        }
-        _ => {}
-      }
-    })
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

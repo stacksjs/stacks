@@ -1,9 +1,9 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "bun build",
-    "beforeDevCommand": "bun dev",
-    "devPath": "https://stacks.test:5173",
+    "beforeBuildCommand": "bun run build",
+    "beforeDevCommand": "bun run dev",
+    "devPath": "http://stacks.test:3333",
     "distDir": "../../../views/desktop/dashboard/dist",
     "withGlobalTauri": true
   },

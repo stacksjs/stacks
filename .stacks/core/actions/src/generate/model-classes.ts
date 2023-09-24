@@ -1,20 +1,62 @@
-import type { Database } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
-class UserModel {
+export interface User {
+  id: number
+
+  name: string
+  email: string
+
+  password: string
+
+  created_at: Date
+}
+
+export class UserModel {
+  private _data: User | undefined = undefined
+
+  private _isSelectInvoked = false
+  public _id: number | undefined = undefined
+  private cols: string[] = []
+
   queryBuilder = db.selectFrom('users')// Initialize queryBuilder
   queryBuilderStore = db.insertInto('users')// Initialize queryBuilder
   queryBuilderUpdate = db.updateTable('users')// Initialize queryBuilder
   queryBuilderDelete = db.deleteFrom('users')// Initialize queryBuilder
 
-  private _isSelectInvoked = false
-  private cols: string[] = []
-  // private so = false
-
-  public async find(id: number) {
-    return this.queryBuilder.selectAll()
+  public async find(id: number): Promise<User> {
+    this._data = await this.queryBuilder.selectAll()
       .where('id', '=', id)
       .executeTakeFirst()
+
+    if (this._data === undefined)
+      throw new Error('User not found!')
+
+    return this._createProxy()
+  }
+
+  private _createProxy(): User & { [key: string]: Function } {
+    return new Proxy(this._data || {}, {
+      get: (target, prop: keyof User | string): any => {
+        // Property lookup in the User data
+        if (prop in target)
+          return target[prop as keyof User]
+
+        // If it's a method on the UserModel, bind it
+        const method = this[prop as keyof this]
+        if (typeof method === 'function')
+          return method.bind(this)
+
+        return undefined
+      },
+    })
+  }
+
+  public update(obj: Partial<User>) {
+    if (this._data && this._data?.id) {
+      return this.queryBuilderUpdate.set(obj)
+        .where('id', '=', this._data?.id)
+        .executeTakeFirst()
+    }
   }
 
   public async all() {
@@ -29,10 +71,10 @@ class UserModel {
     return await this.queryBuilder.selectAll().execute()
   }
 
-  public where(...args) {
+  public where(...args: (string | number | boolean)[]) {
     // TODO: resolve this
     // @ts-expect-error resolve this
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     this.queryBuilder = this.queryBuilder.where(...args)
 
     return this
@@ -68,7 +110,7 @@ class UserModel {
     return this
   }
 
-  public innerJoin(...args: string[]) {
+  public innerJoin(...args: (string)[]) {
     this.queryBuilder = this.queryBuilder.innerJoin(...args)
 
     return this
@@ -138,13 +180,6 @@ class UserModel {
       .executeTakeFirst()
   }
 
-  public update(obj: any) {
-    // Execute the query using queryBuilder
-    return this.queryBuilderUpdate.set(obj)
-      .where('id', '=', 1)
-      .executeTakeFirst()
-  }
-
   public delete() {
     // Execute the query using queryBuilder
     return this.queryBuilderDelete
@@ -152,7 +187,5 @@ class UserModel {
       .executeTakeFirst()
   }
 }
-
-export const User = new UserModel()
 
 process.exit(0)

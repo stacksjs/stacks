@@ -100,6 +100,7 @@
     "@stacksjs/env": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
