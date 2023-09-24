@@ -1,8 +1,8 @@
 import { faker } from '@stacksjs/faker'
 import { validator } from '@stacksjs/validation'
-import { defineModel } from '@stacksjs/config'
+import type { Model } from '@stacksjs/types'
 
-export default defineModel({
+export default {
   name: 'User', // defaults to the sanitized file name
   table: 'users', // defaults to the lowercase, plural name of the model
   // primaryKey: 'id', // defaults to `id`
@@ -46,4 +46,4 @@ export default defineModel({
       factory: () => faker.internet.password(),
     },
   },
-})
+} satisfies Model
