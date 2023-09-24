@@ -1,1 +1,3 @@
 *.lockb binary diff=lockb
+* text=auto
+*.* text eol=lf

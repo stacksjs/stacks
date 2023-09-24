@@ -97,11 +97,11 @@ export interface ContactDetail {
   /**
    * First name of contact.
    */
-  firstName?: string
+  firstName: string
   /**
    * Last name of contact.
    */
-  lastName?: string
+  lastName: string
   /**
    * Indicates whether the contact is a person, company, association, or public organization.
    *
@@ -113,73 +113,73 @@ export interface ContactDetail {
    *
    * @default PERSON
    */
-  contactType?: 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER' | string
+  contactType: 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER' | string
   /**
    * Name of the organization for contact types other than PERSON.
    */
-  organizationName?: string
+  organizationName: string
   /**
    * First line of the contact's address.
    */
-  addressLine1?: string
+  addressLine1: string
   /**
    * Second line of contact's address, if any.
    */
-  addressLine2?: string
+  addressLine2: string
   /**
    * The city of the contact's address.
    */
-  city?: string
+  city: string
   /**
    * The state or province of the contact's city.
    */
-  state?: string
+  state: string
   /**
    * Code for the country of the contact's address.
    */
-  countryCode?: CountryCode
+  countryCode: CountryCode
   /**
    * The zip or postal code of the contact's address.
    */
-  zip?: string
+  zip: string
   /**
    * The phone number of the contact.
    * Constraints: Phone number must be specified in the format "+[country dialing code].[number including any area code&gt;]".
    * For example, a US phone number might appear as "+1.1234567890".
    * @example +1.1234567890
    */
-  phoneNumber?: string
+  phoneNumber: string
   /**
    * Email address of the contact.
    */
-  email?: string
+  email: string
   /**
    * Fax number of the contact. Constraints: Phone number must be specified in the format "+[country dialing code].[number including any area code]". For example, a US phone number might appear as "+1.1234567890".
    */
-  fax?: string
+  fax: string
   /**
    * A list of name-value pairs for parameters required by certain top-level domains.
    */
-  extraParams?: string
+  extraParams: string
 
   /**
    * Enable privacy protection for this domain.
    * @default true
    */
-  privacy?: boolean
+  privacy: boolean
   /**
    * Enable privacy protection for the admin contact.
    * @default true
    */
-  privacyAdmin?: boolean
+  privacyAdmin: boolean
   /**
    * Enable privacy protection for the tech contact.
    * @default true
    */
-  privacyTech?: boolean
+  privacyTech: boolean
   /**
    * Enable privacy protection for the registrant contact.
    * @default true
    */
-  privacyRegistrant?: boolean
+  privacyRegistrant: boolean
 }

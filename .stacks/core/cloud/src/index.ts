@@ -4,15 +4,16 @@ import { Route53Domains } from '@aws-sdk/client-route-53-domains'
 
 export * from './drivers'
 
-interface PurchaseOptions {
+export interface PurchaseOptions {
   domain: string
   years: number
-  privacy?: boolean
-  autoRenew?: boolean
+  privacy: boolean
+  autoRenew: boolean
   adminFirstName: string
   adminLastName: string
   adminOrganization: string
-  adminAddress: string
+  adminAddressLine1: string
+  adminAddressLine2: string
   adminCity: string
   adminState: string
   adminCountry: string
@@ -22,7 +23,8 @@ interface PurchaseOptions {
   techFirstName: string
   techLastName: string
   techOrganization: string
-  techAddress: string
+  techAddressLine1: string
+  techAddressLine2: string
   techCity: string
   techState: string
   techCountry: string
@@ -32,20 +34,22 @@ interface PurchaseOptions {
   registrantFirstName: string
   registrantLastName: string
   registrantOrganization: string
-  registrantAddress: string
+  registrantAddressLine1: string
+  registrantAddressLine2: string
   registrantCity: string
   registrantState: string
   registrantCountry: string
   registrantZip: string
   registrantPhone: string
   registrantEmail: string
-  privacyAdmin?: boolean
-  privacyTech?: boolean
-  privacyRegistrant?: boolean
-  verbose?: boolean
+  privacyAdmin: boolean
+  privacyTech: boolean
+  privacyRegistrant: boolean
+  contactType: string
+  verbose: boolean
 }
 
-export function purchaseDomain(domain: string, options: PurchaseOptions) {
+export async function purchaseDomain(domain: string, options: PurchaseOptions) {
   const route53domains = new Route53Domains({ region: 'us-east-1' })
   const params = {
     DomainName: domain,
@@ -95,16 +99,10 @@ export function purchaseDomain(domain: string, options: PurchaseOptions) {
     PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
   }
 
-  const result = route53domains.registerDomain(params, (error, data) => {
-    if (error)
-      return error
-
-    log.info(data)
-    return data
-  })
-
-  if (result instanceof Error)
-    return err(result)
-
-  return ok(result)
+  try {
+    return ok(await route53domains.registerDomain(params))
+  }
+  catch (error) {
+    return err(error)
+  }
 }
