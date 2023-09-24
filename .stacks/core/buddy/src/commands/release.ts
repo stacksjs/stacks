@@ -24,4 +24,9 @@ export function release(buddy: CLI) {
 
       await outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
     })
+
+  buddy.on('release:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

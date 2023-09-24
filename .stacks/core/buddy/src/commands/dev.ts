@@ -144,6 +144,11 @@ export function dev(buddy: CLI) {
     .action(async (options: DevOptions) => {
       await runPagesDevServer(options)
     })
+
+  buddy.on('dev:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: DevOptions) {

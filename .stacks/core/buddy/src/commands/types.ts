@@ -1,4 +1,5 @@
-import { type CLI } from '@stacksjs/types'
+import process from 'node:process'
+import type { CLI } from '@stacksjs/types'
 import { generateTypes } from '@stacksjs/actions'
 
 export function types(buddy: CLI) {
@@ -21,4 +22,9 @@ export function types(buddy: CLI) {
     .action(async () => {
       // await fixTypes()
     })
+
+  buddy.on('types:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

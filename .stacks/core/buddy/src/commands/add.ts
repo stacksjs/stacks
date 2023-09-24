@@ -53,6 +53,11 @@ export function add(buddy: CLI) {
     .action(async (options: BuildOptions) => {
       await runAdd(options)
     })
+
+  buddy.on('add:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: AddOptions) {

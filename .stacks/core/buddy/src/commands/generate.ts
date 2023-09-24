@@ -132,6 +132,11 @@ export function generate(buddy: CLI) {
     .action(() => {
       generateMigrations()
     })
+
+  buddy.on('generate:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: GeneratorOptions) {

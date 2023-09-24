@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { type CLI, type CreateOptions } from '@stacksjs/types'
+import type { CLI, CreateOptions } from '@stacksjs/types'
 import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
@@ -62,6 +62,11 @@ export function create(buddy: CLI) {
 
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('new:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function isFolderCheck(path: string) {

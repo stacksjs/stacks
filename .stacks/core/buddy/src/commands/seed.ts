@@ -27,4 +27,9 @@ export function seed(buddy: CLI) {
       await outro(`Seeded your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('seed:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

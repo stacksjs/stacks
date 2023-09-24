@@ -37,4 +37,9 @@ export function cloud(buddy: CLI) {
       log.info('Not implemented yet. Please use the --ssh (or --connect) flag to connect to the Stacks Cloud.')
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('cloud:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

@@ -249,6 +249,11 @@ export function make(buddy: CLI) {
 
       log.info(path, name)
     })
+
+  buddy.on('make:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: MakeOptions) {

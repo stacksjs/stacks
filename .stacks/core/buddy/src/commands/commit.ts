@@ -1,4 +1,5 @@
-import { type CLI, type FreshOptions } from '@stacksjs/types'
+import process from 'node:process'
+import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runCommit } from '@stacksjs/actions'
 
 export function commit(buddy: CLI) {
@@ -13,4 +14,9 @@ export function commit(buddy: CLI) {
     .action(async (options: FreshOptions) => {
       await runCommit(options)
     })
+
+  buddy.on('commit:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

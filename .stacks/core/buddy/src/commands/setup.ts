@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
@@ -21,4 +22,9 @@ export function setup(buddy: CLI) {
     .action(async (options: CliOptions) => {
       await runCommand('bun env use', options)
     })
+
+  buddy.on('setup:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

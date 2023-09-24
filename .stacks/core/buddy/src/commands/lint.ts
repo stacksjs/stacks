@@ -41,4 +41,9 @@ export function lint(buddy: CLI) {
 
       log.success('Fixed lint errors')
     })
+
+  buddy.on('lint:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

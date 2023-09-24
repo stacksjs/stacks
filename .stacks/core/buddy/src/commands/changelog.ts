@@ -27,4 +27,9 @@ export function changelog(buddy: CLI) {
       await outro('Generated the CHANGELOG.md file', { ...options, startTime: perf, useSeconds: true, type: 'info' })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('changelog:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

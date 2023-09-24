@@ -54,4 +54,9 @@ export function example(buddy: CLI) {
     .action(async (options: ExamplesOptions) => {
       await runExample(options)
     })
+
+  buddy.on('example:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

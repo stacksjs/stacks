@@ -25,4 +25,9 @@ export function fresh(buddy: CLI) {
       await outro('Freshly reinstalled your dependencies', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('fresh:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

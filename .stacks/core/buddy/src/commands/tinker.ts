@@ -25,4 +25,9 @@ export function tinker(buddy: CLI) {
       await outro('Tinker mode exited.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('tinker:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

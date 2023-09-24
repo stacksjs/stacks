@@ -63,6 +63,11 @@ export function deploy(buddy: CLI) {
 
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('deploy:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 async function hasUserDomainBeenAddedToCloud(domainName?: string) {

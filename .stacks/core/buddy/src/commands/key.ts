@@ -24,4 +24,9 @@ export function key(buddy: CLI) {
 
       await outro('Random application key set.', { startTime })
     })
+
+  buddy.on('key:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

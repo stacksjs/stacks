@@ -27,4 +27,9 @@ export function migrate(buddy: CLI) {
       await outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('migrate:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

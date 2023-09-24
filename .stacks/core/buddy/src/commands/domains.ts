@@ -133,4 +133,9 @@ export function domains(buddy: CLI) {
       await outro('Removed your domain.', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('domains:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

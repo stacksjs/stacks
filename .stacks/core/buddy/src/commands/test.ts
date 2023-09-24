@@ -114,4 +114,9 @@ export function test(buddy: CLI) {
       await outro('Generated the test coverage report', { startTime: perf, useSeconds: true })
       process.exit()
     })
+
+  buddy.on('test:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

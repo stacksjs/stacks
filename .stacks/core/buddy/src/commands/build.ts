@@ -161,6 +161,11 @@ export function build(buddy: CLI) {
 
       await outro('Stacks built successfully', { startTime, useSeconds: true })
     })
+
+  buddy.on('build:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: BuildOptions) {

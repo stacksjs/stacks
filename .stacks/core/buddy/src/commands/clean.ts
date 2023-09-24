@@ -25,4 +25,9 @@ export function clean(buddy: CLI) {
       await outro('Cleaned up', { startTime: perf, useSeconds: true, message: 'Cleaned up' })
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('clean:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
