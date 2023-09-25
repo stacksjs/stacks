@@ -333,13 +333,13 @@ export class StacksCloud extends Stack {
       encrypted: true,
     })
 
-    const role = new iam.Role(this, 'InstanceRole', {
+    const role = new iam.Role(this, 'JumpBoxInstanceRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     })
 
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
-    this.ec2Instance = new ec2.Instance(this, 'Instance', {
+    this.ec2Instance = new ec2.Instance(this, 'JumpBoxInstance', {
       vpc: this.vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
       machineImage: new ec2.AmazonLinuxImage(),
@@ -531,7 +531,7 @@ export class StacksCloud extends Stack {
       })
     }
 
-    new Output(this, 'CloudInstanceId', {
+    new Output(this, 'JumpBoxInstanceId', {
       value: this.ec2Instance.instanceId,
     })
 

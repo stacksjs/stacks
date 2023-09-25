@@ -24,7 +24,15 @@ import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
  * ```
  */
 export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
-  const cmd: string[] = Array.isArray(command) ? command : command.split(' ')
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+
+  if (!cmd)
+    return err(handleError(`Failed to parse command: ${cmd}`))
+
+  if (options?.verbose)
+    // eslint-disable-next-line no-console
+    console.log('exec', { command, cmd, options })
+
   const proc = Bun.spawn(cmd, {
     ...options,
     stdout: options?.stdout || 'inherit',

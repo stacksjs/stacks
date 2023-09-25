@@ -16,7 +16,7 @@ function parseOptions(options?: ActionOptions) {
     if (typeof value === 'boolean' && value) // if the value is `true`, just return the key
       return `--${key}`
 
-    return `--${key}=${value}`
+    return `--${key}=${typeof value === 'string' && value.includes(' ') ? `"${value}"` : value}`
   })
 
   // filter out undefined values and join the array

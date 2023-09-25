@@ -78,14 +78,19 @@ export function domains(buddy: CLI) {
       })
 
       if (!confirm) {
-        await outro(`Alrighty! Your domain ${domain} has been purchased & is added to your account.`, { startTime, useSeconds: true, type: 'success' })
+        await outro(`Alrighty! ${italic(domain)} was added to your account.`, { startTime, useSeconds: true, type: 'success' })
+        log.info(`Please note, you may need to validate your email address. Check your ${italic(options.registrantEmail as string)} inbox.`)
         process.exit(ExitCode.Success)
       }
 
-      let message = `Great! Your domain ${domain} has been purchased.`
-      message += `\n\nAnd your APP_URL has been set to ${domain}.
-      \nThis change has not been applied deployed yet.
-      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${domain}.`
+      // set .env APP_URL to domain
+      const { writeEnv } = await import('@stacksjs/env')
+      writeEnv('APP_URL', domain)
+
+      let message = `Great! ${italic(domain)} was added to your account.`
+      message += `\n\nAnd your APP_URL has been set to ${italic(domain)}.
+      \nPlease note, this change has not been deployed yet.
+      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${italic(domain)}.`
 
       await outro(message, { startTime, useSeconds: true, type: 'info' })
       process.exit(ExitCode.Success)
