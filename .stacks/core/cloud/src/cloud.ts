@@ -37,6 +37,7 @@ export class StacksCloud extends Stack {
   websiteSource: string
   privateSource: string
   zone!: route53.IHostedZone
+  redirectZones: route53.IHostedZone[] = []
   ec2Instance!: ec2.Instance
   storage!: {
     publicBucket: s3.Bucket
@@ -250,8 +251,14 @@ export class StacksCloud extends Stack {
   manageZone() {
     // lets see if the zone already exists
     try {
-      this.zone = route53.PublicHostedZone.fromLookup(this, 'HostedZone', {
+      this.zone = route53.PublicHostedZone.fromLookup(this, 'AppUrlHostedZone', {
         domainName: this.domain,
+      })
+
+      config.dns.redirects?.forEach((redirect) => {
+        const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
+        const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
+        this.redirectZones.push(hostedZone)
       })
     }
     // if not, lets create it
@@ -275,6 +282,23 @@ export class StacksCloud extends Stack {
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+    })
+
+    // for each redirect, create a bucket & redirect it to the APP_URL
+    config.dns.redirects?.forEach((redirect) => {
+      const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', { domainName: redirect })
+      const redirectBucket = new s3.Bucket(this, `RedirectBucket-${redirect}`, {
+        bucketName: `${redirect}-redirect`,
+        websiteRedirect: {
+          hostName: this.domain,
+          protocol: s3.RedirectProtocol.HTTPS,
+        },
+      })
+      new route53.CnameRecord(this, 'RedirectRecord', {
+        zone: hostedZone,
+        recordName: 'redirect',
+        domainName: redirectBucket.bucketWebsiteDomainName,
+      })
     })
 
     const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
@@ -533,6 +557,7 @@ export class StacksCloud extends Stack {
 
     new Output(this, 'JumpBoxInstanceId', {
       value: this.ec2Instance.instanceId,
+      description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
     })
 
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
