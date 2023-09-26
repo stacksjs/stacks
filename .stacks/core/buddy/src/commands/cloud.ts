@@ -8,7 +8,7 @@ export function cloud(buddy: CLI) {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',
-    remove: 'Remove the Stacks Cloud',
+    remove: 'Remove the Stacks Cloud. In case it fails, try again.',
     verbose: 'Enable verbose output',
   }
 
@@ -41,6 +41,8 @@ export function cloud(buddy: CLI) {
 
   buddy
     .command('cloud:remove', descriptions.remove)
+    .alias('cloud:destroy')
+    // .option('--jump-box', 'Remove the jump box', { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudOptions) => {
       const startTime = performance.now()

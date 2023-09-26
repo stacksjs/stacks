@@ -259,6 +259,7 @@ export interface CleanOptions extends CliOptions { }
 export interface CloudOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean
+  jumpBox?: boolean
 }
 export interface CommitOptions extends CliOptions { }
 export interface KeyOptions extends CliOptions { }
