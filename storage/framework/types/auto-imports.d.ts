@@ -171,7 +171,6 @@ declare global {
   const defaultWindow: typeof import('../../../.stacks/core/utils/src/vendors')['defaultWindow']
   const defineApp: typeof import('../../../.stacks/core/utils/src/config')['defineApp']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
-  const defineBinary: typeof import('../../../.stacks/core/utils/src/config')['defineBinary']
   const defineCache: typeof import('../../../.stacks/core/utils/src/config')['defineCache']
   const defineCdn: typeof import('../../../.stacks/core/utils/src/config')['defineCdn']
   const defineChat: typeof import('../../../.stacks/core/utils/src/config')['defineChat']
@@ -982,7 +981,7 @@ declare module 'vue' {
     readonly defaultWindow: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
-    readonly defineBinary: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineBinary']>
+    readonly defineCli: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCli']>
     readonly defineCache: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineChat']>
@@ -1787,7 +1786,7 @@ declare module '@vue/runtime-core' {
     readonly defaultWindow: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
-    readonly defineBinary: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineBinary']>
+    readonly defineCli: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCli']>
     readonly defineCache: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCache']>
     readonly defineCdn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineCdn']>
     readonly defineChat: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineChat']>

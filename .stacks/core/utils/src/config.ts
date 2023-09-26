@@ -1,6 +1,5 @@
 export {
   defineApp,
-  defineBinary,
   defineCache,
   defineCli,
   defineCdn,

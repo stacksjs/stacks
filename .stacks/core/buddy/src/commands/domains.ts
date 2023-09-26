@@ -90,7 +90,8 @@ export function domains(buddy: CLI) {
       let message = `Great! ${italic(domain)} was added to your account.`
       message += `\n\nAnd your APP_URL has been set to ${italic(domain)}.
       \nPlease note, this change has not been deployed yet.
-      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${italic(domain)}.`
+      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${italic(domain)}.
+      \n${italic('You may need to deploy 2-3 times for the changes to take effect. Issue tracked here: https://github.com/stacksjs/stacks/issues/685')}`
 
       await outro(message, { startTime, useSeconds: true, type: 'info' })
       process.exit(ExitCode.Success)
