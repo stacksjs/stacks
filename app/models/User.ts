@@ -9,6 +9,7 @@ export default {
   // autoIncrement: true, // defaults to true
   useUuid: true, // instead of `auto-incrementing id`, defaults to false
   searchable: true, // defaults to false, also accepts SearchEngineSettings
+  useSoftDeletes: true, // defaults to false, also accepts SearchEngineSettings
   seedable: { // defaults to a count of 10
     count: 10,
   },

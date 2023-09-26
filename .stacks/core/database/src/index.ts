@@ -46,7 +46,7 @@ if (driver === 'sqlite') {
 else {
   dialect = new MysqlDialect({
     pool: createPool({
-      database: 'stacks',
+      database: 'carefree',
       host: '127.0.0.1',
       user: 'root',
       password: '',
