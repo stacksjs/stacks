@@ -27,6 +27,6 @@ await runCommand('bun actions/src/zip/api.ts', {
   cwd: p.frameworkPath('core'),
 })
 
-await runCommand('bunx cdk deploy --profile stacks --require-approval never', {
+await runCommand('bunx cdk deploy --profile stacks', {
   cwd: p.cloudPath(),
 })
