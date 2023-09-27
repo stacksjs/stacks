@@ -48,7 +48,7 @@ export interface AppOptions {
    * to your application. You can set this to a string or an array of strings.
    *
    * @default []
-   * @example "['stacksjs.org', 'stacksjs.org']"
+   * @example "['stacksjs.com', 'stacksjs.dev']"
    */
   redirectUrls: string | string[]
 

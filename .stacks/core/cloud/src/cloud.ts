@@ -561,6 +561,12 @@ export class StacksCloud extends Stack {
       description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
     })
 
+    // async function getInstanceId(stackName) {
+    //   const data = await cloudformation.describeStacks({ StackName: stackName }).promise()
+    //   const instanceIdOutput = data.Stacks[0].Outputs.find(output => output.OutputKey === 'CloudInstanceId')
+    //   return instanceIdOutput.OutputValue
+    // }
+
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
     if (this.shouldDeployDocs() && this.docsPrefix) {
       new Output(this, 'DocsUrl', {
@@ -584,3 +590,26 @@ export class StacksCloud extends Stack {
     })
   }
 }
+
+// export class BucketEmptyingResource extends Construct {
+//   constructor(scope: Construct, id: string, bucket: s3.IBucket) {
+//     super(scope, id)
+
+//     const emptyBucket = new CustomResource.AwsCustomResource(this, 'EmptyBucket', {
+//       onUpdate: {
+//         service: 'S3',
+//         action: 'deleteObjects',
+//         parameters: {
+//           Bucket: bucket.bucketName,
+//           Delete: {
+//             // Objects: (bucket.objects as BucketObject[]).map(object => ({ Key: object.key })),
+//           },
+//         },
+//         // physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+//       },
+//       // policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: AwsCustomResourcePolicy.ANY_RESOURCE }),
+//     })
+
+//     emptyBucket.node.addDependency(bucket)
+//   }
+// }

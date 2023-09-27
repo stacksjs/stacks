@@ -1,6 +1,6 @@
 import process from 'node:process'
 import type { CLI, CloudOptions } from '@stacksjs/types'
-import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
@@ -45,7 +45,15 @@ export function cloud(buddy: CLI) {
     // .option('--jump-box', 'Remove the jump box', { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudOptions) => {
-      const startTime = performance.now()
+      const startTime = await intro('buddy cloud:remove')
+
+      log.info('')
+      log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
+      log.info('')
+      log.info(italic('If you see an error, please try again. If the error persists, please contact support.'))
+      // sleep for 2 seconds to get the user to read the message
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
       const result = await runCommand('bunx cdk destroy --profile stacks', {
         ...options,
         cwd: p.cloudPath(),

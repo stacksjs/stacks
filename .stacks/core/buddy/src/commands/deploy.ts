@@ -15,7 +15,7 @@ export function deploy(buddy: CLI) {
 
   buddy
     .command('deploy', descriptions.deploy)
-    .option('--domain', 'Specify a domain to deploy to', { default: '' })
+    .option('--domain', 'Specify a domain to deploy to', { default: undefined })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       const perf = await intro('buddy deploy')

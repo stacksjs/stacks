@@ -12,7 +12,7 @@ export default {
   name: env.APP_NAME || 'Stacks',
   env: env.APP_ENV || 'development',
   url: env.APP_URL || 'stacks.test',
-  redirectUrls: ['stacksjs.org', 'stacksjs.org'],
+  redirectUrls: ['stacksjs.com'],
   debug: env.DEBUG || false,
   key: env.APP_KEY,
 
