@@ -30,6 +30,7 @@ export interface UsersTable {
   // a `Date`, can optionally be provided as a `string` in inserts and
   // can never be updated:
   created_at: ColumnType<Date, string | undefined, never>
+  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 export interface Database {
@@ -46,7 +47,7 @@ if (driver === 'sqlite') {
 else {
   dialect = new MysqlDialect({
     pool: createPool({
-      database: 'carefree',
+      database: 'stacks',
       host: '127.0.0.1',
       user: 'root',
       password: '',

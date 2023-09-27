@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database'
+
 import type { Collection } from '@stacksjs/collections'
 import { collect } from '@stacksjs/collections'
 
@@ -8,50 +9,54 @@ export interface User {
   email: string
   password: string
   created_at: Date
+  deleted_at: Date
 }
+
+export type UserColumn = keyof User
+export type UserColumns = Array<keyof User>
 
 export class UserModel {
   private _data: User | undefined = undefined
 
   private _isSelectInvoked = false
   public _id: number | undefined = undefined
-  private cols: string[] = []
+  private cols: UserColumns = []
   private useSoftDeletes = true
+  private keyName: keyof User = 'id'
 
   queryBuilder = db.selectFrom('users')// Initialize queryBuilder
   queryBuilderStore = db.insertInto('users')// Initialize queryBuilder
   queryBuilderUpdate = db.updateTable('users')// Initialize queryBuilder
   queryBuilderDelete = db.deleteFrom('users')// Initialize queryBuilder
 
-  private getKeyName(): string {
-    return 'id'
-  }
-
   public async find(id: number | number[]): Promise<User | Collection<User>> {
     if (Array.isArray(id))
       return await this.findMany(id)
 
     let query = this.queryBuilder.selectAll()
-      .where(this.getKeyName(), '=', id)
+      .where(this.keyName, '=', id)
 
     if (this.useSoftDeletes)
       query = query.where('deleted_at', 'is', null)
 
     this._data = await query.executeTakeFirst()
 
+    if (!this._data)
+      throw new Error('User not found!')
+
     return this._createProxy()
   }
 
   public async findMany(id: number[] | string[]): Promise<User | Collection<User>> {
-    return await this.whereIn(this.getKeyName(), id).get()
+    return await this.whereIn(this.keyName, id).get()
   }
 
-  private _createProxy(): User & { [key: string]: Function } {
+  private _createProxy() {
     return new Proxy(this._data || {}, {
-      get: (target, prop: keyof User | string): any => {
+      get: (target: User, prop: UserColumn) => {
         // Property lookup in the User data
         if (prop in target)
-          return target[prop as keyof User]
+          return target[prop]
 
         // If it's a method on the UserModel, bind it
         const method = this[prop as keyof this]
@@ -63,12 +68,16 @@ export class UserModel {
     })
   }
 
-  public update(obj: Partial<User>): any {
+  public async update(obj: Partial<User>): Promise<User | undefined | Collection<User>> {
     if (this._data && this._data?.id) {
-      return this.queryBuilderUpdate.set(obj)
-        .where(this.getKeyName(), '=', this._data?.id)
+      await this.queryBuilderUpdate.set(obj)
+        .where(this.keyName, '=', this._data?.id)
         .executeTakeFirst()
+
+      return await this.find(this._data?.id)
     }
+
+    return undefined
   }
 
   public async all() {
@@ -103,7 +112,7 @@ export class UserModel {
   public where(...args: (string | number | boolean)[]): this {
     if (args.length === 2) {
       const [column, value] = args
-      this.queryBuilder = this.queryBuilder.where(column, '=', value)
+      this.queryBuilder = this.queryBuilder.where(column as UserColumn, '=', value)
     }
     else { this.queryBuilder = this.queryBuilder.where(...args) }
 
@@ -128,7 +137,7 @@ export class UserModel {
     return this
   }
 
-  public whereNull(col: string): this {
+  public whereNull(col: UserColumn): this {
     this.queryBuilder = this.queryBuilder.where(col, 'is', null)
 
     return this
@@ -141,7 +150,7 @@ export class UserModel {
     return this
   }
 
-  public whereNotNull(col: string): this {
+  public whereNotNull(col: UserColumn): this {
     this.queryBuilder = this.queryBuilder.where(col, 'is not', null)
 
     return this
@@ -153,7 +162,7 @@ export class UserModel {
     return this
   }
 
-  public distinctOn(col: string): this {
+  public distinctOn(col: UserColumn): this {
     this.queryBuilder = this.queryBuilder.distinctOn(col)
 
     return this
@@ -165,13 +174,13 @@ export class UserModel {
     return this
   }
 
-  public orderBy(col: string) {
+  public orderBy(col: UserColumn) {
     this.queryBuilder = this.queryBuilder.orderBy(col)
 
     return this
   }
 
-  public groupBy(col: string) {
+  public groupBy(col: UserColumn) {
     this.queryBuilder = this.queryBuilder.groupBy(col)
 
     return this
@@ -231,13 +240,13 @@ export class UserModel {
     return this
   }
 
-  public orderByDesc(col: string): this {
+  public orderByDesc(col: UserColumn): this {
     this.queryBuilder = this.queryBuilder.orderBy(col, 'desc')
 
     return this
   }
 
-  public select(...args: string[]): this {
+  public select(...args: UserColumns): this {
     this.cols = args
     this._isSelectInvoked = true
 
@@ -281,7 +290,7 @@ export class UserModel {
 
   public forceDelete(): any {
     if (this._data && this._data?.id) {
-      return this.queryBuilderDelete.where(this.getKeyName(), '=', this._data?.id)
+      return this.queryBuilderDelete.where(this.keyName, '=', this._data?.id)
         .executeTakeFirst()
     }
   }
@@ -289,11 +298,9 @@ export class UserModel {
 
 const UserInstance = new UserModel()
 
-const user = await UserInstance.when(true, (query) => {
-  // Modify the query as needed
-  return query.where('id', 1)
-}).get()
+const user = await UserInstance.find(1)
 
-console.log(user)
+const res = await user.update({ name: 'glenn 2' })
 
+console.log(res)
 process.exit(0)
