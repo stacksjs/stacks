@@ -27,7 +27,7 @@ export interface ModelOptions extends Base {
   table: string // defaults to the lowercase, plural name of the model
   useUuid: boolean
   fields: Fields
-  hasOne: string // hasOne: 'Post
+  hasOne: string // hasOne: 'Post'
   hasMany: {
     model: string // should be typed as ModelName
     foreignKey?: string
