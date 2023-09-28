@@ -38,7 +38,7 @@ export class StacksCloud extends Stack {
   privateSource: string
   zone!: route53.IHostedZone
   redirectZones: route53.IHostedZone[] = []
-  ec2Instance!: ec2.Instance
+  ec2Instance?: ec2.Instance
   storage!: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
@@ -364,21 +364,22 @@ export class StacksCloud extends Stack {
 
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
+    // this instance needs to be created once to mount the EFS & clone the Stacks repo
     this.ec2Instance = new ec2.Instance(this, 'JumpBoxInstance', {
       vpc: this.vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
       machineImage: new ec2.AmazonLinuxImage(),
       role,
       userData: ec2.UserData.custom(`
-    #!/bin/bash
-    yum update -y
-    yum install -y amazon-efs-utils
-    yum install -y git
-    yum install -y https://s3.us-east-1.amazonaws.com/amazon-ssm-us-east-1/latest/linux_amd64/amazon-ssm-agent.rpm
-    mkdir /mnt/efs
-    mount -t efs ${this.storage.fileSystem.fileSystemId}:/ /mnt/efs
-    git clone https://github.com/stacksjs/stacks.git /mnt/efs
-  `),
+      #!/bin/bash
+      yum update -y
+      yum install -y amazon-efs-utils
+      yum install -y git
+      yum install -y https://s3.us-east-1.amazonaws.com/amazon-ssm-us-east-1/latest/linux_amd64/amazon-ssm-agent.rpm
+      mkdir /mnt/efs
+      mount -t efs ${this.storage.fileSystem.fileSystemId}:/ /mnt/efs
+      git clone https://github.com/stacksjs/stacks.git /mnt/efs
+    `),
     })
 
     this.storage.accessPoint = new efs.AccessPoint(this, 'StacksAccessPoint', {
@@ -556,16 +557,12 @@ export class StacksCloud extends Stack {
       })
     }
 
-    new Output(this, 'JumpBoxInstanceId', {
-      value: this.ec2Instance.instanceId,
-      description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
-    })
-
-    // async function getInstanceId(stackName) {
-    //   const data = await cloudformation.describeStacks({ StackName: stackName }).promise()
-    //   const instanceIdOutput = data.Stacks[0].Outputs.find(output => output.OutputKey === 'CloudInstanceId')
-    //   return instanceIdOutput.OutputValue
-    // }
+    if (this.ec2Instance?.instanceId) {
+      new Output(this, 'JumpBoxInstanceId', {
+        value: this.ec2Instance.instanceId,
+        description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
+      })
+    }
 
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
     if (this.shouldDeployDocs() && this.docsPrefix) {

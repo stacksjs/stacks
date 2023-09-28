@@ -59,8 +59,6 @@ export interface CloudOptions {
     api: boolean
     fileSystem: boolean
   }
-
-  useJumpBox: boolean
 }
 
 export type CloudConfig = Partial<CloudOptions>

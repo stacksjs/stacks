@@ -5,7 +5,8 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { Route53 } from '@aws-sdk/client-route-53'
-import app from '~/config/app'
+import { app, config } from '@stacksjs/config'
+import { dd } from '@stacksjs/logging'
 
 export function deploy(buddy: CLI) {
   const descriptions = {

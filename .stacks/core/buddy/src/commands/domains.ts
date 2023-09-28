@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { bgCyan, bold, dd, intro, italic, outro, prompts } from '@stacksjs/cli'
+import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { addDomain } from './deploy'
 

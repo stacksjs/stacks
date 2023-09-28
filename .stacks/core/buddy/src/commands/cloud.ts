@@ -1,13 +1,15 @@
 import process from 'node:process'
 import type { CLI, CloudOptions } from '@stacksjs/types'
-import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',
+    add: 'Add a resource to the Stacks Cloud.',
     remove: 'Remove the Stacks Cloud. In case it fails, try again.',
     verbose: 'Enable verbose output',
   }
@@ -20,7 +22,8 @@ export function cloud(buddy: CLI) {
     .action(async (options: CloudOptions) => {
       if (options.ssh || options.connect) {
         const startTime = performance.now()
-        const result = await runCommand('aws ssm start-session --target i-0a4a48be7544a72e3', {
+        const jumpBoxId = await getJumpBoxInstanceId()
+        const result = await runCommand(`aws ssm start-session --target ${jumpBoxId}`, {
           ...options,
           cwd: p.projectPath(),
           stdin: 'pipe',
@@ -40,17 +43,75 @@ export function cloud(buddy: CLI) {
     })
 
   buddy
+    .command('cloud:add', descriptions.add)
+    .option('--jump-box', 'Remove the jump-box', { default: true })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudOptions) => {
+      const startTime = await intro('buddy cloud:add')
+
+      if (options.jumpBox) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { confirm } = await prompts({
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Would you like to add a jump-box?',
+        })
+
+        if (!confirm) {
+          await outro('Exited', { startTime, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+
+        log.info('')
+        log.info('The jump-box is getting added to your cloud resources...')
+        log.info('This takes a few moments, please be patient')
+        log.info('')
+        // sleep for 2 seconds to get the user to read the message
+        await new Promise(resolve => setTimeout(resolve, 2000))
+
+        await addJumpBox()
+
+        await outro('Your jump-box was added.', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      log.info('')
+      log.info('This functionality is not yet implemented.')
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
     .command('cloud:remove', descriptions.remove)
     .alias('cloud:destroy')
-    // .option('--jump-box', 'Remove the jump box', { default: true })
+    .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudOptions) => {
       const startTime = await intro('buddy cloud:remove')
 
+      if (options.jumpBox) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { confirm } = await prompts({
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Would you like to remove your jump-box for now?',
+        })
+
+        if (!confirm) {
+          await outro('Exited', { startTime, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+
+        await deleteJumpBox()
+
+        await outro('Your jump-box was removed.', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
       log.info('')
       log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
-      log.info(italic('If you see an error, please try again. If the error persists, please contact support.'))
+      log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
+      log.info(italic('If it does fail, don\'t worry—please try again, or contact us trough Discord.'))
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
