@@ -60,15 +60,15 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk-lib": "^2.97.0",
+    "aws-cdk-lib": "^2.98.0",
     "constructs": "^10.2.70"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^1.13.1",
     "@aws-lambda-powertools/metrics": "^1.13.1",
     "@aws-lambda-powertools/tracer": "^1.13.1",
-    "@aws-sdk/client-cloudfront": "^3.418.0",
-    "@aws-sdk/client-route-53-domains": "^3.418.0",
+    "@aws-sdk/client-cloudfront": "^3.421.0",
+    "@aws-sdk/client-route-53-domains": "^3.421.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/logging": "workspace:*",
@@ -76,12 +76,12 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk-lib": "^2.97.0",
+    "aws-cdk-lib": "^2.98.0",
     "aws4fetch": "^1.0.17",
     "constructs": "^10.2.70"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^3.8.0",
+    "@oclif/plugin-plugins": "^3.8.2",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
