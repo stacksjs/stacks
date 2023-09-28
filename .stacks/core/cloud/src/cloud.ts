@@ -349,7 +349,7 @@ export class StacksCloud extends Stack {
 
     this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
       vpc: this.vpc,
-      fileSystemName: `${config.app.name}-${config.app.env}-efs`,
+      fileSystemName: `stacks-${config.app.env}-efs`,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,

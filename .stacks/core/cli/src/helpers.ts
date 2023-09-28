@@ -34,7 +34,7 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
 
   return new Promise((resolve) => {
     if (error)
-      handleError(error)
+      return handleError(error)
 
     if (options.startTime) {
       let time = performance.now() - options.startTime

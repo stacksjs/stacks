@@ -1,6 +1,6 @@
 import process from 'node:process'
 import type { CLI, CloudOptions } from '@stacksjs/types'
-import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId } from '@stacksjs/cloud'
@@ -44,7 +44,7 @@ export function cloud(buddy: CLI) {
 
   buddy
     .command('cloud:add', descriptions.add)
-    .option('--jump-box', 'Remove the jump-box', { default: true })
+    .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudOptions) => {
       const startTime = await intro('buddy cloud:add')
@@ -54,7 +54,7 @@ export function cloud(buddy: CLI) {
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',
-          message: 'Would you like to add a jump-box?',
+          message: 'Would you like to add a jump-box to your cloud?',
         })
 
         if (!confirm) {
@@ -64,12 +64,25 @@ export function cloud(buddy: CLI) {
 
         log.info('')
         log.info('The jump-box is getting added to your cloud resources...')
-        log.info('This takes a few moments, please be patient')
+        log.info('This takes a few moments, please be patient.')
         log.info('')
         // sleep for 2 seconds to get the user to read the message
         await new Promise(resolve => setTimeout(resolve, 2000))
 
-        await addJumpBox()
+        const result = await addJumpBox()
+
+        if (result.isErr()) {
+          await outro('While running the cloud:add command, there was an issue', { startTime, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+
+        log.info('')
+        log.info(italic('View the jump-box in the AWS console:'))
+        log.info(underline('https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:instanceState=running'))
+        log.info('')
+        log.info(italic('Once it finished initializing, you may SSH into it:'))
+        log.info(underline(('buddy cloud --ssh')))
+        log.info('')
 
         await outro('Your jump-box was added.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
@@ -111,7 +124,9 @@ export function cloud(buddy: CLI) {
       log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
       log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
-      log.info(italic('If it does fail, don\'t worry—please try again, or contact us trough Discord.'))
+      log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))
+      log.info('')
+
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 

@@ -5,9 +5,6 @@ export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
   static handle(err: string | StacksError, options?: any) {
-    if (typeof err === 'string')
-      err = new Error(err)
-
     this.writeErrorToConsole(err, options)
     this.writeErrorToFile(err)
 
@@ -30,13 +27,13 @@ export class ErrorHandler {
   }
 
   static writeErrorToConsole(err: string | StacksError, options?: any) {
-    console.error(err, options)
+    if (options)
+      console.error(err, options)
+    else
+      console.error(err)
   }
 }
 
 export function handleError(err: StacksError | string, options?: any): StacksError {
-  if (typeof err === 'string')
-    return ErrorHandler.handle(new Error(err), options)
-
   return ErrorHandler.handle(err, options)
 }
