@@ -122,7 +122,7 @@ export function cloud(buddy: CLI) {
       }
 
       log.info('')
-      log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
+      log.info('ℹ️ Please note, removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
 
       if (!await isFailedState()) {

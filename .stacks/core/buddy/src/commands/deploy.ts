@@ -1,8 +1,7 @@
-/* eslint-disable no-console */
 import process from 'node:process'
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, outro } from '@stacksjs/cli'
+import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { Route53 } from '@aws-sdk/client-route-53'
 import { app } from '@stacksjs/config'
@@ -22,22 +21,22 @@ export function deploy(buddy: CLI) {
       const domain = options.domain || app.url
 
       if (!domain) {
-        console.log('We could not identify a domain to deploy to.')
-        console.log('Please set your .env or ./config/app.ts properly.')
-        console.log('')
-        console.log('ℹ️  Alternatively, specify a domain to deploy via the `--domain` flag.')
-        console.log('')
-        console.log('   ➡️  Example: `buddy deploy --domain example.com`')
-        console.log('')
+        log.info('We could not identify a domain to deploy to.')
+        log.info('Please set your .env or ./config/app.ts properly.')
+        log.info('')
+        log.info('ℹ️  Alternatively, specify a domain to deploy via the `--domain` flag.')
+        log.info('')
+        log.info('   ➡️  Example: `buddy deploy --domain example.com`')
+        log.info('')
         process.exit(ExitCode.FatalError)
       }
 
       if (await hasUserDomainBeenAddedToCloud(domain)) {
         log.info('')
         log.info('✅ Your domain is properly configured.')
-        log.info('ℹ️ Your application is deploying...')
+        log.info('ℹ️  Your cloud is deploying.')
         log.info('')
-        log.info(italic('This may take a while to complete.'))
+        log.info(italic('⏳ This may take a while...'))
         log.info('')
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
@@ -46,12 +45,12 @@ export function deploy(buddy: CLI) {
       // if the domain hasn't been added to the user's (AWS) cloud, we will add it for them
       // and then exit the process with prompts for the user to update their nameservers
       else {
-        console.log('')
-        console.log(`👋  It appears to be your first ${italic(domain)} deployment.`)
-        console.log('')
-        console.log(italic('Let’s ensure it is all connected properly.'))
-        console.log(italic('One moment...'))
-        console.log('')
+        log.info('')
+        log.info(`👋  It appears to be your first ${italic(domain)} deployment.`)
+        log.info('')
+        log.info(italic('Let’s ensure it is all connected properly.'))
+        log.info(italic('One moment...'))
+        log.info('')
 
         options.domain = domain
         await addDomain(options, perf)
@@ -72,7 +71,7 @@ export function deploy(buddy: CLI) {
     })
 
   buddy.on('deploy:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }
