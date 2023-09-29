@@ -3,7 +3,7 @@ import type { CLI, CloudOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId, isFailedDeployment } from '@stacksjs/cloud'
+import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -125,7 +125,7 @@ export function cloud(buddy: CLI) {
       log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
 
-      if (!await isFailedDeployment()) {
+      if (!await isFailedState()) {
         log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
         log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))
         log.info('')
