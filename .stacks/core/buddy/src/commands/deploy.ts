@@ -5,8 +5,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { Route53 } from '@aws-sdk/client-route-53'
-import { app, config } from '@stacksjs/config'
-import { dd } from '@stacksjs/logging'
+import { app } from '@stacksjs/config'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
@@ -34,6 +33,13 @@ export function deploy(buddy: CLI) {
       }
 
       if (await hasUserDomainBeenAddedToCloud(domain)) {
+        log.info('')
+        log.info('✅ Your domain is properly configured.')
+        log.info('ℹ️ Your application is deploying...')
+        log.info('')
+        log.info(italic('This may take a while to complete.'))
+        log.info('')
+        await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
       }
 
