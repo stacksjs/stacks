@@ -3,7 +3,7 @@ import type { CLI, CloudOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId } from '@stacksjs/cloud'
+import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId, isFailedDeployment } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -96,6 +96,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:remove', descriptions.remove)
     .alias('cloud:destroy')
+    .alias('cloud:rm')
     .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudOptions) => {
@@ -123,9 +124,12 @@ export function cloud(buddy: CLI) {
       log.info('')
       log.info('Please note, removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
-      log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
-      log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))
-      log.info('')
+
+      if (!await isFailedDeployment()) {
+        log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
+        log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))
+        log.info('')
+      }
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))

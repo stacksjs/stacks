@@ -6,6 +6,8 @@ import { IAM } from '@aws-sdk/client-iam'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { config } from '@stacksjs/config'
 
+const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+const cloudName = `stacks-cloud-${appEnv}`
 const ec2 = new EC2({ region: 'us-east-1' })
 
 export async function getSecurityGroupId(name: string) {
@@ -133,7 +135,7 @@ export async function purchaseDomain(domain: string, options: PurchaseOptions) {
 
 export async function getJumpBoxInstanceId(name?: string) {
   if (!name)
-    name = 'stacks-cloud-jump-box'
+    name = `${cloudName}-jump-box`
 
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({
@@ -153,7 +155,7 @@ export async function getJumpBoxInstanceId(name?: string) {
 
 export async function deleteEc2Instance(id: string, stackName?: string) {
   if (!stackName)
-    stackName = 'stacks-cloud'
+    stackName = cloudName
 
   if (!id)
     return `Instance ${id} not found`
@@ -165,7 +167,7 @@ export async function deleteEc2Instance(id: string, stackName?: string) {
 
 export async function deleteJumpBox(stackName?: string) {
   if (!stackName)
-    stackName = 'stacks-cloud'
+    stackName = cloudName
 
   const jumpBoxId = await getJumpBoxInstanceId()
 
@@ -175,14 +177,31 @@ export async function deleteJumpBox(stackName?: string) {
   return deleteEc2Instance(jumpBoxId, stackName)
 }
 
+export async function getJumpBoxInstanceProfileName() {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const iam = new IAM({ region: 'us-east-1' })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const data = await iam.listInstanceProfiles({})
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+  const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBoxInstance'))
+
+  if (!instanceProfile)
+    return err('Jump-box IAM instance profile not found')
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return ok(instanceProfile?.InstanceProfileName)
+}
+
 export async function addJumpBox(stackName?: string) {
   if (!stackName)
-    stackName = 'stacks-cloud'
+    stackName = cloudName
 
   if (await getJumpBoxInstanceId())
     return err('The jump–box you are trying to add already exists. Please remove it & wait until it finished terminating.')
 
   const ec2 = new EC2({ region: 'us-east-1' })
+
+  // TODO: fix this
   const result = await getSecurityGroupId('stacks-cloud-JumpBoxInstanceInstanceSecurityGroupF8898C8C-1J0P9G9EIC1JR')
   let sgId: string | undefined
 
@@ -207,9 +226,9 @@ export async function addJumpBox(stackName?: string) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const fileSystemId = fileSystem?.FileSystemId
 
-  console.log('fileSystemId', fileSystemId)
-
   if (!fileSystem || !fileSystemId)
+    return err(`EFS file system ${fileSystemName} not found`)
+
   const userDataScript = `
 #!/bin/bash
 yum update -y
@@ -217,7 +236,7 @@ yum install -y amazon-efs-utils
 yum install -y git
 yum install -y https://s3.us-east-1.amazonaws.com/amazon-ssm-us-east-1/latest/linux_amd64/amazon-ssm-agent.rpm
 mkdir /mnt/efs
-mount -t efs fs-0d8c0b3811f1bc6e5:/ /mnt/efs
+mount -t efs ${fileSystemId}:/ /mnt/efs
 git clone https://github.com/stacksjs/stacks.git /mnt/efs
 `
 
@@ -246,7 +265,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
         Tags: [
           {
             Key: 'Name',
-            Value: 'stacks-cloud-jump-box',
+            Value: `${cloudName}-jump-box`,
           },
         ],
       },
@@ -262,25 +281,19 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
     : err('Jump box creation failed')
 }
 
-export async function getJumpBoxInstanceProfileName() {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-  const iam = new IAM({ region: 'us-east-1' })
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-  const data = await iam.listInstanceProfiles({})
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-  const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBoxInstance'))
-
-  if (!instanceProfile)
-    return err('Jump-box IAM instance profile not found')
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return ok(instanceProfile?.InstanceProfileName)
-}
-
 export async function isFirstDeployment() {
-  const stackName = 'stacks-cloud'
+  const stackName = cloudName
   const cloudFormation = new CloudFormation()
   const data = await cloudFormation.listStacks({ StackStatusFilter: ['CREATE_COMPLETE', 'UPDATE_COMPLETE'] })
+  const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === stackName)
+
+  return !isStacksCloudPresent
+}
+
+export async function isFailedDeployment() {
+  const stackName = cloudName
+  const cloudFormation = new CloudFormation()
+  const data = await cloudFormation.listStacks({ StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED'] })
   const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === stackName)
 
   return !isStacksCloudPresent

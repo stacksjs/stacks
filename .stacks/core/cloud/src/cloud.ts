@@ -27,6 +27,8 @@ import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
+const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+
 export class StacksCloud extends Stack {
   domain: string
   apiPrefix: string
@@ -127,7 +129,7 @@ export class StacksCloud extends Stack {
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
-      secretName: `${config.app.name}-${config.app.env}-secrets`,
+      secretName: `${config.app.name}-${appEnv}-secrets`,
       description: 'Secrets for the Stacks application',
       generateSecretString: {
         secretStringTemplate: JSON.stringify(env),
@@ -135,7 +137,7 @@ export class StacksCloud extends Stack {
       },
     })
 
-    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${config.app.env === 'local' ? 'development' : config.app.env}-server`
+    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${appEnv}-server`
     const serverFunction = new lambda.Function(this, 'StacksServer', {
       functionName,
       description: 'The Stacks Server',
@@ -278,7 +280,7 @@ export class StacksCloud extends Stack {
 
   manageStorage() {
     const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${this.domain}-${config.app.env}`,
+      bucketName: `${this.domain}-${appEnv}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -303,7 +305,7 @@ export class StacksCloud extends Stack {
     })
 
     const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${this.domain}-private-${config.app.env}`,
+      bucketName: `${this.domain}-private-${appEnv}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -314,7 +316,7 @@ export class StacksCloud extends Stack {
 
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${config.app.env}`,
+        bucketName: `${this.domain}-logs-${appEnv}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
@@ -349,7 +351,7 @@ export class StacksCloud extends Stack {
 
     this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
       vpc: this.vpc,
-      fileSystemName: `stacks-${config.app.env}-efs`,
+      fileSystemName: `stacks-${appEnv}-efs`,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
