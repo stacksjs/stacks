@@ -367,7 +367,7 @@ export class StacksCloud extends Stack {
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
     // this instance needs to be created once to mount the EFS & clone the Stacks repo
-    this.ec2Instance = new ec2.Instance(this, 'JumpBoxInstance', {
+    this.ec2Instance = new ec2.Instance(this, 'JumpBox', {
       vpc: this.vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
       machineImage: new ec2.AmazonLinuxImage(),

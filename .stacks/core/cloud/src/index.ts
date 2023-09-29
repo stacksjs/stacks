@@ -10,18 +10,18 @@ const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`
 const ec2 = new EC2({ region: 'us-east-1' })
 
-export async function getSecurityGroupId(name: string) {
+export async function getSecurityGroupId(securityGroupName: string) {
   const { SecurityGroups } = await ec2.describeSecurityGroups({
-    Filters: [{ Name: 'group-name', Values: [name] }],
+    Filters: [{ Name: 'group-name', Values: [securityGroupName] }],
   })
 
   if (!SecurityGroups)
-    return err(`Security group ${name} not found`)
+    return err(`Security group ${securityGroupName} not found`)
 
   if (SecurityGroups[0])
     return ok(SecurityGroups[0].GroupId)
 
-  return err(`Security group ${name} not found`)
+  return err(`Security group ${securityGroupName} not found`)
 }
 
 export * from './drivers'
@@ -183,7 +183,7 @@ export async function getJumpBoxInstanceProfileName() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const data = await iam.listInstanceProfiles({})
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-  const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBoxInstance'))
+  const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBox'))
 
   if (!instanceProfile)
     return err('Jump-box IAM instance profile not found')
@@ -201,8 +201,15 @@ export async function addJumpBox(stackName?: string) {
 
   const ec2 = new EC2({ region: 'us-east-1' })
 
-  // TODO: fix this
-  const result = await getSecurityGroupId('stacks-cloud-JumpBoxInstanceInstanceSecurityGroupF8898C8C-1J0P9G9EIC1JR')
+  const r = await getJumpBoxSecurityGroupName()
+
+  if (r.isErr())
+    return err(r.error)
+
+  if (!r.value)
+    return err('Security group not found when adding jump box')
+
+  const result = await getSecurityGroupId(r.value)
   let sgId: string | undefined
 
   if (result.isErr())
@@ -279,6 +286,41 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   return instance.Instances && instance.Instances[0]
     ? ok(`Jump box created with id ${instance.Instances[0].InstanceId}`)
     : err('Jump box creation failed')
+}
+
+export async function getJumpBoxSecurityGroupName() {
+  const jumpBoxId = await getJumpBoxInstanceId()
+
+  if (!jumpBoxId)
+    return err('Jump box not found')
+
+  const ec2 = new EC2({ region: 'us-east-1' })
+  const data = await ec2.describeInstances({ InstanceIds: [jumpBoxId] })
+
+  if (data.Reservations && data.Reservations[0] && data.Reservations[0].Instances && data.Reservations[0].Instances[0]) {
+    const instance = data.Reservations[0].Instances[0]
+    const securityGroups = instance.SecurityGroups
+
+    if (securityGroups && securityGroups[0])
+      return ok(securityGroups[0].GroupName)
+  }
+
+  return err('Security group not found')
+}
+
+export async function getSecurityGroupFromInstanceId(instanceId: string) {
+  const ec2 = new EC2({ region: 'us-east-1' })
+  const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
+
+  if (data.Reservations && data.Reservations[0] && data.Reservations[0].Instances && data.Reservations[0].Instances[0]) {
+    const instance = data.Reservations[0].Instances[0]
+    const securityGroups = instance.SecurityGroups
+
+    if (securityGroups && securityGroups[0])
+      return securityGroups[0].GroupId // Returns the ID of the first security group
+  }
+
+  return undefined
 }
 
 export async function isFirstDeployment() {
