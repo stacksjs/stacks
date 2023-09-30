@@ -27,7 +27,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
 
   if (!cmd)
-    return err(handleError(`Failed to parse command: ${cmd}`))
+    return err(handleError(`Failed to parse command: ${cmd}`, options))
 
   if (options?.verbose)
     // eslint-disable-next-line no-console

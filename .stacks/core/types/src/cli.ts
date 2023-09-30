@@ -111,6 +111,17 @@ export interface CliOptions {
   verbose?: boolean
 
   /**
+   * **Silent Mode**
+   *
+   * When you are using "silent"-mode, the CLI will not output anything
+   * to the console. This is useful when you want to run the CLI in
+   * the background.
+   *
+   * @default false
+   */
+  silent?: boolean
+
+  /**
    * **Current Work Directory**
    *
    * Based on the `cwd` value, that's where the command...

@@ -37,6 +37,7 @@ async function main() {
   // cmd.make(buddy)
   // cmd.migrate(buddy)
   // cmd.seed(buddy)
+  cmd.setup(buddy)
   // cmd.example(buddy)
   // cmd.test(buddy)
   // cmd.version(buddy)

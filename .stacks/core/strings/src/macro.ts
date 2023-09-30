@@ -63,10 +63,6 @@ export const Str = {
     return c.dotCase(str)
   },
 
-  headerCase(str: string) {
-    return c.headerCase(str)
-  },
-
   noCase(str: string) {
     return c.noCase(str)
   },

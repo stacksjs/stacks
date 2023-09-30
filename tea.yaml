@@ -1,9 +1,9 @@
 dependencies:
-  npmjs.com: ^9.7.2
-  bun.sh: ^1.0.0
-  sqlite.org: ^3.42.0
-  redis.io: ^7.0.11
   aws.amazon.com/cli: ^2.13.7
+  bun.sh: ^1.0.3
   caddyserver.com: ^2.7.4
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
+  npmjs.com: ^9.7.2 # can soon be removed when Bun native support is added
+  redis.io: ^7.0.11
+  sqlite.org: ^3.42.0

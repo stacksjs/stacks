@@ -1,6 +1,6 @@
 const { readdirSync } = require('node:fs')
 const { resolve } = require('node:path')
-const { paramCase } = require('change-case')
+const { kebabCase } = require('change-case')
 const jiti = require('jiti')(__filename)
 
 const git = jiti('./config/git.ts')
@@ -8,11 +8,11 @@ const git = jiti('./config/git.ts')
 const toDelete = ['readme-md']
 
 const components = readdirSync(resolve(__dirname, './components'))
-  .map(item => paramCase(item.replace(/.vue/g, '')))
+  .map(item => kebabCase(item.replace(/.vue/g, '')))
   .filter(item => !toDelete.includes(item))
 
 const functions = readdirSync(resolve(__dirname, './functions'))
-  .map(item => paramCase(item.replace(/.ts/g, '')))
+  .map(item => kebabCase(item.replace(/.ts/g, '')))
   .filter(item => !toDelete.includes(item))
 
 const scopes = [...git.default.scopes, ...components, ...functions]

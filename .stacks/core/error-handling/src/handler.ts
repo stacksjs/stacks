@@ -1,22 +1,34 @@
 import { logsPath } from '@stacksjs/path'
-import type { StacksError } from '@stacksjs/types'
+import { StacksError as Error } from '@stacksjs/types'
+
+interface ErrorOptions {
+  silent?: boolean
+}
+
+export const StacksError = Error
 
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static handle(err: string | StacksError, options?: any) {
-    this.writeErrorToConsole(err, options)
-    this.writeErrorToFile(err)
+  static handle(err: string | Error, options?: ErrorOptions) {
+    // lets only write to the console if we are not in silent mode
+    if (!options?.silent)
+      this.writeErrorToConsole(err, options)
+
+    if (typeof err === 'string')
+      err = new StacksError(err)
+
+    this.writeErrorToFile(err).catch(e => console.error(e))
 
     return err
   }
 
-  static handleError(err: Error, options?: any) {
+  static handleError(err: Error, options?: ErrorOptions) {
     this.handle(err, options)
     return err
   }
 
-  static async writeErrorToFile(err: StacksError) {
+  static async writeErrorToFile(err: Error) {
     const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
     const file = Bun.file(this.logFile)
     const writer = file.writer()
@@ -26,7 +38,7 @@ export class ErrorHandler {
     await writer.end()
   }
 
-  static writeErrorToConsole(err: string | StacksError, options?: any) {
+  static writeErrorToConsole(err: string | Error, options?: ErrorOptions) {
     if (options)
       console.error(err, options)
     else
@@ -34,6 +46,6 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: StacksError | string, options?: any): StacksError {
+export function handleError(err: Error | string, options?: ErrorOptions): Error {
   return ErrorHandler.handle(err, options)
 }
