@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
+import { handleError } from '@stacksjs/error-handling'
 import { runCommand } from '@stacksjs/cli'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
@@ -54,7 +55,7 @@ async function ensureDependenciesAreInstalled(): Promise<void> {
   if (result.isOk())
     return
 
-  console.error('Failed to install dependencies')
+  handleError(result.error)
   process.exit(1)
 }
 
@@ -64,23 +65,92 @@ async function installTea(): Promise<void> {
   if (result.isOk())
     return
 
-  console.error('Failed to install tea')
+  handleError(result.error)
   process.exit(1)
 }
 
 async function initializeProject(options: CliOptions): Promise<void> {
-  const result = await runCommands([
-    'bun install', // -> await runCommand('bun install')
-    'cp env.example env', // -> cp.env.example to env
-    'buddy key:generate', // -> set application key
-    'buddy configure:aws', // -> ensure aws is configured
-  ], {
+  log.info('')
+  log.info('⏳ Installing npm dependencies...')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  const result = await runCommand('bun install', {
     cwd: options.cwd || p.projectPath(),
   })
 
-  if (result.isOk())
-    return
+  if (result.isErr()) {
+    handleError(result.error)
+    process.exit(1)
+  }
 
-  console.error('Failed to initialize project')
-  process.exit(1)
+  log.info('')
+  log.info('✅ Installed npm dependencies')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  log.info('')
+  log.info('⏳ Ensuring .env exists...')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 800))
+
+  const envResult = await runCommand('cp .env.example .env', {
+    cwd: options.cwd || p.projectPath(),
+  })
+
+  if (envResult.isErr()) {
+    handleError(envResult.error)
+    process.exit(1)
+  }
+
+  log.info('')
+  log.info('✅ .env exists')
+  log.info('')
+
+  log.info('')
+  log.info('⏳ Generating application key...')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 1200))
+
+  const keyResult = await runCommand('buddy key:generate', {
+    cwd: options.cwd || p.projectPath(),
+  })
+
+  if (keyResult.isErr()) {
+    handleError(keyResult.error)
+    process.exit(1)
+  }
+
+  log.info('')
+  log.info('✅ Generated application key')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  log.info('')
+  log.info('⏳ Ensuring AWS is connected...')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 1200))
+
+  const awsResult = await runCommand('buddy configure:aws', {
+    cwd: options.cwd || p.projectPath(),
+  })
+
+  if (awsResult.isErr()) {
+    handleError(awsResult.error)
+    process.exit(1)
+  }
+
+  log.info('')
+  log.info('✅ Configured AWS')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  log.info('')
+  log.info('✅ Project is setup')
+  log.info('')
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  log.info('')
+  log.info('🎉 Happy coding!')
+  log.info('')
 }
