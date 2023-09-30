@@ -58,6 +58,6 @@
     "foxundermoon.shell-format"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.21.0"
+    "@vscode/vsce": "^2.21.1"
   }
 }
