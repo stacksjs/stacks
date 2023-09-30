@@ -55,13 +55,13 @@
     "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.1",
     "nprogress": "^0.2.0",
-    "vue-i18n": "^9.4.1"
+    "vue-i18n": "^9.5.0"
   },
   "dependencies": {
     "@stacksjs/types": "workspace:*",
     "@types/nprogress": "^0.2.1",
     "nprogress": "^0.2.0",
-    "vue-i18n": "^9.4.1"
+    "vue-i18n": "^9.5.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
