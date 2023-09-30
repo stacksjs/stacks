@@ -23,8 +23,7 @@ export function setup(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       if (await ensureTeaIsInstalled())
-        // await optimizeTeaDeps()
-        await ensureDependenciesAreInstalled()
+        await optimizeTeaDeps()
       else
         await installTea()
 
@@ -44,19 +43,6 @@ async function ensureTeaIsInstalled(): Promise<boolean> {
     return true
 
   return false
-}
-
-async function ensureDependenciesAreInstalled(): Promise<void> {
-  const result = await runCommand('dev', {
-    silent: true,
-    cwd: p.projectPath(),
-  })
-
-  if (result.isOk())
-    return
-
-  handleError(result.error)
-  process.exit(1)
 }
 
 async function installTea(): Promise<void> {
@@ -153,4 +139,8 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.info('')
   log.info('🎉 Happy coding!')
   log.info('')
+}
+
+export async function optimizeTeaDeps(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 300))
 }
