@@ -1,5 +1,6 @@
 alefragnani
 alrighty
+amazonses
 amazonwebservices
 antfu
 applypatch
@@ -68,6 +69,7 @@ destructurable
 devs
 dinero
 docgen
+domainkey
 dotenv
 dprint
 encrypter

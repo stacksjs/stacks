@@ -2,6 +2,7 @@
 import type { Construct } from 'constructs'
 import type { StackProps } from 'aws-cdk-lib'
 import {
+  CustomResource,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -302,17 +303,48 @@ export class StacksCloud extends Stack {
         this.redirectZones.push(hostedZone)
       })
 
-      new custom_resources.AwsCustomResource(this, 'VerifyDomainIdentity', {
+      const domainIdentity = new custom_resources.AwsCustomResource(this, 'DomainIdentity', {
         onCreate: {
           service: 'SES',
           action: 'verifyDomainIdentity',
           parameters: {
             Domain: this.domain,
           },
-          physicalResourceId: custom_resources.PhysicalResourceId.of('VerifyDomainIdentity'),
+          physicalResourceId: { id: 'DomainIdentityCreation' },
         },
         policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
       })
+
+      // give ourselves permission to verify the domain
+      domainIdentity.grantPrincipal.addToPrincipalPolicy(new iam.PolicyStatement({
+        actions: ['ses:VerifyDomainIdentity'],
+        resources: ['*'],
+        effect: iam.Effect.ALLOW,
+      }))
+
+      // Enable DKIM on the domain identity
+      const dkimAttributes = new custom_resources.AwsCustomResource(this, 'DkimAttributes', {
+        onCreate: {
+          service: 'SES',
+          action: 'verifyDomainDkim',
+          parameters: {
+            Domain: this.domain,
+          },
+          physicalResourceId: { id: 'DkimAttributesCreation' },
+        },
+        policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
+      })
+
+      // Add the DKIM CNAME records to the DNS configuration
+      const dkimTokens = dkimAttributes.getResponseField('DkimTokens')
+      for (let i = 0; i < dkimTokens.length; i++) {
+        new route53.CnameRecord(this, `DkimRecord${i}`, {
+          zone: this.zone,
+          recordName: `${dkimTokens[i]}._domainkey.${this.domain}`,
+          domainName: `${dkimTokens[i]}.dkim.amazonses.com`,
+          ttl: Duration.hours(1),
+        })
+      }
 
       new route53.MxRecord(this, 'MxRecord', {
         zone: this.zone,
