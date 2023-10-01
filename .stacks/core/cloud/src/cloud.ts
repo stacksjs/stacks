@@ -46,6 +46,7 @@ export class StacksCloud extends Stack {
   storage!: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
+    emailBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
@@ -336,6 +337,13 @@ export class StacksCloud extends Stack {
       autoDeleteObjects: true,
     })
 
+    const emailBucket = new s3.Bucket(this, 'EmailBucket', {
+      bucketName: `${this.domain}-email`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
     // Create an S3 bucket for CloudFront access logs
     let logBucket: s3.Bucket | undefined
 
@@ -351,6 +359,7 @@ export class StacksCloud extends Stack {
     this.storage = {
       publicBucket,
       privateBucket,
+      emailBucket,
       logBucket,
     }
   }

@@ -201,6 +201,7 @@ scrollback
 seedable
 sendemail
 sendgrid
+sesv
 sfc
 sfcs
 shiki

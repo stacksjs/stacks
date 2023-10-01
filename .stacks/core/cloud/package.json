@@ -73,6 +73,8 @@
     "@aws-sdk/client-efs": "^3.421.0",
     "@aws-sdk/client-iam": "^3.421.0",
     "@aws-sdk/client-route-53-domains": "^3.421.0",
+    "@aws-sdk/client-s3": "^3.188.0",
+    "@aws-sdk/client-sesv2": "^3.188.0",
     "@aws-sdk/client-ssm": "^3.421.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
