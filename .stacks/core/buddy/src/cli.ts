@@ -29,6 +29,7 @@ async function main() {
   cmd.cloud(buddy)
   // cmd.commit(buddy)
   cmd.deploy(buddy)
+  cmd.configure(buddy)
   cmd.domains(buddy)
   cmd.fresh(buddy)
   cmd.install(buddy)

@@ -1,7 +1,8 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
-import { runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI) {
@@ -32,7 +33,7 @@ export function setup(buddy: CLI) {
 
   buddy.on('setup:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
+    process.exit(ExitCode.FatalError)
   })
 }
 
@@ -52,7 +53,7 @@ async function installTea(): Promise<void> {
     return
 
   handleError(result.error)
-  process.exit(1)
+  process.exit(ExitCode.FatalError)
 }
 
 async function initializeProject(options: CliOptions): Promise<void> {
@@ -67,7 +68,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   if (result.isErr()) {
     handleError(result.error)
-    process.exit(1)
+    process.exit(ExitCode.FatalError)
   }
 
   log.info('')
@@ -86,7 +87,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   if (envResult.isErr()) {
     handleError(envResult.error)
-    process.exit(1)
+    process.exit(ExitCode.FatalError)
   }
 
   log.info('')
@@ -104,7 +105,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   if (keyResult.isErr()) {
     handleError(keyResult.error)
-    process.exit(1)
+    process.exit(ExitCode.FatalError)
   }
 
   log.info('')
@@ -123,7 +124,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   if (awsResult.isErr()) {
     handleError(awsResult.error)
-    process.exit(1)
+    process.exit(ExitCode.FatalError)
   }
 
   log.info('')

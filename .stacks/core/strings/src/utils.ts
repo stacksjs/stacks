@@ -87,7 +87,7 @@ export function truncate(str: string, length: number, end = '...') {
  * Generate a random string
  * @category String
  */
-export function randomStr(size = 16, dict = urlAlphabet) {
+export function random(size = 16, dict = urlAlphabet) {
   let id = ''
   let i = size
   const len = dict.length

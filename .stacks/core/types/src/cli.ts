@@ -267,7 +267,7 @@ export type DomainsOptions = CliOptions & {
 }
 
 export interface CleanOptions extends CliOptions { }
-export interface CloudOptions extends CliOptions {
+export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean
   jumpBox?: boolean

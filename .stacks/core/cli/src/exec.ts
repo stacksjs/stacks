@@ -52,7 +52,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     stderr: options?.stderr || 'inherit',
     cwd: options?.cwd || import.meta.dir,
     env: { ...e, ...options?.env },
-    async onExit(subprocess, exitCode, signalCode, error) {
+    onExit(subprocess, exitCode, signalCode, error) {
       if (exitCode !== ExitCode.Success && exitCode)
         process.exit(exitCode)
     },

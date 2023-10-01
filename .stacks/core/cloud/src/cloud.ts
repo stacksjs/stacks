@@ -6,6 +6,7 @@ import {
   Fn,
   CfnOutput as Output,
   RemovalPolicy,
+  SecretValue,
   Stack,
   aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
@@ -21,6 +22,7 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
+import { string } from '@stacksjs/strings'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
@@ -72,6 +74,7 @@ export class StacksCloud extends Stack {
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
+    this.manageUsers()
     this.manageZone()
     this.manageCertificate()
     this.manageStorage()
@@ -248,6 +251,16 @@ export class StacksCloud extends Stack {
       recordName: 'www',
       domainName: this.domain,
     })
+  }
+
+  manageUsers() {
+    const user = new iam.User(this, 'User', {
+      userName: 'chris',
+      password: SecretValue.unsafePlainText(string.random()),
+      passwordResetRequired: true,
+    })
+
+    user.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'))
   }
 
   manageZone() {
