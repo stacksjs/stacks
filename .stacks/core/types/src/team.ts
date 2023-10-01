@@ -1,6 +1,8 @@
 type TeamMemberName = string
 type Email = string
+type TeamMembers = Record<TeamMemberName, Email>
 
 export interface Team {
-  [key: TeamMemberName]: Email
+  name: string
+  members: TeamMembers
 }

@@ -30,9 +30,6 @@ import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-function capitalizeFirstLetter(string: string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
-}
 
 export class StacksCloud extends Stack {
   domain: string
@@ -260,11 +257,13 @@ export class StacksCloud extends Stack {
   }
 
   manageUsers() {
-    const users = config.team
+    const teamName = config.team.name
+    const users = config.team.members
 
     for (const userName in users) {
       // const userEmail = users[userName]
-      const user = new iam.User(this, `${capitalizeFirstLetter(userName)}User`, {
+      const name = `${string.pascalCase(teamName)}${string.pascalCase(userName)}User`
+      const user = new iam.User(this, name, {
         userName,
         password: SecretValue.unsafePlainText(env.AWS_DEFAULT_PASSWORD || string.random()),
         passwordResetRequired: true,
