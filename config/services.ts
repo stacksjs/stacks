@@ -13,7 +13,7 @@ export default {
     accountId: env.AWS_ACCOUNT_ID || '',
     appId: env.AWS_ACCESS_KEY_ID || '',
     apiKey: env.AWS_SECRET_ACCESS_KEY || '',
-    region: env.AWS_DEFAULT_REGION || '',
+    region: env.AWS_DEFAULT_REGION || 'us-east-1',
   },
 
   algolia: {

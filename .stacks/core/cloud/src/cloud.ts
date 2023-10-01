@@ -10,6 +10,7 @@ import {
   Stack,
   aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
+  custom_resources,
   aws_ec2 as ec2,
   aws_efs as efs,
   aws_iam as iam,
@@ -270,13 +271,14 @@ export class StacksCloud extends Stack {
   manageUsers() {
     const teamName = config.team.name
     const users = config.team.members
+    const password = env.AWS_DEFAULT_PASSWORD || string.random()
 
     for (const userName in users) {
       // const userEmail = users[userName]
       const name = `${string.pascalCase(teamName)}${string.pascalCase(userName)}User`
       const user = new iam.User(this, name, {
         userName,
-        password: SecretValue.unsafePlainText(env.AWS_DEFAULT_PASSWORD || string.random()),
+        password: SecretValue.unsafePlainText(password),
         passwordResetRequired: true,
       })
 
@@ -293,10 +295,32 @@ export class StacksCloud extends Stack {
         domainName: this.domain,
       })
 
+      // TODO: fix this – redirects do not work yet
       config.dns.redirects?.forEach((redirect) => {
         const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
         const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
         this.redirectZones.push(hostedZone)
+      })
+
+      new custom_resources.AwsCustomResource(this, 'VerifyDomainIdentity', {
+        onCreate: {
+          service: 'SES',
+          action: 'verifyDomainIdentity',
+          parameters: {
+            Domain: this.domain,
+          },
+          physicalResourceId: custom_resources.PhysicalResourceId.of('VerifyDomainIdentity'),
+        },
+        policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
+      })
+
+      new route53.MxRecord(this, 'MxRecord', {
+        zone: this.zone,
+        recordName: this.domain,
+        values: [{
+          priority: 10,
+          hostName: 'inbound-smtp.us-east-1.amazonaws.com', // Replace with your SES inbound endpoint
+        }],
       })
     }
     // if not, lets create it

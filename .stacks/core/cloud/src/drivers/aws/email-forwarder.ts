@@ -37,30 +37,29 @@ console.log('AWS Lambda SES Forwarder')
 //
 //   To match all email addresses matching no other mapping, use "@" as a key.
 const defaultConfig = {
-  fromEmail: 'noreply@example.com',
+  fromEmail: 'noreply@stacksjs.org',
   subjectPrefix: '',
-  emailBucket: 's3-bucket-name',
-  emailKeyPrefix: 'emailsPrefix/',
+  emailBucket: 'stacksjs.org-email',
+  emailKeyPrefix: 'stacks/',
   allowPlusSign: true,
   forwardMapping: {
-    'info@example.com': [
-      'example.john@example.com',
-      'example.jen@example.com',
+    'hello@stacksjs.org': [
+      'chrisbreuer93@gmail.com',
     ],
-    'abuse@example.com': [
-      'example.jim@example.com',
+    // 'abuse@example.com': [
+    //   'example.jim@example.com',
+    // ],
+    '@stacksjs.org': [
+      'chrisbreuer93@gmail.com',
     ],
-    '@example.com': [
-      'example.john@example.com',
-    ],
-    'info': [
-      'info@example.com',
-    ],
+    // 'info': [
+    //   'info@example.com',
+    // ],
   },
 }
 
 /**
- * Parses the SES event record provided for the `mail` and `receipients` data.
+ * Parses the SES event record provided for the `mail` and `recipients` data.
  *
  * @param {object} data - Data bundle with context, email, etc.
  *
