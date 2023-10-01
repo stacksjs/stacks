@@ -23,6 +23,7 @@ declare module 'bun' {
     const AWS_ACCESS_KEY_ID: string
     const AWS_SECRET_ACCESS_KEY: string
     const AWS_DEFAULT_REGION: string
+    const AWS_DEFAULT_PASSWORD: string
     const MAIL_MAILER: 'smtp' | 'mailgun' | 'ses' | 'postmark' | 'sendmail' | 'log'
     const MAIL_HOST: string
     const MAIL_PORT: number

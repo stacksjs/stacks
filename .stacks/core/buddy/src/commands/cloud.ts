@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, CloudOptions } from '@stacksjs/types'
+import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -19,7 +19,7 @@ export function cloud(buddy: CLI) {
     .option('--ssh', descriptions.ssh, { default: false })
     .option('--connect', descriptions.ssh, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CloudOptions) => {
+    .action(async (options: CloudCliOptions) => {
       if (options.ssh || options.connect) {
         const startTime = performance.now()
         const jumpBoxId = await getJumpBoxInstanceId()
@@ -46,7 +46,7 @@ export function cloud(buddy: CLI) {
     .command('cloud:add', descriptions.add)
     .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CloudOptions) => {
+    .action(async (options: CloudCliOptions) => {
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
@@ -99,7 +99,7 @@ export function cloud(buddy: CLI) {
     .alias('cloud:rm')
     .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CloudOptions) => {
+    .action(async (options: CloudCliOptions) => {
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
@@ -122,7 +122,7 @@ export function cloud(buddy: CLI) {
       }
 
       log.info('')
-      log.info('ℹ️ Please note, removing your cloud resources will take a while to complete. Please be patient.')
+      log.info('ℹ️  Removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
 
       if (!await isFailedState()) {

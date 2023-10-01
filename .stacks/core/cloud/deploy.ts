@@ -1,13 +1,14 @@
 import process from 'node:process'
 import * as cdk from 'aws-cdk-lib'
+import { env } from '@stacksjs/env'
 import { config } from '@stacksjs/config'
 import { StacksCloud } from './src/cloud'
 
 const app = new cdk.App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`
-const account = Bun.env.AWS_ACCOUNT_ID
-const region = Bun.env.AWS_DEFAULT_REGION
+const account = env.AWS_ACCOUNT_ID
+const region = env.AWS_DEFAULT_REGION
 
 if (!account || !region) {
   console.error('Missing accountId or region in config.')

@@ -16,8 +16,6 @@ export function configure(buddy: CLI) {
     .option('--aws', descriptions.aws, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
-      console.log('abc options', options)
-
       if (options?.aws) {
         const startTime = performance.now()
         const result = await runCommand('aws configure --profile stacks', {

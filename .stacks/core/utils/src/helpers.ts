@@ -37,11 +37,11 @@ export async function initProject(): Promise<Result<SyncSubprocess, StacksError>
 }
 
 export async function ensureProjectIsInitialized() {
-  if (storage.isFile('.env'))
+  if (storage.isFile(projectPath('.env')))
     return await isAppKeySet()
 
   // copy the .env.example file to .env
-  if (storage.isFile('.env.example'))
+  if (storage.isFile(projectPath('.env.example')))
     await runCommand('cp .env.example .env', { cwd: projectPath() })
   else
     console.error('no .env.example file found')

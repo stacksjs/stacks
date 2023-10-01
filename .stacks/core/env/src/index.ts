@@ -41,7 +41,7 @@ export function process() {
     : p.env as unknown as Env
 }
 
-export const env: Env = new Proxy(process(), handler)
+export const env = new Proxy(process(), handler)
 
 export function writeEnv(key: EnvKey, value: string, options?: { path: string }) {
   const envPath = options?.path || projectPath('.env')

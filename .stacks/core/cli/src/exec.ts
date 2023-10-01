@@ -33,25 +33,12 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     // eslint-disable-next-line no-console
     console.log('exec', { command, cmd, options })
 
-  const e = Object.fromEntries(
-    Object.entries(Bun.env).map(([key, value]) => {
-      if (typeof value === 'boolean')
-        return [key, value ? 'true' : 'false']
-
-      else if (typeof value === 'number')
-        return [key, value.toString()]
-
-      else
-        return [key, value]
-    }),
-  )
-
   const proc = Bun.spawn(cmd, {
     ...options,
     stdout: options?.stdout || 'inherit',
     stderr: options?.stderr || 'inherit',
     cwd: options?.cwd || import.meta.dir,
-    env: { ...e, ...options?.env },
+    // env: { ...e, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {
       if (exitCode !== ExitCode.Success && exitCode)
         process.exit(exitCode)

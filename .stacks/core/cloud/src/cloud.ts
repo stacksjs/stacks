@@ -30,6 +30,12 @@ import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+function isProductionDeployment() {
+  return config.app.env === 'production' || config.app.env === 'prod'
+}
+function isProductionEnv(env: string) {
+  return env === 'production' || env === 'prod'
+}
 
 export class StacksCloud extends Stack {
   domain: string
@@ -46,8 +52,8 @@ export class StacksCloud extends Stack {
   storage!: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
-    emailBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
+    emailBucket?: s3.Bucket
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
   }
@@ -70,7 +76,11 @@ export class StacksCloud extends Stack {
     if (!config.team || Object.keys(config.team).length === 0)
       throw new Error('Your ./config team needs to at least have one member defined. Please set yourself as a team member and try deploying again.')
 
-    this.domain = config.app.url
+    if (isProductionEnv(appEnv || 'dev'))
+      this.domain = config.app.url
+    else
+      this.domain = `${appEnv}.${config.app.url}`
+
     this.apiPrefix = config.api.prefix || 'api'
     this.docsPrefix = config.app.docMode ? undefined : config.docs.base
     this.docsSource = '../../../storage/framework/docs'
@@ -337,12 +347,15 @@ export class StacksCloud extends Stack {
       autoDeleteObjects: true,
     })
 
-    const emailBucket = new s3.Bucket(this, 'EmailBucket', {
-      bucketName: `${this.domain}-email`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
+    let emailBucket: s3.Bucket | undefined
+    if (isProductionDeployment()) {
+      emailBucket = new s3.Bucket(this, 'EmailBucket', {
+        bucketName: `${this.domain}-email`,
+        versioned: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+      })
+    }
 
     // Create an S3 bucket for CloudFront access logs
     let logBucket: s3.Bucket | undefined

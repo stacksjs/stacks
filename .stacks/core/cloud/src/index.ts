@@ -178,17 +178,13 @@ export async function deleteJumpBox(stackName?: string) {
 }
 
 export async function getJumpBoxInstanceProfileName() {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const iam = new IAM({ region: 'us-east-1' })
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const data = await iam.listInstanceProfiles({})
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
   const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBox'))
 
   if (!instanceProfile)
     return err('Jump-box IAM instance profile not found')
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return ok(instanceProfile?.InstanceProfileName)
 }
 
@@ -220,17 +216,12 @@ export async function addJumpBox(stackName?: string) {
   if (!sgId)
     return err('Security group not found when adding jump box')
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const client = new EFSClient({ region: 'us-east-1' })
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const command = new DescribeFileSystemsCommand({})
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const data = await client.send(command)
-  const fileSystemName = `stacks-${config.app.env}-efs`
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  const fileSystemName = `stacks-${config.app.env}-efs`
   const fileSystem = data.FileSystems?.find(fs => fs.Name === fileSystemName)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const fileSystemId = fileSystem?.FileSystemId
 
   if (!fileSystem || !fileSystemId)
@@ -253,7 +244,6 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   if (res.isErr())
     return err(res.error)
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const jumpBoxInstanceProfileName: string | undefined = res.value
   if (!jumpBoxInstanceProfileName)
     return err('Jump-box IAM instance profile not found')
