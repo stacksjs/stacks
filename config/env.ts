@@ -29,6 +29,7 @@ export default {
   AWS_ACCESS_KEY_ID: validate.string(),
   AWS_SECRET_ACCESS_KEY: validate.string(),
   AWS_DEFAULT_REGION: validate.string(),
+  AWS_DEFAULT_PASSWORD: validate.string(),
 
   MAIL_MAILER: validate.enum(['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log']),
   MAIL_HOST: validate.string(),

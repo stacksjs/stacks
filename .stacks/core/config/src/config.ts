@@ -28,6 +28,7 @@ export const {
   searchEngine,
   services,
   storage,
+  team,
   ui,
 }: StacksOptions = config
 

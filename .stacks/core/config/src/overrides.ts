@@ -18,6 +18,7 @@ import storage from '~/config/storage'
 import searchEngine from '~/config/search-engine'
 import security from '~/config/security'
 import services from '~/config/services'
+import team from '~/config/team'
 import ui from '~/config/ui'
 
 // this "user config" will override the default config options
@@ -41,5 +42,6 @@ export default {
   security,
   services,
   storage,
+  team,
   ui,
 } satisfies StacksConfig

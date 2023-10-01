@@ -30,6 +30,9 @@ import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
 
 export class StacksCloud extends Stack {
   domain: string
@@ -65,6 +68,9 @@ export class StacksCloud extends Stack {
 
     if (!config.app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
+
+    if (!config.team || Object.keys(config.team).length === 0)
+      throw new Error('Your ./config team needs to at least have one member defined. Please set yourself as a team member and try deploying again.')
 
     this.domain = config.app.url
     this.apiPrefix = config.api.prefix || 'api'
@@ -254,13 +260,20 @@ export class StacksCloud extends Stack {
   }
 
   manageUsers() {
-    const user = new iam.User(this, 'User', {
-      userName: 'chris',
-      password: SecretValue.unsafePlainText(string.random()),
-      passwordResetRequired: true,
-    })
+    const users = config.team
 
-    user.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'))
+    for (const userName in users) {
+      // const userEmail = users[userName]
+      const user = new iam.User(this, `${capitalizeFirstLetter(userName)}User`, {
+        userName,
+        password: SecretValue.unsafePlainText(env.AWS_DEFAULT_PASSWORD || string.random()),
+        passwordResetRequired: true,
+      })
+
+      user.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'))
+
+      // TODO: email the userEmail their credentials
+    }
   }
 
   manageZone() {

@@ -1,3 +1,6 @@
+type TeamMemberName = string
+type Email = string
+
 export interface Team {
-  [key: string]: string
+  [key: TeamMemberName]: Email
 }
