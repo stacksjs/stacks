@@ -86,12 +86,12 @@ export function parseArgv(argv?: string[]): ParsedArgv {
   return { args, options }
 }
 
-export function parseOptions(argv?: string[]): { [k: string]: string | boolean | number } {
-  if (argv === undefined)
-    argv = process.argv.slice(2)
+// export function parseOptions(argv?: string[]): { [k: string]: string | boolean | number } {
+//   if (argv === undefined)
+//     argv = process.argv.slice(2)
 
-  return parseArgv(argv).options
-}
+//   return parseArgv(argv).options
+// }
 
 export function parseArgs(argv?: string[]): string[] {
   if (argv === undefined)

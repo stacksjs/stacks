@@ -263,7 +263,7 @@ export class StacksCloud extends Stack {
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.cdn)),
     })
 
-    new route53.CnameRecord(this, 'WwwCnameRecord', {
+    new route53.CnameRecord(this, 'CnameRecordWww', {
       zone: this.zone,
       recordName: 'www',
       domainName: this.domain,
@@ -446,7 +446,7 @@ export class StacksCloud extends Stack {
   manageCdn() {
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
 
-    const cdnCachePolicy = new cloudfront.CachePolicy(this, 'cdnCachePolicy', {
+    const cdnCachePolicy = new cloudfront.CachePolicy(this, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
       cachePolicyName: 'cdnCachePolicy',
       minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
@@ -575,7 +575,7 @@ export class StacksCloud extends Stack {
       values: ['v=spf1 include:amazonses.com ~all'],
     })
 
-    const lambdaFunction = new lambda.Function(this, 'SesForwarder', {
+    const lambdaFunction = new lambda.Function(this, 'EmailForwarder', {
       description: 'The Stacks Email Forwarder',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',

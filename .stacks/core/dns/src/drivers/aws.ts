@@ -84,7 +84,7 @@ function updateNameservers(nameservers: string[]) {
     )
     fs.writeFileSync(path, modifiedContent, 'utf-8')
     // eslint-disable-next-line no-console
-    console.log('Nameservers updated successfully.')
+    console.log('Nameservers have been set.')
   }
   catch (err) {
     console.error('Error updating nameservers:', err)

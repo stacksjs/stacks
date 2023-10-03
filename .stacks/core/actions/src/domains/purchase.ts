@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
-import { dd, log, parseOptions } from '@stacksjs/cli'
+import { log, parseOptions } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import type { PurchaseOptions } from '@stacksjs/cloud'

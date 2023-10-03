@@ -36,7 +36,19 @@ if (result.isErr()) {
 }
 
 const nameservers = result.value
-const registrar = (await whois(options.domain, true)).parsedData.Registrar
+const registrar: string = (await whois(options.domain, true)).parsedData.Registrar
+
+// usually for Route53 registered domains, we don't need to update crete a hosted zone as it's already
+// done for us. But in case it's not, we'll still need to ensure it's created technically, we
+// could automatically run the deploy command after instead of prompting the user
+if (registrar.includes('Amazon')) {
+  logger.log('')
+  logger.log('You can now continue your deployment process by running again:')
+  logger.log('')
+  logger.log(`  ➡️  ${italic('buddy deploy')}`)
+  logger.log('')
+  process.exit(0)
+}
 
 logger.log('')
 logger.log('ℹ️  Please note, before continuing your deployment process,')
