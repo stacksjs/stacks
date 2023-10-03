@@ -56,7 +56,7 @@ export class StacksCloud extends Stack {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
-    emailBucket?: s3.Bucket
+    emailBucket: s3.Bucket
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
   }
@@ -354,19 +354,14 @@ export class StacksCloud extends Stack {
       autoDeleteObjects: true,
     })
 
-    let emailBucket: s3.Bucket | undefined
-    if (isProductionDeployment()) {
-      emailBucket = new s3.Bucket(this, 'EmailBucket', {
-        bucketName: `${this.domain}-email`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      })
-    }
+    const emailBucket: s3.Bucket = new s3.Bucket(this, 'EmailBucket', {
+      bucketName: `${this.domain}-email`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
 
-    // Create an S3 bucket for CloudFront access logs
     let logBucket: s3.Bucket | undefined
-
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.domain}-logs-${appEnv}`,
@@ -578,6 +573,61 @@ export class StacksCloud extends Stack {
       zone: this.zone,
       recordName: `mail.${this.domain}`,
       values: ['v=spf1 include:amazonses.com ~all'],
+    })
+
+    const lambdaFunction = new lambda.Function(this, 'SesForwarder', {
+      description: 'The Stacks Email Forwarder',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '/email-forwarder.zip')),
+    })
+
+    const ruleSet = new ses.CfnReceiptRuleSet(this, 'RuleSet', {
+      ruleSetName: 'EmailForwardingRuleSet',
+    })
+
+    new ses.CfnReceiptRule(this, 'Rule', {
+      rule: {
+        name: 'EmailForwardingRule',
+        recipients: ['chrisbreuer93@gmail.com'], // replace with your email addresses
+        actions: [
+          {
+            s3Action: {
+              bucketName: this.storage.emailBucket.bucketName,
+              objectKeyPrefix: 'email',
+            },
+          },
+          {
+            lambdaAction: {
+              functionArn: lambdaFunction.functionArn,
+              invocationType: 'Event',
+            },
+          },
+        ],
+        enabled: true,
+        scanEnabled: true,
+      },
+      ruleSetName: ruleSet.ruleSetName as string,
+    })
+
+    // Grant SES permission to write to the S3 bucket
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+      principals: [new iam.ServicePrincipal('ses.amazonaws.com')],
+      actions: ['s3:PutObject'],
+      resources: [this.storage.emailBucket.arnForObjects('*')],
+      conditions: {
+        StringEquals: {
+          'aws:Referer': this.account,
+        },
+      },
+    }))
+
+    // Grant the Lambda function permission to read from the S3 bucket
+    this.storage.emailBucket.grantRead(lambdaFunction)
+
+    // Grant SES permission to invoke the Lambda function
+    lambdaFunction.addPermission('InvokeBySES', {
+      principal: new iam.ServicePrincipal('ses.amazonaws.com'),
     })
   }
 
