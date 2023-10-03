@@ -28,7 +28,7 @@ export const Str = {
   },
 
   random(length = 16) {
-    return u.randomStr(length)
+    return u.random(length)
   },
 
   capitalize(str: string) {

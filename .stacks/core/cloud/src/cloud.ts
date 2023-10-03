@@ -2,7 +2,7 @@
 import type { Construct } from 'constructs'
 import type { StackProps } from 'aws-cdk-lib'
 import {
-  CustomResource,
+  // CustomResource,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -11,7 +11,7 @@ import {
   Stack,
   aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
-  custom_resources,
+  // custom_resources,
   aws_ec2 as ec2,
   aws_efs as efs,
   aws_iam as iam,
@@ -21,6 +21,7 @@ import {
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
   aws_secretsmanager as secretsmanager,
+  aws_ses as ses,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
@@ -303,57 +304,7 @@ export class StacksCloud extends Stack {
         this.redirectZones.push(hostedZone)
       })
 
-      const domainIdentity = new custom_resources.AwsCustomResource(this, 'DomainIdentity', {
-        onCreate: {
-          service: 'SES',
-          action: 'verifyDomainIdentity',
-          parameters: {
-            Domain: this.domain,
-          },
-          physicalResourceId: { id: 'DomainIdentityCreation' },
-        },
-        policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
-      })
-
-      // give ourselves permission to verify the domain
-      domainIdentity.grantPrincipal.addToPrincipalPolicy(new iam.PolicyStatement({
-        actions: ['ses:VerifyDomainIdentity'],
-        resources: ['*'],
-        effect: iam.Effect.ALLOW,
-      }))
-
-      // Enable DKIM on the domain identity
-      const dkimAttributes = new custom_resources.AwsCustomResource(this, 'DkimAttributes', {
-        onCreate: {
-          service: 'SES',
-          action: 'verifyDomainDkim',
-          parameters: {
-            Domain: this.domain,
-          },
-          physicalResourceId: { id: 'DkimAttributesCreation' },
-        },
-        policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
-      })
-
-      // Add the DKIM CNAME records to the DNS configuration
-      const dkimTokens = dkimAttributes.getResponseField('DkimTokens')
-      for (let i = 0; i < dkimTokens.length; i++) {
-        new route53.CnameRecord(this, `DkimRecord${i}`, {
-          zone: this.zone,
-          recordName: `${dkimTokens[i]}._domainkey.${this.domain}`,
-          domainName: `${dkimTokens[i]}.dkim.amazonses.com`,
-          ttl: Duration.hours(1),
-        })
-      }
-
-      new route53.MxRecord(this, 'MxRecord', {
-        zone: this.zone,
-        recordName: this.domain,
-        values: [{
-          priority: 10,
-          hostName: 'inbound-smtp.us-east-1.amazonaws.com', // Replace with your SES inbound endpoint
-        }],
-      })
+      this.manageEmail()
     }
     // if not, lets create it
     catch (error) {
@@ -565,6 +516,71 @@ export class StacksCloud extends Stack {
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
+  manageEmail() {
+    // Create a SES domain identity
+    const sesIdentity = new ses.CfnEmailIdentity(this, 'DomainIdentity', {
+      emailIdentity: this.domain,
+
+      dkimSigningAttributes: {
+        nextSigningKeyLength: 'RSA_2048_BIT',
+      },
+
+      dkimAttributes: {
+        signingEnabled: true,
+      },
+
+      mailFromAttributes: {
+        behaviorOnMxFailure: 'USE_DEFAULT_VALUE',
+        mailFromDomain: `mail.${this.domain}`,
+      },
+
+      feedbackAttributes: {
+        emailForwardingEnabled: true,
+      },
+    })
+
+    // Create a Route53 records for the SES domain identity
+    // https://github.com/aws/aws-cdk/issues/21306
+    new route53.CfnRecordSet(this, 'DkimRecord1', {
+      hostedZoneName: `${this.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName1,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue1],
+      ttl: '1800',
+    })
+
+    new route53.CfnRecordSet(this, 'DkimRecord2', {
+      hostedZoneName: `${this.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName2,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue2],
+      ttl: '1800',
+    })
+
+    new route53.CfnRecordSet(this, 'DkimRecord3', {
+      hostedZoneName: `${this.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName3,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue3],
+      ttl: '1800',
+    })
+
+    new route53.MxRecord(this, 'MxRecord', {
+      zone: this.zone,
+      recordName: `mail.${this.domain}`,
+      values: [{
+        priority: 10,
+        hostName: 'feedback-smtp.us-east-1.amazonses.com',
+      }],
+    })
+
+    new route53.TxtRecord(this, 'TxtRecord', {
+      zone: this.zone,
+      recordName: `mail.${this.domain}`,
+      values: ['v=spf1 include:amazonses.com ~all'],
+    })
+  }
+
   additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
@@ -692,26 +708,3 @@ export class StacksCloud extends Stack {
     })
   }
 }
-
-// export class BucketEmptyingResource extends Construct {
-//   constructor(scope: Construct, id: string, bucket: s3.IBucket) {
-//     super(scope, id)
-
-//     const emptyBucket = new CustomResource.AwsCustomResource(this, 'EmptyBucket', {
-//       onUpdate: {
-//         service: 'S3',
-//         action: 'deleteObjects',
-//         parameters: {
-//           Bucket: bucket.bucketName,
-//           Delete: {
-//             // Objects: (bucket.objects as BucketObject[]).map(object => ({ Key: object.key })),
-//           },
-//         },
-//         // physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
-//       },
-//       // policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: AwsCustomResourcePolicy.ANY_RESOURCE }),
-//     })
-
-//     emptyBucket.node.addDependency(bucket)
-//   }
-// }

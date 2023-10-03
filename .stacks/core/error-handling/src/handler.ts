@@ -1,5 +1,4 @@
 import { logsPath } from '@stacksjs/path'
-import { StacksError as Error } from '@stacksjs/types'
 
 interface ErrorOptions {
   silent?: boolean
