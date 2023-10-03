@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^2.1.6",
+    "@stripe/stripe-js": "^2.1.7",
     "stripe": "^13.8.0"
   },
   "devDependencies": {

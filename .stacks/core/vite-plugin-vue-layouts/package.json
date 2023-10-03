@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@stacksjs/storage": "workspace:*",
-    "local-pkg": "^0.4.3"
+    "local-pkg": "^0.5.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
