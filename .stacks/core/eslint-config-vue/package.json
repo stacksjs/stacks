@@ -21,7 +21,7 @@
     "@stacksjs/eslint-config-basic": "workspace:*",
     "@stacksjs/eslint-config-ts": "workspace:*",
     "eslint-plugin-vue": "^9.17.0",
-    "local-pkg": "^0.4.3"
+    "local-pkg": "^0.5.0"
   },
   "devDependencies": {
     "eslint": "^8.50.0"
