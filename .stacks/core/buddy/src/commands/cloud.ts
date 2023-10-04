@@ -125,7 +125,6 @@ export function cloud(buddy: CLI) {
       log.info('ℹ️  Removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
 
-      // FIXME: oddly this conditions triggers inaccurately
       if (!await isFailedState()) {
         log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
         log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))

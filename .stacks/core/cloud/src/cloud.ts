@@ -33,9 +33,7 @@ import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-function isProductionDeployment() {
-  return config.app.env === 'production' || config.app.env === 'prod'
-}
+
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
 }
@@ -52,11 +50,11 @@ export class StacksCloud extends Stack {
   zone!: route53.IHostedZone
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
-  storage!: {
+  storage: {
     publicBucket: s3.Bucket
     privateBucket: s3.Bucket
     logBucket: s3.Bucket | undefined
-    emailBucket: s3.Bucket
+    emailBucket?: s3.Bucket
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
   }
@@ -72,6 +70,7 @@ export class StacksCloud extends Stack {
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
+    this.storage = {}
 
     if (!config.app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
@@ -292,26 +291,18 @@ export class StacksCloud extends Stack {
 
   manageZone() {
     // lets see if the zone already exists
-    try {
-      this.zone = route53.PublicHostedZone.fromLookup(this, 'AppUrlHostedZone', {
-        domainName: this.domain,
-      })
+    this.zone = route53.PublicHostedZone.fromLookup(this, 'AppUrlHostedZone', {
+      domainName: this.domain,
+    })
 
-      // TODO: fix this – redirects do not work yet
-      config.dns.redirects?.forEach((redirect) => {
-        const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
-        const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
-        this.redirectZones.push(hostedZone)
-      })
+    // TODO: fix this – redirects do not work yet
+    // config.dns.redirects?.forEach((redirect) => {
+    //   const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
+    //   const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
+    //   this.redirectZones.push(hostedZone)
+    // })
 
-      this.manageEmail()
-    }
-    // if not, lets create it
-    catch (error) {
-      this.zone = new route53.PublicHostedZone(this, 'HostedZone', {
-        zoneName: this.domain,
-      })
-    }
+    this.manageEmail()
   }
 
   manageCertificate() {
@@ -354,13 +345,6 @@ export class StacksCloud extends Stack {
       autoDeleteObjects: true,
     })
 
-    const emailBucket: s3.Bucket = new s3.Bucket(this, 'EmailBucket', {
-      bucketName: `${this.domain}-email`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
-
     let logBucket: s3.Bucket | undefined
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
@@ -374,7 +358,7 @@ export class StacksCloud extends Stack {
     this.storage = {
       publicBucket,
       privateBucket,
-      emailBucket,
+      emailBucket: this.storage?.emailBucket,
       logBucket,
     }
   }
@@ -512,6 +496,13 @@ export class StacksCloud extends Stack {
   }
 
   manageEmail() {
+    this.storage.emailBucket = new s3.Bucket(this, 'EmailBucket', {
+      bucketName: `${this.domain}-email`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
     // Create a SES domain identity
     const sesIdentity = new ses.CfnEmailIdentity(this, 'DomainIdentity', {
       emailIdentity: this.domain,
@@ -562,24 +553,30 @@ export class StacksCloud extends Stack {
 
     new route53.MxRecord(this, 'MxRecord', {
       zone: this.zone,
-      recordName: `mail.${this.domain}`,
+      recordName: 'mail',
       values: [{
         priority: 10,
         hostName: 'feedback-smtp.us-east-1.amazonses.com',
       }],
     })
 
-    new route53.TxtRecord(this, 'TxtRecord', {
+    new route53.TxtRecord(this, 'TxtSpfRecord', {
       zone: this.zone,
-      recordName: `mail.${this.domain}`,
+      recordName: 'mail',
       values: ['v=spf1 include:amazonses.com ~all'],
+    })
+
+    new route53.TxtRecord(this, 'TxtDmarcRecord', {
+      zone: this.zone,
+      recordName: '_dmarc',
+      values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${this.domain}`],
     })
 
     const lambdaFunction = new lambda.Function(this, 'EmailForwarder', {
       description: 'The Stacks Email Forwarder',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '/email-forwarder.zip')),
+      code: lambda.Code.fromAsset(p.join(__dirname, '/email-forwarder.zip')),
     })
 
     const ruleSet = new ses.CfnReceiptRuleSet(this, 'RuleSet', {

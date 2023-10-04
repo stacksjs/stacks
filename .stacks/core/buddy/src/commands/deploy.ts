@@ -53,7 +53,10 @@ export function deploy(buddy: CLI) {
         log.info('')
 
         options.domain = domain
-        await addDomain(options, perf)
+        await addDomain({
+          ...options,
+          deploy: true,
+        }, perf)
         process.exit(ExitCode.Success)
       }
 

@@ -2,7 +2,7 @@ import process from 'node:process'
 import { createHostedZone } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
-import { italic, parseOptions } from '@stacksjs/cli'
+import { italic, parseOptions, runCommand } from '@stacksjs/cli'
 import { whois } from '@stacksjs/whois'
 import { logger } from '@stacksjs/logging'
 import { projectConfigPath } from '@stacksjs/path'
@@ -38,15 +38,19 @@ if (result.isErr()) {
 const nameservers = result.value
 const registrar: string = (await whois(options.domain, true)).parsedData.Registrar
 
-// usually for Route53 registered domains, we don't need to update crete a hosted zone as it's already
-// done for us. But in case it's not, we'll still need to ensure it's created technically, we
-// could automatically run the deploy command after instead of prompting the user
+// usually for Route53 registered domains, we don't need to update create a hosted zone as it's already
+// done for us. But in case it's not, we still need to ensure it's created before we can deploy
 if (registrar.includes('Amazon')) {
-  logger.log('')
-  logger.log('You can now continue your deployment process by running again:')
-  logger.log('')
-  logger.log(`  ➡️  ${italic('buddy deploy')}`)
-  logger.log('')
+  if (parsedOptions.deploy) {
+    await runCommand('buddy deploy')
+  }
+  else {
+    logger.log('')
+    logger.log('You can now continue your deployment process by re-running:')
+    logger.log('')
+    logger.log(`  ➡️  ${italic('buddy deploy')}`)
+    logger.log('')
+  }
   process.exit(0)
 }
 

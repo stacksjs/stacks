@@ -18,11 +18,12 @@ export const log = {
 }
 
 export function dump(...args: any[]) {
-  // return debug(...args)
   return log.debug(...args)
 }
 
 export function dd(...args: any[]) {
   args.forEach(arg => log.debug(arg))
-  process.exit(ExitCode.Success)
+  // we need to return a non-zero exit code to indicate an error
+  // e.g. if used in a CDK script, we want it to fail the deployment
+  process.exit(ExitCode.FatalError)
 }
