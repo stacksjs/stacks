@@ -79,6 +79,7 @@ entrypoints
 envrc
 execa
 filesize
+flareapp
 flowconfig
 FLUSHALL
 fontshare
@@ -160,6 +161,7 @@ npmrc
 nprogress
 nuxt
 oclif
+ofetch
 openai
 openweb
 openweblabs

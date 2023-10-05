@@ -98,8 +98,6 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "@flareapp/flare-client": "^3.0.5",
-    "ofetch": "^1.3.3",
     "stacks": "workspace:*"
   },
   "lint-staged": {

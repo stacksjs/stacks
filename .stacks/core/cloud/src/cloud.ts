@@ -47,7 +47,7 @@ export class StacksCloud extends Stack {
   docsSource: string
   websiteSource: string
   privateSource: string
-  zone!: route53.IHostedZone
+  zone: route53.IHostedZone
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
   storage: {
@@ -71,6 +71,7 @@ export class StacksCloud extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
     this.storage = {}
+    this.zone = {} as route53.IHostedZone
 
     if (!config.app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
