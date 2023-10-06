@@ -126,8 +126,8 @@ export function cloud(buddy: CLI) {
       log.info('')
 
       if (!await isFailedState()) {
-        log.info(italic('Due to the nature of Lambda@edge functions, this command may fail on first execution.'))
-        log.info(italic('If it does fail, don’t worry — please try again, or contact us trough Discord.'))
+        log.info(italic('📢  Due to the nature of AWS::Lambda::Function functions, this command may fail on first execution.'))
+        log.info(italic('In case it fails, don’t worry — please try again & it will work (or else contact us through Discord).'))
         log.info('')
       }
 

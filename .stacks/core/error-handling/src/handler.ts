@@ -45,6 +45,7 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: Error | string, options?: ErrorOptions): Error {
+type ErrorDescription = string
+export function handleError(err: Error | ErrorDescription, options?: ErrorOptions | Error): Error {
   return ErrorHandler.handle(err, options)
 }

@@ -268,4 +268,5 @@ vueuse
 wafv
 whois
 wmaurer
+yourdomain
 zixuanchen

@@ -323,10 +323,9 @@ export async function isFirstDeployment() {
 }
 
 export async function isFailedState() {
-  const stackName = cloudName
   const cloudFormation = new CloudFormation()
-  const data = await cloudFormation.listStacks({ StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'DELETE_FAILED', 'ROLLBACK_COMPLETE'] })
-  const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === stackName)
+  const data = await cloudFormation.listStacks({ StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'] })
+  const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === cloudName)
 
   return !isStacksCloudPresent
 }

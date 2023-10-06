@@ -211,12 +211,12 @@ onMounted(() => {
                   <a
                     href="https://github.com/stacksjs/audio"
                     class="underline text-blue-600 dark:text-blue-200"
-                  >Audios</a>,
+                  >Audio</a>,
                   and
                   <a
-                    href="https://github.com/stacksjs/web3"
+                    href="https://github.com/stacksjs/web"
                     class="underline text-blue-600 dark:text-blue-200"
-                  >Web3</a>
+                  >Web</a>
                   libraries.
                 </div>
               </div>

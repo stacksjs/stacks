@@ -136,7 +136,7 @@ export function domains(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Removed your domain.', { startTime, useSeconds: true })
+      await outro('Removed your domain DNS records.', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

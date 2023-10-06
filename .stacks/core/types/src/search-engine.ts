@@ -28,6 +28,17 @@ export interface SearchEngineOptions {
     host: string
     apiKey: string
   }
+
+  filters?: {
+    [key: string]: string
+  }
+
+  /**
+   * The number of hits to be returned per page.
+   *
+   * @default number 20
+   */
+  perPage?: number
 }
 
 export type SearchEngineConfig = Partial<SearchEngineOptions>

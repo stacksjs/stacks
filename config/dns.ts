@@ -28,4 +28,6 @@ export default {
   txt: [],
 
   nameservers: [],
+
+  // redirects: ['stacksjs.com'],
 } satisfies DnsConfig

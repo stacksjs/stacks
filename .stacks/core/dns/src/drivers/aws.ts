@@ -3,9 +3,6 @@ import { err, ok } from '@stacksjs/error-handling'
 import { fs } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 
-// todo: need to consider that the domain may be in a non-AWS account
-// in which case, we need to ensure that the user's nameservers point to AWS
-
 export async function deleteHostedZone(domainName: string) {
   const route53 = new Route53()
 
@@ -41,6 +38,46 @@ export async function deleteHostedZone(domainName: string) {
   await route53.deleteHostedZone({ Id: hostedZone.Id })
   // eslint-disable-next-line no-console
   console.log(`Deleted Hosted Zone for domain: ${domainName}`)
+
+  return ok('success')
+}
+
+// sometimes it's useful to delete all records but keep the hosted zone
+// for example, if you want to keep the nameservers
+export async function deleteHostedZoneRecords(domainName: string) {
+  const route53 = new Route53()
+
+  // First, we need to get the Hosted Zone ID using the domain name
+  const hostedZones = await route53.listHostedZonesByName({ DNSName: domainName })
+  if (!hostedZones || !hostedZones.HostedZones)
+    return err((`No hosted zones found for domain: ${domainName}`))
+
+  const hostedZone = hostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
+  if (!hostedZone)
+    return err((`Hosted Zone not found for domain: ${domainName}`))
+
+  // Delete all record sets
+  const recordSets = await route53.listResourceRecordSets({ HostedZoneId: hostedZone.Id })
+  if (!recordSets || !recordSets.ResourceRecordSets)
+    return err((`No DNS records found for domain: ${domainName}`))
+
+  for (const recordSet of recordSets.ResourceRecordSets) {
+    if (recordSet.Type !== 'NS' && recordSet.Type !== 'SOA') {
+      await route53.changeResourceRecordSets({
+        HostedZoneId: hostedZone.Id,
+        ChangeBatch: {
+          Changes: [{
+            Action: 'DELETE',
+            ResourceRecordSet: recordSet,
+          }],
+        },
+      })
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(`Deleted DNS records for domain: ${domainName}`)
+
   return ok('success')
 }
 
@@ -88,6 +125,29 @@ function updateNameservers(nameservers: string[]) {
   }
   catch (err) {
     console.error('Error updating nameservers:', err)
+  }
+}
+
+export async function findHostedZone(domain: string) {
+  try {
+    const route53 = new Route53()
+    const { HostedZones } = await route53.listHostedZonesByName({ DNSName: domain })
+
+    if (!HostedZones)
+      return handleError(`No hosted zones found for domain ${domain}`)
+
+    // The API returns hosted zones sorted by name in ASCII order,
+    // so the desired hosted zone (if it exists) should be the first one in the list
+    const hostedZone = HostedZones[0]
+
+    if (hostedZone && hostedZone.Name === `${domain}.`)
+      return ok(hostedZone.Id)
+
+    return ok(null)
+  }
+  catch (error) {
+    console.error(`Failed to find hosted zone for domain ${domain}:`, error)
+    return handleError(`Failed to find hosted zone for domain ${domain}:`, error)
   }
 }
 

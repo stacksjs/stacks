@@ -47,7 +47,7 @@ export class StacksCloud extends Stack {
   docsSource: string
   websiteSource: string
   privateSource: string
-  zone: route53.IHostedZone
+  zone!: route53.IHostedZone
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
   storage: {
@@ -70,8 +70,8 @@ export class StacksCloud extends Stack {
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
+    // @ts-expect-error – we know this was properly set when needed
     this.storage = {}
-    this.zone = {} as route53.IHostedZone
 
     if (!config.app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
@@ -262,12 +262,6 @@ export class StacksCloud extends Stack {
       zone: this.zone,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.cdn)),
     })
-
-    new route53.CnameRecord(this, 'CnameRecordWww', {
-      zone: this.zone,
-      recordName: 'www',
-      domainName: this.domain,
-    })
   }
 
   manageUsers() {
@@ -307,9 +301,10 @@ export class StacksCloud extends Stack {
   }
 
   manageCertificate() {
-    this.certificate = new acm.Certificate(this, 'WebsiteCertificate', {
+    this.certificate = new acm.Certificate(this, 'StacksCertificate', {
       domainName: this.domain,
       validation: acm.CertificateValidation.fromDns(this.zone),
+      subjectAlternativeNames: [`www.${this.domain}`],
     })
   }
 
@@ -323,6 +318,7 @@ export class StacksCloud extends Stack {
 
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
+      // TODO: use string-ts function here instead
       const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
       const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', { domainName: redirect })
       const redirectBucket = new s3.Bucket(this, `RedirectBucket${slug}`, {
@@ -331,6 +327,7 @@ export class StacksCloud extends Stack {
           hostName: this.domain,
           protocol: s3.RedirectProtocol.HTTPS,
         },
+        removalPolicy: RemovalPolicy.DESTROY,
       })
       new route53.CnameRecord(this, `RedirectRecord${slug}`, {
         zone: hostedZone,
@@ -449,7 +446,7 @@ export class StacksCloud extends Stack {
       code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip')),
     })
 
-    const cdn = new cloudfront.Distribution(this, 'Distribution', {
+    const cdn = new cloudfront.Distribution(this, 'Cdn', {
       domainNames: [this.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${config.app.url}`,
@@ -491,6 +488,24 @@ export class StacksCloud extends Stack {
           ttl: Duration.seconds(0),
         },
       ],
+    })
+
+    // setup the www redirect
+    // Create a bucket for www.yourdomain.com and configure it to redirect to yourdomain.com
+    const wwwBucket = new s3.Bucket(this, 'WwwBucket', {
+      bucketName: `www.${this.domain}`,
+      websiteRedirect: {
+        hostName: this.domain,
+        protocol: s3.RedirectProtocol.HTTPS,
+      },
+      removalPolicy: RemovalPolicy.DESTROY,
+    })
+
+    // Create a Route53 record for www.yourdomain.com
+    new route53.ARecord(this, 'WwwAliasRecord', {
+      recordName: `www.${this.domain}`,
+      zone: this.zone,
+      target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
 
     return { cdn, originAccessIdentity, cdnCachePolicy }
