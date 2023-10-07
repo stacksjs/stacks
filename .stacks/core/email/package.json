@@ -68,11 +68,11 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "mailparser": "^2.4.3",
-    "mime": "^2.4.0",
-    "moment": "^2.24.0",
+    "mailparser": "^2.8.1",
+    "mime": "^2.6.0",
+    "moment": "^2.29.4",
     "nodemailer": "^5.1.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.4.0"
   },
   "optionalDependencies": {
     "@novu/emailjs": "^0.19.0",
