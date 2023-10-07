@@ -14,7 +14,5 @@ export default {
     address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
   },
 
-  mailboxes: {
-    hi: 'your@mailbox.com', // enables hi@stacksjs.org and forwards incoming mail to your@mailbox.com
-  },
+  // mailboxes: ['chris'], -> chris@${APP_URL}
 } satisfies EmailConfig

@@ -3,8 +3,6 @@
 const { CopyObjectCommand, GetObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const { SendEmailCommand, SESv2Client } = require('@aws-sdk/client-sesv2')
 
-console.log('AWS Lambda SES Forwarder')
-
 // Configure the S3 bucket and key prefix for stored raw emails, and the
 // mapping of email addresses to forward from and to.
 //
@@ -37,19 +35,19 @@ console.log('AWS Lambda SES Forwarder')
 //
 //   To match all email addresses matching no other mapping, use "@" as a key.
 const defaultConfig = {
-  fromEmail: 'noreply@stacksjs.org',
+  fromEmail: 'noreply@stacksjs.com',
   subjectPrefix: '',
-  emailBucket: 'stacksjs.org-email',
+  emailBucket: 'stacksjs.com-email',
   emailKeyPrefix: 'stacks/',
   allowPlusSign: true,
   forwardMapping: {
-    'hello@stacksjs.org': [
+    'hello@stacksjs.com': [
       'chrisbreuer93@gmail.com',
     ],
     // 'abuse@example.com': [
     //   'example.jim@example.com',
     // ],
-    '@stacksjs.org': [
+    '@stacksjs.com': [
       'chrisbreuer93@gmail.com',
     ],
     // 'info': [
@@ -346,6 +344,8 @@ exports.sendMessage = function (data) {
  * configuration, SES object, and S3 object.
  */
 exports.handler = function (event, context, callback, overrides) {
+  console.log('AWS Lambda SES Forwarder')
+
   const steps = overrides && overrides.steps
     ? overrides.steps
     : [

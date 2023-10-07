@@ -93,6 +93,7 @@ export class StacksCloud extends Stack {
 
     this.manageUsers()
     this.manageZone()
+    this.manageEmailServer()
     this.manageCertificate()
     this.manageStorage()
     this.manageFirewall()
@@ -296,8 +297,6 @@ export class StacksCloud extends Stack {
     //   const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
     //   this.redirectZones.push(hostedZone)
     // })
-
-    this.manageEmail()
   }
 
   manageCertificate() {
@@ -511,13 +510,82 @@ export class StacksCloud extends Stack {
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
-  manageEmail() {
-    this.storage.emailBucket = new s3.Bucket(this, 'EmailBucket', {
+  manageEmailServer() {
+    this.storage.emailBucket = new s3.Bucket(this, 'EmailServerBucket', {
       bucketName: `${this.domain}-email`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+      lifecycleRules: [
+        {
+          id: '24h',
+          expiration: Duration.days(1),
+          noncurrentVersionExpiration: Duration.days(1),
+          prefix: 'Today/',
+          enabled: true,
+        },
+      // add other lifecycle rules
+      ],
+      // notifications: [
+      //   {
+      //     lambdaFunction: lambdaEmailInbound,
+      //     events: [s3.EventType.OBJECT_CREATED_PUT],
+      //     filters: [{ prefix: 'tmp/email_in' }],
+      //   },
+      //   {
+      //     lambdaFunction: lambdaEmailOutbound,
+      //     events: [s3.EventType.OBJECT_CREATED_PUT],
+      //     filters: [{ prefix: 'tmp/email_out/json' }],
+      //   },
+      //   {
+      //     lambdaFunction: lambdaEmailConverter,
+      //     events: [s3.EventType.OBJECT_CREATED_COPY],
+      //     filters: [{ prefix: 'Sent/' }],
+      //   },
+      // // add other notifications
+      // ],
     })
+
+    const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
+    const bucketPolicyStatement = new iam.PolicyStatement({
+      sid: 'AllowSESPuts',
+      effect: iam.Effect.ALLOW,
+      principals: [sesPrincipal],
+      actions: ['s3:PutObject'],
+      resources: [this.storage.emailBucket.arnForObjects('tmp/email_in/*')],
+      conditions: {
+        StringEquals: {
+          'aws:Referer': this.account,
+        },
+      },
+    })
+
+    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
+
+    const iamGroup = new iam.Group(this, 'IAMGroup', {
+      groupName: 'StacksEmailManagementS3Group',
+    })
+
+    const listBucketsPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:ListAllMyBuckets'],
+      resources: ['*'],
+    })
+
+    const policyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:*'],
+      resources: [
+        `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
+        `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
+      ],
+    })
+
+    const policy = new iam.Policy(this, 'EmailS3FullAccessPolicy', {
+      statements: [policyStatement, listBucketsPolicyStatement],
+    })
+
+    iamGroup.attachInlinePolicy(policy)
 
     // Create a SES domain identity
     const sesIdentity = new ses.CfnEmailIdentity(this, 'DomainIdentity', {
@@ -588,40 +656,143 @@ export class StacksCloud extends Stack {
       values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${this.domain}`],
     })
 
-    const lambdaFunction = new lambda.Function(this, 'EmailForwarder', {
-      description: 'The Stacks Email Forwarder',
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(p.join(__dirname, '/email-forwarder.zip')),
+    const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
+      ruleSetName: 'StacksS3Email',
     })
 
-    const ruleSet = new ses.CfnReceiptRuleSet(this, 'RuleSet', {
-      ruleSetName: 'EmailForwardingRuleSet',
-    })
-
-    new ses.CfnReceiptRule(this, 'Rule', {
+    const rule = new ses.CfnReceiptRule(this, 'SESReceiptRule', {
+      ruleSetName: ruleSet.ref,
       rule: {
-        name: 'EmailForwardingRule',
-        recipients: ['chrisbreuer93@gmail.com'], // replace with your email addresses
+        name: 'Inbound',
+        enabled: true,
         actions: [
           {
             s3Action: {
               bucketName: this.storage.emailBucket.bucketName,
-              objectKeyPrefix: 'email',
-            },
-          },
-          {
-            lambdaAction: {
-              functionArn: lambdaFunction.functionArn,
-              invocationType: 'Event',
+              objectKeyPrefix: 'tmp/email_in',
             },
           },
         ],
-        enabled: true,
-        scanEnabled: true,
       },
-      ruleSetName: ruleSet.ruleSetName as string,
     })
+
+    const lambdaEmailOutboundRole = new iam.Role(this, 'LambdaEmailOutboundRole', {
+      roleName: 'stacks_s3_email_lambda_outbound',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
+
+    const lambdaEmailOutbound = new lambda.Function(this, 'LambdaEmailOutbound', {
+      functionName: 'stacks-s3-email-outbound',
+      description: 'Take the JSON and convert it in to an raw email.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.storage.emailBucket.bucketName,
+      },
+      role: lambdaEmailOutboundRole,
+    })
+
+    lambdaEmailOutboundRole.addToPolicy(policyStatement)
+
+    const sesPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ses:SendRawEmail'],
+      resources: ['*'],
+    })
+
+    lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
+
+    const lambdaEmailInboundRole = new iam.Role(this, 'LambdaEmailInboundRole', {
+      roleName: 'stacks_s3_email_lambda_inbound',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
+
+    const lambdaEmailInbound = new lambda.Function(this, 'LambdaEmailInbound', {
+      functionName: 'stacks-s3-email-inbound',
+      description: 'This Lambda organizes all the incoming emails based on the From and To field.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailInboundRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.storage.emailBucket.bucketName,
+      },
+    })
+
+    new lambda.CfnPermission(this, 'S3InboundPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: lambdaEmailInbound.functionName,
+      principal: 's3.amazonaws.com',
+    })
+
+    const inboundS3PolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:*'],
+      resources: [
+        `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
+        `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
+      ],
+    })
+
+    lambdaEmailInboundRole.addToPolicy(inboundS3PolicyStatement)
+
+    const sesInboundPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ses:ListIdentities'],
+      resources: ['*'],
+    })
+
+    lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
+
+    const lambdaEmailConverterRole = new iam.Role(this, 'LambdaEmailConverterRole', {
+      roleName: 'stacks_s3_email_lambda_converter',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
+
+    const lambdaEmailConverter = new lambda.Function(this, 'LambdaEmailConverter', {
+      functionName: 'stacks-s3-email-converter',
+      description: 'This Lambda converts raw emails files in to HTML and text.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailConverterRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.storage.emailBucket.bucketName,
+      },
+    })
+
+    const converterS3PolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:*'],
+      resources: [
+      `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
+      `arn:aws:s3:::${this.storage.emailBucket.bucketName}/`,
+      ],
+    })
+
+    new lambda.CfnPermission(this, 'S3ConverterPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: lambdaEmailConverter.functionName,
+      principal: 's3.amazonaws.com',
+    })
+
+    lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
 
     // Grant SES permission to write to the S3 bucket
     this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
@@ -636,12 +807,12 @@ export class StacksCloud extends Stack {
     }))
 
     // Grant the Lambda function permission to read from the S3 bucket
-    this.storage.emailBucket.grantRead(lambdaFunction)
+    // this.storage.emailBucket.grantRead(lambdaFunction)
 
     // Grant SES permission to invoke the Lambda function
-    lambdaFunction.addPermission('InvokeBySES', {
-      principal: new iam.ServicePrincipal('ses.amazonaws.com'),
-    })
+    // lambdaFunction.addPermission('InvokeBySES', {
+    //   principal: new iam.ServicePrincipal('ses.amazonaws.com'),
+    // })
   }
 
   additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
