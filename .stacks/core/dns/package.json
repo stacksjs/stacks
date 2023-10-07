@@ -50,24 +50,24 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-route-53": "^3.426.0",
+    "@aws-sdk/client-route-53": "^3.427.0",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.99.1"
+    "aws-cdk-lib": "^2.100.0"
   },
   "dependencies": {
-    "@aws-sdk/client-route-53": "^3.426.0",
+    "@aws-sdk/client-route-53": "^3.427.0",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.99.1"
+    "aws-cdk-lib": "^2.100.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.99.1"
+    "aws-cdk-lib": "^2.100.0"
   }
 }
