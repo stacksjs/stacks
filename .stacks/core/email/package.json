@@ -72,7 +72,7 @@
     "mime": "^2.6.0",
     "moment": "^2.29.4",
     "nodemailer": "^5.1.1",
-    "uuid": "^3.4.0"
+    "uuid": "^9.0.1"
   },
   "optionalDependencies": {
     "@novu/emailjs": "^0.19.0",
