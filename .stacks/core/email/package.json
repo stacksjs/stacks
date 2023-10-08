@@ -69,7 +69,7 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "mailparser": "^2.8.1",
-    "mime": "^2.6.0",
+    "mime": "^3.0.0",
     "moment": "^2.29.4",
     "nodemailer": "^5.1.1",
     "uuid": "^3.4.0"
