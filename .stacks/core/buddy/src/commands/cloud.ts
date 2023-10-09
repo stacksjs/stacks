@@ -11,6 +11,7 @@ export function cloud(buddy: CLI) {
     ssh: 'SSH into the Stacks Cloud',
     add: 'Add a resource to the Stacks Cloud.',
     remove: 'Remove the Stacks Cloud. In case it fails, try again.',
+    optimizeCost: 'Optimize the cost of the Stacks Cloud. This removes certain resources that may be re-applied at a later time.',
     verbose: 'Enable verbose output',
   }
 
@@ -115,7 +116,12 @@ export function cloud(buddy: CLI) {
           process.exit(ExitCode.Success)
         }
 
-        await deleteJumpBox()
+        const result = await deleteJumpBox()
+
+        if (result.isErr()) {
+          await outro('While removing your jump box, there was an issue', { startTime, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
 
         await outro('Your jump-box was removed.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
@@ -146,6 +152,36 @@ export function cloud(buddy: CLI) {
       }
 
       await outro('Exited', { startTime, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:optimize-cost', descriptions.optimizeCost)
+    .option('--jump-box', 'Remove the jump-box', { default: true })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions) => {
+      const startTime = await intro('buddy cloud:remove')
+
+      if (options.jumpBox) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { confirm } = await prompts({
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Would you like to remove your jump-box to optimize your costs?',
+        })
+
+        if (!confirm) {
+          await outro('Exited', { startTime, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+
+        await deleteJumpBox()
+
+        await outro('Your jump-box was removed & cost optimizations are applied.', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      await outro('No cost optimization was applied', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

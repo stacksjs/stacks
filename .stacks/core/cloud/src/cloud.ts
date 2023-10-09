@@ -574,14 +574,23 @@ export class StacksCloud extends Stack {
 
     const policyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ['s3:*'],
+      actions: [
+        's3:ListBucket',
+        's3:GetObject',
+        's3:PutObject',
+        's3:DeleteObject',
+        's3:GetObjectAcl',
+        's3:GetObjectVersionAcl',
+        's3:PutObjectAcl',
+        's3:PutObjectVersionAcl',
+      ],
       resources: [
         `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
         `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
       ],
     })
 
-    const policy = new iam.Policy(this, 'EmailS3FullAccessPolicy', {
+    const policy = new iam.Policy(this, 'EmailAccessPolicy', {
       statements: [policyStatement, listBucketsPolicyStatement],
     })
 
@@ -660,7 +669,7 @@ export class StacksCloud extends Stack {
       ruleSetName: 'StacksS3Email',
     })
 
-    const rule = new ses.CfnReceiptRule(this, 'SESReceiptRule', {
+    new ses.CfnReceiptRule(this, 'SESReceiptRule', {
       ruleSetName: ruleSet.ref,
       rule: {
         name: 'Inbound',
@@ -673,6 +682,8 @@ export class StacksCloud extends Stack {
             },
           },
         ],
+        scanEnabled: config.email.server?.scan,
+        tlsPolicy: 'Require',
       },
     })
 

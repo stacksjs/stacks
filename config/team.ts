@@ -8,15 +8,9 @@ import type { Team } from '@stacksjs/types'
  * for each team member, email them their credentials, and add them to the team.
  */
 export default {
-  name: 'Open Web',
+  name: 'Stacks',
 
   members: {
-    avery: 'avery@stacksjs.org',
-    chris: 'chris@ow3.org',
-    brian: 'brian@stacksjs.org',
-    germaine: 'germaine@stacksjs.org',
-    glenn: 'glenn@stacksjs.org',
-    harley: 'harley@stacksjs.org',
-    royce: 'royce@stacksjs.org',
+    chris: 'chris@stacksjs.org',
   },
 } satisfies Team

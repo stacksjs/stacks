@@ -18,6 +18,7 @@ bazel
 bazelignore
 bazelproject
 bazelrc
+boject
 booleanish
 Bootcamp
 breakline
@@ -132,6 +133,7 @@ lockb
 macroable
 mailgun
 mailjet
+mailparser
 maizzle
 marvinpinto
 mattpocock

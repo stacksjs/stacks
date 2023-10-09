@@ -51,6 +51,7 @@
   ],
   "scripts": {
     "build": "bun --bun build.ts",
+    "build:inbound": "bun --bun build-inbound.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
@@ -68,6 +69,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@types/mailparser": "^3.4.1",
     "mailparser": "^3.6.5",
     "mime": "^3.0.0",
     "moment": "^2.29.4",

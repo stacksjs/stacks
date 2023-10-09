@@ -29,7 +29,6 @@ if (!options.domain) {
 }
 
 // check if hostedZone exists, if it does, delete
-
 const result = await createHostedZone(options.domain)
 
 if (result.isErr()) {

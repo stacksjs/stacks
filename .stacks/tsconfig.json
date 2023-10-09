@@ -66,6 +66,7 @@
     "./core/cloud/*",
     "./core/utils/scripts/*",
     "./core/**/build.ts",
+    "./core/**/build-*.ts",
     "./core/**/build.config.ts"
   ],
   "exclude": [

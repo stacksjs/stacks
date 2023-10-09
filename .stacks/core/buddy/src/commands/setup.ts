@@ -132,6 +132,8 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.info('')
   await new Promise(resolve => setTimeout(resolve, 300))
 
+  // ensure the IDE is setup
+
   log.info('')
   log.info('✅ Project is setup')
   log.info('')

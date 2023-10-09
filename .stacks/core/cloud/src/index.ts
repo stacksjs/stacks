@@ -135,7 +135,7 @@ export async function purchaseDomain(domain: string, options: PurchaseOptions) {
 
 export async function getJumpBoxInstanceId(name?: string) {
   if (!name)
-    name = `${cloudName}-jump-box`
+    name = `${cloudName}/JumpBox`
 
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({
@@ -158,11 +158,12 @@ export async function deleteEc2Instance(id: string, stackName?: string) {
     stackName = cloudName
 
   if (!id)
-    return `Instance ${id} not found`
+    return err(`Instance ${id} not found`)
 
   const ec2 = new EC2({ region: 'us-east-1' })
   await ec2.terminateInstances({ InstanceIds: [id] })
-  return `Instance ${id} is being terminated`
+
+  return ok(`Instance ${id} is being terminated`)
 }
 
 export async function deleteJumpBox(stackName?: string) {
@@ -172,9 +173,9 @@ export async function deleteJumpBox(stackName?: string) {
   const jumpBoxId = await getJumpBoxInstanceId()
 
   if (!jumpBoxId)
-    return 'Jump box not found'
+    return err('Jump box not found')
 
-  return deleteEc2Instance(jumpBoxId, stackName)
+  return await deleteEc2Instance(jumpBoxId, stackName)
 }
 
 export async function getJumpBoxInstanceProfileName() {
