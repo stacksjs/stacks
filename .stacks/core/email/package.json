@@ -71,7 +71,7 @@
     "mailparser": "^3.6.5",
     "mime": "^3.0.0",
     "moment": "^2.29.4",
-    "nodemailer": "^5.1.1",
+    "nodemailer": "^6.9.6",
     "uuid": "^9.0.1"
   },
   "optionalDependencies": {
