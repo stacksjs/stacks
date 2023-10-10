@@ -5,6 +5,7 @@ import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
 import { Route53 } from '@aws-sdk/client-route-53'
 import { app } from '@stacksjs/config'
+import { getNameservers, updateNameservers } from '@stacksjs/dns'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
@@ -79,6 +80,7 @@ export function deploy(buddy: CLI) {
   })
 }
 
+// please note, this function also updates the user's nameservers if they are out of date
 async function hasUserDomainBeenAddedToCloud(domainName?: string) {
   const route53 = new Route53()
 
@@ -88,9 +90,14 @@ async function hasUserDomainBeenAddedToCloud(domainName?: string) {
     return false
 
   const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
-  if (existingHostedZone)
-    return true
+  if (existingHostedZone) {
+    // need to ensure the user has updated their nameservers if they aren't up to date already
+    const domainNameservers = await getNameservers(domainName)
+    const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
+    const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
 
+    await updateNameservers(domainNameservers, hostedZoneNameservers, domainName)
+  }
   return false
 }
 

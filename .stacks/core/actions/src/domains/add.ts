@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { createHostedZone } from '@stacksjs/dns'
+import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
 import { app } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { italic, parseOptions, runCommand } from '@stacksjs/cli'
@@ -28,13 +28,22 @@ if (!options.domain) {
   }
 }
 
-// check if hostedZone exists, if it does, delete
 const result = await createHostedZone(options.domain)
 
 if (result.isErr()) {
   handleError(result.error)
   process.exit(1)
 }
+
+// Update the nameservers
+const nameServers = await getNameservers(options.domain)
+
+if (!nameServers) {
+  handleError(`No nameservers found for domain: ${options.domain}`)
+  process.exit(1)
+}
+
+await updateNameservers(nameServers)
 
 const nameservers = result.value
 const registrar: string = (await whois(options.domain, true)).parsedData.Registrar
