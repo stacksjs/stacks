@@ -163,7 +163,7 @@ function extract_data(container) {
     //	7.	Create the path where the email needs to be moved
     //		so it is properly organized.
     //
-    const path = 	`Sent/${
+    const path = 	`sent/${
 					 to_domain
 					 }/${
 					 to_account

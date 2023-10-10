@@ -146,6 +146,8 @@ export interface CliOptions {
   stderr?: stderr
 
   env?: Record<string, string | undefined>
+
+  startTime?: number
 }
 
 export type CliConfig = CliOptions

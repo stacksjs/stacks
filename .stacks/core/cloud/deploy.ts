@@ -15,11 +15,12 @@ if (!account || !region) {
   process.exit(1)
 }
 
-// eslint-disable-next-line no-new
-new StacksCloud(app, cloudName, {
+const cloud = new StacksCloud(app, cloudName, {
   description: 'This stack includes all of your Stacks cloud resources.',
   env: {
     account,
     region,
   },
 })
+
+await cloud.init()

@@ -1,9 +1,13 @@
 import { Route53 } from '@aws-sdk/client-route-53'
 import { err, ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
+import { runAction } from '@stacksjs/actions'
 import { fs } from '@stacksjs/storage'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { Route53Domains } from '@aws-sdk/client-route-53-domains'
+import { Action } from '@stacksjs/types'
+import type { DeployOptions } from '@stacksjs/types'
 
 export async function deleteHostedZone(domainName: string) {
   const route53 = new Route53()
@@ -179,4 +183,35 @@ export async function updateNameservers(hostedZoneNameservers: string[], domainN
   }
 
   log.info('Your nameservers are up to date.')
+}
+
+// please note, this function also updates the user's nameservers if they are out of date
+export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
+  if (!domainName)
+    domainName = config.app.url
+
+  const route53 = new Route53()
+
+  // Check if the hosted zone already exists
+  const existingHostedZones = await route53.listHostedZonesByName({ DNSName: domainName })
+  if (!existingHostedZones || !existingHostedZones.HostedZones)
+    return false
+
+  const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
+  if (existingHostedZone) {
+    // need to ensure the user has updated their nameservers if they aren't up to date already
+    const domainNameservers = await getNameservers(domainName)
+    const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
+    const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
+
+    await updateNameservers(domainNameservers, hostedZoneNameservers, domainName)
+
+    return true
+  }
+
+  return false
+}
+
+export async function addDomain(options: DeployOptions) {
+  return await runAction(Action.DomainsAdd, options)
 }

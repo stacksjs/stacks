@@ -354,7 +354,7 @@ function copy_email_to_today(container: Container): Promise<Container> {
     const params = {
       Bucket: container.bucket,
       CopySource: `${container.bucket}/${container.escaped_key}`,
-      Key: `Today/${container.path}`,
+      Key: `today/${container.path}`,
     }
 
     s3.copyObject(params, (error, data) => {

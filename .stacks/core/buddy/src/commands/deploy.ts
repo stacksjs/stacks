@@ -3,9 +3,8 @@ import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
-import { Route53 } from '@aws-sdk/client-route-53'
 import { app } from '@stacksjs/config'
-import { getNameservers, updateNameservers } from '@stacksjs/dns'
+import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
@@ -18,7 +17,7 @@ export function deploy(buddy: CLI) {
     .option('--domain', 'Specify a domain to deploy to', { default: undefined })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
-      const perf = await intro('buddy deploy')
+      const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
 
       if (!domain) {
@@ -54,10 +53,18 @@ export function deploy(buddy: CLI) {
         log.info('')
 
         options.domain = domain
-        await addDomain({
+        const result = await addDomain({
           ...options,
           deploy: true,
-        }, perf)
+          startTime,
+        })
+
+        if (result.isErr()) {
+          await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+
+        await outro('Added your domain.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
@@ -65,11 +72,11 @@ export function deploy(buddy: CLI) {
       const result = await runAction(Action.Deploy, options)
 
       if (result.isErr()) {
-        await outro('While running the `buddy deploy`, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Deployment succeeded.', { startTime: perf, useSeconds: true })
+      await outro('Deployment succeeded.', { startTime, useSeconds: true })
 
       process.exit(ExitCode.Success)
     })
@@ -78,36 +85,4 @@ export function deploy(buddy: CLI) {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
-}
-
-// please note, this function also updates the user's nameservers if they are out of date
-async function hasUserDomainBeenAddedToCloud(domainName?: string) {
-  const route53 = new Route53()
-
-  // Check if the hosted zone already exists
-  const existingHostedZones = await route53.listHostedZonesByName({ DNSName: domainName })
-  if (!existingHostedZones || !existingHostedZones.HostedZones)
-    return false
-
-  const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
-  if (existingHostedZone) {
-    // need to ensure the user has updated their nameservers if they aren't up to date already
-    const domainNameservers = await getNameservers(domainName)
-    const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
-    const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
-
-    await updateNameservers(domainNameservers, hostedZoneNameservers, domainName)
-  }
-  return false
-}
-
-export async function addDomain(options: DeployOptions, startTime: number) {
-  const result = await runAction(Action.DomainsAdd, options)
-
-  if (result.isErr()) {
-    await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
-    process.exit(ExitCode.FatalError)
-  }
-
-  await outro('Added your domain.', { startTime, useSeconds: true })
 }

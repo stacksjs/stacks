@@ -51,6 +51,7 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-route-53": "^3.427.0",
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
@@ -59,6 +60,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-route-53": "^3.427.0",
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",

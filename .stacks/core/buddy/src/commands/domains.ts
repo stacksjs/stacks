@@ -4,7 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'
-import { addDomain } from './deploy'
+import { addDomain } from '@stacksjs/dns'
 
 export function domains(buddy: CLI) {
   const descriptions = {
@@ -102,7 +102,17 @@ export function domains(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DomainsOptions) => {
       const startTime = await intro('buddy domains:add')
-      await addDomain(options, startTime)
+      const result = await addDomain({
+        ...options,
+        startTime,
+      })
+
+      if (result.isErr()) {
+        await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Added your domain.', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

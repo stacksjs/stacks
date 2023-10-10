@@ -1,8 +1,10 @@
 /* eslint-disable no-new */
 import type { Construct } from 'constructs'
-import type { StackProps } from 'aws-cdk-lib'
+import type {
+  CfnResource,
+  StackProps,
+} from 'aws-cdk-lib'
 import {
-  // CustomResource,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -20,11 +22,13 @@ import {
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
+  aws_s3_notifications as s3n,
   aws_secretsmanager as secretsmanager,
   aws_ses as ses,
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
+import * as AWS from 'aws-sdk'
 import { string } from '@stacksjs/strings'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
@@ -33,43 +37,51 @@ import { env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+const timestamp = new Date().getTime()
+const s3Sdk = new AWS.S3()
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
 }
 
 export class StacksCloud extends Stack {
-  domain: string
-  apiPrefix: string
+  domain!: string
+  appName = config.app.name?.toLocaleLowerCase() || 'stacks'
+  teamName = config.team.name.toLowerCase() || 'stacks'
+  apiPrefix!: string
   docsPrefix?: string
-  apiVanityUrl: string
-  vanityUrl: string
-  docsSource: string
-  websiteSource: string
-  privateSource: string
+  apiVanityUrl!: string
+  vanityUrl!: string
+  docsSource!: string
+  websiteSource!: string
+  privateSource!: string
   zone!: route53.IHostedZone
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
-  storage: {
-    publicBucket: s3.Bucket
-    privateBucket: s3.Bucket
+  vpc!: ec2.Vpc
+
+  storage!: {
+    publicBucket: s3.Bucket | s3.IBucket
+    privateBucket: s3.Bucket | s3.IBucket
+    emailBucket?: s3.Bucket | s3.IBucket
     logBucket: s3.Bucket | undefined
-    emailBucket?: s3.Bucket
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
   }
 
-  vpc!: ec2.Vpc
-
-  cdn: cloudfront.Distribution
+  cdn!: cloudfront.Distribution
   certificate!: acm.Certificate
   firewall!: wafv2.CfnWebACL
-  originAccessIdentity: cloudfront.OriginAccessIdentity
-  cdnCachePolicy: cloudfront.CachePolicy
+  originAccessIdentity!: cloudfront.OriginAccessIdentity
+  cdnCachePolicy!: cloudfront.CachePolicy
   apiCachePolicy: cloudfront.CachePolicy | undefined
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
+  }
+
+  async init() {
+    // this is a noop function that is used to ensure the constructor is called
     // @ts-expect-error – we know this was properly set when needed
     this.storage = {}
 
@@ -93,9 +105,9 @@ export class StacksCloud extends Stack {
 
     this.manageUsers()
     this.manageZone()
-    this.manageEmailServer()
+    await this.manageEmailServer()
     this.manageCertificate()
-    this.manageStorage()
+    await this.manageStorage()
     this.manageFirewall()
     this.manageFileSystem()
 
@@ -126,7 +138,7 @@ export class StacksCloud extends Stack {
 
     this.apiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
-      cachePolicyName: 'StacksApiCachePolicy',
+      cachePolicyName: `${this.appName}-${appEnv}-api-cache-policy`,
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
@@ -150,7 +162,7 @@ export class StacksCloud extends Stack {
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
-      secretName: `${config.app.name}-${appEnv}-secrets`,
+      secretName: `${this.appName}-${appEnv}-secrets`,
       description: 'Secrets for the Stacks application',
       generateSecretString: {
         secretStringTemplate: JSON.stringify(env),
@@ -158,7 +170,7 @@ export class StacksCloud extends Stack {
       },
     })
 
-    const functionName = `${config.app.name?.toLowerCase() || 'stacks'}-${appEnv}-server`
+    const functionName = `${this.appName}-${appEnv}-server`
     const serverFunction = new lambda.Function(this, 'StacksServer', {
       functionName,
       description: 'The Stacks Server',
@@ -307,14 +319,12 @@ export class StacksCloud extends Stack {
     })
   }
 
-  manageStorage() {
-    const publicBucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${this.domain}-${appEnv}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
+  async manageStorage() {
+    // the bucketName cannot contain the domainName because when it is changed,
+    // this resource needs to stay around/is retained. Hence, the domainName
+    // does not make much sense using as a (linking) identifier
 
+    const publicBucket = await this.getPublicBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -335,19 +345,13 @@ export class StacksCloud extends Stack {
       })
     })
 
-    const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${this.domain}-private-${appEnv}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-    })
+    const privateBucket = await this.getPrivateBucket()
 
     let logBucket: s3.Bucket | undefined
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
-        bucketName: `${this.domain}-logs-${appEnv}`,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
+        bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
+        removalPolicy: RemovalPolicy.RETAIN,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
       })
     }
@@ -381,7 +385,7 @@ export class StacksCloud extends Stack {
 
     this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
       vpc: this.vpc,
-      fileSystemName: `stacks-${appEnv}-efs`,
+      fileSystemName: `${this.appName}-${appEnv}-efs`,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
@@ -429,7 +433,7 @@ export class StacksCloud extends Stack {
 
     const cdnCachePolicy = new cloudfront.CachePolicy(this, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
-      cachePolicyName: 'cdnCachePolicy',
+      cachePolicyName: `${this.appName}-${appEnv}-cdn-cache-policy`,
       minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
       maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
@@ -439,11 +443,19 @@ export class StacksCloud extends Stack {
     // this edge function ensures pretty docs urls
     // and it will soon be reused for our Meema features
     const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
+      functionName: `${this.appName}-${appEnv}-origin-request`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip')),
     })
+
+    // applying this is a workaround for failing deployments due to the following DELETE_FAILED error:
+    // > Resource handler returned message: "Lambda was unable to delete arn:aws:lambda:us-east-1:92330274019:function:stacks-cloud-production-OriginRequestFunction4FA39-XQadJcSWY8Lz:1 because it is a replicated function. Please see our documentation for Deleting Lambda@Edge Functions and Replicas. (Service: Lambda, Status Code: 400, Request ID: 83bd3112-aaa4-4980-bfcf-3ee2052a0435)" (RequestToken: c91aed31-1a62-9425-c25d-4fc0fccfa45f, HandlerErrorCode: InvalidRequest)
+    // if we do not delete this resource, then it circumvents trying to delete the function and the deployment succeeds
+    // buddy cloud:cleanup is what will be suggested running after user ensured no more sensitive data is in the buckets
+    const cfnOriginRequestFunction = originRequestFunction.node.defaultChild as CfnResource
+    cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
     const cdn = new cloudfront.Distribution(this, 'Cdn', {
       domainNames: [this.domain],
@@ -510,41 +522,8 @@ export class StacksCloud extends Stack {
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
-  manageEmailServer() {
-    this.storage.emailBucket = new s3.Bucket(this, 'EmailServerBucket', {
-      bucketName: `${this.domain}-email`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      lifecycleRules: [
-        {
-          id: '24h',
-          expiration: Duration.days(1),
-          noncurrentVersionExpiration: Duration.days(1),
-          prefix: 'Today/',
-          enabled: true,
-        },
-      // add other lifecycle rules
-      ],
-      // notifications: [
-      //   {
-      //     lambdaFunction: lambdaEmailInbound,
-      //     events: [s3.EventType.OBJECT_CREATED_PUT],
-      //     filters: [{ prefix: 'tmp/email_in' }],
-      //   },
-      //   {
-      //     lambdaFunction: lambdaEmailOutbound,
-      //     events: [s3.EventType.OBJECT_CREATED_PUT],
-      //     filters: [{ prefix: 'tmp/email_out/json' }],
-      //   },
-      //   {
-      //     lambdaFunction: lambdaEmailConverter,
-      //     events: [s3.EventType.OBJECT_CREATED_COPY],
-      //     filters: [{ prefix: 'Sent/' }],
-      //   },
-      // // add other notifications
-      // ],
-    })
+  async manageEmailServer() {
+    this.storage.emailBucket = await this.getEmailBucket()
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
     const bucketPolicyStatement = new iam.PolicyStatement({
@@ -560,10 +539,10 @@ export class StacksCloud extends Stack {
       },
     })
 
-    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
+    this.storage.emailBucket?.addToResourcePolicy(bucketPolicyStatement)
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
-      groupName: 'StacksEmailManagementS3Group',
+      groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
     })
 
     const listBucketsPolicyStatement = new iam.PolicyStatement({
@@ -666,7 +645,7 @@ export class StacksCloud extends Stack {
     })
 
     const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
-      ruleSetName: 'StacksS3Email',
+      ruleSetName: `${this.appName}-${appEnv}-email`,
     })
 
     new ses.CfnReceiptRule(this, 'SESReceiptRule', {
@@ -688,7 +667,7 @@ export class StacksCloud extends Stack {
     })
 
     const lambdaEmailOutboundRole = new iam.Role(this, 'LambdaEmailOutboundRole', {
-      roleName: 'stacks_s3_email_lambda_outbound',
+      roleName: `${this.appName}-${appEnv}-email-outbound`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -696,7 +675,7 @@ export class StacksCloud extends Stack {
     })
 
     const lambdaEmailOutbound = new lambda.Function(this, 'LambdaEmailOutbound', {
-      functionName: 'stacks-s3-email-outbound',
+      functionName: `${this.appName}-${appEnv}-email-outbound`,
       description: 'Take the JSON and convert it in to an raw email.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
@@ -720,7 +699,7 @@ export class StacksCloud extends Stack {
     lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
 
     const lambdaEmailInboundRole = new iam.Role(this, 'LambdaEmailInboundRole', {
-      roleName: 'stacks_s3_email_lambda_inbound',
+      roleName: `${this.appName}-${appEnv}-email-inbound`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -728,7 +707,7 @@ export class StacksCloud extends Stack {
     })
 
     const lambdaEmailInbound = new lambda.Function(this, 'LambdaEmailInbound', {
-      functionName: 'stacks-s3-email-inbound',
+      functionName: `${this.appName}-${appEnv}-email-inbound`,
       description: 'This Lambda organizes all the incoming emails based on the From and To field.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
@@ -767,7 +746,7 @@ export class StacksCloud extends Stack {
     lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
 
     const lambdaEmailConverterRole = new iam.Role(this, 'LambdaEmailConverterRole', {
-      roleName: 'stacks_s3_email_lambda_converter',
+      roleName: `${this.appName}-${appEnv}-email-converter`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -775,7 +754,7 @@ export class StacksCloud extends Stack {
     })
 
     const lambdaEmailConverter = new lambda.Function(this, 'LambdaEmailConverter', {
-      functionName: 'stacks-s3-email-converter',
+      functionName: `${this.appName}-${appEnv}-email-converter`,
       description: 'This Lambda converts raw emails files in to HTML and text.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
@@ -817,13 +796,9 @@ export class StacksCloud extends Stack {
       },
     }))
 
-    // Grant the Lambda function permission to read from the S3 bucket
-    // this.storage.emailBucket.grantRead(lambdaFunction)
-
-    // Grant SES permission to invoke the Lambda function
-    // lambdaFunction.addPermission('InvokeBySES', {
-    //   principal: new iam.ServicePrincipal('ses.amazonaws.com'),
-    // })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'sent/' })
   }
 
   additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
@@ -939,6 +914,60 @@ export class StacksCloud extends Stack {
     }
   }
 
+  async getPublicBucket(): Promise<s3.Bucket | s3.IBucket> {
+    const bucketPrefix = `${this.appName}-${appEnv}-`
+    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
+    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
+
+    if (existingBucketName)
+      return s3.Bucket.fromBucketArn(this, 'ExistingPublicBucket', existingBucketArn)
+
+    return new s3.Bucket(this, 'PublicBucket', {
+      bucketName: `${bucketPrefix}${timestamp}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+    })
+  }
+
+  async getPrivateBucket(): Promise<s3.Bucket | s3.IBucket> {
+    const bucketPrefix = `${this.appName}-private-${appEnv}-`
+    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
+    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
+
+    if (existingBucketName)
+      return s3.Bucket.fromBucketArn(this, 'ExistingPrivateBucket', existingBucketArn)
+
+    return new s3.Bucket(this, 'PrivateBucket', {
+      bucketName: `${bucketPrefix}${timestamp}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+    })
+  }
+
+  async getEmailBucket(): Promise<s3.Bucket | s3.IBucket> {
+    const bucketPrefix = `${this.appName}-email-${appEnv}-`
+    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
+    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
+
+    if (existingBucketName)
+      return s3.Bucket.fromBucketArn(this, 'ExistingEmailBucket', existingBucketArn)
+
+    return new s3.Bucket(this, 'EmailServerBucket', {
+      bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+      lifecycleRules: [
+        {
+          id: '24h',
+          expiration: Duration.days(1),
+          noncurrentVersionExpiration: Duration.days(1),
+          prefix: 'today/',
+          enabled: true,
+        },
+      ],
+    })
+  }
+
   deploy() {
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
       sources: [s3deploy.Source.asset(this.websiteSource)],
@@ -952,4 +981,10 @@ export class StacksCloud extends Stack {
       destinationBucket: this.storage.privateBucket,
     })
   }
+}
+
+export async function getBucketWithPrefix(prefix: string): Promise<string | null | undefined> {
+  const response = await s3Sdk.listBuckets().promise()
+  const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
+  return bucket ? bucket.Name : null
 }
