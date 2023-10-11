@@ -28,7 +28,7 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
-import { S3 } from '@aws-sdk/client-s3'
+import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { string } from '@stacksjs/strings'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
@@ -984,7 +984,17 @@ export class StacksCloud extends Stack {
 }
 
 export async function getBucketWithPrefix(prefix: string): Promise<string | null | undefined> {
-  const response = await new S3().listBuckets()
-  const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
-  return bucket ? bucket.Name : null
+  const s3 = new S3({ region: 'us-east-1' })
+
+  try {
+    const response = await s3.send(new ListBucketsCommand({}))
+
+    const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
+
+    return bucket ? bucket.Name : null
+  }
+  catch (error) {
+    console.error('Error fetching buckets', error)
+    throw error
+  }
 }

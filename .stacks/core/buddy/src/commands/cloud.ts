@@ -227,7 +227,8 @@ export function cloud(buddy: CLI) {
         }
       }
 
-      await outro('Exited', { startTime, useSeconds: true })
+      log.info('')
+      await outro('All AWS resources have been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
