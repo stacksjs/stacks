@@ -1,8 +1,11 @@
 import { err, ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
 import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
 import { IAM } from '@aws-sdk/client-iam'
+import { S3 } from '@aws-sdk/client-s3'
+import { Lambda } from '@aws-sdk/client-lambda'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { config } from '@stacksjs/config'
 
@@ -176,6 +179,69 @@ export async function deleteJumpBox(stackName?: string) {
     return err('Jump box not found')
 
   return await deleteEc2Instance(jumpBoxId, stackName)
+}
+
+export async function deleteStacksBuckets() {
+  const s3 = new S3({ region: 'us-east-1' })
+  const data = await s3.listBuckets({})
+  const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
+
+  if (!stacksBuckets)
+    return err('No stacks buckets found')
+
+  const promises = stacksBuckets.map(async (bucket) => {
+    const bucketName = bucket.Name || ''
+    log.info(`Deleting bucket ${bucketName}...`)
+
+    // List all objects in the bucket
+    const objects = await s3.listObjectsV2({ Bucket: bucketName })
+
+    // Delete all objects
+    if (objects.Contents) {
+      await Promise.all(objects.Contents.map(object =>
+        s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }),
+      ))
+    }
+
+    // If the bucket is versioning-enabled, you need to delete all versions
+    // If the bucket is versioning-enabled, you need to delete all versions
+    const versions = await s3.listObjectVersions({ Bucket: bucketName })
+    if (versions.Versions) {
+      await Promise.all(versions.Versions.map(version =>
+        s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }),
+      ))
+    }
+
+    // If the bucket has uncompleted multipart uploads, you need to abort them
+    const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
+    if (uploads.Uploads) {
+      await Promise.all(uploads.Uploads.map(upload =>
+        s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }),
+      ))
+    }
+
+    // Delete the bucket
+    return s3.deleteBucket({ Bucket: bucketName })
+  })
+
+  await Promise.all(promises)
+
+  return ok('Stacks buckets deleted')
+}
+
+export async function deleteStacksFunctions() {
+  const lambda = new Lambda({ region: 'us-east-1' })
+  const data = await lambda.listFunctions({})
+  const stacksFunctions = data.Functions?.filter(func => func.FunctionName?.includes('stacks')) || []
+
+  if (!stacksFunctions || stacksFunctions.length === 0)
+    return err('No stacks functions found')
+
+  const promises = stacksFunctions.map(func => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
+
+  await Promise.all(promises)
+
+  return ok('Stacks functions deleted')
 }
 
 export async function getJumpBoxInstanceProfileName() {

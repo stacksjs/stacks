@@ -28,7 +28,7 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
-import * as AWS from 'aws-sdk'
+import { S3 } from '@aws-sdk/client-s3'
 import { string } from '@stacksjs/strings'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
@@ -38,7 +38,7 @@ import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const timestamp = new Date().getTime()
-const s3Sdk = new AWS.S3()
+const s3Sdk = new S3()
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
@@ -984,7 +984,7 @@ export class StacksCloud extends Stack {
 }
 
 export async function getBucketWithPrefix(prefix: string): Promise<string | null | undefined> {
-  const response = await s3Sdk.listBuckets().promise()
+  const response = await new S3().listBuckets()
   const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
   return bucket ? bucket.Name : null
 }

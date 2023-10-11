@@ -3,7 +3,7 @@ import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
+import { addJumpBox, deleteJumpBox, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -12,6 +12,7 @@ export function cloud(buddy: CLI) {
     add: 'Add a resource to the Stacks Cloud.',
     remove: 'Remove the Stacks Cloud. In case it fails, try again.',
     optimizeCost: 'Optimize the cost of the Stacks Cloud. This removes certain resources that may be re-applied at a later time.',
+    cleanUp: 'Cleans up the Stacks Cloud. This removes all resources that were retained during the cloud deletion.',
     verbose: 'Enable verbose output',
   }
 
@@ -182,6 +183,49 @@ export function cloud(buddy: CLI) {
       }
 
       await outro('No cost optimization was applied', { startTime, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:clean-up', descriptions.cleanUp)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async () => {
+      const startTime = await intro('buddy cloud:clean-up')
+
+      log.info('')
+      log.info('ℹ️  Cleaning up your cloud resources will take a while to complete. Please be patient.')
+      log.info('')
+
+      // sleep for 2 seconds to get the user to read the message
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      log.info('Removing any jump-boxes...')
+      const result = await deleteJumpBox()
+
+      if (result.isErr()) {
+        if (result.error !== 'Jump box not found') {
+          await outro('While removing your jump box, there was an issue', { startTime, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+      }
+
+      log.info('Removing any retained S3 buckets...')
+      const result2 = await deleteStacksBuckets()
+
+      if (result2.isErr()) {
+        await outro('While deleting the retained S3 buckets, there was an issue', { startTime, useSeconds: true }, result2.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      log.info('Removing any retained Lambda functions...')
+      const result3 = await deleteStacksFunctions()
+
+      if (result3.isErr()) {
+        await outro('While deleting the Origin Request Lambda function, there was an issue', { startTime, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Exited', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
