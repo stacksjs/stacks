@@ -539,7 +539,18 @@ export class StacksCloud extends Stack {
       },
     })
 
-    this.storage.emailBucket?.addToResourcePolicy(bucketPolicyStatement)
+    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
+    // Grant SES permission to write to the S3 bucket
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+      principals: [sesPrincipal],
+      actions: ['s3:PutObject'],
+      resources: [this.storage.emailBucket.arnForObjects('*')],
+      conditions: {
+        StringEquals: {
+          'aws:Referer': this.account,
+        },
+      },
+    }))
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -783,18 +794,6 @@ export class StacksCloud extends Stack {
     })
 
     lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
-
-    // Grant SES permission to write to the S3 bucket
-    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
-      principals: [new iam.ServicePrincipal('ses.amazonaws.com')],
-      actions: ['s3:PutObject'],
-      resources: [this.storage.emailBucket.arnForObjects('*')],
-      conditions: {
-        StringEquals: {
-          'aws:Referer': this.account,
-        },
-      },
-    }))
 
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json' })
