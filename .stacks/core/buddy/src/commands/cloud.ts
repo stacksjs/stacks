@@ -221,8 +221,10 @@ export function cloud(buddy: CLI) {
       const result3 = await deleteStacksFunctions()
 
       if (result3.isErr()) {
-        await outro('While deleting the Origin Request Lambda function, there was an issue', { startTime, useSeconds: true }, result.error)
-        process.exit(ExitCode.FatalError)
+        if (result3.error !== 'No stacks functions found') {
+          await outro('While deleting the Origin Request Lambda function, there was an issue', { startTime, useSeconds: true }, result3.error)
+          process.exit(ExitCode.FatalError)
+        }
       }
 
       await outro('Exited', { startTime, useSeconds: true })

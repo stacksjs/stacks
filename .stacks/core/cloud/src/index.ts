@@ -198,30 +198,44 @@ export async function deleteStacksBuckets() {
 
     // Delete all objects
     if (objects.Contents) {
+      log.info('Deleting bucket objects...')
       await Promise.all(objects.Contents.map(object =>
         s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }),
       ))
     }
 
-    // If the bucket is versioning-enabled, you need to delete all versions
-    // If the bucket is versioning-enabled, you need to delete all versions
-    const versions = await s3.listObjectVersions({ Bucket: bucketName })
-    if (versions.Versions) {
-      await Promise.all(versions.Versions.map(version =>
-        s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }),
-      ))
-    }
+    try {
+      log.info('Deleting bucket versions...')
+      const versions = await s3.listObjectVersions({ Bucket: bucketName })
+      if (versions.Versions) {
+        await Promise.all(versions.Versions.map(version =>
+          s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }),
+        ))
+      }
 
-    // If the bucket has uncompleted multipart uploads, you need to abort them
-    const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
-    if (uploads.Uploads) {
-      await Promise.all(uploads.Uploads.map(upload =>
-        s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }),
-      ))
-    }
+      // Delete all delete markers
+      log.info('Deleting bucket delete markers...')
+      if (versions.DeleteMarkers) {
+        await Promise.all(versions.DeleteMarkers.map(marker =>
+          s3.deleteObject({ Bucket: bucketName, Key: marker.Key || '', VersionId: marker.VersionId }),
+        ))
+      }
 
-    // Delete the bucket
-    return s3.deleteBucket({ Bucket: bucketName })
+      // If the bucket has uncompleted multipart uploads, you need to abort them
+      const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
+      if (uploads.Uploads) {
+        log.info('Aborting bucket multipart uploads...')
+        await Promise.all(uploads.Uploads.map(upload =>
+          s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }),
+        ))
+      }
+
+      // Delete the bucket
+      return s3.deleteBucket({ Bucket: bucketName })
+    }
+    catch (error) {
+      log.error('There was an error deleting your S3 resources\n', error)
+    }
   })
 
   await Promise.all(promises)
