@@ -3,7 +3,7 @@ import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { addJumpBox, deleteJumpBox, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
+import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -99,6 +99,7 @@ export function cloud(buddy: CLI) {
     .command('cloud:remove', descriptions.remove)
     .alias('cloud:destroy')
     .alias('cloud:rm')
+    .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
@@ -120,7 +121,7 @@ export function cloud(buddy: CLI) {
         const result = await deleteJumpBox()
 
         if (result.isErr()) {
-          await outro('While removing your jump box, there was an issue', { startTime, useSeconds: true }, result.error)
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
 
@@ -132,12 +133,6 @@ export function cloud(buddy: CLI) {
       log.info('ℹ️  Removing your cloud resources will take a while to complete. Please be patient.')
       log.info('')
 
-      if (!await isFailedState()) {
-        log.info(italic('📢  Due to the nature of AWS::Lambda::Function functions, this command may fail on first execution.'))
-        log.info(italic('In case it fails, don’t worry — please try again & it will work (or else contact us through Discord).'))
-        log.info('')
-      }
-
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -148,11 +143,17 @@ export function cloud(buddy: CLI) {
       })
 
       if (result.isErr()) {
-        await outro('While running the cloud:remove command, there was an issue', { startTime, useSeconds: true }, result.error)
+        await outro('While running the cloud:remove ("undeploy") command, there was an issue', { startTime, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Exited', { startTime, useSeconds: true })
+      await runCommand('buddy cloud:clean-up', {
+        ...options,
+        cwd: p.projectPath(),
+        stdin: 'inherit',
+      })
+
+      await outro('Cloud removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -203,8 +204,8 @@ export function cloud(buddy: CLI) {
       const result = await deleteJumpBox()
 
       if (result.isErr()) {
-        if (result.error !== 'Jump box not found') {
-          await outro('While removing your jump box, there was an issue', { startTime, useSeconds: true }, result.error)
+        if (result.error !== 'Jump-box not found') {
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -225,6 +226,23 @@ export function cloud(buddy: CLI) {
           await outro('While deleting the Origin Request Lambda function, there was an issue', { startTime, useSeconds: true }, result3.error)
           process.exit(ExitCode.FatalError)
         }
+      }
+
+      log.info('Removing any remaining Stacks logs...')
+      const result4 = await deleteLogGroups()
+      // TODO: investigate other regions for edge (cloudfront) logs
+
+      if (result4.isErr()) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result4.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      log.info('Removing any CDK remnants...')
+      const result5 = await deleteCdkRemnants()
+
+      if (!result5) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result4.error)
+        process.exit(ExitCode.FatalError)
       }
 
       log.info('')

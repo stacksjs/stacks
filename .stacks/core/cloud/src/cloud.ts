@@ -324,7 +324,7 @@ export class StacksCloud extends Stack {
     // this resource needs to stay around/is retained. Hence, the domainName
     // does not make much sense using as a (linking) identifier
 
-    const publicBucket = await this.getPublicBucket()
+    const publicBucket = await this.getOrCreatePublicBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -345,7 +345,7 @@ export class StacksCloud extends Stack {
       })
     })
 
-    const privateBucket = await this.getPrivateBucket()
+    const privateBucket = await this.getOrCreatePrivateBucket()
 
     let logBucket: s3.Bucket | undefined
     if (config.cloud.cdn?.enableLogging) {
@@ -523,7 +523,7 @@ export class StacksCloud extends Stack {
   }
 
   async manageEmailServer() {
-    this.storage.emailBucket = await this.getEmailBucket()
+    this.storage.emailBucket = await this.getOrCreateEmailBucket()
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
     const bucketPolicyStatement = new iam.PolicyStatement({
@@ -913,7 +913,7 @@ export class StacksCloud extends Stack {
     }
   }
 
-  async getPublicBucket(): Promise<s3.Bucket | s3.IBucket> {
+  async getOrCreatePublicBucket(): Promise<s3.Bucket | s3.IBucket> {
     const bucketPrefix = `${this.appName}-${appEnv}-`
     const existingBucketName = await getBucketWithPrefix(bucketPrefix)
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
@@ -928,7 +928,7 @@ export class StacksCloud extends Stack {
     })
   }
 
-  async getPrivateBucket(): Promise<s3.Bucket | s3.IBucket> {
+  async getOrCreatePrivateBucket(): Promise<s3.Bucket | s3.IBucket> {
     const bucketPrefix = `${this.appName}-private-${appEnv}-`
     const existingBucketName = await getBucketWithPrefix(bucketPrefix)
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
@@ -943,7 +943,7 @@ export class StacksCloud extends Stack {
     })
   }
 
-  async getEmailBucket(): Promise<s3.Bucket | s3.IBucket> {
+  async getOrCreateEmailBucket(): Promise<s3.Bucket | s3.IBucket> {
     const bucketPrefix = `${this.appName}-email-${appEnv}-`
     const existingBucketName = await getBucketWithPrefix(bucketPrefix)
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`

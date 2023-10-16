@@ -29,5 +29,5 @@ export default {
 
   nameservers: [],
 
-  // redirects: ['stacksjs.com'],
+  // redirects: ['stacksjs.com', 'buddy.sh'],
 } satisfies DnsConfig

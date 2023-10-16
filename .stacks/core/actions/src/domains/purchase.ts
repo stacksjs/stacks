@@ -64,7 +64,7 @@ if (!options.domain) {
   process.exit(ExitCode.FatalError)
 }
 
-const result = await purchaseDomain(options.domain, options)
+const result = purchaseDomain(options.domain, options)
 
 if (result.isErr()) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

@@ -1,12 +1,17 @@
-import { projectPath } from '@stacksjs/path'
-import { rimraf as del } from './delete'
+import { path as p } from '@stacksjs/path'
+import { rimraf } from './delete'
 
 export async function cleanProject() {
-  return await del([
-    projectPath('bun.lockb'),
-    projectPath('yarn.lock'),
-    projectPath('node_modules/'),
-    projectPath('.stacks/dist'),
-    projectPath('.stacks/**/dist'),
+  return await rimraf([
+    p.projectPath('bun.lockb'),
+    p.projectPath('yarn.lock'),
+    p.projectPath('node_modules/'),
+    p.frameworkPath('dist'),
+    p.frameworkPath('node_modules'),
+    p.frameworkPath('**/dist'),
+    p.frameworkPath('**/node_modules'),
+    p.cloudPath('cdk.out/'),
+    p.cloudPath('cdk.context.json'),
+    p.cloudPath('dist.zip'),
   ])
 }
