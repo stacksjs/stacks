@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@stacksjs/eslint-config": "workspace:*",
-    "@typescript-eslint/utils": "^6.7.5"
+    "@typescript-eslint/utils": "^6.8.0"
   },
   "devDependencies": {
     "unbuild": "latest"
