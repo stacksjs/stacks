@@ -70,7 +70,7 @@
     "js-yaml": "^4.1.0",
     "rimraf": "^5.0.5",
     "semver": "^7.5.4",
-    "yaml": "^2.3.2"
+    "yaml": "^2.3.3"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -101,7 +101,7 @@
     "pretty-bytes": "^6.1.1",
     "rimraf": "^5.0.5",
     "semver": "^7.5.4",
-    "yaml": "^2.3.2"
+    "yaml": "^2.3.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
