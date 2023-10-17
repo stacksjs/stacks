@@ -194,7 +194,7 @@ export function cloud(buddy: CLI) {
       const startTime = await intro('buddy cloud:clean-up')
 
       log.info('')
-      log.info('ℹ️  Cleaning up your cloud resources will take a while to complete. Please be patient.')
+      log.info(`ℹ️  ${italic('Cleaning up your cloud resources will take a while to complete. Please be patient.')}`)
       log.info('')
 
       // sleep for 2 seconds to get the user to read the message

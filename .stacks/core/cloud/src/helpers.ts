@@ -5,7 +5,7 @@ import type { CountryCode } from '@aws-sdk/client-route-53-domains'
 import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
 import { IAM } from '@aws-sdk/client-iam'
-import { S3 } from '@aws-sdk/client-s3'
+import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { Lambda } from '@aws-sdk/client-lambda'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
@@ -297,6 +297,19 @@ export async function deleteCdkRemnants() {
   }
   catch (error) {
     return err(handleError(error))
+  }
+}
+
+export async function hasBeenDeployed() {
+  const s3 = new S3({ region: 'us-east-1' })
+
+  try {
+    const response = await s3.send(new ListBucketsCommand({}))
+    return response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) || false
+  }
+  catch (error) {
+    console.error('Error fetching buckets', error)
+    return false
   }
 }
 

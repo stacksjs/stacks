@@ -531,7 +531,10 @@ export class StacksCloud extends Stack {
       effect: iam.Effect.ALLOW,
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
-      resources: [this.storage.emailBucket.arnForObjects('tmp/email_in/*')],
+      resources: [
+        // this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
+        this.storage.emailBucket.arnForObjects('*'),
+      ],
       conditions: {
         StringEquals: {
           'aws:Referer': this.account,
@@ -540,17 +543,6 @@ export class StacksCloud extends Stack {
     })
 
     this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
-    // Grant SES permission to write to the S3 bucket
-    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
-      principals: [sesPrincipal],
-      actions: ['s3:PutObject'],
-      resources: [this.storage.emailBucket.arnForObjects('*')],
-      conditions: {
-        StringEquals: {
-          'aws:Referer': this.account,
-        },
-      },
-    }))
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -672,7 +664,7 @@ export class StacksCloud extends Stack {
             },
           },
         ],
-        scanEnabled: config.email.server?.scan,
+        scanEnabled: config.email.server?.scan || true,
         tlsPolicy: 'Require',
       },
     })
@@ -919,7 +911,7 @@ export class StacksCloud extends Stack {
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
 
     if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'ExistingPublicBucket', existingBucketArn)
+      return s3.Bucket.fromBucketArn(this, 'PublicBucket', existingBucketArn)
 
     return new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
@@ -934,7 +926,7 @@ export class StacksCloud extends Stack {
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
 
     if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'ExistingPrivateBucket', existingBucketArn)
+      return s3.Bucket.fromBucketArn(this, 'PrivateBucket', existingBucketArn)
 
     return new s3.Bucket(this, 'PrivateBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
@@ -949,7 +941,7 @@ export class StacksCloud extends Stack {
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
 
     if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'ExistingEmailBucket', existingBucketArn)
+      return s3.Bucket.fromBucketArn(this, 'EmailBucket', existingBucketArn)
 
     return new s3.Bucket(this, 'EmailServerBucket', {
       bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
@@ -987,7 +979,6 @@ export async function getBucketWithPrefix(prefix: string): Promise<string | null
 
   try {
     const response = await s3.send(new ListBucketsCommand({}))
-
     const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
 
     return bucket ? bucket.Name : null
