@@ -532,7 +532,7 @@ export class StacksCloud extends Stack {
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
       resources: [
-        // this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
+        this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
         this.storage.emailBucket.arnForObjects('*'),
       ],
       conditions: {
@@ -941,7 +941,7 @@ export class StacksCloud extends Stack {
     const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
 
     if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'EmailBucket', existingBucketArn)
+      return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', existingBucketArn)
 
     return new s3.Bucket(this, 'EmailServerBucket', {
       bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,

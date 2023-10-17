@@ -147,3 +147,5 @@ elif [ $(basename "/$0") != 'installer.sh' ]; then
     echo "for more info: pkgx --help" >&2
   fi
 fi
+
+eval "$(pkgx integrate)"

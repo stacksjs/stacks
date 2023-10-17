@@ -188,30 +188,32 @@ export async function deleteJumpBox(stackName?: string) {
 }
 
 export async function deleteStacksBuckets() {
-  const s3 = new S3({ region: 'us-east-1' })
-  const data = await s3.listBuckets({})
-  const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
+  try {
+    const s3 = new S3({ region: 'us-east-1' })
+    const data = await s3.listBuckets({})
+    const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
 
-  if (!stacksBuckets)
-    return err('No stacks buckets found')
+    if (!stacksBuckets)
+      return err('No stacks buckets found')
 
-  const promises = stacksBuckets.map(async (bucket) => {
-    const bucketName = bucket.Name || ''
-    log.info(`Deleting bucket ${bucketName}...`)
+    const promises = stacksBuckets.map(async (bucket) => {
+      const bucketName = bucket.Name || ''
 
-    // List all objects in the bucket
-    const objects = await s3.listObjectsV2({ Bucket: bucketName })
+      // Delete the bucket
+      log.info(`Deleting bucket ${bucketName}...`)
 
-    // Delete all objects
-    if (objects.Contents) {
-      log.info('Deleting bucket objects...')
-      await Promise.all(objects.Contents.map(object =>
-        s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }),
-      ))
-    }
+      // List all objects in the bucket
+      const objects = await s3.listObjectsV2({ Bucket: bucketName })
 
-    try {
-      log.info('Deleting bucket versions...')
+      // Delete all objects
+      if (objects.Contents) {
+        log.info('Deleting bucket objects...')
+        await Promise.all(objects.Contents.map(object =>
+          s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }),
+        ))
+      }
+
+      log.info(`Deleting bucket ${bucketName} versions...`)
       const versions = await s3.listObjectVersions({ Bucket: bucketName })
       if (versions.Versions) {
         await Promise.all(versions.Versions.map(version =>
@@ -220,7 +222,7 @@ export async function deleteStacksBuckets() {
       }
 
       // Delete all delete markers
-      log.info('Deleting bucket delete markers...')
+      log.info(`Deleting bucket ${bucketName} delete markers...`)
       if (versions.DeleteMarkers) {
         await Promise.all(versions.DeleteMarkers.map(marker =>
           s3.deleteObject({ Bucket: bucketName, Key: marker.Key || '', VersionId: marker.VersionId }),
@@ -236,19 +238,20 @@ export async function deleteStacksBuckets() {
         ))
       }
 
-      // Delete the bucket
       await s3.deleteBucket({ Bucket: bucketName })
+      log.info(`Bucket ${bucketName} deleted`)
 
       return ok(`Bucket ${bucketName} deleted`)
-    }
-    catch (error) {
-      log.error('There was an error deleting your S3 resources\n', error)
-    }
-  })
+    })
 
-  await Promise.all(promises)
+    await Promise.all(promises)
 
-  return ok('Stacks buckets deleted')
+    return ok('Stacks buckets deleted')
+  }
+  catch (error) {
+    // handleError('Error deleting stacks buckets', error)
+    return err('Error deleting stacks buckets', error)
+  }
 }
 
 export async function deleteStacksFunctions() {

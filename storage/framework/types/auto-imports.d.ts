@@ -268,7 +268,7 @@ declare global {
   const generateLibEntries: typeof import('../../../.stacks/core/actions/src/generate/index')['generateLibEntries']
   const generateMigrations: typeof import('../../../.stacks/core/actions/src/generate/index')['generateMigrations']
   const generateSeeder: typeof import('../../../.stacks/core/actions/src/generate/index')['generateSeeder']
-  const generateTeaConfig: typeof import('../../../.stacks/core/actions/src/generate/index')['generateTeaConfig']
+  const generatePkgxConfig: typeof import('../../../.stacks/core/actions/src/generate/index')['generatePkgxConfig']
   const generateTypes: typeof import('../../../.stacks/core/actions/src/generate/index')['generateTypes']
   const generateVsCodeCustomData: typeof import('../../../.stacks/core/actions/src/generate/index')['generateVsCodeCustomData']
   const generateVueCompat: typeof import('../../../.stacks/core/actions/src/generate/index')['generateVueCompat']
@@ -1079,7 +1079,7 @@ declare module 'vue' {
     readonly generateLibEntries: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateLibEntries']>
     readonly generateMigrations: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateMigrations']>
     readonly generateSeeder: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateSeeder']>
-    readonly generateTeaConfig: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateTeaConfig']>
+    readonly generatePkgxConfig: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateTypes: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateVueCompat: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateVueCompat']>
@@ -1884,7 +1884,7 @@ declare module '@vue/runtime-core' {
     readonly generateLibEntries: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateLibEntries']>
     readonly generateMigrations: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateMigrations']>
     readonly generateSeeder: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateSeeder']>
-    readonly generateTeaConfig: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateTeaConfig']>
+    readonly generatePkgxConfig: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateTypes: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateVueCompat: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['generateVueCompat']>

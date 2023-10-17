@@ -9,7 +9,7 @@ import {
   generateIdeHelpers,
   generateLibEntries,
   generateMigrations,
-  generateTeaConfig,
+  generatePkgxConfig,
   generateTypes,
   generateVsCodeCustomData,
   generateVueCompat,
@@ -124,7 +124,7 @@ export function generate(buddy: CLI) {
     .command('generate:tea-config', descriptions.tea)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(() => {
-      generateTeaConfig()
+      generatePkgxConfig()
     })
 
   buddy

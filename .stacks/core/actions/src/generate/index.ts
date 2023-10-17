@@ -129,11 +129,11 @@ export function generateMigrations() {
   log.success('Successfully updated migrations')
 }
 
-export function generateTeaConfig() {
+export function generatePkgxConfig() {
   // write the yaml string to a file in your project root
   // files.put(projectPath('./tea.yaml'), yamlStr)
 
-  log.success('Successfully generated `./tea.yaml` based on your configs')
+  log.success('Successfully generated `./pkgx.yaml` based on your configs')
 }
 
 export async function generateSeeder() {

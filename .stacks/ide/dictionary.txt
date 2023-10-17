@@ -180,6 +180,7 @@ phpcs
 phpunit
 pinia
 pkgjson
+pkgx
 planetscale
 plivo
 pluginutils
