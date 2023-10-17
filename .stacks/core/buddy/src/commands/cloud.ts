@@ -153,7 +153,7 @@ export function cloud(buddy: CLI) {
         stdin: 'inherit',
       })
 
-      await outro('Cloud removed', { startTime, useSeconds: true })
+      await outro('Your cloud has successfully been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -240,8 +240,8 @@ export function cloud(buddy: CLI) {
       log.info('Removing any CDK remnants...')
       const result5 = await deleteCdkRemnants()
 
-      if (!result5) {
-        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result4.error)
+      if (result5.isErr()) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result5.error)
         process.exit(ExitCode.FatalError)
       }
 
