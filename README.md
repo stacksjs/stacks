@@ -1,6 +1,6 @@
 ![Social Card of Stacks](./.stacks/core/buddy/art/social.png)
 
-# Rapid App Development
+# Rapid App & Library Development
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
