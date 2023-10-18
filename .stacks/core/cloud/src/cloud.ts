@@ -523,7 +523,8 @@ export class StacksCloud extends Stack {
     this.storage.emailBucket = this.createBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
-    const bucketPolicyStatement = new iam.PolicyStatement({
+
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
       sid: 'AllowSESPuts',
       effect: iam.Effect.ALLOW,
       principals: [sesPrincipal],
@@ -537,9 +538,19 @@ export class StacksCloud extends Stack {
           'aws:Referer': this.account,
         },
       },
-    })
+    }))
 
-    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
+    // Grant SES permission to write to the S3 bucket
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+      principals: [sesPrincipal],
+      actions: ['s3:PutObject'],
+      resources: [this.storage.emailBucket.arnForObjects('*')],
+      conditions: {
+        StringEquals: {
+          'aws:Referer': this.account,
+        },
+      },
+    }))
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -657,6 +668,7 @@ export class StacksCloud extends Stack {
           {
             s3Action: {
               bucketName: this.storage.emailBucket.bucketName,
+              // kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
               objectKeyPrefix: 'tmp/email_in',
             },
           },
