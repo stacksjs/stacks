@@ -1,9 +1,6 @@
 /* eslint-disable no-new */
 import type { Construct } from 'constructs'
-import type {
-  CfnResource,
-  StackProps,
-} from 'aws-cdk-lib'
+import type { CfnResource, StackProps } from 'aws-cdk-lib'
 import {
   Duration,
   Fn,
@@ -38,7 +35,7 @@ import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const timestamp = new Date().getTime()
-const s3Sdk = new S3()
+// const s3Sdk = new S3()
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
@@ -80,7 +77,7 @@ export class StacksCloud extends Stack {
     super(scope, id, props)
   }
 
-  async init() {
+  init() {
     // this is a noop function that is used to ensure the constructor is called
     // @ts-expect-error – we know this was properly set when needed
     this.storage = {}
@@ -105,9 +102,9 @@ export class StacksCloud extends Stack {
 
     this.manageUsers()
     this.manageZone()
-    await this.manageEmailServer()
+    this.manageEmailServer()
     this.manageCertificate()
-    await this.manageStorage()
+    this.manageStorage()
     this.manageFirewall()
     this.manageFileSystem()
 
@@ -319,12 +316,12 @@ export class StacksCloud extends Stack {
     })
   }
 
-  async manageStorage() {
+  manageStorage() {
     // the bucketName cannot contain the domainName because when it is changed,
     // this resource needs to stay around/is retained. Hence, the domainName
     // does not make much sense using as a (linking) identifier
 
-    const publicBucket = await this.getOrCreateBucket()
+    const publicBucket = this.createBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -345,13 +342,13 @@ export class StacksCloud extends Stack {
       })
     })
 
-    const privateBucket = await this.getOrCreateBucket('private')
+    const privateBucket = this.createBucket('private')
 
     let logBucket: s3.Bucket | undefined
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
       })
     }
@@ -522,8 +519,8 @@ export class StacksCloud extends Stack {
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
-  async manageEmailServer() {
-    this.storage.emailBucket = await this.getOrCreateBucket('email')
+  manageEmailServer() {
+    this.storage.emailBucket = this.createBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
     const bucketPolicyStatement = new iam.PolicyStatement({
@@ -905,34 +902,34 @@ export class StacksCloud extends Stack {
     }
   }
 
-  async getOrCreateBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
-    let bucketPrefix, existingBucketName
+  createBucket(type?: 'public' | 'private' | 'email'): s3.Bucket {
+    let bucketPrefix
 
     if (type === 'private') {
       bucketPrefix = `${this.appName}-private-${appEnv}-`
-      existingBucketName = await getBucketWithPrefix(bucketPrefix)
+      // existingBucketName = await getBucketWithPrefix(bucketPrefix)
 
-      if (existingBucketName)
-        return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
+      // if (existingBucketName)
+      //   return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
 
       return new s3.Bucket(this, 'PrivateBucket', {
         bucketName: `${bucketPrefix}${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
       })
     }
 
     if (type === 'email') {
       bucketPrefix = `${this.appName}-email-${appEnv}-`
-      existingBucketName = await getBucketWithPrefix(bucketPrefix)
+      // existingBucketName = await getBucketWithPrefix(bucketPrefix)
 
-      if (existingBucketName)
-        return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
+      // if (existingBucketName)
+      //   return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
 
       return new s3.Bucket(this, 'EmailServerBucket', {
         bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
         lifecycleRules: [
           {
             id: '24h',
@@ -946,15 +943,15 @@ export class StacksCloud extends Stack {
     }
 
     bucketPrefix = `${this.appName}-${appEnv}-`
-    existingBucketName = await getBucketWithPrefix(bucketPrefix)
+    // existingBucketName = await getBucketWithPrefix(bucketPrefix)
 
-    if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingBucketName}`)
+    // if (existingBucketName)
+    //   return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingBucketName}`)
 
     return new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
       versioned: true,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     })
   }
 
