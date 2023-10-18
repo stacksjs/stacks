@@ -533,7 +533,7 @@ export class StacksCloud extends Stack {
       actions: ['s3:PutObject'],
       resources: [
         this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
-        this.storage.emailBucket.arnForObjects('*'),
+        // this.storage.emailBucket.arnForObjects('*'),
       ],
       conditions: {
         StringEquals: {

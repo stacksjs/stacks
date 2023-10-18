@@ -30,11 +30,20 @@ const fathomAnalyticsHead: HeadConfig[] = [
   ],
 ]
 
-const head = analytics.driver === 'fathom'
+const analyticsHead = analytics.driver === 'fathom'
   ? fathomAnalyticsHead
   : analytics.driver === 'google-analytics'
     ? googleAnalyticsHead
     : []
+
+const faviconHead: HeadConfig[] = [
+  [
+    'link', {
+      rel: 'icon',
+      href: '/favicon.png',
+    },
+  ],
+]
 
 // this is the resolved user config
 export default {
@@ -81,7 +90,10 @@ export default {
     ],
   },
 
-  head,
+  head: [
+    ...faviconHead,
+    ...analyticsHead,
+  ],
 
   ...userConfig,
 } satisfies UserConfig
