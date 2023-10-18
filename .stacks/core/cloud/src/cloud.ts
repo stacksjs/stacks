@@ -324,7 +324,7 @@ export class StacksCloud extends Stack {
     // this resource needs to stay around/is retained. Hence, the domainName
     // does not make much sense using as a (linking) identifier
 
-    const publicBucket = await this.getOrCreatePublicBucket()
+    const publicBucket = await this.getOrCreateBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -345,7 +345,7 @@ export class StacksCloud extends Stack {
       })
     })
 
-    const privateBucket = await this.getOrCreatePrivateBucket()
+    const privateBucket = await this.getOrCreateBucket('private')
 
     let logBucket: s3.Bucket | undefined
     if (config.cloud.cdn?.enableLogging) {
@@ -523,7 +523,7 @@ export class StacksCloud extends Stack {
   }
 
   async manageEmailServer() {
-    this.storage.emailBucket = await this.getOrCreateEmailBucket()
+    this.storage.emailBucket = await this.getOrCreateBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
     const bucketPolicyStatement = new iam.PolicyStatement({
@@ -905,57 +905,56 @@ export class StacksCloud extends Stack {
     }
   }
 
-  async getOrCreatePublicBucket(): Promise<s3.Bucket | s3.IBucket> {
-    const bucketPrefix = `${this.appName}-${appEnv}-`
-    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
-    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
+  async getOrCreateBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
+    let bucketPrefix, existingBucketName
+
+    if (type === 'private') {
+      bucketPrefix = `${this.appName}-private-${appEnv}-`
+      existingBucketName = await getBucketWithPrefix(bucketPrefix)
+
+      if (existingBucketName)
+        return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
+
+      return new s3.Bucket(this, 'PrivateBucket', {
+        bucketName: `${bucketPrefix}${timestamp}`,
+        versioned: true,
+        removalPolicy: RemovalPolicy.RETAIN,
+      })
+    }
+
+    if (type === 'email') {
+      bucketPrefix = `${this.appName}-email-${appEnv}-`
+      existingBucketName = await getBucketWithPrefix(bucketPrefix)
+
+      if (existingBucketName)
+        return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
+
+      return new s3.Bucket(this, 'EmailServerBucket', {
+        bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
+        versioned: true,
+        removalPolicy: RemovalPolicy.RETAIN,
+        lifecycleRules: [
+          {
+            id: '24h',
+            expiration: Duration.days(1),
+            noncurrentVersionExpiration: Duration.days(1),
+            prefix: 'today/',
+            enabled: true,
+          },
+        ],
+      })
+    }
+
+    bucketPrefix = `${this.appName}-${appEnv}-`
+    existingBucketName = await getBucketWithPrefix(bucketPrefix)
 
     if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'PublicBucket', existingBucketArn)
+      return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingBucketName}`)
 
     return new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
       versioned: true,
       removalPolicy: RemovalPolicy.RETAIN,
-    })
-  }
-
-  async getOrCreatePrivateBucket(): Promise<s3.Bucket | s3.IBucket> {
-    const bucketPrefix = `${this.appName}-private-${appEnv}-`
-    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
-    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
-
-    if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'PrivateBucket', existingBucketArn)
-
-    return new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${bucketPrefix}${timestamp}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.RETAIN,
-    })
-  }
-
-  async getOrCreateEmailBucket(): Promise<s3.Bucket | s3.IBucket> {
-    const bucketPrefix = `${this.appName}-email-${appEnv}-`
-    const existingBucketName = await getBucketWithPrefix(bucketPrefix)
-    const existingBucketArn = `arn:aws:s3:::${existingBucketName}`
-
-    if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', existingBucketArn)
-
-    return new s3.Bucket(this, 'EmailServerBucket', {
-      bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
-      versioned: true,
-      removalPolicy: RemovalPolicy.RETAIN,
-      lifecycleRules: [
-        {
-          id: '24h',
-          expiration: Duration.days(1),
-          noncurrentVersionExpiration: Duration.days(1),
-          prefix: 'today/',
-          enabled: true,
-        },
-      ],
     })
   }
 
