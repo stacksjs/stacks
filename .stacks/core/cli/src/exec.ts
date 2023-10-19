@@ -33,10 +33,12 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     // eslint-disable-next-line no-console
     console.log('exec', { command, cmd, options })
 
+  const stdout = options?.stdin ? options.stdin : (options?.stdout || 'inherit')
+  const stderr = options?.stderr || 'inherit'
   const proc = Bun.spawn(cmd, {
     ...options,
-    stdout: options?.stdout || 'inherit',
-    stderr: options?.stderr || 'inherit',
+    stdout,
+    stderr,
     cwd: options?.cwd || import.meta.dir,
     // env: { ...e, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {

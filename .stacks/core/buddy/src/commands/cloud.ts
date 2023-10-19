@@ -157,11 +157,12 @@ export function cloud(buddy: CLI) {
       // for some still unknown reason to me (Chris), sometimes, running this
       // command once is not enough to remove all resources, so we loop
       // over it a few times to ensure everything is removed
+      log.info('Final cleanups. One moment...')
       for (let i = 0; i < 3; i++) {
         await runCommand('buddy cloud:clean-up', {
           ...options,
           cwd: p.projectPath(),
-          stdin: 'inherit',
+          stdin: 'ignore',
         })
       }
 
