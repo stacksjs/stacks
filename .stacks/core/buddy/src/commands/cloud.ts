@@ -131,7 +131,7 @@ export function cloud(buddy: CLI) {
 
       log.info('')
       log.info(`ℹ️  ${italic('Removing your cloud resources will take a while to complete. Please be patient.')}`)
-      log.info(`    ${italic('If you want to retain your buckets data, please back them up before.')}`)
+      log.info(`   ${italic('If you want to retain your buckets data, please back them up before.')}`)
       log.info('')
 
       // sleep for 2 seconds to get the user to read the message
@@ -154,7 +154,7 @@ export function cloud(buddy: CLI) {
         stdin: 'inherit',
       })
 
-      await outro('Your cloud has successfully been removed', { startTime, useSeconds: true })
+      await outro('Your cloud has now been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

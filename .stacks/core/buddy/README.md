@@ -1,4 +1,4 @@
-![Social Card of Stacks](./art/social.png)
+![Social Card of Stacks](./art/social.jpg)
 
 # Rapid App Development
 

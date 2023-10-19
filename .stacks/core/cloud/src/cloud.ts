@@ -348,7 +348,7 @@ export class StacksCloud extends Stack {
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
-        removalPolicy: RemovalPolicy.DESTROY,
+        removalPolicy: RemovalPolicy.RETAIN,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
       })
     }
@@ -540,8 +540,7 @@ export class StacksCloud extends Stack {
       },
     }))
 
-    // Grant SES permission to write to the S3 bucket
-    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+    const bucketPolicyStatement = new iam.PolicyStatement({
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
       resources: [this.storage.emailBucket.arnForObjects('*')],
@@ -550,7 +549,10 @@ export class StacksCloud extends Stack {
           'aws:Referer': this.account,
         },
       },
-    }))
+    })
+
+    // Grant SES permission to write to the S3 bucket
+    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -927,7 +929,7 @@ export class StacksCloud extends Stack {
       return new s3.Bucket(this, 'PrivateBucket', {
         bucketName: `${bucketPrefix}${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
+        removalPolicy: RemovalPolicy.RETAIN,
       })
     }
 
@@ -941,7 +943,7 @@ export class StacksCloud extends Stack {
       return new s3.Bucket(this, 'EmailServerBucket', {
         bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
+        removalPolicy: RemovalPolicy.RETAIN,
         lifecycleRules: [
           {
             id: '24h',
@@ -963,7 +965,7 @@ export class StacksCloud extends Stack {
     return new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
       versioned: true,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
     })
   }
 

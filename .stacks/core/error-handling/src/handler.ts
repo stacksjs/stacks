@@ -9,9 +9,9 @@ export const StacksError = Error
 export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
-  static handle(err: string | Error, options?: ErrorOptions) {
+  static handle(err: ErrorDescription | Error, options?: ErrorOptions | Error) {
     // lets only write to the console if we are not in silent mode
-    if (!options?.silent)
+    if (!(options instanceof Error) && options?.silent !== true)
       this.writeErrorToConsole(err, options)
 
     if (typeof err === 'string')
@@ -46,6 +46,6 @@ export class ErrorHandler {
 }
 
 type ErrorDescription = string
-export function handleError(err: Error | ErrorDescription, options?: ErrorOptions | Error): Error {
+export function handleError(err: ErrorDescription | Error, options?: ErrorOptions | Error): Error {
   return ErrorHandler.handle(err, options)
 }

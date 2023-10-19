@@ -1,4 +1,4 @@
-<p align="center"><img src="../buddy/art/social.png" alt="Social Card of ESLint Config"></p>
+<p align="center"><img src="../buddy/art/social.jpg" alt="Social Card of ESLint Config"></p>
 
 [![npm version][npm-version-src]][npm-version-href]
 [![GitHub Actions][github-actions-src]][github-actions-href]
