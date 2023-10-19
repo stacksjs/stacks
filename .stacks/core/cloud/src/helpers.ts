@@ -249,8 +249,7 @@ export async function deleteStacksBuckets() {
     return ok('Stacks buckets deleted')
   }
   catch (error) {
-    // handleError('Error deleting stacks buckets', error)
-    return err('Error deleting stacks buckets', error)
+    return err(handleError('Error deleting stacks buckets', error as Error))
   }
 }
 
@@ -287,7 +286,7 @@ export async function deleteLogGroups() {
     return ok('Log groups deleted')
   }
   catch (error) {
-    return err(handleError(error))
+    return err(handleError('Error deleting log groups', error as Error))
   }
 }
 
@@ -299,7 +298,7 @@ export async function deleteCdkRemnants() {
     ]))
   }
   catch (error) {
-    return err(handleError(error))
+    return err(handleError('Error deleting CDK remnants', error as Error))
   }
 }
 
@@ -308,11 +307,10 @@ export async function hasBeenDeployed() {
 
   try {
     const response = await s3.send(new ListBucketsCommand({}))
-    return response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) || false
+    return ok(response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) || false)
   }
   catch (error) {
-    console.error('Error fetching buckets', error)
-    return false
+    return err(handleError('Error checking if the app has been deployed', error as Error))
   }
 }
 

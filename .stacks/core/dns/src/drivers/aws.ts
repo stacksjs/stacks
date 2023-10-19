@@ -153,8 +153,6 @@ export async function getNameservers(domainName?: string) {
   if (!domainName)
     return []
 
-  log.info('domainName', domainName)
-
   try {
     const route53Domains = new Route53Domains()
     const domainDetail = await route53Domains.getDomainDetail({ DomainName: domainName })
@@ -174,7 +172,7 @@ export async function updateNameservers(hostedZoneNameservers: string[], domainN
 
   const domainNameservers = await getNameservers(domainName)
 
-  if (JSON.stringify(domainNameservers?.sort()) !== JSON.stringify(hostedZoneNameservers.sort())) {
+  if (domainNameservers && hostedZoneNameservers && JSON.stringify(domainNameservers.sort()) !== JSON.stringify(hostedZoneNameservers.sort())) {
     log.info('Updating your domain nameservers to match the ones in your hosted zone...')
     log.debug('Hosted zone nameservers:', hostedZoneNameservers)
     log.debug('Domain nameservers:', domainNameservers)
@@ -197,7 +195,6 @@ export async function updateNameservers(hostedZoneNameservers: string[], domainN
 
 // please note, this function also updates the user's nameservers if they are out of date
 export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
-  log.info('hasUserDomainBeenAddedToCloud for', domainName)
   if (!domainName)
     domainName = config.app.url
 
@@ -205,7 +202,6 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
 
   // Check if the hosted zone already exists
   const existingHostedZones = await route53.listHostedZonesByName({ DNSName: domainName })
-  log.info('existingHostedZones', existingHostedZones)
   if (!existingHostedZones || !existingHostedZones.HostedZones)
     return false
 
@@ -213,15 +209,10 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
   if (existingHostedZone) {
     log.info('existingHostedZone', existingHostedZone)
 
-    // need to ensure the user has updated their nameservers if they aren't up to date already
-    const domainNameservers = await getNameservers(domainName)
-    log.info('domainNameservers', domainNameservers)
     const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
     const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
-    log.info('hostedZoneNameservers', hostedZoneNameservers)
 
-    await updateNameservers(domainNameservers, hostedZoneNameservers, domainName)
-    log.info('here')
+    await updateNameservers(hostedZoneNameservers, domainName)
 
     return true
   }
