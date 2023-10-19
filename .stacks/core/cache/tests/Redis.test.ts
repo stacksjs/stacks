@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
-import { createClient } from 'redis' // TODO: needs to be imported from cache package
 import { expect, it } from '@stacksjs/testing'
+
+import { createClient } from 'redis' // TODO: needs to be imported from cache package
 
 const client: any = createClient({
   socket: {
@@ -45,7 +45,7 @@ async function flushDB(): Promise<void> {
   await client.sendCommand(['FLUSHDB', 'ASYNC'])
 }
 
-describe('RedisTest', () => {
+describe('redisTest', () => {
   it('it should set redis cache', async () => {
     await set('test', 'test')
     expect(await get('test')).toBe('test')

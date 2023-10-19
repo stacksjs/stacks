@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
-
-import { type EmailOptions } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
+import type { EmailOptions } from '@stacksjs/types'
 
 // @ts-expect-error check if types are available
 import * as Maizzle from '@maizzle/framework'
-import * as maizzleConfig from '../utils/config'
 import { config } from '../tailwind.config'
+import * as maizzleConfig from '../utils/config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string): Promise<ResultAsync<any, Error>> {
   const template = `

@@ -1,4 +1,4 @@
-import { type Hits, type SearchResponse } from 'meilisearch'
+import type { Hits, SearchResponse } from 'meilisearch'
 
 /**
  * the TableStore interface is primarily used to unify the persisting of data to localStorage

@@ -101,7 +101,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
+    "*": "eslint --fix"
   },
   "config": {
     "commitizen": {

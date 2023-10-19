@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
 import { log, parseOptions } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
 import type { PurchaseOptions } from '@stacksjs/cloud'
 import { purchaseDomain } from '@stacksjs/cloud'
+import { config } from '@stacksjs/config'
+import { handleError } from '@stacksjs/error-handling'
+import { ExitCode } from '@stacksjs/types'
 
 const c = config.dns.contactInfo
 if (!c) {
@@ -67,7 +67,6 @@ if (!options.domain) {
 const result = purchaseDomain(options.domain, options)
 
 if (result.isErr()) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   handleError(result.error)
   process.exit(ExitCode.FatalError)
 }

@@ -1,8 +1,7 @@
+import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
 import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
-import { type ComponentMeta, type MetaCheckerOptions } from 'vue-component-meta'
-import { createComponentMetaChecker } from 'vue-component-meta'
-import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
+import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
 
 /**
  * ℹ️ Useful Links
@@ -70,7 +69,6 @@ export function generateComponentMeta() {
 
     // if meta dir doesn't exist create
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (!existsSync(metaDirPath))
       mkdirSync(metaDirPath)
 

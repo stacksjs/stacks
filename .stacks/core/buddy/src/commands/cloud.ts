@@ -1,9 +1,9 @@
 import process from 'node:process'
-import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
+import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
+import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId, isFailedState } from '@stacksjs/cloud'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -52,7 +52,6 @@ export function cloud(buddy: CLI) {
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',
@@ -106,7 +105,6 @@ export function cloud(buddy: CLI) {
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',
@@ -154,18 +152,6 @@ export function cloud(buddy: CLI) {
         stdin: 'inherit',
       })
 
-      // for some still unknown reason to me (Chris), sometimes, running this
-      // command once is not enough to remove all resources, so we loop
-      // over it a few times to ensure everything is removed
-      log.info('Final cleanups. One moment...')
-      for (let i = 0; i < 3; i++) {
-        await runCommand('buddy cloud:clean-up', {
-          ...options,
-          cwd: p.projectPath(),
-          stdin: 'ignore',
-        })
-      }
-
       await outro('Your cloud has now been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
@@ -178,7 +164,6 @@ export function cloud(buddy: CLI) {
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',

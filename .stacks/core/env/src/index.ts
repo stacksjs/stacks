@@ -1,8 +1,8 @@
-import p from 'node:process'
 import { readFileSync, writeFileSync } from 'node:fs'
+import p from 'node:process'
+import type { Env } from '@stacksjs/env'
 import { projectPath } from '@stacksjs/path'
 import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
-import type { Env } from '@stacksjs/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 interface EnumObject {
@@ -19,7 +19,6 @@ export const enums: EnumObject = {
 
 const handler = {
   get: (target: Env, key: EnvKey) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const value = target[key] as any
 
     if (value instanceof ValidationEnum)

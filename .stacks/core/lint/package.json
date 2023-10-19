@@ -39,8 +39,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "scripts": {
     "build": "bun --bun build.ts",
@@ -51,7 +51,6 @@
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.6",
     "eslint": "^8.51.0",
-    "eslint-plugin-stacksjs": "workspace:*",
     "lint-staged": "^15.0.1",
     "publint": "^0.2.4"
   },

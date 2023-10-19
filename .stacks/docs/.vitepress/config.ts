@@ -38,7 +38,8 @@ const analyticsHead = analytics.driver === 'fathom'
 
 const faviconHead: HeadConfig[] = [
   [
-    'link', {
+    'link',
+    {
       rel: 'icon',
       href: '/favicon.png',
     },

@@ -2,7 +2,13 @@
 
 This bootcamp is a collection of tutorials, guides, and resources to help you get started with Stacks. Read along to learn about the features that make up the core Stacks logic.
 
-## Features
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
+
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
+
+Continue with this bootcamp to learn about the above.
+
+<!-- ## Features
 
 The Stacks framework is a harmony of several “engines”, designed to build any web and/or desktop application—in highly scalable & privacy-friendly ways. It consists of the following engines:
 
@@ -74,10 +80,4 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
-- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
-
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
-
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
-
-Continue with this bootcamp to learn about the above.
+- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_ -->

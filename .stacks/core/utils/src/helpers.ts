@@ -1,19 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
-
+import type { AddressInfo } from 'node:net'
 import process from 'node:process'
-import { type AddressInfo } from 'node:net'
-import type { CliOptions, Manifest, NpmScript, StacksError, SyncSubprocess } from '@stacksjs/types'
-import { Action } from '@stacksjs/types'
-import { frameworkPath, projectPath } from '@stacksjs/path'
-import { parse } from 'yaml'
 import { runAction } from '@stacksjs/actions'
 import { italic, log, runCommand } from '@stacksjs/cli'
-import * as storage from '@stacksjs/storage'
 import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
+import { frameworkPath, projectPath } from '@stacksjs/path'
+import * as storage from '@stacksjs/storage'
+import type { CliOptions, Manifest, NpmScript, StacksError, SyncSubprocess } from '@stacksjs/types'
+import { Action } from '@stacksjs/types'
+import { parse } from 'yaml'
 import { semver } from './versions'
-import ui from '~/config/ui'
 import app from '~/config/app'
+import ui from '~/config/ui'
 
 export async function packageManager() {
   const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))

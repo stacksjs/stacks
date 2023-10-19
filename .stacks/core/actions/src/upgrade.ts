@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import * as storage from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
+import * as storage from '@stacksjs/storage'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { version } from '../../../package.json'
 

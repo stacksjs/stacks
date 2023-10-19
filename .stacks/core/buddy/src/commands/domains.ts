@@ -1,10 +1,10 @@
 import process from 'node:process'
-import type { CLI, DomainsOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { config } from '@stacksjs/config'
 import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
-import { Action, ExitCode } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
+import type { CLI, DomainsOptions } from '@stacksjs/types'
+import { Action, ExitCode } from '@stacksjs/types'
 
 export function domains(buddy: CLI) {
   const descriptions = {
@@ -70,7 +70,6 @@ export function domains(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { confirm } = await prompts({
         name: 'confirm',
         type: 'confirm',
@@ -126,7 +125,6 @@ export function domains(buddy: CLI) {
       const startTime = await intro('buddy domains:remove')
 
       if (!opts.yes) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',

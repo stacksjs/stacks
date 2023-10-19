@@ -21,7 +21,7 @@ onUnmounted(() => {
     class="fixed inset-x-0 bottom-0 px-4 pb-6 sm:inset-0 sm:p-0 sm:flex sm:items-center sm:justify-center"
     :style="statusTransition ? 'z-index: 20' : 'z-index: -1' "
   >
-    <transition
+    <Transition
       enter-active-class="opacity-0 "
       enter-class="duration-300 ease-out"
       enter-to-class="opacity-100"
@@ -37,11 +37,11 @@ onUnmounted(() => {
       >
         <div class="absolute inset-0 bg-gray-500 opacity-75" />
       </div>
-    </transition>
+    </Transition>
 
     <span class="hidden sm:inline-block sm:align-middle sm:h-screen" />&#8203;
 
-    <transition
+    <Transition
       enter-active-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95"
       enter-class="duration-300 ease-out"
       enter-to-class="translate-y-0 opacity-100 sm:scale-100"
@@ -86,6 +86,6 @@ onUnmounted(() => {
           <slot name="modal-actions" />
         </div>
       </div>
-    </transition>
+    </Transition>
   </div>
 </template>

@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
-import { type RedisClientType } from 'redis'
-import { createClient } from 'redis'
 import { cache } from '@stacksjs/config'
+import { type RedisClientType, createClient } from 'redis'
 
 export const client: RedisClientType = createClient({
   socket: {

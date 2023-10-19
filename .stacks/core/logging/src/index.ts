@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
 import { bold, green } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
+import { handleError } from '@stacksjs/error-handling'
 import type { StacksError } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 
 export const logger = console
 export const log = {

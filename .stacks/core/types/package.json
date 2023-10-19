@@ -35,8 +35,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "scripts": {
     "build": "bun --bun build.ts",
@@ -79,6 +79,7 @@
     "vue": "^3.3.4"
   },
   "devDependencies": {
+    "aws-cdk-lib": "^2.102.0",
     "typescript": "^5.2.2"
   }
 }

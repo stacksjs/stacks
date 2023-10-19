@@ -11,7 +11,7 @@ bun install -d @stacksjs/modules
 Now, you can use it in your project:
 
 ```ts
-import { type UserModule } from '@stacksjs/types'
+import type { UserModule } from '@stacksjs/types'
 
 export const install: UserModule = ({ app, router, isClient }) => {
   // do something

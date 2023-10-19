@@ -1,16 +1,16 @@
-import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
-import { err, ok } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/logging'
-import type { CountryCode } from '@aws-sdk/client-route-53-domains'
-import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
-import { IAM } from '@aws-sdk/client-iam'
-import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
-import { Lambda } from '@aws-sdk/client-lambda'
-import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
 import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand } from '@aws-sdk/client-cloudwatch-logs'
+import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
+import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
+import { IAM } from '@aws-sdk/client-iam'
+import { Lambda } from '@aws-sdk/client-lambda'
+import type { CountryCode } from '@aws-sdk/client-route-53-domains'
+import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
+import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { config } from '@stacksjs/config'
+import { err, handleError, ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { rimraf } from '@stacksjs/utils'
 
@@ -197,51 +197,58 @@ export async function deleteStacksBuckets() {
       return err('No stacks buckets found')
 
     const promises = stacksBuckets.map(async (bucket) => {
-      const bucketName = bucket.Name || ''
+      try {
+        const bucketName = bucket.Name || ''
 
-      // Delete the bucket
-      log.info(`Deleting bucket ${bucketName}...`)
+        // Delete the bucket
+        log.info(`Deleting bucket ${bucketName}...`)
 
-      // List all objects in the bucket
-      const objects = await s3.listObjectsV2({ Bucket: bucketName })
+        // List all objects in the bucket
+        const objects = await s3.listObjectsV2({ Bucket: bucketName })
 
-      // Delete all objects
-      if (objects.Contents) {
-        log.info('Deleting bucket objects...')
-        await Promise.all(objects.Contents.map(object =>
-          s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }),
-        ))
+        // Delete all objects
+        if (objects.Contents) {
+          log.info('Deleting bucket objects...')
+          await Promise.all(objects.Contents.map(object =>
+            s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch(error => handleError(error)),
+          ))
+          log.info(`Finished deleting objects from bucket ${bucketName}`)
+        }
+
+        log.info(`Deleting bucket ${bucketName} versions...`)
+        const versions = await s3.listObjectVersions({ Bucket: bucketName }).catch(error => handleError(error))
+        if (versions.Versions) {
+          await Promise.all(versions.Versions.map(version =>
+            s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }).catch(error => handleError(error)),
+          ))
+          log.info(`Finished deleting versions from bucket ${bucketName}`)
+        }
+
+        // Delete all delete markers
+        log.info(`Deleting bucket ${bucketName} delete markers...`)
+        if (versions.DeleteMarkers) {
+          await Promise.all(versions.DeleteMarkers.map(marker =>
+            s3.deleteObject({ Bucket: bucketName, Key: marker.Key || '', VersionId: marker.VersionId }).catch(error => handleError(error)),
+          ))
+          log.info(`Finished deleting delete markers from bucket ${bucketName}`)
+        }
+
+        // If the bucket has uncompleted multipart uploads, you need to abort them
+        const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
+        if (uploads.Uploads) {
+          log.info('Aborting bucket multipart uploads...')
+          await Promise.all(uploads.Uploads.map(upload =>
+            s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }).catch(error => handleError(error)),
+          ))
+          log.info(`Finished aborting multipart uploads from bucket ${bucketName}`)
+        }
+
+        await s3.deleteBucket({ Bucket: bucketName })
+        log.info(`Bucket ${bucketName} deleted`)
       }
-
-      log.info(`Deleting bucket ${bucketName} versions...`)
-      const versions = await s3.listObjectVersions({ Bucket: bucketName })
-      if (versions.Versions) {
-        await Promise.all(versions.Versions.map(version =>
-          s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }),
-        ))
+      catch (error) {
+        return err(handleError('Error deleting stacks buckets', error as Error))
       }
-
-      // Delete all delete markers
-      log.info(`Deleting bucket ${bucketName} delete markers...`)
-      if (versions.DeleteMarkers) {
-        await Promise.all(versions.DeleteMarkers.map(marker =>
-          s3.deleteObject({ Bucket: bucketName, Key: marker.Key || '', VersionId: marker.VersionId }),
-        ))
-      }
-
-      // If the bucket has uncompleted multipart uploads, you need to abort them
-      const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
-      if (uploads.Uploads) {
-        log.info('Aborting bucket multipart uploads...')
-        await Promise.all(uploads.Uploads.map(upload =>
-          s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }),
-        ))
-      }
-
-      await s3.deleteBucket({ Bucket: bucketName })
-      log.info(`Bucket ${bucketName} deleted`)
-
-      return ok(`Bucket ${bucketName} deleted`)
     })
 
     await Promise.all(promises)

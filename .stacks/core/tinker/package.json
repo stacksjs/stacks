@@ -42,8 +42,8 @@
     "tinker": "./dist/tinker.mjs"
   },
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "scripts": {
     "build": "bun --bun build.ts",

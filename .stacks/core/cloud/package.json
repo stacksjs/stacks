@@ -39,8 +39,8 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "scripts": {
     "bootstrap": "cdk bootstrap --profile stacks",

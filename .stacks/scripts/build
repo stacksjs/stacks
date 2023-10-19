@@ -24,9 +24,9 @@ for dir in $dirs; do
   # Check if the directory is one of the two specified
   ## This is because eslint requires cjs builds which we use unbuild for
   case "$dir" in
-  *"/eslint-plugin-stacks" | *"/eslint-plugin-stacksjs")
+  *"/eslint-config")
     # Run the bun unbuild command
-    bunx --bun unbuild
+    bun run build
     ;;
   *)
     # Check if build.ts exists in the directory

@@ -2,12 +2,33 @@
   "vue.inlayHints.missingProps": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "editor.formatOnSave": true,
-  "eslint.format.enable": true,
+
+  "eslint.experimental.useFlatConfig": true,
+
+  // Disable the default formatter, use eslint instead
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+
+  // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": false
+    "source.fixAll": "explicit",
+    "source.organizeImports": "never"
   },
+
+  // Silent the stylistic rules in you IDE, but still auto fix them
+  "eslint.rules.customizations": [
+    { "rule": "style/*", "severity": "off" },
+    { "rule": "*-indent", "severity": "off" },
+    { "rule": "*-spacing", "severity": "off" },
+    { "rule": "*-spaces", "severity": "off" },
+    { "rule": "*-order", "severity": "off" },
+    { "rule": "*-dangle", "severity": "off" },
+    { "rule": "*-newline", "severity": "off" },
+    { "rule": "*quotes", "severity": "off" },
+    { "rule": "*semi", "severity": "off" }
+  ],
+
+  // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -20,17 +41,12 @@
     "jsonc",
     "yaml"
   ],
-  "eslint.codeAction.showDocumentation": {
-    "enable": true
-  },
-  "editor.quickSuggestions": {
-    "strings": true
-  },
+
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "files.associations": {
-    "buddy": "typescript"
-  },
   "[jsonc]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[yaml]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[markdown]": {
@@ -40,11 +56,18 @@
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "files.associations": {
+    "buddy": "typescript"
+  },
   "git.enableSmartCommit": true,
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "bun",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./.stacks/core/ui/src/unocss.ts",
+  "unocss.root": "./.stacks/core/ui/src/unocss.config.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
@@ -81,9 +104,8 @@
       "scope": "user",
       "addWords": true
     },
-    "custom": true // Enable the `custom` dictionary
+    "custom": true // enable the `custom` dictionary
   },
-  "prettier.enable": false, // to ensure it is disabled
   "terminal.integrated.scrollback": 10000,
   "grammarly.files.include": [
     "**/README.md",

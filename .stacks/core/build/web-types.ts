@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { type WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
+import type { WebTypesBuilderConfig } from 'vue-docgen-web-types/types/config'
 import { componentsPath, frameworkPath } from '@stacksjs/path'
 import { frameworkVersion } from '@stacksjs/utils'
 import library from '~/config/library'

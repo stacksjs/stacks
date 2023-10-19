@@ -17,7 +17,7 @@
  * )
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
+
 export function throttle(fn: Function, wait = 300) {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>

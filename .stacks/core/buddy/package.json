@@ -60,8 +60,8 @@
     "bud": "dist/cli.mjs"
   },
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "scripts": {
     "buddy": "bunx ./src/cli.ts",

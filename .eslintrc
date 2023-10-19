@@ -1,4 +1,0 @@
-{
-  "extends": "@stacksjs",
-  "ignorePatterns": ["**/README.md", "**/eslint-plugin-stacksjs", "**/cdk.out"]
-}

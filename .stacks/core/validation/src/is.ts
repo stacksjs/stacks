@@ -1,5 +1,5 @@
-import { getTypeName } from '@stacksjs/types'
 import { toString } from '@stacksjs/strings'
+import { getTypeName } from '@stacksjs/types'
 
 export function isDef<T = any>(val?: T): val is T {
   return typeof val !== 'undefined'
@@ -9,7 +9,6 @@ export function isBoolean(val: any): val is boolean {
   return typeof val === 'boolean'
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function isFunction<T extends Function>(val: any): val is T {
   return typeof val === 'function'
 }

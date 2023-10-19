@@ -1,9 +1,9 @@
 import Net from 'node:net'
+import fetch from 'node-fetch'
 import type { SocksClientOptions } from 'socks'
 import { SocksClient } from 'socks'
-import fetch from 'node-fetch'
-import SERVERS from './servers'
 import PARAMETERS from './parameters'
+import SERVERS from './servers'
 
 const IANA_CHK_URL = 'https://www.iana.org/whois?q='
 
@@ -60,7 +60,7 @@ function shallowCopy<T extends any>(obj: T): T {
  * @param tld TLD of the domain
  * @returns WhoIs server which hosts the information for the domains of the TLD
  */
-function getWhoIsServer(tld: string): string | undefined {
+function getWhoIsServer(tld: keyof typeof SERVERS): string | undefined {
   return SERVERS[tld]
 }
 
@@ -72,15 +72,16 @@ function getWhoIsServer(tld: string): string | undefined {
  * @param domain Domain name
  * @returns TLD
  */
-function getTLD(domain: string): string {
-  let tld = ''
+function getTLD(domain: string): keyof typeof SERVERS {
+  let tld: keyof typeof SERVERS | null = null
   let domainStr = domain
+
   while (true) {
     const domainData = domainStr.split('.')
     if (domainData.length < 2)
       break
 
-    const tldCheck = domainData.slice(1).join('.')
+    const tldCheck = domainData.slice(1).join('.') as keyof typeof SERVERS
     const server = SERVERS[tldCheck]
     if (server) {
       tld = tldCheck
@@ -89,13 +90,13 @@ function getTLD(domain: string): string {
     domainStr = tldCheck
   }
 
-  if (tld != '')
+  if (tld)
     return tld
 
   console.debug('TLD is not found in server list. Returning last element after split as TLD!')
 
   const domainData = domain.split('.')
-  return domainData[domainData.length - 1]
+  return domainData[domainData.length - 1] as keyof typeof SERVERS
 }
 
 // get whois query parameters if exist on parameters.json for whois server
@@ -221,13 +222,13 @@ export class WhoIsParser {
 
     for (let i = 0; i < rawData.length; i++) {
       const letter = rawData[i]
-      if (letter == '\n' || (lastLetter == ':' && letter == ' ')) {
+      if (letter === '\n' || (lastLetter === ':' && letter === ' ')) {
         if (lastStr.trim() in outputData) {
           lastField = lastStr.trim()
         }
         else if (lastField !== null) {
           const x = lastStr.trim()
-          if (x != '') {
+          if (x !== '') {
             const obj = outputData[lastField]
             if (Array.isArray(obj))
               obj.push(x)
@@ -239,11 +240,11 @@ export class WhoIsParser {
         }
         lastStr = ''
       }
-      else if (letter != ':') {
+      else if (letter !== ':') {
         lastStr = lastStr + letter
       }
-      lastLetter = letter
-      if (lastStr == 'Record maintained by' || lastStr == '>>>')
+      lastLetter = letter as string
+      if (lastStr === 'Record maintained by' || lastStr === '>>>')
         break
     }
 
@@ -295,7 +296,7 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
     return new Promise((resolve, reject) => {
       try {
         socket.connect({ port, host: server }, () => {
-          if (queryOptions != '')
+          if (queryOptions !== '')
             socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
           else
             socket.write(encoder.encode(`${domain}\r\n`))
@@ -319,7 +320,7 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
       proxy: {
         host: proxy.ip,
         port: proxy.port,
-        type: proxy.type == ProxyType.SOCKS5 ? 5 : 4,
+        type: proxy.type === ProxyType.SOCKS5 ? 5 : 4,
       },
 
       command: 'connect',
@@ -344,7 +345,7 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
           if (!info)
             reject(new Error('No socket info received!'))
 
-          if (queryOptions != '') {
+          if (queryOptions !== '') {
             info?.socket.write(
               encoder.encode(`${queryOptions} ${domain}\r\n`),
             )
@@ -394,7 +395,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
     port = options.serverPort ? options.serverPort : 43
   }
 
-  if (server == '') {
+  if (server === '') {
     let serverData = getWhoIsServer(tld)
     if (!serverData) {
       console.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
@@ -430,7 +431,6 @@ export async function whois(domain: string, parse: boolean = false, options: Who
         outputData = shallowCopy(options.parseData)
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const parsedData = WhoIsParser.parseData(rawData, outputData)
         return {
           _raw: rawData,

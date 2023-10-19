@@ -1,5 +1,5 @@
 import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql, sql as qbSql } from 'kysely'
-import { type Pool } from 'mysql2'
+import type { Pool } from 'mysql2'
 import { createPool } from 'mysql2'
 
 // import { Pool } from 'pg'

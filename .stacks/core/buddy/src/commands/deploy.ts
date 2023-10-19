@@ -34,7 +34,7 @@ export function deploy(buddy: CLI) {
       if (await hasUserDomainBeenAddedToCloud(domain)) {
         log.info('')
         log.info('✅ Your domain is properly configured.')
-        log.info('ℹ️  Your cloud is deploying.')
+        log.info('ℹ️  Your cloud is deploying...')
         log.info('')
         log.info(italic('⏳ This may take a while...'))
         log.info('')

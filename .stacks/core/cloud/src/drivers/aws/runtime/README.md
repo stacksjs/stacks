@@ -30,16 +30,16 @@ When an event is triggered from [API Gateway](https://docs.aws.amazon.com/lambda
 ```ts
 export default {
   async fetch(request: Request): Promise<Response> {
-    console.log(request.headers.get("x-amzn-function-arn"));
+    console.log(request.headers.get('x-amzn-function-arn'))
     // ...
-    return new Response("Hello from Lambda!", {
+    return new Response('Hello from Lambda!', {
       status: 200,
       headers: {
-        "Content-Type": "text/plain",
+        'Content-Type': 'text/plain',
       },
-    });
+    })
   },
-};
+}
 ```
 
 #### Non-HTTP Event Example
@@ -49,11 +49,11 @@ For non-HTTP events — S3, SQS, EventBridge, etc. — the event payload is the 
 ```ts
 export default {
   async fetch(request: Request): Promise<Response> {
-    const event = await request.json();
+    const event = await request.json()
     // ...
-    return new Response();
+    return new Response()
   },
-};
+}
 ```
 
 ### Step 2: Build the Bun handler

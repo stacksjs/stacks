@@ -161,11 +161,9 @@ export async function getNameservers(domainName?: string) {
   }
   catch (error) {
     handleError('Error getting domain detail:', error as Error)
-    // process.exit(1)
   }
 }
 
-// export async function updateNameservers(hostedZoneNameservers: string[], domainNameservers?: string[], domainName?: string) {
 export async function updateNameservers(hostedZoneNameservers: string[], domainName?: string) {
   if (!domainName)
     domainName = config.app.url
@@ -200,17 +198,23 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
 
   const route53 = new Route53()
 
-  // Check if the hosted zone already exists
+  // check if the hosted zone already exists
   const existingHostedZones = await route53.listHostedZonesByName({ DNSName: domainName })
+
   if (!existingHostedZones || !existingHostedZones.HostedZones)
     return false
 
   const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
+
   if (existingHostedZone) {
     const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
     const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
 
-    return await updateNameservers(hostedZoneNameservers, domainName)
+    await updateNameservers(hostedZoneNameservers, domainName)
+
+    // need to return true here to indicate that the domain
+    // has been added to cloud and is properly configured
+    return true
   }
 
   return false

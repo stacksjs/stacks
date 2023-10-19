@@ -1,6 +1,5 @@
 import type { DatabaseConnection, Driver, QueryResult } from 'kysely'
 import { CompiledQuery } from 'kysely'
-import { path as p } from '@stacksjs/path'
 import type { EmitterOnce } from './mitt'
 import MittOnce from './mitt'
 import type { EventWithError, MainMsg, WorkerMsg } from './type'

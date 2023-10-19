@@ -1,5 +1,5 @@
-import { dinero as currency } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
+import { dinero as currency } from 'dinero.js'
 import { validator } from './validate'
 
 /**
@@ -95,7 +95,6 @@ export interface ErrorReporterContract {
   report(message: string, rule: string, field: FieldContext, args?: Record<string, any>): any
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const isMoney = validator.createRule((value: unknown, _, field: FieldContext) => {
   /**
    * Convert string representation of a number to a JavaScript

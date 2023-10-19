@@ -1,5 +1,6 @@
-import type { Server, ServerWebSocket } from 'bun'
+import process from 'node:process'
 import { AwsClient } from 'aws4fetch'
+import type { Server, ServerWebSocket } from 'bun'
 
 interface Lambda {
   fetch: (request: Request, server: Server) => Promise<Response | undefined>

@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/types'
-import { type GeneratorOptions } from '@stacksjs/types'
+import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 
 // import { files } from '@stacksjs/storage'

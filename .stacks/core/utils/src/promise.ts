@@ -104,9 +104,9 @@ export function createControlledPromise<T>(): ControlledPromise<T> {
     resolve = _resolve
     reject = _reject
   }) as ControlledPromise<T>
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   promise.resolve = resolve
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   promise.reject = reject
   return promise
 }

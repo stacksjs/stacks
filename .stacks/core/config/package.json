@@ -35,8 +35,8 @@
     }
   },
   "files": [
-    "src",
-    "README.md"
+    "README.md",
+    "src"
   ],
   "scripts": {
     "build": "bun --bun build.ts",

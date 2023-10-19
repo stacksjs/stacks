@@ -1,6 +1,7 @@
+import process from 'node:process'
+import { db } from '@stacksjs/database'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
-import { db } from '@stacksjs/database'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
@@ -10,8 +11,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('email', 'varchar(255)', col => col.notNull())
     .addColumn('password', 'varchar(255)', col => col.notNull())
     .addColumn('created_at', 'timestamp', col =>
-      col.defaultTo(sql`now()`).notNull(),
-    )
+      col.defaultTo(sql`now()`).notNull())
     .execute()
 }
 

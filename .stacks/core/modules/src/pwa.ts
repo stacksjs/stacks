@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-import { type UserModule } from '@stacksjs/types'
+import type { UserModule } from '@stacksjs/types'
 
 // https://github.com/antfu/vite-plugin-pwa#automatic-reload-when-new-content-available
 export const install: UserModule = ({ isClient, router }) => {

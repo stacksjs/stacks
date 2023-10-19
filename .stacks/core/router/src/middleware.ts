@@ -6,7 +6,7 @@ import type { MiddlewareType } from '@stacksjs/types'
 export class Middleware implements MiddlewareType {
   name: string
   priority: number
-  // eslint-disable-next-line @typescript-eslint/ban-types
+
   handle: Function
 
   constructor(data: MiddlewareType) {

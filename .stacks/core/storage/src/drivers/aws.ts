@@ -1,6 +1,6 @@
-import { type NestedStackProps } from 'aws-cdk-lib'
+import type { NestedStackProps } from 'aws-cdk-lib'
 import { NestedStack } from 'aws-cdk-lib'
-import { type Construct } from 'constructs'
+import type { Construct } from 'constructs'
 
 export class StorageStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: NestedStackProps) {

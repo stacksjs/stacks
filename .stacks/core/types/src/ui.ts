@@ -1,4 +1,4 @@
-import { type UserShortcuts } from 'unocss'
+import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons'

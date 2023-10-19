@@ -16,7 +16,6 @@ export const Str = {
   },
 
   template(str: string, ...args: any[]): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return u.template(str, ...args)
   },
 

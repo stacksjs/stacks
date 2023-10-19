@@ -101,7 +101,8 @@ exports.transformRecipients = function (data) {
 
     if (data.config.forwardMapping.hasOwnProperty(origEmailKey)) {
       newRecipients = newRecipients.concat(
-        data.config.forwardMapping[origEmailKey])
+        data.config.forwardMapping[origEmailKey],
+      )
       data.originalRecipient = origEmail
     }
     else {
@@ -118,18 +119,21 @@ exports.transformRecipients = function (data) {
       if (origEmailDomain
           && data.config.forwardMapping.hasOwnProperty(origEmailDomain)) {
         newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailDomain])
+          data.config.forwardMapping[origEmailDomain],
+        )
         data.originalRecipient = origEmail
       }
       else if (origEmailUser
         && data.config.forwardMapping.hasOwnProperty(origEmailUser)) {
         newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailUser])
+          data.config.forwardMapping[origEmailUser],
+        )
         data.originalRecipient = origEmail
       }
       else if (data.config.forwardMapping.hasOwnProperty('@')) {
         newRecipients = newRecipients.concat(
-          data.config.forwardMapping['@'])
+          data.config.forwardMapping['@'],
+        )
         data.originalRecipient = origEmail
       }
     }
@@ -180,7 +184,8 @@ exports.fetchMessage = function (data) {
           stack: err.stack,
         })
         return reject(
-          new Error('Error: Could not make readable copy of email.'))
+          new Error('Error: Could not make readable copy of email.'),
+        )
       }
 
       // Load the raw email from S3
@@ -196,7 +201,8 @@ exports.fetchMessage = function (data) {
             stack: err.stack,
           })
           return reject(
-            new Error('Error: Failed to load message body from S3.'))
+            new Error('Error: Failed to load message body from S3.'),
+          )
         }
         result.Body.transformToString().then(
           (body) => {
@@ -258,7 +264,8 @@ exports.processMessage = function (data) {
         } <${data.originalRecipient}>`
       }
       return fromText
-    })
+    },
+  )
 
   // Add a prefix to the Subject
   if (data.config.subjectPrefix) {
@@ -266,7 +273,8 @@ exports.processMessage = function (data) {
       /^subject:[\t ]?(.*)/mgi,
       (match, subject) => {
         return `Subject: ${data.config.subjectPrefix}${subject}`
-      })
+      },
+    )
   }
 
   // Replace original 'To' header with a manually defined one

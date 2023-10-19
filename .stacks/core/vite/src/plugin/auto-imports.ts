@@ -1,14 +1,17 @@
-import AutoImport from 'unplugin-auto-import/vite'
-import { defu } from 'defu'
-import type { AutoImportsOptions } from '@stacksjs/types'
 import { frameworkPath, projectStoragePath, resourcesPath } from '@stacksjs/path'
-import type { Plugin } from 'vite'
+import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports } from '@unhead/vue'
+import { defu } from 'defu'
+import AutoImport from 'unplugin-auto-import/vite'
+import type { Plugin } from 'vite'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   const defaultOptions: AutoImportsOptions = {
     imports: [
-      'vue', 'vue-router', 'vue/macros', 'pinia',
+      'vue',
+      'vue-router',
+      'vue/macros',
+      'pinia',
       unheadVueComposablesImports,
       // 'vitepress'
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
@@ -32,6 +35,5 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
 
   const newOptions = defu(options, defaultOptions)
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return AutoImport(newOptions)
 }

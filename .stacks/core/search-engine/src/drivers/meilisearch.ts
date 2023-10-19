@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
-
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
 import { searchEngine } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { MeiliSearch } from 'meilisearch'
 
-import { type SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
+import type { SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
 
 interface SearchEngineOptions {
   host: string

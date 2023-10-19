@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
-import { type Result } from '@stacksjs/error-handling'
-import { err, ok } from '@stacksjs/error-handling'
+import { type Result, err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from './fs'

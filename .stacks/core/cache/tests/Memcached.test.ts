@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
-import { type Client } from 'memjs'
-import Memcached from 'memjs'
 import { expect, it } from '@stacksjs/testing'
+import Memcached, { type Client } from 'memjs'
 
 const client: Client = Memcached.Client.create('127.0.0.1:11211')
 
@@ -29,7 +26,7 @@ async function flush(): Promise<void> {
   await client.flush()
 }
 
-describe('MemcachedTest', () => {
+describe('memcachedTest', () => {
   it('it should set memcached cache', async () => {
     await set('test', 'test', 10 * 60)
     expect(await get('test')).toBe('test')

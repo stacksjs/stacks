@@ -21,10 +21,10 @@
     "rsms"
   ],
   "files": [
-    "ttf",
     "Inter-VariableFont_slnt,wght.ttf",
     "OFL.txt",
     "README.md",
-    "README.txt"
+    "README.txt",
+    "ttf"
   ]
 }

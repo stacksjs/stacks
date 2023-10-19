@@ -1,4 +1,4 @@
-import { type TagsOptions } from './components'
+import type { TagsOptions } from './components'
 
 /**
  * **Library Options**

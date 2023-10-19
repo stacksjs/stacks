@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { type CLI } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action, ExitCode } from '@stacksjs/types'

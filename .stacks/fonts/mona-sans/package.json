@@ -19,14 +19,14 @@
     "github"
   ],
   "files": [
-    "otf",
-    "ttf",
-    "woff",
-    "woff2",
+    "LICENSE.txt",
     "Mona-Sans.ttf",
     "Mona-Sans.woff",
     "Mona-Sans.woff2",
     "README.md",
-    "LICENSE.txt"
+    "otf",
+    "ttf",
+    "woff",
+    "woff2"
   ]
 }

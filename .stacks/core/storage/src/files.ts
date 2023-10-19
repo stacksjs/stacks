@@ -122,7 +122,6 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
           deleteFiles(p, exclude)
       }
 
-      // eslint-disable-next-line max-statements-per-line
       else if (!contains(p, exclude)) { fs.rmSync(p) }
     })
   }

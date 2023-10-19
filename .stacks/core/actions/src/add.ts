@@ -1,5 +1,5 @@
 import { installPackage } from '@stacksjs/cli'
-import { type AddOptions } from '@stacksjs/types'
+import type { AddOptions } from '@stacksjs/types'
 
 export async function invoke(options: AddOptions) {
   if (options?.table)

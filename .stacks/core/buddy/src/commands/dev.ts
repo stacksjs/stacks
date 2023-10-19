@@ -3,7 +3,6 @@ import { Action, ExitCode } from '@stacksjs/types'
 import {
   runAction,
   runComponentsDevServer,
-  runDesktopDevServer,
   runFunctionsDevServer,
   runPagesDevServer,
 } from '@stacksjs/actions'

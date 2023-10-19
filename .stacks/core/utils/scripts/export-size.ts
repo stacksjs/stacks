@@ -1,10 +1,10 @@
 // inspired by vue-use
-import { markdownTable } from 'markdown-table'
-import filesize from 'filesize'
 import { fs } from '@stacksjs/storage'
 import type { PackageManifest } from '@vueuse/metadata'
-import { getExportsSize } from '../src/export-size'
+import filesize from 'filesize'
+import { markdownTable } from 'markdown-table'
 import { version } from '../package.json'
+import { getExportsSize } from '../src/export-size'
 
 export const packages: PackageManifest[] = [
   {
@@ -64,7 +64,6 @@ async function run() {
   md += '\n\n'
 
   for (const pkg of [...packages.slice(2), packages[1]]) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { exports, packageJSON } = await getExportsSize({
       pkg: `./packages/${pkg?.name}/dist`,
       output: false,
@@ -73,16 +72,14 @@ async function run() {
       includes: ['@vueuse/shared'],
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     md += `<kbd>${packageJSON.name}</kbd>\n\n`
 
     md += markdownTable([
       ['Function', 'min+gzipped'],
       // eslint-disable-next-line stacksjs/no-cjs-exports
       ...exports.map((i) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         mdJSON[i.name] = filesize(i.minzipped)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         return [`\`${i.name}\``, filesize(i.minzipped)]
       }),
     ])

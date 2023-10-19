@@ -2,7 +2,7 @@
  * This file is used to define the types/interfaces used in the project.
  */
 
-import { type Hits, type SearchResponse } from 'meilisearch'
+import type { Hits, SearchResponse } from 'meilisearch'
 
 // export function isString(val: unknown): val is string {
 //   return typeof val === 'string'

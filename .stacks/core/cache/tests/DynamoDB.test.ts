@@ -3,7 +3,7 @@ import { expect, it } from '@stacksjs/testing'
 
 const dynamodb = new DynamoDB({ region: 'us-east-1' })
 
-describe('DynamoDB test', () => {
+describe('dynamoDB test', () => {
   it('it should create a table for dynamodb cache', async () => {
     await createTable()
   })

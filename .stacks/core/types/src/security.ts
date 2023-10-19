@@ -1,39 +1,23 @@
+import type { aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { CountryCode } from './cloud'
+
+export type FirewallOptions = wafv2.CfnWebACLProps & {
+  enabled: boolean // default: true
+  countryCodes: CountryCode[]
+  ipAddresses: string[]
+  queryString: string[]
+  httpHeaders: string[]
+  ipSets: string[]
+  rateLimitPerMinute: number
+  useIpReputationLists: boolean
+  useKnownBadInputsRuleSet: boolean
+}
+export type FirewallConfig = Partial<FirewallOptions>
+
 export interface SecurityOptions {
   driver: 'aws'
 
-  app: {
-    firewall: {
-      immunity: number
-      challenge: {
-        captcha: {
-          duration: number
-          headerName: string
-          headerValue: string
-        }
-      }
-      rules: {
-        name: string
-        priority: number
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        action: { block?: {}; allow?: {} }
-        visibilityConfig: {
-          sampledRequestsEnabled: boolean
-          cloudWatchMetricsEnabled: boolean
-          metricName: string
-        }
-        statement: {
-          rateBasedStatement?: {
-            limit: number
-            aggregateKeyType: 'IP'
-          }
-          managedRuleGroupStatement?: {
-            vendorName: 'AWS'
-            name: string
-          }
-        }
-      }[]
-    }
-  }
+  firewall: FirewallOptions
 }
 
 export type SecurityConfig = Partial<SecurityOptions>

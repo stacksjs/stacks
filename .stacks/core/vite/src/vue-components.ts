@@ -2,12 +2,12 @@ import { alias } from '@stacksjs/alias'
 import { server } from '@stacksjs/server'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
-import { type ViteConfig } from '@stacksjs/types'
+import type { ViteConfig } from '@stacksjs/types'
 import { components } from './plugin/components'
 import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { inspect } from './plugin/inspect'
-import { type ViteBuildOptions } from './'
+import type { ViteBuildOptions } from './'
 
 const config = {
   root: p.frameworkPath('libs/components/vue'),

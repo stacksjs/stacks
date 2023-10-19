@@ -245,6 +245,8 @@ unhead
 unimport
 unocss
 unplugin
+Unprefix
+Unprefixed
 unstorage
 upstash
 vclass

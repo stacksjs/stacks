@@ -1,5 +1,5 @@
-import { whois } from './index'
+// import { whois } from './index'
 
-const r = (await whois('stacksjs.org', true)).parsedData.Registrar
+// const r = (await whois('stacksjs.org', true)).parsedData.Registrar
 
-console.log(r)
+// console.log(r)

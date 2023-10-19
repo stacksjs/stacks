@@ -1,4 +1,4 @@
-import { type ISmsOptions as SmsOptions } from '@novu/stateless'
+import type { ISmsOptions as SmsOptions } from '@novu/stateless'
 
 export type { SmsOptions }
 

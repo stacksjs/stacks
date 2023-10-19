@@ -19,14 +19,14 @@
     "github"
   ],
   "files": [
-    "otf",
-    "ttf",
-    "woff",
-    "woff2",
     "Hubot-Sans.ttf",
     "Hubot-Sans.woff",
     "Hubot-Sans.woff2",
+    "LICENSE.txt",
     "README.md",
-    "LICENSE.txt"
+    "otf",
+    "ttf",
+    "woff",
+    "woff2"
   ]
 }

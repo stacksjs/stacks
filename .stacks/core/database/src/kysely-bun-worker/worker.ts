@@ -9,13 +9,12 @@ function run(mode: RunMode, sql: string, parameters?: readonly unknown[]): Query
 
   let rows: unknown[] = []
   if (mode !== 'exec')
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     rows = stmt.all(parameters as any)
 
   if (mode === 'query')
     return { rows }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   stmt.run(parameters as any)
   return {
     rows,

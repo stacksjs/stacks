@@ -1,9 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
 import process from 'node:process'
-import { type CLI, type GeneratorOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import { prompt } from '@stacksjs/cli'
-import { isString } from '@stacksjs/validation'
 import {
   generateComponentMeta,
   generateIdeHelpers,
@@ -16,6 +11,9 @@ import {
   generateWebTypes,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
+import { prompt } from '@stacksjs/cli'
+import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export function generate(buddy: CLI) {
   const descriptions = {

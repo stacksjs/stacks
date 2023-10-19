@@ -1,41 +1,74 @@
 {
   "name": "@stacksjs/eslint-config",
-  "version": "0.0.0",
-  "description": "The Stacks ESLint config",
-  "author": "Chris Breuer <chris@ow3.org> (https://github.com/stacksjs/)",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "The Stacks.js ESLint config preset, heavily inspired by Anthony's ESLint config.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com> (https://github.com/antfu/)",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/eslint-config",
+  "funding": "https://github.com/sponsors/antfu",
+  "homepage": "https://github.com/stacksjs/stacks/blob/main/.stacks/core/eslint-config",
   "keywords": [
+    "stacks",
     "eslint-config"
   ],
-  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "index.js"
+    "dist"
   ],
   "scripts": {
-    "build": "echo 'no build needed'"
+    "build": "bunx tsup src/index.ts --format esm,cjs --clean --dts",
+    "stub": "bunx tsup src/index.ts --format esm,cjs",
+    "dev": "bunx tsup src/index.ts --format esm,cjs --watch & eslint-flat-config-viewer",
+    "lint": "bun run stub && eslint .",
+    "prepack": "bun run build",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "eslint": ">=8.51.0"
+    "eslint": ">=8.0.0"
   },
   "dependencies": {
-    "@stacksjs/eslint-config-vue": "workspace:*",
+    "@antfu/eslint-define-config": "^1.23.0-1",
+    "@stylistic/eslint-plugin": "0.0.11",
     "@typescript-eslint/eslint-plugin": "^6.8.0",
     "@typescript-eslint/parser": "^6.8.0",
+    "eslint-config-flat-gitignore": "^0.1.1",
+    "eslint-plugin-antfu": "^1.0.0-beta.12",
     "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-html": "^7.1.0",
-    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-i": "^2.28.1",
     "eslint-plugin-jsdoc": "^46.8.2",
     "eslint-plugin-jsonc": "^2.10.0",
+    "eslint-plugin-markdown": "^3.0.1",
     "eslint-plugin-n": "^16.2.0",
-    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-no-only-tests": "^3.1.0",
+    "eslint-plugin-sort-keys": "^2.3.5",
     "eslint-plugin-unicorn": "^48.0.1",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "eslint-plugin-vitest": "^0.3.2",
     "eslint-plugin-vue": "^9.17.0",
     "eslint-plugin-yml": "^1.10.0",
+    "globals": "^13.23.0",
     "jsonc-eslint-parser": "^2.3.0",
+    "local-pkg": "^0.5.0",
+    "vue-eslint-parser": "^9.3.2",
     "yaml-eslint-parser": "^1.2.2"
   },
   "devDependencies": {
-    "eslint": "^8.51.0"
+    "@stacksjs/eslint-config": "workspace:*",
+    "@stylistic/eslint-plugin-migrate": "^0.0.11",
+    "@types/eslint": "^8.44.4",
+    "@types/fs-extra": "^11.0.2",
+    "@types/node": "^20.8.6",
+    "eslint": "^8.51.0",
+    "eslint-flat-config-viewer": "^0.1.0",
+    "fast-glob": "^3.3.1",
+    "fs-extra": "^11.1.1",
+    "sucrase": "^3.34.0"
   }
 }

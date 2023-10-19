@@ -36,7 +36,7 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
       throw new Error(`Invalid env value for ${key}`)
   }
   const envKey = key as EnvKeys
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   acc[envKey] = validatorType as any
   return acc
 }, {} as EnvMap)

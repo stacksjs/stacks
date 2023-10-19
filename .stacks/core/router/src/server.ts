@@ -1,5 +1,5 @@
-import { URL } from 'node:url'
 import { extname } from 'node:path'
+import { URL } from 'node:url'
 import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
 import { middlewares } from './middleware'
 import { request } from './request'
@@ -129,7 +129,6 @@ function isObjectNotEmpty(obj: object): boolean {
   return Object.keys(obj).length > 0
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 function isFunction(val: unknown): val is Function {
   return typeof val === 'function'
 }

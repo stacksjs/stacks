@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import { send } from './client'
-import { type Log } from './types'
+import type { Log } from './types'
 
 // import { ray } from 'node-ray'
 

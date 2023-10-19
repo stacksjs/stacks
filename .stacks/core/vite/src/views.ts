@@ -1,4 +1,4 @@
-import { type ViteConfig } from '@stacksjs/types'
+import type { ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'

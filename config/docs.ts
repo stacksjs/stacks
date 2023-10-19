@@ -47,42 +47,7 @@ const sidebar = {
       collapsible: true,
       items: [
         { text: 'What is Stacks?', link: '/guide/what-is-stacks' },
-        { text: 'Getting Started', link: '/guide/getting-started' },
-      ],
-    },
-
-    {
-      text: 'Bootcamp',
-      collapsible: true,
-      items: [
-        { text: 'Introduction', link: '/bootcamp/intro' },
-        {
-          text: 'Let’s Build',
-          items: [
-            { text: 'Build an API', link: '/bootcamp/api' },
-            { text: 'Build a Frontend', link: '/bootcamp/frontend' },
-            { text: 'Build a Documentation', link: '/bootcamp/docs' },
-            {
-              text: 'Build a Library',
-              collapsible: true,
-              collapsed: true,
-              items: [
-                { text: 'Component Library', link: '/bootcamp/library/components' },
-                { text: 'Function Library', link: '/bootcamp/library/functions' },
-              ],
-            },
-            { text: 'Build a CLI', link: '/bootcamp/cli' },
-            { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
-            { text: 'Extend the Dashboard', link: '/bootcamp/dashboard' },
-          ],
-        },
-        { text: 'Linting & Formatting', link: '/bootcamp/linting' },
-        { text: 'Semantic Commits', link: '/bootcamp/semantic-commits' },
-        { text: 'How to deploy?', link: '/bootcamp/deploy' },
-        { text: 'How to test?', link: '/bootcamp/test' },
-        { text: 'How to publish?', link: '/bootcamp/publish' },
-        { text: 'How to “uninstall”?', link: '/bootcamp/uninstall' },
-        { text: 'Conclusion', link: '/bootcamp/conclusion' },
+        { text: 'Get Started', link: '/guide/get-started' },
       ],
     },
 
@@ -102,7 +67,7 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: 'Getting Started', link: '/guide/libraries/get-started' },
+            { text: 'Get Started', link: '/guide/libraries/get-started' },
             { text: 'Component Libs', link: '/guide/libraries/components' },
             { text: 'Function Libs', link: '/guide/libraries/functions' },
             { text: 'Composability', link: '/guide/libraries/composability' },
@@ -183,6 +148,43 @@ const sidebar = {
     {
       text: 'Terminology',
       link: '/terminology',
+    },
+  ],
+
+  '/bootcamp/': [
+    {
+      text: 'Bootcamp',
+      collapsible: true,
+      items: [
+        { text: 'Introduction', link: '/bootcamp/intro' },
+        {
+          text: 'Let’s Build',
+          items: [
+            { text: 'Build an API', link: '/bootcamp/api' },
+            { text: 'Build a Frontend', link: '/bootcamp/frontend' },
+            { text: 'Build a Documentation', link: '/bootcamp/docs' },
+            {
+              text: 'Build a Library',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Component Library', link: '/bootcamp/library/components' },
+                { text: 'Function Library', link: '/bootcamp/library/functions' },
+              ],
+            },
+            { text: 'Build a CLI', link: '/bootcamp/cli' },
+            { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
+            { text: 'Extend the Dashboard', link: '/bootcamp/dashboard' },
+          ],
+        },
+        { text: 'Linting & Formatting', link: '/bootcamp/linting' },
+        { text: 'Semantic Commits', link: '/bootcamp/semantic-commits' },
+        { text: 'How to deploy?', link: '/bootcamp/deploy' },
+        { text: 'How to test?', link: '/bootcamp/test' },
+        { text: 'How to publish?', link: '/bootcamp/publish' },
+        { text: 'How to “uninstall”?', link: '/bootcamp/uninstall' },
+        { text: 'Conclusion', link: '/bootcamp/conclusion' },
+      ],
     },
   ],
 }

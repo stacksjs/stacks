@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
+import { intro, outro, prompt } from '@stacksjs/cli'
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { Action, ExitCode } from '@stacksjs/types'
-import { intro, outro, prompt } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
 import { isString } from '@stacksjs/validation'
 
 export function upgrade(buddy: CLI) {

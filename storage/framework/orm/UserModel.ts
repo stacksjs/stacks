@@ -1,5 +1,4 @@
-import { dbDialect, db } from '@stacksjs/database'
-import { Kysely } from 'kysely'
+import { db } from '@stacksjs/database'
 
 class UserModel {
   // constructor() {

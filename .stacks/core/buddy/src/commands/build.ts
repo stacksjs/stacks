@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
-
 import process from 'node:process'
-import { type BuildOptions, type CLI } from '@stacksjs/types'
-import { Action, ExitCode } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
-import { intro, log, outro, prompt } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
+import { intro, log, outro, prompt } from '@stacksjs/cli'
+import { Action, type BuildOptions, type CLI, ExitCode } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export function build(buddy: CLI) {
   const descriptions = {

@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
-import { ExitCode, type IntroOptions, type OutroOptions } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
+import type { IntroOptions, OutroOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
-import { spinner } from './spinner'
 import { bgCyan, bold, cyan, dim, gray, green, italic } from './utilities'
 
 /**
@@ -17,7 +18,11 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
       console.log()
     }
 
-    log.info(`Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}`)
+    let msg = `Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}`
+    if (command === 'buddy deploy')
+      msg = `Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}  for  ${italic(bold(` ${config.app.name} `))}  ${italic(` via ${config.app.url} `)}`
+
+    log.info(msg)
 
     if (options?.showPerformance === false || options?.quiet)
       return resolve(0)
@@ -68,18 +73,18 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
   })
 }
 
-export function startSpinner(text?: string) {
-  if (!text)
-    text = 'Executing...'
+// export function startSpinner(text?: string) {
+//   if (!text)
+//     text = 'Executing...'
 
-  const spin = spinner({
-    text,
-  }).start()
+//   const spin = spinner({
+//     text,
+//   }).start()
 
-  setTimeout(() => {
-    spin.text = italic('This may take a few moments...')
-    spin.spinner = 'clock'
-  }, 7500)
+//   setTimeout(() => {
+//     spin.text = italic('This may take a few moments...')
+//     spin.spinner = 'clock'
+//   }, 7500)
 
-  return spin
-}
+//   return spin
+// }

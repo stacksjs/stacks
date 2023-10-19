@@ -1,4 +1,3 @@
-/* eslint-disable import/export */
 import * as shell from '@tauri-apps/api/shell'
 import { open as shellOpen } from '@tauri-apps/api/shell'
 

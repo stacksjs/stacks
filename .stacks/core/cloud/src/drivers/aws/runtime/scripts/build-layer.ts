@@ -1,8 +1,8 @@
 // HACK: https://github.com/oven-sh/bun/issues/2081
 import { createReadStream, createWriteStream } from 'node:fs'
 import process from 'node:process'
-import { path as p } from '@stacksjs/path'
 import { Command, Flags } from '@oclif/core'
+import { path as p } from '@stacksjs/path'
 import JSZip from 'jszip'
 
 process.stdout.getWindowSize = () => [80, 80]
@@ -27,7 +27,7 @@ export class BuildCommand extends Command {
     }),
     output: Flags.file({
       exists: false,
-      // eslint-disable-next-line @typescript-eslint/require-await
+
       default: async () => ['bun-lambda-layer.zip'],
     }),
     layer: Flags.string({
@@ -63,7 +63,6 @@ export class BuildCommand extends Command {
 
     this.debug('Response:', response.status, response.statusText)
     if (!response.ok) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const reason = await response.text()
       this.error(reason, { exit: 1 })
     }

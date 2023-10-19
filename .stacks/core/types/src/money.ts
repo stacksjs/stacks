@@ -1,3 +1,3 @@
-import { type Dinero } from 'dinero.js'
+import type { Dinero } from 'dinero.js'
 
 export type Money = Dinero<number>

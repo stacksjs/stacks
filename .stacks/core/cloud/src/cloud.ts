@@ -1,5 +1,10 @@
 /* eslint-disable no-new */
-import type { Construct } from 'constructs'
+import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
+import { config } from '@stacksjs/config'
+import { env } from '@stacksjs/env'
+import { path as p } from '@stacksjs/path'
+import { hasFiles } from '@stacksjs/storage'
+import { string } from '@stacksjs/strings'
 import type { CfnResource, StackProps } from 'aws-cdk-lib'
 import {
   Duration,
@@ -25,12 +30,7 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
-import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
-import { string } from '@stacksjs/strings'
-import { hasFiles } from '@stacksjs/storage'
-import { path as p } from '@stacksjs/path'
-import { config } from '@stacksjs/config'
-import { env } from '@stacksjs/env'
+import type { Construct } from 'constructs'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
@@ -361,17 +361,225 @@ export class StacksCloud extends Stack {
     }
   }
 
+  getFirewallRules() {
+    const rules: wafv2.CfnWebACL.RuleProperty[] = []
+
+    if (config.security.firewall?.countryCodes?.length) {
+      rules.push({
+        name: 'CountryRule',
+        priority: 1,
+        statement: {
+          geoMatchStatement: {
+            countryCodes: config.security.firewall.countryCodes,
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'CountryRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.ipAddresses?.length) {
+      rules.push({
+        name: 'IpAddressRule',
+        priority: 2,
+        statement: {
+          ipSetReferenceStatement: {
+            arn: config.security.firewall.ipAddresses,
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'IpAddressRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.httpHeaders?.length) {
+      rules.push({
+        name: 'HttpHeaderRule',
+        priority: 3,
+        statement: {
+          byteMatchStatement: {
+            fieldToMatch: {
+              singleHeader: {
+                name: config.security.firewall.httpHeaders,
+              },
+            },
+            positionalConstraint: 'EXACTLY',
+            searchString: 'true',
+            textTransformations: [
+              {
+                priority: 0,
+                type: 'NONE',
+              },
+            ],
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'HttpHeaderRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.queryString?.length) {
+      rules.push({
+        name: 'QueryStringRule',
+        priority: 4,
+        statement: {
+          byteMatchStatement: {
+            fieldToMatch: {
+              queryString: {},
+            },
+            positionalConstraint: 'EXACTLY',
+            searchString: config.security.firewall.queryString,
+            textTransformations: [
+              {
+                priority: 0,
+                type: 'NONE',
+              },
+            ],
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'QueryStringRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.ipSets?.length) {
+      rules.push({
+        name: 'IpSetRule',
+        priority: 5,
+        statement: {
+          ipSetReferenceStatement: {
+            arn: config.security.firewall.ipSets,
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'IpSetRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.rateLimitPerMinute) {
+      rules.push({
+        name: 'RateLimitRule',
+        priority: 6,
+        statement: {
+          rateBasedStatement: {
+            limit: config.security.firewall.rateLimitPerMinute,
+            aggregateKeyType: 'IP',
+            scopeDownStatement: {
+              notStatement: {
+                statement: {
+                  rateBasedStatement: {
+                    limit: config.security.firewall.rateLimitPerMinute,
+                    aggregateKeyType: 'IP',
+                  },
+                },
+              },
+            },
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'RateLimitRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.useIpReputationLists) {
+      rules.push({
+        name: 'IpReputationRule',
+        priority: 6,
+        statement: {
+          managedRuleGroupStatement: {
+            vendorName: 'AWS',
+            name: 'AWSManagedRulesAmazonIpReputationList',
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'IpReputationRule',
+        },
+      })
+    }
+
+    if (config.security.firewall?.useKnownBadInputsRuleSet) {
+      rules.push({
+        name: 'KnownBadInputsRule',
+        priority: 7,
+        statement: {
+          managedRuleGroupStatement: {
+            vendorName: 'AWS',
+            name: 'AWSManagedRulesKnownBadInputsRuleSet',
+          },
+        },
+        action: {
+          block: {},
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'KnownBadInputsRule',
+        },
+      })
+    }
+
+    return rules
+  }
+
   manageFirewall() {
-    this.firewall = new wafv2.CfnWebACL(this, 'WebAcl', {
+    const firewallOptions = config.cloud.firewall
+
+    if (!firewallOptions)
+      return false
+
+    const options = {
+      defaultAction: { allow: {} },
       scope: 'CLOUDFRONT',
-      defaultAction: { allow: {} }, // Default action is to allow requests
       visibilityConfig: {
         sampledRequestsEnabled: true,
         cloudWatchMetricsEnabled: true,
-        metricName: 'webAclMetric',
+        metricName: 'firewallMetric',
       },
-      // rules: security.appFirewall?.rules,
-    })
+      rules: this.getFirewallRules(),
+    }
+
+    this.firewall = new wafv2.CfnWebACL(this, 'WebAcl', options)
   }
 
   manageFileSystem() {
@@ -530,8 +738,8 @@ export class StacksCloud extends Stack {
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
       resources: [
-        this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
-        // this.storage.emailBucket.arnForObjects('*'),
+        // this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
+        this.storage.emailBucket.arnForObjects('*'),
       ],
       conditions: {
         StringEquals: {
@@ -539,20 +747,6 @@ export class StacksCloud extends Stack {
         },
       },
     }))
-
-    const bucketPolicyStatement = new iam.PolicyStatement({
-      principals: [sesPrincipal],
-      actions: ['s3:PutObject'],
-      resources: [this.storage.emailBucket.arnForObjects('*')],
-      conditions: {
-        StringEquals: {
-          'aws:Referer': this.account,
-        },
-      },
-    })
-
-    // Grant SES permission to write to the S3 bucket
-    this.storage.emailBucket.addToResourcePolicy(bucketPolicyStatement)
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,

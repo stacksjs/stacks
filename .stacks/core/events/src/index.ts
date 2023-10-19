@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 // thanks to mitt for the base of this wonderful functional event emitter
 
 export type EventType = string | symbol
@@ -168,4 +167,4 @@ const listen: typeof emitter.on = emitter.on.bind(emitter)
 const off: typeof emitter.off = emitter.off.bind(emitter)
 const all: typeof emitter.all = emitter.all
 
-export { useEvent, useEvents, dispatch, listen, all, off, events, mitt }
+export { all, dispatch, events, listen, mitt, off, useEvent, useEvents }

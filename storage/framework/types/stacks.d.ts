@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
-import { MoneyValidator, Validator } from '@stacksjs/validation'
+import type { MoneyValidator } from '@stacksjs/validation'
 
 /**
  * Inform TypeScript about the custom/user-added macros
