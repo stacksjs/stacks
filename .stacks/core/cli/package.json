@@ -64,7 +64,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@types/prompts": "^2.4.6",
+    "@types/prompts": "^2.4.7",
     "cac": "^6.7.14",
     "ora": "^7.0.1",
     "prompts": "^2.4.2"
@@ -78,7 +78,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@types/prompts": "^2.4.6",
+    "@types/prompts": "^2.4.7",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
     "ora": "^7.0.1",
