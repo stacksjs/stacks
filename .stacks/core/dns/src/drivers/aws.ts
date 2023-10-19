@@ -186,7 +186,7 @@ export async function updateNameservers(hostedZoneNameservers: string[], domainN
     writeNameserversToConfig(hostedZoneNameservers)
 
     log.info('Nameservers updated.')
-    return
+    return true
   }
 
   log.info('')
@@ -207,14 +207,10 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string) {
 
   const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
   if (existingHostedZone) {
-    log.info('existingHostedZone', existingHostedZone)
-
     const hostedZoneDetail = await route53.getHostedZone({ Id: existingHostedZone.Id })
     const hostedZoneNameservers = hostedZoneDetail.DelegationSet?.NameServers || []
 
-    await updateNameservers(hostedZoneNameservers, domainName)
-
-    return true
+    return await updateNameservers(hostedZoneNameservers, domainName)
   }
 
   return false
