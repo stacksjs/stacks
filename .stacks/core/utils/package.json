@@ -61,7 +61,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/js-yaml": "^4.0.7",
+    "@types/js-yaml": "^4.0.8",
     "@vueuse/core": "^10.5.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^10.5.0",
@@ -83,7 +83,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/semver": "^7.5.3",
+    "@types/semver": "^7.5.4",
     "@vueuse/core": "^10.5.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^10.5.0",
@@ -105,8 +105,8 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@types/js-yaml": "^4.0.7",
-    "@types/semver": "^7.5.3",
+    "@types/js-yaml": "^4.0.8",
+    "@types/semver": "^7.5.4",
     "markdown-table": "^3.0.3",
     "vue-starport": "^0.4.0"
   }
