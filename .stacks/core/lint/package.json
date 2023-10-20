@@ -51,14 +51,14 @@
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.6",
     "eslint": "^8.51.0",
-    "lint-staged": "^15.0.1",
+    "lint-staged": "^15.0.2",
     "publint": "^0.2.4"
   },
   "dependencies": {
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.44.6",
     "eslint": "^8.51.0",
-    "lint-staged": "^15.0.1",
+    "lint-staged": "^15.0.2",
     "publint": "^0.2.4"
   },
   "devDependencies": {

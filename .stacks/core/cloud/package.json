@@ -70,7 +70,7 @@
     "@aws-sdk/client-cloudformation": "^3.431.0",
     "@aws-sdk/client-cloudfront": "^3.431.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.431.0",
-    "@aws-sdk/client-ec2": "^3.431.0",
+    "@aws-sdk/client-ec2": "^3.432.0",
     "@aws-sdk/client-efs": "^3.431.0",
     "@aws-sdk/client-iam": "^3.431.0",
     "@aws-sdk/client-lambda": "^3.431.0",
