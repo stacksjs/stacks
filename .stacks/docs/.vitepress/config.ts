@@ -1,12 +1,12 @@
-import { path as p } from '@stacksjs/path'
-import { config } from '@stacksjs/config'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { kolorist as c } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
 import type { HeadConfig, UserConfig } from 'vitepress'
-import { version } from '../../package.json'
-import userConfig from '../../../config/docs'
 import analytics from '../../../config/analytics'
+import userConfig from '../../../config/docs'
+import { version } from '../../package.json'
 
 const googleAnalyticsHead: HeadConfig[] = [
   [

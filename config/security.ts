@@ -12,7 +12,6 @@ export default {
     enabled: true,
     countryCodes: ['RU', 'IR'],
     ipAddresses: [],
-    ipSets: [],
     rateLimitPerMinute: 1000,
     useIpReputationLists: true,
     useKnownBadInputsRuleSet: true,

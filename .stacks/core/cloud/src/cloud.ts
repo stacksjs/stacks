@@ -363,11 +363,13 @@ export class StacksCloud extends Stack {
 
   getFirewallRules() {
     const rules: wafv2.CfnWebACL.RuleProperty[] = []
+    const priorities = []
 
     if (config.security.firewall?.countryCodes?.length) {
+      priorities.push(1)
       rules.push({
         name: 'CountryRule',
-        priority: 1,
+        priority: priorities.length,
         statement: {
           geoMatchStatement: {
             countryCodes: config.security.firewall.countryCodes,
@@ -385,12 +387,21 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.ipAddresses?.length) {
+      const ipSet = new wafv2.CfnIPSet(this, 'IpSet', {
+        name: 'IpSet',
+        description: 'IP Set',
+        scope: 'CLOUDFRONT',
+        addresses: config.security.firewall.ipAddresses,
+        ipAddressVersion: 'IPV4',
+      })
+
+      priorities.push(1)
       rules.push({
         name: 'IpAddressRule',
-        priority: 2,
+        priority: priorities.length,
         statement: {
           ipSetReferenceStatement: {
-            arn: config.security.firewall.ipAddresses,
+            arn: ipSet.attrArn,
           },
         },
         action: {
@@ -405,9 +416,10 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.httpHeaders?.length) {
+      priorities.push(1)
       rules.push({
         name: 'HttpHeaderRule',
-        priority: 3,
+        priority: priorities.length,
         statement: {
           byteMatchStatement: {
             fieldToMatch: {
@@ -437,16 +449,17 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.queryString?.length) {
+      priorities.push(1)
       rules.push({
         name: 'QueryStringRule',
-        priority: 4,
+        priority: priorities.length,
         statement: {
           byteMatchStatement: {
             fieldToMatch: {
               queryString: {},
             },
             positionalConstraint: 'EXACTLY',
-            searchString: config.security.firewall.queryString,
+            searchString: config.security.firewall.queryString.join(', '),
             textTransformations: [
               {
                 priority: 0,
@@ -466,30 +479,32 @@ export class StacksCloud extends Stack {
       })
     }
 
-    if (config.security.firewall?.ipSets?.length) {
-      rules.push({
-        name: 'IpSetRule',
-        priority: 5,
-        statement: {
-          ipSetReferenceStatement: {
-            arn: config.security.firewall.ipSets,
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'IpSetRule',
-        },
-      })
-    }
+    // if (config.security.firewall?.ipSets?.length) {
+    //   priorities.push(1)
+    //   rules.push({
+    //     name: 'IpSetRule',
+    //     priority: priorities.length,
+    //     statement: {
+    //       ipSetReferenceStatement: {
+    //         arn: config.security.firewall.ipSets,
+    //       },
+    //     },
+    //     action: {
+    //       block: {},
+    //     },
+    //     visibilityConfig: {
+    //       sampledRequestsEnabled: true,
+    //       cloudWatchMetricsEnabled: true,
+    //       metricName: 'IpSetRule',
+    //     },
+    //   })
+    // }
 
     if (config.security.firewall?.rateLimitPerMinute) {
+      priorities.push(1)
       rules.push({
         name: 'RateLimitRule',
-        priority: 6,
+        priority: priorities.length,
         statement: {
           rateBasedStatement: {
             limit: config.security.firewall.rateLimitPerMinute,
@@ -518,9 +533,10 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.useIpReputationLists) {
+      priorities.push(1)
       rules.push({
         name: 'IpReputationRule',
-        priority: 6,
+        priority: priorities.length,
         statement: {
           managedRuleGroupStatement: {
             vendorName: 'AWS',
@@ -539,9 +555,10 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.useKnownBadInputsRuleSet) {
+      priorities.push(1)
       rules.push({
         name: 'KnownBadInputsRule',
-        priority: 7,
+        priority: priorities.length,
         statement: {
           managedRuleGroupStatement: {
             vendorName: 'AWS',

@@ -10,8 +10,10 @@ import security from './security'
  */
 export default {
   driver: 'aws',
-  firewall: security.app.firewall,
+  firewall: security.firewall,
+
   storage: {},
+
   cdn: {
     enableLogging: true,
     compress: true,
@@ -29,6 +31,7 @@ export default {
       queryStrings: [],
     },
   },
+
   deploy: {
     docs: true, // enables docs
     api: true, // enables api

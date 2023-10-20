@@ -69,4 +69,8 @@ export const GLOB_EXCLUDE = [
   '**/__snapshots__',
   '**/auto-import?(s).d.ts',
   '**/components.d.ts',
+
+  // stacks relating
+  '**/cdk.out/**',
+  '**/runtime/server.js',
 ]

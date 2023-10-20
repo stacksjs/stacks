@@ -216,7 +216,7 @@ export async function deleteStacksBuckets() {
         }
 
         log.info(`Deleting bucket ${bucketName} versions...`)
-        const versions = await s3.listObjectVersions({ Bucket: bucketName }).catch(error => handleError(error))
+        const versions = await s3.listObjectVersions({ Bucket: bucketName })
         if (versions.Versions) {
           await Promise.all(versions.Versions.map(version =>
             s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }).catch(error => handleError(error)),

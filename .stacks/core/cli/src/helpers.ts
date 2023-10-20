@@ -20,7 +20,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 
     let msg = `Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}`
     if (command === 'buddy deploy')
-      msg = `Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}  for  ${italic(bold(` ${config.app.name} `))}  ${italic(` via ${config.app.url} `)}`
+      msg = `Preparing to run  ${bgCyan(italic(bold(` ${command} `)))}  for ${italic(bold(` ${config.app.name} `))} ${italic(`via ${config.app.url} `)}`
 
     log.info(msg)
 

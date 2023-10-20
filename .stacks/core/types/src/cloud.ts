@@ -1,3 +1,5 @@
+import type { FirewallConfig } from './security'
+
 export type CountryCode =
   | 'AD' | 'AE' | 'AF' | 'AG' | 'AI' | 'AL' | 'AM' | 'AO' | 'AQ' | 'AR' | 'AS' | 'AT' | 'AU' | 'AW' | 'AX' | 'AZ'
   | 'BA' | 'BB' | 'BD' | 'BE' | 'BF' | 'BG' | 'BH' | 'BI' | 'BJ' | 'BL' | 'BM' | 'BN' | 'BO' | 'BQ' | 'BR' | 'BS' | 'BT' | 'BV' | 'BW' | 'BY' | 'BZ'
@@ -31,45 +33,28 @@ export interface CloudOptions {
   // eslint-disable-next-line ts/ban-types
   storage: {}
 
-  firewall: {
-    enabled: boolean
-    block: {
-      countries?: CountryCode[]
-      ipAddresses?: string[]
-      userAgent?: string[]
-      httpReferer?: string[]
-      httpHost?: string[]
-    }
-    immunity: number
-    challenge: {
-      captcha: {
-        duration: number
-        headerName: string
-        headerValue: string
-      }
-    }
-    rules: {
-      name: string
-      priority: number
-      // eslint-disable-next-line ts/ban-types
-      action: { block?: {}; allow?: {} }
-      visibilityConfig: {
-        sampledRequestsEnabled: boolean
-        cloudWatchMetricsEnabled: boolean
-        metricName: string
-      }
-      statement: {
-        rateBasedStatement?: {
-          limit: number
-          aggregateKeyType: 'IP'
-        }
-        managedRuleGroupStatement?: {
-          vendorName: 'AWS'
-          name: string
-        }
-      }
-    }[]
-  }
+  /**
+   * **Firewall Settings**
+   *
+   * These settings are used to configure the firewall.
+   *
+   * @see https://stacksjs.org/docs/cloud#firewall
+   *
+   * @example
+   * ```ts
+   * firewall: {
+   *   enabled: true, // default: true
+   *   countryCodes: ['RU', 'IN'], // default: []
+   *   ipAddresses: ['56.123.456.789'], // default: []
+   *   queryString: ['foo', 'bar'], // default: []
+   *   httpHeaders: ['x-foo', 'x-bar'], // default: []
+   *   rateLimitPerMinute: 1000, // default: 1000
+   *   useIpReputationLists: true, // default: true
+   *   useKnownBadInputsRuleSet: true // default: true
+   * },
+   * ```
+   */
+  firewall: FirewallConfig
 
   cdn: {
     enableLogging: boolean
