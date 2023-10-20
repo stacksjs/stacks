@@ -416,77 +416,58 @@ export class StacksCloud extends Stack {
     }
 
     if (config.security.firewall?.httpHeaders?.length) {
-      priorities.push(1)
-      rules.push({
-        name: 'HttpHeaderRule',
-        priority: priorities.length,
-        statement: {
-          byteMatchStatement: {
-            fieldToMatch: {
-              singleHeader: {
-                name: config.security.firewall.httpHeaders,
+      config.security.firewall.httpHeaders.forEach((header, index) => {
+        priorities.push(1)
+        rules.push({
+          name: `HttpHeaderRule${index}`,
+          priority: priorities.length,
+          statement: {
+            byteMatchStatement: {
+              fieldToMatch: {
+                singleHeader: {
+                  name: header,
+                },
               },
+              positionalConstraint: 'EXACTLY',
+              searchString: 'true',
+              textTransformations: [
+                {
+                  priority: index,
+                  type: 'NONE',
+                },
+              ],
             },
-            positionalConstraint: 'EXACTLY',
-            searchString: 'true',
-            textTransformations: [
-              {
-                priority: 0,
-                type: 'NONE',
-              },
-            ],
           },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'HttpHeaderRule',
-        },
+          action: {
+            block: {},
+          },
+          visibilityConfig: {
+            sampledRequestsEnabled: true,
+            cloudWatchMetricsEnabled: true,
+            metricName: `HttpHeaderRule${index}`,
+          },
+        })
       })
     }
 
-    if (config.security.firewall?.queryString?.length) {
-      priorities.push(1)
-      rules.push({
-        name: 'QueryStringRule',
-        priority: priorities.length,
-        statement: {
-          byteMatchStatement: {
-            fieldToMatch: {
-              queryString: {},
-            },
-            positionalConstraint: 'EXACTLY',
-            searchString: config.security.firewall.queryString.join(', '),
-            textTransformations: [
-              {
-                priority: 0,
-                type: 'NONE',
-              },
-            ],
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'QueryStringRule',
-        },
-      })
-    }
-
-    // if (config.security.firewall?.ipSets?.length) {
+    // if (config.security.firewall?.queryString?.length) {
     //   priorities.push(1)
     //   rules.push({
-    //     name: 'IpSetRule',
+    //     name: 'QueryStringRule',
     //     priority: priorities.length,
     //     statement: {
-    //       ipSetReferenceStatement: {
-    //         arn: config.security.firewall.ipSets,
+    //       byteMatchStatement: {
+    //         fieldToMatch: {
+    //           queryString: {},
+    //         },
+    //         positionalConstraint: 'EXACTLY',
+    //         searchString: config.security.firewall.queryString.join(', '),
+    //         textTransformations: [
+    //           {
+    //             priority: 0,
+    //             type: 'NONE',
+    //           },
+    //         ],
     //       },
     //     },
     //     action: {
@@ -495,86 +476,76 @@ export class StacksCloud extends Stack {
     //     visibilityConfig: {
     //       sampledRequestsEnabled: true,
     //       cloudWatchMetricsEnabled: true,
-    //       metricName: 'IpSetRule',
+    //       metricName: 'QueryStringRule',
     //     },
     //   })
     // }
 
-    if (config.security.firewall?.rateLimitPerMinute) {
-      priorities.push(1)
-      rules.push({
-        name: 'RateLimitRule',
-        priority: priorities.length,
-        statement: {
-          rateBasedStatement: {
-            limit: config.security.firewall.rateLimitPerMinute,
-            aggregateKeyType: 'IP',
-            scopeDownStatement: {
-              notStatement: {
-                statement: {
-                  rateBasedStatement: {
-                    limit: config.security.firewall.rateLimitPerMinute,
-                    aggregateKeyType: 'IP',
-                  },
-                },
-              },
-            },
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'RateLimitRule',
-        },
-      })
-    }
+    // if (config.security.firewall?.rateLimitPerMinute) {
+    //   priorities.push(1)
+    //   rules.push({
+    //     name: 'RateLimitRule',
+    //     priority: priorities.length,
+    //     statement: {
+    //       rateBasedStatement: {
+    //         limit: config.security.firewall.rateLimitPerMinute,
+    //         aggregateKeyType: 'IP',
+    //       },
+    //     },
+    //     action: {
+    //       block: {},
+    //     },
+    //     visibilityConfig: {
+    //       sampledRequestsEnabled: true,
+    //       cloudWatchMetricsEnabled: true,
+    //       metricName: 'RateLimitRule',
+    //     },
+    //   })
+    // }
 
-    if (config.security.firewall?.useIpReputationLists) {
-      priorities.push(1)
-      rules.push({
-        name: 'IpReputationRule',
-        priority: priorities.length,
-        statement: {
-          managedRuleGroupStatement: {
-            vendorName: 'AWS',
-            name: 'AWSManagedRulesAmazonIpReputationList',
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'IpReputationRule',
-        },
-      })
-    }
+    // if (config.security.firewall?.useIpReputationLists) {
+    //   priorities.push(1)
+    //   rules.push({
+    //     name: 'IpReputationRule',
+    //     priority: priorities.length,
+    //     statement: {
+    //       managedRuleGroupStatement: {
+    //         vendorName: 'AWS',
+    //         name: 'AWSManagedRulesAmazonIpReputationList',
+    //       },
+    //     },
+    //     action: {
+    //       block: {},
+    //     },
+    //     visibilityConfig: {
+    //       sampledRequestsEnabled: true,
+    //       cloudWatchMetricsEnabled: true,
+    //       metricName: 'IpReputationRule',
+    //     },
+    //   })
+    // }
 
-    if (config.security.firewall?.useKnownBadInputsRuleSet) {
-      priorities.push(1)
-      rules.push({
-        name: 'KnownBadInputsRule',
-        priority: priorities.length,
-        statement: {
-          managedRuleGroupStatement: {
-            vendorName: 'AWS',
-            name: 'AWSManagedRulesKnownBadInputsRuleSet',
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'KnownBadInputsRule',
-        },
-      })
-    }
+    // if (config.security.firewall?.useKnownBadInputsRuleSet) {
+    //   priorities.push(1)
+    //   rules.push({
+    //     name: 'KnownBadInputsRule',
+    //     priority: priorities.length,
+    //     statement: {
+    //       managedRuleGroupStatement: {
+    //         vendorName: 'AWS',
+    //         name: 'AWSManagedRulesKnownBadInputsRuleSet',
+    //       },
+    //     },
+    //     action: {
+    //       block: {},
+    //     },
+    //     visibilityConfig: {
+    //       sampledRequestsEnabled: true,
+    //       cloudWatchMetricsEnabled: true,
+    //       metricName: 'KnownBadInputsRule',
+    //     },
+    //   })
+    // }
 
     return rules
   }
@@ -749,21 +720,23 @@ export class StacksCloud extends Stack {
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
 
-    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+    const sesPolicy = new iam.PolicyStatement({
       sid: 'AllowSESPuts',
       effect: iam.Effect.ALLOW,
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
       resources: [
-        // this.storage.emailBucket.arnForObjects('tmp/email_in/*'),
-        this.storage.emailBucket.arnForObjects('*'),
+        `${this.storage.emailBucket.bucketArn}`,
+        `${this.storage.emailBucket.bucketArn}/*`,
       ],
       conditions: {
         StringEquals: {
           'aws:Referer': this.account,
         },
       },
-    }))
+    })
+
+    this.storage.emailBucket.addToResourcePolicy(sesPolicy)
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -788,8 +761,8 @@ export class StacksCloud extends Stack {
         's3:PutObjectVersionAcl',
       ],
       resources: [
-        `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
-        `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
+        `${this.storage.emailBucket.bucketArn}`,
+        `${this.storage.emailBucket.bucketArn}/*`,
       ],
     })
 

@@ -266,11 +266,18 @@ export async function deleteStacksFunctions() {
   const stacksFunctions = data.Functions?.filter(func => func.FunctionName?.includes('stacks')) || []
 
   if (!stacksFunctions || stacksFunctions.length === 0)
-    return err('No stacks functions found')
+    return ok('No stacks functions found')
 
   const promises = stacksFunctions.map(func => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
 
-  await Promise.all(promises)
+  await Promise.all(promises).catch((error: Error) => {
+    if (error.message.includes('it is a replicated function')) {
+      log.info('Function is replicated, skipping...')
+      return ok('CloudFront is still deleting the some functions. Try again later.')
+    }
+
+    return err(handleError('Error deleting stacks functions', error))
+  })
 
   return ok('Stacks functions deleted')
 }

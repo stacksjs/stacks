@@ -1,9 +1,9 @@
-import process from 'node:process'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
+import process from 'node:process'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -152,7 +152,7 @@ export function cloud(buddy: CLI) {
         stdin: 'inherit',
       })
 
-      await outro('Your cloud has now been removed', { startTime, useSeconds: true })
+      await outro('Your cloud has been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
@@ -220,11 +220,13 @@ export function cloud(buddy: CLI) {
       const result3 = await deleteStacksFunctions()
 
       if (result3.isErr()) {
-        if (result3.error !== 'No stacks functions found') {
+        if (result3.error !== 'No stacks functions found')
           await outro('While deleting the Origin Request Lambda function, there was an issue', { startTime, useSeconds: true }, result3.error)
-          process.exit(ExitCode.FatalError)
-        }
+
+        process.exit(ExitCode.FatalError)
       }
+
+      log.info(result3.value)
 
       log.info('Removing any remaining Stacks logs...')
       const result4 = await deleteLogGroups()
