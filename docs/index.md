@@ -12,7 +12,7 @@ hero:
     - theme: brand
       text: Coming Soon
       # text: Get Started
-      link: /guide/getting-started
+      link: /guide/get-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/stacksjs/stacks
