@@ -596,7 +596,7 @@ export class StacksCloud extends Stack {
       rules: this.getFirewallRules(),
     }
 
-    this.firewall = new wafv2.CfnWebACL(this, 'WebAcl', options)
+    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
   }
 
   manageFileSystem() {

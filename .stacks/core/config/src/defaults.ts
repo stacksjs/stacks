@@ -1,5 +1,5 @@
-import type { StacksOptions } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
+import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
 
@@ -57,32 +57,15 @@ export default {
     storage: {},
 
     firewall: {
-      immunity: 0,
-      challenge: {
-        captcha: {
-          duration: 60,
-          headerName: 'X-Captcha',
-          headerValue: 'true',
-        },
-      },
-      rules: [
-        {
-          name: 'default',
-          priority: 0,
-          action: { block: {} },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: 'default',
-          },
-          statement: {
-            rateBasedStatement: {
-              limit: 1000,
-              aggregateKeyType: 'IP',
-            },
-          },
-        },
-      ],
+      enabled: true,
+      countryCodes: [],
+      ipAddresses: [],
+      queryString: [],
+      httpHeaders: [],
+      // ipSets: [],
+      rateLimitPerMinute: 1000,
+      useIpReputationLists: true,
+      useKnownBadInputsRuleSet: true,
     },
 
     cdn: {
@@ -164,7 +147,10 @@ export default {
       address: 'no-reply@stacksjs.org',
     },
 
-    mailboxes: {},
+    server: {
+      scan: true,
+      mailboxes: [],
+    },
   },
 
   git: {
@@ -353,113 +339,16 @@ export default {
   },
 
   security: {
-    app: {
-      firewall: {
-        immunity: 300, // CAPTCHA immunity time 300 seconds
-        challenge: {
-          captcha: {
-            duration: 300,
-            headerName: 'x-captcha',
-            headerValue: 'true',
-          },
-        },
-
-        rules: [
-          // rule to limit requests to 1000 per 5 minutes
-          {
-            action: { block: {} },
-            name: 'RateLimitRule',
-            priority: 0,
-            statement: {
-              rateBasedStatement: {
-                aggregateKeyType: 'IP',
-                limit: 1000,
-              },
-            },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudWatchMetricsEnabled: true,
-              metricName: 'rateLimitRuleMetric',
-            },
-          },
-
-          // use managed rule AWSManagedRulesAmazonIpReputationList
-          {
-            name: 'AWSManagedRulesAmazonIpReputationList',
-            priority: 1,
-            // use rule action
-            action: { allow: {} },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudWatchMetricsEnabled: true,
-              metricName: 'AWSManagedRulesAmazonIpReputationList',
-            },
-            statement: {
-              managedRuleGroupStatement: {
-                vendorName: 'AWS',
-                name: 'AWSManagedRulesAmazonIpReputationList',
-              },
-            },
-          },
-
-          // use managed rule AWSManagedRulesKnownBadInputsRuleSet
-          {
-            name: 'AWSManagedRulesKnownBadInputsRuleSet',
-            priority: 2,
-            // use rule action
-            action: { allow: {} },
-            visibilityConfig: {
-              sampledRequestsEnabled: true,
-              cloudWatchMetricsEnabled: true,
-              metricName: 'AWSManagedRulesKnownBadInputsRuleSet',
-            },
-            statement: {
-              managedRuleGroupStatement: {
-                vendorName: 'AWS',
-                name: 'AWSManagedRulesKnownBadInputsRuleSet',
-              },
-            },
-          },
-
-          // use managed rule Account takeover prevention
-          // {
-          //   name: 'AWSManagedRulesAccountTakeoverProtectionRuleSet',
-          //   priority: 4,
-          //   // use rule action
-          //   action: { allow: {} },
-          //   visibilityConfig: {
-          //     sampledRequestsEnabled: true,
-          //     cloudWatchMetricsEnabled: true,
-          //     metricName: 'AWSManagedRulesAccountTakeoverProtectionRuleSet',
-          //   },
-          //   statement: {
-          //     managedRuleGroupStatement: {
-          //       vendorName: 'AWS',
-          //       name: 'AWSManagedRulesAccountTakeoverProtectionRuleSet',
-          //     },
-          //   },
-          // },
-
-          // use managed rule Account creation fraud prevention
-          // {
-          //   name: 'AWSManagedRulesAdminProtectionRuleSet',
-          //   priority: 5,
-          //   // use rule action
-          //   action: { allow: {} },
-          //   visibilityConfig: {
-          //     sampledRequestsEnabled: true,
-          //     cloudWatchMetricsEnabled: true,
-          //     metricName: 'AWSManagedRulesAdminProtectionRuleSet',
-          //   },
-          //   statement: {
-          //     managedRuleGroupStatement: {
-          //       vendorName: 'AWS',
-          //       name: 'AWSManagedRulesAdminProtectionRuleSet',
-          //     },
-          //   },
-          // },
-        ],
-      },
+    firewall: {
+      enabled: true,
+      countryCodes: [],
+      ipAddresses: [],
+      queryString: [],
+      httpHeaders: [],
+      // ipSets: [],
+      rateLimitPerMinute: 1000,
+      useIpReputationLists: true,
+      useKnownBadInputsRuleSet: true,
     },
   },
 
@@ -501,7 +390,12 @@ export default {
     driver: 's3',
   },
 
-  team: {},
+  team: {
+    name: 'Stacks',
+    members: [{
+      'Chris Breuer': 'chris@stacksjs.org',
+    }],
+  },
 
   ui: {
     shortcuts: [
