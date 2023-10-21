@@ -226,10 +226,15 @@ buddy changelog # generates CHANGELOG.md
 
 # when deploying your app/s to a remote server or cloud provider
 buddy deploy # select a specific deployment (follow CLI prompts)
-buddy deploy:docs # deploys docs to AWS (or other configured provider)
-buddy deploy:functions # deploys functions to AWS (or other configured provider)
-buddy deploy:views # deploys views to AWS (or other configured provider)
-buddy deploy:all # deploys all your code
+# buddy deploy:docs # deploys docs to AWS (or other configured provider)
+# buddy deploy:functions # deploys functions to AWS (or other configured provider)
+# buddy deploy:views # deploys views to AWS (or other configured provider)
+# buddy deploy:all # deploys all your code
+
+buddy cloud:clean-up # removes cloud setup
+buddy cloud:remove # removes cloud setup
+buddy cloud:add --jump-box # adds a jump box to your cloud setup
+
 
 # select the example to run (follow CLI prompts)
 buddy example # prompts you to select which example to run
