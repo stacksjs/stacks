@@ -360,12 +360,11 @@ export class StacksCloud extends Stack {
     const backupRole = this.createBackupRole()
 
     // Daily 35 day retention
-    const vault = new backup.BackupVault(this, 'BackupVault', {})
-    const plan = backup.BackupPlan.daily35DayRetention(
-      this,
-      'BackupPlan',
-      vault,
-    )
+    const vault = new backup.BackupVault(this, 'BackupVault', {
+      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault`,
+      // encryptionKey: this.storage?.encryptionKey,
+    })
+    const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
 
     plan.addSelection('Selection', {
       role: backupRole,
@@ -1221,6 +1220,7 @@ export class StacksCloud extends Stack {
     const bucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
       versioned: true,
+      autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
     })
 
