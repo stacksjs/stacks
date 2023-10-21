@@ -586,11 +586,10 @@ export class StacksCloud extends Stack {
       rules: this.getFirewallRules(),
     }
 
-    // this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
-    const wafAclCloudFront = new wafv2.CfnWebACL(this, 'WebFirewall', options)
-    Tags.of(wafAclCloudFront).add('Name', 'waf-cloudfront', { priority: 300 })
-    Tags.of(wafAclCloudFront).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(wafAclCloudFront).add('CreatedBy', 'CloudFormation', { priority: 300 })
+    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
+    Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
+    Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
+    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
   }
 
   manageFileSystem() {
