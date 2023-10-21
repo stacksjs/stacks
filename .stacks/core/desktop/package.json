@@ -64,7 +64,7 @@
     "@tauri-apps/cli": "1.5.5",
     "unified-network": "0.6.4",
     "unstorage": "^1.9.0",
-    "vue": "3.3.5",
+    "vue": "3.3.6",
     "vue3-highlightjs": "^1.0.5"
   },
   "dependencies": {
@@ -74,7 +74,7 @@
     "@tauri-apps/cli": "1.5.5",
     "unified-network": "0.6.4",
     "unstorage": "^1.9.0",
-    "vue": "3.3.5",
+    "vue": "3.3.6",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {

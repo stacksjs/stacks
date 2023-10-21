@@ -116,7 +116,7 @@
     "vite-plugin-pwa": "^0.16.5",
     "vite-plugin-vue-markdown": "^0.23.8",
     "vite-ssg": "^0.23.3",
-    "vite-ssg-sitemap": "^0.5.1"
+    "vite-ssg-sitemap": "^0.6.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "latest",
