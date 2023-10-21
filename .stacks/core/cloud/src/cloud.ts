@@ -13,7 +13,9 @@ import {
   RemovalPolicy,
   SecretValue,
   Stack,
+  Tags,
   aws_certificatemanager as acm,
+  aws_backup as backup,
   aws_cloudfront as cloudfront,
   // custom_resources,
   aws_ec2 as ec2,
@@ -24,7 +26,6 @@ import {
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
-  aws_s3_notifications as s3n,
   aws_secretsmanager as secretsmanager,
   aws_ses as ses,
   aws_route53_targets as targets,
@@ -334,6 +335,7 @@ export class StacksCloud extends Stack {
           protocol: s3.RedirectProtocol.HTTPS,
         },
         removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
       })
       new route53.CnameRecord(this, `RedirectRecord${slug}`, {
         zone: hostedZone,
@@ -348,10 +350,27 @@ export class StacksCloud extends Stack {
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
       })
+      Tags.of(logBucket).add('daily-backup', 'true')
     }
+
+    const backupRole = this.createBackupRole()
+
+    // Daily 35 day retention
+    const vault = new backup.BackupVault(this, 'BackupVault', {})
+    const plan = backup.BackupPlan.daily35DayRetention(
+      this,
+      'BackupPlan',
+      vault,
+    )
+
+    plan.addSelection('Selection', {
+      role: backupRole,
+      resources: [backup.BackupResource.fromTag('daily-backup', 'true')],
+    })
 
     this.storage = {
       publicBucket,
@@ -583,7 +602,7 @@ export class StacksCloud extends Stack {
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       throughputMode: efs.ThroughputMode.BURSTING,
-      enableAutomaticBackups: true,
+      enableAutomaticBackups: true, // TODO: ensure this is documented
       encrypted: true,
     })
 
@@ -636,7 +655,7 @@ export class StacksCloud extends Stack {
     // this edge function ensures pretty docs urls
     // and it will soon be reused for our Meema features
     const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
-      functionName: `${this.appName}-${appEnv}-origin-request`,
+      functionName: `${this.appName}-${appEnv}-origin-request-${timestamp}`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
@@ -703,6 +722,7 @@ export class StacksCloud extends Stack {
         protocol: s3.RedirectProtocol.HTTPS,
       },
       removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     })
 
     // Create a Route53 record for www.yourdomain.com
@@ -719,19 +739,45 @@ export class StacksCloud extends Stack {
     this.storage.emailBucket = this.createBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
+    const ruleSetName = `${this.appName}-${appEnv}-email`
+    const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
+      ruleSetName,
+    })
+
+    const ruleName = 'Inbound'
+    const receiptRule = new ses.CfnReceiptRule(this, 'SESReceiptRule', {
+      ruleSetName: ruleSet.ref,
+      rule: {
+        name: ruleName,
+        enabled: true,
+        actions: [
+          {
+            s3Action: {
+              bucketName: this.storage.emailBucket.bucketName,
+              // kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
+              objectKeyPrefix: 'tmp/email_in',
+            },
+          },
+        ],
+        scanEnabled: config.email.server?.scan || true,
+        tlsPolicy: 'Require',
+      },
+    })
 
     const sesPolicy = new iam.PolicyStatement({
-      sid: 'AllowSESPuts',
+      sid: `AllowSESPuts`,
       effect: iam.Effect.ALLOW,
       principals: [sesPrincipal],
       actions: ['s3:PutObject'],
       resources: [
-        `${this.storage.emailBucket.bucketArn}`,
         `${this.storage.emailBucket.bucketArn}/*`,
       ],
       conditions: {
         StringEquals: {
-          'aws:Referer': this.account,
+          'aws:SourceAccount': Stack.of(this).account,
+        },
+        ArnLike: {
+          'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
         },
       },
     })
@@ -767,6 +813,7 @@ export class StacksCloud extends Stack {
     })
 
     const policy = new iam.Policy(this, 'EmailAccessPolicy', {
+      policyName: `${this.appName}-${appEnv}-email-management-s3-policy-${timestamp}`,
       statements: [policyStatement, listBucketsPolicyStatement],
     })
 
@@ -1110,11 +1157,25 @@ export class StacksCloud extends Stack {
       // if (existingBucketName)
       //   return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
 
-      return new s3.Bucket(this, 'PrivateBucket', {
+      const bucket = new s3.Bucket(this, 'PrivateBucket', {
         bucketName: `${bucketPrefix}${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        enforceSSL: true,
+        publicReadAccess: false,
+        blockPublicAccess: {
+          blockPublicAcls: true,
+          blockPublicPolicy: true,
+          ignorePublicAcls: true,
+          restrictPublicBuckets: true,
+        },
       })
+
+      Tags.of(bucket).add('daily-backup', 'true')
+
+      return bucket
     }
 
     if (type === 'email') {
@@ -1124,10 +1185,12 @@ export class StacksCloud extends Stack {
       // if (existingBucketName)
       //   return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
 
-      return new s3.Bucket(this, 'EmailServerBucket', {
+      const bucket = new s3.Bucket(this, 'EmailServerBucket', {
         bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
         versioned: true,
-        removalPolicy: RemovalPolicy.RETAIN,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+        // encryption: s3.BucketEncryption.S3_MANAGED,
         lifecycleRules: [
           {
             id: '24h',
@@ -1138,6 +1201,10 @@ export class StacksCloud extends Stack {
           },
         ],
       })
+
+      Tags.of(bucket).add('daily-backup', 'true')
+
+      return bucket
     }
 
     bucketPrefix = `${this.appName}-${appEnv}-`
@@ -1146,11 +1213,15 @@ export class StacksCloud extends Stack {
     // if (existingBucketName)
     //   return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingBucketName}`)
 
-    return new s3.Bucket(this, 'PublicBucket', {
+    const bucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}${timestamp}`,
       versioned: true,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
     })
+
+    Tags.of(bucket).add('daily-backup', 'true')
+
+    return bucket
   }
 
   deploy() {
@@ -1165,6 +1236,93 @@ export class StacksCloud extends Stack {
       sources: [s3deploy.Source.asset(this.privateSource)],
       destinationBucket: this.storage.privateBucket,
     })
+  }
+
+  private createBackupRole() {
+    const backupRole = new iam.Role(this, 'Role', {
+      assumedBy: new iam.ServicePrincipal('backup.amazonaws.com'),
+    })
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          's3:GetInventoryConfiguration',
+          's3:PutInventoryConfiguration',
+          's3:ListBucketVersions',
+          's3:ListBucket',
+          's3:GetBucketVersioning',
+          's3:GetBucketNotification',
+          's3:PutBucketNotification',
+          's3:GetBucketLocation',
+          's3:GetBucketTagging',
+        ],
+        resources: ['arn:aws:s3:::*'],
+        sid: 'S3BucketBackupPermissions',
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          's3:GetObjectAcl',
+          's3:GetObject',
+          's3:GetObjectVersionTagging',
+          's3:GetObjectVersionAcl',
+          's3:GetObjectTagging',
+          's3:GetObjectVersion',
+        ],
+        resources: ['arn:aws:s3:::*/*'],
+        sid: 'S3ObjectBackupPermissions',
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:ListAllMyBuckets'],
+        resources: ['*'],
+        sid: 'S3GlobalPermissions',
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:ListAllMyBuckets'],
+        resources: ['*'],
+        sid: 'S3GlobalPermissions',
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['kms:Decrypt', 'kms:DescribeKey'],
+        resources: ['*'],
+        sid: 'KMSBackupPermissions',
+        conditions: {
+          StringLike: {
+            'kms:ViaService': 's3.*.amazonaws.com',
+          },
+        },
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'events:DescribeRule',
+          'events:EnableRule',
+          'events:PutRule',
+          'events:DeleteRule',
+          'events:PutTargets',
+          'events:RemoveTargets',
+          'events:ListTargetsByRule',
+          'events:DisableRule',
+        ],
+        resources: ['arn:aws:events:*:*:rule/AwsBackupManagedRule*'],
+        sid: 'EventsPermissions',
+      }),
+    )
+    backupRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['cloudwatch:GetMetricData', 'events:ListRules'],
+        resources: ['*'],
+        sid: 'EventsMetricsGlobalPermissions',
+      }),
+    )
+    return backupRole
   }
 }
 

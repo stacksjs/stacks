@@ -10,6 +10,11 @@ This package assists you in setting up & maintaining your application's cloud in
 - SSL Certificate Management
 - Domain & DNS Management
 - Stacks Buddy Commands
+- Serverless Email Server
+
+### Notes
+
+- the maximum email size (including headers) is 40 MB. Emails larger than that bounce
 
 ### TODO
 
