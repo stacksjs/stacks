@@ -241,6 +241,7 @@ tsup
 typecheck
 typesense
 unconfig
+undeploys
 unhead
 unimport
 unocss

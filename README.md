@@ -231,6 +231,7 @@ buddy deploy # select a specific deployment (follow CLI prompts)
 # buddy deploy:functions # deploys functions to AWS (or other configured provider)
 # buddy deploy:views # deploys views to AWS (or other configured provider)
 # buddy deploy:all # deploys all your code
+buddy undeploy # be careful: "undeploys" removes/deletes your deployed resources
 
 buddy cloud:cleanup # removes cloud setup
 buddy cloud:remove # removes cloud setup

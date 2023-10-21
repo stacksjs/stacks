@@ -351,9 +351,8 @@ export class StacksCloud extends Stack {
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
-        removalPolicy: RemovalPolicy.RETAIN, // removed via buddy cloud:cleanup because oddly the files in the bucket don't get auto-deleted
-        // removalPolicy: RemovalPolicy.DESTROY,
-        // autoDeleteObjects: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
         blockPublicAccess: new s3.BlockPublicAccess({
           blockPublicAcls: false,
           ignorePublicAcls: true,
@@ -370,7 +369,7 @@ export class StacksCloud extends Stack {
     // Daily 35 day retention
     const vault = new backup.BackupVault(this, 'BackupVault', {
       backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault-${timestamp}`,
-      // encryptionKey: this.storage?.encryptionKey,
+      encryptionKey: this.storage?.emailBucket?.encryptionKey,
     })
     const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
 
@@ -757,6 +756,7 @@ export class StacksCloud extends Stack {
     })
 
     const ruleName = 'Inbound'
+    // const receiptRule = new ses.CfnReceiptRule(this, 'SESReceiptRule', {
     new ses.CfnReceiptRule(this, 'SESReceiptRule', {
       ruleSetName: ruleSet.ref,
       rule: {
@@ -766,7 +766,7 @@ export class StacksCloud extends Stack {
           {
             s3Action: {
               bucketName: this.storage.emailBucket.bucketName,
-              // kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
+              kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
               objectKeyPrefix: 'tmp/email_in',
             },
           },
@@ -804,10 +804,10 @@ export class StacksCloud extends Stack {
         'kms:Decrypt',
         'kms:GenerateDataKey',
       ],
-      resources: ['*'],
+      resources: [this.storage.emailBucket.encryptionKey?.keyArn || '*'],
       conditions: {
         StringEquals: {
-          'aws:SourceAccount': this.account,
+          'aws:SourceAccount': Stack.of(this).account,
         },
         ArnLike: {
           'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
@@ -1195,7 +1195,7 @@ export class StacksCloud extends Stack {
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.S3_MANAGED,
+        encryption: s3.BucketEncryption.KMS_MANAGED,
         enforceSSL: true,
         publicReadAccess: false,
         blockPublicAccess: {
@@ -1223,7 +1223,7 @@ export class StacksCloud extends Stack {
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        // encryption: s3.BucketEncryption.S3_MANAGED,
+        encryption: s3.BucketEncryption.KMS_MANAGED,
         lifecycleRules: [
           {
             id: '24h',
