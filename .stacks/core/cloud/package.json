@@ -94,6 +94,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^3.17.2"
+    "oclif": "^4.0.3"
   }
 }
