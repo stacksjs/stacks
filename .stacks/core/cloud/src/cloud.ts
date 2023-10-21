@@ -586,7 +586,11 @@ export class StacksCloud extends Stack {
       rules: this.getFirewallRules(),
     }
 
-    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
+    // this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
+    const wafAclCloudFront = new wafv2.CfnWebACL(this, 'WebFirewall', options)
+    Tags.of(wafAclCloudFront).add('Name', 'waf-cloudfront', { priority: 300 })
+    Tags.of(wafAclCloudFront).add('Purpose', 'CloudFront', { priority: 300 })
+    Tags.of(wafAclCloudFront).add('CreatedBy', 'CloudFormation', { priority: 300 })
   }
 
   manageFileSystem() {
@@ -608,9 +612,11 @@ export class StacksCloud extends Stack {
 
     const role = new iam.Role(this, 'JumpBoxInstanceRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'),
+      ],
     })
-
-    role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
     // this instance needs to be created once to mount the EFS & clone the Stacks repo
     this.ec2Instance = new ec2.Instance(this, 'JumpBox', {
