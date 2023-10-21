@@ -214,7 +214,7 @@ export async function deleteStacksBuckets() {
         log.info(`Finished deleting objects from bucket ${bucketName}`)
       }
 
-      log.info(`aaDeleting bucket ${bucketName} versions...`)
+      log.info(`Deleting bucket ${bucketName} versions...`)
       try {
         const versions = await s3.listObjectVersions({ Bucket: bucketName })
 

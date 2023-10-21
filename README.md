@@ -72,8 +72,9 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
-- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mail_
+- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mailboxes_
 - 🔐 **Firewall** _native web application firewall support_
+- 📦 **Storage** _unlimited cloud storage & automatic backups_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
 - 🤖 **Infrastructure as Code** _version-controlled cloud infrastructure_
 
@@ -97,6 +98,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 - ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Utilities** _Collections, VueUse, and more_
+- 👥 **Team Management** _manage your team & their permissions_
 - 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
