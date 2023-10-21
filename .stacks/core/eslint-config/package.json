@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "eslint": ">=8.51.0"
+    "eslint": ">=8.52.0"
   },
   "dependencies": {
     "@antfu/eslint-define-config": "^1.23.0-1",
@@ -65,7 +65,7 @@
     "@types/eslint": "^8.44.6",
     "@types/fs-extra": "^11.0.3",
     "@types/node": "^20.8.7",
-    "eslint": "^8.51.0",
+    "eslint": "^8.52.0",
     "eslint-flat-config-viewer": "^0.1.0",
     "fast-glob": "^3.3.1",
     "fs-extra": "^11.1.1",
