@@ -3,6 +3,7 @@ import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteSt
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
+import { loop } from '@stacksjs/utils'
 import process from 'node:process'
 
 export function cloud(buddy: CLI) {
@@ -152,8 +153,26 @@ export function cloud(buddy: CLI) {
         stdin: 'inherit',
       })
 
-      await outro('Your cloud has been removed', { startTime, useSeconds: true })
-      process.exit(ExitCode.Success)
+      // TODO: this should not be necessary but for some reason some buckets with versions aren't properly getting deleted
+      // and because of that, we simply run the command several times, because eventually the versions will be deleted
+      // and consequently the buckets will be deleted
+      // the reason we are using 7 as the number of times to run the command is because it's the most amount of times I have had to run it to get it to delete everything
+      try {
+        await loop(7, async () => {
+          await runCommand('buddy cloud:clean-up', {
+            ...options,
+            cwd: p.projectPath(),
+            stdout: 'ignore',
+          })
+        })
+
+        await outro('Your cloud has been removed', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        await outro('While cleaning up the cloud, there was an issue', { startTime, useSeconds: true }, error as Error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy

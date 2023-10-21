@@ -43,36 +43,31 @@ export interface SearchEngineOptions {
 
 export type SearchEngineConfig = Partial<SearchEngineOptions>
 
-export interface MeiliSearchOptions {
-  apiKey: string
-  host: string
-}
-
 export interface SearchEngineDriver {
   client: MeiliSearch
 
   // Indexes
   createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>
   getIndex: (name: string) => MaybePromise<Index>
-  updateIndex?: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
-  deleteIndex?: (name: string) => MaybePromise<EnqueuedTask>
+  updateIndex: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
+  deleteIndex: (name: string) => MaybePromise<EnqueuedTask>
   updateIndexSettings: (name: string, settings: SearchEngineSettings) => MaybePromise<EnqueuedTask>
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
   // Records (MeiliSearch uses the term "documents")
-  getRecord?: (key: string) => MaybePromise<any>
-  getRecords?: (key: string) => MaybePromise<RecordOptions>
-  createRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createRecords?: (records: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createOrReplaceRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  createOrUpdateRecord?: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  deleteRecord?: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
-  deleteAllRecords?: (indexName: string) => MaybePromise<EnqueuedTask>
-  batchDeleteRecords?: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>
+  getRecord: (key: string) => MaybePromise<any>
+  getRecords: (key: string) => MaybePromise<RecordOptions>
+  createRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createRecords: (records: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrReplaceRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrUpdateRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  deleteRecord: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
+  deleteAllRecords: (indexName: string) => MaybePromise<EnqueuedTask>
+  batchDeleteRecords: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>
 
   // Search
-  search?: (query: string, indexName: string, options: SearchParams) => MaybePromise<Search>
+  search: (query: string, indexName: string, options: SearchParams) => MaybePromise<Search>
 
   calculatePagination: Pages
   currentPage: Page
@@ -94,8 +89,6 @@ export interface SearchEngineDriver {
   sorts: Sorts
   totalPages: number
 }
-
-export type SearchEngineDriverFactory<T> = (opts?: T) => SearchEngineDriver
 
 /**
  * This interface is used to unify the persisting of data to localStorage
@@ -126,6 +119,11 @@ export interface SearchEngineStorage {
    * @default number 1
    */
   currentPage: number
+}
+
+export interface MeiliSearchOptions {
+  apiKey: string
+  host: string
 }
 
 export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, SearchEngineSettings, SearchParams, SearchResponse }

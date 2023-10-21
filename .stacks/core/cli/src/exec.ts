@@ -1,7 +1,7 @@
-import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
+import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
 import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
-import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
+import { ExitCode } from '@stacksjs/types'
+import process from 'node:process'
 
 /**
  * Execute a command.
@@ -42,7 +42,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     cwd: options?.cwd || import.meta.dir,
     // env: { ...e, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {
-      if (exitCode !== ExitCode.Success && exitCode)
+      if (exitCode && exitCode !== ExitCode.Success)
         process.exit(exitCode)
     },
   })
