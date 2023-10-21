@@ -6,7 +6,6 @@ import { StacksCloud } from './src/cloud'
 
 const app = new cdk.App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-// stacks-cloud-${appEnv}`
 const cloudName = `stacks-cloud-${appEnv}`
 const account = env.AWS_ACCOUNT_ID
 const region = env.AWS_DEFAULT_REGION
