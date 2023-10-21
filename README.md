@@ -44,7 +44,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
-- 🪄 **AI** _deep AI integration_
+- 🪄 **AI** _deep AI integrations_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _Redis, DynamoDB, Upstash, SingleStore, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
@@ -68,7 +68,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 _Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
 
-- ☁️ **Server** _local development server & production-ready servers_
+- ☁️ **Server** _local development server & production-ready servers out-of-the-box_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
 - 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
@@ -131,6 +131,7 @@ buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
 buddy upgrade # auto-update all deps & the Stacks framework
 
+buddy make:model Car # scaffolds a model
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
 buddy make:page hello-world # scaffolds a page (https://my-project.test/hello-world)
@@ -152,12 +153,12 @@ buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 
-buddy upgrade # auto-upgrades deps, framework, and Bun
+buddy upgrade # prompts you to select which updates to apply
 buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine
 buddy upgrade:bun # upgrades to latest project-defined Bun version
-buddy upgrade:all # auto-upgrades deps, framework, and Bun
+buddy upgrade:all # auto-upgrades all of the above
 
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
@@ -212,7 +213,7 @@ buddy make:database cars # creates a cars database
 buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:seed cars # creates a Car seed file
-buddy make:table cars # boostraps a cars data table
+buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
 buddy make:stack my-project # shares logic with `bunx stacks new my-project`
