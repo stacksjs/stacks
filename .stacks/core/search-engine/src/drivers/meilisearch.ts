@@ -1,16 +1,12 @@
-import process from 'node:process'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import type { MeiliSearchOptions, SearchEngineDriver } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import type { SearchResponse } from 'meilisearch'
 import { MeiliSearch } from 'meilisearch'
+import process from 'node:process'
 
-import type { SearchResponse } from 'meilisearch' // TODO: import from @stacksjs/types
-
-interface SearchEngineOptions {
-  host: string
-  apiKey: string
-}
-
-function client(options?: SearchEngineOptions) {
+function client(options?: MeiliSearchOptions) {
   let host = searchEngine.meilisearch?.host
   let apiKey = searchEngine.meilisearch?.apiKey
 
@@ -22,7 +18,7 @@ function client(options?: SearchEngineOptions) {
 
   if (!host) {
     log.error('Please specify a search engine host.')
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   return new MeiliSearch({ host, apiKey })
@@ -34,7 +30,8 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     .search(params.query, { limit: params.perPage, offset: params.page * params.perPage })
 }
 
-export {
+export default {
   client,
   search,
-}
+  // ...other methods
+} satisfies SearchEngineDriver
