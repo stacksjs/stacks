@@ -1236,6 +1236,28 @@ export class StacksCloud extends Stack {
             prefix: 'today/',
             enabled: true,
           },
+          {
+            id: 'Intelligent transition for Inbox',
+            enabled: true,
+            prefix: 'Inbox/',
+            transitions: [
+              {
+                storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+                transitionAfter: Duration.days(0),
+              },
+            ],
+          },
+          {
+            id: 'Intelligent transition for Sent',
+            enabled: true,
+            prefix: 'Sent/',
+            transitions: [
+              {
+                storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+                transitionAfter: Duration.days(0),
+              },
+            ],
+          },
         ],
       })
 
