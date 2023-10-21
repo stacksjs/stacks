@@ -204,7 +204,7 @@ export async function deleteStacksBuckets() {
 
       // List all objects in the bucket
       const objects = await s3.listObjectsV2({ Bucket: bucketName })
-      log.info(`Finished listing bucket ${bucketName} objects`, objects)
+      log.info(`Finished listing bucket ${bucketName} objects`)
       // Delete all objects
       if (objects.Contents) {
         log.info('Deleting bucket objects...')
@@ -218,7 +218,6 @@ export async function deleteStacksBuckets() {
       try {
         const versions = await s3.listObjectVersions({ Bucket: bucketName })
 
-        log.info(`reaching?? Finished listing bucket ${bucketName} versions`, versions)
         if (versions.Versions) {
           await Promise.all(versions.Versions.map(version =>
             s3.deleteObject({ Bucket: bucketName, Key: version.Key || '', VersionId: version.VersionId }),

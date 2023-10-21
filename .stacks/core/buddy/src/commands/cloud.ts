@@ -1,4 +1,4 @@
-import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
 import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
@@ -158,8 +158,9 @@ export function cloud(buddy: CLI) {
       // and consequently the buckets will be deleted
       // the reason we are using 7 as the number of times to run the command is because it's the most amount of times I have had to run it to get it to delete everything
       try {
-        await loop(7, async () => {
-          await runCommand('buddy cloud:clean-up', {
+        log.info('Finalizing the removal of your cloud resources...')
+        loop(7, () => {
+          runCommandSync('buddy cloud:clean-up', {
             ...options,
             cwd: p.projectPath(),
             stdout: 'ignore',
