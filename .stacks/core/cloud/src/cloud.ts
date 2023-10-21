@@ -134,7 +134,7 @@ export class StacksCloud extends Stack {
     if (this.apiCachePolicy)
       return this.apiCachePolicy
 
-    this.apiCachePolicy = new cloudfront.CachePolicy(this, 'StacksApiCachePolicy', {
+    this.apiCachePolicy = new cloudfront.CachePolicy(this, 'ApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
       cachePolicyName: `${this.appName}-${appEnv}-api-cache-policy`,
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
@@ -148,7 +148,7 @@ export class StacksCloud extends Stack {
   }
 
   deployApi() {
-    const layer = new lambda.LayerVersion(this, 'StacksLambdaLayer', {
+    const layer = new lambda.LayerVersion(this, 'BunLambdaLayer', {
       code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/bun-lambda-layer.zip')),
       compatibleRuntimes: [lambda.Runtime.PROVIDED_AL2],
       compatibleArchitectures: [lambda.Architecture.ARM_64],
@@ -310,7 +310,7 @@ export class StacksCloud extends Stack {
   }
 
   manageCertificate() {
-    this.certificate = new acm.Certificate(this, 'StacksCertificate', {
+    this.certificate = new acm.Certificate(this, 'Certificate', {
       domainName: this.domain,
       validation: acm.CertificateValidation.fromDns(this.zone),
       subjectAlternativeNames: [`www.${this.domain}`],
@@ -352,6 +352,12 @@ export class StacksCloud extends Stack {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
+        blockPublicAccess: new s3.BlockPublicAccess({
+          blockPublicAcls: false,
+          ignorePublicAcls: true,
+          blockPublicPolicy: true,
+          restrictPublicBuckets: true,
+        }),
         objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
       })
       Tags.of(logBucket).add('daily-backup', 'true')
@@ -361,7 +367,7 @@ export class StacksCloud extends Stack {
 
     // Daily 35 day retention
     const vault = new backup.BackupVault(this, 'BackupVault', {
-      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault`,
+      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault-${timestamp}`,
       // encryptionKey: this.storage?.encryptionKey,
     })
     const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
@@ -597,7 +603,7 @@ export class StacksCloud extends Stack {
       // natGateways: 1,
     })
 
-    this.storage.fileSystem = new efs.FileSystem(this, 'StacksFileSystem', {
+    this.storage.fileSystem = new efs.FileSystem(this, 'FileSystem', {
       vpc: this.vpc,
       fileSystemName: `${this.appName}-${appEnv}-efs`,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -634,7 +640,7 @@ export class StacksCloud extends Stack {
     `),
     })
 
-    this.storage.accessPoint = new efs.AccessPoint(this, 'StacksAccessPoint', {
+    this.storage.accessPoint = new efs.AccessPoint(this, 'FileSystemAccessPoint', {
       fileSystem: this.storage.fileSystem,
       path: '/',
       posixUser: {

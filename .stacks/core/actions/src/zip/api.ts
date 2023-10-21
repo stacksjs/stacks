@@ -1,9 +1,9 @@
 // zip the api for deployment
-import { zip } from '@stacksjs/storage'
+import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import { logger } from '@stacksjs/logging'
+import { zip } from '@stacksjs/storage'
 
-logger.log('zipping your API for Lambda usage...')
+log.info('zipping your API for Lambda usage...')
 
 const from = [
   'bootstrap',
@@ -18,5 +18,4 @@ await zip(from, to, {
   cwd: p.cloudPath('src/drivers/aws/runtime'),
 })
 
-logger.log('✓ zipped your API')
-logger.log('')
+log.info('zipped your API')

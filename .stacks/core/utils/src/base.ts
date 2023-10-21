@@ -7,6 +7,6 @@ export function assert(condition: boolean, message: string): asserts condition {
 
 // export function noop() {}
 
-export function loop(times: number, callback: any) {
-  [...Array(times)].forEach((item, i) => callback(i))
+export async function loop(times: number, callback: any) {
+  [...Array(times)].forEach(async (item, i) => await callback(i))
 }
