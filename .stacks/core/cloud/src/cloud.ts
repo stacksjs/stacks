@@ -776,44 +776,49 @@ export class StacksCloud extends Stack {
       },
     })
 
-    const sesPolicy = new iam.PolicyStatement({
-      sid: `AllowSESPuts`,
-      effect: iam.Effect.ALLOW,
-      principals: [sesPrincipal],
-      actions: ['s3:PutObject'],
-      resources: [
-        `${this.storage.emailBucket.bucketArn}/*`,
-      ],
-      conditions: {
-        StringEquals: {
-          'aws:SourceAccount': Stack.of(this).account,
+    this.storage.emailBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: `AllowSESToPutObject`,
+        effect: iam.Effect.ALLOW,
+        principals: [sesPrincipal],
+        actions: [
+          's3:PutObject',
+          's3:PutObjectAcl',
+        ],
+        resources: [
+          `${this.storage.emailBucket.bucketArn}/*`,
+        ],
+        conditions: {
+          StringEquals: {
+            'aws:SourceAccount': Stack.of(this).account,
+          },
+          ArnLike: {
+            'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
+          },
         },
-        ArnLike: {
-          'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
-        },
-      },
-    })
+      }),
+    )
 
-    this.storage.emailBucket.addToResourcePolicy(sesPolicy)
-
-    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
-      sid: `AllowSESToEncryptMessagesBelongingToThisAccount`,
-      effect: iam.Effect.ALLOW,
-      principals: [sesPrincipal],
-      actions: [
-        'kms:Decrypt',
-        'kms:GenerateDataKey',
-      ],
-      resources: [this.storage.emailBucket.encryptionKey?.keyArn || '*'],
-      conditions: {
-        StringEquals: {
-          'aws:SourceAccount': Stack.of(this).account,
-        },
-        ArnLike: {
-          'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
-        },
-      },
-    }))
+    // this.storage.emailBucket.addToResourcePolicy(
+    //   new iam.PolicyStatement({
+    //     sid: `AllowSESToEncryptMessagesBelongingToThisAccount`,
+    //     effect: iam.Effect.ALLOW,
+    //     principals: [sesPrincipal],
+    //     actions: [
+    //       'kms:Decrypt',
+    //       'kms:GenerateDataKey*',
+    //     ],
+    //     resources: ['*'],
+    //     conditions: {
+    //       StringEquals: {
+    //         'aws:SourceAccount': Stack.of(this).account,
+    //       },
+    //       ArnLike: {
+    //         'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
+    //       },
+    //     },
+    //   }),
+    // )
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -1050,11 +1055,10 @@ export class StacksCloud extends Stack {
       resources: [
         `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailInbound.functionName}`,
         `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailConverter.functionName}`,
-        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailOutbound.functionName}`,
       ],
       conditions: {
         StringEquals: {
-          'aws:SourceAccount': this.account,
+          'aws:SourceAccount': Stack.of(this).account,
         },
         ArnLike: {
           'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
