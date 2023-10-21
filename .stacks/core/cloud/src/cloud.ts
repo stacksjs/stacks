@@ -26,6 +26,7 @@ import {
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_deployment as s3deploy,
+  aws_s3_notifications as s3n,
   aws_secretsmanager as secretsmanager,
   aws_ses as ses,
   aws_route53_targets as targets,
@@ -282,7 +283,7 @@ export class StacksCloud extends Stack {
 
     for (const userName in users) {
       // const userEmail = users[userName]
-      const name = `${string.pascalCase(teamName)}${string.pascalCase(userName)}User`
+      const name = `User${string.pascalCase(teamName)}${string.pascalCase(userName)}`
       const user = new iam.User(this, name, {
         userName,
         password: SecretValue.unsafePlainText(password),
@@ -350,8 +351,9 @@ export class StacksCloud extends Stack {
     if (config.cloud.cdn?.enableLogging) {
       logBucket = new s3.Bucket(this, 'LogBucket', {
         bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
+        removalPolicy: RemovalPolicy.RETAIN, // removed via buddy cloud:cleanup because oddly the files in the bucket don't get auto-deleted
+        // removalPolicy: RemovalPolicy.DESTROY,
+        // autoDeleteObjects: true,
         blockPublicAccess: new s3.BlockPublicAccess({
           blockPublicAcls: false,
           ignorePublicAcls: true,
@@ -755,7 +757,7 @@ export class StacksCloud extends Stack {
     })
 
     const ruleName = 'Inbound'
-    const receiptRule = new ses.CfnReceiptRule(this, 'SESReceiptRule', {
+    new ses.CfnReceiptRule(this, 'SESReceiptRule', {
       ruleSetName: ruleSet.ref,
       rule: {
         name: ruleName,
@@ -794,6 +796,25 @@ export class StacksCloud extends Stack {
 
     this.storage.emailBucket.addToResourcePolicy(sesPolicy)
 
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+      sid: `AllowSESToEncryptMessagesBelongingToThisAccount`,
+      effect: iam.Effect.ALLOW,
+      principals: [sesPrincipal],
+      actions: [
+        'kms:Decrypt',
+        'kms:GenerateDataKey',
+      ],
+      resources: ['*'],
+      conditions: {
+        StringEquals: {
+          'aws:SourceAccount': this.account,
+        },
+        ArnLike: {
+          'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
+        },
+      },
+    }))
+
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
     })
@@ -826,6 +847,9 @@ export class StacksCloud extends Stack {
       policyName: `${this.appName}-${appEnv}-email-management-s3-policy-${timestamp}`,
       statements: [policyStatement, listBucketsPolicyStatement],
     })
+
+    const cfnBucketPolicy = this.storage.emailBucket.node.findChild('Policy').node.findChild('Resource')
+    ruleSet.node.addDependency(cfnBucketPolicy)
 
     iamGroup.attachInlinePolicy(policy)
 
@@ -896,29 +920,6 @@ export class StacksCloud extends Stack {
       zone: this.zone,
       recordName: '_dmarc',
       values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${this.domain}`],
-    })
-
-    const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
-      ruleSetName: `${this.appName}-${appEnv}-email`,
-    })
-
-    new ses.CfnReceiptRule(this, 'SESReceiptRule', {
-      ruleSetName: ruleSet.ref,
-      rule: {
-        name: 'Inbound',
-        enabled: true,
-        actions: [
-          {
-            s3Action: {
-              bucketName: this.storage.emailBucket.bucketName,
-              // kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
-              objectKeyPrefix: 'tmp/email_in',
-            },
-          },
-        ],
-        scanEnabled: config.email.server?.scan || true,
-        tlsPolicy: 'Require',
-      },
     })
 
     const lambdaEmailOutboundRole = new iam.Role(this, 'LambdaEmailOutboundRole', {
@@ -1038,6 +1039,28 @@ export class StacksCloud extends Stack {
     })
 
     lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
+
+    this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
+      sid: `AllowSESToInvokeLambda`,
+      effect: iam.Effect.ALLOW,
+      principals: [sesPrincipal],
+      actions: [
+        'lambda:InvokeFunction',
+      ],
+      resources: [
+        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailInbound.functionName}`,
+        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailConverter.functionName}`,
+        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailOutbound.functionName}`,
+      ],
+      conditions: {
+        StringEquals: {
+          'aws:SourceAccount': this.account,
+        },
+        ArnLike: {
+          'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
+        },
+      },
+    }))
 
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json' })

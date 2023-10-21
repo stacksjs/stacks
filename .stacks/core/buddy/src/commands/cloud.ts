@@ -147,7 +147,7 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await runCommand('buddy cloud:clean-up', {
+      await runCommand('buddy cloud:cleanup', {
         ...options,
         cwd: p.projectPath(),
         stdin: 'inherit',
@@ -160,7 +160,7 @@ export function cloud(buddy: CLI) {
       try {
         log.info('Finalizing the removal of your cloud resources...')
         loop(7, () => {
-          runCommandSync('buddy cloud:clean-up', {
+          runCommandSync('buddy cloud:cleanup', {
             ...options,
             cwd: p.projectPath(),
             stdout: 'ignore',
@@ -206,10 +206,11 @@ export function cloud(buddy: CLI) {
     })
 
   buddy
-    .command('cloud:clean-up', descriptions.cleanUp)
+    .command('cloud:cleanup', descriptions.cleanUp)
+    .alias('cloud:clean-up')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
-      const startTime = await intro('buddy cloud:clean-up')
+      const startTime = await intro('buddy cloud:cleanup')
 
       log.info('')
       log.info(`ℹ️  ${italic('Cleaning up your cloud resources will take a while to complete. Please be patient.')}`)
