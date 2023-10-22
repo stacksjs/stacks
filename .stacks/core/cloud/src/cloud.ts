@@ -21,6 +21,7 @@ import {
   aws_ec2 as ec2,
   aws_efs as efs,
   aws_iam as iam,
+  aws_kms as kms,
   aws_lambda as lambda,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
@@ -58,6 +59,7 @@ export class StacksCloud extends Stack {
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
   vpc!: ec2.Vpc
+  encryptionKey!: kms.Key
 
   storage!: {
     publicBucket: s3.Bucket | s3.IBucket
@@ -102,6 +104,10 @@ export class StacksCloud extends Stack {
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
+    this.encryptionKey = new kms.Key(this, 'StacksEncryptionKey', {
+      description: 'KMS key for Stacks Cloud',
+      enableKeyRotation: true,
+    })
     this.manageUsers()
     this.manageZone()
     this.manageEmailServer()
@@ -369,7 +375,7 @@ export class StacksCloud extends Stack {
     // Daily 35 day retention
     const vault = new backup.BackupVault(this, 'BackupVault', {
       backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault-${timestamp}`,
-      encryptionKey: this.storage?.emailBucket?.encryptionKey,
+      encryptionKey: this.encryptionKey,
     })
     const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
 
@@ -766,7 +772,7 @@ export class StacksCloud extends Stack {
           {
             s3Action: {
               bucketName: this.storage.emailBucket.bucketName,
-              kmsKeyArn: this.storage.emailBucket.encryptionKey?.keyArn,
+              kmsKeyArn: this.encryptionKey.keyArn,
               objectKeyPrefix: 'tmp/email_in',
             },
           },
@@ -1199,7 +1205,7 @@ export class StacksCloud extends Stack {
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.KMS_MANAGED,
+        encryptionKey: this.encryptionKey,
         enforceSSL: true,
         publicReadAccess: false,
         blockPublicAccess: {
@@ -1227,7 +1233,7 @@ export class StacksCloud extends Stack {
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.KMS_MANAGED,
+        encryptionKey: this.encryptionKey,
         lifecycleRules: [
           {
             id: '24h',
@@ -1239,7 +1245,7 @@ export class StacksCloud extends Stack {
           {
             id: 'Intelligent transition for Inbox',
             enabled: true,
-            prefix: 'Inbox/',
+            prefix: 'inbox/',
             transitions: [
               {
                 storageClass: s3.StorageClass.INTELLIGENT_TIERING,
@@ -1250,7 +1256,7 @@ export class StacksCloud extends Stack {
           {
             id: 'Intelligent transition for Sent',
             enabled: true,
-            prefix: 'Sent/',
+            prefix: 'sent/',
             transitions: [
               {
                 storageClass: s3.StorageClass.INTELLIGENT_TIERING,
