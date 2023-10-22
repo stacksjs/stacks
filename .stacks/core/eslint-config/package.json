@@ -50,7 +50,7 @@
     "eslint-plugin-sort-keys": "^2.3.5",
     "eslint-plugin-unicorn": "^48.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
-    "eslint-plugin-vitest": "^0.3.3",
+    "eslint-plugin-vitest": "^0.3.6",
     "eslint-plugin-vue": "^9.17.0",
     "eslint-plugin-yml": "^1.10.0",
     "globals": "^13.23.0",
