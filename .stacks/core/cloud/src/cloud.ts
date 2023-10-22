@@ -805,26 +805,26 @@ export class StacksCloud extends Stack {
       }),
     )
 
-    // this.storage.emailBucket.addToResourcePolicy(
-    //   new iam.PolicyStatement({
-    //     sid: `AllowSESToEncryptMessagesBelongingToThisAccount`,
-    //     effect: iam.Effect.ALLOW,
-    //     principals: [sesPrincipal],
-    //     actions: [
-    //       'kms:Decrypt',
-    //       'kms:GenerateDataKey*',
-    //     ],
-    //     resources: ['*'],
-    //     conditions: {
-    //       StringEquals: {
-    //         'aws:SourceAccount': Stack.of(this).account,
-    //       },
-    //       ArnLike: {
-    //         'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
-    //       },
-    //     },
-    //   }),
-    // )
+    this.storage.emailBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: `AllowSESToEncryptMessagesBelongingToThisAccount`,
+        effect: iam.Effect.ALLOW,
+        principals: [sesPrincipal],
+        actions: [
+          'kms:Decrypt',
+          'kms:GenerateDataKey*',
+        ],
+        resources: ['*'],
+        conditions: {
+          StringEquals: {
+            'aws:SourceAccount': Stack.of(this).account,
+          },
+          ArnLike: {
+            'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${ruleName}`,
+          },
+        },
+      }),
+    )
 
     const iamGroup = new iam.Group(this, 'IAMGroup', {
       groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
@@ -1039,7 +1039,7 @@ export class StacksCloud extends Stack {
       actions: ['s3:*'],
       resources: [
       `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
-      `arn:aws:s3:::${this.storage.emailBucket.bucketName}/`,
+      `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
       ],
     })
 
@@ -1053,14 +1053,9 @@ export class StacksCloud extends Stack {
 
     this.storage.emailBucket.addToResourcePolicy(new iam.PolicyStatement({
       sid: `AllowSESToInvokeLambda`,
-      effect: iam.Effect.ALLOW,
       principals: [sesPrincipal],
       actions: [
         'lambda:InvokeFunction',
-      ],
-      resources: [
-        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailInbound.functionName}`,
-        `arn:aws:lambda:${this.region}:${Stack.of(this).account}:function:${lambdaEmailConverter.functionName}`,
       ],
       conditions: {
         StringEquals: {
@@ -1075,6 +1070,8 @@ export class StacksCloud extends Stack {
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'sent/' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'inbox/' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'today/' })
   }
 
   additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
