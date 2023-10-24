@@ -15,7 +15,6 @@ export default {
   storage: {},
 
   cdn: {
-    enableLogging: true,
     compress: true,
     allowedMethods: 'ALL',
     cachedMethods: 'GET_HEAD',

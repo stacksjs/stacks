@@ -57,7 +57,6 @@ export interface CloudOptions {
   firewall: FirewallConfig
 
   cdn: {
-    // enableLogging: boolean
     allowedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS' | 'ALL'
     cachedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS'
     minTtl: number

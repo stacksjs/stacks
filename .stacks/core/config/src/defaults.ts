@@ -69,7 +69,6 @@ export default {
     },
 
     cdn: {
-      enableLogging: true,
       allowedMethods: 'GET_HEAD',
       cachedMethods: 'GET_HEAD',
       minTtl: 0,
