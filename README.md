@@ -10,7 +10,7 @@
 
 _Beta coming soon._
 
-The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid application development framework, meeting all your full stack needs.
+The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid development framework, meeting all your full stack needs.
 
 - Web & Desktop applications
 - Serverless & traditional APIs

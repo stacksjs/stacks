@@ -160,8 +160,8 @@ const sidebar = {
         {
           text: 'Let’s Build',
           items: [
-            { text: 'Build an API', link: '/bootcamp/api' },
             { text: 'Build a Frontend', link: '/bootcamp/frontend' },
+            { text: 'Build an API', link: '/bootcamp/api' },
             { text: 'Build a Documentation', link: '/bootcamp/docs' },
             {
               text: 'Build a Library',
@@ -175,6 +175,7 @@ const sidebar = {
             { text: 'Build a CLI', link: '/bootcamp/cli' },
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
             { text: 'Extend the Dashboard', link: '/bootcamp/dashboard' },
+            { text: 'Extend the Cloud', link: '/bootcamp/cloud' },
           ],
         },
         { text: 'Linting & Formatting', link: '/bootcamp/linting' },
