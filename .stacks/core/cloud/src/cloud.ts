@@ -374,6 +374,7 @@ export class StacksCloud extends Stack {
     const vault = new backup.BackupVault(this, 'BackupVault', {
       backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault`,
       encryptionKey: this.encryptionKey,
+      removalPolicy: RemovalPolicy.DESTROY,
     })
     const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
 

@@ -258,11 +258,19 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      log.info('Removing any CDK remnants...')
-      const result5 = await deleteCdkRemnants()
+      // log.info('Removing any Backup Vaults...')
+      // const result5 = await deleteBackupVaults()
 
-      if (result5.isErr()) {
-        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result5.error)
+      // if (result5.isErr()) {
+      //   await outro('While deleting the Backup Vaults, there was an issue', { startTime, useSeconds: true }, result5.error)
+      //   process.exit(ExitCode.FatalError)
+      // }
+
+      log.info('Removing any CDK remnants...')
+      const result6 = await deleteCdkRemnants()
+
+      if (result6.isErr()) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result6.error)
         process.exit(ExitCode.FatalError)
       }
 
