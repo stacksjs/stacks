@@ -24,4 +24,4 @@ const cloud = new StacksCloud(app, 'StacksCloud', {
   },
 })
 
-cloud.init()
+await cloud.init()
