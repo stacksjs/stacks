@@ -352,9 +352,16 @@ export class StacksCloud extends Stack {
     })
 
     const privateBucket = await this.createBucket('private')
+    const bucketPrefix = `${this.appName}-${appEnv}`
 
-    const logBucket = new s3.Bucket(this, 'LogBucket', {
-      bucketName: `${this.appName}-logs-${appEnv}-${timestamp}`,
+    // need to check if the bucket exists first
+    const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-logs`)
+
+    if (existingBucketName)
+      return s3.Bucket.fromBucketArn(this, 'LogsBucket', `arn:aws:s3:::${existingBucketName}`)
+
+    const logBucket = new s3.Bucket(this, 'LogsBucket', {
+      bucketName: `${bucketPrefix}-logs-${timestamp}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: new s3.BlockPublicAccess({
@@ -812,10 +819,11 @@ export class StacksCloud extends Stack {
         //     s3Action: {
         //       bucketName: this.storage.emailBucket.bucketName,
         //       kmsKeyArn: this.encryptionKey.keyArn,
-        //       objectKeyPrefix: 'tmp/email_in',
+        //       objectKeyPrefix: 'tmp/email_in',v
         //     },
         //   },
         // ],
+        recipients: config.email.server?.mailboxes || [],
         scanEnabled: config.email.server?.scan || true,
         tlsPolicy: 'Require',
       },
@@ -1043,8 +1051,8 @@ export class StacksCloud extends Stack {
 
     lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
 
-    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in' })
-    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in/' })
+    this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json/' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'sent/' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'inbox/' })
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'today/' })
@@ -1164,17 +1172,16 @@ export class StacksCloud extends Stack {
   }
 
   async createBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
-    let bucketPrefix
+    const bucketPrefix = `${this.appName}-${appEnv}`
 
     if (type === 'private') {
-      bucketPrefix = `${this.appName}-private-${appEnv}-`
-      // existingBucketName = await getBucketNameByPrefix(bucketPrefix)
+      const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-private`)
 
-      // if (existingBucketName)
-      //   return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
+      if (existingBucketName)
+        return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
 
       const bucket = new s3.Bucket(this, 'PrivateBucket', {
-        bucketName: `${bucketPrefix}${timestamp}`,
+        bucketName: `${bucketPrefix}-private-${timestamp}`,
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
@@ -1196,14 +1203,13 @@ export class StacksCloud extends Stack {
     }
 
     if (type === 'email') {
-      bucketPrefix = `${this.appName}-email-${appEnv}-`
-      const bucketName = await getBucketNameByPrefix(bucketPrefix)
+      const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-email`)
 
-      if (bucketName)
-        return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${bucketName}`)
+      if (existingBucketName)
+        return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
 
       const bucket = new s3.Bucket(this, 'EmailServerBucket', {
-        bucketName: `${this.appName}-email-${appEnv}-${timestamp}`,
+        bucketName: `${bucketPrefix}-email-${timestamp}`,
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
@@ -1247,14 +1253,13 @@ export class StacksCloud extends Stack {
       return bucket
     }
 
-    bucketPrefix = `${this.appName}-${appEnv}-`
-    const existingBucketName = await getBucketNameByPrefix(bucketPrefix)
+    const existingPublicBucketName = await getExistingBucketNameByPrefix(bucketPrefix)
 
-    if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingBucketName}`)
+    if (existingPublicBucketName)
+      return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingPublicBucketName}`)
 
     const bucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${bucketPrefix}${timestamp}`,
+      bucketName: `${bucketPrefix}-${timestamp}`,
       versioned: true,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -1369,7 +1374,7 @@ export class StacksCloud extends Stack {
   }
 }
 
-export async function getBucketNameByPrefix(prefix: string): Promise<string | null | undefined> {
+export async function getExistingBucketNameByPrefix(prefix: string): Promise<string | undefined | null> {
   const s3 = new S3({ region: 'us-east-1' })
 
   try {
@@ -1380,6 +1385,6 @@ export async function getBucketNameByPrefix(prefix: string): Promise<string | nu
   }
   catch (error) {
     console.error('Error fetching buckets', error)
-    throw error
+    return `${prefix}-${timestamp}`
   }
 }

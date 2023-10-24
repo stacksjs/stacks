@@ -15,7 +15,7 @@ export default {
   },
 
   server: {
-    mailboxes: ['chris'], // -> chris@${APP_URL}
-    scan: true, // -> Scans for spam and viruses
+    mailboxes: ['chris@stacksjs.org'],
+    scan: true, // scans for spam and viruses
   },
 } satisfies EmailConfig
