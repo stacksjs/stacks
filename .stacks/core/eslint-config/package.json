@@ -23,7 +23,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "bunx tsup src/index.ts --format esm,cjs --clean --dts",
+    "build": "bunx --bun tsup src/index.ts --format esm,cjs --clean",
+    "build-with-dts": "bunx --bun tsup src/index.ts --format esm,cjs --clean --dts",
     "stub": "bunx tsup src/index.ts --format esm,cjs",
     "dev": "bunx tsup src/index.ts --format esm,cjs --watch & eslint-flat-config-viewer",
     "lint": "bun run stub && eslint .",
@@ -60,6 +61,7 @@
     "yaml-eslint-parser": "^1.2.2"
   },
   "devDependencies": {
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "workspace:*",
     "@stylistic/eslint-plugin-migrate": "^0.1.0",
     "@types/eslint": "^8.44.6",
