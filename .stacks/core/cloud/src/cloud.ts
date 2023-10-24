@@ -329,7 +329,7 @@ export class StacksCloud extends Stack {
     // this resource needs to stay around/is retained. Hence, the domainName
     // does not make much sense using as a (linking) identifier
 
-    const publicBucket = await this.createBucket()
+    this.storage.publicBucket = await this.createBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -351,16 +351,10 @@ export class StacksCloud extends Stack {
       })
     })
 
-    const privateBucket = await this.createBucket('private')
+    this.storage.privateBucket = await this.createBucket('private')
     const bucketPrefix = `${this.appName}-${appEnv}`
 
-    // need to check if the bucket exists first
-    const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-logs`)
-
-    if (existingBucketName)
-      return s3.Bucket.fromBucketArn(this, 'LogsBucket', `arn:aws:s3:::${existingBucketName}`)
-
-    const logBucket = new s3.Bucket(this, 'LogsBucket', {
+    this.storage.logBucket = new s3.Bucket(this, 'LogsBucket', {
       bucketName: `${bucketPrefix}-logs-${timestamp}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -372,13 +366,13 @@ export class StacksCloud extends Stack {
       }),
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
     })
-    Tags.of(logBucket).add('daily-backup', 'true')
+    Tags.of(this.storage.logBucket).add('daily-backup', 'true')
 
     const backupRole = this.createBackupRole()
 
     // Daily 35 day retention
     const vault = new backup.BackupVault(this, 'BackupVault', {
-      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault-${timestamp}`,
+      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault`,
       encryptionKey: this.encryptionKey,
     })
     const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
@@ -389,10 +383,10 @@ export class StacksCloud extends Stack {
     })
 
     this.storage = {
-      publicBucket,
-      privateBucket,
-      emailBucket: this.storage?.emailBucket,
-      logBucket,
+      publicBucket: this.storage.publicBucket,
+      privateBucket: this.storage.privateBucket,
+      emailBucket: this.storage.emailBucket,
+      logBucket: this.storage.logBucket,
     }
   }
 
@@ -693,7 +687,7 @@ export class StacksCloud extends Stack {
     // this edge function ensures pretty docs urls
     // and it will soon be reused for our Meema features
     const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
-      functionName: `${this.appName}-${appEnv}-origin-request-${timestamp}`,
+      functionName: `${this.appName}-${appEnv}-origin-request-${timestamp}`, // we need the timestamp here to ensure the function can be more easily deleted (due to being a replicated function) -> helpful when recreating a project
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
@@ -777,8 +771,8 @@ export class StacksCloud extends Stack {
     this.storage.emailBucket = await this.createBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
-    const ruleSetName = `${this.appName}-${appEnv}-email-receipt-rule-set-${timestamp}`
-    const receiptRuleName = `${this.appName}-${appEnv}-email-receipt-rule-${timestamp}`
+    const ruleSetName = `${this.appName}-${appEnv}-email-receipt-rule-set`
+    const receiptRuleName = `${this.appName}-${appEnv}-email-receipt-rule`
 
     const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
       ruleSetName,
@@ -814,15 +808,15 @@ export class StacksCloud extends Stack {
       rule: {
         name: receiptRuleName,
         enabled: true,
-        // actions: [
-        //   {
-        //     s3Action: {
-        //       bucketName: this.storage.emailBucket.bucketName,
-        //       kmsKeyArn: this.encryptionKey.keyArn,
-        //       objectKeyPrefix: 'tmp/email_in',v
-        //     },
-        //   },
-        // ],
+        actions: [
+          {
+            s3Action: {
+              bucketName: this.storage.emailBucket.bucketName,
+              kmsKeyArn: this.encryptionKey.keyArn,
+              objectKeyPrefix: 'tmp/email_in',
+            },
+          },
+        ],
         recipients: config.email.server?.mailboxes || [],
         scanEnabled: config.email.server?.scan || true,
         tlsPolicy: 'Require',
@@ -1175,11 +1169,6 @@ export class StacksCloud extends Stack {
     const bucketPrefix = `${this.appName}-${appEnv}`
 
     if (type === 'private') {
-      const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-private`)
-
-      if (existingBucketName)
-        return s3.Bucket.fromBucketArn(this, 'PrivateBucket', `arn:aws:s3:::${existingBucketName}`)
-
       const bucket = new s3.Bucket(this, 'PrivateBucket', {
         bucketName: `${bucketPrefix}-private-${timestamp}`,
         versioned: true,
@@ -1203,11 +1192,6 @@ export class StacksCloud extends Stack {
     }
 
     if (type === 'email') {
-      const existingBucketName = await getExistingBucketNameByPrefix(`${bucketPrefix}-email`)
-
-      if (existingBucketName)
-        return s3.Bucket.fromBucketArn(this, 'EmailServerBucket', `arn:aws:s3:::${existingBucketName}`)
-
       const bucket = new s3.Bucket(this, 'EmailServerBucket', {
         bucketName: `${bucketPrefix}-email-${timestamp}`,
         versioned: true,
@@ -1252,11 +1236,6 @@ export class StacksCloud extends Stack {
 
       return bucket
     }
-
-    const existingPublicBucketName = await getExistingBucketNameByPrefix(bucketPrefix)
-
-    if (existingPublicBucketName)
-      return s3.Bucket.fromBucketArn(this, 'PublicBucket', `arn:aws:s3:::${existingPublicBucketName}`)
 
     const bucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}-${timestamp}`,
