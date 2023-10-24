@@ -66,8 +66,8 @@
         "open": true
       },
       "window": {
-        "all": true, // enable all window APIs
-        "create": true, // enable window creation
+        "all": true, 
+        "create": true,
         "center": true,
         "requestUserAttention": true,
         "setResizable": true,
