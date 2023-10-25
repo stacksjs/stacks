@@ -1,10 +1,10 @@
+import process from 'node:process'
 import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
 import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { loop } from '@stacksjs/utils'
-import process from 'node:process'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -273,6 +273,9 @@ export function cloud(buddy: CLI) {
         await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result6.error)
         process.exit(ExitCode.FatalError)
       }
+
+      // TODO: needs to delete all Backup Vaults
+      // TODO: needs to delete all KMS keys
 
       log.info('')
       await outro('AWS resources have been removed', { startTime, useSeconds: true })

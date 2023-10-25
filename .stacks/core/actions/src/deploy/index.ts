@@ -1,5 +1,6 @@
 import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import { hashDirectory } from '@stacksjs/storage'
 
 await runCommand('bun run build', {
   cwd: p.frameworkPath(),
@@ -24,6 +25,11 @@ await runCommand('bun actions/src/zip/api.ts', {
 log.info('')
 log.info('Preparing deployment...')
 
-await runCommand('bunx cdk deploy --profile stacks --require-approval never', {
+// Calculate the hash of the Lambda function's source code
+// to future self: there is a chance that in the future the source will be in more places than just the edge folder
+const originRequestFunctionCodeHash = hashDirectory(p.cloudPath('src/edge'))
+log.info(`Lambda function code hash: ${originRequestFunctionCodeHash}`)
+
+await runCommand(`bunx cdk deploy --profile stacks --require-approval never --context originRequestFunctionCodeHash=${originRequestFunctionCodeHash}`, {
   cwd: p.cloudPath(),
 })

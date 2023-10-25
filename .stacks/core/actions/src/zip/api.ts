@@ -11,7 +11,7 @@ const from = [
   'server.js',
 ]
 
-const to = p.projectStoragePath('framework/cloud/lambda.zip')
+const to = p.projectStoragePath('framework/cloud/api.zip')
 
 // zip all the paths into a single file
 await zip(from, to, {

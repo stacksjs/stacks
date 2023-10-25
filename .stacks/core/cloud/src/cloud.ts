@@ -1,4 +1,5 @@
 /* eslint-disable no-new */
+import process from 'node:process'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
@@ -7,6 +8,7 @@ import { hasFiles } from '@stacksjs/storage'
 import { string } from '@stacksjs/strings'
 import type { CfnResource, StackProps } from 'aws-cdk-lib'
 import {
+  AssetHashType,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -37,8 +39,21 @@ import type { Construct } from 'constructs'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-const timestamp = new Date().getTime()
-// const s3Sdk = new S3()
+const appKey = config.app.key
+
+if (!appKey) {
+  log.info('Please set an application key. buddy key:generate is your friend in this case.')
+  process.exit(ExitCode.InvalidArgument)
+}
+
+const parts = appKey.split(':')
+if (parts && parts.length < 2)
+  throw new Error('Invalid format application key format. Expected a colon-separated string.')
+
+const partialAppKey = parts[1] ? parts[1].substring(0, 10).toLowerCase() : undefined
+
+if (!partialAppKey)
+  throw new Error('The application key seems to be missing. Please set it before deploying. buddy key:generate is your friend in this case.')
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
@@ -64,7 +79,7 @@ export class StacksCloud extends Stack {
   storage!: {
     publicBucket: s3.Bucket | s3.IBucket
     privateBucket: s3.Bucket | s3.IBucket
-    emailBucket?: s3.Bucket | s3.IBucket
+    emailBucket: s3.Bucket | s3.IBucket
     logBucket: s3.Bucket | s3.IBucket
     fileSystem?: efs.FileSystem | undefined
     accessPoint?: efs.AccessPoint | undefined
@@ -104,10 +119,7 @@ export class StacksCloud extends Stack {
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
-    this.encryptionKey = new kms.Key(this, 'StacksEncryptionKey', {
-      description: 'KMS key for Stacks Cloud',
-      enableKeyRotation: true,
-    })
+    this.manageEncryptionKey()
     this.manageUsers()
     this.manageZone()
     await this.manageEmailServer()
@@ -117,11 +129,7 @@ export class StacksCloud extends Stack {
     this.manageFileSystem()
 
     // this also deploys your API
-    const { cdn, originAccessIdentity, cdnCachePolicy } = this.manageCdn()
-    this.cdn = cdn
-    this.originAccessIdentity = originAccessIdentity
-    this.cdnCachePolicy = cdnCachePolicy
-    this.vanityUrl = `https://${this.cdn.domainName}`
+    this.manageCdn()
 
     // needs to run after the cdn is created because it links the distribution
     this.manageDns()
@@ -184,7 +192,10 @@ export class StacksCloud extends Stack {
       filesystem: lambda.FileSystem.fromEfsAccessPoint(this.storage.accessPoint!, '/mnt/efs'),
       timeout: Duration.seconds(30),
       tracing: lambda.Tracing.ACTIVE,
-      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/lambda.zip')),
+      code: lambda.Code.fromAsset(p.projectStoragePath('framework/cloud/api.zip'), {
+        assetHash: this.node.tryGetContext('serverFunctionCodeHash'),
+        assetHashType: AssetHashType.CUSTOM,
+      }),
       handler: 'server.fetch',
       runtime: lambda.Runtime.PROVIDED_AL2,
       architecture: lambda.Architecture.ARM_64,
@@ -282,6 +293,17 @@ export class StacksCloud extends Stack {
     })
   }
 
+  // currently only used for Backup Vaults
+  manageEncryptionKey() {
+    this.encryptionKey = new kms.Key(this, 'StacksEncryptionKey', {
+      alias: 'stacks-encryption-key',
+      description: 'KMS key for Stacks Cloud',
+      enableKeyRotation: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      pendingWindow: Duration.days(30),
+    })
+  }
+
   manageUsers() {
     const teamName = config.team.name
     const users = config.team.members
@@ -355,7 +377,7 @@ export class StacksCloud extends Stack {
     const bucketPrefix = `${this.appName}-${appEnv}`
 
     this.storage.logBucket = new s3.Bucket(this, 'LogsBucket', {
-      bucketName: `${bucketPrefix}-logs-${timestamp}`,
+      bucketName: `${bucketPrefix}-logs-${partialAppKey}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: new s3.BlockPublicAccess({
@@ -688,11 +710,14 @@ export class StacksCloud extends Stack {
     // this edge function ensures pretty docs urls
     // and it will soon be reused for our Meema features
     const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
-      functionName: `${this.appName}-${appEnv}-origin-request-${timestamp}`, // we need the timestamp here to ensure the function can be more easily deleted (due to being a replicated function) -> helpful when recreating a project
+      functionName: `${this.appName}-${appEnv}-origin-request`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
-      code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip')),
+      code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
+        assetHash: this.node.tryGetContext('originRequestFunctionCodeHash'),
+        assetHashType: AssetHashType.CUSTOM,
+      }),
     })
 
     // applying this is a workaround for failing deployments due to the following DELETE_FAILED error:
@@ -765,6 +790,11 @@ export class StacksCloud extends Stack {
       target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
 
+    this.cdn = cdn
+    this.originAccessIdentity = originAccessIdentity
+    this.cdnCachePolicy = cdnCachePolicy
+    this.vanityUrl = `https://${this.cdn.domainName}`
+
     return { cdn, originAccessIdentity, cdnCachePolicy }
   }
 
@@ -779,7 +809,6 @@ export class StacksCloud extends Stack {
       ruleSetName,
     })
 
-    // add a policy to the S3 bucket to allow the SES service to put objects into it
     this.storage.emailBucket.addToResourcePolicy(
       new iam.PolicyStatement({
         sid: `AllowSESToPutObject`,
@@ -787,10 +816,8 @@ export class StacksCloud extends Stack {
         principals: [sesPrincipal],
         actions: [
           's3:PutObject',
-          's3:PutObjectAcl',
         ],
         resources: [
-          this.storage.emailBucket.bucketArn,
           `${this.storage.emailBucket.bucketArn}/*`,
         ],
         conditions: {
@@ -813,8 +840,7 @@ export class StacksCloud extends Stack {
           {
             s3Action: {
               bucketName: this.storage.emailBucket.bucketName,
-              kmsKeyArn: this.encryptionKey.keyArn,
-              objectKeyPrefix: 'tmp/email_in',
+              objectKeyPrefix: 'tmp/email_in/',
             },
           },
         ],
@@ -1171,12 +1197,11 @@ export class StacksCloud extends Stack {
 
     if (type === 'private') {
       const bucket = new s3.Bucket(this, 'PrivateBucket', {
-        bucketName: `${bucketPrefix}-private-${timestamp}`,
+        bucketName: `${bucketPrefix}-private-${partialAppKey}`,
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.KMS,
-        encryptionKey: this.encryptionKey,
+        encryption: s3.BucketEncryption.S3_MANAGED,
         enforceSSL: true,
         publicReadAccess: false,
         blockPublicAccess: {
@@ -1194,12 +1219,11 @@ export class StacksCloud extends Stack {
 
     if (type === 'email') {
       const bucket = new s3.Bucket(this, 'EmailServerBucket', {
-        bucketName: `${bucketPrefix}-email-${timestamp}`,
+        bucketName: `${bucketPrefix}-email-${partialAppKey}`,
         versioned: true,
         removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        encryptionKey: this.encryptionKey,
-        encryption: s3.BucketEncryption.KMS,
+        encryption: s3.BucketEncryption.S3_MANAGED,
         lifecycleRules: [
           {
             id: '24h',
@@ -1239,12 +1263,11 @@ export class StacksCloud extends Stack {
     }
 
     const bucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${bucketPrefix}-${timestamp}`,
+      bucketName: `${bucketPrefix}-${partialAppKey}`,
       versioned: true,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
-      // encryption: s3.BucketEncryption.KMS, // does encryption for public files make sense?
-      // encryptionKey: this.encryptionKey,
+      encryption: s3.BucketEncryption.S3_MANAGED,
     })
 
     Tags.of(bucket).add('daily-backup', 'true')
@@ -1365,6 +1388,6 @@ export async function getExistingBucketNameByPrefix(prefix: string): Promise<str
   }
   catch (error) {
     console.error('Error fetching buckets', error)
-    return `${prefix}-${timestamp}`
+    return `${prefix}-${partialAppKey}`
   }
 }

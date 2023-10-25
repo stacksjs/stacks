@@ -181,9 +181,17 @@ const sidebar = {
         { text: 'Linting & Formatting', link: '/bootcamp/linting' },
         { text: 'Semantic Commits', link: '/bootcamp/semantic-commits' },
         { text: 'How to deploy?', link: '/bootcamp/deploy' },
-        { text: 'How to test?', link: '/bootcamp/test' },
+        { text: 'How to test?', link: '/bootcamp/testing' },
         { text: 'How to publish?', link: '/bootcamp/publish' },
         { text: 'How to “uninstall”?', link: '/bootcamp/uninstall' },
+        {
+          text: 'Tips',
+          items: [
+            { text: 'Cost Optimization', link: '/bootcamp/tips/cost-optimization' },
+            { text: 'Jump Box', link: '/bootcamp/tips/jump-box' },
+            { text: 'Managing a team?', link: '/bootcamp/tips/team' },
+          ],
+        },
         { text: 'Conclusion', link: '/bootcamp/conclusion' },
       ],
     },

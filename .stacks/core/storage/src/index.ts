@@ -1,5 +1,6 @@
 export * from './files'
 export * from './folders'
+export * from './hash'
 export * from './helpers'
 export * from './fs'
 export * from './copy'
