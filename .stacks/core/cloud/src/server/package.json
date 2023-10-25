@@ -1,0 +1,9 @@
+{
+  "name": "stacks-cloud",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.433.0",
+    "@aws-sdk/lib-dynamodb": "^3.433.0",
+    "@smithy/smithy-client": "^2.1.3"
+  }
+}

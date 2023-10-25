@@ -286,14 +286,14 @@ export class StacksCloud extends Stack {
   }
 
   manageCompute() {
+    const vpc = this.vpc
+
     // ECS Cluster
     const cluster = new ecs.Cluster(this, 'ECSCluster', {
       clusterName: `${this.appName}-${appEnv}-ecs-cluster`,
       containerInsights: true,
-      vpc: this.vpc,
+      vpc,
     })
-
-    const vpc = this.vpc
 
     // ECS Task Execution Role
     const ecsTaskExecutionRole = new iam.Role(this, 'ECSTaskExecutionRole', {
@@ -329,7 +329,6 @@ export class StacksCloud extends Stack {
       vpc,
       internetFacing: true,
       securityGroup,
-
     })
 
     const listener = loadBalancer.addListener('PublicLoadBalancerListener', {
@@ -340,7 +339,7 @@ export class StacksCloud extends Stack {
     // Target Group
     const targetGroup = new elbv2.ApplicationTargetGroup(this, 'ServiceTargetGroup', {
       vpc,
-      port: 3000,
+      port: 80,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targetType: elbv2.TargetType.IP,
       healthCheck: {
@@ -370,7 +369,7 @@ export class StacksCloud extends Stack {
       targetGroups: [targetGroup],
     })
 
-    service.connections.allowFrom(loadBalancer, ec2.Port.allTraffic())
+    service.connections.allowFrom(loadBalancer, ec2.Port.allTraffic(), 'Load Balancer access to ECS Service')
 
     const table = new dynamodb.Table(this, 'HitCounters', {
       partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
