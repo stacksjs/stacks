@@ -25,10 +25,43 @@ function client(options?: MeiliSearchOptions) {
 }
 
 async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
+  const offsetVal = ((params.page * params.perPage) - 20) || 0
+  const filter = convertToMeilisearchFilter(params.filter)
+  const sort = convertToMeilisearchSorting(params.sort)
+
   return await client()
     .index(index)
-    .search(params.query, { limit: params.perPage, offset: params.page * params.perPage })
+    .search(params.query, { limit: params.perPage, filter, sort, offset: offsetVal })
 }
+
+function convertToMeilisearchFilter(jsonData: any): string[] {
+  const filters: string[] = [];
+
+  for (const key in jsonData) {
+    if (jsonData.hasOwnProperty(key)) {
+      const value = jsonData[key];
+      const filter = `${key}='${value}'`;
+      filters.push(filter);
+    }
+  }
+
+  return filters;
+}
+
+function convertToMeilisearchSorting(jsonData: any): string[] {
+  const filters: string[] = [];
+
+  for (const key in jsonData) {
+    if (jsonData.hasOwnProperty(key)) {
+      const value = jsonData[key];
+      const filter = `${key}:${value}`;
+      filters.push(filter);
+    }
+  }
+
+  return filters;
+}
+
 
 export default {
   client,
