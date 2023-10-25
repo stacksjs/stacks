@@ -9,6 +9,7 @@ import { string } from '@stacksjs/strings'
 import type { CfnResource, StackProps } from 'aws-cdk-lib'
 import {
   AssetHashType,
+  CfnParameter,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -19,12 +20,15 @@ import {
   aws_certificatemanager as acm,
   aws_backup as backup,
   aws_cloudfront as cloudfront,
+  aws_dynamodb as dynamodb,
   aws_ec2 as ec2,
+  aws_ecs as ecs,
   aws_efs as efs,
+  aws_elasticloadbalancingv2 as elbv2,
   aws_iam as iam,
-  // custom_resources,
   aws_kms as kms,
   aws_lambda as lambda,
+  aws_logs as logs,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
   aws_s3 as s3,
@@ -127,12 +131,9 @@ export class StacksCloud extends Stack {
     await this.manageStorage()
     this.manageFirewall()
     this.manageFileSystem()
-
-    // this also deploys your API
     this.manageCdn()
-
-    // needs to run after the cdn is created because it links the distribution
-    this.manageDns()
+    this.manageCompute()
+    this.manageDns() // needs to run after the cdn is created because it links the distribution
     this.deploy()
     this.addOutputs()
   }
@@ -282,6 +283,132 @@ export class StacksCloud extends Stack {
       default:
         return cloudfront.CachedMethods.CACHE_GET_HEAD
     }
+  }
+
+  manageCompute() {
+    // ECS Cluster
+    const cluster = new ecs.Cluster(this, 'ECSCluster', {
+      clusterName: `${this.appName}-${appEnv}-ecs-cluster`,
+      containerInsights: true,
+      vpc: this.vpc,
+    })
+
+    const vpc = this.vpc
+
+    // ECS Task Execution Role
+    const ecsTaskExecutionRole = new iam.Role(this, 'ECSTaskExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
+      ],
+    })
+
+    // Task Definition
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {
+      cpu: 256, // TODO: make this configurable
+      memoryLimitMiB: 512, // TODO: make this configurable
+      executionRole: ecsTaskExecutionRole,
+    })
+
+    const container = taskDefinition.addContainer('web', {
+      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'ServiceName' }),
+    })
+
+    container.addPortMappings({ containerPort: 3000 })
+
+    // Security Group
+    const securityGroup = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
+      vpc,
+      description: 'Security group for service',
+    })
+
+    // Load Balancer
+    const loadBalancer = new elbv2.ApplicationLoadBalancer(this, 'PublicLoadBalancer', {
+      loadBalancerName: `${this.appName}-${appEnv}-load-balancer`,
+      vpc,
+      internetFacing: true,
+      securityGroup,
+
+    })
+
+    const listener = loadBalancer.addListener('PublicLoadBalancerListener', {
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+    })
+
+    // Target Group
+    const targetGroup = new elbv2.ApplicationTargetGroup(this, 'ServiceTargetGroup', {
+      vpc,
+      port: 3000,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/',
+        interval: Duration.seconds(6),
+        timeout: Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 10,
+      },
+    })
+
+    // ECS Service
+    const service = new ecs.FargateService(this, 'WebService', {
+      serviceName: `${this.appName}-${appEnv}-web-service`,
+      cluster,
+      taskDefinition,
+      desiredCount: 2,
+      securityGroups: [securityGroup],
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      assignPublicIp: true,
+    })
+    // Add the Fargate Service to the Target Group
+    targetGroup.addTarget(service)
+
+    // Add the Target Group to the Listener
+    listener.addTargetGroups('ServiceTarget', {
+      targetGroups: [targetGroup],
+    })
+
+    service.connections.allowFrom(loadBalancer, ec2.Port.allTraffic())
+
+    const table = new dynamodb.Table(this, 'HitCounters', {
+      partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
+
+    listener.addTargets('ServiceTarget', {
+      targetGroupName: `${this.appName}-${appEnv}-service-target`,
+      targets: [service],
+    })
+
+    // Task Role
+    const taskRole = new iam.Role(this, 'TaskRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+    })
+
+    taskRole.addToPolicy(new iam.PolicyStatement({
+      actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
+      resources: [table.tableArn],
+    }))
+
+    // Log Group
+    new logs.LogGroup(this, 'ServerLogGroup', {
+      logGroupName: `${this.appName}-${appEnv}-server`,
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: RemovalPolicy.DESTROY,
+    })
+
+    // Parameters
+    new CfnParameter(this, 'ContainerImageUrl', {
+      type: 'String',
+      description: 'The URL of the container image that you built',
+    })
+
+    new Output(this, 'ComputeClusterName', {
+      value: cluster.clusterName,
+      description: 'The ECS cluster into which to launch resources',
+    })
   }
 
   manageDns() {

@@ -76,10 +76,13 @@ docgen
 domainkey
 dotenv
 dprint
+elasticloadbalancingv
+elbv
 encrypter
 entrypoints
 envrc
 execa
+Fargate
 filesize
 flareapp
 flowconfig
