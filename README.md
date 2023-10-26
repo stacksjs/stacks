@@ -48,7 +48,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _Redis, DynamoDB, Upstash, SingleStore, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
-- 📀 **Database** _MySQL, Postgres, PlanetScale, Supabase, Prisma, ..._
+- 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
@@ -233,8 +233,8 @@ buddy deploy # select a specific deployment (follow CLI prompts)
 # buddy deploy:all # deploys all your code
 buddy undeploy # be careful: "undeploys" removes/deletes your deployed resources
 
-buddy cloud:cleanup # removes cloud setup
 buddy cloud:remove # removes cloud setup
+buddy cloud:cleanup # removes cloud setup & cleans up all potentially leftover resources
 buddy cloud:add --jump-box # adds a jump box to your cloud setup
 
 

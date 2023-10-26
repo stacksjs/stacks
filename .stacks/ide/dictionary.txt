@@ -51,6 +51,7 @@ compat
 composability
 composables
 consola
+Cooldown
 corepack
 cossssmin
 cryptojs
@@ -65,6 +66,7 @@ defaultcontent
 defu
 demi
 deps
+deregistration
 Descryption
 dessant
 destructurable
@@ -169,6 +171,8 @@ nuxt
 oclif
 ofetch
 openai
+opensearch
+opensearchservice
 openweb
 openweblabs
 outdir
@@ -278,5 +282,6 @@ vueuse
 wafv
 whois
 wmaurer
+xvda
 yourdomain
 zixuanchen

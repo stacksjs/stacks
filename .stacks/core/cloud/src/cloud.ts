@@ -9,7 +9,6 @@ import { string } from '@stacksjs/strings'
 import type { CfnResource, StackProps } from 'aws-cdk-lib'
 import {
   AssetHashType,
-  CfnParameter,
   Duration,
   Fn,
   CfnOutput as Output,
@@ -29,6 +28,7 @@ import {
   aws_kms as kms,
   aws_lambda as lambda,
   aws_logs as logs,
+  aws_opensearchservice as opensearch,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
   aws_s3 as s3,
@@ -39,6 +39,7 @@ import {
   aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
+import { IAMClient, ListRolesCommand } from '@aws-sdk/client-iam'
 import type { Construct } from 'constructs'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
@@ -75,8 +76,13 @@ export class StacksCloud extends Stack {
   websiteSource!: string
   privateSource!: string
   zone!: route53.IHostedZone
+  compute!: {
+    fargate: ecs.FargateService
+  }
+
   redirectZones: route53.IHostedZone[] = []
   ec2Instance?: ec2.Instance
+
   vpc!: ec2.Vpc
   encryptionKey!: kms.Key
 
@@ -102,8 +108,10 @@ export class StacksCloud extends Stack {
 
   async init() {
     // this is a noop function that is used to ensure the constructor is called
-    // @ts-expect-error – we know this was properly set when needed
+    // @ts-expect-error – by default this will be set
     this.storage = {}
+    // @ts-expect-error – by default this will be set
+    this.compute = {}
 
     if (!config.app.url)
       throw new Error('Your ./config app.url needs to be defined in order to deploy. You may need to adjust the APP_URL inside your .env file.')
@@ -133,6 +141,7 @@ export class StacksCloud extends Stack {
     this.manageFileSystem()
     this.manageCdn()
     this.manageCompute()
+    this.manageSearchEngine()
     this.manageDns() // needs to run after the cdn is created because it links the distribution
     this.deploy()
     this.addOutputs()
@@ -287,127 +296,272 @@ export class StacksCloud extends Stack {
 
   manageCompute() {
     const vpc = this.vpc
+    const fileSystem = this.storage.fileSystem
 
-    // ECS Cluster
-    const cluster = new ecs.Cluster(this, 'ECSCluster', {
+    if (!fileSystem)
+      throw new Error('The file system is missing. Please make sure it was created properly.')
+
+    const ecsCluster = new ecs.Cluster(this, 'DefaultEcsCluster', {
       clusterName: `${this.appName}-${appEnv}-ecs-cluster`,
       containerInsights: true,
       vpc,
     })
 
-    // ECS Task Execution Role
-    const ecsTaskExecutionRole = new iam.Role(this, 'ECSTaskExecutionRole', {
+    fileSystem.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: ['elasticfilesystem:ClientMount'],
+        principals: [new iam.AnyPrincipal()],
+        conditions: {
+          Bool: {
+            'elasticfilesystem:AccessedViaMountTarget': 'true',
+          },
+        },
+      }),
+    )
+
+    const cacheTable = new dynamodb.Table(this, 'CacheTable', {
+      partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
+
+    const taskRole = new iam.Role(this, 'TaskRole', {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
+      inlinePolicies: {
+        AccessToHitCounterTable: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
+              resources: [cacheTable.tableArn],
+              conditions: {
+                ArnLike: {
+                  'aws:SourceArn': `arn:aws:ecs:${this.region}:${this.account}:*`,
+                },
+                StringEquals: {
+                  'aws:SourceAccount': this.account,
+                },
+              },
+            }),
+          ],
+        }),
+      },
+    })
+
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'FargateTaskDefinition', {
+      memoryLimitMiB: 512, // TODO: make configurable in cloud.compute
+      cpu: 256, // TODO: make configurable in cloud.compute
+      volumes: [
+        {
+          name: 'stacks-efs',
+          efsVolumeConfiguration: {
+            fileSystemId: fileSystem.fileSystemId,
+          },
+        },
       ],
+      taskRole,
+      executionRole: new iam.Role(this, 'ExecutionRole', {
+        assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      }),
     })
 
-    // Task Definition
-    const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {
-      cpu: 256, // TODO: make this configurable
-      memoryLimitMiB: 512, // TODO: make this configurable
-      executionRole: ecsTaskExecutionRole,
-    })
-
-    const container = taskDefinition.addContainer('web', {
+    const containerDef = taskDefinition.addContainer('WebContainer', {
+      containerName: `${this.appName}-${appEnv}-web-container`,
       image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
-      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'ServiceName' }),
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: `${this.appName}-${appEnv}-web`,
+        logGroup: new logs.LogGroup(this, 'LogGroup'),
+      }),
+      // gpuCount: 0,
     })
 
-    container.addPortMappings({ containerPort: 3000 })
+    containerDef.addMountPoints(
+      {
+        sourceVolume: 'stacks-efs',
+        containerPath: '/mnt/efs',
+        readOnly: false,
+      },
+    )
 
-    // Security Group
-    const securityGroup = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
+    containerDef.addPortMappings({ containerPort: 3000 })
+
+    const serviceSecurityGroup = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
       vpc,
       description: 'Security group for service',
     })
 
-    // Load Balancer
-    const loadBalancer = new elbv2.ApplicationLoadBalancer(this, 'PublicLoadBalancer', {
-      loadBalancerName: `${this.appName}-${appEnv}-load-balancer`,
+    const publicLoadBalancerSG = new ec2.SecurityGroup(this, 'PublicLoadBalancerSG', {
       vpc,
-      internetFacing: true,
-      securityGroup,
+      description: 'Access to the public facing load balancer',
     })
 
-    const listener = loadBalancer.addListener('PublicLoadBalancerListener', {
-      port: 80,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-    })
+    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
+    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
 
-    // Target Group
-    const targetGroup = new elbv2.ApplicationTargetGroup(this, 'ServiceTargetGroup', {
+    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(this, 'ServiceTargetGroup', {
       vpc,
-      port: 80,
-      protocol: elbv2.ApplicationProtocol.HTTP,
       targetType: elbv2.TargetType.IP,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      port: 80,
       healthCheck: {
-        path: '/',
         interval: Duration.seconds(6),
+        path: '/',
         timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 10,
       },
     })
 
-    // ECS Service
+    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
+
+    const lb = new elbv2.ApplicationLoadBalancer(this, 'ApplicationLoadBalancer', {
+      vpc,
+      internetFacing: true,
+      idleTimeout: Duration.seconds(30),
+      securityGroup: publicLoadBalancerSG,
+    })
+
+    const listener = lb.addListener('PublicLoadBalancerListener', {
+      port: 80,
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
+    })
+
     const service = new ecs.FargateService(this, 'WebService', {
-      serviceName: `${this.appName}-${appEnv}-web-service`,
-      cluster,
+      cluster: ecsCluster,
       taskDefinition,
       desiredCount: 2,
-      securityGroups: [securityGroup],
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       assignPublicIp: true,
-    })
-    // Add the Fargate Service to the Target Group
-    targetGroup.addTarget(service)
-
-    // Add the Target Group to the Listener
-    listener.addTargetGroups('ServiceTarget', {
-      targetGroups: [targetGroup],
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      minHealthyPercent: 75,
     })
 
-    service.connections.allowFrom(loadBalancer, ec2.Port.allTraffic(), 'Load Balancer access to ECS Service')
+    this.compute.fargate = service
 
-    const table = new dynamodb.Table(this, 'HitCounters', {
-      partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-    })
-
-    listener.addTargets('ServiceTarget', {
-      targetGroupName: `${this.appName}-${appEnv}-service-target`,
+    listener.addTargets('ECS', {
+      port: 80,
       targets: [service],
     })
 
-    // Task Role
-    const taskRole = new iam.Role(this, 'TaskRole', {
-      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+    // Setup AutoScaling policy
+    // TODO: make this configurable in cloud.compute
+    const scaling = this.compute.fargate.autoScaleTaskCount({ maxCapacity: 2 })
+    scaling.scaleOnCpuUtilization('CpuScaling', {
+      targetUtilizationPercent: 50,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
+    })
+    scaling.scaleOnMemoryUtilization('MemoryScaling', {
+      targetUtilizationPercent: 60,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
     })
 
-    taskRole.addToPolicy(new iam.PolicyStatement({
-      actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
-      resources: [table.tableArn],
-    }))
+    // this.compute.fargate.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '0')
 
-    // Log Group
-    new logs.LogGroup(this, 'ServerLogGroup', {
-      logGroupName: `${this.appName}-${appEnv}-server`,
-      retention: logs.RetentionDays.ONE_WEEK,
+    // Allow access to EFS from Fargate ECS
+    fileSystem.grantRootAccess(this.compute.fargate.taskDefinition.taskRole.grantPrincipal)
+    fileSystem.connections.allowDefaultPortFrom(this.compute.fargate.connections)
+  }
+
+  async manageSearchEngine() {
+    const vpc = this.vpc
+
+    // Security Group
+    const bastionSecurityGroup = new ec2.SecurityGroup(this, 'BastionSecurityGroup', {
+      vpc,
+      allowAllOutbound: true,
+      securityGroupName: `${this.appName}-${appEnv}-bastion-security-group`,
+    })
+
+    const opensearchSecurityGroup = new ec2.SecurityGroup(this, 'OpenSearchSecurityGroup', {
+      vpc,
+      securityGroupName: `${this.appName}-${appEnv}-opensearch-security-group`,
+    })
+
+    opensearchSecurityGroup.addIngressRule(bastionSecurityGroup, ec2.Port.tcp(443))
+
+    // Service-linked role that Amazon OpenSearch Service will use
+    const iamClient = new IAMClient({})
+    const response = await iamClient.send(
+      new ListRolesCommand({
+        PathPrefix: '/aws-service-role/opensearchservice.amazonaws.com/',
+      }),
+    )
+
+    // Only if the role for OpenSearch Service doesn't exist, it will be created.
+    if (response.Roles && response.Roles?.length === 0) {
+      new iam.CfnServiceLinkedRole(this, 'OpenSearchServiceLinkedRole', {
+        awsServiceName: 'es.amazonaws.com',
+      })
+    }
+
+    // Bastion host to access Opensearch Dashboards
+    new ec2.BastionHostLinux(this, 'BastionHost', {
+      vpc,
+      securityGroup: bastionSecurityGroup,
+      machineImage: ec2.MachineImage.latestAmazonLinux2023(),
+      blockDevices: [
+        {
+          deviceName: '/dev/xvda',
+          volume: ec2.BlockDeviceVolume.ebs(10, {
+            encrypted: true,
+          }),
+        },
+      ],
+    })
+
+    // OpenSearch domain
+    const domain = new opensearch.Domain(this, 'OpenSearchDomain', {
+      version: opensearch.EngineVersion.OPENSEARCH_2_9,
+      nodeToNodeEncryption: true,
+      enforceHttps: true,
+      encryptionAtRest: {
+        enabled: true,
+      },
+      vpc,
+      capacity: {
+        masterNodes: 3,
+        dataNodes: 3,
+        multiAzWithStandbyEnabled: true,
+      },
+      ebs: {
+        volumeSize: 10,
+        volumeType: ec2.EbsDeviceVolumeType.GP3, // or opensearch.EbsVolumeType.IO1
+      },
       removalPolicy: RemovalPolicy.DESTROY,
+      zoneAwareness: {
+        enabled: true,
+        availabilityZoneCount: 3,
+      },
+      securityGroups: [opensearchSecurityGroup],
     })
 
-    // Parameters
-    new CfnParameter(this, 'ContainerImageUrl', {
-      type: 'String',
-      description: 'The URL of the container image that you built',
+    domain.addAccessPolicies(
+      new iam.PolicyStatement({
+        principals: [new iam.AnyPrincipal()],
+        actions: ['es:ESHttp*'],
+        resources: [`${domain.domainArn}/*`],
+      }),
+    )
+
+    // // Lambda
+    // const dataIndexFunction = PythonFunction(this, 'DataIndex', {
+    //   runtime: lambda.Runtime.PYTHON_3_10,
+    //   entry: 'lambda',
+    //   vpc,
+    //   environment: {
+    //     OPENSEARCH_HOST: domain.domainEndpoint,
+    //   },
+    // })
+
+    // domain.connections.allowFrom(dataIndexFunction, Port.tcp(443))
+
+    // Outputs
+    new Output(this, 'OpenSearchDomainHost', {
+      value: domain.domainEndpoint,
     })
 
-    new Output(this, 'ComputeClusterName', {
-      value: cluster.clusterName,
-      description: 'The ECS cluster into which to launch resources',
-    })
+    // new Output(this, 'IndexingFunctionName', {
+    //   value: dataIndexFunction.functionName,
+    // })
   }
 
   manageDns() {
@@ -473,10 +627,9 @@ export class StacksCloud extends Stack {
   }
 
   async manageStorage() {
-    // the bucketName cannot contain the domainName because when it is changed,
-    // this resource needs to stay around/is retained. Hence, the domainName
-    // does not make much sense using as a (linking) identifier
-
+    // the bucketName should not contain the domainName because when the APP_URL is changed,
+    // we want it to deploy properly, and this way we would not force a recreation of the
+    // resources that contain the domain name
     this.storage.publicBucket = await this.createBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
@@ -770,13 +923,14 @@ export class StacksCloud extends Stack {
 
   manageFileSystem() {
     this.vpc = new ec2.Vpc(this, 'Network', {
-      maxAzs: 2,
+      vpcName: `${this.appName}-${appEnv}-vpc`,
+      maxAzs: 3, // StacksCloud/OpenSearchDomain -> "Domains with standby must use 3 Availability Zones"
       // natGateways: 1,
     })
 
     this.storage.fileSystem = new efs.FileSystem(this, 'FileSystem', {
-      vpc: this.vpc,
       fileSystemName: `${this.appName}-${appEnv}-efs`,
+      vpc: this.vpc,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
@@ -944,6 +1098,7 @@ export class StacksCloud extends Stack {
           's3:PutObject',
         ],
         resources: [
+          this.storage.emailBucket.bucketArn,
           `${this.storage.emailBucket.bucketArn}/*`,
         ],
         conditions: {
@@ -1416,7 +1571,7 @@ export class StacksCloud extends Stack {
   }
 
   private createBackupRole() {
-    const backupRole = new iam.Role(this, 'Role', {
+    const backupRole = new iam.Role(this, 'BackupRole', {
       assumedBy: new iam.ServicePrincipal('backup.amazonaws.com'),
     })
     backupRole.addToPolicy(

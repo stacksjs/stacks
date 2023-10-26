@@ -32,8 +32,8 @@ export default {
   },
 
   deploy: {
-    docs: true, // enables docs
-    api: false, // enables api
+    docs: true, // deploys docs
+    api: false, // deploys api
     fileSystem: true, // enables file system
   },
 
