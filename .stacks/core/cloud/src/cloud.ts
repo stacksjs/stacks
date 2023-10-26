@@ -47,7 +47,7 @@ const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const appKey = config.app.key
 
 if (!appKey) {
-  log.info('Please set an application key. buddy key:generate is your friend in this case.')
+  log.info('Please set an application key. `buddy key:generate` is your friend, in this case.')
   process.exit(ExitCode.InvalidArgument)
 }
 
@@ -58,7 +58,7 @@ if (parts && parts.length < 2)
 const partialAppKey = parts[1] ? parts[1].substring(0, 10).toLowerCase() : undefined
 
 if (!partialAppKey)
-  throw new Error('The application key seems to be missing. Please set it before deploying. buddy key:generate is your friend in this case.')
+  throw new Error('The application key seems to be missing. Please set it before deploying. `buddy key:generate` is your friend, in this case.')
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
@@ -134,6 +134,7 @@ export class StacksCloud extends Stack {
     this.manageEncryptionKey()
     this.manageUsers()
     this.manageZone()
+    this.manageNetwork()
     await this.manageEmailServer()
     this.manageCertificate()
     await this.manageStorage()
@@ -141,7 +142,7 @@ export class StacksCloud extends Stack {
     this.manageFileSystem()
     this.manageCdn()
     this.manageCompute()
-    this.manageSearchEngine()
+    // this.manageSearchEngine()
     this.manageDns() // needs to run after the cdn is created because it links the distribution
     this.deploy()
     this.addOutputs()
@@ -417,6 +418,7 @@ export class StacksCloud extends Stack {
       internetFacing: true,
       idleTimeout: Duration.seconds(30),
       securityGroup: publicLoadBalancerSG,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     })
 
     const listener = lb.addListener('PublicLoadBalancerListener', {
@@ -468,12 +470,12 @@ export class StacksCloud extends Stack {
     const bastionSecurityGroup = new ec2.SecurityGroup(this, 'BastionSecurityGroup', {
       vpc,
       allowAllOutbound: true,
-      securityGroupName: `${this.appName}-${appEnv}-bastion-security-group`,
+      securityGroupName: `${this.appName}-${appEnv}-bastion-sg`,
     })
 
     const opensearchSecurityGroup = new ec2.SecurityGroup(this, 'OpenSearchSecurityGroup', {
       vpc,
-      securityGroupName: `${this.appName}-${appEnv}-opensearch-security-group`,
+      securityGroupName: `${this.appName}-${appEnv}-opensearch-sg`,
     })
 
     opensearchSecurityGroup.addIngressRule(bastionSecurityGroup, ec2.Port.tcp(443))
@@ -517,17 +519,15 @@ export class StacksCloud extends Stack {
         enabled: true,
       },
       vpc,
+      // unsure if there are "better" ways to do this
       vpcSubnets: [
-        this.vpc.selectSubnets({
-          subnetGroupName: `${this.appName}-${appEnv}-private-subnet-1`,
-        }),
-        this.vpc.selectSubnets({
-          subnetGroupName: `${this.appName}-${appEnv}-private-subnet-2`,
-        }),
+        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-1` },
+        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-2` },
       ],
+
       capacity: {
-        masterNodes: 3,
-        dataNodes: 3,
+        masterNodes: 2,
+        dataNodes: 2,
         multiAzWithStandbyEnabled: true,
       },
       ebs: {
@@ -638,7 +638,7 @@ export class StacksCloud extends Stack {
     // the bucketName should not contain the domainName because when the APP_URL is changed,
     // we want it to deploy properly, and this way we would not force a recreation of the
     // resources that contain the domain name
-    this.storage.publicBucket = await this.createBucket()
+    this.storage.publicBucket = await this.getOrCreateBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -660,7 +660,7 @@ export class StacksCloud extends Stack {
       })
     })
 
-    this.storage.privateBucket = await this.createBucket('private')
+    this.storage.privateBucket = await this.getOrCreateBucket('private')
     const bucketPrefix = `${this.appName}-${appEnv}`
 
     this.storage.logBucket = new s3.Bucket(this, 'LogsBucket', {
@@ -906,30 +906,7 @@ export class StacksCloud extends Stack {
     return rules
   }
 
-  manageFirewall() {
-    const firewallOptions = config.cloud.firewall
-
-    if (!firewallOptions)
-      return false
-
-    const options = {
-      defaultAction: { allow: {} },
-      scope: 'CLOUDFRONT',
-      visibilityConfig: {
-        sampledRequestsEnabled: true,
-        cloudWatchMetricsEnabled: true,
-        metricName: 'firewallMetric',
-      },
-      rules: this.getFirewallRules(),
-    }
-
-    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
-    Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
-    Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
-  }
-
-  manageFileSystem() {
+  manageNetwork() {
     this.vpc = new ec2.Vpc(this, 'Network', {
       vpcName: `${this.appName}-${appEnv}-vpc`,
       ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
@@ -957,7 +934,32 @@ export class StacksCloud extends Stack {
         },
       ],
     })
+  }
 
+  manageFirewall() {
+    const firewallOptions = config.cloud.firewall
+
+    if (!firewallOptions)
+      return false
+
+    const options = {
+      defaultAction: { allow: {} },
+      scope: 'CLOUDFRONT',
+      visibilityConfig: {
+        sampledRequestsEnabled: true,
+        cloudWatchMetricsEnabled: true,
+        metricName: 'firewallMetric',
+      },
+      rules: this.getFirewallRules(),
+    }
+
+    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
+    Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
+    Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
+    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
+  }
+
+  manageFileSystem() {
     this.storage.fileSystem = new efs.FileSystem(this, 'FileSystem', {
       fileSystemName: `${this.appName}-${appEnv}-efs`,
       vpc: this.vpc,
@@ -1109,7 +1111,7 @@ export class StacksCloud extends Stack {
   }
 
   async manageEmailServer() {
-    this.storage.emailBucket = await this.createBucket('email')
+    this.storage.emailBucket = await this.getOrCreateBucket('email')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
     const ruleSetName = `${this.appName}-${appEnv}-email-receipt-rule-set`
@@ -1121,14 +1123,13 @@ export class StacksCloud extends Stack {
 
     this.storage.emailBucket.addToResourcePolicy(
       new iam.PolicyStatement({
-        sid: `AllowSESToPutObject`,
+        sid: 'AllowSESPuts',
         effect: iam.Effect.ALLOW,
         principals: [sesPrincipal],
         actions: [
           's3:PutObject',
         ],
         resources: [
-          this.storage.emailBucket.bucketArn,
           `${this.storage.emailBucket.bucketArn}/*`,
         ],
         conditions: {
@@ -1136,7 +1137,7 @@ export class StacksCloud extends Stack {
             'aws:SourceAccount': Stack.of(this).account,
           },
           ArnLike: {
-            'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSet.ref}:receipt-rule/${receiptRuleName}`,
+            'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${receiptRuleName}`,
           },
         },
       }),
@@ -1329,8 +1330,8 @@ export class StacksCloud extends Stack {
       effect: iam.Effect.ALLOW,
       actions: ['s3:*'],
       resources: [
-        `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
-        `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
+        this.storage.emailBucket.bucketArn,
+        `${this.storage.emailBucket.bucketArn}/*`,
       ],
     })
 
@@ -1355,7 +1356,7 @@ export class StacksCloud extends Stack {
     const lambdaEmailConverter = new lambda.Function(this, 'LambdaEmailConverter', {
       functionName: `${this.appName}-${appEnv}-email-converter`,
       description: 'This Lambda converts raw emails files in to HTML and text.',
-      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      code: lambda.Code.fromInline('exports.handler = async (event) => {console.log("hello world email converter");return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
       memorySize: 256,
       role: lambdaEmailConverterRole,
@@ -1370,8 +1371,8 @@ export class StacksCloud extends Stack {
       effect: iam.Effect.ALLOW,
       actions: ['s3:*'],
       resources: [
-      `arn:aws:s3:::${this.storage.emailBucket.bucketName}`,
-      `arn:aws:s3:::${this.storage.emailBucket.bucketName}/*`,
+        this.storage.emailBucket.bucketArn,
+        `${this.storage.emailBucket.bucketArn}/*`,
       ],
     })
 
@@ -1503,75 +1504,23 @@ export class StacksCloud extends Stack {
     }
   }
 
-  async createBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
+  async getOrCreateBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
     const bucketPrefix = `${this.appName}-${appEnv}`
+    let bucket: s3.Bucket
 
-    if (type === 'private') {
-      const bucket = new s3.Bucket(this, 'PrivateBucket', {
-        bucketName: `${bucketPrefix}-private-${partialAppKey}`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.S3_MANAGED,
-        enforceSSL: true,
-        publicReadAccess: false,
-        blockPublicAccess: {
-          blockPublicAcls: true,
-          blockPublicPolicy: true,
-          ignorePublicAcls: true,
-          restrictPublicBuckets: true,
-        },
-      })
+    if (type === 'private')
+      bucket = this.handlePrivateBucket(bucketPrefix)
+    else if (type === 'email')
+      bucket = this.handleEmailBucket(bucketPrefix)
+    else
+      bucket = this.handlePublicBucket(bucketPrefix)
 
-      Tags.of(bucket).add('daily-backup', 'true')
+    return bucket
+  }
 
-      return bucket
-    }
-
-    if (type === 'email') {
-      const bucket = new s3.Bucket(this, 'EmailServerBucket', {
-        bucketName: `${bucketPrefix}-email-${partialAppKey}`,
-        versioned: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-        encryption: s3.BucketEncryption.S3_MANAGED,
-        lifecycleRules: [
-          {
-            id: '24h',
-            enabled: true,
-            expiration: Duration.days(1),
-            noncurrentVersionExpiration: Duration.days(1),
-            prefix: 'today/',
-          },
-          {
-            id: 'Intelligent transition for Inbox',
-            enabled: true,
-            prefix: 'inbox/',
-            transitions: [
-              {
-                storageClass: s3.StorageClass.INTELLIGENT_TIERING,
-                transitionAfter: Duration.days(0),
-              },
-            ],
-          },
-          {
-            id: 'Intelligent transition for Sent',
-            enabled: true,
-            prefix: 'sent/',
-            transitions: [
-              {
-                storageClass: s3.StorageClass.INTELLIGENT_TIERING,
-                transitionAfter: Duration.days(0),
-              },
-            ],
-          },
-        ],
-      })
-
-      Tags.of(bucket).add('daily-backup', 'true')
-
-      return bucket
-    }
+  handlePublicBucket(bucketPrefix?: string): s3.Bucket {
+    if (!bucketPrefix)
+      bucketPrefix = `${this.appName}-${appEnv}`
 
     const bucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}-${partialAppKey}`,
@@ -1579,6 +1528,76 @@ export class StacksCloud extends Stack {
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.S3_MANAGED,
+    })
+
+    Tags.of(bucket).add('daily-backup', 'true')
+
+    return bucket
+  }
+
+  handlePrivateBucket(bucketPrefix?: string): s3.Bucket {
+    if (!bucketPrefix)
+      bucketPrefix = `${this.appName}-${appEnv}`
+
+    const bucket = new s3.Bucket(this, 'PrivateBucket', {
+      bucketName: `${bucketPrefix}-private-${partialAppKey}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      publicReadAccess: false,
+      blockPublicAccess: {
+        blockPublicAcls: true,
+        blockPublicPolicy: true,
+        ignorePublicAcls: true,
+        restrictPublicBuckets: true,
+      },
+    })
+
+    Tags.of(bucket).add('daily-backup', 'true')
+
+    return bucket
+  }
+
+  handleEmailBucket(bucketPrefix: string): s3.Bucket {
+    const bucket = new s3.Bucket(this, 'EmailServerBucket', {
+      bucketName: `${bucketPrefix}-email-${partialAppKey}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      lifecycleRules: [
+        {
+          id: '24h',
+          enabled: true,
+          expiration: Duration.days(1),
+          noncurrentVersionExpiration: Duration.days(1),
+          prefix: 'today/',
+        },
+        {
+          id: 'Intelligent transition for Inbox',
+          enabled: true,
+          prefix: 'inbox/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+        {
+          id: 'Intelligent transition for Sent',
+          enabled: true,
+          prefix: 'sent/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+      ],
     })
 
     Tags.of(bucket).add('daily-backup', 'true')

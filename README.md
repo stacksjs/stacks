@@ -8,7 +8,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_Beta coming soon._
+_Open Beta coming soon._
 
 The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid development framework, meeting all your full stack needs.
 
@@ -296,9 +296,9 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Image](https://github.com/stacksjs/image) (Modern image experience)
 - [Video](https://github.com/stacksjs/video) (Modern video experience)
 - [Audio](https://github.com/stacksjs/audio) (Modern audio experience)
-- [Identity](https://github.com/stacksjs/identity) (Identity providers & wallet integrations)
+- [Identity](https://github.com/stacksjs/identity) (Identity providers)
 - [Digital Ownership](https://github.com/stacksjs/ownership) (Public ownership protocol integrations)
-- [Payments](https://github.com/stacksjs/payments) (Unified payment APIs)
+- [Payments](https://github.com/stacksjs/payments) (Unified payment & wallet APIs)
 - [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
 
 View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).

@@ -251,6 +251,7 @@ unconfig
 undeploys
 unhead
 unimport
+unmanaged
 unocss
 unplugin
 Unprefix
