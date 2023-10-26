@@ -424,12 +424,13 @@ export class StacksCloud extends Stack {
     })
 
     const service = new ecs.FargateService(this, 'WebService', {
+      serviceName: `${this.appName}-${appEnv}-web-service`,
       cluster: ecsCluster,
       taskDefinition,
       desiredCount: 2,
       assignPublicIp: true,
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       minHealthyPercent: 75,
+      securityGroups: [serviceSecurityGroup],
     })
 
     this.compute.fargate = service
@@ -517,8 +518,12 @@ export class StacksCloud extends Stack {
       },
       vpc,
       vpcSubnets: [
-        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-1` },
-        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-2` },
+        this.vpc.selectSubnets({
+          subnetGroupName: `${this.appName}-${appEnv}-private-subnet-1`,
+        }),
+        this.vpc.selectSubnets({
+          subnetGroupName: `${this.appName}-${appEnv}-private-subnet-2`,
+        }),
       ],
       capacity: {
         masterNodes: 3,
