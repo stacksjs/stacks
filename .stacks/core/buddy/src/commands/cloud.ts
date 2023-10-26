@@ -129,8 +129,8 @@ export function cloud(buddy: CLI) {
       }
 
       log.info('')
-      log.info(`ℹ️  ${italic('Removing your cloud resources will take a while to complete. Please be patient.')}`)
-      log.info(`   ${italic('Please also note, your backups are not deleted. They require manual deletion.')}`)
+      log.info(`ℹ️  ${italic('Removing your cloud resources takes a while to complete.')}`)
+      log.info(`   ${italic('Please note, your backups will not be deleted yet. They will be set to delete themselves in 30 days though.')}`)
       log.info('')
 
       // sleep for 2 seconds to get the user to read the message

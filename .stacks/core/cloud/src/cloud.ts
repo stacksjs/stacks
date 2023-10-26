@@ -421,7 +421,6 @@ export class StacksCloud extends Stack {
 
     const listener = lb.addListener('PublicLoadBalancerListener', {
       port: 80,
-      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
     })
 
     const service = new ecs.FargateService(this, 'WebService', {
@@ -517,6 +516,10 @@ export class StacksCloud extends Stack {
         enabled: true,
       },
       vpc,
+      vpcSubnets: [
+        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-1` },
+        { subnetGroupName: `${this.appName}-${appEnv}-private-subnet-2` },
+      ],
       capacity: {
         masterNodes: 3,
         dataNodes: 3,
@@ -529,6 +532,7 @@ export class StacksCloud extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       zoneAwareness: {
         enabled: true,
+        availabilityZoneCount: 2,
       },
       securityGroups: [opensearchSecurityGroup],
     })
@@ -923,7 +927,7 @@ export class StacksCloud extends Stack {
   manageFileSystem() {
     this.vpc = new ec2.Vpc(this, 'Network', {
       vpcName: `${this.appName}-${appEnv}-vpc`,
-      cidr: '10.0.0.0/16',
+      ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
       maxAzs: 2, // Maximum number of availability zones to use
       subnetConfiguration: [
         {
@@ -939,12 +943,12 @@ export class StacksCloud extends Stack {
         {
           cidrMask: 19,
           name: `${this.appName}-${appEnv}-private-subnet-1`,
-          subnetType: ec2.SubnetType.PRIVATE,
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
         {
           cidrMask: 19,
           name: `${this.appName}-${appEnv}-private-subnet-2`,
-          subnetType: ec2.SubnetType.PRIVATE,
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
       ],
     })
