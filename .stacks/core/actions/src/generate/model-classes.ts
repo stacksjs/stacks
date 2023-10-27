@@ -296,11 +296,4 @@ export class UserModel {
   }
 }
 
-const UserInstance = new UserModel()
-
-const user = await UserInstance.find(1)
-
-const res = await user.update({ name: 'glenn 2' })
-
-console.log(res)
 process.exit(0)

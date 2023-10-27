@@ -42,6 +42,7 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

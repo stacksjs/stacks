@@ -57,6 +57,7 @@
     "@stacksjs/ui": "workspace:*"
   },
   "dependencies": {
+    "@opensearch-project/opensearch": "^2.4.0",
     "meilisearch": "^0.35.0"
   },
   "devDependencies": {

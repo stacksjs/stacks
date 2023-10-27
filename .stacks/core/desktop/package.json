@@ -51,8 +51,8 @@
   ],
   "scripts": {
     "build": "bun --bun build.ts",
-    "build:app": "vite build ../../../../storage/framework/desktop/music -c ../../core/vite/src/music.ts",
-    "dev": "bun --bun vite serve ../../../storage/framework/desktop/music -c ../../core/vite/src/music.ts",
+    "build:app": "vite build ../../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
+    "dev": "bun --bun vite serve ../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
