@@ -1,8 +1,9 @@
+/* eslint-disable no-new */
+import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import * as cdk from 'aws-cdk-lib'
-import process from 'node:process'
-import { StacksCloud } from './src/cloud'
+import { Stacks as StacksCloud } from './cloud/'
 
 const app = new cdk.App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
@@ -15,13 +16,13 @@ if (!account || !region) {
   process.exit(1)
 }
 
-const cloud = new StacksCloud(app, 'StacksCloud', {
-  stackName: cloudName,
-  description: 'This stack includes all of your Stacks cloud resources.',
-  env: {
-    account,
-    region,
-  },
+const usEnv = {
+  account,
+  region,
+}
+
+new StacksCloud(app, cloudName, {
+  env: usEnv,
 })
 
-await cloud.init()
+app.synth()

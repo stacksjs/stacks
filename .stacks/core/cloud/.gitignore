@@ -1,2 +1,2 @@
 cdk.context.json
-src/drivers/aws/runtime/server.js
+src/runtime/server.js

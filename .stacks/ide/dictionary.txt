@@ -57,6 +57,7 @@ cossssmin
 cryptojs
 cssnano
 cssnanorc
+customresources
 czrc
 dangerfile
 datetime
@@ -117,6 +118,7 @@ huggingface
 huskyrc
 iconify
 iife
+Imdsv
 intlify
 itemprop
 jetbrains
@@ -228,6 +230,7 @@ singlestore
 solana
 stackblitz
 stacksjs
+stepfunctions
 strikethrough
 styleci
 stylelint

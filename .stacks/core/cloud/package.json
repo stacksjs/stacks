@@ -47,8 +47,8 @@
     "deploy": "cd ../.. && bun run build && cd docs && bun run build && cd ../core && bun actions/src/zip/api.ts && cd cloud && bunx cdk deploy --profile stacks --require-approval never",
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
-    "build-layer": "bun ./src/drivers/aws/runtime/scripts/build-layer.ts",
-    "publish-layer": "bun ./src/drivers/aws/runtime/scripts/publish-layer.ts",
+    "build-layer": "bun ./src/runtime/scripts/build-layer.ts",
+    "publish-layer": "bun ./src/runtime/scripts/publish-layer.ts",
     "build-server": "bun --bun build-server.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
@@ -81,9 +81,6 @@
     "constructs": "^10.3.0"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.14.0",
-    "@aws-lambda-powertools/metrics": "^1.14.0",
-    "@aws-lambda-powertools/tracer": "^1.14.0",
     "@aws-sdk/client-cloudformation": "^3.435.0",
     "@aws-sdk/client-cloudfront": "^3.435.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.435.0",

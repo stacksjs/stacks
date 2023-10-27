@@ -1,5 +1,5 @@
 {
-  "app": "bun ./deploy.ts",
+  "app": "bun ./src/deploy.ts",
   "watch": {
     "include": [
       "**"
