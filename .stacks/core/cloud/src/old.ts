@@ -4,22 +4,16 @@ import process from 'node:process'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
-import { path as p } from '@stacksjs/path'
-import { hasFiles } from '@stacksjs/storage'
 import { string } from '@stacksjs/strings'
-import type { CfnResource, StackProps } from 'aws-cdk-lib'
+import type { StackProps } from 'aws-cdk-lib'
 import {
-  AssetHashType,
   Duration,
-  Fn,
   CfnOutput as Output,
   RemovalPolicy,
   SecretValue,
   Stack,
   Tags,
   aws_certificatemanager as acm,
-  aws_backup as backup,
-  aws_cloudfront as cloudfront,
   aws_dynamodb as dynamodb,
   aws_ec2 as ec2,
   aws_ecs as ecs,
@@ -30,37 +24,16 @@ import {
   aws_lambda as lambda,
   aws_logs as logs,
   aws_opensearchservice as opensearch,
-  aws_cloudfront_origins as origins,
   aws_route53 as route53,
   aws_s3 as s3,
-  aws_s3_deployment as s3deploy,
   aws_s3_notifications as s3n,
-  aws_secretsmanager as secretsmanager,
   aws_ses as ses,
-  aws_ssm as ssm,
-  aws_route53_targets as targets,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
 import { IAMClient, ListRolesCommand } from '@aws-sdk/client-iam'
 import type { Construct } from 'constructs'
-import type { EnvKey } from '~/storage/framework/stacks/env'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-const appKey = config.app.key
-
-if (!appKey) {
-  log.info('Please set an application key. `buddy key:generate` is your friend, in this case.')
-  process.exit(ExitCode.InvalidArgument)
-}
-
-const parts = appKey.split(':')
-if (parts && parts.length < 2)
-  throw new Error('Invalid format application key format. Expected a colon-separated string.')
-
-const partialAppKey = parts[1] ? parts[1].substring(0, 10).toLowerCase() : undefined
-
-if (!partialAppKey)
-  throw new Error('The application key seems to be missing. Please set it before deploying. `buddy key:generate` is your friend, in this case.')
 
 function isProductionEnv(env: string) {
   return env === 'production' || env === 'prod'
@@ -1007,131 +980,6 @@ export class StacksCloud extends Stack {
     })
   }
 
-  manageCdn() {
-    // const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
-
-    // const cdnCachePolicy = new cloudfront.CachePolicy(this, 'CdnCachePolicy', {
-    //   comment: 'Stacks CDN Cache Policy',
-    //   cachePolicyName: `${this.appName}-${appEnv}-cdn-cache-policy`,
-    //   minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
-    //   defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
-    //   maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
-    //   cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
-    // })
-
-    // // const timestamp = new Date().getTime()
-
-    // // Fetch the timestamp from SSM Parameter Store
-    // const timestampParam = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'TimestampParam', {
-    //   parameterName: `/${this.appName.toLowerCase()}/timestamp`,
-    //   version: 1,
-    // })
-
-    // let timestamp = timestampParam.stringValue
-
-    // // If the timestamp does not exist, create it
-    // if (!timestamp) {
-    //   timestamp = new Date().getTime().toString()
-    //   new ssm.StringParameter(this, 'TimestampParam', {
-    //     parameterName: `/${this.appName.toLowerCase()}/timestamp`,
-    //     stringValue: timestamp,
-    //   })
-    // }
-
-    // // this edge function ensures pretty docs urls
-    // // soon to be reused for our Meema features
-    // const originRequestFunction = new lambda.Function(this, 'OriginRequestFunction', {
-    //   // this needs to have partialAppKey & timestamp to ensure it is unique, because there is a chance that during testing, you deploy
-    //   // the same app many times using the same app key. Since Origin Request (Lambda@Edge) functions are replicated functions, the
-    //   // deletion process takes a long time. This is to ensure that the function is always unique in cases of quick recreations.
-    //   functionName: `${this.appName}-${appEnv}-origin-request-${partialAppKey}-${timestamp}`,
-    //   description: 'The Stacks Origin Request function that prettifies URLs',
-    //   runtime: lambda.Runtime.NODEJS_18_X,
-    //   handler: 'dist/origin-request.handler',
-    //   code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
-    //     assetHash: this.node.tryGetContext('originRequestFunctionCodeHash'),
-    //     assetHashType: AssetHashType.CUSTOM,
-    //   }),
-    // })
-
-    // // applying this is a workaround for failing deployments due to the following DELETE_FAILED error:
-    // // > Resource handler returned message: "Lambda was unable to delete arn:aws:lambda:us-east-1:92330274019:function:stacks-cloud-production-OriginRequestFunction4FA39-XQadJcSWY8Lz:1 because it is a replicated function. Please see our documentation for Deleting Lambda@Edge Functions and Replicas. (Service: Lambda, Status Code: 400, Request ID: 83bd3112-aaa4-4980-bfcf-3ee2052a0435)" (RequestToken: c91aed31-1a62-9425-c25d-4fc0fccfa45f, HandlerErrorCode: InvalidRequest)
-    // // if we do not delete this resource, then it circumvents trying to delete the function and the deployment succeeds
-    // // buddy cloud:cleanup is what will be suggested running after user ensured no more sensitive data is in the buckets
-    // const cfnOriginRequestFunction = originRequestFunction.node.defaultChild as CfnResource
-    // cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
-
-    // const cdn = new cloudfront.Distribution(this, 'Cdn', {
-    //   domainNames: [this.domain],
-    //   defaultRootObject: 'index.html',
-    //   comment: `CDN for ${config.app.url}`,
-    //   certificate: this.certificate,
-    //   enableLogging: true,
-    //   logBucket: this.storage.logBucket,
-    //   httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
-    //   priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-    //   enabled: true,
-    //   minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-    //   webAclId: this.firewall.attrArn,
-    //   enableIpv6: true,
-
-    //   defaultBehavior: {
-    //     origin: new origins.S3Origin(this.storage.publicBucket, {
-    //       originAccessIdentity: this.originAccessIdentity,
-    //     }),
-    //     edgeLambdas: [
-    //       {
-    //         eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
-    //         functionVersion: originRequestFunction.currentVersion,
-    //       },
-    //     ],
-    //     compress: config.cloud.cdn?.compress,
-    //     allowedMethods: this.allowedMethods(),
-    //     cachedMethods: this.cachedMethods(),
-    //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //     cachePolicy: this.cdnCachePolicy,
-    //   },
-
-    //   additionalBehaviors: this.additionalBehaviors(),
-
-    //   // Add custom error responses
-    //   errorResponses: [
-    //     {
-    //       httpStatus: 403,
-    //       responsePagePath: '/index.html',
-    //       responseHttpStatus: 200,
-    //       ttl: Duration.seconds(0),
-    //     },
-    //   ],
-    // })
-
-    // // setup the www redirect
-    // // Create a bucket for www.yourdomain.com and configure it to redirect to yourdomain.com
-    // const wwwBucket = new s3.Bucket(this, 'WwwBucket', {
-    //   bucketName: `www.${this.domain}`,
-    //   websiteRedirect: {
-    //     hostName: this.domain,
-    //     protocol: s3.RedirectProtocol.HTTPS,
-    //   },
-    //   removalPolicy: RemovalPolicy.DESTROY,
-    //   autoDeleteObjects: true,
-    // })
-
-    // // Create a Route53 record for www.yourdomain.com
-    // new route53.ARecord(this, 'WwwAliasRecord', {
-    //   recordName: `www.${this.domain}`,
-    //   zone: this.zone,
-    //   target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
-    // })
-
-    // this.cdn = cdn
-    // this.originAccessIdentity = originAccessIdentity
-    // this.cdnCachePolicy = cdnCachePolicy
-    // this.vanityUrl = `https://${this.cdn.domainName}`
-
-    // return { cdn, originAccessIdentity, cdnCachePolicy }
-  }
-
   async manageEmailServer() {
     this.storage.emailBucket = await this.getOrCreateBucket('email')
 
@@ -1413,80 +1261,6 @@ export class StacksCloud extends Stack {
     this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'today/' })
   }
 
-  // additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
-  //   let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
-
-  //   if (this.shouldDeployApi()) {
-  //     this.deployApi()
-
-  //     behaviorOptions = this.apiBehaviorOptions()
-  //   }
-
-  //   // if docMode is used, we don't need to add a behavior for the docs
-  //   // because the docs will be the root of the site
-  //   if (this.shouldDeployDocs() && !config.app.docMode) {
-  //     behaviorOptions = {
-  //       ...this.docsBehaviorOptions(),
-  //       ...behaviorOptions,
-  //     }
-  //   }
-
-  //   return behaviorOptions
-  // }
-
-  // apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
-  //   const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-  //     originPath: path,
-  //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-  //   })
-
-  //   return {
-  //     '/api': {
-  //       origin: origin(),
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: this.setApiCachePolicy(),
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //     },
-  //     '/api/*': {
-  //       origin: origin('/api/*'),
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: this.apiCachePolicy,
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //     },
-  //   }
-  // }
-
-  // docsBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
-  //   return {
-  //     '/docs': {
-  //       origin: new origins.S3Origin(this.storage.publicBucket, {
-  //         originAccessIdentity: this.originAccessIdentity,
-  //         originPath: '/docs',
-  //       }),
-  //       compress: true,
-  //       allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
-  //       cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-  //     },
-  //     '/docs/*': {
-  //       origin: new origins.S3Origin(this.storage.publicBucket, {
-  //         originAccessIdentity: this.originAccessIdentity,
-  //         originPath: '/docs',
-  //       }),
-  //       compress: true,
-  //       allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
-  //       cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-  //     },
-  //   }
-  // }
-
   addOutputs(): void {
     new Output(this, 'AppUrl', {
       value: `https://${this.domain}`,
@@ -1525,62 +1299,6 @@ export class StacksCloud extends Stack {
       })
     }
   }
-
-  // async getOrCreateBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
-  //   const bucketPrefix = `${this.appName}-${appEnv}`
-  //   let bucket: s3.Bucket
-
-  //   if (type === 'private')
-  //     bucket = this.handlePrivateBucket(bucketPrefix)
-  //   else if (type === 'email')
-  //     bucket = this.handleEmailBucket(bucketPrefix)
-  //   else
-  //     bucket = this.handlePublicBucket(bucketPrefix)
-
-  //   return bucket
-  // }
-
-  // handlePublicBucket(bucketPrefix?: string): s3.Bucket {
-  //   if (!bucketPrefix)
-  //     bucketPrefix = `${this.appName}-${appEnv}`
-
-  //   const bucket = new s3.Bucket(this, 'PublicBucket', {
-  //     bucketName: `${bucketPrefix}-${partialAppKey}`,
-  //     versioned: true,
-  //     autoDeleteObjects: true,
-  //     removalPolicy: RemovalPolicy.DESTROY,
-  //     encryption: s3.BucketEncryption.S3_MANAGED,
-  //   })
-
-  //   Tags.of(bucket).add('daily-backup', 'true')
-
-  //   return bucket
-  // }
-
-  // handlePrivateBucket(bucketPrefix?: string): s3.Bucket {
-  //   if (!bucketPrefix)
-  //     bucketPrefix = `${this.appName}-${appEnv}`
-
-  //   const bucket = new s3.Bucket(this, 'PrivateBucket', {
-  //     bucketName: `${bucketPrefix}-private-${partialAppKey}`,
-  //     versioned: true,
-  //     removalPolicy: RemovalPolicy.DESTROY,
-  //     autoDeleteObjects: true,
-  //     encryption: s3.BucketEncryption.S3_MANAGED,
-  //     enforceSSL: true,
-  //     publicReadAccess: false,
-  //     blockPublicAccess: {
-  //       blockPublicAcls: true,
-  //       blockPublicPolicy: true,
-  //       ignorePublicAcls: true,
-  //       restrictPublicBuckets: true,
-  //     },
-  //   })
-
-  //   Tags.of(bucket).add('daily-backup', 'true')
-
-  //   return bucket
-  // }
 
   handleEmailBucket(bucketPrefix: string): s3.Bucket {
     const bucket = new s3.Bucket(this, 'EmailServerBucket', {
@@ -1626,107 +1344,6 @@ export class StacksCloud extends Stack {
 
     return bucket
   }
-
-  deploy() {
-    new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset(this.websiteSource)],
-      destinationBucket: this.storage.publicBucket,
-      distribution: this.cdn,
-      distributionPaths: ['/*'],
-    })
-
-    new s3deploy.BucketDeployment(this, 'DeployPrivateFiles', {
-      sources: [s3deploy.Source.asset(this.privateSource)],
-      destinationBucket: this.storage.privateBucket,
-    })
-  }
-
-  // private createBackupRole() {
-  //   const backupRole = new iam.Role(this, 'BackupRole', {
-  //     assumedBy: new iam.ServicePrincipal('backup.amazonaws.com'),
-  //   })
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: [
-  //         's3:GetInventoryConfiguration',
-  //         's3:PutInventoryConfiguration',
-  //         's3:ListBucketVersions',
-  //         's3:ListBucket',
-  //         's3:GetBucketVersioning',
-  //         's3:GetBucketNotification',
-  //         's3:PutBucketNotification',
-  //         's3:GetBucketLocation',
-  //         's3:GetBucketTagging',
-  //       ],
-  //       resources: ['arn:aws:s3:::*'],
-  //       sid: 'S3BucketBackupPermissions',
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: [
-  //         's3:GetObjectAcl',
-  //         's3:GetObject',
-  //         's3:GetObjectVersionTagging',
-  //         's3:GetObjectVersionAcl',
-  //         's3:GetObjectTagging',
-  //         's3:GetObjectVersion',
-  //       ],
-  //       resources: ['arn:aws:s3:::*/*'],
-  //       sid: 'S3ObjectBackupPermissions',
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: ['s3:ListAllMyBuckets'],
-  //       resources: ['*'],
-  //       sid: 'S3GlobalPermissions',
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: ['s3:ListAllMyBuckets'],
-  //       resources: ['*'],
-  //       sid: 'S3GlobalPermissions',
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: ['kms:Decrypt', 'kms:DescribeKey'],
-  //       resources: ['*'],
-  //       sid: 'KMSBackupPermissions',
-  //       conditions: {
-  //         StringLike: {
-  //           'kms:ViaService': 's3.*.amazonaws.com',
-  //         },
-  //       },
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: [
-  //         'events:DescribeRule',
-  //         'events:EnableRule',
-  //         'events:PutRule',
-  //         'events:DeleteRule',
-  //         'events:PutTargets',
-  //         'events:RemoveTargets',
-  //         'events:ListTargetsByRule',
-  //         'events:DisableRule',
-  //       ],
-  //       resources: ['arn:aws:events:*:*:rule/AwsBackupManagedRule*'],
-  //       sid: 'EventsPermissions',
-  //     }),
-  //   )
-  //   backupRole.addToPolicy(
-  //     new iam.PolicyStatement({
-  //       actions: ['cloudwatch:GetMetricData', 'events:ListRules'],
-  //       resources: ['*'],
-  //       sid: 'EventsMetricsGlobalPermissions',
-  //     }),
-  //   )
-  //   return backupRole
-  // }
 }
 
 export async function getExistingBucketNameByPrefix(prefix: string): Promise<string | undefined | null> {

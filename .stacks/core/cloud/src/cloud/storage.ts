@@ -1,7 +1,7 @@
 /* eslint-disable no-new */
-import { NestedStack, RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3, aws_s3_deployment as s3deploy } from 'aws-cdk-lib'
+import { NestedStack, RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import type { NestedCloudProps } from './index'
+import type { NestedCloudProps } from '../types'
 
 export class StorageStack extends NestedStack {
   websiteSource: string
@@ -15,15 +15,13 @@ export class StorageStack extends NestedStack {
     super(scope, 'Storage', props)
     this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
     this.bucketPrefix = `${props.appName}-${props.appEnv}`
-
-
   }
 
   async manageStorage() {
     // the bucketName should not contain the domainName because when the APP_URL is changed,
     // we want it to deploy properly, and this way we would not force a recreation of the
     // resources that contain the domain name
-    this.storage.publicBucket = await this.getOrCreateBucket()
+    this.publicBucket = await this.getOrCreateBucket()
     // for each redirect, create a bucket & redirect it to the APP_URL
     config.dns.redirects?.forEach((redirect) => {
       // TODO: use string-ts function here instead
@@ -45,11 +43,11 @@ export class StorageStack extends NestedStack {
       })
     })
 
-    this.storage.privateBucket = await this.getOrCreateBucket('private')
-    const bucketPrefix = `${this.appName}-${appEnv}`
+    this.privateBucket = await this.getOrCreateBucket('private')
+    const bucketPrefix = `${props.appName}-${props.appEnv}`
 
-    this.storage.logBucket = new s3.Bucket(this, 'LogsBucket', {
-      bucketName: `${bucketPrefix}-logs-${partialAppKey}`,
+    this.logBucket = new s3.Bucket(this, 'LogsBucket', {
+      bucketName: `${bucketPrefix}-logs-${props.partialAppKey}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: new s3.BlockPublicAccess({
@@ -60,13 +58,13 @@ export class StorageStack extends NestedStack {
       }),
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
     })
-    Tags.of(this.storage.logBucket).add('daily-backup', 'true')
+    Tags.of(this.logBucket).add('daily-backup', 'true')
 
     const backupRole = this.createBackupRole()
 
     // Daily 35 day retention
     const vault = new backup.BackupVault(this, 'BackupVault', {
-      backupVaultName: `${this.appName}-${appEnv}-daily-backup-vault`,
+      backupVaultName: `${props.appName}-${appEnv}-daily-backup-vault`,
       encryptionKey: this.encryptionKey,
       removalPolicy: RemovalPolicy.DESTROY,
     })

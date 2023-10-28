@@ -1,3 +1,5 @@
+export type AppEnvType = 'production' | 'development' | 'staging' | 'local' | 'stage' | 'dev' | 'prod'
+
 /**
  * **Application Options**
  *
@@ -26,7 +28,7 @@ export interface AppOptions {
    *
    * @default "development"
    */
-  env: string
+  env: AppEnvType
 
   /**
    * **Application URL**
