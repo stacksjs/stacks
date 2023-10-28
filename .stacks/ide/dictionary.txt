@@ -196,7 +196,6 @@ pluginutils
 pnpm
 polacek
 postcssrc
-powertools
 prefetch
 prepublishing
 procfile

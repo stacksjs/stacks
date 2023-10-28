@@ -17,6 +17,7 @@ export class Stacks extends Stack {
   constructor(scope: Construct, id: string, props: EnvProps) {
     super(scope, id, props)
 
+    // please beware: be careful changing the order of the stacks creation below
     new StorageStack(this, props)
     new CdnStack(this, props)
     new DocsStack(this, props)
