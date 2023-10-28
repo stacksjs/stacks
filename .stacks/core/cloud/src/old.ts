@@ -112,14 +112,10 @@ export class StacksCloud extends Stack {
     this.manageNetwork()
     await this.manageEmailServer()
     this.manageCertificate()
-    // await this.manageStorage()
-    this.manageFirewall()
     this.manageFileSystem()
-    this.manageCdn()
     // this.manageCompute()
     // this.manageSearchEngine()
     // this.manageDns() // needs to run after the cdn is created because it links the distribution
-    this.deploy()
     this.addOutputs()
   }
 
@@ -554,17 +550,6 @@ export class StacksCloud extends Stack {
 
   // }
 
-  // currently only used for Backup Vaults
-  manageEncryptionKey() {
-    this.encryptionKey = new kms.Key(this, 'StacksEncryptionKey', {
-      alias: 'stacks-encryption-key',
-      description: 'KMS key for Stacks Cloud',
-      enableKeyRotation: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(30),
-    })
-  }
-
   manageUsers() {
     const teamName = config.team.name
     const users = config.team.members
@@ -673,212 +658,6 @@ export class StacksCloud extends Stack {
   //   }
   // }
 
-  getFirewallRules() {
-    const rules: wafv2.CfnWebACL.RuleProperty[] = []
-    const priorities = []
-
-    if (config.security.firewall?.countryCodes?.length) {
-      priorities.push(1)
-      rules.push({
-        name: 'CountryRule',
-        priority: priorities.length,
-        statement: {
-          geoMatchStatement: {
-            countryCodes: config.security.firewall.countryCodes,
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'CountryRule',
-        },
-      })
-    }
-
-    if (config.security.firewall?.ipAddresses?.length) {
-      const ipSet = new wafv2.CfnIPSet(this, 'IpSet', {
-        name: 'IpSet',
-        description: 'IP Set',
-        scope: 'CLOUDFRONT',
-        addresses: config.security.firewall.ipAddresses,
-        ipAddressVersion: 'IPV4',
-      })
-
-      priorities.push(1)
-      rules.push({
-        name: 'IpAddressRule',
-        priority: priorities.length,
-        statement: {
-          ipSetReferenceStatement: {
-            arn: ipSet.attrArn,
-          },
-        },
-        action: {
-          block: {},
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'IpAddressRule',
-        },
-      })
-    }
-
-    if (config.security.firewall?.httpHeaders?.length) {
-      config.security.firewall.httpHeaders.forEach((header, index) => {
-        priorities.push(1)
-        rules.push({
-          name: `HttpHeaderRule${index}`,
-          priority: priorities.length,
-          statement: {
-            byteMatchStatement: {
-              fieldToMatch: {
-                singleHeader: {
-                  name: header,
-                },
-              },
-              positionalConstraint: 'EXACTLY',
-              searchString: 'true',
-              textTransformations: [
-                {
-                  priority: index,
-                  type: 'NONE',
-                },
-              ],
-            },
-          },
-          action: {
-            block: {},
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: `HttpHeaderRule${index}`,
-          },
-        })
-      })
-    }
-
-    // if (config.security.firewall?.queryString?.length) {
-    //   priorities.push(1)
-    //   rules.push({
-    //     name: 'QueryStringRule',
-    //     priority: priorities.length,
-    //     statement: {
-    //       byteMatchStatement: {
-    //         fieldToMatch: {
-    //           queryString: {},
-    //         },
-    //         positionalConstraint: 'EXACTLY',
-    //         searchString: config.security.firewall.queryString.join(', '),
-    //         textTransformations: [
-    //           {
-    //             priority: 0,
-    //             type: 'NONE',
-    //           },
-    //         ],
-    //       },
-    //     },
-    //     action: {
-    //       block: {},
-    //     },
-    //     visibilityConfig: {
-    //       sampledRequestsEnabled: true,
-    //       cloudWatchMetricsEnabled: true,
-    //       metricName: 'QueryStringRule',
-    //     },
-    //   })
-    // }
-
-    // if (config.security.firewall?.rateLimitPerMinute) {
-    //   priorities.push(1)
-    //   rules.push({
-    //     name: 'RateLimitRule',
-    //     priority: priorities.length,
-    //     statement: {
-    //       rateBasedStatement: {
-    //         limit: config.security.firewall.rateLimitPerMinute,
-    //         aggregateKeyType: 'IP',
-    //       },
-    //     },
-    //     action: {
-    //       block: {},
-    //     },
-    //     visibilityConfig: {
-    //       sampledRequestsEnabled: true,
-    //       cloudWatchMetricsEnabled: true,
-    //       metricName: 'RateLimitRule',
-    //     },
-    //   })
-    // }
-
-    // if (config.security.firewall?.useIpReputationLists) {
-    //   priorities.push(1)
-    //   rules.push({
-    //     name: 'IpReputationRule',
-    //     priority: priorities.length,
-    //     statement: {
-    //       managedRuleGroupStatement: {
-    //         vendorName: 'AWS',
-    //         name: 'AWSManagedRulesAmazonIpReputationList',
-    //       },
-    //     },
-    //     action: {
-    //       block: {},
-    //     },
-    //     visibilityConfig: {
-    //       sampledRequestsEnabled: true,
-    //       cloudWatchMetricsEnabled: true,
-    //       metricName: 'IpReputationRule',
-    //     },
-    //   })
-    // }
-
-    // if (config.security.firewall?.useKnownBadInputsRuleSet) {
-    //   priorities.push(1)
-    //   rules.push({
-    //     name: 'KnownBadInputsRule',
-    //     priority: priorities.length,
-    //     statement: {
-    //       managedRuleGroupStatement: {
-    //         vendorName: 'AWS',
-    //         name: 'AWSManagedRulesKnownBadInputsRuleSet',
-    //       },
-    //     },
-    //     action: {
-    //       block: {},
-    //     },
-    //     visibilityConfig: {
-    //       sampledRequestsEnabled: true,
-    //       cloudWatchMetricsEnabled: true,
-    //       metricName: 'KnownBadInputsRule',
-    //     },
-    //   })
-    // }
-    // also add
-    //     }, {
-    //   "name": "AWSManagedRulesAnonymousIpList",
-    //   "priority": 40,
-    //   "overrideAction": "none",
-    //   "excludedRules": []
-    // }, {
-    //   "name": "AWSManagedRulesLinuxRuleSet",
-    //   "priority": 50,
-    //   "overrideAction": "none",
-    //   "excludedRules": []
-    // }, {
-    //   "name": "AWSManagedRulesUnixRuleSet",
-    //   "priority": 60,
-    //   "overrideAction": "none",
-    //   "excludedRules": [],
-    // }];
-
-    return rules
-  }
-
   manageNetwork() {
     this.vpc = new ec2.Vpc(this, 'Network', {
       vpcName: `${this.appName}-${appEnv}-vpc`,
@@ -907,29 +686,6 @@ export class StacksCloud extends Stack {
       //   },
       // ],
     })
-  }
-
-  manageFirewall() {
-    const firewallOptions = config.cloud.firewall
-
-    if (!firewallOptions)
-      return false
-
-    const options = {
-      defaultAction: { allow: {} },
-      scope: 'CLOUDFRONT',
-      visibilityConfig: {
-        sampledRequestsEnabled: true,
-        cloudWatchMetricsEnabled: true,
-        metricName: 'firewallMetric',
-      },
-      rules: this.getFirewallRules(),
-    }
-
-    this.firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
-    Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
-    Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
   }
 
   manageFileSystem() {
