@@ -3,7 +3,7 @@ import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import * as cdk from 'aws-cdk-lib'
-import { Stacks as StacksCloud } from './cloud/'
+import { Cloud } from './cloud/'
 
 const app = new cdk.App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
@@ -21,7 +21,7 @@ const usEnv = {
   region,
 }
 
-new StacksCloud(app, cloudName, {
+new Cloud(app, cloudName, {
   env: usEnv,
 })
 
