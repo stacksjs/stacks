@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@maizzle/framework": "^4.6.0",
-    "@novu/stateless": "^0.20.0",
+    "@novu/stateless": "^0.21.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
@@ -77,16 +77,16 @@
     "uuid": "^9.0.1"
   },
   "optionalDependencies": {
-    "@novu/emailjs": "^0.20.0",
-    "@novu/mailgun": "^0.20.0",
-    "@novu/mailjet": "^0.20.0",
-    "@novu/mandrill": "^0.20.0",
-    "@novu/netcore": "^0.20.0",
-    "@novu/node": "^0.20.0",
-    "@novu/nodemailer": "^0.20.0",
-    "@novu/postmark": "^0.20.0",
-    "@novu/sendgrid": "^0.20.0",
-    "@novu/ses": "^0.20.0"
+    "@novu/emailjs": "^0.21.0",
+    "@novu/mailgun": "^0.21.0",
+    "@novu/mailjet": "^0.21.0",
+    "@novu/mandrill": "^0.21.0",
+    "@novu/netcore": "^0.21.0",
+    "@novu/node": "^0.21.0",
+    "@novu/nodemailer": "^0.21.0",
+    "@novu/postmark": "^0.21.0",
+    "@novu/sendgrid": "^0.21.0",
+    "@novu/ses": "^0.21.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
