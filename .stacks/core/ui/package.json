@@ -55,7 +55,7 @@
     "@iconify-json/heroicons": "^1.1.13",
     "@iconify-json/heroicons-outline": "^1.1.7",
     "@iconify-json/heroicons-solid": "^1.1.8",
-    "@iconify/json": "^2.2.133",
+    "@iconify/json": "^2.2.134",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -63,10 +63,10 @@
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unocss/transformer-compile-class": "^0.57.1",
     "pinia": "^2.1.7",
-    "unhead": "^1.7.4",
+    "unhead": "^1.8.0",
     "unocss": "^0.57.1",
     "vue": "^3.3.7",
-    "vue-tsc": "^1.8.21"
+    "vue-tsc": "^1.8.22"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.1.13",
@@ -79,10 +79,10 @@
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unocss/transformer-compile-class": "^0.57.1",
     "pinia": "^2.1.7",
-    "unhead": "^1.7.4",
+    "unhead": "^1.8.0",
     "unocss": "^0.57.1",
     "vue": "^3.3.7",
-    "vue-tsc": "^1.8.21"
+    "vue-tsc": "^1.8.22"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -50,7 +50,7 @@
     "@mdit-vue/plugin-component": "^1.0.0",
     "@mdit-vue/plugin-frontmatter": "^1.0.0",
     "@mdit-vue/types": "^1.0.0",
-    "@novu/stateless": "^0.20.0",
+    "@novu/stateless": "^0.21.0",
     "@rollup/pluginutils": "^5.0.5",
     "@stacksjs/validation": "workspace:*",
     "@types/bcryptjs": "^2.4.5",
@@ -69,17 +69,17 @@
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
     "unocss": "^0.57.1",
-    "unplugin-auto-import": "^0.16.6",
+    "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^4.5.0",
-    "vite-plugin-inspect": "^0.7.40",
-    "vite-plugin-pwa": "^0.16.5",
-    "vite-ssg": "^0.23.3",
+    "vite-plugin-inspect": "^0.7.41",
+    "vite-plugin-pwa": "^0.16.6",
+    "vite-ssg": "^0.23.4",
     "vitepress": "1.0.0-rc.24",
     "vue": "^3.3.7"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.102.0",
+    "aws-cdk-lib": "^2.103.1",
     "typescript": "^5.2.2"
   }
 }
