@@ -44,10 +44,8 @@ export class StacksCloud extends Stack {
   appName = config.app.name?.toLocaleLowerCase() || 'stacks'
   teamName = config.team.name.toLowerCase() || 'stacks'
   apiPrefix!: string
-  docsPrefix?: string
   apiVanityUrl!: string
   vanityUrl!: string
-  docsSource!: string
   websiteSource!: string
   privateSource!: string
   zone!: route53.IHostedZone
@@ -100,8 +98,7 @@ export class StacksCloud extends Stack {
       this.domain = `${appEnv}.${config.app.url}`
 
     this.apiPrefix = config.api.prefix || 'api'
-    this.docsPrefix = config.app.docMode ? undefined : config.docs.base
-    this.docsSource = '../../../storage/framework/docs'
+    // this.docsSource = '../../../storage/framework/docs'
     this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
@@ -1043,14 +1040,6 @@ export class StacksCloud extends Stack {
       new Output(this, 'JumpBoxInstanceId', {
         value: this.ec2Instance.instanceId,
         description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
-      })
-    }
-
-    // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
-    if (this.shouldDeployDocs() && this.docsPrefix) {
-      new Output(this, 'DocsUrl', {
-        value: `https://${this.domain}/${this.docsPrefix}`,
-        description: 'The URL of the deployed documentation',
       })
     }
   }

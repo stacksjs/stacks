@@ -30,9 +30,14 @@ export class CdnStack extends NestedStack {
   certificateArn: string
   certificate: acm.ICertificate
   logBucket: s3.IBucket
+  publicBucket: s3.IBucket
+  firewallArn: string
+  apiCachePolicy: cloudfront.CachePolicy | undefined
+  props: NestedCloudProps
 
   constructor(scope: Construct, props: NestedCloudProps) {
     super(scope, 'Cdn', props)
+    this.props = props
 
     // do lookups
     this.zone = route53.PublicHostedZone.fromLookup(this, 'AppUrlHostedZone', {
@@ -41,11 +46,18 @@ export class CdnStack extends NestedStack {
     this.certificateArn = Stack.of(this).formatArn({
       service: 'acm',
       resource: 'certificate',
-      resourceName: 'Certificate', // replace with your actual certificate logical ID
+      resourceName: 'Certificate',
     })
     this.certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', this.certificateArn)
+    this.firewallArn = Stack.of(this).formatArn({
+      service: 'wafv2',
+      resource: 'webacl',
+      resourceName: 'WebFirewall',
+    })
+
     const bucketPrefix = `${props.appName}-${props.appEnv}`
     this.logBucket = s3.Bucket.fromBucketName(this, 'LogBucket', `${bucketPrefix}-logs-${props.partialAppKey}`)
+    this.publicBucket = s3.Bucket.fromBucketName(this, 'PublicBucket', `${bucketPrefix}-${props.partialAppKey}`)
 
     // proceed with cdn logic
     this.originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
@@ -99,22 +111,23 @@ export class CdnStack extends NestedStack {
     const cfnOriginRequestFunction = originRequestFunction.node.defaultChild as CfnResource
     cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
-    const cdn = new cloudfront.Distribution(this, 'Distribution', {
+    // the actual CDN distribution
+    new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [props.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${config.app.url}`,
-      certificate,
+      certificate: this.certificate,
       enableLogging: true,
-      logBucket: props.logBucket,
+      logBucket: this.logBucket,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       enabled: true,
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-      webAclId: props.firewall.attrArn,
+      webAclId: this.firewallArn,
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(props.publicBucket, {
+        origin: new origins.S3Origin(this.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
         edgeLambdas: [
@@ -240,24 +253,6 @@ export class CdnStack extends NestedStack {
     return config.cloud.deploy?.api
   }
 
-  deployApi(props) {
-    const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
-    keysToRemove.forEach(key => delete env[key as EnvKey])
-
-    const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
-      secretName: `${props.appName}-${props.appEnv}-secrets`,
-      description: 'Secrets for the Stacks application',
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify(env),
-        generateStringKey: Object.keys(env).join(',').length.toString(),
-      },
-    })
-
-    const functionName = `${props.appName}-${props.appEnv}-server`
-
-    // this.apiVanityUrl = api.url
-  }
-
   apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
     const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
       originPath: path,
@@ -287,7 +282,7 @@ export class CdnStack extends NestedStack {
   docsBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
     return {
       '/docs': {
-        origin: new origins.S3Origin(this.props.storage.publicBucket, {
+        origin: new origins.S3Origin(this.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),
@@ -298,7 +293,7 @@ export class CdnStack extends NestedStack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
       '/docs/*': {
-        origin: new origins.S3Origin(this.props.storage.publicBucket, {
+        origin: new origins.S3Origin(this.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),
@@ -315,13 +310,23 @@ export class CdnStack extends NestedStack {
     return hasFiles(p.projectPath('docs'))
   }
 
-  additionalBehaviors(props): Record<string, cloudfront.BehaviorOptions> {
+  additionalBehaviors(props: NestedCloudProps): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
-      this.deployApi(props)
+      const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
+      keysToRemove.forEach(key => delete env[key as EnvKey])
 
-      behaviorOptions = this.apiBehaviorOptions()
+      new secretsmanager.Secret(this, 'StacksSecrets', {
+        secretName: `${props.appName}-${props.appEnv}-secrets`,
+        description: 'Secrets for the Stacks application',
+        generateSecretString: {
+          secretStringTemplate: JSON.stringify(env),
+          generateStringKey: Object.keys(env).join(',').length.toString(),
+        },
+      })
+
+      // behaviorOptions = this.apiBehaviorOptions()
     }
 
     // if docMode is used, we don't need to add a behavior for the docs
