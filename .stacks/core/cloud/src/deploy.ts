@@ -11,6 +11,7 @@ const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const appKey = config.app.key
 const domain = config.app.url
 const name = `stacks-cloud-${appEnv}`
+const appName = config.app.name?.toLowerCase()
 const account = env.AWS_ACCOUNT_ID
 const region = env.AWS_DEFAULT_REGION
 
@@ -31,6 +32,12 @@ if (!partialAppKey)
 if (!account || !region)
   throw new Error('Missing accountId or region in config.')
 
+if (!domain)
+  throw new Error('Missing app.url in config.')
+
+if (!appName)
+  throw new Error('Missing app.name in config.')
+
 const usEnv = {
   account,
   region,
@@ -39,7 +46,8 @@ const usEnv = {
 export const options = {
   env: usEnv,
   name,
-  appEnv,
+  appEnv: appEnv ?? 'dev',
+  appName,
   domain,
   partialAppKey,
 } satisfies CloudOptions

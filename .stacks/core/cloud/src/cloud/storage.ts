@@ -1,125 +1,26 @@
-/* eslint-disable no-new */
-import { NestedStack, RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
+import { NestedStack, RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_kms as kms, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
 export class StorageStack extends NestedStack {
-  websiteSource: string
-  bucketPrefix: string
-  docsSource: string = '../../../storage/docs'
-  publicBucket: s3.Bucket | s3.IBucket
-  privateBucket: s3.Bucket | s3.IBucket
-  logBucket: s3.Bucket | s3.IBucket
-
   constructor(scope: Construct, props: NestedCloudProps) {
     super(scope, 'Storage', props)
-    this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
-    this.bucketPrefix = `${props.appName}-${props.appEnv}`
-  }
 
-  async manageStorage() {
-    // the bucketName should not contain the domainName because when the APP_URL is changed,
-    // we want it to deploy properly, and this way we would not force a recreation of the
-    // resources that contain the domain name
-    this.publicBucket = await this.getOrCreateBucket()
-    // for each redirect, create a bucket & redirect it to the APP_URL
-    config.dns.redirects?.forEach((redirect) => {
-      // TODO: use string-ts function here instead
-      const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
-      const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', { domainName: redirect })
-      const redirectBucket = new s3.Bucket(this, `RedirectBucket${slug}`, {
-        bucketName: `${redirect}-redirect`,
-        websiteRedirect: {
-          hostName: this.domain,
-          protocol: s3.RedirectProtocol.HTTPS,
-        },
-        removalPolicy: RemovalPolicy.DESTROY,
-        autoDeleteObjects: true,
-      })
-      new route53.CnameRecord(this, `RedirectRecord${slug}`, {
-        zone: hostedZone,
-        recordName: 'redirect',
-        domainName: redirectBucket.bucketWebsiteDomainName,
-      })
-    })
-
-    this.privateBucket = await this.getOrCreateBucket('private')
     const bucketPrefix = `${props.appName}-${props.appEnv}`
+    // const docsSource = '../../../storage/docs'
+    // const websiteSource = config.app.docMode ? docsSource : '../../../storage/public'
 
-    this.logBucket = new s3.Bucket(this, 'LogsBucket', {
-      bucketName: `${bucketPrefix}-logs-${props.partialAppKey}`,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      blockPublicAccess: new s3.BlockPublicAccess({
-        blockPublicAcls: false,
-        ignorePublicAcls: true,
-        blockPublicPolicy: true,
-        restrictPublicBuckets: true,
-      }),
-      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
-    })
-    Tags.of(this.logBucket).add('daily-backup', 'true')
-
-    const backupRole = this.createBackupRole()
-
-    // Daily 35 day retention
-    const vault = new backup.BackupVault(this, 'BackupVault', {
-      backupVaultName: `${props.appName}-${appEnv}-daily-backup-vault`,
-      encryptionKey: this.encryptionKey,
-      removalPolicy: RemovalPolicy.DESTROY,
-    })
-    const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
-
-    plan.addSelection('Selection', {
-      role: backupRole,
-      resources: [backup.BackupResource.fromTag('daily-backup', 'true')],
-    })
-
-    this.storage = {
-      publicBucket: this.storage.publicBucket,
-      privateBucket: this.storage.privateBucket,
-      // emailBucket: this.storage.emailBucket,
-      logBucket: this.storage.logBucket,
-    }
-  }
-
-  async getOrCreateBucket(type?: 'public' | 'private' | 'email'): Promise<s3.Bucket | s3.IBucket> {
-    const bucketPrefix = `${this.appName}-${appEnv}`
-    let bucket: s3.Bucket
-
-    if (type === 'private')
-      bucket = this.handlePrivateBucket(bucketPrefix)
-    else if (type === 'email')
-      bucket = this.handleEmailBucket(bucketPrefix)
-    else
-      bucket = this.handlePublicBucket(bucketPrefix)
-
-    return bucket
-  }
-
-  handlePublicBucket(bucketPrefix?: string): s3.Bucket {
-    if (!bucketPrefix)
-      bucketPrefix = `${this.appName}-${appEnv}`
-
-    const bucket = new s3.Bucket(this, 'PublicBucket', {
-      bucketName: `${bucketPrefix}-${partialAppKey}`,
+    const publicBucket = new s3.Bucket(this, 'PublicBucket', {
+      bucketName: `${bucketPrefix}-${props.partialAppKey}`,
       versioned: true,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.S3_MANAGED,
     })
+    Tags.of(publicBucket).add('daily-backup', 'true')
 
-    Tags.of(bucket).add('daily-backup', 'true')
-
-    return bucket
-  }
-
-  handlePrivateBucket(bucketPrefix?: string): s3.Bucket {
-    if (!bucketPrefix)
-      bucketPrefix = `${this.appName}-${appEnv}`
-
-    const bucket = new s3.Bucket(this, 'PrivateBucket', {
-      bucketName: `${bucketPrefix}-private-${partialAppKey}`,
+    const privateBucket = new s3.Bucket(this, 'PrivateBucket', {
+      bucketName: `${bucketPrefix}-private-${props.partialAppKey}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -133,10 +34,61 @@ export class StorageStack extends NestedStack {
         restrictPublicBuckets: true,
       },
     })
+    Tags.of(privateBucket).add('daily-backup', 'true')
 
-    Tags.of(bucket).add('daily-backup', 'true')
+    const logBucket = new s3.Bucket(this, 'LogsBucket', {
+      bucketName: `${bucketPrefix}-logs-${props.partialAppKey}`,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        ignorePublicAcls: true,
+        blockPublicPolicy: true,
+        restrictPublicBuckets: true,
+      }),
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
+    })
+    Tags.of(logBucket).add('daily-backup', 'true')
 
-    return bucket
+    const backupRole = this.createBackupRole()
+
+    // Daily 35 day retention
+    const keyFromAlias = kms.Key.fromLookup(this, 'Key', {
+      aliasName: 'alias/stacks-encryption-key',
+    })
+
+    const vault = new backup.BackupVault(this, 'BackupVault', {
+      backupVaultName: `${props.appName}-${props.appEnv}-daily-backup-vault`,
+      encryptionKey: keyFromAlias,
+      removalPolicy: RemovalPolicy.DESTROY,
+    })
+    const plan = backup.BackupPlan.daily35DayRetention(this, 'BackupPlan', vault)
+
+    plan.addSelection('Selection', {
+      role: backupRole,
+      resources: [backup.BackupResource.fromTag('daily-backup', 'true')],
+    })
+
+    // for each redirect, create a bucket & redirect it to the APP_URL
+    // config.dns.redirects?.forEach((redirect) => {
+    //   // TODO: use string-ts function here instead
+    //   const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
+    //   const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', { domainName: redirect })
+    //   const redirectBucket = new s3.Bucket(this, `RedirectBucket${slug}`, {
+    //     bucketName: `${redirect}-redirect`,
+    //     websiteRedirect: {
+    //       hostName: this.domain,
+    //       protocol: s3.RedirectProtocol.HTTPS,
+    //     },
+    //     removalPolicy: RemovalPolicy.DESTROY,
+    //     autoDeleteObjects: true,
+    //   })
+    //   new route53.CnameRecord(this, `RedirectRecord${slug}`, {
+    //     zone: hostedZone,
+    //     recordName: 'redirect',
+    //     domainName: redirectBucket.bucketWebsiteDomainName,
+    //   })
+    // })
   }
 
   createBackupRole() {

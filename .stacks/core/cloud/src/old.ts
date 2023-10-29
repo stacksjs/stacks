@@ -59,7 +59,7 @@ export class StacksCloud extends Stack {
   ec2Instance?: ec2.Instance
 
   vpc!: ec2.Vpc
-  encryptionKey!: kms.Key
+  // encryptionKey!: kms.Key
 
   storage!: {
     // publicBucket: s3.Bucket | s3.IBucket
@@ -106,7 +106,6 @@ export class StacksCloud extends Stack {
     this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
-    this.manageEncryptionKey()
     this.manageUsers()
     this.manageZone()
     this.manageNetwork()

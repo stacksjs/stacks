@@ -1,11 +1,13 @@
 /* eslint-disable no-new */
-import type { CfnResource, NestedStackProps, aws_certificatemanager as acm, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { CfnResource } from 'aws-cdk-lib'
 import {
   AssetHashType,
   Duration,
   Fn,
   NestedStack,
   RemovalPolicy,
+  Stack,
+  aws_certificatemanager as acm,
   aws_cloudfront as cloudfront,
   aws_lambda as lambda,
   aws_cloudfront_origins as origins,
@@ -18,43 +20,37 @@ import {
 import type { Construct } from 'constructs'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
+import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
-interface ResourceNestedStackProps extends NestedStackProps {
-  env: {
-    account: string
-    region: string
-  }
-  appName: string
-  appEnv: string
-  domain: string
-  partialAppKey: string
-  zone: route53.HostedZone
-  certificate: acm.Certificate
-  logBucket: s3.Bucket
-  firewall: wafv2.CfnWebACL
-  storage: {
-    publicBucket: s3.Bucket
-    accessPoint: s3.CfnAccessPoint | undefined
-  }
-}
-
 export class CdnStack extends NestedStack {
-  cdn!: cloudfront.Distribution
-  originAccessIdentity!: cloudfront.OriginAccessIdentity
-  cdnCachePolicy!: cloudfront.CachePolicy
-  apiCachePolicy: cloudfront.CachePolicy | undefined
-  vanityUrl!: string
-  apiVanityUrl!: string
-  props: ResourceNestedStackProps
+  originAccessIdentity: cloudfront.OriginAccessIdentity
+  cdnCachePolicy: cloudfront.CachePolicy
+  zone: route53.IHostedZone
+  certificateArn: string
+  certificate: acm.ICertificate
+  logBucket: s3.IBucket
 
-  constructor(scope: Construct, props: ResourceNestedStackProps) {
+  constructor(scope: Construct, props: NestedCloudProps) {
     super(scope, 'Cdn', props)
-    this.props = props
-    // ...
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
 
-    const cdnCachePolicy = new cloudfront.CachePolicy(this, 'CdnCachePolicy', {
+    // do lookups
+    this.zone = route53.PublicHostedZone.fromLookup(this, 'AppUrlHostedZone', {
+      domainName: props.domain,
+    })
+    this.certificateArn = Stack.of(this).formatArn({
+      service: 'acm',
+      resource: 'certificate',
+      resourceName: 'Certificate', // replace with your actual certificate logical ID
+    })
+    this.certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', this.certificateArn)
+    const bucketPrefix = `${props.appName}-${props.appEnv}`
+    this.logBucket = s3.Bucket.fromBucketName(this, 'LogBucket', `${bucketPrefix}-logs-${props.partialAppKey}`)
+
+    // proceed with cdn logic
+    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI')
+
+    this.cdnCachePolicy = new cloudfront.CachePolicy(this, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
       cachePolicyName: `${props.appName}-${props.appEnv}-cdn-cache-policy`,
       minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
@@ -63,11 +59,9 @@ export class CdnStack extends NestedStack {
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
 
-    // const timestamp = new Date().getTime()
-
     // Fetch the timestamp from SSM Parameter Store
     const timestampParam = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'TimestampParam', {
-      parameterName: `/${this.props.appName.toLowerCase()}/timestamp`,
+      parameterName: `/${props.appName.toLowerCase()}/timestamp`,
       version: 1,
     })
 
@@ -77,16 +71,10 @@ export class CdnStack extends NestedStack {
     if (!timestamp) {
       timestamp = new Date().getTime().toString()
       new ssm.StringParameter(this, 'TimestampParam', {
-        parameterName: `/${this.props.appName.toLowerCase()}/timestamp`,
+        parameterName: `/${props.appName.toLowerCase()}/timestamp`,
         stringValue: timestamp,
       })
     }
-
-    new route53.ARecord(this, 'AliasRecord', {
-      recordName: this.props.domain,
-      zone: this.props.zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.cdn)),
-    })
 
     // this edge function ensures pretty docs urls
     // soon to be reused for our Meema features
@@ -94,7 +82,7 @@ export class CdnStack extends NestedStack {
       // this needs to have partialAppKey & timestamp to ensure it is unique, because there is a chance that during testing, you deploy
       // the same app many times using the same app key. Since Origin Request (Lambda@Edge) functions are replicated functions, the
       // deletion process takes a long time. This is to ensure that the function is always unique in cases of quick recreations.
-      functionName: `${this.props.appName}-${this.props.appEnv}-origin-request-${this.props.partialAppKey}-${timestamp}`,
+      functionName: `${props.appName}-${props.appEnv}-origin-request-${props.partialAppKey}-${timestamp}`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
@@ -112,21 +100,21 @@ export class CdnStack extends NestedStack {
     cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
     const cdn = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: [this.props.domain],
+      domainNames: [props.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${config.app.url}`,
-      certificate: this.props.certificate,
+      certificate,
       enableLogging: true,
-      logBucket: this.props.logBucket,
+      logBucket: props.logBucket,
       httpVersion: cloudfront.HttpVersion.HTTP2_AND_3,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       enabled: true,
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-      webAclId: this.props.firewall.attrArn,
+      webAclId: props.firewall.attrArn,
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(this.props.storage.publicBucket, {
+        origin: new origins.S3Origin(props.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
         edgeLambdas: [
@@ -142,7 +130,7 @@ export class CdnStack extends NestedStack {
         cachePolicy: this.cdnCachePolicy,
       },
 
-      additionalBehaviors: this.additionalBehaviors(),
+      additionalBehaviors: this.additionalBehaviors(props),
 
       // Add custom error responses
       errorResponses: [
@@ -158,9 +146,9 @@ export class CdnStack extends NestedStack {
     // setup the www redirect
     // Create a bucket for www.yourdomain.com and configure it to redirect to yourdomain.com
     const wwwBucket = new s3.Bucket(this, 'WwwBucket', {
-      bucketName: `www.${this.props.domain}`,
+      bucketName: `www.${props.domain}`,
       websiteRedirect: {
-        hostName: this.props.domain,
+        hostName: props.domain,
         protocol: s3.RedirectProtocol.HTTPS,
       },
       removalPolicy: RemovalPolicy.DESTROY,
@@ -169,15 +157,15 @@ export class CdnStack extends NestedStack {
 
     // Create a Route53 record for www.yourdomain.com
     new route53.ARecord(this, 'WwwAliasRecord', {
-      recordName: `www.${this.props.domain}`,
-      zone: this.props.zone,
+      recordName: `www.${props.domain}`,
+      zone: this.zone,
       target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
 
-    this.cdn = cdn
-    this.originAccessIdentity = originAccessIdentity
-    this.cdnCachePolicy = cdnCachePolicy
-    this.vanityUrl = `https://${this.cdn.domainName}`
+    // this.cdn = cdn
+    // this.originAccessIdentity = originAccessIdentity
+    // this.cdnCachePolicy = cdnCachePolicy
+    // this.vanityUrl = `https://${this.cdn.domainName}`
   }
 
   getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
@@ -252,12 +240,12 @@ export class CdnStack extends NestedStack {
     return config.cloud.deploy?.api
   }
 
-  deployApi() {
+  deployApi(props) {
     const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(this, 'StacksSecrets', {
-      secretName: `${this.props.appName}-${this.props.appEnv}-secrets`,
+      secretName: `${props.appName}-${props.appEnv}-secrets`,
       description: 'Secrets for the Stacks application',
       generateSecretString: {
         secretStringTemplate: JSON.stringify(env),
@@ -265,7 +253,7 @@ export class CdnStack extends NestedStack {
       },
     })
 
-    const functionName = `${this.props.appName}-${this.props.appEnv}-server`
+    const functionName = `${props.appName}-${props.appEnv}-server`
 
     // this.apiVanityUrl = api.url
   }
@@ -327,11 +315,11 @@ export class CdnStack extends NestedStack {
     return hasFiles(p.projectPath('docs'))
   }
 
-  additionalBehaviors(): Record<string, cloudfront.BehaviorOptions> {
+  additionalBehaviors(props): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
-      this.deployApi()
+      this.deployApi(props)
 
       behaviorOptions = this.apiBehaviorOptions()
     }
