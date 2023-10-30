@@ -10,18 +10,16 @@ export function config(options: ServerOptions) {
     api: 'api.stacks.test',
     app: 'app.stacks.test',
     desktop: 'desktop.stacks.test',
-    docs: 'docs.stacks.test',
+    docs: 'localhost',
     library: 'library.stacks.test',
     example: 'example.stacks.test',
   }
 
   if (options.type && ['docs', 'api', 'library', 'app', 'desktop', 'example'].includes(options.type)) {
-    const host = typeToHostMap[options.type]
-
     return {
-      host,
+      host: typeToHostMap[options.type],
       port: 3333,
-      open: false,
+      open: true,
     }
   }
 

@@ -38,6 +38,9 @@ if (!domain)
 if (!appName)
   throw new Error('Missing app.name in config.')
 
+if (!config.team || Object.keys(config.team).length === 0)
+  throw new Error('Your ./config team needs to at least have one member defined. Please set yourself as a team member and try deploying again.')
+
 const usEnv = {
   account,
   region,
@@ -55,3 +58,22 @@ export const options = {
 new Cloud(app, name, options)
 
 app.synth()
+
+// function isProductionEnv(env: string) {
+//   return env === 'production' || env === 'prod'
+// }
+
+// export async function getExistingBucketNameByPrefix(prefix: string): Promise<string | undefined | null> {
+//   const s3 = new S3({ region: 'us-east-1' })
+
+//   try {
+//     const response = await s3.send(new ListBucketsCommand({}))
+//     const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
+
+//     return bucket ? bucket.Name : null
+//   }
+//   catch (error) {
+//     console.error('Error fetching buckets', error)
+//     return `${prefix}-${partialAppKey}`
+//   }
+// }

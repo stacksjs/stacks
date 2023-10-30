@@ -1,13 +1,22 @@
-/* eslint-disable no-new */
 // waf and encryption
 import { config } from '@stacksjs/config'
-import { Duration, NestedStack, RemovalPolicy, Tags, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { aws_route53 as route53 } from 'aws-cdk-lib'
+import { Duration, RemovalPolicy, Tags, aws_certificatemanager as acm, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
-export class SecurityStack extends NestedStack {
-  constructor(scope: Construct, props: NestedCloudProps) {
-    super(scope, 'Security', props)
+export interface StorageStackProps extends NestedCloudProps {
+  zone: route53.IHostedZone
+}
+
+// export class SecurityStack extends NestedStack {
+export class SecurityStack {
+  firewall: wafv2.CfnWebACL
+  kmsKey: kms.Key
+  certificate: acm.Certificate
+
+  constructor(scope: Construct, props: StorageStackProps) {
+    // super(scope, 'Security', props)
     const firewallOptions = config.cloud.firewall
 
     if (!firewallOptions)
@@ -24,17 +33,23 @@ export class SecurityStack extends NestedStack {
       rules: this.getFirewallRules(),
     }
 
-    const firewall = new wafv2.CfnWebACL(this, 'WebFirewall', options)
-    Tags.of(firewall).add('Name', 'waf-cloudfront', { priority: 300 })
-    Tags.of(firewall).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
+    this.firewall = new wafv2.CfnWebACL(scope, 'WebFirewall', options)
+    Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
+    Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
+    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
 
-    new kms.Key(this, 'StacksEncryptionKey', {
+    this.kmsKey = new kms.Key(scope, 'EncryptionKey', {
       alias: 'stacks-encryption-key',
       description: 'KMS key for Stacks Cloud',
       enableKeyRotation: true,
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(30),
+    })
+
+    this.certificate = new acm.Certificate(scope, 'Certificate', {
+      domainName: props.domain,
+      validation: acm.CertificateValidation.fromDns(props.zone),
+      subjectAlternativeNames: [`www.${props.domain}`],
     })
   }
 

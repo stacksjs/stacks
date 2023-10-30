@@ -29,6 +29,6 @@ log.info('Preparing deployment...')
 // to future self: there is a chance that in the future the source will be in more places than just the edge folder
 log.info(`Lambda function code hash: ${originRequestFunctionCodeHash}`)
 
-await runCommand(`bunx cdk deploy --profile stacks --require-approval never --context originRequestFunctionCodeHash=${originRequestFunctionCodeHash}`, {
+await runCommand(`bunx cdk deploy --require-approval never --context originRequestFunctionCodeHash=${originRequestFunctionCodeHash}`, {
   cwd: p.cloudPath(),
 })

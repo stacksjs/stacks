@@ -1,5 +1,4 @@
 dependencies:
-  aws.amazon.com/cdk: ^2.102.0
   aws.amazon.com/cli: ^2.13.7
   bun.sh: ^1.0.6
   caddyserver.com: ^2.7.4

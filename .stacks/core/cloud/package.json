@@ -43,7 +43,7 @@
     "dist"
   ],
   "scripts": {
-    "bootstrap": "cdk bootstrap --profile stacks",
+    "bootstrap": "bunx cdk bootstrap --profile stacks",
     "deploy": "cd ../.. && bun run build && cd docs && bun run build && cd ../core && bun actions/src/zip/api.ts && cd cloud && bunx cdk deploy --profile stacks --require-approval never",
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
