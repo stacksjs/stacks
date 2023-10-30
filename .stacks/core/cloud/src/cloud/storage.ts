@@ -7,8 +7,6 @@ export class StorageStack extends NestedStack {
     super(scope, 'Storage', props)
 
     const bucketPrefix = `${props.appName}-${props.appEnv}`
-    // const docsSource = '../../../storage/docs'
-    // const websiteSource = config.app.docMode ? docsSource : '../../../storage/public'
 
     const publicBucket = new s3.Bucket(this, 'PublicBucket', {
       bucketName: `${bucketPrefix}-${props.partialAppKey}`,

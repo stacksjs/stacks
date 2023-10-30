@@ -46,8 +46,6 @@ export class StacksCloud extends Stack {
   apiPrefix!: string
   apiVanityUrl!: string
   vanityUrl!: string
-  websiteSource!: string
-  privateSource!: string
   zone!: route53.IHostedZone
   compute!: {
     fargate: ecs.FargateService
@@ -98,9 +96,6 @@ export class StacksCloud extends Stack {
       this.domain = `${appEnv}.${config.app.url}`
 
     this.apiPrefix = config.api.prefix || 'api'
-    // this.docsSource = '../../../storage/framework/docs'
-    this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
-    this.privateSource = '../../../storage/private'
     this.apiVanityUrl = ''
 
     this.manageUsers()

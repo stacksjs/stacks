@@ -12,7 +12,6 @@ export class DocsStack extends NestedStack {
     super(scope, 'Docs', props)
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
     const docsPrefix = config.app.docMode ? undefined : config.docs.base
-    const docsSource = '../../../storage/framework/docs'
 
     new Output(this, 'DocsUrl', {
       value: `https://${props.domain}/${docsPrefix}`,

@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 // waf and encryption
+import { config } from '@stacksjs/config'
 import { Duration, NestedStack, RemovalPolicy, Tags, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'

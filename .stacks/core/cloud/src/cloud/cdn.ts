@@ -5,6 +5,7 @@ import {
   Duration,
   Fn,
   NestedStack,
+  CfnOutput as Output,
   RemovalPolicy,
   Stack,
   aws_certificatemanager as acm,
@@ -18,6 +19,7 @@ import {
   aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
+import { config } from '@stacksjs/config'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import type { NestedCloudProps } from '../types'
@@ -112,7 +114,7 @@ export class CdnStack extends NestedStack {
     cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
     // the actual CDN distribution
-    new cloudfront.Distribution(this, 'Distribution', {
+    const cdn = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [props.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${config.app.url}`,
@@ -154,6 +156,10 @@ export class CdnStack extends NestedStack {
           ttl: Duration.seconds(0),
         },
       ],
+    })
+
+    new Output(this, 'DistributionId', {
+      value: cdn.distributionId,
     })
 
     // setup the www redirect
@@ -253,31 +259,31 @@ export class CdnStack extends NestedStack {
     return config.cloud.deploy?.api
   }
 
-  apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
-    const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-      originPath: path,
-      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-    })
+  // apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
+  // const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+  //   originPath: path,
+  //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+  // })
 
-    return {
-      '/api': {
-        origin: origin(),
-        compress: true,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: this.setApiCachePolicy(),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      },
-      '/api/*': {
-        origin: origin('/api/*'),
-        compress: true,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: this.apiCachePolicy,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      },
-    }
-  }
+  // return {
+  //   '/api': {
+  //     origin: origin(),
+  //     compress: true,
+  //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //     // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //     cachePolicy: this.setApiCachePolicy(),
+  //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //   },
+  //   '/api/*': {
+  //     origin: origin('/api/*'),
+  //     compress: true,
+  //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //     // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //     cachePolicy: this.apiCachePolicy,
+  //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //   },
+  // }
+  // }
 
   docsBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
     return {

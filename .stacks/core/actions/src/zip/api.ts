@@ -15,7 +15,7 @@ const to = p.projectStoragePath('framework/cloud/api.zip')
 
 // zip all the paths into a single file
 await zip(from, to, {
-  cwd: p.cloudPath('src/drivers/aws/runtime'),
+  cwd: p.cloudPath('src/runtime'),
 })
 
 log.info('zipped your API')
