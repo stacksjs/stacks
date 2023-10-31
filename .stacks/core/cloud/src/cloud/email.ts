@@ -1,321 +1,334 @@
-// async manageEmailServer() {
-//   this.storage.emailBucket = await this.getOrCreateBucket('email')
+/* eslint-disable no-new */
+import { Duration, RemovalPolicy, Stack, Tags, aws_iam as iam, aws_lambda as lambda, aws_route53 as route53, aws_s3 as s3, aws_s3_notifications as s3n, aws_ses as ses } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 
-//   const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
-//   const ruleSetName = `${this.appName}-${appEnv}-email-receipt-rule-set`
-//   const receiptRuleName = `${this.appName}-${appEnv}-email-receipt-rule`
+export interface EmailStackProps extends NestedCloudProps {
+  zone: route53.IHostedZone
+}
 
-//   const ruleSet = new ses.CfnReceiptRuleSet(this, 'SESReceiptRuleSet', {
-//     ruleSetName,
-//   })
+export class EmailStack {
+  emailBucket: s3.Bucket
 
-//   this.storage.emailBucket.addToResourcePolicy(
-//     new iam.PolicyStatement({
-//       sid: 'AllowSESPuts',
-//       effect: iam.Effect.ALLOW,
-//       principals: [sesPrincipal],
-//       actions: [
-//         's3:PutObject',
-//       ],
-//       resources: [
-//         `${this.storage.emailBucket.bucketArn}/*`,
-//       ],
-//       conditions: {
-//         StringEquals: {
-//           'aws:SourceAccount': Stack.of(this).account,
-//         },
-//         ArnLike: {
-//           'aws:SourceArn': `arn:aws:ses:${this.region}:${Stack.of(this).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${receiptRuleName}`,
-//         },
-//       },
-//     }),
-//   )
+  constructor(scope: Construct, props: EmailStackProps) {
+    const bucketPrefix = `${props.appName}-${props.appEnv}`
+    this.emailBucket = new s3.Bucket(scope, 'EmailServerBucket', {
+      bucketName: `${bucketPrefix}-email-${timestamp}`,
+      versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      // encryptionKey: this.encryptionKey,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      lifecycleRules: [
+        {
+          id: '24h',
+          enabled: true,
+          expiration: Duration.days(1),
+          noncurrentVersionExpiration: Duration.days(1),
+          prefix: 'today/',
+        },
+        {
+          id: 'Intelligent transition for Inbox',
+          enabled: true,
+          prefix: 'inbox/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+        {
+          id: 'Intelligent transition for Sent',
+          enabled: true,
+          prefix: 'sent/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+      ],
+    })
 
-//   new ses.CfnReceiptRule(this, 'SESReceiptRule', {
-//     ruleSetName: ruleSet.ref,
-//     rule: {
-//       name: receiptRuleName,
-//       enabled: true,
-//       actions: [
-//         {
-//           s3Action: {
-//             bucketName: this.storage.emailBucket.bucketName,
-//             objectKeyPrefix: 'tmp/email_in/',
-//           },
-//         },
-//       ],
-//       recipients: config.email.server?.mailboxes || [],
-//       scanEnabled: config.email.server?.scan || true,
-//       tlsPolicy: 'Require',
-//     },
-//   })
+    Tags.of(this.emailBucket).add('daily-backup', 'true')
 
-//   const iamGroup = new iam.Group(this, 'IAMGroup', {
-//     groupName: `${this.appName}-${appEnv}-email-management-s3-group`,
-//   })
+    const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
+    const ruleSetName = `${props.appName}-${props.appEnv}-email-receipt-rule-set`
+    const receiptRuleName = `${props.appName}-${props.appEnv}-email-receipt-rule`
 
-//   const listBucketsPolicyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: ['s3:ListAllMyBuckets'],
-//     resources: ['*'],
-//   })
+    const ruleSet = new ses.CfnReceiptRuleSet(scope, 'SESReceiptRuleSet', {
+      ruleSetName,
+    })
 
-//   const policyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: [
-//       's3:ListBucket',
-//       's3:GetObject',
-//       's3:PutObject',
-//       's3:DeleteObject',
-//       's3:GetObjectAcl',
-//       's3:GetObjectVersionAcl',
-//       's3:PutObjectAcl',
-//       's3:PutObjectVersionAcl',
-//     ],
-//     resources: [
-//       this.storage.emailBucket.bucketArn,
-//       `${this.storage.emailBucket.bucketArn}/*`,
-//     ],
-//   })
+    this.emailBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowSESPuts',
+        effect: iam.Effect.ALLOW,
+        principals: [sesPrincipal],
+        actions: [
+          's3:PutObject',
+        ],
+        resources: [
+            `${this.emailBucket.bucketArn}/*`,
+        ],
+        conditions: {
+          StringEquals: {
+            'aws:SourceAccount': Stack.of(scope).account,
+          },
+          ArnLike: {
+            'aws:SourceArn': `arn:aws:ses:${Stack.of(scope).region}:${Stack.of(scope).account}:receipt-rule-set/${ruleSetName}:receipt-rule/${receiptRuleName}`,
+          },
+        },
+      }),
+    )
 
-//   const policy = new iam.Policy(this, 'EmailAccessPolicy', {
-//     policyName: `${this.appName}-${appEnv}-email-management-s3-policy`,
-//     statements: [policyStatement, listBucketsPolicyStatement],
-//   })
+    new ses.CfnReceiptRule(scope, 'SESReceiptRule', {
+      ruleSetName: ruleSet.ref,
+      rule: {
+        name: receiptRuleName,
+        enabled: true,
+        actions: [
+          {
+            s3Action: {
+              bucketName: this.emailBucket.bucketName,
+              objectKeyPrefix: 'tmp/email_in/',
+            },
+          },
+        ],
+        recipients: config.email.server?.mailboxes || [],
+        scanEnabled: config.email.server?.scan || true,
+        tlsPolicy: 'Require',
+      },
+    })
 
-//   iamGroup.attachInlinePolicy(policy)
+    const iamGroup = new iam.Group(scope, 'IAMGroup', {
+      groupName: `${props.appName}-${props.appEnv}-email-management-s3-group`,
+    })
 
-//   // Create a SES domain identity
-//   const sesIdentity = new ses.CfnEmailIdentity(this, 'DomainIdentity', {
-//     emailIdentity: this.domain,
+    const listBucketsPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:ListAllMyBuckets'],
+      resources: ['*'],
+    })
 
-//     dkimSigningAttributes: {
-//       nextSigningKeyLength: 'RSA_2048_BIT',
-//     },
+    const policyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        's3:ListBucket',
+        's3:GetObject',
+        's3:PutObject',
+        's3:DeleteObject',
+        's3:GetObjectAcl',
+        's3:GetObjectVersionAcl',
+        's3:PutObjectAcl',
+        's3:PutObjectVersionAcl',
+      ],
+      resources: [
+        this.emailBucket.bucketArn,
+          `${this.emailBucket.bucketArn}/*`,
+      ],
+    })
 
-//     dkimAttributes: {
-//       signingEnabled: true,
-//     },
+    const policy = new iam.Policy(scope, 'EmailAccessPolicy', {
+      policyName: `${props.appName}-${props.appEnv}-email-management-s3-policy`,
+      statements: [policyStatement, listBucketsPolicyStatement],
+    })
 
-//     mailFromAttributes: {
-//       behaviorOnMxFailure: 'USE_DEFAULT_VALUE',
-//       mailFromDomain: `mail.${this.domain}`,
-//     },
+    iamGroup.attachInlinePolicy(policy)
 
-//     feedbackAttributes: {
-//       emailForwardingEnabled: true,
-//     },
-//   })
+    // Create a SES domain identity
+    const sesIdentity = new ses.CfnEmailIdentity(scope, 'DomainIdentity', {
+      emailIdentity: props.domain,
 
-//   // Create a Route53 records for the SES domain identity
-//   // https://github.com/aws/aws-cdk/issues/21306
-//   new route53.CfnRecordSet(this, 'DkimRecord1', {
-//     hostedZoneName: `${this.zone.zoneName}.`,
-//     name: sesIdentity.attrDkimDnsTokenName1,
-//     type: 'CNAME',
-//     resourceRecords: [sesIdentity.attrDkimDnsTokenValue1],
-//     ttl: '1800',
-//   })
+      dkimSigningAttributes: {
+        nextSigningKeyLength: 'RSA_2048_BIT',
+      },
 
-//   new route53.CfnRecordSet(this, 'DkimRecord2', {
-//     hostedZoneName: `${this.zone.zoneName}.`,
-//     name: sesIdentity.attrDkimDnsTokenName2,
-//     type: 'CNAME',
-//     resourceRecords: [sesIdentity.attrDkimDnsTokenValue2],
-//     ttl: '1800',
-//   })
+      dkimAttributes: {
+        signingEnabled: true,
+      },
 
-//   new route53.CfnRecordSet(this, 'DkimRecord3', {
-//     hostedZoneName: `${this.zone.zoneName}.`,
-//     name: sesIdentity.attrDkimDnsTokenName3,
-//     type: 'CNAME',
-//     resourceRecords: [sesIdentity.attrDkimDnsTokenValue3],
-//     ttl: '1800',
-//   })
+      mailFromAttributes: {
+        behaviorOnMxFailure: 'USE_DEFAULT_VALUE',
+        mailFromDomain: `mail.${props.domain}`,
+      },
 
-//   new route53.MxRecord(this, 'MxRecord', {
-//     zone: this.zone,
-//     recordName: 'mail',
-//     values: [{
-//       priority: 10,
-//       hostName: 'feedback-smtp.us-east-1.amazonses.com',
-//     }],
-//   })
+      feedbackAttributes: {
+        emailForwardingEnabled: true,
+      },
+    })
 
-//   new route53.TxtRecord(this, 'TxtSpfRecord', {
-//     zone: this.zone,
-//     recordName: 'mail',
-//     values: ['v=spf1 include:amazonses.com ~all'],
-//   })
+    // Create a Route53 records for the SES domain identity
+    // https://github.com/aws/aws-cdk/issues/21306
+    new route53.CfnRecordSet(scope, 'DkimRecord1', {
+      hostedZoneName: `${props.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName1,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue1],
+      ttl: '1800',
+    })
 
-//   new route53.TxtRecord(this, 'TxtDmarcRecord', {
-//     zone: this.zone,
-//     recordName: '_dmarc',
-//     values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${this.domain}`],
-//   })
+    new route53.CfnRecordSet(scope, 'DkimRecord2', {
+      hostedZoneName: `${props.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName2,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue2],
+      ttl: '1800',
+    })
 
-//   const lambdaEmailOutboundRole = new iam.Role(this, 'LambdaEmailOutboundRole', {
-//     roleName: `${this.appName}-${appEnv}-email-outbound`,
-//     assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-//     managedPolicies: [
-//       iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-//     ],
-//   })
+    new route53.CfnRecordSet(scope, 'DkimRecord3', {
+      hostedZoneName: `${props.zone.zoneName}.`,
+      name: sesIdentity.attrDkimDnsTokenName3,
+      type: 'CNAME',
+      resourceRecords: [sesIdentity.attrDkimDnsTokenValue3],
+      ttl: '1800',
+    })
 
-//   const lambdaEmailOutbound = new lambda.Function(this, 'LambdaEmailOutbound', {
-//     functionName: `${this.appName}-${appEnv}-email-outbound`,
-//     description: 'Take the JSON and convert it in to an raw email.',
-//     code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
-//     handler: 'index.handler',
-//     memorySize: 256,
-//     runtime: lambda.Runtime.NODEJS_18_X,
-//     timeout: Duration.seconds(60),
-//     environment: {
-//       BUCKET: this.storage.emailBucket.bucketName,
-//     },
-//     role: lambdaEmailOutboundRole,
-//   })
+    new route53.MxRecord(scope, 'MxRecord', {
+      zone: props.zone,
+      recordName: 'mail',
+      values: [{
+        priority: 10,
+        hostName: 'feedback-smtp.us-east-1.amazonses.com',
+      }],
+    })
 
-//   lambdaEmailOutboundRole.addToPolicy(policyStatement)
+    new route53.TxtRecord(scope, 'TxtSpfRecord', {
+      zone: props.zone,
+      recordName: 'mail',
+      values: ['v=spf1 include:amazonses.com ~all'],
+    })
 
-//   const sesPolicyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: ['ses:SendRawEmail'],
-//     resources: ['*'],
-//   })
+    new route53.TxtRecord(scope, 'TxtDmarcRecord', {
+      zone: props.zone,
+      recordName: '_dmarc',
+      values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${props.domain}`],
+    })
 
-//   lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
+    const lambdaEmailOutboundRole = new iam.Role(scope, 'LambdaEmailOutboundRole', {
+      roleName: `${props.appName}-${props.appEnv}-email-outbound`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
 
-//   const lambdaEmailInboundRole = new iam.Role(this, 'LambdaEmailInboundRole', {
-//     roleName: `${this.appName}-${appEnv}-email-inbound`,
-//     assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-//     managedPolicies: [
-//       iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-//     ],
-//   })
+    const lambdaEmailOutbound = new lambda.Function(scope, 'LambdaEmailOutbound', {
+      functionName: `${props.appName}-${props.appEnv}-email-outbound`,
+      description: 'Take the JSON and convert it in to an raw email.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
+      },
+      role: lambdaEmailOutboundRole,
+    })
 
-//   const lambdaEmailInbound = new lambda.Function(this, 'LambdaEmailInbound', {
-//     functionName: `${this.appName}-${appEnv}-email-inbound`,
-//     description: 'This Lambda organizes all the incoming emails based on the From and To field.',
-//     code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
-//     handler: 'index.handler',
-//     memorySize: 256,
-//     role: lambdaEmailInboundRole,
-//     runtime: lambda.Runtime.NODEJS_18_X,
-//     timeout: Duration.seconds(60),
-//     environment: {
-//       BUCKET: this.storage.emailBucket.bucketName,
-//     },
-//   })
+    lambdaEmailOutboundRole.addToPolicy(policyStatement)
 
-//   new lambda.CfnPermission(this, 'S3InboundPermission', {
-//     action: 'lambda:InvokeFunction',
-//     functionName: lambdaEmailInbound.functionName,
-//     principal: 's3.amazonaws.com',
-//   })
+    const sesPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ses:SendRawEmail'],
+      resources: ['*'],
+    })
 
-//   const inboundS3PolicyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: ['s3:*'],
-//     resources: [
-//       this.storage.emailBucket.bucketArn,
-//       `${this.storage.emailBucket.bucketArn}/*`,
-//     ],
-//   })
+    lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
 
-//   lambdaEmailInboundRole.addToPolicy(inboundS3PolicyStatement)
+    const lambdaEmailInboundRole = new iam.Role(scope, 'LambdaEmailInboundRole', {
+      roleName: `${props.appName}-${props.appEnv}-email-inbound`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
 
-//   const sesInboundPolicyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: ['ses:ListIdentities'],
-//     resources: ['*'],
-//   })
+    const lambdaEmailInbound = new lambda.Function(scope, 'LambdaEmailInbound', {
+      functionName: `${props.appName}-${props.appEnv}-email-inbound`,
+      description: 'This Lambda organizes all the incoming emails based on the From and To field.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailInboundRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
+      },
+    })
 
-//   lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
+    new lambda.CfnPermission(scope, 'S3InboundPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: lambdaEmailInbound.functionName,
+      principal: 's3.amazonaws.com',
+    })
 
-//   const lambdaEmailConverterRole = new iam.Role(this, 'LambdaEmailConverterRole', {
-//     roleName: `${this.appName}-${appEnv}-email-converter`,
-//     assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-//     managedPolicies: [
-//       iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-//     ],
-//   })
+    const inboundS3PolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:*'],
+      resources: [
+        this.emailBucket.bucketArn,
+          `${this.emailBucket.bucketArn}/*`,
+      ],
+    })
 
-//   const lambdaEmailConverter = new lambda.Function(this, 'LambdaEmailConverter', {
-//     functionName: `${this.appName}-${appEnv}-email-converter`,
-//     description: 'This Lambda converts raw emails files in to HTML and text.',
-//     code: lambda.Code.fromInline('exports.handler = async (event) => {console.log("hello world email converter");return true;};'), // this needs to be updated with the real lambda code
-//     handler: 'index.handler',
-//     memorySize: 256,
-//     role: lambdaEmailConverterRole,
-//     runtime: lambda.Runtime.NODEJS_18_X,
-//     timeout: Duration.seconds(60),
-//     environment: {
-//       BUCKET: this.storage.emailBucket.bucketName,
-//     },
-//   })
+    lambdaEmailInboundRole.addToPolicy(inboundS3PolicyStatement)
 
-//   const converterS3PolicyStatement = new iam.PolicyStatement({
-//     effect: iam.Effect.ALLOW,
-//     actions: ['s3:*'],
-//     resources: [
-//       this.storage.emailBucket.bucketArn,
-//       `${this.storage.emailBucket.bucketArn}/*`,
-//     ],
-//   })
+    const sesInboundPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ses:ListIdentities'],
+      resources: ['*'],
+    })
 
-//   new lambda.CfnPermission(this, 'S3ConverterPermission', {
-//     action: 'lambda:InvokeFunction',
-//     functionName: lambdaEmailConverter.functionName,
-//     principal: 's3.amazonaws.com',
-//   })
+    lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
 
-//   lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
+    const lambdaEmailConverterRole = new iam.Role(scope, 'LambdaEmailConverterRole', {
+      roleName: `${props.appName}-${props.appEnv}-email-converter`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
 
-//   this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in/' })
-//   this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json/' })
-//   this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'sent/' })
-//   this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'inbox/' })
-//   this.storage.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'today/' })
-// }
+    const lambdaEmailConverter = new lambda.Function(scope, 'LambdaEmailConverter', {
+      functionName: `${props.appName}-${props.appEnv}-email-converter`,
+      description: 'This Lambda converts raw emails files in to HTML and text.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {console.log("hello world email converter");return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailConverterRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
+      },
+    })
 
-// const bucket = new s3.Bucket(this, 'EmailServerBucket', {
-//   bucketName: `${bucketPrefix}-email-${partialAppKey}`,
-//   versioned: true,
-//   removalPolicy: RemovalPolicy.DESTROY,
-//   autoDeleteObjects: true,
-//   encryption: s3.BucketEncryption.S3_MANAGED,
-//   lifecycleRules: [
-//     {
-//       id: '24h',
-//       enabled: true,
-//       expiration: Duration.days(1),
-//       noncurrentVersionExpiration: Duration.days(1),
-//       prefix: 'today/',
-//     },
-//     {
-//       id: 'Intelligent transition for Inbox',
-//       enabled: true,
-//       prefix: 'inbox/',
-//       transitions: [
-//         {
-//           storageClass: s3.StorageClass.INTELLIGENT_TIERING,
-//           transitionAfter: Duration.days(0),
-//         },
-//       ],
-//     },
-//     {
-//       id: 'Intelligent transition for Sent',
-//       enabled: true,
-//       prefix: 'sent/',
-//       transitions: [
-//         {
-//           storageClass: s3.StorageClass.INTELLIGENT_TIERING,
-//           transitionAfter: Duration.days(0),
-//         },
-//       ],
-//     },
-//   ],
-// })
+    const converterS3PolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:*'],
+      resources: [
+        this.emailBucket.bucketArn,
+          `${this.emailBucket.bucketArn}/*`,
+      ],
+    })
 
-// Tags.of(bucket).add('daily-backup', 'true')
+    new lambda.CfnPermission(scope, 'S3ConverterPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: lambdaEmailConverter.functionName,
+      principal: 's3.amazonaws.com',
+    })
+
+    lambdaEmailConverterRole.addToPolicy(converterS3PolicyStatement)
+
+    this.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailInbound), { prefix: 'tmp/email_in/' })
+    this.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(lambdaEmailOutbound), { prefix: 'tmp/email_out/json/' })
+    this.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'sent/' })
+    this.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'inbox/' })
+    this.emailBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.LambdaDestination(lambdaEmailConverter), { prefix: 'today/' })
+  }
+}
