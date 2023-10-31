@@ -1,22 +1,3 @@
-// // setup the www redirect
-//     // Create a bucket for www.yourdomain.com and configure it to redirect to yourdomain.com
-//     const wwwBucket = new s3.Bucket(this, 'WwwBucket', {
-//       bucketName: `www.${props.domain}`,
-//       websiteRedirect: {
-//         hostName: props.domain,
-//         protocol: s3.RedirectProtocol.HTTPS,
-//       },
-//       removalPolicy: RemovalPolicy.DESTROY,
-//       autoDeleteObjects: true,
-//     })
-
-//     // Create a Route53 record for www.yourdomain.com
-//     new route53.ARecord(this, 'WwwAliasRecord', {
-//       recordName: `www.${props.domain}`,
-//       zone: props.zone,
-//       target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
-//     })
-
 // for each redirect, create a bucket & redirect it to the APP_URL
 // config.dns.redirects?.forEach((redirect) => {
 //   // TODO: use string-ts function here instead

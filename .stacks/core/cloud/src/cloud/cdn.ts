@@ -1,10 +1,8 @@
 /* eslint-disable no-new */
-import type { CfnResource, aws_certificatemanager as acm, aws_lambda as lambda, aws_route53 as route53, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
-  AssetHashType,
   Duration,
   CfnOutput as Output,
-  RemovalPolicy,
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,
   aws_secretsmanager as secretsmanager,
@@ -21,7 +19,6 @@ export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
   logBucket: s3.Bucket
   publicBucket: s3.Bucket
-  zone: route53.IHostedZone
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
 }
@@ -68,7 +65,7 @@ export class CdnStack {
     // }
 
     // the actual CDN distribution
-    this.distribution = new cloudfront.Distribution(scope, 'Distribution', {
+    this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
       domainNames: [props.domain],
       defaultRootObject: 'index.html',
       comment: `CDN for ${config.app.url}`,

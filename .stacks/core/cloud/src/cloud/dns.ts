@@ -1,4 +1,5 @@
-import { aws_route53 as route53 } from 'aws-cdk-lib'
+/* eslint-disable no-new */
+import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -10,6 +11,25 @@ export class DnsStack {
     // lets see if the zone already exists because Buddy should have created it already
     this.zone = route53.PublicHostedZone.fromLookup(scope, 'AppUrlHostedZone', {
       domainName: props.domain,
+    })
+
+    // setup the www redirect
+    // Create a bucket for www.yourdomain.com and configure it to redirect to yourdomain.com
+    const wwwBucket = new s3.Bucket(scope, 'WwwBucket', {
+      bucketName: `www.${props.domain}`,
+      websiteRedirect: {
+        hostName: props.domain,
+        protocol: s3.RedirectProtocol.HTTPS,
+      },
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
+    // Create a Route53 record for www.yourdomain.com
+    new route53.ARecord(scope, 'WwwAliasRecord', {
+      recordName: `www.${props.domain}`,
+      zone: this.zone,
+      target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
   }
 }

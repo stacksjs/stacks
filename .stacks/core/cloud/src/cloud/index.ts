@@ -33,7 +33,6 @@ export class Cloud extends Stack {
       publicBucket: storage.publicBucket,
       logBucket: storage.logBucket,
       certificate: security.certificate,
-      zone: dns.zone,
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
     })
@@ -44,11 +43,5 @@ export class Cloud extends Stack {
       privateBucket: storage.privateBucket,
       cdn: cdn.distribution,
     })
-
-    // security.addDependency(dns)
-    // storage.addDependency(security)
-    // cdn.addDependency(storage)
-    // cdn.addDependency(dns)
-    // cdn.addDependency(security)
   }
 }
