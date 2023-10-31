@@ -4,6 +4,7 @@ import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand }
 import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { IAM } from '@aws-sdk/client-iam'
+import { SSM } from '@aws-sdk/client-ssm'
 import { Lambda } from '@aws-sdk/client-lambda'
 import type { CountryCode } from '@aws-sdk/client-route-53-domains'
 import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
@@ -483,3 +484,48 @@ export async function isFailedState() {
 
   return !isStacksCloudPresent
 }
+
+export async function getOrCreateTimestamp(): Promise<string> {
+  const parameterName = `/stacks/timestamp`
+  const ssm = new SSM({ region: 'us-east-1' })
+
+  try {
+    const response = await ssm.getParameter({ Name: parameterName })
+    const timestamp = response.Parameter ? response.Parameter.Value : undefined
+
+    if (!timestamp)
+      throw new Error('Timestamp parameter not found')
+
+    return timestamp
+  }
+  catch (error: any) {
+    const timestamp = new Date().getTime().toString()
+    log.info(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
+    await ssm.putParameter({
+      Name: parameterName,
+      Value: timestamp,
+      Type: 'String',
+    })
+
+    return timestamp
+  }
+}
+
+// function isProductionEnv(env: string) {
+//   return env === 'production' || env === 'prod'
+// }
+
+// export async function getExistingBucketNameByPrefix(prefix: string): Promise<string | undefined | null> {
+//   const s3 = new S3({ region: 'us-east-1' })
+
+//   try {
+//     const response = await s3.send(new ListBucketsCommand({}))
+//     const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
+
+//     return bucket ? bucket.Name : null
+//   }
+//   catch (error) {
+//     console.error('Error fetching buckets', error)
+//     return `${prefix}-${timestamp}`
+//   }
+// }

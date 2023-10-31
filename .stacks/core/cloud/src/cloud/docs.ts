@@ -21,10 +21,9 @@ export class DocsStack {
     // this edge function ensures pretty docs urls
     // soon to be reused for our Meema features
     this.originRequestFunction = new lambda.Function(scope, 'OriginRequestFunction', {
-      // this needs to have partialAppKey & timestamp to ensure it is unique, because there is a chance that during testing, you deploy
-      // the same app many times using the same app key. Since Origin Request (Lambda@Edge) functions are replicated functions, the
-      // deletion process takes a long time. This is to ensure that the function is always unique in cases of quick recreations.
-      functionName: `${props.appName}-${props.appEnv}-origin-request-${props.partialAppKey}-${new Date().getTime()}`,
+      // this needs to have timestamp to ensure uniqueness. Since Origin Request (Lambda@Edge) functions are replicated functions, the
+      // deletion process takes a "long time". This way, the function is always unique in cases of quick recreations.
+      functionName: `${props.appName}-${props.appEnv}-origin-request-${props.timestamp}`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',

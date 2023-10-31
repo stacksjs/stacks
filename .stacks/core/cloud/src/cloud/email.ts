@@ -13,7 +13,7 @@ export class EmailStack {
   constructor(scope: Construct, props: EmailStackProps) {
     const bucketPrefix = `${props.appName}-${props.appEnv}`
     this.emailBucket = new s3.Bucket(scope, 'EmailServerBucket', {
-      bucketName: `${bucketPrefix}-email-${timestamp}`,
+      bucketName: `${bucketPrefix}-email-${props.timestamp}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,

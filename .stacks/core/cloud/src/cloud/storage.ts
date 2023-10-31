@@ -20,7 +20,7 @@ export class StorageStack {
     this.bucketPrefix = `${props.appName}-${props.appEnv}`
 
     this.publicBucket = new s3.Bucket(scope, 'PublicBucket', {
-      bucketName: `${this.bucketPrefix}-${props.partialAppKey}`,
+      bucketName: `${this.bucketPrefix}-${props.timestamp}`,
       versioned: true,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -30,7 +30,7 @@ export class StorageStack {
     Tags.of(this.publicBucket).add('daily-backup', 'true')
 
     this.privateBucket = new s3.Bucket(scope, 'PrivateBucket', {
-      bucketName: `${this.bucketPrefix}-private-${props.partialAppKey}`,
+      bucketName: `${this.bucketPrefix}-private-${props.timestamp}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -48,7 +48,7 @@ export class StorageStack {
     Tags.of(this.privateBucket).add('daily-backup', 'true')
 
     this.logBucket = new s3.Bucket(scope, 'LogsBucket', {
-      bucketName: `${this.bucketPrefix}-logs-${props.partialAppKey}`,
+      bucketName: `${this.bucketPrefix}-logs-${props.timestamp}`,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: new s3.BlockPublicAccess({

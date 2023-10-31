@@ -49,7 +49,7 @@ export interface MigrationOptions {
 export function generateMigrationFile(options: MigrationOptions) {
   const { name, up, down } = options
 
-  const timestamp = new Date().getTime()
+  const timestamp = new Date().getTime().toString()
   const fileName = `${timestamp}-${name}.ts`
   const filePath = p.frameworkPath(`database/migrations/${fileName}`)
   const fileContent = `

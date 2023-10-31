@@ -10,7 +10,7 @@ export interface CloudOptions extends StackProps {
   appEnv: AppEnvType
   appName: string
   domain: string
-  partialAppKey: string
+  timestamp: string
 }
 
 // export interface NestedCloudProps extends NestedStackProps {
@@ -23,5 +23,5 @@ export interface NestedCloudProps {
   appEnv: AppEnvType
   appName: string
   domain: string
-  partialAppKey: string
+  timestamp: string
 }

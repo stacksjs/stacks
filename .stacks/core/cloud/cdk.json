@@ -1,5 +1,5 @@
 {
-  "app": "bun ./src/deploy.ts",
+  "app": "bun ./deploy.ts",
   "profile": "stacks",
   "watch": {
     "include": [

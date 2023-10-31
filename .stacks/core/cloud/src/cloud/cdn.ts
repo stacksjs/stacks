@@ -7,7 +7,6 @@ import {
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
   aws_secretsmanager as secretsmanager,
-  // aws_ssm as ssm,
   aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
@@ -49,23 +48,6 @@ export class CdnStack {
       maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
-
-    // Fetch the timestamp from SSM Parameter Store
-    // const timestampParam = ssm.StringParameter.fromSecureStringParameterAttributes(scope, 'TimestampParam', {
-    //   parameterName: `/stacks/${props.appName.toLowerCase()}/timestamp`,
-    //   version: 1,
-    // })
-
-    // let timestamp = timestampParam.stringValue
-
-    // // If the timestamp does not exist, create it
-    // if (!timestamp) {
-    //   timestamp = new Date().getTime().toString()
-    //   new ssm.StringParameter(scope, 'TimestampParam', {
-    //     parameterName: `/stacks/${props.appName.toLowerCase()}/timestamp`,
-    //     stringValue: timestamp,
-    //   })
-    // }
 
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
