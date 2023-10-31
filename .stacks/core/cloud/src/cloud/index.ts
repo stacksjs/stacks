@@ -8,6 +8,9 @@ import { DocsStack } from './docs'
 import { StorageStack } from './storage'
 import { SecurityStack } from './security'
 import { DeploymentStack } from './deployment'
+import { JumpBoxStack } from './jump-box'
+import { FileSystemStack } from './file-system'
+import { NetworkStack } from './network'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
@@ -24,6 +27,19 @@ export class Cloud extends Stack {
     const storage = new StorageStack(this, {
       ...props,
       kmsKey: security.kmsKey,
+    })
+
+    const network = new NetworkStack(this, props)
+
+    const fileSystem = new FileSystemStack(this, {
+      ...props,
+      vpc: network.vpc,
+    })
+
+    new JumpBoxStack(this, {
+      ...props,
+      vpc: network.vpc,
+      fileSystem: fileSystem.fileSystem,
     })
 
     const docs = new DocsStack(this, props)
