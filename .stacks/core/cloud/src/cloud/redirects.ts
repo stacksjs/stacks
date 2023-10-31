@@ -1,27 +1,45 @@
-// for each redirect, create a bucket & redirect it to the APP_URL
-// config.dns.redirects?.forEach((redirect) => {
-//   // TODO: use string-ts function here instead
-//   const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
-//   const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', { domainName: redirect })
-//   const redirectBucket = new s3.Bucket(this, `RedirectBucket${slug}`, {
-//     bucketName: `${redirect}-redirect`,
-//     websiteRedirect: {
-//       hostName: this.domain,
-//       protocol: s3.RedirectProtocol.HTTPS,
-//     },
-//     removalPolicy: RemovalPolicy.DESTROY,
-//     autoDeleteObjects: true,
-//   })
-//   new route53.CnameRecord(this, `RedirectRecord${slug}`, {
-//     zone: hostedZone,
-//     recordName: 'redirect',
-//     domainName: redirectBucket.bucketWebsiteDomainName,
-//   })
-// })
+/* eslint-disable no-new */
+import { config } from '@stacksjs/config'
+import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3 } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 
-// TODO: fix this – redirects do not work yet
-// config.dns.redirects?.forEach((redirect) => {
-//   const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
-//   const hostedZone = route53.HostedZone.fromLookup(this, `RedirectHostedZone${slug}`, { domainName: redirect })
-//   this.redirectZones.push(hostedZone)
-// })
+export interface RedirectsStackProps extends NestedCloudProps {
+  //
+}
+
+export class RedirectsStack {
+  redirectZones: route53.IHostedZone[] = []
+
+  constructor(scope: Construct, props: RedirectsStackProps) {
+    // for each redirect, create a bucket & redirect it to the APP_URL
+    config.dns.redirects?.forEach((redirect) => {
+      // TODO: use string-ts function here instead
+      const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
+      const hostedZone = route53.HostedZone.fromLookup(scope, 'HostedZone', { domainName: redirect })
+
+      const redirectBucket = new s3.Bucket(scope, `RedirectBucket${slug}`, {
+        bucketName: `${redirect}-redirect`,
+        websiteRedirect: {
+          hostName: props.domain,
+          protocol: s3.RedirectProtocol.HTTPS,
+        },
+        removalPolicy: RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+      })
+
+      new route53.CnameRecord(scope, `RedirectRecord${slug}`, {
+        zone: hostedZone,
+        recordName: 'redirect',
+        domainName: redirectBucket.bucketWebsiteDomainName,
+      })
+    })
+
+    // TODO: fix this – redirects do not work yet
+    config.dns.redirects?.forEach((redirect) => {
+      const slug = redirect.split('.').map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)).join('') // creates a CamelCase slug from the redirect
+      const hostedZone = route53.HostedZone.fromLookup(scope, `RedirectHostedZone${slug}`, { domainName: redirect })
+      this.redirectZones.push(hostedZone)
+    })
+  }
+}

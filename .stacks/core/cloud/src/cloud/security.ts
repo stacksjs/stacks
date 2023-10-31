@@ -9,14 +9,12 @@ export interface StorageStackProps extends NestedCloudProps {
   zone: route53.IHostedZone
 }
 
-// export class SecurityStack extends NestedStack {
 export class SecurityStack {
   firewall: wafv2.CfnWebACL
   kmsKey: kms.Key
   certificate: acm.Certificate
 
   constructor(scope: Construct, props: StorageStackProps) {
-    // super(scope, 'Security', props)
     const firewallOptions = config.cloud.firewall
 
     if (!firewallOptions)

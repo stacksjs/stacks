@@ -12,30 +12,41 @@ export class NetworkStack {
   constructor(scope: Construct, props: NetworkStackProps) {
     this.vpc = new ec2.Vpc(scope, 'Network', {
       vpcName: `${props.appName}-${props.appEnv}-vpc`,
-      // ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
+      ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
       maxAzs: 3,
-    // subnetConfiguration: [
-    //   {
-    //     cidrMask: 19, // Size of the subnet in CIDR notation
-    //     name: `${this.appName}-${appEnv}-public-subnet-1`,
-    //     subnetType: ec2.SubnetType.PUBLIC,
-    //   },
-    //   {
-    //     cidrMask: 19,
-    //     name: `${this.appName}-${appEnv}-public-subnet-2`,
-    //     subnetType: ec2.SubnetType.PUBLIC,
-    //   },
-    //   {
-    //     cidrMask: 19,
-    //     name: `${this.appName}-${appEnv}-private-subnet-1`,
-    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-    //   },
-    //   {
-    //     cidrMask: 19,
-    //     name: `${this.appName}-${appEnv}-private-subnet-2`,
-    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-    //   },
-    // ],
+      natGateways: 0,
+      subnetConfiguration: [
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-public-subnet-1`,
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-public-subnet-2`,
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-public-subnet-3`,
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-private-subnet-1`,
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-private-subnet-2`,
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+        {
+          cidrMask: 21,
+          name: `${props.appName}-${props.appEnv}-private-subnet-3`,
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+      ],
     })
   }
 }

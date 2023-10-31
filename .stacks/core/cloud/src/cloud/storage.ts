@@ -1,5 +1,5 @@
 import type { aws_kms as kms } from 'aws-cdk-lib'
-import { NestedStack, RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
+import { RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -7,7 +7,6 @@ export interface StorageStackProps extends NestedCloudProps {
   kmsKey: kms.Key
 }
 
-// export class StorageStack extends NestedStack {
 export class StorageStack {
   publicBucket: s3.Bucket
   privateBucket: s3.Bucket
@@ -18,7 +17,6 @@ export class StorageStack {
   backupRole: iam.Role
 
   constructor(scope: Construct, props: StorageStackProps) {
-    // super(scope, 'Storage', props)
     this.bucketPrefix = `${props.appName}-${props.appEnv}`
 
     this.publicBucket = new s3.Bucket(scope, 'PublicBucket', {

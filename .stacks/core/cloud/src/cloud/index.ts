@@ -11,6 +11,7 @@ import { DeploymentStack } from './deployment'
 import { JumpBoxStack } from './jump-box'
 import { FileSystemStack } from './file-system'
 import { NetworkStack } from './network'
+import { RedirectsStack } from './redirects'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
@@ -53,6 +54,8 @@ export class Cloud extends Stack {
       originRequestFunction: docs.originRequestFunction,
       zone: dns.zone,
     })
+
+    new RedirectsStack(this, props)
 
     new DeploymentStack(this, {
       ...props,
