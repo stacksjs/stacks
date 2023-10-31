@@ -1,13 +1,6 @@
 /* eslint-disable no-new */
-import type {
-  CfnResource,
-} from 'aws-cdk-lib'
-import {
-  AssetHashType,
-  CfnOutput as Output,
-  RemovalPolicy,
-  aws_lambda as lambda,
-} from 'aws-cdk-lib'
+import type { CfnResource } from 'aws-cdk-lib'
+import { AssetHashType, CfnOutput as Output, RemovalPolicy, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
@@ -22,7 +15,6 @@ export class DocsStack {
   originRequestFunction: lambda.Function
 
   constructor(scope: Construct, props: DocsStackProps) {
-    // super(scope, 'Docs', props)
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
     const docsPrefix = config.app.docMode ? '' : config.docs.base
 
@@ -50,9 +42,11 @@ export class DocsStack {
     const cfnOriginRequestFunction = this.originRequestFunction.node.defaultChild as CfnResource
     cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
-    new Output(scope, 'DocsUrl', {
-      value: `https://${props.domain}/${docsPrefix}`,
-      description: 'The URL of the deployed documentation',
-    })
+    if (!config.app.docMode) {
+      new Output(scope, 'DocsUrl', {
+        value: `https://${props.domain}/${docsPrefix}`,
+        description: 'The URL of the deployed documentation',
+      })
+    }
   }
 }

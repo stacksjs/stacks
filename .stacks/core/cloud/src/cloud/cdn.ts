@@ -5,8 +5,10 @@ import {
   CfnOutput as Output,
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,
+  aws_route53 as route53,
   aws_secretsmanager as secretsmanager,
   aws_ssm as ssm,
+  aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
@@ -21,6 +23,7 @@ export interface CdnStackProps extends NestedCloudProps {
   publicBucket: s3.Bucket
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
+  zone: route53.IHostedZone
 }
 
 // export class CdnStack extends NestedStack {
@@ -107,6 +110,12 @@ export class CdnStack {
           ttl: Duration.seconds(0),
         },
       ],
+    })
+
+    new route53.ARecord(scope, 'AliasRecord', {
+      recordName: props.domain,
+      zone: props.zone,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
     })
 
     new Output(scope, 'DistributionId', {

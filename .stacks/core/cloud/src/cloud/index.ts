@@ -35,6 +35,7 @@ export class Cloud extends Stack {
       certificate: security.certificate,
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
+      zone: dns.zone,
     })
 
     new DeploymentStack(this, {
