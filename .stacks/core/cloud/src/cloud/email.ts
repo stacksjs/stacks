@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 import { Duration, RemovalPolicy, Stack, Tags, aws_iam as iam, aws_lambda as lambda, aws_route53 as route53, aws_s3 as s3, aws_s3_notifications as s3n, aws_ses as ses } from 'aws-cdk-lib'
+import { config } from '@stacksjs/config'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -12,7 +13,7 @@ export class EmailStack {
 
   constructor(scope: Construct, props: EmailStackProps) {
     const bucketPrefix = `${props.appName}-${props.appEnv}`
-    this.emailBucket = new s3.Bucket(scope, 'EmailServerBucket', {
+    this.emailBucket = new s3.Bucket(scope, 'EmailBucket', {
       bucketName: `${bucketPrefix}-email-${props.timestamp}`,
       versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -84,7 +85,7 @@ export class EmailStack {
       }),
     )
 
-    new ses.CfnReceiptRule(scope, 'SESReceiptRule', {
+    const receiptRule = new ses.CfnReceiptRule(scope, 'SESReceiptRule', {
       ruleSetName: ruleSet.ref,
       rule: {
         name: receiptRuleName,
@@ -102,6 +103,10 @@ export class EmailStack {
         tlsPolicy: 'Require',
       },
     })
+
+    // this line is important to make sure the bucket is created before the receipt rule
+    // do not remove it, unless you want a hell of a time debugging randomness
+    receiptRule.node.addDependency(this.emailBucket)
 
     const iamGroup = new iam.Group(scope, 'IAMGroup', {
       groupName: `${props.appName}-${props.appEnv}-email-management-s3-group`,

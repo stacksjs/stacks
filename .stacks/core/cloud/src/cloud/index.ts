@@ -12,6 +12,7 @@ import { JumpBoxStack } from './jump-box'
 import { FileSystemStack } from './file-system'
 import { NetworkStack } from './network'
 import { RedirectsStack } from './redirects'
+import { EmailStack } from './email'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
@@ -52,6 +53,11 @@ export class Cloud extends Stack {
       certificate: security.certificate,
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
+      zone: dns.zone,
+    })
+
+    new EmailStack(this, {
+      ...props,
       zone: dns.zone,
     })
 
