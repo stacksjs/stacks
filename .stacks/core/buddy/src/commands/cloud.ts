@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
-import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
+import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -267,6 +267,14 @@ export function cloud(buddy: CLI) {
       //   await outro('While deleting the Backup Vaults, there was an issue', { startTime, useSeconds: true }, result5.error)
       //   process.exit(ExitCode.FatalError)
       // }
+
+      log.info('Removing any stored parameters...')
+      const result7 = await deleteParameterStore()
+
+      if (result7.isErr()) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result7.error)
+        process.exit(ExitCode.FatalError)
+      }
 
       log.info('Removing any CDK remnants...')
       const result6 = await deleteCdkRemnants()

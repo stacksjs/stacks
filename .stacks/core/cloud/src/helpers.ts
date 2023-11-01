@@ -308,6 +308,27 @@ export async function deleteLogGroups() {
   }
 }
 
+export async function deleteParameterStore() {
+  const ssm = new SSM({ region: 'us-east-1' })
+  const data = await ssm.describeParameters({})
+
+  if (!data.Parameters)
+    return ok('No parameters found')
+
+  const stacksParameters = data.Parameters.filter(param => param.Name?.includes('stacks')) || []
+
+  if (!stacksParameters || stacksParameters.length === 0)
+    return ok('No stacks parameters found')
+
+  const promises = stacksParameters.map(param => ssm.deleteParameter({ Name: param.Name || '' }))
+
+  await Promise.all(promises).catch((error: Error) => {
+    return err(handleError('Error deleting parameter store', error))
+  })
+
+  return ok('Parameter store deleted')
+}
+
 export async function deleteCdkRemnants() {
   try {
     return ok(await rimraf([
