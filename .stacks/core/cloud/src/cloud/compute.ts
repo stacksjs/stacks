@@ -1,5 +1,5 @@
 /* eslint-disable no-new */
-import type { aws_efs as efs } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
 import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_route53 as route53, aws_route53_targets as route53Targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
@@ -8,9 +8,12 @@ export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
   fileSystem: efs.FileSystem
   zone: route53.IHostedZone
+  certificate: acm.Certificate
 }
 
 export class ComputeStack {
+  lb: elbv2.ApplicationLoadBalancer
+
   constructor(scope: Construct, props: ComputeStackProps) {
     const vpc = props.vpc
     const fileSystem = props.fileSystem
@@ -101,11 +104,13 @@ export class ComputeStack {
     containerDef.addPortMappings({ containerPort: 80 })
 
     const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
+      securityGroupName: `${props.appName}-${props.appEnv}-service-sg`,
       vpc,
       description: 'Security group for service',
     })
 
     const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
+      securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
       vpc,
       description: 'Access to the public facing load balancer',
     })
@@ -113,7 +118,22 @@ export class ComputeStack {
     // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
     serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
 
+    this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
+      loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
+      vpc,
+      vpcSubnets: {
+        subnets: vpc.selectSubnets({
+          subnetType: ec2.SubnetType.PUBLIC,
+          onePerAz: true,
+        }).subnets,
+      },
+      internetFacing: true,
+      idleTimeout: Duration.seconds(30),
+      securityGroup: publicLoadBalancerSG,
+    })
+
     const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
+      // targetGroupName: `${props.appName}-${props.appEnv}-service-tg`,
       vpc,
       targetType: elbv2.TargetType.IP,
       protocol: elbv2.ApplicationProtocol.HTTP,
@@ -127,29 +147,15 @@ export class ComputeStack {
       },
     })
 
-    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
-
-    const lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
-      vpc,
-      vpcSubnets: {
-        subnets: vpc.selectSubnets({
-          subnetType: ec2.SubnetType.PUBLIC,
-          onePerAz: true,
-        }).subnets,
-      },
-      internetFacing: true,
-      idleTimeout: Duration.seconds(30),
-      securityGroup: publicLoadBalancerSG,
-    })
-
-    new route53.ARecord(scope, 'AliasApiRecord', {
-      zone: props.zone,
-      recordName: 'api',
-      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(lb)),
-    })
-
-    const listener = lb.addListener('PublicLoadBalancerListener', {
+    this.lb.addListener('HttpListener', {
       port: 80,
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
+    })
+
+    this.lb.addListener('HttpsListener', {
+      port: 443,
+      certificates: [props.certificate],
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
     })
 
     const service = new ecs.FargateService(scope, 'WebService', {
@@ -162,11 +168,14 @@ export class ComputeStack {
       securityGroups: [serviceSecurityGroup],
     })
 
-    //   this.compute.fargate = service
+    service.attachToApplicationTargetGroup(serviceTargetGroup)
 
-    listener.addTargets('ECS', {
-      port: 80,
-      targets: [service],
+    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
+
+    new route53.ARecord(scope, 'AliasApiRecord', {
+      zone: props.zone,
+      recordName: 'api',
+      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(this.lb)),
     })
 
     // Setup AutoScaling policy
@@ -193,6 +202,11 @@ export class ComputeStack {
     new Output(scope, 'ApiUrl', {
       value: `https://${props.domain}/${apiPrefix}`,
       description: 'The URL of the deployed application',
+    })
+
+    new Output(scope, 'LoadBalancerDNSName', {
+      value: this.lb.loadBalancerDnsName,
+      description: 'The DNS name of the load balancer',
     })
   }
 }

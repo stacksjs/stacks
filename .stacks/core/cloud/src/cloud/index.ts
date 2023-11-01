@@ -48,16 +48,6 @@ export class Cloud extends Stack {
 
     const docs = new DocsStack(this, props)
 
-    const cdn = new CdnStack(this, {
-      ...props,
-      publicBucket: storage.publicBucket,
-      logBucket: storage.logBucket,
-      certificate: security.certificate,
-      firewall: security.firewall,
-      originRequestFunction: docs.originRequestFunction,
-      zone: dns.zone,
-    })
-
     new EmailStack(this, {
       ...props,
       zone: dns.zone,
@@ -67,11 +57,23 @@ export class Cloud extends Stack {
 
     new PermissionsStack(this)
 
-    new ComputeStack(this, {
+    const compute = new ComputeStack(this, {
       ...props,
       vpc: network.vpc,
       fileSystem: fileSystem.fileSystem,
       zone: dns.zone,
+      certificate: security.certificate,
+    })
+
+    const cdn = new CdnStack(this, {
+      ...props,
+      publicBucket: storage.publicBucket,
+      logBucket: storage.logBucket,
+      certificate: security.certificate,
+      firewall: security.firewall,
+      originRequestFunction: docs.originRequestFunction,
+      zone: dns.zone,
+      lb: compute.lb,
     })
 
     new DeploymentStack(this, {

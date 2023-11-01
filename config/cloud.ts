@@ -33,7 +33,7 @@ export default {
 
   deploy: {
     docs: true, // deploys docs
-    api: false, // deploys api
+    api: true, // deploys api
     fileSystem: true, // enables file system
   },
 

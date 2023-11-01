@@ -4,10 +4,11 @@ import { AssetHashType, CfnOutput as Output, RemovalPolicy, aws_lambda as lambda
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
+import { originRequestFunctionHash } from '@stacksjs/utils'
 import type { NestedCloudProps } from '../types'
 
 export interface DocsStackProps extends NestedCloudProps {
-  originRequestFunctionCodeHash?: string
+  //
 }
 
 export class DocsStack {
@@ -27,7 +28,7 @@ export class DocsStack {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
-        assetHash: props.originRequestFunctionCodeHash ?? 'dummy-hash',
+        assetHash: originRequestFunctionHash,
         assetHashType: AssetHashType.CUSTOM,
       }),
     })

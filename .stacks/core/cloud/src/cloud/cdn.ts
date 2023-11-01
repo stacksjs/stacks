@@ -1,5 +1,5 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_elasticloadbalancingv2 as elbv2, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
   CfnOutput as Output,
@@ -13,6 +13,7 @@ import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
+import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
@@ -23,6 +24,7 @@ export interface CdnStackProps extends NestedCloudProps {
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
+  lb: elbv2.ApplicationLoadBalancer
 }
 
 // export class CdnStack extends NestedStack {
@@ -191,31 +193,35 @@ export class CdnStack {
     return config.cloud.deploy?.api
   }
 
-  // apiBehaviorOptions(scope: Construct): Record<string, cloudfront.BehaviorOptions> {
-  //   const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-  //     originPath: path,
-  //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-  //   })
+  apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
+    // const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(props.lb.loadBalancerDnsName, {
+    //   originPath: path,
+    //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    // })
+    const origin = (path: '/api' | '/api/*' = '/api') => new origins.LoadBalancerV2Origin(props.lb, {
+      originPath: path,
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    })
 
-  //   return {
-  //     '/api': {
-  //       origin: origin(),
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: this.setApiCachePolicy(scope),
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //     },
-  //     '/api/*': {
-  //       origin: origin('/api/*'),
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: this.apiCachePolicy,
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //     },
-  //   }
-  // }
+    return {
+      '/api': {
+        origin: origin(),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: this.setApiCachePolicy(scope),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      '/api/*': {
+        origin: origin('/api/*'),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: this.apiCachePolicy,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+    }
+  }
 
   docsBehaviorOptions(props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     return {
@@ -264,7 +270,7 @@ export class CdnStack {
         },
       })
 
-      // behaviorOptions = this.apiBehaviorOptions(scope)
+      behaviorOptions = this.apiBehaviorOptions(scope, props)
     }
 
     // if docMode is used, we don't need to add a behavior for the docs

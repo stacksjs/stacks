@@ -4,7 +4,7 @@ import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deletePa
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { loop, originRequestFunctionCodeHash, websiteSourceHash } from '@stacksjs/utils'
+import { loop, originRequestFunctionHash, websiteSourceHash } from '@stacksjs/utils'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
@@ -137,7 +137,7 @@ export function cloud(buddy: CLI) {
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      const result = await runCommand(`bunx cdk destroy --profile stacks --context originRequestFunctionCodeHash=${originRequestFunctionCodeHash} --context websiteSourceHash=${websiteSourceHash}`, {
+      const result = await runCommand(`bunx cdk destroy --profile stacks`, {
         ...options,
         cwd: p.cloudPath(),
         stdin: 'inherit',
