@@ -14,6 +14,7 @@ import { NetworkStack } from './network'
 import { RedirectsStack } from './redirects'
 import { EmailStack } from './email'
 import { PermissionsStack } from './permissions'
+import { ComputeStack } from './compute'
 
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
@@ -65,6 +66,12 @@ export class Cloud extends Stack {
     new RedirectsStack(this, props)
 
     new PermissionsStack(this)
+
+    new ComputeStack(this, {
+      ...props,
+      vpc: network.vpc,
+      fileSystem: fileSystem.fileSystem,
+    })
 
     new DeploymentStack(this, {
       ...props,

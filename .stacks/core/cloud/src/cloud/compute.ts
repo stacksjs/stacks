@@ -1,181 +1,188 @@
-// manageCompute() {
-//   const vpc = this.vpc
-//   const fileSystem = this.storage.fileSystem
+/* eslint-disable no-new */
+import type { aws_efs as efs } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 
-//   if (!fileSystem)
-//     throw new Error('The file system is missing. Please make sure it was created properly.')
+export interface ComputeStackProps extends NestedCloudProps {
+  vpc: ec2.Vpc
+  fileSystem: efs.FileSystem
+}
 
-//   const ecsCluster = new ecs.Cluster(this, 'DefaultEcsCluster', {
-//     clusterName: `${this.appName}-${appEnv}-ecs-cluster`,
-//     containerInsights: true,
-//     vpc,
-//   })
+export class ComputeStack {
+  constructor(scope: Construct, props: ComputeStackProps) {
+    const vpc = props.vpc
+    const fileSystem = props.fileSystem
 
-//   fileSystem.addToResourcePolicy(
-//     new iam.PolicyStatement({
-//       actions: ['elasticfilesystem:ClientMount'],
-//       principals: [new iam.AnyPrincipal()],
-//       conditions: {
-//         Bool: {
-//           'elasticfilesystem:AccessedViaMountTarget': 'true',
-//         },
-//       },
-//     }),
-//   )
+    if (!fileSystem)
+      throw new Error('The file system is missing. Please make sure it was created properly.')
 
-//   const cacheTable = new dynamodb.Table(this, 'CacheTable', {
-//     partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
-//     billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-//   })
+    const ecsCluster = new ecs.Cluster(scope, 'DefaultEcsCluster', {
+      clusterName: `${props.appName}-${props.appEnv}-ecs-cluster`,
+      containerInsights: true,
+      vpc,
+    })
 
-//   const taskRole = new iam.Role(this, 'TaskRole', {
-//     assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-//     inlinePolicies: {
-//       AccessToHitCounterTable: new iam.PolicyDocument({
-//         statements: [
-//           new iam.PolicyStatement({
-//             actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
-//             resources: [cacheTable.tableArn],
-//             conditions: {
-//               ArnLike: {
-//                 'aws:SourceArn': `arn:aws:ecs:${this.region}:${this.account}:*`,
-//               },
-//               StringEquals: {
-//                 'aws:SourceAccount': this.account,
-//               },
-//             },
-//           }),
-//         ],
-//       }),
-//     },
-//   })
+    fileSystem.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: ['elasticfilesystem:ClientMount'],
+        principals: [new iam.AnyPrincipal()],
+        conditions: {
+          Bool: {
+            'elasticfilesystem:AccessedViaMountTarget': 'true',
+          },
+        },
+      }),
+    )
 
-//   const taskDefinition = new ecs.FargateTaskDefinition(this, 'FargateTaskDefinition', {
-//     memoryLimitMiB: 512, // TODO: make configurable in cloud.compute
-//     cpu: 256, // TODO: make configurable in cloud.compute
-//     volumes: [
-//       {
-//         name: 'stacks-efs',
-//         efsVolumeConfiguration: {
-//           fileSystemId: fileSystem.fileSystemId,
-//         },
-//       },
-//     ],
-//     taskRole,
-//     executionRole: new iam.Role(this, 'ExecutionRole', {
-//       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-//     }),
-//   })
+    const cacheTable = new dynamodb.Table(scope, 'CacheTable', {
+      partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
 
-//   const containerDef = taskDefinition.addContainer('WebContainer', {
-//     containerName: `${this.appName}-${appEnv}-web-container`,
-//     image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
-//     logging: new ecs.AwsLogDriver({
-//       streamPrefix: `${this.appName}-${appEnv}-web`,
-//       logGroup: new logs.LogGroup(this, 'LogGroup'),
-//     }),
-//     // gpuCount: 0,
-//   })
+    const taskRole = new iam.Role(scope, 'TaskRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      inlinePolicies: {
+        AccessToHitCounterTable: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
+              resources: [cacheTable.tableArn],
+              conditions: {
+                ArnLike: {
+                  'aws:SourceArn': `arn:aws:ecs:${Stack.of(scope).region}:${Stack.of(scope).account}:*`,
+                },
+                StringEquals: {
+                  'aws:SourceAccount': Stack.of(scope).account,
+                },
+              },
+            }),
+          ],
+        }),
+      },
+    })
 
-//   containerDef.addMountPoints(
-//     {
-//       sourceVolume: 'stacks-efs',
-//       containerPath: '/mnt/efs',
-//       readOnly: false,
-//     },
-//   )
+    const taskDefinition = new ecs.FargateTaskDefinition(scope, 'FargateTaskDefinition', {
+      memoryLimitMiB: 512, // TODO: make configurable in cloud.compute
+      cpu: 256, // TODO: make configurable in cloud.compute
+      volumes: [
+        {
+          name: 'stacks-efs',
+          efsVolumeConfiguration: {
+            fileSystemId: fileSystem.fileSystemId,
+          },
+        },
+      ],
+      taskRole,
+      executionRole: new iam.Role(scope, 'ExecutionRole', {
+        assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      }),
+    })
 
-//   containerDef.addPortMappings({ containerPort: 3000 })
+    const containerDef = taskDefinition.addContainer('WebContainer', {
+      containerName: `${props.appName}-${props.appEnv}-web-container`,
+      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: `${props.appName}-${props.appEnv}-web`,
+        logGroup: new logs.LogGroup(scope, 'LogGroup'),
+      }),
+      // gpuCount: 0,
+    })
 
-//   const serviceSecurityGroup = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
-//     vpc,
-//     description: 'Security group for service',
-//   })
+    containerDef.addMountPoints(
+      {
+        sourceVolume: 'stacks-efs',
+        containerPath: '/mnt/efs',
+        readOnly: false,
+      },
+    )
 
-//   const publicLoadBalancerSG = new ec2.SecurityGroup(this, 'PublicLoadBalancerSG', {
-//     vpc,
-//     description: 'Access to the public facing load balancer',
-//   })
+    containerDef.addPortMappings({ containerPort: 3000 })
 
-//   // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
-//   serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
+    const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
+      vpc,
+      description: 'Security group for service',
+    })
 
-//   const serviceTargetGroup = new elbv2.ApplicationTargetGroup(this, 'ServiceTargetGroup', {
-//     vpc,
-//     targetType: elbv2.TargetType.IP,
-//     protocol: elbv2.ApplicationProtocol.HTTP,
-//     port: 80,
-//     healthCheck: {
-//       interval: Duration.seconds(6),
-//       path: '/',
-//       timeout: Duration.seconds(5),
-//       healthyThresholdCount: 2,
-//       unhealthyThresholdCount: 10,
-//     },
-//   })
+    const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
+      vpc,
+      description: 'Access to the public facing load balancer',
+    })
 
-//   publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
+    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
+    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
 
-//   const lb = new elbv2.ApplicationLoadBalancer(this, 'ApplicationLoadBalancer', {
-//     vpc,
-//     vpcSubnets: {
-//       subnetType: ec2.SubnetType.PUBLIC,
-//     },
-//     internetFacing: true,
-//     idleTimeout: Duration.seconds(30),
-//     securityGroup: publicLoadBalancerSG,
-//   })
+    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
+      vpc,
+      targetType: elbv2.TargetType.IP,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      port: 80,
+      healthCheck: {
+        interval: Duration.seconds(6),
+        path: '/',
+        timeout: Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 10,
+      },
+    })
 
-//   const listener = lb.addListener('PublicLoadBalancerListener', {
-//     port: 80,
-//   })
+    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
 
-//   const service = new ecs.FargateService(this, 'WebService', {
-//     serviceName: `${this.appName}-${appEnv}-web-service`,
-//     cluster: ecsCluster,
-//     taskDefinition,
-//     desiredCount: 2,
-//     assignPublicIp: true,
-//     minHealthyPercent: 75,
-//     securityGroups: [serviceSecurityGroup],
-//   })
+    const lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
+      vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PUBLIC,
+      },
+      internetFacing: true,
+      idleTimeout: Duration.seconds(30),
+      securityGroup: publicLoadBalancerSG,
+    })
 
-//   this.compute.fargate = service
+    const listener = lb.addListener('PublicLoadBalancerListener', {
+      port: 80,
+    })
 
-//   listener.addTargets('ECS', {
-//     port: 80,
-//     targets: [service],
-//   })
+    const service = new ecs.FargateService(scope, 'WebService', {
+      serviceName: `${props.appName}-${props.appEnv}-web-service`,
+      cluster: ecsCluster,
+      taskDefinition,
+      desiredCount: 2,
+      assignPublicIp: true,
+      minHealthyPercent: 75,
+      securityGroups: [serviceSecurityGroup],
+    })
 
-//   // Setup AutoScaling policy
-//   // TODO: make this configurable in cloud.compute
-//   const scaling = this.compute.fargate.autoScaleTaskCount({ maxCapacity: 2 })
-//   scaling.scaleOnCpuUtilization('CpuScaling', {
-//     targetUtilizationPercent: 50,
-//     scaleInCooldown: Duration.seconds(60),
-//     scaleOutCooldown: Duration.seconds(60),
-//   })
-//   scaling.scaleOnMemoryUtilization('MemoryScaling', {
-//     targetUtilizationPercent: 60,
-//     scaleInCooldown: Duration.seconds(60),
-//     scaleOutCooldown: Duration.seconds(60),
-//   })
+    //   this.compute.fargate = service
 
-//   // this.compute.fargate.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '0')
+    listener.addTargets('ECS', {
+      port: 80,
+      targets: [service],
+    })
 
-//   // Allow access to EFS from Fargate ECS
-//   fileSystem.grantRootAccess(this.compute.fargate.taskDefinition.taskRole.grantPrincipal)
-//   fileSystem.connections.allowDefaultPortFrom(this.compute.fargate.connections)
-// }
+    // Setup AutoScaling policy
+    // TODO: make this configurable in cloud.compute
+    const scaling = service.autoScaleTaskCount({ maxCapacity: 2 })
+    scaling.scaleOnCpuUtilization('CpuScaling', {
+      targetUtilizationPercent: 50,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
+    })
+    scaling.scaleOnMemoryUtilization('MemoryScaling', {
+      targetUtilizationPercent: 60,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
+    })
 
-//   new Output(this, 'ApiUrl', {
-//   value: `https://${this.domain}/${this.apiPrefix}`,
-//   description: 'The URL of the deployed application',
-// })
+    // this.compute.fargate.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '0')
 
-// if (this.apiVanityUrl) {
-//   new Output(this, 'ApiVanityUrl', {
-//     value: this.apiVanityUrl,
-//     description: 'The vanity URL of the deployed Stacks server.',
-//   })
-// }
+    // Allow access to EFS from Fargate ECS
+    fileSystem.grantRootAccess(service.taskDefinition.taskRole.grantPrincipal)
+    fileSystem.connections.allowDefaultPortFrom(service.connections)
+
+    const apiPrefix = 'api'
+    new Output(scope, 'ApiUrl', {
+      value: `https://${props.domain}/${apiPrefix}`,
+      description: 'The URL of the deployed application',
+    })
+  }
+}

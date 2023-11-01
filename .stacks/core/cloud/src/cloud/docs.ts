@@ -10,7 +10,6 @@ export interface DocsStackProps extends NestedCloudProps {
   originRequestFunctionCodeHash?: string
 }
 
-// export class DocsStack extends NestedStack {
 export class DocsStack {
   originRequestFunction: lambda.Function
 

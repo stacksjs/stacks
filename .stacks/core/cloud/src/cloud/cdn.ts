@@ -2,6 +2,7 @@
 import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
+  Fn,
   CfnOutput as Output,
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,
@@ -191,30 +192,30 @@ export class CdnStack {
     return config.cloud.deploy?.api
   }
 
-  // apiBehaviorOptions(): Record<string, cloudfront.BehaviorOptions> {
-  // const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
-  //   originPath: path,
-  //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-  // })
+  // apiBehaviorOptions(scope: Construct): Record<string, cloudfront.BehaviorOptions> {
+  //   const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(Fn.select(2, Fn.split('/', this.apiVanityUrl)), { // removes the https://
+  //     originPath: path,
+  //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+  //   })
 
-  // return {
-  //   '/api': {
-  //     origin: origin(),
-  //     compress: true,
-  //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //     // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //     cachePolicy: this.setApiCachePolicy(),
-  //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //   },
-  //   '/api/*': {
-  //     origin: origin('/api/*'),
-  //     compress: true,
-  //     allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //     // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //     cachePolicy: this.apiCachePolicy,
-  //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //   },
-  // }
+  //   return {
+  //     '/api': {
+  //       origin: origin(),
+  //       compress: true,
+  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //       cachePolicy: this.setApiCachePolicy(scope),
+  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //     },
+  //     '/api/*': {
+  //       origin: origin('/api/*'),
+  //       compress: true,
+  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //       // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //       cachePolicy: this.apiCachePolicy,
+  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //     },
+  //   }
   // }
 
   docsBehaviorOptions(props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
@@ -264,7 +265,7 @@ export class CdnStack {
         },
       })
 
-      // behaviorOptions = this.apiBehaviorOptions()
+      // behaviorOptions = this.apiBehaviorOptions(scope)
     }
 
     // if docMode is used, we don't need to add a behavior for the docs
