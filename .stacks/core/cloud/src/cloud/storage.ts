@@ -20,7 +20,7 @@ export class StorageStack {
     this.bucketPrefix = `${props.appName}-${props.appEnv}`
 
     this.publicBucket = new s3.Bucket(scope, 'PublicBucket', {
-      bucketName: `${this.bucketPrefix}-${props.timestamp}`,
+      bucketName: `${this.bucketPrefix}-public-${props.timestamp}`,
       versioned: true,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,

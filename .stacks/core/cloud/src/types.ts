@@ -13,7 +13,6 @@ export interface CloudOptions extends StackProps {
   timestamp: string
 }
 
-// export interface NestedCloudProps extends NestedStackProps {
 export interface NestedCloudProps {
   name: string
   env: {

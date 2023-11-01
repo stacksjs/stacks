@@ -28,7 +28,6 @@ export class DocsStack {
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
         assetHash: props.originRequestFunctionCodeHash ?? 'dummy-hash',
-        // assetHash: this.node.tryGetContext('originRequestFunctionCodeHash') ?? 'dummy-hash',
         assetHashType: AssetHashType.CUSTOM,
       }),
     })

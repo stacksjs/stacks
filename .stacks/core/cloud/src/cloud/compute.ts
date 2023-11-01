@@ -1,12 +1,13 @@
 /* eslint-disable no-new */
 import type { aws_efs as efs } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_route53 as route53, aws_route53_targets as route53Targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
   fileSystem: efs.FileSystem
+  zone: route53.IHostedZone
 }
 
 export class ComputeStack {
@@ -139,6 +140,12 @@ export class ComputeStack {
       internetFacing: true,
       idleTimeout: Duration.seconds(30),
       securityGroup: publicLoadBalancerSG,
+    })
+
+    new route53.ARecord(scope, 'AliasApiRecord', {
+      zone: props.zone,
+      recordName: 'api',
+      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(lb)),
     })
 
     const listener = lb.addListener('PublicLoadBalancerListener', {

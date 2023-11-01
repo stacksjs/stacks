@@ -2,7 +2,6 @@
 import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
-  Fn,
   CfnOutput as Output,
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,

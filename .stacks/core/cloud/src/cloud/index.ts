@@ -71,6 +71,7 @@ export class Cloud extends Stack {
       ...props,
       vpc: network.vpc,
       fileSystem: fileSystem.fileSystem,
+      zone: dns.zone,
     })
 
     new DeploymentStack(this, {
