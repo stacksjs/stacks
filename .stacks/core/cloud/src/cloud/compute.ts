@@ -97,7 +97,7 @@ export class ComputeStack {
       },
     )
 
-    containerDef.addPortMappings({ containerPort: 3000 })
+    containerDef.addPortMappings({ containerPort: 80 })
 
     const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
       vpc,
@@ -131,7 +131,10 @@ export class ComputeStack {
     const lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
       vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PUBLIC,
+        subnets: vpc.selectSubnets({
+          subnetType: ec2.SubnetType.PUBLIC,
+          onePerAz: true,
+        }).subnets,
       },
       internetFacing: true,
       idleTimeout: Duration.seconds(30),
