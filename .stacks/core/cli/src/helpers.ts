@@ -55,14 +55,14 @@ export function outro(text: string, options: OutroOptions, error?: Error | strin
       if (error)
         log.error(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] Failed`)
       else if (options.type === 'info')
-        log.info(`${dim(gray(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`))} ${message ?? 'Complete'}`)
+        console.log(`${dim(gray(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`))} ${message ?? 'Complete'}`)
       else
-        log.info(`${dim(gray(bold(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(message ?? 'Complete'))}`)
+        console.log(`${dim(gray(bold(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(message ?? 'Complete'))}`)
     }
 
     else {
       if (options?.type === 'info')
-        log.info(text)
+        console.log(text)
 
       // the following condition triggers in the case of "Cleaned up" messages
       else if (message !== text)

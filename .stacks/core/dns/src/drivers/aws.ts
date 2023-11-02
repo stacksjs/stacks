@@ -187,8 +187,7 @@ export async function updateNameservers(hostedZoneNameservers: string[], domainN
     return true
   }
 
-  log.info('')
-  log.info('✅ Your nameservers are up to date.')
+  log.success('Your nameservers are up to date.')
 }
 
 // please note, this function also updates the user's nameservers if they are out of date

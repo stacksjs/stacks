@@ -6,8 +6,7 @@ import { route } from '../.stacks/core/router/src/index.ts'
 // }).middleware('auth').prefix('/users')
 
 // route.redirect('/user', '/welcome')
-route.get('/welcome', () => 'hello world')
-  .middleware('logger')
+route.get('/welcome', () => 'hello world').middleware('logger')
 // route.get('/users', 'hello users')
 
 // function getUsers() {

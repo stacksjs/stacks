@@ -55,6 +55,7 @@
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "consola": "^3.2.3",
     "node-ray": "1.21.0",
     "vue-ray": "^1.17.4"
   },

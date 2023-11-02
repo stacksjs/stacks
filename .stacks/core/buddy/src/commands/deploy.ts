@@ -23,21 +23,18 @@ export function deploy(buddy: CLI) {
       if (!domain) {
         log.info('We could not identify a domain to deploy to.')
         log.info('Please set your .env or ./config/app.ts properly.')
-        log.info('')
-        log.info('ℹ️  Alternatively, specify a domain to deploy via the `--domain` flag.')
-        log.info('')
+        console.log('')
+        log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
+        console.log('')
         log.info('   ➡️  Example: `buddy deploy --domain example.com`')
-        log.info('')
+        console.log('')
         process.exit(ExitCode.FatalError)
       }
 
       if (await hasUserDomainBeenAddedToCloud(domain)) {
-        log.info('')
-        log.info('✅ Your domain is properly configured.')
-        log.info('ℹ️  Your cloud is deploying...')
-        log.info('')
-        log.info(italic('⏳ This may take a while...'))
-        log.info('')
+        log.success('Your domain is properly configured.')
+        log.info('Your cloud is deploying...')
+        console.log(italic('⏳ This may take a while...'))
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
       }
@@ -45,12 +42,12 @@ export function deploy(buddy: CLI) {
       // if the domain hasn't been added to the user's (AWS) cloud, we will add it for them
       // and then exit the process with prompts for the user to update their nameservers
       else {
-        log.info('')
+        console.log('')
         log.info(`👋  It appears to be your first ${italic(domain)} deployment.`)
-        log.info('')
+        console.log('')
         log.info(italic('Let’s ensure it is all connected properly.'))
         log.info(italic('One moment...'))
-        log.info('')
+        console.log('')
 
         options.domain = domain
         const result = await addDomain({

@@ -21,7 +21,6 @@ await runCommand('bun actions/src/zip/api.ts', {
   cwd: p.frameworkPath('core'),
 })
 
-log.info('')
 log.info('Preparing deployment...')
 
 await runCommand(`bunx cdk deploy --require-approval never`, {

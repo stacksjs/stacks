@@ -57,9 +57,7 @@ async function installTea(): Promise<void> {
 }
 
 async function initializeProject(options: CliOptions): Promise<void> {
-  log.info('')
   log.info('⏳ Installing npm dependencies...')
-  log.info('')
   await new Promise(resolve => setTimeout(resolve, 1500))
 
   const result = await runCommand('bun install', {
@@ -71,14 +69,10 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('')
-  log.info('✅ Installed npm dependencies')
-  log.info('')
+  log.success('Installed npm dependencies')
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  log.info('')
   log.info('⏳ Ensuring .env exists...')
-  log.info('')
   await new Promise(resolve => setTimeout(resolve, 800))
 
   const envResult = await runCommand('cp .env.example .env', {
@@ -90,13 +84,9 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('')
-  log.info('✅ .env exists')
-  log.info('')
+  log.success('.env exists')
 
-  log.info('')
   log.info('⏳ Generating application key...')
-  log.info('')
   await new Promise(resolve => setTimeout(resolve, 1200))
 
   const keyResult = await runCommand('buddy key:generate', {
@@ -108,14 +98,10 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('')
-  log.info('✅ Generated application key')
-  log.info('')
+  log.success('Generated application key')
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  log.info('')
   log.info('⏳ Ensuring AWS is connected...')
-  log.info('')
   await new Promise(resolve => setTimeout(resolve, 1200))
 
   const awsResult = await runCommand('buddy configure:aws', {
@@ -127,21 +113,15 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('')
-  log.info('✅ Configured AWS')
-  log.info('')
+  log.success('Configured AWS')
   await new Promise(resolve => setTimeout(resolve, 300))
 
   // ensure the IDE is setup
 
-  log.info('')
-  log.info('✅ Project is setup')
-  log.info('')
+  log.success('Project is setup')
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  log.info('')
   log.info('🎉 Happy coding!')
-  log.info('')
 }
 
 export async function optimizeTeaDeps(): Promise<void> {

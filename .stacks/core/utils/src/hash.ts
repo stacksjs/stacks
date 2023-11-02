@@ -1,6 +1,17 @@
-import { hashDirectory } from '@stacksjs/storage'
+import { hashPaths } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
 
-export const originRequestFunctionHash = hashDirectory(p.cloudPath('src/edge'))
-export const websiteSourceHash = config.app.docMode ? hashDirectory(p.projectPath('docs')) : hashDirectory(p.projectPath('resources/views'))
+export const originRequestFunctionHash = hashPaths(p.cloudPath('src/edge'))
+
+const docsSrc = [
+  p.projectPath('docs'),
+  p.projectPath('config/docs.ts'),
+]
+
+const websiteSrc = [
+  p.projectPath('resources/views'),
+  // p.projectPath('config/app.ts'),
+]
+
+export const websiteSourceHash = config.app.docMode ? hashPaths(docsSrc) : hashPaths(websiteSrc)

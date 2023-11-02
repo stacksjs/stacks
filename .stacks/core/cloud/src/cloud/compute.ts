@@ -205,7 +205,7 @@ export class ComputeStack {
     })
 
     new Output(scope, 'LoadBalancerDNSName', {
-      value: this.lb.loadBalancerDnsName,
+      value: `http://${this.lb.loadBalancerDnsName}`,
       description: 'The DNS name of the load balancer',
     })
   }

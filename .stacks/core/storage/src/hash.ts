@@ -2,18 +2,37 @@ import * as crypto from 'node:crypto'
 import { path as p } from '@stacksjs/path'
 import { fs } from './fs'
 
-export function hashDirectory(directory: string): string {
-  const files = fs.readdirSync(directory)
-  const hash = crypto.createHash('sha256')
-
-  for (const file of files) {
-    const filePath = p.join(directory, file)
-    if (fs.statSync(filePath).isDirectory())
-      hash.update(hashDirectory(filePath))
-
-    else
-      hash.update(fs.readFileSync(filePath))
+export function hashFileOrDirectory(path: string, hash: crypto.Hash): void {
+  if (fs.statSync(path).isDirectory()) {
+    const files = fs.readdirSync(path)
+    for (const file of files) {
+      const filePath = p.join(path, file)
+      hashFileOrDirectory(filePath, hash)
+    }
   }
+  else {
+    hash.update(fs.readFileSync(path))
+  }
+}
+
+export function hashDirectory(directory: string): string {
+  const hash = crypto.createHash('sha256')
+  hashFileOrDirectory(directory, hash)
+  return hash.digest('hex')
+}
+
+export function hashPath(path: string): string {
+  const hash = crypto.createHash('sha256')
+  hashFileOrDirectory(path, hash)
+  return hash.digest('hex')
+}
+
+export function hashPaths(paths: string | string[]): string {
+  const hash = crypto.createHash('sha256')
+  const pathsArray = Array.isArray(paths) ? paths : [paths]
+
+  for (const path of pathsArray)
+    hashFileOrDirectory(path, hash)
 
   return hash.digest('hex')
 }

@@ -64,10 +64,8 @@ export function cloud(buddy: CLI) {
           process.exit(ExitCode.Success)
         }
 
-        log.info('')
         log.info('The jump-box is getting added to your cloud resources...')
         log.info('This takes a few moments, please be patient.')
-        log.info('')
         // sleep for 2 seconds to get the user to read the message
         await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -78,19 +76,15 @@ export function cloud(buddy: CLI) {
           process.exit(ExitCode.FatalError)
         }
 
-        log.info('')
         log.info(italic('View the jump-box in the AWS console:'))
         log.info(underline('https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:instanceState=running'))
-        log.info('')
         log.info(italic('Once it finished initializing, you may SSH into it:'))
         log.info(underline(('buddy cloud --ssh')))
-        log.info('')
 
         await outro('Your jump-box was added.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
-      log.info('')
       log.info('This functionality is not yet implemented.')
       process.exit(ExitCode.Success)
     })
@@ -128,11 +122,9 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      log.info('')
       log.info(`   ${italic('ℹ️   Removing your cloud resources takes a while to complete.')}`)
       log.info(`   ${italic('Please note, your backups will not yet be deleted. Though,')}`)
       log.info(`   ${italic('Backups are scheduled to delete themselves in 30 days.')}`)
-      log.info('')
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -214,9 +206,7 @@ export function cloud(buddy: CLI) {
     .action(async () => {
       const startTime = await intro('buddy cloud:cleanup')
 
-      log.info('')
       log.info(`ℹ️  ${italic('Cleaning up your cloud resources will take a while to complete. Please be patient.')}`)
-      log.info('')
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -287,7 +277,6 @@ export function cloud(buddy: CLI) {
       // TODO: needs to delete all Backup Vaults
       // TODO: needs to delete all KMS keys
 
-      log.info('')
       await outro('AWS resources have been removed', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })

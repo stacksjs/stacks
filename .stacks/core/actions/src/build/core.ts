@@ -14,7 +14,6 @@ if (dirs.length === 0) {
 }
 
 dirs.forEach(async (folder) => {
-  log.info('')
   log.info('🏗️  Building...')
   log.info(`📦 ${italic(dim(folder))}`)
 
@@ -28,7 +27,6 @@ dirs.forEach(async (folder) => {
   }
 
   log.success('✅ Build complete')
-  log.info('')
 })
 
 // run the tsc command

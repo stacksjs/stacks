@@ -36,7 +36,6 @@ cli()
     else
       log.info(quotes.random())
 
-    log.info('')
     log.success('Have a great day!')
     process.exit(ExitCode.Success)
   })

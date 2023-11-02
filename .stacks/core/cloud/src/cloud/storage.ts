@@ -49,8 +49,8 @@ export class StorageStack {
 
     this.logBucket = new s3.Bucket(scope, 'LogsBucket', {
       bucketName: `${this.bucketPrefix}-logs-${props.timestamp}`,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.RETAIN, // somehow, if we try to auto-delete logs, it fails bc the bucket is not empty (even though objects should be deleted) -> that's why we let buddy cloud:cleanup handle this which is auto triggered when buddy undeploy is ran
+      // autoDeleteObjects: true,
       blockPublicAccess: new s3.BlockPublicAccess({
         blockPublicAcls: false,
         ignorePublicAcls: true,
