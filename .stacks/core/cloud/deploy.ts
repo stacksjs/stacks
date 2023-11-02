@@ -61,6 +61,9 @@ export const options = {
   timestamp,
 } satisfies CloudOptions
 
-new Cloud(app, name, options)
+new Cloud(app, name, {
+  ...options,
+  description: `Stacks Cloud ${appEnv} deployment`,
+})
 
 app.synth()

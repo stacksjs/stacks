@@ -29,7 +29,6 @@ export default {
 
     email: {
       unique: true,
-      default: 'test email',
       validator: {
         rule: validator.string().email(),
         message: 'Email must be a valid email address',
