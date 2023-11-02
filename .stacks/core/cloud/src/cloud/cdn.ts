@@ -194,14 +194,14 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    // const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(props.lb.loadBalancerDnsName, {
-    //   originPath: path,
-    //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-    // })
-    const origin = (path: '/api' | '/api/*' = '/api') => new origins.LoadBalancerV2Origin(props.lb, {
+    const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(props.lb.loadBalancerDnsName, {
       originPath: path,
       protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
     })
+    // const origin = (path: '/api' | '/api/*' = '/api') => new origins.LoadBalancerV2Origin(props.lb, {
+    //   originPath: path,
+    //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    // })
 
     return {
       '/api': {
