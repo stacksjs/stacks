@@ -9,7 +9,7 @@ const dynamodb = new DynamoDBClient()
 // Bare-bones document client
 const db = DynamoDBDocumentClient.from(dynamodb)
 
-const TABLE_NAME = process.env.TABLE_NAME
+const TABLE_NAME = 'hit-counter'
 
 if (!TABLE_NAME)
   throw new Error('Expected environment variable `TABLE_NAME` with name of DynamoDB table to store counter in')

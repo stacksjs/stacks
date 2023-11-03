@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_route53 as route53, aws_route53_targets as route53Targets } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecr as ecr, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_route53 as route53, aws_route53_targets as route53Targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -83,9 +83,12 @@ export class ComputeStack {
       }),
     })
 
+    const repositoryName = 'stacks-bun-hitcounter' // replace with your repository name
+    const repository = ecr.Repository.fromRepositoryName(scope, 'ServerRepo', repositoryName)
     const containerDef = taskDefinition.addContainer('WebContainer', {
       containerName: `${props.appName}-${props.appEnv}-web-container`,
-      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
+      // image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
+      image: ecs.ContainerImage.fromEcrRepository(repository),
       logging: new ecs.AwsLogDriver({
         streamPrefix: `${props.appName}-${props.appEnv}-web`,
         logGroup: new logs.LogGroup(scope, 'LogGroup'),
@@ -101,7 +104,10 @@ export class ComputeStack {
       },
     )
 
-    containerDef.addPortMappings({ containerPort: 80 })
+    containerDef.addPortMappings({
+      containerPort: 3000,
+      hostPort: 3000,
+    })
 
     const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
       securityGroupName: `${props.appName}-${props.appEnv}-service-sg`,
@@ -137,10 +143,11 @@ export class ComputeStack {
       vpc,
       targetType: elbv2.TargetType.IP,
       protocol: elbv2.ApplicationProtocol.HTTP,
-      port: 80,
+      port: 3000,
       healthCheck: {
         interval: Duration.seconds(6),
         path: '/',
+        protocol: elbv2.Protocol.HTTP,
         timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 10,
@@ -152,18 +159,17 @@ export class ComputeStack {
       defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
     })
 
-    this.lb.addListener('HttpsListener', {
-      port: 443,
-      certificates: [props.certificate],
-      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
-    })
-
     const service = new ecs.FargateService(scope, 'WebService', {
       serviceName: `${props.appName}-${props.appEnv}-web-service`,
       cluster: ecsCluster,
       taskDefinition,
       desiredCount: 2,
       assignPublicIp: true,
+      maxHealthyPercent: 200,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PUBLIC,
+        onePerAz: true,
+      }),
       minHealthyPercent: 75,
       securityGroups: [serviceSecurityGroup],
     })

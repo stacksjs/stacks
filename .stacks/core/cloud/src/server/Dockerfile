@@ -1,4 +1,4 @@
-FROM oven/bun
+FROM oven/bun:latest
 WORKDIR /srv
 
 # Add the package manifest and install packages
