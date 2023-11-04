@@ -1,9 +1,10 @@
 dependencies:
+  aws.amazon.com/cdk: ^2.13.7
   aws.amazon.com/cli: ^2.13.7
-  bun.sh: ^1.0.6
+  bun.sh: ^1.0.8
   caddyserver.com: ^2.7.4
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
-  npmjs.com: ^9.7.2 # can soon be removed when Bun native support is added
+  npmjs.com: ^9.7.2 # can soon be removed when Bun-native support is released
   redis.io: ^7.0.11
   sqlite.org: ^3.42.0

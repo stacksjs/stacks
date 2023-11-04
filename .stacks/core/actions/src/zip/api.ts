@@ -18,4 +18,4 @@ await zip(from, to, {
   cwd: p.cloudPath('src/runtime'),
 })
 
-log.info('zipped your API')
+log.info('Zipped your API')

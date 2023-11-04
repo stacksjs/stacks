@@ -16,6 +16,8 @@ import { EmailStack } from './email'
 import { PermissionsStack } from './permissions'
 import { ComputeStack } from './compute'
 
+// import { DashboardStack } from './dashboard'
+
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
     super(scope, id, props)
@@ -57,7 +59,9 @@ export class Cloud extends Stack {
 
     new PermissionsStack(this)
 
-    const compute = new ComputeStack(this, {
+    // new DashboardStack(this)
+
+    new ComputeStack(this, {
       ...props,
       vpc: network.vpc,
       fileSystem: fileSystem.fileSystem,
@@ -73,7 +77,6 @@ export class Cloud extends Stack {
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
       zone: dns.zone,
-      lb: compute.lb,
     })
 
     new DeploymentStack(this, {

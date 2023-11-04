@@ -1,8 +1,11 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, Stack, aws_dynamodb as dynamodb, aws_ec2 as ec2, aws_ecr as ecr, aws_ecs as ecs, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_route53 as route53, aws_route53_targets as route53Targets } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, aws_ecr_assets as ecr_assets, aws_lambda as lambda, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
+import { path as p } from '@stacksjs/path'
+import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
+import type { EnvKey } from '~/storage/framework/stacks/env'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
@@ -12,8 +15,6 @@ export interface ComputeStackProps extends NestedCloudProps {
 }
 
 export class ComputeStack {
-  lb: elbv2.ApplicationLoadBalancer
-
   constructor(scope: Construct, props: ComputeStackProps) {
     const vpc = props.vpc
     const fileSystem = props.fileSystem
@@ -21,198 +22,58 @@ export class ComputeStack {
     if (!fileSystem)
       throw new Error('The file system is missing. Please make sure it was created properly.')
 
-    const ecsCluster = new ecs.Cluster(scope, 'DefaultEcsCluster', {
-      clusterName: `${props.appName}-${props.appEnv}-ecs-cluster`,
-      containerInsights: true,
+    // const dockerImageAsset = new ecr_assets.DockerImageAsset(scope, 'ServerBuildImage', {
+    //   directory: p.cloudPath('src/server'),
+    // })
+
+    const webServer = new lambda.Function(scope, 'WebServer', {
+      // code: lambda.Code.fromDockerBuild(p.cloudPath('src/server')),
+      description: 'The web server for the Stacks application',
+      code: lambda.Code.fromAssetImage(p.cloudPath('src/server')),
+      handler: lambda.Handler.FROM_IMAGE,
+      runtime: lambda.Runtime.FROM_IMAGE,
       vpc,
+      memorySize: 512, // replace with your actual memory size
+      timeout: Duration.minutes(5), // replace with your actual timeout
+      logRetention: logs.RetentionDays.ONE_WEEK,
+      architecture: lambda.Architecture.ARM_64,
+      // filesystem: lambda.FileSystem.fromEfsAccessPoint(this.storage.accessPoint!, '/mnt/efs'),
     })
 
-    fileSystem.addToResourcePolicy(
-      new iam.PolicyStatement({
-        actions: ['elasticfilesystem:ClientMount'],
-        principals: [new iam.AnyPrincipal()],
-        conditions: {
-          Bool: {
-            'elasticfilesystem:AccessedViaMountTarget': 'true',
-          },
-        },
-      }),
-    )
+    const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
+    keysToRemove.forEach(key => delete env[key as EnvKey])
 
-    const cacheTable = new dynamodb.Table(scope, 'CacheTable', {
-      partitionKey: { name: 'counter', type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-    })
-
-    const taskRole = new iam.Role(scope, 'TaskRole', {
-      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-      inlinePolicies: {
-        AccessToHitCounterTable: new iam.PolicyDocument({
-          statements: [
-            new iam.PolicyStatement({
-              actions: ['dynamodb:Get*', 'dynamodb:UpdateItem'],
-              resources: [cacheTable.tableArn],
-              conditions: {
-                ArnLike: {
-                  'aws:SourceArn': `arn:aws:ecs:${Stack.of(scope).region}:${Stack.of(scope).account}:*`,
-                },
-                StringEquals: {
-                  'aws:SourceAccount': Stack.of(scope).account,
-                },
-              },
-            }),
-          ],
-        }),
+    const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
+      secretName: `${props.appName}-${props.appEnv}-secrets`,
+      description: 'Secrets for the Stacks application',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify(env),
+        generateStringKey: Object.keys(env).join(',').length.toString(),
       },
     })
 
-    const taskDefinition = new ecs.FargateTaskDefinition(scope, 'FargateTaskDefinition', {
-      memoryLimitMiB: 512, // TODO: make configurable in cloud.compute
-      cpu: 256, // TODO: make configurable in cloud.compute
-      volumes: [
-        {
-          name: 'stacks-efs',
-          efsVolumeConfiguration: {
-            fileSystemId: fileSystem.fileSystemId,
-          },
-        },
-      ],
-      taskRole,
-      executionRole: new iam.Role(scope, 'ExecutionRole', {
-        assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-      }),
-    })
+    secrets.grantRead(webServer)
+    webServer.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
-    const repositoryName = 'stacks-bun-hitcounter' // replace with your repository name
-    const repository = ecr.Repository.fromRepositoryName(scope, 'ServerRepo', repositoryName)
-    const containerDef = taskDefinition.addContainer('WebContainer', {
-      containerName: `${props.appName}-${props.appEnv}-web-container`,
-      // image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/nginx:latest'),
-      image: ecs.ContainerImage.fromEcrRepository(repository),
-      logging: new ecs.AwsLogDriver({
-        streamPrefix: `${props.appName}-${props.appEnv}-web`,
-        logGroup: new logs.LogGroup(scope, 'LogGroup'),
-      }),
-      // gpuCount: 0,
-    })
-
-    containerDef.addMountPoints(
-      {
-        sourceVolume: 'stacks-efs',
-        containerPath: '/mnt/efs',
-        readOnly: false,
-      },
-    )
-
-    containerDef.addPortMappings({
-      containerPort: 3000,
-      hostPort: 3000,
-    })
-
-    const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
-      securityGroupName: `${props.appName}-${props.appEnv}-service-sg`,
-      vpc,
-      description: 'Security group for service',
-    })
-
-    const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
-      securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
-      vpc,
-      description: 'Access to the public facing load balancer',
-    })
-
-    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
-    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
-
-    this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
-      loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
-      vpc,
-      vpcSubnets: {
-        subnets: vpc.selectSubnets({
-          subnetType: ec2.SubnetType.PUBLIC,
-          onePerAz: true,
-        }).subnets,
-      },
-      internetFacing: true,
-      idleTimeout: Duration.seconds(30),
-      securityGroup: publicLoadBalancerSG,
-    })
-
-    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
-      // targetGroupName: `${props.appName}-${props.appEnv}-service-tg`,
-      vpc,
-      targetType: elbv2.TargetType.IP,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      port: 3000,
-      healthCheck: {
-        interval: Duration.seconds(6),
-        path: '/',
-        protocol: elbv2.Protocol.HTTP,
-        timeout: Duration.seconds(5),
-        healthyThresholdCount: 2,
-        unhealthyThresholdCount: 10,
+    const api = new lambda.FunctionUrl(scope, 'StacksServerUrl', {
+      function: webServer,
+      authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
+      cors: {
+        allowedOrigins: ['*'],
       },
     })
 
-    this.lb.addListener('HttpListener', {
-      port: 80,
-      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
-    })
-
-    const service = new ecs.FargateService(scope, 'WebService', {
-      serviceName: `${props.appName}-${props.appEnv}-web-service`,
-      cluster: ecsCluster,
-      taskDefinition,
-      desiredCount: 2,
-      assignPublicIp: true,
-      maxHealthyPercent: 200,
-      vpcSubnets: vpc.selectSubnets({
-        subnetType: ec2.SubnetType.PUBLIC,
-        onePerAz: true,
-      }),
-      minHealthyPercent: 75,
-      securityGroups: [serviceSecurityGroup],
-    })
-
-    service.attachToApplicationTargetGroup(serviceTargetGroup)
-
-    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
-
-    new route53.ARecord(scope, 'AliasApiRecord', {
-      zone: props.zone,
-      recordName: 'api',
-      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(this.lb)),
-    })
-
-    // Setup AutoScaling policy
-    // TODO: make this configurable in cloud.compute
-    const scaling = service.autoScaleTaskCount({ maxCapacity: 2 })
-    scaling.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 50,
-      scaleInCooldown: Duration.seconds(60),
-      scaleOutCooldown: Duration.seconds(60),
-    })
-    scaling.scaleOnMemoryUtilization('MemoryScaling', {
-      targetUtilizationPercent: 60,
-      scaleInCooldown: Duration.seconds(60),
-      scaleOutCooldown: Duration.seconds(60),
-    })
-
-    // this.compute.fargate.targetGroup.setAttribute('deregistration_delay.timeout_seconds', '0')
-
-    // Allow access to EFS from Fargate ECS
-    fileSystem.grantRootAccess(service.taskDefinition.taskRole.grantPrincipal)
-    fileSystem.connections.allowDefaultPortFrom(service.connections)
-
+    const apiVanityUrl = api.url
     const apiPrefix = 'api'
+
     new Output(scope, 'ApiUrl', {
       value: `https://${props.domain}/${apiPrefix}`,
       description: 'The URL of the deployed application',
     })
 
-    new Output(scope, 'LoadBalancerDNSName', {
-      value: `http://${this.lb.loadBalancerDnsName}`,
-      description: 'The DNS name of the load balancer',
+    new Output(scope, 'ApiVanityUrl', {
+      value: apiVanityUrl,
+      description: 'The Vanity URL of the deployed application',
     })
   }
 }

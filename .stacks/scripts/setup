@@ -29,18 +29,14 @@ _install_pre_reqs() {
     B=libudev-dev
 
     case $(cat /etc/debian_version) in
-    jessie/sid | 8.* | stretch/sid | 9.*)
-      apt --yes install libc-dev libstdc++-4.8-dev libgcc-4.7-dev $A $B
-      ;;
-    buster/sid | 10.*)
-      apt --yes install libc-dev libstdc++-8-dev libgcc-8-dev $A $B
-      ;;
-    bullseye/sid | 11.*)
-      apt --yes install libc-dev libstdc++-10-dev libgcc-9-dev $A $B
-      ;;
-    bookworm/sid | 12.* | *)
-      apt --yes install libc-dev libstdc++-11-dev libgcc-11-dev $A $B
-      ;;
+    jessie/sid|8.*|stretch/sid|9.*)
+      apt --yes install libc-dev libstdc++-4.8-dev libgcc-4.7-dev $A $B;;
+    buster/sid|10.*)
+      apt --yes install libc-dev libstdc++-8-dev libgcc-8-dev $A $B;;
+    bullseye/sid|11.*)
+      apt --yes install libc-dev libstdc++-10-dev libgcc-9-dev $A $B;;
+    bookworm/sid|12.*|*)
+      apt --yes install libc-dev libstdc++-11-dev libgcc-11-dev $A $B;;
     esac
   elif test -f /etc/fedora-release; then
     $SUDO yum --assumeyes install libatomic
@@ -61,13 +57,17 @@ _install_pkgx() {
   tmpdir=$(mktemp -d)
 
   if [ $# -eq 0 ]; then
-    echo "Installing: /usr/local/bin/pkgx" >&2
+    if [ -f /usr/local/bin/pkgx ]; then
+      echo "upgrading: /usr/local/bin/pkgx" >&2
+    else
+      echo "installing: /usr/local/bin/pkgx" >&2
+    fi
 
     # using a named pipe to prevent curl progress output trumping the sudo password prompt
     pipe="$tmpdir/pipe"
     mkfifo "$pipe"
 
-    curl $progress --fail --proto '=https' "https://pkgx.sh/$(uname)/$(uname -m)".tgz >"$pipe" &
+    curl $progress --fail --proto '=https' "https://pkgx.sh/$(uname)/$(uname -m)".tgz > "$pipe" &
     $SUDO sh -c "
       mkdir -p /usr/local/bin
       tar xz --directory /usr/local/bin < '$pipe'
@@ -76,36 +76,43 @@ _install_pkgx() {
 
     rm -r "$tmpdir"
 
-    export PATH="/usr/local/bin:$PATH" # just in case
+    if [ "$(command which pkgx)" != /usr/local/bin/pkgx ]; then
+      echo "warning: active pkgx is not /usr/local/bin/pkgx" >&2
+      export PATH="/usr/local/bin:$PATH"  # so we can exec if required
+    fi
+
+    # tell the user what version we just installed
+    pkgx --version
+
   else
     curl $progress --fail --proto '=https' \
-      "https://pkgx.sh/$(uname)/$(uname -m)".tgz |
-      tar xz --directory "$tmpdir"
+        "https://pkgx.sh/$(uname)/$(uname -m)".tgz \
+      | tar xz --directory "$tmpdir"
 
     export PATH="$tmpdir:$PATH"
+    export PKGX_DIR="$tmpdir"
   fi
 
   unset tmpdir pipe
 }
 
 _should_install_pkgx() {
-  if ! command -v pkgx >/dev/null 2>&1; then
+  if [ ! -f /usr/local/bin/pkgx ]; then
     return 0
-  elif [ $(/usr/bin/which pkgx) != /usr/local/bin/pkgx ]; then
-    # if pkgx is not installed to /usr/local/bin then we’re not getting involved
-    return 1
+  else
+    # if the installed version is less than the available version then upgrade
+    /usr/local/bin/pkgx --silent semverator gt \
+      $(curl -Ssf https://pkgx.sh/VERSION) \
+      $(/usr/local/bin/pkgx --version | awk '{print $2}') >/dev/null 2>&1
   fi
-
-  # if the installed version is less than the available version then upgrade
-  pkgx --silent semverator lt \
-    $(curl -Ssf https://pkgx.sh/VERSION) \
-    $(/usr/local/bin/pkgx --version | awk '{print $2}') >/dev/null 2>&1
 }
 
 ########################################################################### meat
 
 if _should_install_pkgx; then
   _install_pkgx "$@"
+elif [ $# -eq 0 ]; then
+  echo "pkgx already up-to-date" >&2
 fi
 
 if _is_ci; then
@@ -121,7 +128,7 @@ else
   apt() {
     case "$1" in
     update)
-      echo "ensure you have the $(pkgx) pre-requisites installed:" >&2
+      echo "ensure you have the `pkgx` pre-requisites installed:" >&2
       echo >&2
       ;;
     install)

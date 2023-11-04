@@ -1,5 +1,5 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_elasticloadbalancingv2 as elbv2, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
   CfnOutput as Output,
@@ -24,10 +24,8 @@ export interface CdnStackProps extends NestedCloudProps {
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
-  lb: elbv2.ApplicationLoadBalancer
 }
 
-// export class CdnStack extends NestedStack {
 export class CdnStack {
   distribution: cloudfront.Distribution
   originAccessIdentity: cloudfront.OriginAccessIdentity
@@ -261,16 +259,7 @@ export class CdnStack {
       const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
       keysToRemove.forEach(key => delete env[key as EnvKey])
 
-      new secretsmanager.Secret(scope, 'StacksSecrets', {
-        secretName: `${props.appName}-${props.appEnv}-secrets`,
-        description: 'Secrets for the Stacks application',
-        generateSecretString: {
-          secretStringTemplate: JSON.stringify(env),
-          generateStringKey: Object.keys(env).join(',').length.toString(),
-        },
-      })
-
-      behaviorOptions = this.apiBehaviorOptions(scope, props)
+      // behaviorOptions = this.apiBehaviorOptions(scope, props)
     }
 
     // if docMode is used, we don't need to add a behavior for the docs
