@@ -30,13 +30,12 @@ export const pagesConfig = {
     UnoCSS({
       configFile: p.corePath('vite/src/uno.config.ts'),
     }),
-    // cssEngine(),
     components(),
     layouts({
       layoutsDirs: p.resourcesPath('layouts'),
     }),
     autoImports(),
-    inspect(),
+    // inspect(),
   ],
 
   // https://github.com/antfu/vite-ssg

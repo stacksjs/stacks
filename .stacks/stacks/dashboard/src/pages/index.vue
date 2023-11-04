@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import Alert from '../components/Modals/Popups/Alert.vue'
 import BaseModal from '../components/Modals/BaseModal.vue'
-
-import { useSearchEngine } from '@stacksjs/search-engine'
-
-console.log(useSearchEngine)
 </script>
 
 <template>

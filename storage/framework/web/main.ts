@@ -1,4 +1,4 @@
-import { createHead } from 'unhead'
+import { createHead } from '@unhead/vue'
 
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
@@ -13,6 +13,8 @@ import 'virtual:uno.css'
 
 const routes = setupLayouts(generatedRoutes)
 
+const head = createHead()
+
 createHead()
 
 ViteSSG(
@@ -24,5 +26,7 @@ ViteSSG(
   (ctx) => {
     Object.values(import.meta.glob<{ install: UserModule }>('../../../.stacks/core/modules/*.ts', { eager: true }))
       .forEach(i => i.install?.(ctx))
+
+      ctx.app.use(head)
   },
 )

@@ -11,6 +11,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       'vue',
       'vue-router',
       'vue/macros',
+      '@vueuse/core',
       'pinia',
       unheadVueComposablesImports,
       // 'vitepress'
@@ -23,7 +24,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       resourcesPath('components'),
 
       // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
-      frameworkPath('src'),
+      // frameworkPath('src'),
     ],
     dts: projectStoragePath('framework/types/auto-imports.d.ts'),
     vueTemplate: true,
