@@ -10,6 +10,7 @@ import { cssEngine } from './plugin/css-engine'
 import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { inspect } from './plugin/inspect'
+import { server } from '@stacksjs/server'
 // import { stacks } from './plugin/stacks'
 
 const config = {
@@ -18,13 +19,9 @@ const config = {
   envPrefix: 'FRONTEND_',
   publicDir: p.publicPath(),
 
-  // server: server({
-  //   type: 'library',
-  // }),
-
-  server: {
-    port: 3333,
-  },
+  server: server({
+    type: 'library',
+  }),
 
   resolve: {
     dedupe: ['vue'],

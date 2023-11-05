@@ -11,7 +11,7 @@ export function config(options: ServerOptions) {
     app: 'app.stacks.test',
     desktop: 'desktop.stacks.test',
     docs: 'localhost',
-    library: 'library.stacks.test',
+    library: 'localhost',
     example: 'example.stacks.test',
   }
 
