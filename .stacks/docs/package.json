@@ -13,6 +13,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.24"
+    "vitepress": "1.0.0-rc.25"
   }
 }
