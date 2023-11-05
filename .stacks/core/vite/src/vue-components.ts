@@ -1,5 +1,6 @@
 import { alias } from '@stacksjs/alias'
 import { server } from '@stacksjs/server'
+import { config as c } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
@@ -15,9 +16,9 @@ const config = {
   envPrefix: 'FRONTEND_',
   publicDir: p.storagePath('public'),
 
-  server: server({
-    type: 'library',
-  }),
+  // server: server({
+  //   type: 'library',
+  // }),
 
   resolve: {
     dedupe: ['vue'],
@@ -46,8 +47,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     emptyOutDir: true,
     lib: {
       entry: p.libraryEntryPath('vue-components'),
-      // name: library.vueComponents?.name,
-      name: 'test-lib-abc',
+      name: c.library.vueComponents?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
         if (format === 'es')
