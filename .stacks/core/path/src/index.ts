@@ -92,7 +92,7 @@ export function buildEnginePath(path?: string) {
 }
 
 export function libsPath(path?: string) {
-  return frameworkPath(`libs/${path || ''}`)
+  return frameworkStoragePath(`libs/${path || ''}`)
 }
 
 export function libsEntriesPath(path?: string) {

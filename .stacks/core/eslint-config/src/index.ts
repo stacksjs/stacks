@@ -1,10 +1,10 @@
 import { antfu as stacks } from './factory'
 
-export * from './configs'
-export * from './factory'
-export * from './globs'
-export * from './plugins'
 export * from './types'
+export * from './factory'
+export * from './configs'
+export * from './plugins'
 export * from './utils'
+export * from './globs'
 
 export default stacks

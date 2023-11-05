@@ -1,3 +1,5 @@
+import type { FlatGitignoreOptions } from 'eslint-config-flat-gitignore'
+import type { ParserOptions } from '@typescript-eslint/parser'
 import type {
   EslintCommentsRules,
   EslintRules,
@@ -17,25 +19,20 @@ import type {
   VueRules,
   YmlRules,
 } from '@antfu/eslint-define-config'
-import type { UnprefixedRuleOptions } from '@stylistic/eslint-plugin'
-import type { ParserOptions } from '@typescript-eslint/parser'
-import type { FlatGitignoreOptions } from 'eslint-config-flat-gitignore'
 import type { Rules as AntfuRules } from 'eslint-plugin-antfu'
+import type { UnprefixedRuleOptions } from '@stylistic/eslint-plugin'
 
 type StylisticMergedRules = MergeIntersection<
   EslintRules &
   Unprefix<ReactRules, 'react/'> &
-  Unprefix<TypeScriptRules, 'ts/'>
+  Unprefix<TypeScriptRules, '@typescript-eslint/'>
+  & { 'jsx-self-closing-comp': ReactRules['react/self-closing-comp'] }
 >
 
-type CommonKeys<T1, T2> = Extract<keyof T1, keyof T2>
-
-type StylisticRules = Pick<StylisticMergedRules, CommonKeys<StylisticMergedRules, UnprefixedRuleOptions>>
-// below throws an error atm
-// type StylisticRules = Pick<StylisticMergedRules, keyof UnprefixedRuleOptions>
+type StylisticRules = Pick<StylisticMergedRules, keyof UnprefixedRuleOptions>
 
 export type Rules = MergeIntersection<
-  RenamePrefix<TypeScriptRules, 'ts/', 'ts/'> &
+  RenamePrefix<TypeScriptRules, '@typescript-eslint/', 'ts/'> &
   RenamePrefix<VitestRules, 'vitest/', 'test/'> &
   RenamePrefix<YmlRules, 'yml/', 'yaml/'> &
   RenamePrefix<NRules, 'n/', 'node/'> &
@@ -89,7 +86,7 @@ export interface OptionsTypeScriptWithTypes {
    * When this options is provided, type aware rules will be enabled.
    * @see https://typescript-eslint.io/linting/typed-linting/
    */
-  tsconfigPath?: string
+  tsconfigPath?: string | string[]
 }
 
 export interface OptionsHasTypeScript {
@@ -132,7 +129,7 @@ export interface OptionsConfig extends OptionsComponentExts {
    *
    * @default auto-detect based on the dependencies
    */
-  typescript?: boolean | OptionsTypeScriptWithTypes
+  typescript?: boolean | OptionsTypeScriptWithTypes | OptionsTypeScriptParserOptions
 
   /**
    * Enable JSX related rules.
