@@ -183,7 +183,7 @@ export type CreateOptions = {
   [key in CreateStringOption]: string
 } & CliOptions
 
-export type DevOption = 'components' | 'docs' | 'pages' | 'api' | 'desktop' | 'all'
+export type DevOption = 'components' | 'docs' | 'pages' | 'api' | 'desktop' | 'all' | 'functions' | 'interactive' | 'verbose'
 export type DevOptions = {
   [key in DevOption]: boolean;
 } & CliOptions
@@ -299,8 +299,9 @@ export enum NpmScript {
   BuildStacks = 'build:stacks',
   Clean = 'rimraf bun.lockb node_modules/ .stacks/**/dist',
   Dev = 'dev',
+  DevDocs = 'dev:docs',
   DevDesktop = 'dev:desktop',
-  DevViews = 'dev:views',
+  DevViews = 'dev',
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
   Lint = 'eslint .',
@@ -349,7 +350,9 @@ export enum Action {
   Changelog = 'changelog',
   Clean = 'clean',
   DevComponents = 'dev/components',
-  Dev = 'dev/index',
+  Dev = 'dev/views',
+  DevViews = 'dev/views',
+  DevApi = 'wip',
   DevDesktop = 'dev/desktop',
   DevDocs = 'dev/docs',
   Deploy = 'deploy/index',

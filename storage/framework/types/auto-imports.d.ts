@@ -1431,7 +1431,6 @@ declare module 'vue' {
     readonly runFunctionsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFunctionsDevServer']>
     readonly runMake: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['runNpmScript']>
-    readonly runPagesDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runPagesDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['scriptsPath']>
@@ -2269,7 +2268,6 @@ declare module '@vue/runtime-core' {
     readonly runFunctionsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFunctionsDevServer']>
     readonly runMake: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['runNpmScript']>
-    readonly runPagesDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runPagesDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['scriptsPath']>
