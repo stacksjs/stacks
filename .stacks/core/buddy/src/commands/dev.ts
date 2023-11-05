@@ -78,7 +78,8 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const result = await runCommand(`bunx --bun vite --config ${vitePath('src/vue-components.ts')}`, options)
+      const cmd = `bunx --bun vite --config ${vitePath('src/vue-components.ts')}`
+      const result = await runCommand(cmd, options)
 
       if (options.verbose)
         log.info('buddy dev:components result', result)

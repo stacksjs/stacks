@@ -1,3 +1,4 @@
+import type { ViteBuildOptions } from './'
 import { alias } from '@stacksjs/alias'
 import { server } from '@stacksjs/server'
 import { config as c } from '@stacksjs/config'
@@ -5,20 +6,25 @@ import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
 import { components } from './plugin/components'
+import { cssEngine } from './plugin/css-engine'
 import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { inspect } from './plugin/inspect'
-import type { ViteBuildOptions } from './'
+// import { stacks } from './plugin/stacks'
 
 const config = {
-  root: p.frameworkPath('libs/components/vue'),
+  root: p.libsPath('components/vue'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: p.storagePath('public'),
+  publicDir: p.publicPath(),
 
   // server: server({
   //   type: 'library',
   // }),
+
+  server: {
+    port: 3333,
+  },
 
   resolve: {
     dedupe: ['vue'],
@@ -26,13 +32,13 @@ const config = {
   },
 
   optimizeDeps: {
-    exclude: ['vue', '@stacksjs/path'],
+    exclude: ['vue'],
   },
 
   plugins: [
     uiEngine(),
     autoImports(),
-    // cssEngine(),
+    cssEngine(),
     inspect(),
     components(),
     // stacks(),
@@ -62,6 +68,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 
     rollupOptions: {
       external: ['vue', '@stacksjs/path'],
+      input: p.libraryEntryPath('vue-components'),
       output: {
         globals: {
           vue: 'Vue',

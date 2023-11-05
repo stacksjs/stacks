@@ -24,20 +24,20 @@ vscode:
   - '.stacks/ide/vscode/**'
 
 libs:
-  - '.stacks/libs/**'
+  - 'storage/framework/libs/**'
 
 components:
-  - '.stacks/libs/components/**'
+  - 'storage/framework/libs/components/**'
   - resources/components/**
 
 entries:
-  - .stacks/libs/entries/**
+  - storage/framework/libs/entries/**
 
 examples:
-  - .stacks/libs/examples/**
+  - storage/framework/libs/examples/**
 
 functions:
-  - '.stacks/libs/functions/**'
+  - 'storage/framework/libs/functions/**'
   - resources/functions/**
 
 scripts:

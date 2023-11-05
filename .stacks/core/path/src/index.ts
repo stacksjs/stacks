@@ -68,7 +68,7 @@ export function authPath(path?: string) {
 }
 
 export function frameworkStoragePath(path?: string) {
-  return storagePath(`framework/${path || ''}`)
+  return projectStoragePath(`framework/${path || ''}`)
 }
 
 /**
@@ -293,7 +293,7 @@ export function projectStoragePath(path?: string): string {
 }
 
 export function publicPath(path?: string) {
-  return projectStoragePath(`public/${path || ''}`)
+  return projectPath(`public/${path || ''}`)
 }
 
 export function pushPath(path?: string) {
@@ -477,6 +477,7 @@ export const path = {
   paymentsPath,
   projectPath,
   projectStoragePath,
+  publicPath,
   pushPath,
   queryBuilderPath,
   queuePath,
