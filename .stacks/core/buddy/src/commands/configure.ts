@@ -18,7 +18,7 @@ export function configure(buddy: CLI) {
     .action(async (options?: ConfigureOptions) => {
       if (options?.aws) {
         const startTime = performance.now()
-        const result = await runCommand('aws configure --profile stacks', {
+        const result = await runCommand('aws configure', {
           ...options,
           cwd: p.projectPath(),
           stdin: 'inherit',
@@ -42,7 +42,7 @@ export function configure(buddy: CLI) {
   //   .option('--verbose', descriptions.verbose, { default: false })
   //   .action(async (options?: ConfigureOptions) => {
   //     const startTime = performance.now()
-  //     const result = await runCommand('aws configure --profile stacks', {
+  //     const result = await runCommand('aws configure', {
   //       ...options,
   //       cwd: p.cloudPath(),
   //       stdin: 'inherit',

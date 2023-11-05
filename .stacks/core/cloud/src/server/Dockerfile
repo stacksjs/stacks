@@ -1,12 +1,20 @@
-FROM oven/bun:latest
-WORKDIR /srv
+# Builder image
+FROM oven/bun:latest AS builder
+WORKDIR /tmp
 
-# Add the package manifest and install packages
-ADD package.json .
-RUN bun install
+COPY ./runtime.ts ./runtime.ts
+COPY ./index.ts ./index.ts
+RUN bun install aws4fetch
+RUN bun build --compile runtime.ts --outfile bootstrap
+RUN bun build --target=bun index.ts --outfile index
 
-# Add the application code
-ADD index.ts .
+# Runtime image, includes Lambda RIC
+FROM public.ecr.aws/lambda/provided:al2
 
-# Specify the command to run when launching the container
-CMD bun index.ts
+# Copy our handler code into the task root
+COPY --from=builder /tmp/index ${LAMBDA_TASK_ROOT}
+# Copy bun + runtime.ts into the runtime directory
+COPY --from=builder /tmp/bootstrap ${LAMBDA_RUNTIME_DIR}
+
+# Set our handler method
+CMD ["index.hello"]

@@ -129,7 +129,7 @@ export function cloud(buddy: CLI) {
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      const result = await runCommand(`bunx cdk destroy --profile stacks`, {
+      const result = await runCommand(`bunx cdk destroy`, {
         ...options,
         cwd: p.cloudPath(),
         stdin: 'inherit',

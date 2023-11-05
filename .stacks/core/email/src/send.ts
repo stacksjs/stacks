@@ -1,11 +1,10 @@
 import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
 import type { EmailOptions } from '@stacksjs/types'
-
-// @ts-expect-error check if types are available
 import * as Maizzle from '@maizzle/framework'
-import { config } from '../tailwind.config'
-import * as maizzleConfig from '../utils/config'
+import { stringify } from 'json5'
+import { config } from './tailwind.config'
+import * as maizzleConfig from './utils/config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string): Promise<ResultAsync<any, Error>> {
   const template = `
@@ -19,7 +18,7 @@ export async function send(options: EmailOptions, provider: any, providerName: s
     template,
     {
       tailwind: {
-        config,
+        config: stringify(config),
         css,
         maizzle: maizzleConfig,
       },

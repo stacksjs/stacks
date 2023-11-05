@@ -2,7 +2,7 @@ import { MailjetEmailProvider } from '@novu/mailjet'
 import type { EmailOptions } from '@stacksjs/types'
 import type { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
-import { send as sendEmail } from '../actions/send'
+import { send as sendEmail } from '../send'
 
 const env = notification.email
 const service = notification.email?.drivers.mailjet
