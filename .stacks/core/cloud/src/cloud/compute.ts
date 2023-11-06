@@ -27,7 +27,6 @@ export class ComputeStack {
     // })
 
     const webServer = new lambda.Function(scope, 'WebServer', {
-      // code: lambda.Code.fromDockerBuild(p.cloudPath('src/server')),
       description: 'The web server for the Stacks application',
       code: lambda.Code.fromAssetImage(p.cloudPath('src/server')),
       handler: lambda.Handler.FROM_IMAGE,

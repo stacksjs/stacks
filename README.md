@@ -91,7 +91,7 @@ _Enhanced productivity for developers. No more creating boilerplate._
 
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
-- 👩🏽‍🔧 **Linter & Formatter** _auto-configured & built into your IDE_
+- 💅 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
