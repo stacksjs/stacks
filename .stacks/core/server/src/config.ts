@@ -1,5 +1,5 @@
 interface ServerOptions {
-  type?: 'docs' | 'api' | 'library' | 'app' | 'desktop' | 'example'
+  type?: 'docs' | 'api' | 'library' | 'app' | 'desktop' | 'example' | 'views'
   host?: string
   port?: number
   open?: boolean
@@ -12,10 +12,11 @@ export function config(options: ServerOptions) {
     desktop: 'desktop.stacks.test',
     docs: 'localhost',
     library: 'localhost',
+    views: 'localhost',
     example: 'example.stacks.test',
   }
 
-  if (options.type && ['docs', 'api', 'library', 'app', 'desktop', 'example'].includes(options.type)) {
+  if (options.type && ['docs', 'api', 'library', 'app', 'desktop', 'example', 'views'].includes(options.type)) {
     return {
       host: typeToHostMap[options.type],
       port: 3333,

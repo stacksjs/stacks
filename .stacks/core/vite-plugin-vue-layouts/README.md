@@ -1,6 +1,6 @@
-# Stacks Arrays
+# Stacks
 
-This package contains the Stacks Arrays source.
+wip
 
 ## ☘️ Features
 
