@@ -55,7 +55,7 @@
     "@iconify-json/heroicons": "^1.1.13",
     "@iconify-json/heroicons-outline": "^1.1.7",
     "@iconify-json/heroicons-solid": "^1.1.8",
-    "@iconify/json": "^2.2.137",
+    "@iconify/json": "^2.2.138",
     "@julr/unocss-preset-forms": "^0.0.5",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -64,7 +64,7 @@
     "@unocss/transformer-compile-class": "^0.57.2",
     "pinia": "^2.1.7",
     "unocss": "^0.57.2",
-    "vue": "^3.3.7",
+    "vue": "^3.3.8",
     "vue-tsc": "^1.8.22"
   },
   "dependencies": {
@@ -82,7 +82,7 @@
     "pinia": "^2.1.7",
     "unhead": "^1.8.3",
     "unocss": "^0.57.2",
-    "vue": "^3.3.7",
+    "vue": "^3.3.8",
     "vue-tsc": "^1.8.22"
   },
   "devDependencies": {

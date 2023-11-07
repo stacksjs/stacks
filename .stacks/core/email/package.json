@@ -56,20 +56,20 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.6.0",
+    "@maizzle/framework": "^4.6.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.6.0",
+    "@maizzle/framework": "^4.6.1",
     "@novu/stateless": "^0.21.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/mailparser": "^3.4.3",
+    "@types/mailparser": "^3.4.4",
     "mailparser": "^3.6.5",
     "mime": "^3.0.0",
     "moment": "^2.29.4",
