@@ -56,7 +56,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.0",
+    "@types/archiver": "^6.0.1",
     "archiver": "^6.0.1"
   },
   "dependencies": {
@@ -65,9 +65,9 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.0",
+    "@types/archiver": "^6.0.1",
     "archiver": "^6.0.1",
-    "fast-glob": "^3.3.1",
+    "fast-glob": "^3.3.2",
     "fs-extra": "^11.1.1",
     "unstorage": "^1.9.0"
   },
