@@ -6,9 +6,10 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
     address?: string
   }
 
+  mailboxes: string[]
+
   server: {
     scan?: boolean
-    mailboxes: string[]
   }
 }
 

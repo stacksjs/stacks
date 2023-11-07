@@ -98,7 +98,7 @@ export class EmailStack {
             },
           },
         ],
-        recipients: config.email.server?.mailboxes || [],
+        recipients: config.email.mailboxes || [],
         scanEnabled: config.email.server?.scan || true,
         tlsPolicy: 'Require',
       },
