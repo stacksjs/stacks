@@ -28,8 +28,6 @@ export function dev(buddy: CLI) {
     .action(async (server: string | undefined, options: DevOptions) => {
       const perf = await intro('buddy dev')
 
-      console.log('server', server)
-
       switch (server) {
         case 'frontend':
           await runPagesDevServer(options)
@@ -51,7 +49,7 @@ export function dev(buddy: CLI) {
           .select(descriptions.select, {
             options: [
               { value: 'all', label: 'All' },
-              { value: 'pages', label: 'Frontend' },
+              { value: 'frontend', label: 'Frontend' },
               { value: 'api', label: 'Backend' },
               { value: 'desktop', label: 'Desktop' },
               { value: 'components', label: 'Components' },
@@ -64,7 +62,7 @@ export function dev(buddy: CLI) {
           await runComponentsDevServer(options)
         // else if (answer === 'functions')
         //   await runFunctionsDevServer(options)
-        else if (answer === 'pages')
+        else if (answer === 'frontend')
           await runPagesDevServer(options)
         else if (answer === 'docs')
           await runDocsDevServer(options)

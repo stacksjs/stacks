@@ -50,12 +50,16 @@ export function stacks(): Plugin {
         // }
 
         const appUrl = app.url
-        const frontendUrl = `https://${appUrl}`
-        const backendUrl = `https://${appUrl}/api`
-        const dashboardUrl = `https://admin.${appUrl}`
-        const libraryUrl = `https://libs.${appUrl}`
-        const docsUrl = `https://${appUrl}/docs`
-        const inspectUrl = `https://${appUrl}/__inspect/`
+
+        // need to update the .tld to .localhost
+        const localUrl = appUrl?.replace(/\.[^\.]+$/, '.localhost');
+
+        const frontendUrl = `https://${localUrl}`
+        const backendUrl = `https://${localUrl}/api`
+        const dashboardUrl = `https://${localUrl}/admin`
+        const libraryUrl = `https://${localUrl}/libs`
+        const docsUrl = `https://${localUrl}/docs`
+        const inspectUrl = `https://${localUrl}/__inspect/`
 
         // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
         const stacksVersion = `alpha-${version}`
