@@ -153,7 +153,8 @@ buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 
-buddy upgrade # prompts you to select which updates to apply
+buddy upgrade # upgrades all dependencies
+buddy upgrade -i # prompts you to select which updates to apply (wip)
 buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine
@@ -163,12 +164,16 @@ buddy upgrade:all # auto-upgrades all of the above
 # if you need any more info on any command listed here, you may suffix
 # any of them via the "help option", i.e. `buddy ... --help`
 
-buddy dev # starts one of the dev servers (components, functions, views, or docs)
-buddy dev:components # starts local playground dev server
-buddy dev:desktop # starts the Desktop playground
-buddy dev:views # starts local playground views dev server
-buddy dev:functions # stubs local the functions
+buddy dev # starts the frontend dev server
+buddy dev -i # prompts any of the dev servers (components, functions, views, or docs)
+buddy dev:api # starts the API dev server
+buddy dev:admin # starts the Admin/Dashboard dev server
+buddy dev:desktop # starts the Desktop dev server
+buddy dev:views # starts frontend dev server
+buddy dev:components # starts component dev server
+buddy dev:functions # stubs functions
 buddy dev:docs # starts local docs dev server
+buddy dev docs # also starts the local docs dev server (colon is optional)
 buddy development # `buddy dev` alias
 
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:

@@ -1,6 +1,10 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { projectPath } from '@stacksjs/path'
 
+export * from './middleware'
+export * from './request'
+export * from './server'
+
 export interface RouterInterface {
   get(url: Route['url'], callback: Route['callback']): this
   post(url: Route['url'], callback: Route['callback']): this
@@ -160,7 +164,3 @@ export class Router implements RouterInterface {
 }
 
 export const route = new Router()
-
-export * from './middleware'
-export * from './request'
-export * from './server'

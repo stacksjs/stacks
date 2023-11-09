@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { runCommand } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
+import { runAction } from '../helpers'
 import type { DevOptions } from '@stacksjs/types'
 import { Action, NpmScript } from '@stacksjs/types'
 

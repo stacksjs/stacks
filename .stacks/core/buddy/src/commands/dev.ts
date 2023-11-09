@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { Action, ExitCode } from '@stacksjs/types'
-import { runAction, runComponentsDevServer, runFunctionsDevServer, runDocsDevServer } from '@stacksjs/actions'
+import { runAction, runComponentsDevServer, runFunctionsDevServer, runDocsDevServer, runApiDevServer } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand, prompt } from '@stacksjs/cli'
 import { vitePath } from '@stacksjs/path'
@@ -33,7 +33,7 @@ export function dev(buddy: CLI) {
           await runPagesDevServer(options)
           break
         case 'api':
-          await runFunctionsDevServer(options)
+          await runApiDevServer(options)
           break
         case 'components':
           await runComponentsDevServer(options)
@@ -60,10 +60,10 @@ export function dev(buddy: CLI) {
 
         if (answer === 'components')
           await runComponentsDevServer(options)
-        // else if (answer === 'functions')
-        //   await runFunctionsDevServer(options)
-        else if (answer === 'frontend')
-          await runPagesDevServer(options)
+        else if (answer === 'functions')
+          await runFunctionsDevServer(options)
+        else if (answer === 'api')
+          await runApiDevServer(options)
         else if (answer === 'docs')
           await runDocsDevServer(options)
 
@@ -79,7 +79,7 @@ export function dev(buddy: CLI) {
         if (options.docs)
           await runDocsDevServer(options)
         else if (options.api)
-          await runFunctionsDevServer(options)
+          await runApiDevServer(options)
         else if (options.pages)
           await runPagesDevServer(options)
       }
@@ -149,11 +149,18 @@ export function dev(buddy: CLI) {
     })
 
   buddy
-    .command('dev:functions', descriptions.api)
+    .command('dev:api', descriptions.api)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runFunctionsDevServer(options)
+      await runApiDevServer(options)
     })
+
+  // buddy
+  //   .command('dev:functions', descriptions.api)
+  //   .option('--verbose', descriptions.verbose, { default: false })
+  //   .action(async (options: DevOptions) => {
+  //     await runFunctionsDevServer(options)
+  //   })
 
   buddy
     .command('dev:views', descriptions.views)

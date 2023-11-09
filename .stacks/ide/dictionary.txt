@@ -200,6 +200,7 @@ postcssrc
 prefetch
 prepublishing
 procfile
+proxied
 publint
 pubspec
 pullapprove

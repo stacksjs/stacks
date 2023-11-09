@@ -133,7 +133,7 @@ var projectPath = function(filePath = "") {
   return resolve(path3, filePath);
 };
 var readdir = promisify(fs.readdir);
-var middlewareDirectory = appPath("/app/middleware");
+var middlewareDirectory = appPath("middleware");
 var middlewares = await importMiddlewares(middlewareDirectory);
 
 class Request {

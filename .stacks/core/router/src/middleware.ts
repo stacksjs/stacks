@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { promisify } from 'node:util'
-import { appPath } from '@stacksjs/path'
+import { appPath, path } from '@stacksjs/path'
 import type { MiddlewareType } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareType {
@@ -18,7 +18,7 @@ export class Middleware implements MiddlewareType {
 
 const readdir = promisify(fs.readdir)
 
-async function importMiddlewares(directory: any) {
+async function importMiddlewares(directory: string) {
   const middlewares = []
   const files = await readdir(directory)
 
@@ -31,7 +31,4 @@ async function importMiddlewares(directory: any) {
   return middlewares
 }
 
-// Example usage:
-const middlewareDirectory = appPath('/app/middleware')
-
-export const middlewares = await importMiddlewares(middlewareDirectory)
+export const middlewares = await importMiddlewares(appPath('middleware'))

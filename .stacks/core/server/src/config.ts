@@ -1,25 +1,46 @@
 interface ServerOptions {
-  type?: 'docs' | 'api' | 'library' | 'app' | 'desktop' | 'example' | 'views'
+  type?: 'frontend' | 'api' | 'library' | 'desktop' | 'admin' | 'docs' | 'example'
   host?: string
   port?: number
   open?: boolean
 }
 
 export function config(options: ServerOptions) {
-  const typeToHostMap = {
-    api: 'api.stacks.test',
-    app: 'app.stacks.test',
-    desktop: 'desktop.stacks.test',
-    docs: 'localhost',
-    library: 'localhost',
-    views: 'localhost',
-    example: 'example.stacks.test',
+  const serversMap = {
+    frontend: {
+      host: 'localhost',
+      port: 3333,
+    },
+    api: {
+      host: 'localhost',
+      port: 3334,
+    },
+    library: { // component library
+      host: 'localhost',
+      port: 3335,
+    },
+    desktop: {
+      host: 'localhost',
+      port: 3336,
+    },
+    admin: {
+      host: 'localhost',
+      port: 3337,
+    },
+    docs: {
+      host: 'localhost',
+      port: 3338,
+    },
+    example: {
+      host: 'localhost',
+      port: 3339,
+    },
   }
 
-  if (options.type && ['docs', 'api', 'library', 'app', 'desktop', 'example', 'views'].includes(options.type)) {
+  if (options.type && ['frontend', 'api', 'library', 'desktop', 'admin', 'docs', 'example'].includes(options.type)) {
     return {
-      host: typeToHostMap[options.type],
-      port: 3333,
+      host: serversMap[options.type].host,
+      port: serversMap[options.type].port,
       open: true,
     }
   }

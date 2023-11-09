@@ -1,13 +1,13 @@
-import { route } from '../.stacks/core/router/src/index.ts'
+import { route } from '@stacksjs/router'
 
 // route.group(() => {
 //   route.get('/get/:id', getUsers)
 //   route.get('/delete', getBlogs)
 // }).middleware('auth').prefix('/users')
 
+route.get('/', () => 'hello world 1')
+route.get('/welcome', () => 'hello world 2')
 // route.redirect('/user', '/welcome')
-route.get('/welcome', () => 'hello world').middleware('logger')
-// route.get('/users', 'hello users')
 
 // function getUsers() {
 //   return request.getParams('id')

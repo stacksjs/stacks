@@ -17,6 +17,7 @@ const config = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.publicPath(),
+  base: '/libs',
 
   server: server({
     type: 'library',

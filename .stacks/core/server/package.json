@@ -51,12 +51,14 @@
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "vite": "^4.5.0"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "vite": "^4.5.0"
   },

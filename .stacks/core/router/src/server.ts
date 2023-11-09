@@ -3,19 +3,24 @@ import { URL } from 'node:url'
 import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
 import { middlewares } from './middleware'
 import { request } from './request'
-import { route } from './index'
+import { route } from './'
 
-const routesList: Route[] = await route.getRoutes()
+interface ServeOptions {
+  port?: number;
+  // Add other options as needed
+}
 
-export function serve() {
+export function serve(options: ServeOptions = {}) {
   Bun.serve({
+    port: options.port || 3000,
     fetch(req: Request) {
       return serverResponse(req)
     },
   })
 }
 
-export function serverResponse(req: Request) {
+export async function serverResponse(req: Request) {
+  const routesList: Route[] = await route.getRoutes()
   const url = new URL(req.url)
 
   const foundRoute: Route | undefined = routesList.find((route: Route) => {
