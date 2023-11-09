@@ -131,7 +131,7 @@ export function generateMigrations() {
 
 export function generatePkgxConfig() {
   // write the yaml string to a file in your project root
-  // files.put(projectPath('./tea.yaml'), yamlStr)
+  // files.put(projectPath('./pkgx.yaml'), yamlStr)
 
   log.success('Successfully generated `./pkgx.yaml` based on your configs')
 }

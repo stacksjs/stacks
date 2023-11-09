@@ -1,4 +1,12 @@
 import type { AppConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, SecurityConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import { config } from './'
+
+export function localUrl(url?: string) {
+  if (!url)
+    return config.app.url
+
+  return url?.replace(/\.[^\.]+$/, '.localhost');
+}
 
 export function defineStacksConfig(config: StacksConfig) {
   return config

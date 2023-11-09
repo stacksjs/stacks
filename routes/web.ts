@@ -6,6 +6,8 @@ import { route } from '@stacksjs/router'
 // }).middleware('auth').prefix('/users')
 
 route.get('/', () => 'hello world 1')
+route.get('/api/', () => 'hello world 3')
+route.get('/api/welcome', () => 'hello world 4')
 route.get('/welcome', () => 'hello world 2')
 // route.redirect('/user', '/welcome')
 

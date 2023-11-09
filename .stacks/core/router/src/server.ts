@@ -1,17 +1,20 @@
 import { extname } from 'node:path'
 import { URL } from 'node:url'
 import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
+import { localUrl } from '@stacksjs/config'
 import { middlewares } from './middleware'
 import { request } from './request'
 import { route } from './'
 
 interface ServeOptions {
+  host?: string;
   port?: number;
   // Add other options as needed
 }
 
 export function serve(options: ServeOptions = {}) {
   Bun.serve({
+    hostname: options.host || localUrl(),
     port: options.port || 3000,
     fetch(req: Request) {
       return serverResponse(req)
@@ -29,11 +32,11 @@ export async function serverResponse(req: Request) {
     return pattern.test(url.pathname)
   })
 
-  if (url.pathname === '/favicon.ico')
-    return new Response('')
+  // if (url.pathname === '/favicon.ico')
+  //   return new Response('')
 
   if (!foundRoute)
-    return new Response('Not found', { status: 404 })
+    return new Response('Not found', { status: 404 }) // TODO: create a pretty 404 page
 
   addRouteParamsAndQuery(url, foundRoute)
   executeMiddleware(foundRoute)

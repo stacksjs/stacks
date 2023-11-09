@@ -1,6 +1,7 @@
 import type { ViteConfig } from '@stacksjs/types'
 
 export const apiConfig: ViteConfig = {
+  base: '/api/',
   server: {
     port: 3334,
     proxy: {

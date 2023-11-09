@@ -47,10 +47,12 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
     "unplugin-vue-router": "^0.7.0",
     "vue-router": "^4.2.5"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
     "unplugin-vue-router": "^0.7.0",
     "vue-router": "^4.2.5"
   },

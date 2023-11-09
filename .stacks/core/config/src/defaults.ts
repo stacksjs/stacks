@@ -20,7 +20,7 @@ export default {
   app: {
     name: 'Stacks',
     env: 'local',
-    url: 'stacks.test',
+    url: 'stacks.localhost',
     debug: true,
     key: '',
     timezone: 'UTC',

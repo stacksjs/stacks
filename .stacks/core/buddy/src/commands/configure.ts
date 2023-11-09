@@ -37,25 +37,25 @@ export function configure(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 
-  // buddy
-  //   .command('configure:aws', descriptions.aws)
-  //   .option('--verbose', descriptions.verbose, { default: false })
-  //   .action(async (options?: ConfigureOptions) => {
-  //     const startTime = performance.now()
-  //     const result = await runCommand('aws configure', {
-  //       ...options,
-  //       cwd: p.cloudPath(),
-  //       stdin: 'inherit',
-  //     })
+  buddy
+    .command('configure:aws', descriptions.aws)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options?: ConfigureOptions) => {
+      const startTime = performance.now()
+      const result = await runCommand('aws configure', {
+        ...options,
+        cwd: p.cloudPath(),
+        stdin: 'inherit',
+      })
 
-  //     if (result.isErr()) {
-  //       await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
-  //       process.exit(ExitCode.FatalError)
-  //     }
+      if (result.isErr()) {
+        await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
 
-  //     await outro('Exited', { startTime, useSeconds: true })
-  //     process.exit(ExitCode.Success)
-  //   })
+      await outro('Exited', { startTime, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
 
   buddy.on('configure:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))

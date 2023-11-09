@@ -23,10 +23,10 @@ export function setup(buddy: CLI) {
     .command('setup', descriptions.setup)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
-      if (await ensureTeaIsInstalled())
-        await optimizeTeaDeps()
+      if (await ensurePkgxIsInstalled())
+        await optimizePkgxDeps()
       else
-        await installTea()
+        await installPkgx()
 
       await initializeProject(options)
     })
@@ -37,8 +37,8 @@ export function setup(buddy: CLI) {
   })
 }
 
-async function ensureTeaIsInstalled(): Promise<boolean> {
-  const result = await runCommand('tea --version', { silent: true })
+async function ensurePkgxIsInstalled(): Promise<boolean> {
+  const result = await runCommand('pkgx --version', { silent: true })
 
   if (result.isOk())
     return true
@@ -46,8 +46,8 @@ async function ensureTeaIsInstalled(): Promise<boolean> {
   return false
 }
 
-async function installTea(): Promise<void> {
-  const result = await runCommand('./scripts/setup.sh')
+async function installPkgx(): Promise<void> {
+  const result = await runCommand('./scripts/setup')
 
   if (result.isOk())
     return
@@ -57,7 +57,7 @@ async function installTea(): Promise<void> {
 }
 
 async function initializeProject(options: CliOptions): Promise<void> {
-  log.info('⏳ Installing npm dependencies...')
+  log.info('⏳ Installing node_modules...')
   await new Promise(resolve => setTimeout(resolve, 1500))
 
   const result = await runCommand('bun install', {
@@ -69,7 +69,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('Installed npm dependencies')
+  log.success('Installed node_modules')
   await new Promise(resolve => setTimeout(resolve, 300))
 
   log.info('⏳ Ensuring .env exists...')
@@ -124,6 +124,6 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.info('🎉 Happy coding!')
 }
 
-export async function optimizeTeaDeps(): Promise<void> {
+export async function optimizePkgxDeps(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 300))
 }

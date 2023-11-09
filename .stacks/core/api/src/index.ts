@@ -1,6 +1,6 @@
 import { ofetch } from 'ofetch'
 import { flare } from '@flareapp/flare-client'
-import { config } from '@stacksjs/config'
+import { config, localUrl } from '@stacksjs/config'
 
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined')
   bearerToken = window.localStorage.getItem('bearerToken')
 
 export function useHttpFetch(endpoint = '') {
-  let baseURL = config.app.url || 'https://stacks.test/api'
+  let baseURL = localUrl(config.app.url)
 
   if (endpoint)
     baseURL = endpoint

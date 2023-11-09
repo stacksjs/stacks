@@ -1,6 +1,6 @@
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { kolorist as c } from '@stacksjs/cli'
-import { app } from '@stacksjs/config'
+import { localUrl } from '@stacksjs/config'
 import { version } from '../../package.json'
 
 // https://github.com/hannoeru/vite-plugin-pages
@@ -48,11 +48,6 @@ export function stacks(): Plugin {
         //     log.warn('Parse resolved url failed:', error)
         //   }
         // }
-
-        const appUrl = app.url
-
-        // need to update the .tld to .localhost
-        const localUrl = appUrl?.replace(/\.[^\.]+$/, '.localhost');
 
         const frontendUrl = `https://${localUrl}`
         const backendUrl = `https://${localUrl}/api`

@@ -31,6 +31,17 @@ export function deploy(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
+      if (domain.includes('localhost')) {
+        log.info('You are deploying to a local environment.')
+        log.info('Please set your .env or ./config/app.ts properly.')
+        console.log('')
+        log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
+        console.log('')
+        log.info('   ➡️  Example: `buddy deploy --domain example.com`')
+        console.log('')
+        process.exit(ExitCode.FatalError)
+      }
+
       if (await hasUserDomainBeenAddedToCloud(domain)) {
         log.success('Your domain is properly configured.')
         log.info('Your cloud is deploying...')
