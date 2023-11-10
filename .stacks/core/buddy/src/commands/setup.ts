@@ -13,14 +13,8 @@ export function setup(buddy: CLI) {
   }
 
   buddy
-    .command('ensure', descriptions.ensure)
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CliOptions) => {
-      await runCommand('bun install', options)
-    })
-
-  buddy
     .command('setup', descriptions.setup)
+    .alias('ensure')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       if (await ensurePkgxIsInstalled())

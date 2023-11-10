@@ -54,6 +54,7 @@ export function stacks(): Plugin {
         const dashboardUrl = `https://${localUrl}/admin`
         const libraryUrl = `https://${localUrl}/libs`
         const docsUrl = `https://${localUrl}/docs`
+        const emailTestingUrl = `https://${localUrl}/email-testing`
         const inspectUrl = `https://${localUrl}/__inspect/`
 
         // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
@@ -69,6 +70,8 @@ export function stacks(): Plugin {
         console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
         // eslint-disable-next-line no-console
         console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
+        // eslint-disable-next-line no-console
+        console.log(`  ${c.green('➜')}  ${c.bold('Email Testing')}: ${c.green(emailTestingUrl)}`)
         // eslint-disable-next-line no-console
         console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
         // eslint-disable-next-line no-console
