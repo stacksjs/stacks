@@ -557,16 +557,17 @@ declare global {
   const runActions: typeof import('../../../.stacks/core/actions/src/helpers/utils')['runActions']
   const runAdd: typeof import('../../../.stacks/core/actions/src/index')['runAdd']
   const runApiDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runApiDevServer']
+  const runBackendDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runBackendDevServer']
   const runCommit: typeof import('../../../.stacks/core/actions/src/index')['runCommit']
   const runComponentsDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runComponentsDevServer']
   const runDesktopDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runDesktopDevServer']
   const runDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runDevServer']
   const runDocsDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runDocsDevServer']
   const runExample: typeof import('../../../.stacks/core/actions/src/index')['runExample']
+  const runFrontendDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runFrontendDevServer']
   const runFunctionsDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runFunctionsDevServer']
   const runMake: typeof import('../../../.stacks/core/actions/src/index')['runMake']
   const runNpmScript: typeof import('../../../.stacks/core/utils/src/helpers')['runNpmScript']
-  const runPagesDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runPagesDevServer']
   const runViewsDevServer: typeof import('../../../.stacks/core/actions/src/dev/index')['runViewsDevServer']
   const runtimePath: typeof import('../../../.stacks/core/path/src/index')['runtimePath']
   const schedulerPath: typeof import('../../../.stacks/core/path/src/index')['schedulerPath']
@@ -1429,16 +1430,16 @@ declare module 'vue' {
     readonly runActions: UnwrapRef<typeof import('../../../.stacks/core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runAdd']>
     readonly runApiDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runApiDevServer']>
+    readonly runBackendDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runBackendDevServer']>
     readonly runCommit: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDocsDevServer']>
     readonly runExample: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runExample']>
-    readonly runFunctionsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFunctionsDevServer']>
+    readonly runFrontendDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFrontendDevServer']>
     readonly runMake: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['runNpmScript']>
-    readonly runViewsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runViewsDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['scriptsPath']>
@@ -2270,16 +2271,16 @@ declare module '@vue/runtime-core' {
     readonly runActions: UnwrapRef<typeof import('../../../.stacks/core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runAdd']>
     readonly runApiDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runApiDevServer']>
+    readonly runBackendDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runBackendDevServer']>
     readonly runCommit: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runDocsDevServer']>
     readonly runExample: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runExample']>
-    readonly runFunctionsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFunctionsDevServer']>
+    readonly runFrontendDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runFrontendDevServer']>
     readonly runMake: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['runNpmScript']>
-    readonly runViewsDevServer: UnwrapRef<typeof import('../../../.stacks/core/actions/src/dev/index')['runViewsDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['scriptsPath']>

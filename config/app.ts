@@ -16,6 +16,17 @@ export default {
   debug: env.DEBUG || false,
   key: env.APP_KEY,
 
+  ports: {
+    frontend: env.APP_PORT || 3000,
+    backend: env.APP_PORT + 1,
+    // api: env.APP_PORT + 1,
+    admin: env.APP_PORT + 2,
+    library: env.APP_PORT + 3,
+    email: env.APP_PORT + 4,
+    docs: env.APP_PORT + 5,
+    inspect: env.APP_PORT + 6,
+  },
+
   timezone: 'UTC',
   locale: 'en',
   fallbackLocale: 'en',

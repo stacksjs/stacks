@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { Action, ExitCode } from '@stacksjs/types'
-import { runAction, runComponentsDevServer, runFunctionsDevServer, runDocsDevServer, runApiDevServer } from '@stacksjs/actions'
+import { runAction, runComponentsDevServer, runDocsDevServer, runApiDevServer, runFrontendDevServer } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand, prompt } from '@stacksjs/cli'
 import { vitePath } from '@stacksjs/path'
@@ -8,10 +8,11 @@ import { vitePath } from '@stacksjs/path'
 export function dev(buddy: CLI) {
   const descriptions = {
     dev: 'Starts development server',
-    views: 'Starts the frontend development server',
+    frontend: 'Starts the frontend development server',
     components: 'Start the Components development server',
     desktop: 'Start the Desktop development server',
     api: 'Start the local API development server',
+    email: 'Start the Email development server',
     docs: 'Start the Documentation development server',
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
@@ -20,26 +21,46 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev [server]', descriptions.dev)
-    .option('-c, --components', descriptions.components)
+    .option('-f, --frontend', descriptions.frontend)
     .option('-a, --api', descriptions.api)
+    .option('-e, --email', descriptions.email)
+    .option('-c, --components', descriptions.components)
     .option('-d, --docs', descriptions.docs)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
       const perf = await intro('buddy dev')
 
+      // ensure Caddy is running
+      runAction(Action.StartCaddy, {...options, silent: true })
+
       switch (server) {
         case 'frontend':
-          await runPagesDevServer(options)
+          await runFrontendDevServer({
+            ...options,
+            frontend: true,
+          })
           break
         case 'api':
-          await runApiDevServer(options)
+          await runApiDevServer({
+            ...options,
+            api: true,
+          })
           break
         case 'components':
-          await runComponentsDevServer(options)
+          await runComponentsDevServer({
+            ...options,
+            components: true,
+          })
           break
+        // case 'email':
+        //   await runEmailDevServer(options)
+        //   break
         case 'docs':
-          await runDocsDevServer(options)
+          await runDocsDevServer({
+            ...options,
+            docs: true,
+          })
           break
         default:
       }
@@ -52,20 +73,29 @@ export function dev(buddy: CLI) {
               { value: 'frontend', label: 'Frontend' },
               { value: 'api', label: 'Backend' },
               { value: 'desktop', label: 'Desktop' },
+              { value: 'email', label: 'Email' },
               { value: 'components', label: 'Components' },
-              // { value: 'functions', label: 'Functions' },
               { value: 'docs', label: 'Documentation' },
             ],
           })
 
         if (answer === 'components')
-          await runComponentsDevServer(options)
-        else if (answer === 'functions')
-          await runFunctionsDevServer(options)
+          await runComponentsDevServer({
+            ...options,
+            components: true,
+          })
         else if (answer === 'api')
-          await runApiDevServer(options)
+          await runApiDevServer({
+            ...options,
+            api: true,
+          })
+        // else if (answer === 'email')
+        //   await runEmailDevServer(options)
         else if (answer === 'docs')
-          await runDocsDevServer(options)
+          await runDocsDevServer({
+            ...options,
+            docs: true,
+          })
 
         else {
           log.error('Invalid option during interactive mode')
@@ -80,8 +110,8 @@ export function dev(buddy: CLI) {
           await runDocsDevServer(options)
         else if (options.api)
           await runApiDevServer(options)
-        else if (options.pages)
-          await runPagesDevServer(options)
+        // else if (options.email)
+        //   await runEmailDevServer(options)
       }
 
       await startDevelopmentServer(options)
@@ -163,10 +193,12 @@ export function dev(buddy: CLI) {
   //   })
 
   buddy
-    .command('dev:views', descriptions.views)
+    .command('dev:frontend', descriptions.frontend)
+    .alias('dev:pages')
+    .alias('dev:views')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runPagesDevServer(options)
+      await runFrontendDevServer(options)
     })
 
   buddy.on('dev:*', () => {

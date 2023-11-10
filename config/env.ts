@@ -13,6 +13,7 @@ export default {
   APP_ENV: validate.enum(['development', 'staging', 'production']),
   APP_KEY: validate.string(),
   APP_URL: validate.string(),
+  APP_PORT: validate.number(),
   DEBUG: validate.boolean(),
 
   API_PREFIX: validate.string(),

@@ -84,6 +84,7 @@ const sidebar = {
           items: [
             { text: 'How to deploy?', link: '/bootcamp/how-to/deploy' },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
+            { text: 'Define env & config values', link: '/bootcamp/how-to/env-config' },
             { text: 'Error Handling', link: '/bootcamp/how-to/error-handling' },
             { text: 'Publish Components & Functions', link: '/bootcamp/how-to/publish' },
             { text: 'Create a Mailbox', link: '/bootcamp/how-to/create-mailbox' },

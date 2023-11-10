@@ -1,5 +1,15 @@
 export type AppEnvType = 'production' | 'development' | 'staging' | 'local' | 'stage' | 'dev' | 'prod'
 
+type Ports = {
+  frontend: number
+  backend: number
+  admin: number
+  library: number
+  email: number
+  docs: number
+  inspect: number
+}
+
 /**
  * **Application Options**
  *
@@ -73,6 +83,15 @@ export interface AppOptions {
    * not be safe. Please do this before deploying an application!
    */
   key: string
+
+  /**
+   * **Application Ports**
+   *
+   * This port is used by the Stacks servers when running your application, library, email services,
+   * and other services. You may change this port to any other port that is free
+   * on your machine, as long as the following 6 ports are also available.
+   */
+  ports: Ports
 
   /**
    * **Application Timezone**

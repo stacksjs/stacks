@@ -147,6 +147,12 @@ export interface CliOptions {
 
   env?: Record<string, string | undefined>
 
+  /**
+   * Runs the action in interactive/detached mode.
+   * @default false
+   */
+  background?: boolean
+
   startTime?: number
 }
 
@@ -162,7 +168,9 @@ export type ActionOption = 'types' | 'domains' | 'count'
  * The options to pass to the Action.
  */
 export type ActionOptions = {
-  [key in ActionOption]?: boolean | number;
+  'types'?: boolean
+  'domains'?: boolean
+  'count'?: number
 } & CliOptions & DomainsOptions
 
 export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'
@@ -183,7 +191,7 @@ export type CreateOptions = {
   [key in CreateStringOption]: string
 } & CliOptions
 
-export type DevOption = 'components' | 'docs' | 'pages' | 'api' | 'desktop' | 'all' | 'functions' | 'interactive' | 'verbose'
+export type DevOption = 'components' | 'docs' | 'frontend' | 'api' | 'desktop' | 'all' | 'email' | 'interactive' | 'verbose'
 export type DevOptions = {
   [key in DevOption]: boolean;
 } & CliOptions
@@ -372,6 +380,7 @@ export enum Action {
   Prepublish = 'prepublish',
   Release = 'release', // ✅
   ShowFeatureTestReport = 'show-feature-test-report',
+  StartCaddy = 'start-caddy',
   Test = 'test',
   TestUi = 'test-ui',
   TestUnit = 'test-unit',

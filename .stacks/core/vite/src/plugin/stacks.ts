@@ -1,10 +1,24 @@
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
-import { kolorist as c } from '@stacksjs/cli'
+import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
 import { version } from '../../package.json'
 
+type StacksPluginOptions = {
+  frontend?: boolean
+  backend?: boolean
+  admin?: boolean
+  desktop?: boolean
+  library?: boolean
+  email?: boolean
+  docs?: boolean
+  config?: string // the vite config used
+}
+
 // https://github.com/hannoeru/vite-plugin-pages
-export function stacks(): Plugin {
+export function stacks(options?: StacksPluginOptions): Plugin {
+  if (!options)
+    options = parseOptions()
+
   return {
     name: 'stacks',
 
@@ -32,50 +46,51 @@ export function stacks(): Plugin {
     },
 
     configureServer(server: DevServer) {
-      // const base = server.config.base || '/'
-      // const _print = server.printUrls
       server.printUrls = () => {
-        // const url = server.resolvedUrls?.local[0]
-        //
-        // if (url) {
-        //   try {
-        //     const u = new URL(url)
-        //     // eslint-disable-next-line no-console
-        //     console.log(`${u.protocol}//${u.host}`)
-        //     // const host = `${u.protocol}//${u.host}`
-        //   }
-        //   catch (error) {
-        //     log.warn('Parse resolved url failed:', error)
-        //   }
-        // }
+        const urls = {
+          frontend: `https://${localUrl()}`,
+          backend: `https://${localUrl()}/api/`,
+          admin: `https://${localUrl()}/admin/`,
+          library: `https://${localUrl()}/lib/`,
+          email: `https://${localUrl()}/email-testing/`,
+          docs: `https://${localUrl()}/docs/`,
+          inspect: `https://${localUrl()}/__inspect/`,
+        }
 
-        const frontendUrl = `https://${localUrl}`
-        const backendUrl = `https://${localUrl}/api`
-        const dashboardUrl = `https://${localUrl}/admin`
-        const libraryUrl = `https://${localUrl}/libs`
-        const docsUrl = `https://${localUrl}/docs`
-        const emailTestingUrl = `https://${localUrl}/email-testing`
-        const inspectUrl = `https://${localUrl}/__inspect/`
-
-        // const pkg = await storage.readPackageJson(frameworkPath('./package.json')) // TODO: fix this async call placing `press h to show help` on top
         const stacksVersion = `alpha-${version}`
 
-        // eslint-disable-next-line no-console
         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.green(frontendUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.green(backendUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Dashboard')}: ${c.green(dashboardUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.green(libraryUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Email Testing')}: ${c.green(emailTestingUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl)}`)
-        // eslint-disable-next-line no-console
-        console.log(`  ${c.green('➜')}  ${c.dim('Inspect')}: ${c.green(inspectUrl)}`)
+
+        for (const [option, url] of Object.entries(urls)) {
+          if (options && options[option as keyof StacksPluginOptions]) {
+            console.log(`  ${c.green('➜')}  ${c.bold(option.charAt(0).toUpperCase() + option.slice(1))}: ${c.green(url)}`)
+          }
+        }
+
+        // there is a chance the above loop is not triggered, in a case we are serving a single dev server
+        // that's why the below is needed
+        if (options && options.config?.includes('frontend')) {
+          console.log(`  ${c.green('➜') }  ${c.bold('Frontend')}: ${c.green(localUrl({ type: 'frontend' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('localhost')}: ${c.green(localUrl({ type: 'frontend' }, true))}`)
+        }
+
+        if (options && options.config?.includes('components')) {
+          console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(localUrl({ type: 'library' }))}`)
+
+        }
+
+        if (options && options.config?.includes('email'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Email')}: ${c.green(localUrl({ type: 'email' }))}`)
+        if (options && options.config?.includes('docs'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Docs')}: ${c.green(localUrl({ type: 'docs' }))}`)
+        if (options && options.config?.includes('inspect'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Inspect')}: ${c.green(localUrl({ type: 'inspect' }))}`)
+        if (options && options.config?.includes('admin'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Admin')}: ${c.green(localUrl({ type: 'admin' }))}`)
+        if (options && options.config?.includes('backend'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Backend')}: ${c.green(localUrl({ type: 'backend' }))}`)
+        if (options && options.config?.includes('desktop'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Desktop')}: ${c.green(localUrl({ type: 'desktop' }))}`)
       }
     },
   }
