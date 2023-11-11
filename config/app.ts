@@ -19,12 +19,12 @@ export default {
   ports: {
     frontend: env.APP_PORT || 3333,
     backend: env.APP_PORT + 1,
-    // api: env.APP_PORT + 1,
     admin: env.APP_PORT + 2,
     library: env.APP_PORT + 3,
-    email: env.APP_PORT + 4,
-    docs: env.APP_PORT + 5,
-    inspect: env.APP_PORT + 6,
+    desktop: env.APP_PORT + 4,
+    email: env.APP_PORT + 5,
+    docs: env.APP_PORT + 6,
+    inspect: env.APP_PORT + 7,
   },
 
   timezone: 'UTC',

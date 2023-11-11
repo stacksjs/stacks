@@ -21,6 +21,15 @@ const handler = {
   get: (target: Env, key: EnvKey) => {
     const value = target[key] as any
 
+    // if value is a string but only contains numbers, return it as a number
+    if (typeof value === 'string' && /^\d+$/.test(value))
+      return Number(value)
+
+    // if value is a string but only contains boolean values, return it as a boolean
+    if (typeof value === 'string' && /^(true|false)$/.test(value))
+      return value === 'true'
+
+    // at some point, let's see if we can remove the need for below
     if (value instanceof ValidationEnum)
       return target[key] as string
 

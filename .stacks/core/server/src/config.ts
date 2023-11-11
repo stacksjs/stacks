@@ -15,15 +15,15 @@ export function config(options: ServerOptions) {
       host: 'localhost',
       port: 3334,
     },
-    library: { // component library
+    admin: {
       host: 'localhost',
       port: 3335,
     },
-    desktop: {
+    library: { // component library
       host: 'localhost',
       port: 3336,
     },
-    admin: {
+    desktop: {
       host: 'localhost',
       port: 3337,
     },

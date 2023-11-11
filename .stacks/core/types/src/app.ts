@@ -5,6 +5,7 @@ type Ports = {
   backend: number
   admin: number
   library: number
+  desktop: number
   email: number
   docs: number
   inspect: number
