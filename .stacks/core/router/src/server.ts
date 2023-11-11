@@ -12,9 +12,9 @@ interface ServeOptions {
   // Add other options as needed
 }
 
-export function serve(options: ServeOptions = {}) {
+export async function serve(options: ServeOptions = {}) {
   Bun.serve({
-    hostname: options.host || localUrl(),
+    hostname: options.host || await localUrl({ type: 'backend' }),
     port: options.port || 3000,
     fetch(req: Request) {
       return serverResponse(req)

@@ -11,7 +11,7 @@ export class ErrorHandler {
 
   static handle(err: ErrorDescription | Error, options?: ErrorOptions | Error) {
     // lets only write to the console if we are not in silent mode
-    if (!(options instanceof Error) && options?.silent !== true)
+    if (!(options instanceof Error) && options?.silent !== false)
       this.writeErrorToConsole(err, options)
 
     if (typeof err === 'string')

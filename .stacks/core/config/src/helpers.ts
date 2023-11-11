@@ -1,50 +1,115 @@
 import type { AppConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, SecurityConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import { createLocalTunnel } from '@stacksjs/tunnel'
 import { config } from './'
 
 export type LocalUrlType = 'frontend' | 'backend' | 'api' | 'admin' | 'library' | 'email' | 'docs' | 'inspect' | 'desktop'
 
-export function localUrl({
-  url = config.app.url || 'stacks',
+export async function localUrl({
+  domain = config.app.url || 'stacks',
   type = 'frontend' as LocalUrlType,
   localhost = false,
+  https = undefined as boolean | undefined,
+  network = undefined as boolean | undefined
 } = {}) {
+    // Ensure url starts with http:// or https://
+  // if (!url.startsWith('http://') && !url.startsWith('https://'))
+  //   url = 'https://' + url
+  let url
+
   switch (type) {
     case 'frontend':
+      if (network)
+        return await createLocalTunnel(config.app.ports?.frontend || 3336)
+
       if (localhost)
         return `http://localhost:${config.app.ports?.frontend}`
-      return url.replace(/\.[^\.]+$/, '.localhost');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'backend':
       if (localhost)
         return `http://localhost:${config.app.ports?.backend}`
-      return url.replace(/\.[^\.]+$/, '.localhost/api/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'api':
       if (localhost)
         return `http://localhost:${config.app.ports?.backend}`
-      return url.replace(/\.[^\.]+$/, '.localhost/api/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'admin':
       if (localhost)
         return `http://localhost:${config.app.ports?.admin}`
-      return url.replace(/\.[^\.]+$/, '.localhost/admin/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/admin/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'library':
       if (localhost)
         return `http://localhost:${config.app.ports?.library}`
-      return url.replace(/\.[^\.]+$/, '.localhost/libs/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/libs/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'email':
       if (localhost)
         return `http://localhost:${config.app.ports?.email}`
-      return url.replace(/\.[^\.]+$/, '.localhost/email/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'docs':
       if (localhost)
         return `http://localhost:${config.app.ports?.docs}`
-      return url.replace(/\.[^\.]+$/, '.localhost/docs/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/docs/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     case 'inspect':
       if (localhost)
         return `http://localhost:${config.app.ports?.inspect}`
-      return url.replace(/\.[^\.]+$/, '.localhost/__inspect/');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost/__inspect/')
+
+      if (https)
+        return `https://${url}`
+
+      return url
     default:
       if (localhost)
         return `http://localhost:${config.app.ports?.frontend}`
-      return url.replace(/\.[^\.]+$/, '.localhost');
+
+      url = domain.replace(/\.[^\.]+$/, '.localhost')
+
+      if (https)
+        return `https://${url}`
+
+        return url
   }
 }
 

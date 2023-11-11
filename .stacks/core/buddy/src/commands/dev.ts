@@ -3,6 +3,7 @@ import { Action, ExitCode } from '@stacksjs/types'
 import { runAction, runComponentsDevServer, runDocsDevServer, runApiDevServer, runFrontendDevServer } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, runCommand, prompt } from '@stacksjs/cli'
+import { sleep } from '@stacksjs/utils'
 import { vitePath } from '@stacksjs/path'
 
 export function dev(buddy: CLI) {
@@ -33,6 +34,9 @@ export function dev(buddy: CLI) {
 
       log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
       runAction(Action.StartCaddy, {...options, silent: true })
+
+      // just for a better DX
+      await sleep(100)
 
       switch (server) {
         case 'frontend':

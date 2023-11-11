@@ -2,7 +2,6 @@ import { frameworkPath, vitePath } from '@stacksjs/path'
 import { parseOptions, runCommand } from '@stacksjs/cli'
 import type { DeployOptions } from '@stacksjs/types'
 
-
 const options: DeployOptions = parseOptions()
 
 if (options.verbose)

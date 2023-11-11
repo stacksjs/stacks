@@ -29,8 +29,8 @@ let bearerToken: string | null = ''
 if (typeof window !== 'undefined')
   bearerToken = window.localStorage.getItem('bearerToken')
 
-export function useHttpFetch(endpoint = '') {
-  let baseURL = localUrl(config.app.url)
+export async function useHttpFetch(endpoint = '') {
+  let baseURL = await localUrl({ domain: config.app.url })
 
   if (endpoint)
     baseURL = endpoint

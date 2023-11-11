@@ -46,15 +46,16 @@ export function stacks(options?: StacksPluginOptions): Plugin {
     },
 
     configureServer(server: DevServer) {
-      server.printUrls = () => {
+      server.printUrls = async () => {
         const urls = {
-          frontend: `https://${localUrl()}`,
-          backend: `https://${localUrl()}/api/`,
-          admin: `https://${localUrl()}/admin/`,
-          library: `https://${localUrl()}/lib/`,
-          email: `https://${localUrl()}/email-testing/`,
-          docs: `https://${localUrl()}/docs/`,
-          inspect: `https://${localUrl()}/__inspect/`,
+          frontend: await localUrl({ type: 'frontend', https: true }),
+          backend: await localUrl({ type: 'backend', https: true }),
+          admin: await localUrl({ type: 'admin', https: true }),
+          library: await localUrl({ type: 'library', https: true }),
+          email: await localUrl({ type: 'email', https: true }),
+          docs: await localUrl({ type: 'docs', https: true }),
+          desktop: await localUrl({ type: 'desktop', https: true }),
+          inspect: await localUrl({ type: 'inspect', https: true }),
         }
 
         const stacksVersion = `alpha-${version}`
@@ -70,27 +71,29 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         // there is a chance the above loop is not triggered, in a case we are serving a single dev server
         // that's why the below is needed
         if (options && options.config?.includes('frontend')) {
-          console.log(`  ${c.green('➜') }  ${c.bold('Frontend')}: ${c.green(localUrl({ type: 'frontend' }))}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.dim(c.green(localUrl({ type: 'frontend', localhost: true })))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Frontend')}: ${c.green(urls.frontend)}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.dim(c.green(await localUrl({ type: 'frontend', localhost: true })))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.dim(c.green(await localUrl({ type: 'frontend', network: true })))}`)
         }
 
         if (options && options.config?.includes('components')) {
-          console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(localUrl({ type: 'library' }))}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(localUrl({ type: 'library', localhost: true }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(urls.library)}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'library', localhost: true }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.dim(c.green(await localUrl({ type: 'library', network: true })))}`)
         }
 
         if (options && options.config?.includes('email'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Email')}: ${c.green(localUrl({ type: 'email' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Email')}: ${c.green(urls.email)}`)
         if (options && options.config?.includes('docs'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Docs')}: ${c.green(localUrl({ type: 'docs' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Docs')}: ${c.green(urls.docs)}`)
         if (options && options.config?.includes('inspect'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Inspect')}: ${c.green(localUrl({ type: 'inspect' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Inspect')}: ${c.green(urls.inspect)}`)
         if (options && options.config?.includes('admin'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Admin')}: ${c.green(localUrl({ type: 'admin' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Admin')}: ${c.green(urls.admin)}`)
         if (options && options.config?.includes('backend'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Backend')}: ${c.green(localUrl({ type: 'backend' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Backend')}: ${c.green(urls.backend)}`)
         if (options && options.config?.includes('desktop'))
-          console.log(`  ${c.green('➜') }  ${c.bold('Desktop')}: ${c.green(localUrl({ type: 'desktop' }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Desktop')}: ${c.green(urls.desktop)}`)
       }
     },
   }

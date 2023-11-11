@@ -5,7 +5,7 @@ stacksjs.localhost {
 		}
 
 		handle @libs {
-			reverse_proxy localhost:3335
+			reverse_proxy localhost:3336
 		}
 
 		@api {
