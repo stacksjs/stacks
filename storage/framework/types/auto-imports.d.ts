@@ -213,6 +213,7 @@ declare global {
   const defineUi: typeof import('../../../.stacks/core/utils/src/config')['defineUi']
   const deflateSync: typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']
   const del: typeof import('../../../.stacks/core/storage/src/delete')['del']
+  const delay: typeof import('../../../.stacks/core/utils/src/sleep')['delay']
   const deleteEmptyFolder: typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']
   const deleteEmptyFolders: typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']
   const deleteFile: typeof import('../../../.stacks/core/storage/src/delete')['deleteFile']
@@ -595,6 +596,7 @@ declare global {
   const shallowRef: typeof import('vue')['shallowRef']
   const signal: typeof import('../../../.stacks/core/signals/src/index')['signal']
   const signalsPath: typeof import('../../../.stacks/core/path/src/index')['signalsPath']
+  const sleep: typeof import('../../../.stacks/core/utils/src/sleep')['sleep']
   const slugPath: typeof import('../../../.stacks/core/path/src/index')['slugPath']
   const sms77: typeof import('../../../.stacks/core/sms/src/drivers/index')['sms77']
   const smsPath: typeof import('../../../.stacks/core/path/src/index')['smsPath']
@@ -858,6 +860,9 @@ declare global {
   const vitePath: typeof import('../../../.stacks/core/path/src/index')['vitePath']
   const vueComponentExample: typeof import('../../../.stacks/core/build/src/index')['vueComponentExample']
   const vueComponents: typeof import('../../../.stacks/core/build/src/index')['vueComponents']
+  const wait: typeof import('../../../.stacks/core/utils/src/sleep')['wait']
+  const waitUntil: typeof import('../../../.stacks/core/utils/src/sleep')['waitUntil']
+  const waitWhile: typeof import('../../../.stacks/core/utils/src/sleep')['waitWhile']
   const watch: typeof import('vue')['watch']
   const watchArray: typeof import('../../../.stacks/core/utils/src/vendors')['watchArray']
   const watchAtMost: typeof import('../../../.stacks/core/utils/src/vendors')['watchAtMost']
@@ -1103,6 +1108,7 @@ declare module 'vue' {
     readonly defineUi: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineUi']>
     readonly deflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']>
     readonly del: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['del']>
+    readonly delay: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['delay']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']>
     readonly deleteFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteFile']>
@@ -1466,6 +1472,7 @@ declare module 'vue' {
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly signal: UnwrapRef<typeof import('../../../.stacks/core/signals/src/index')['signal']>
     readonly signalsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['signalsPath']>
+    readonly sleep: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['sleep']>
     readonly slugPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['slugPath']>
     readonly sms77: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['sms77']>
     readonly smsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['smsPath']>
@@ -1705,6 +1712,9 @@ declare module 'vue' {
     readonly vitePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['vitePath']>
     readonly vueComponentExample: UnwrapRef<typeof import('../../../.stacks/core/build/src/index')['vueComponentExample']>
     readonly vueComponents: UnwrapRef<typeof import('../../../.stacks/core/build/src/index')['vueComponents']>
+    readonly wait: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['wait']>
+    readonly waitUntil: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['waitUntil']>
+    readonly waitWhile: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['waitWhile']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['watchAtMost']>
@@ -1944,6 +1954,7 @@ declare module '@vue/runtime-core' {
     readonly defineUi: UnwrapRef<typeof import('../../../.stacks/core/utils/src/config')['defineUi']>
     readonly deflateSync: UnwrapRef<typeof import('../../../.stacks/core/storage/src/zip')['deflateSync']>
     readonly del: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['del']>
+    readonly delay: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['delay']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteEmptyFolders']>
     readonly deleteFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/delete')['deleteFile']>
@@ -2307,6 +2318,7 @@ declare module '@vue/runtime-core' {
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly signal: UnwrapRef<typeof import('../../../.stacks/core/signals/src/index')['signal']>
     readonly signalsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['signalsPath']>
+    readonly sleep: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['sleep']>
     readonly slugPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['slugPath']>
     readonly sms77: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['sms77']>
     readonly smsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['smsPath']>
@@ -2546,6 +2558,9 @@ declare module '@vue/runtime-core' {
     readonly vitePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['vitePath']>
     readonly vueComponentExample: UnwrapRef<typeof import('../../../.stacks/core/build/src/index')['vueComponentExample']>
     readonly vueComponents: UnwrapRef<typeof import('../../../.stacks/core/build/src/index')['vueComponents']>
+    readonly wait: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['wait']>
+    readonly waitUntil: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['waitUntil']>
+    readonly waitWhile: UnwrapRef<typeof import('../../../.stacks/core/utils/src/sleep')['waitWhile']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['watchAtMost']>

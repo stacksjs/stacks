@@ -32,7 +32,7 @@ export function localUrl({
     case 'email':
       if (localhost)
         return `http://localhost:${config.app.ports?.email}`
-      return url.replace(/\.[^\.]+$/, '.localhost/email-testing/');
+      return url.replace(/\.[^\.]+$/, '.localhost/email/');
     case 'docs':
       if (localhost)
         return `http://localhost:${config.app.ports?.docs}`

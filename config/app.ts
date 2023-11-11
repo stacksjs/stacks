@@ -17,7 +17,7 @@ export default {
   key: env.APP_KEY,
 
   ports: {
-    frontend: env.APP_PORT || 3000,
+    frontend: env.APP_PORT || 3333,
     backend: env.APP_PORT + 1,
     // api: env.APP_PORT + 1,
     admin: env.APP_PORT + 2,

@@ -71,12 +71,12 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         // that's why the below is needed
         if (options && options.config?.includes('frontend')) {
           console.log(`  ${c.green('➜') }  ${c.bold('Frontend')}: ${c.green(localUrl({ type: 'frontend' }))}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('localhost')}: ${c.green(localUrl({ type: 'frontend' }, true))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.dim(c.green(localUrl({ type: 'frontend', localhost: true })))}`)
         }
 
         if (options && options.config?.includes('components')) {
           console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(localUrl({ type: 'library' }))}`)
-
+          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(localUrl({ type: 'library', localhost: true }))}`)
         }
 
         if (options && options.config?.includes('email'))

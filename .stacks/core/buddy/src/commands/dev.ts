@@ -32,35 +32,24 @@ export function dev(buddy: CLI) {
       const perf = await intro('buddy dev')
 
       // ensure Caddy is running
+      log.info('Ensuring web server/s running...')
       runAction(Action.StartCaddy, {...options, silent: true })
 
       switch (server) {
         case 'frontend':
-          await runFrontendDevServer({
-            ...options,
-            frontend: true,
-          })
+          await runFrontendDevServer(options)
           break
         case 'api':
-          await runApiDevServer({
-            ...options,
-            api: true,
-          })
+          await runApiDevServer(options)
           break
         case 'components':
-          await runComponentsDevServer({
-            ...options,
-            components: true,
-          })
+          await runComponentsDevServer(options)
           break
         // case 'email':
         //   await runEmailDevServer(options)
         //   break
         case 'docs':
-          await runDocsDevServer({
-            ...options,
-            docs: true,
-          })
+          await runDocsDevServer(options)
           break
         default:
       }
@@ -80,22 +69,13 @@ export function dev(buddy: CLI) {
           })
 
         if (answer === 'components')
-          await runComponentsDevServer({
-            ...options,
-            components: true,
-          })
+          await runComponentsDevServer(options)
         else if (answer === 'api')
-          await runApiDevServer({
-            ...options,
-            api: true,
-          })
+          await runApiDevServer(options)
         // else if (answer === 'email')
         //   await runEmailDevServer(options)
         else if (answer === 'docs')
-          await runDocsDevServer({
-            ...options,
-            docs: true,
-          })
+          await runDocsDevServer(options)
 
         else {
           log.error('Invalid option during interactive mode')
