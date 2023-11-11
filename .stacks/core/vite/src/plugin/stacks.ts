@@ -72,14 +72,14 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         // that's why the below is needed
         if (options && options.config?.includes('frontend')) {
           console.log(`  ${c.green('➜') }  ${c.bold('Frontend')}: ${c.green(urls.frontend)}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.dim(c.green(await localUrl({ type: 'frontend', localhost: true })))}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.dim(c.green(await localUrl({ type: 'frontend', network: true })))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'frontend', localhost: true }))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'frontend', network: true }))}`)
         }
 
         if (options && options.config?.includes('components')) {
           console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(urls.library)}`)
           console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'library', localhost: true }))}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.dim(c.green(await localUrl({ type: 'library', network: true })))}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'library', network: true }))}`)
         }
 
         if (options && options.config?.includes('email'))
