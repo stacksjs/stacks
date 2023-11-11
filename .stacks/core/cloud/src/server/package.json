@@ -2,9 +2,9 @@
   "name": "stacks-cloud",
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.445.0",
-    "@aws-sdk/lib-dynamodb": "^3.445.0",
-    "@smithy/smithy-client": "^2.1.12",
+    "@aws-sdk/client-dynamodb": "^3.449.0",
+    "@aws-sdk/lib-dynamodb": "^3.449.0",
+    "@smithy/smithy-client": "^2.1.13",
     "aws4fetch": "^1.0.17"
   }
 }
