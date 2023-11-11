@@ -44,10 +44,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "node-cron": "3.0.2"
+    "node-cron": "3.0.3"
   },
   "dependencies": {
-    "node-cron": "3.0.2"
+    "node-cron": "3.0.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

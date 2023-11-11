@@ -69,18 +69,18 @@
     "meilisearch": "^0.35.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
-    "unocss": "^0.57.2",
+    "unocss": "^0.57.3",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^4.5.0",
-    "vite-plugin-inspect": "^0.7.41",
+    "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pwa": "^0.16.7",
-    "vite-ssg": "^0.23.4",
+    "vite-ssg": "^0.23.5",
     "vitepress": "1.0.0-rc.25",
     "vue": "^3.3.8"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.104.0",
+    "aws-cdk-lib": "^2.106.1",
     "typescript": "^5.2.2"
   }
 }
