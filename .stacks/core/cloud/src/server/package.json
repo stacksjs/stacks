@@ -4,7 +4,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.449.0",
     "@aws-sdk/lib-dynamodb": "^3.449.0",
-    "@smithy/smithy-client": "^2.1.13",
+    "@smithy/smithy-client": "^2.1.14",
     "aws4fetch": "^1.0.17"
   }
 }
