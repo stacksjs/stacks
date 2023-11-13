@@ -10,7 +10,7 @@ export async function runDevServer(options: DevOptions) {
 }
 
 export async function runFrontendDevServer(options: DevOptions) {
-  log.info('Starting your Frontend Engine...')
+  log.info('Starting your UI Engine...')
   await runAction(Action.DevViews, options)
 }
 

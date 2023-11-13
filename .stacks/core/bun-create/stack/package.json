@@ -1,9 +1,8 @@
 {
-  "name": "your-project-name",
+  "name": "@bun-examples/stack",
   "type": "module",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Your project description",
+  "version": "0.57.4",
+  "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -15,10 +14,30 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
+  "keywords": [
+    "project-starter",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@ow3.org>"
   ],
-  "scripts": {
+  "files": [
+    "README.md",
+    "dist"
+  ],
+   "scripts": {
     "buddy": "bun --bun .stacks/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./.stacks/scripts/setup.sh",
@@ -121,5 +140,10 @@
     ".stacks/vcs/*",
     ".stacks",
     "storage/framework/*"
-  ]
+  ],
+  "bun-create": {
+    "preinstall": ["echo 'Installing...'", "git clone https://github.com/stacksjs/stacks.git ."],
+    "postinstall": ["echo 'Done!'"],
+    "start": "bun run echo 'Hello world!'"
+  }
 }

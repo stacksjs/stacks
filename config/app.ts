@@ -25,6 +25,7 @@ export default {
     email: env.APP_PORT + 5,
     docs: env.APP_PORT + 6,
     inspect: env.APP_PORT + 7,
+    api: 3999,
   },
 
   timezone: 'UTC',

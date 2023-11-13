@@ -198,6 +198,7 @@ pnpm
 polacek
 postcssrc
 prefetch
+preinstall
 prepublishing
 procfile
 proxied

@@ -2,7 +2,8 @@ export type AppEnvType = 'production' | 'development' | 'staging' | 'local' | 's
 
 type Ports = {
   frontend: number
-  backend: number
+  backend: number // proxies api
+  api: number // the Bun server
   admin: number
   library: number
   desktop: number

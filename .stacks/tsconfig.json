@@ -61,6 +61,7 @@
     "./core/*/tests/*",
     "./core/*/tests/**/*",
     "./core/build/**/*",
+    "./core/bun-create/**/*",
     "./core/cloud/*",
     "./core/utils/scripts/*",
     "./core/**/build.ts",

@@ -154,6 +154,12 @@ export interface CliOptions {
   background?: boolean
 
   startTime?: number
+
+  /**
+   * Include the localhost URL in the output.
+   * @default false
+   */
+  withLocalhost?: boolean
 }
 
 export type CliConfig = CliOptions

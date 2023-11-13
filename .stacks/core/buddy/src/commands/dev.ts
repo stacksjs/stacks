@@ -17,6 +17,7 @@ export function dev(buddy: CLI) {
     docs: 'Start the Documentation development server',
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
+    withLocalhost: 'Include the localhost URL in the output',
     verbose: 'Enable verbose output',
   }
 
@@ -28,6 +29,7 @@ export function dev(buddy: CLI) {
     .option('-c, --components', descriptions.components)
     .option('-d, --docs', descriptions.docs)
     .option('-i, --interactive', descriptions.interactive, { default: false })
+    .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
       const perf = await intro('buddy dev')
@@ -35,7 +37,7 @@ export function dev(buddy: CLI) {
       log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
       runAction(Action.StartCaddy, {...options, silent: true })
 
-      // just for a better DX
+      // just for a better UX
       await sleep(100)
 
       switch (server) {
