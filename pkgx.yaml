@@ -5,6 +5,7 @@ dependencies:
   caddyserver.com: ^2.7.4
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
+  mailpit.axllent.org: ^1.10.0
   npmjs.com: ^9.7.2 # can soon be removed when Bun-native support is released
   redis.io: ^7.0.11
   sqlite.org: ^3.42.0
