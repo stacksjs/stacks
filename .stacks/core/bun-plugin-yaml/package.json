@@ -1,0 +1,57 @@
+{
+  "name": "bun-plugin-yaml",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "A Bun plugin to load yaml files",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/core/bun-plugin-yaml#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./.stacks/core/bun-plugin-yaml"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "bun-plugin-yaml",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "js-yaml": "^4.1.0",
+    "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "@stacksjs/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}
