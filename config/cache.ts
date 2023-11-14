@@ -39,6 +39,8 @@ export default {
       connection: 'cache',
       host: '127.0.0.1',
       port: 6379,
+      password: '',
+      username: 'stacks',
     },
   },
 } satisfies CacheConfig

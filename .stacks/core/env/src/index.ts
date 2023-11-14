@@ -21,8 +21,8 @@ const handler = {
   get: (target: Env, key: EnvKey) => {
     const value = target[key] as any
 
-    // if value is a string but only contains numbers, return it as a number
-    if (typeof value === 'string' && /^\d+$/.test(value))
+    // if value is a string but only contains numbers, and the key is not AWS_ACCOUNT_ID, return it as a number
+    if (typeof value === 'string' && /^\d+$/.test(value) && key !== 'AWS_ACCOUNT_ID')
       return Number(value)
 
     // if value is a string but only contains boolean values, return it as a boolean

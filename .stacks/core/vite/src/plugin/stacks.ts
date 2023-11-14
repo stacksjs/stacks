@@ -12,6 +12,7 @@ type StacksPluginOptions = {
   email?: boolean
   docs?: boolean
   config?: string // the vite config used
+  withLocalhost?: boolean
 }
 
 // https://github.com/hannoeru/vite-plugin-pages
@@ -59,6 +60,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         const stacksVersion = `alpha-${version}`
+        const withLocalhost = options && options.withLocalhost
 
         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
 
@@ -77,23 +79,69 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options && options.config?.includes('components')) {
-          console.log(`  ${c.green('➜') }  ${c.bold('Components')}: ${c.green(urls.library)}`)
-          console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'library', localhost: true }))}`)
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'library', localhost: true }))}`)
+
+          console.log(`  ${c.green('➜') }  ${c.bold('Library')}: ${c.green(urls.library)}`)
           console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'library', network: true }))}`)
         }
 
-        if (options && options.config?.includes('email'))
+        if (options && options.config?.includes('email')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'email', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Email')}: ${c.green(urls.email)}`)
-        if (options && options.config?.includes('docs'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'email', network: true }))}`)
+        }
+
+        if (options && options.config?.includes('docs')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'docs', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Docs')}: ${c.green(urls.docs)}`)
-        if (options && options.config?.includes('inspect'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'docs', network: true }))}`)
+        }
+
+        if (options && options.config?.includes('inspect')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'inspect', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Inspect')}: ${c.green(urls.inspect)}`)
-        if (options && options.config?.includes('admin'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'inspect', network: true }))}`)
+        }
+
+
+        if (options && options.config?.includes('admin')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'admin', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Admin')}: ${c.green(urls.admin)}`)
-        if (options && options.config?.includes('backend'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'admin', network: true }))}`)
+        }
+
+        if (options && options.config?.includes('backend')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'backend', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Backend')}: ${c.green(urls.backend)}`)
-        if (options && options.config?.includes('desktop'))
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'backend', network: true }))}`)
+        }
+
+        if (options && options.config?.includes('backend')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'backend', localhost: true }))}`)
+
+          console.log(`  ${c.green('➜') }  ${c.bold('Backend')}: ${c.green(urls.backend)}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'backend', network: true }))}`)
+        }
+
+        if (options && options.config?.includes('desktop')) {
+          if (withLocalhost)
+            console.log(`  ${c.green('➜') }  ${c.bold('Local')}: ${c.green(await localUrl({ type: 'desktop', localhost: true }))}`)
+
           console.log(`  ${c.green('➜') }  ${c.bold('Desktop')}: ${c.green(urls.desktop)}`)
+          console.log(`  ${c.green('➜') }  ${c.bold('Network')}: ${c.green(await localUrl({ type: 'desktop', network: true }))}`)
+        }
       }
     },
   }

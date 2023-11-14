@@ -3,12 +3,12 @@ import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
-import * as cdk from 'aws-cdk-lib'
+import { App } from 'aws-cdk-lib'
 import { Cloud } from './src/cloud'
 import { getOrCreateTimestamp } from './src/helpers'
 import type { CloudOptions } from './src/types'
 
-const app = new cdk.App()
+const app = new App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const appKey = config.app.key
 const domain = config.app.url

@@ -67,6 +67,26 @@ export interface CacheOptions {
        * @example 6379
        */
       port: number
+
+      /**
+       * **Redis Username**
+       *
+       * This value determines the username that will be used to connect to the Redis server.
+       *
+       * @default string ""
+       * @example "admin"
+       */
+      username: string
+
+      /**
+       * **Redis Password**
+       *
+       * This value determines the password that will be used to connect to the Redis server.
+       *
+       * @default string ""
+       * @example "password"
+       */
+      password: string
     }
 
     memcached?: object

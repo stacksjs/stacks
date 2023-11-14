@@ -3,48 +3,10 @@ import { kolorist as c } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import type { HeadConfig, UserConfig } from 'vitepress'
-import analytics from '../../../config/analytics'
+import type { UserConfig } from 'vitepress'
 import userConfig from '../../../config/docs'
+import { analyticsHead, faviconHead } from './head'
 import { version } from '../../package.json'
-
-const googleAnalyticsHead: HeadConfig[] = [
-  [
-    'script',
-    { async: '', src: `https://www.googletagmanager.com/gtag/js?id=${analytics.drivers?.googleAnalytics?.trackingId}` },
-  ],
-  [
-    'script',
-    {},
-      `window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'TAG_ID');`,
-  ],
-]
-
-const fathomAnalyticsHead: HeadConfig[] = [
-  [
-    'script',
-    { 'src': 'https://cdn.usefathom.com/script.js', 'data-site': analytics.drivers?.fathom?.siteId || '', 'defer': '' },
-  ],
-]
-
-const analyticsHead = analytics.driver === 'fathom'
-  ? fathomAnalyticsHead
-  : analytics.driver === 'google-analytics'
-    ? googleAnalyticsHead
-    : []
-
-const faviconHead: HeadConfig[] = [
-  [
-    'link',
-    {
-      rel: 'icon',
-      href: '/favicon.png',
-    },
-  ],
-]
 
 // this is the resolved user config
 export default {
