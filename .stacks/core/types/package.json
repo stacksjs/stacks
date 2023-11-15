@@ -69,7 +69,7 @@
     "meilisearch": "^0.35.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
-    "unocss": "^0.57.3",
+    "unocss": "^0.57.4",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^4.5.0",
@@ -80,7 +80,7 @@
     "vue": "^3.3.8"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.106.1",
+    "aws-cdk-lib": "^2.108.1",
     "typescript": "^5.2.2"
   }
 }
