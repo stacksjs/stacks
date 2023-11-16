@@ -231,6 +231,7 @@ shiki
 showcaseable
 singleline
 singlestore
+sizecheck
 solana
 stackblitz
 stacksjs
@@ -242,6 +243,7 @@ suffixless
 supabase
 synctex
 tauri
+taze
 tazerc
 telnyx
 templating
