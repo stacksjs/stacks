@@ -1,5 +1,5 @@
-import type { UserModule } from '@stacksjs/types'
 import { createPinia } from 'pinia'
+import type { UserModule } from '@stacksjs/types'
 
 // Setup Pinia
 // https://pinia.vuejs.org/

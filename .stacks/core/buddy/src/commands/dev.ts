@@ -35,6 +35,8 @@ export function dev(buddy: CLI) {
       const perf = await intro('buddy dev')
 
       log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
+      console.log('here')
+
       runAction(Action.StartCaddy, { ...options, silent: true })
 
       // just for a better UX

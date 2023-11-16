@@ -96,14 +96,10 @@
     "test:coverage": "bun run buddy test:coverage",
     "test:types": "bun run buddy test:types",
     "bud": "bun run buddy",
-    "stx": "bun run buddy",
-    "prepare": "bunx simple-git-hooks"
+    "stx": "bun run buddy"
   },
   "dependencies": {
     "stacks": "workspace:*"
-  },
-  "lint-staged": {
-    "*": "eslint --fix"
   },
   "config": {
     "commitizen": {

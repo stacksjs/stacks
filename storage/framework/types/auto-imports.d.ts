@@ -147,6 +147,7 @@ declare global {
   const createHostedZone: typeof import('../../../.stacks/core/dns/src/drivers/aws')['createHostedZone']
   const createInjectionState: typeof import('../../../.stacks/core/utils/src/vendors')['createInjectionState']
   const createLanguage: typeof import('../../../.stacks/core/actions/src/index')['createLanguage']
+  const createLocalTunnel: typeof import('../../../.stacks/core/tunnel/src/index')['createLocalTunnel']
   const createMigration: typeof import('../../../.stacks/core/actions/src/index')['createMigration']
   const createModel: typeof import('../../../.stacks/core/actions/src/index')['createModel']
   const createMysqlPool: typeof import('../../../.stacks/core/query-builder/src/kysely')['createMysqlPool']
@@ -1043,6 +1044,7 @@ declare module 'vue' {
     readonly createHostedZone: UnwrapRef<typeof import('../../../.stacks/core/dns/src/drivers/aws')['createHostedZone']>
     readonly createInjectionState: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['createInjectionState']>
     readonly createLanguage: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createLanguage']>
+    readonly createLocalTunnel: UnwrapRef<typeof import('../../../.stacks/core/tunnel/src/index')['createLocalTunnel']>
     readonly createMigration: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createMigration']>
     readonly createModel: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createModel']>
     readonly createMysqlPool: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['createMysqlPool']>
@@ -1890,6 +1892,7 @@ declare module '@vue/runtime-core' {
     readonly createHostedZone: UnwrapRef<typeof import('../../../.stacks/core/dns/src/drivers/aws')['createHostedZone']>
     readonly createInjectionState: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['createInjectionState']>
     readonly createLanguage: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createLanguage']>
+    readonly createLocalTunnel: UnwrapRef<typeof import('../../../.stacks/core/tunnel/src/index')['createLocalTunnel']>
     readonly createMigration: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createMigration']>
     readonly createModel: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['createModel']>
     readonly createMysqlPool: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['createMysqlPool']>

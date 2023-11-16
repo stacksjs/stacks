@@ -285,6 +285,11 @@
       "types": "./core/tinker/dist/index.d.ts",
       "import": "./core/tinker/dist/index.js"
     },
+    "./tunnel": {
+      "bun": "./core/tunnel/src/index.ts",
+      "types": "./core/tunnel/dist/index.d.ts",
+      "import": "./core/tunnel/dist/index.js"
+    },
     "./types": {
       "bun": "./core/types/src/index.ts",
       "types": "./core/types/dist/index.d.ts",
