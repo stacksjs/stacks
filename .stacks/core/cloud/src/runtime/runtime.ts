@@ -1,3 +1,4 @@
+/* eslint-disable */
 import process from 'node:process'
 import { AwsClient } from 'aws4fetch'
 import type { Server, ServerWebSocket } from 'bun'

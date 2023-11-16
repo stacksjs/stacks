@@ -10,7 +10,7 @@ export const apiConfig: ViteConfig = {
   },
 }
 
-export default function(config: { command: string }): ViteConfig {
+export default function (config: { command: string }): ViteConfig {
   if (config.command === 'serve')
     return apiConfig
 

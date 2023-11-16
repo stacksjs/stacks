@@ -5,8 +5,8 @@ import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import type { UserConfig } from 'vitepress'
 import userConfig from '../../../config/docs'
-import { analyticsHead, faviconHead } from './head'
 import { version } from '../../package.json'
+import { analyticsHead, faviconHead } from './head'
 
 // this is the resolved user config
 export default {

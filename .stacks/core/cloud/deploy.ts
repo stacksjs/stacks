@@ -1,8 +1,8 @@
 /* eslint-disable no-new */
 import process from 'node:process'
-import { config } from '../config/src'
-import { ExitCode } from '../types/src'
-import { env } from '../env/src'
+import { config } from '@stacksjs/config'
+import { ExitCode } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 import { App } from 'aws-cdk-lib'
 import { Cloud } from './src/cloud'
 import { getOrCreateTimestamp } from './src/helpers'

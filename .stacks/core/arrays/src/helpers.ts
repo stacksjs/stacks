@@ -195,7 +195,8 @@ export function at<T>(array: readonly T[] | [], index: number): T | undefined {
 /**
  * Move an item from one index to another
  * @param array
- * @param index
+ * @param from
+ * @param to
  *
  * @category Array
  * @example

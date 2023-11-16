@@ -1,7 +1,8 @@
+import process from 'node:process'
+import { log } from '@stacksjs/cli'
 import { S3 } from '@aws-sdk/client-s3'
 import { SES } from '@aws-sdk/client-ses'
 import { ExitCode } from '@stacksjs/types'
-import process from 'node:process'
 
 const ses = new SES({ apiVersion: '2010-12-01' })
 const s3 = new S3({ apiVersion: '2006-03-01' })
@@ -15,7 +16,6 @@ const s3 = new S3({ apiVersion: '2006-03-01' })
 let bucketName: string | undefined
 const data = await s3.listBuckets({})
 
-console.log('Data', data)
 if (data.Buckets)
   bucketName = data.Buckets.find(bucket => bucket.Name && bucket.Name.includes('-email-'))?.Name
 
@@ -48,7 +48,7 @@ const params: any = {
 
 try {
   const data = await ses.createReceiptRule(params)
-  console.log('Success', data)
+  log.info('Success', data)
 }
 catch (error) {
   console.error(error)

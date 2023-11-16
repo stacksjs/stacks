@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { DatabaseConnection, Driver, QueryResult } from 'kysely'
 import { CompiledQuery } from 'kysely'
 import type { EmitterOnce } from './mitt'

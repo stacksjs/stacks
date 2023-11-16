@@ -62,7 +62,6 @@
     "publint": "^0.2.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "eslint-plugin-import": "^2.29.0"
+    "@stacksjs/development": "workspace:*"
   }
 }

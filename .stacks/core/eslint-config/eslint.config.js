@@ -1,8 +1,8 @@
 // @ts-check
 import styleMigrate from '@stylistic/eslint-plugin-migrate'
-import antfu from './dist/index.js'
+import stacks from './dist/index.js'
 
-export default antfu(
+export default stacks(
   {
     vue: true,
     typescript: true,

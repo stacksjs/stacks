@@ -76,7 +76,6 @@ async function run() {
 
     md += markdownTable([
       ['Function', 'min+gzipped'],
-      // eslint-disable-next-line stacksjs/no-cjs-exports
       ...exports.map((i) => {
         mdJSON[i.name] = filesize(i.minzipped)
 

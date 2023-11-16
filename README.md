@@ -121,7 +121,9 @@ bunx stacks new my-project
 
 ## 🤖 Usage
 
-The following list includes some of the most common ways to interact with the Stacks API. Meet the toolkit, Buddy:
+The following list includes some of the most common ways to interact with the Stacks API.
+
+Meet the toolkit, Buddy:
 
 ```bash
 buddy install # installs all dependencies

@@ -1,4 +1,4 @@
-import type Buffer from 'node:buffer'
+/* eslint-disable */
 import type Stream from 'node:stream'
 import * as AWS from 'aws-sdk'
 import moment from 'moment'

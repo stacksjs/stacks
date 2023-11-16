@@ -28,7 +28,7 @@ export async function del(key: string): Promise<void> {
 
 export async function flushAll(): Promise<void> {
   const command = new Command('FLUSHALL', ['ASYNC'], { replyEncoding: 'utf-8' }, () => {})
-  await client.sendCommand(command);
+  await client.sendCommand(command)
 }
 
 export async function flushDB(): Promise<void> {

@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { Action, ExitCode } from '@stacksjs/types'
-import { runAction, runComponentsDevServer, runDocsDevServer, runApiDevServer, runFrontendDevServer } from '@stacksjs/actions'
+import { runAction, runApiDevServer, runComponentsDevServer, runDocsDevServer, runFrontendDevServer } from '@stacksjs/actions'
 import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, log, outro, runCommand, prompt } from '@stacksjs/cli'
+import { intro, log, outro, prompt, runCommand } from '@stacksjs/cli'
 import { sleep } from '@stacksjs/utils'
 import { vitePath } from '@stacksjs/path'
 
@@ -35,7 +35,7 @@ export function dev(buddy: CLI) {
       const perf = await intro('buddy dev')
 
       log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
-      runAction(Action.StartCaddy, {...options, silent: true })
+      runAction(Action.StartCaddy, { ...options, silent: true })
 
       // just for a better UX
       await sleep(100)
@@ -73,14 +73,17 @@ export function dev(buddy: CLI) {
             ],
           })
 
-        if (answer === 'components')
+        if (answer === 'components') {
           await runComponentsDevServer(options)
-        else if (answer === 'api')
+        }
+        else if (answer === 'api') {
           await runApiDevServer(options)
+        }
         // else if (answer === 'email')
         //   await runEmailDevServer(options)
-        else if (answer === 'docs')
+        else if (answer === 'docs') {
           await runDocsDevServer(options)
+        }
 
         else {
           log.error('Invalid option during interactive mode')

@@ -1,5 +1,6 @@
 import { searchEngine } from '@stacksjs/config'
-import { ApiResponse, Client } from "@opensearch-project/opensearch";
+import type { ApiResponse } from '@opensearch-project/opensearch'
+import { Client } from '@opensearch-project/opensearch'
 import type { SearchEngineDriver } from '@stacksjs/types'
 
 const host = searchEngine.openSearch?.host
@@ -9,13 +10,13 @@ const auth = searchEngine.openSearch?.auth
 
 const client = new Client({
   node: `${protocol}://${auth}@${host}:${port}`,
-});
+})
 
 async function search(index: string, params?: any) {
   const response = await client.search({
     index,
     body: params.query,
-  });
+  })
 
   return response
 }
@@ -48,12 +49,11 @@ async function deleteDocument(indexName: string, document: any): Promise<ApiResp
 }
 
 export default {
-    client,
-    search,
-    createIndex,
-    deleteIndex,
-    addDocument,
-    deleteDocument
-    // ...other methods
-  } satisfies SearchEngineDriver
-  
+  client,
+  search,
+  createIndex,
+  deleteIndex,
+  addDocument,
+  deleteDocument,
+  // ...other methods
+} satisfies SearchEngineDriver

@@ -34,16 +34,18 @@ export function markdown(options: OptionsComponentExts & OptionsOverrides = {}):
       },
       name: 'antfu:markdown:rules',
       rules: {
-        'antfu/no-cjs-exports': 'off',
         'antfu/no-ts-export-equal': 'off',
 
         'import/newline-after-import': 'off',
 
         'no-alert': 'off',
         'no-console': 'off',
+        'no-labels': 'off',
+        'no-lone-blocks': 'off',
+        'no-restricted-syntax': 'off',
         'no-undef': 'off',
         'no-unused-expressions': 'off',
-
+        'no-unused-labels': 'off',
         'no-unused-vars': 'off',
 
         'node/prefer-global/process': 'off',

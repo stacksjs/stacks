@@ -11,7 +11,8 @@ export function comments(): ConfigItem[] {
       rules: {
         'eslint-comments/no-aggregating-enable': 'error',
         'eslint-comments/no-duplicate-disable': 'error',
-        'eslint-comments/no-unlimited-disable': 'error',
+        // TODO: enable this rule once Stacks errors are resolved
+        // 'eslint-comments/no-unlimited-disable': 'error',
         'eslint-comments/no-unused-enable': 'error',
       },
     },

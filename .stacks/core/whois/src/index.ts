@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import Net from 'node:net'
 import fetch from 'node-fetch'
 import type { SocksClientOptions } from 'socks'

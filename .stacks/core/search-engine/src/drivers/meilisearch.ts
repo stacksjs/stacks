@@ -1,10 +1,10 @@
+import process from 'node:process'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { MeiliSearchOptions, SearchEngineDriver } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import type { DocumentOptions, EnqueuedTask, Index, IndexOptions, IndexesResults, SearchResponse } from 'meilisearch'
 import { MeiliSearch } from 'meilisearch'
-import process from 'node:process'
 
 function client(options?: MeiliSearchOptions) {
   let host = searchEngine.meilisearch?.host
@@ -26,7 +26,7 @@ function client(options?: MeiliSearchOptions) {
 
 async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
   const offsetVal = ((params.page * params.perPage) - 20) || 0
-  const filter = convertToMeilisearchFilter(params.filter)
+  const filter = convertToFilter(params.filter)
   const sort = convertToMeilisearchSorting(params.sort)
 
   return await client()
@@ -34,11 +34,11 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     .search(params.query, { limit: params.perPage, filter, sort, offset: offsetVal })
 }
 
-async function addDocument(indexName:string, params: any): Promise<EnqueuedTask> {
+async function addDocument(indexName: string, params: any): Promise<EnqueuedTask> {
   return await client().index(indexName).addDocuments([params])
 }
 
-async function addDocuments(indexName:string, params: any[]): Promise<EnqueuedTask> {
+async function addDocuments(indexName: string, params: any[]): Promise<EnqueuedTask> {
   return await client().index(indexName).addDocuments(params)
 }
 
@@ -74,38 +74,37 @@ async function deleteIndex(indexName: string): Promise<EnqueuedTask> {
   return await client().deleteIndex(indexName)
 }
 
-async function listAllIndexes():  Promise<IndexesResults<Index[]>> {
+async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
   return await client().getIndexes()
 }
 
-function convertToMeilisearchFilter(jsonData: any): string[] {
-  const filters: string[] = [];
+function convertToFilter(jsonData: any): string[] {
+  const filters: string[] = []
 
   for (const key in jsonData) {
-    if (jsonData.hasOwnProperty(key)) {
-      const value = jsonData[key];
-      const filter = `${key}='${value}'`;
-      filters.push(filter);
+    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
+      const value = jsonData[key]
+      const filter = `${key}='${value}'`
+      filters.push(filter)
     }
   }
 
-  return filters;
+  return filters
 }
 
 function convertToMeilisearchSorting(jsonData: any): string[] {
-  const filters: string[] = [];
+  const filters: string[] = []
 
   for (const key in jsonData) {
-    if (jsonData.hasOwnProperty(key)) {
-      const value = jsonData[key];
-      const filter = `${key}:${value}`;
-      filters.push(filter);
+    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
+      const value = jsonData[key]
+      const filter = `${key}='${value}'`
+      filters.push(filter)
     }
   }
 
-  return filters;
+  return filters
 }
-
 
 export default {
   client,
@@ -116,10 +115,10 @@ export default {
   listAllIndexes,
   addDocument,
   addDocuments,
-  updateDocument
+  updateDocument,
   listAllIndices: listAllIndexes,
   updateDocuments,
   deleteDocument,
   deleteDocuments,
-  getDocument
+  getDocument,
 } satisfies SearchEngineDriver

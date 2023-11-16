@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import process from 'node:process'
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
@@ -45,7 +46,7 @@ export function deploy(buddy: CLI) {
       if (await hasUserDomainBeenAddedToCloud(domain)) {
         log.success('Your domain is properly configured.')
         log.info('Your cloud is deploying...')
-        // eslint-disable-next-line no-console
+
         console.log(`⏳ ${italic('This may take a while...')}`)
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain

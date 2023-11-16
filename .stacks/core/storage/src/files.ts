@@ -122,7 +122,9 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
           deleteFiles(p, exclude)
       }
 
-      else if (!contains(p, exclude)) { fs.rmSync(p) }
+      else if (!contains(p, exclude)) {
+        fs.rmSync(p)
+      }
     })
   }
 }

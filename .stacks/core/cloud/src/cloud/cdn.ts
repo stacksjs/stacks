@@ -6,7 +6,6 @@ import {
   aws_cloudfront as cloudfront,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
-  aws_secretsmanager as secretsmanager,
   aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'

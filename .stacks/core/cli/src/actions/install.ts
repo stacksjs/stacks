@@ -1,3 +1,4 @@
+import type { ExecaReturnValue } from 'execa'
 import { installPackage as installPkg } from '@antfu/install-pkg'
 
 interface InstallPackageOptions {
@@ -13,21 +14,21 @@ interface InstallPackageOptions {
 /**
  * Install an npm package.
  *
- * @param pkg - The package name to install.
- * @param pkg - The options to pass to the install.The options to pass to the install.
+ * @param name - The package name to install.
+ * @param options - The options to pass to the install.The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installPackage(pkg: string, options?: InstallPackageOptions) {
+export async function installPackage(name: string, options?: InstallPackageOptions): Promise<ExecaReturnValue<string>> {
   if (options)
-    return await installPkg(pkg, options)
+    return await installPkg(name, options)
 
-  return await installPkg(pkg, { silent: true })
+  return await installPkg(name, { silent: true })
 }
 
 /**
  * Install a Stack into your project.
  *
- * @param pkg - The Stack name to install.
+ * @param name - The Stack name to install.
  * @param options - The options to pass to the install.
  * @returns The result of the install.
  */

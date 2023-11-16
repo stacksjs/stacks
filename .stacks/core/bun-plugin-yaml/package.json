@@ -44,12 +44,12 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "js-yaml": "^4.1.0",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "js-yaml": "^4.1.0"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

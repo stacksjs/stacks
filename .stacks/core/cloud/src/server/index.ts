@@ -1,5 +1,6 @@
 const handler = {
-  async hello(event: any) {
+  async hello(_event: any) {
+    // eslint-disable-next-line no-console
     console.log('Hello from Bun!')
     return new Response(
       JSON.stringify({

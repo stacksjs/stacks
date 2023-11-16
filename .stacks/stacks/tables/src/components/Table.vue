@@ -69,7 +69,7 @@ const parsedFilters = computed((): string[] => {
 })
 const itemsPerPage = computed((): number => {
   if (isString(perPage))
-    return parseInt(perPage)
+    return Number.parseInt(perPage)
 
   return perPage
 })

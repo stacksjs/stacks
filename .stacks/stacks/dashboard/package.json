@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/storage": "workspace:*"
   }
 }

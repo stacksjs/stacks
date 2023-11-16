@@ -15,5 +15,7 @@ export default {
     rateLimitPerMinute: 1000,
     useIpReputationLists: true,
     useKnownBadInputsRuleSet: true,
+    queryString: [],
+    httpHeaders: [],
   },
 } satisfies SecurityConfig

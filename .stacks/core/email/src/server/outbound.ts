@@ -1,3 +1,4 @@
+/* eslint-disable */
 const AWS = require('aws-sdk')
 const moment = require('moment')
 const uuidv1 = require('uuid/v1')

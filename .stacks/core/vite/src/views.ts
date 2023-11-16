@@ -2,7 +2,7 @@ import type { ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'
-import { autoImports, components, inspect, cssEngine, layouts, pages, uiEngine } from './stacks'
+import { autoImports, components, cssEngine, inspect, layouts, pages, uiEngine } from './stacks'
 import { defineConfig } from './'
 
 export const pagesConfig = {
@@ -14,7 +14,7 @@ export const pagesConfig = {
     alias,
   },
 
-   server: server({
+  server: server({
     type: 'views',
   }),
 

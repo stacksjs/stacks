@@ -38,16 +38,15 @@ export function parseArgs() {
 }
 
 export function parseOptions(): ParsedArgv['options'] {
-    const options = cli().parse().options;
+  const options = cli().parse().options
 
-    // Iterate over the options and convert "true" and "false" strings to boolean
-    for (const key in options) {
-      if (options[key] === 'true') {
-        options[key] = true;
-      } else if (options[key] === 'false') {
-        options[key] = false;
-      }
-    }
+  // Iterate over the options and convert "true" and "false" strings to boolean
+  for (const key in options) {
+    if (options[key] === 'true')
+      options[key] = true
+    else if (options[key] === 'false')
+      options[key] = false
+  }
 
   return options
 }

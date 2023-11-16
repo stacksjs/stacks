@@ -4,7 +4,7 @@ import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deletePa
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { loop, originRequestFunctionHash, websiteSourceHash } from '@stacksjs/utils'
+import { loop } from '@stacksjs/utils'
 
 export function cloud(buddy: CLI) {
   const descriptions = {

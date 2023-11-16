@@ -24,7 +24,11 @@ async function extractModelRule() {
   const regex = /rule:.*$/gm
 
   let match: RegExpExecArray | null
-  while ((match = regex.exec(code)) !== null) rules.push(match[0])
+  match = regex.exec(code)
+  while (match !== null) {
+    rules.push(match[0])
+    match = regex.exec(code)
+  }
 }
 
 await extractModelRule()

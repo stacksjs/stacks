@@ -9,7 +9,7 @@ import type { GitConfig } from '@stacksjs/types'
  */
 export default {
   hooks: {
-    'pre-commit': 'bun lint-staged',
+    'pre-commit': 'lint-staged',
   },
 
   scopes: [

@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import SampleComponent from '../components/SampleComponent.vue'
 </script>

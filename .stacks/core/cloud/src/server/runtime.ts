@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { Server, ServerWebSocket } from 'bun'
 import { AwsClient } from 'aws4fetch'
 

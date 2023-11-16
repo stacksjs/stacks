@@ -364,6 +364,7 @@ declare global {
   const isFloat: typeof import('../../../.stacks/core/validation/src/is')['isFloat']
   const isFolder: typeof import('../../../.stacks/core/storage/src/folders')['isFolder']
   const isFunction: typeof import('../../../.stacks/core/validation/src/is')['isFunction']
+  const isGitClean: typeof import('../../../.stacks/core/utils/src/git')['isGitClean']
   const isInteger: typeof import('../../../.stacks/core/validation/src/is')['isInteger']
   const isIntegerOrFloat: typeof import('../../../.stacks/core/validation/src/is')['isIntegerOrFloat']
   const isIpv6: typeof import('../../../.stacks/core/utils/src/helpers')['isIpv6']
@@ -1258,6 +1259,7 @@ declare module 'vue' {
     readonly isFloat: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isFloat']>
     readonly isFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/folders')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isFunction']>
+    readonly isGitClean: UnwrapRef<typeof import('../../../.stacks/core/utils/src/git')['isGitClean']>
     readonly isInteger: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isInteger']>
     readonly isIntegerOrFloat: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isIntegerOrFloat']>
     readonly isIpv6: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['isIpv6']>
@@ -2104,6 +2106,7 @@ declare module '@vue/runtime-core' {
     readonly isFloat: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isFloat']>
     readonly isFolder: UnwrapRef<typeof import('../../../.stacks/core/storage/src/folders')['isFolder']>
     readonly isFunction: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isFunction']>
+    readonly isGitClean: UnwrapRef<typeof import('../../../.stacks/core/utils/src/git')['isGitClean']>
     readonly isInteger: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isInteger']>
     readonly isIntegerOrFloat: UnwrapRef<typeof import('../../../.stacks/core/validation/src/is')['isIntegerOrFloat']>
     readonly isIpv6: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['isIpv6']>

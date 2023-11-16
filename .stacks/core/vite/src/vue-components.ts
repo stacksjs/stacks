@@ -1,4 +1,3 @@
-import type { ViteBuildOptions } from './'
 import { alias } from '@stacksjs/alias'
 import { server } from '@stacksjs/server'
 import { config as c } from '@stacksjs/config'
@@ -11,6 +10,7 @@ import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { inspect } from './plugin/inspect'
 import { stacks } from './plugin/stacks'
+import type { ViteBuildOptions } from './'
 
 const config = {
   root: p.libsPath('components/vue'),

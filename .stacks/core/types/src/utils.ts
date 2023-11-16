@@ -41,3 +41,7 @@ export type DeepMerge<F, S> = MergeInsertions<{
         ? F[K]
         : never;
 }>
+
+export type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+}

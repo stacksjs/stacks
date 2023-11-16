@@ -51,7 +51,7 @@
     "localtunnel": "^2.0.2"
   },
   "devDependencies": {
-    "@types/localtunnel": "^2.0.4",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/localtunnel": "^2.0.4"
   }
 }

@@ -24,7 +24,7 @@ export class Router implements RouterInterface {
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
-    const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (match) => {
+    const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (_match) => {
       return '([a-zA-Z0-9-]+)'
     })}$`)
 
@@ -65,7 +65,7 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public redirect(path: Route['url'], callback: Route['callback'], status?: RedirectCode): this {
+  public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
     this.addRoute('GET', path, callback, 302)
     return this
   }

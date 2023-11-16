@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 declare interface Window {
   // extend the window
 }

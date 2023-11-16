@@ -7,8 +7,8 @@ import { request } from './request'
 import { route } from './'
 
 interface ServeOptions {
-  host?: string;
-  port?: number;
+  host?: string
+  port?: number
   // Add other options as needed
 }
 

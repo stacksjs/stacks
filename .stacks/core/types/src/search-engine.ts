@@ -33,7 +33,7 @@ export interface SearchEngineOptions {
     host: string
     protocol: number
     port: number
-    auth: string,
+    auth: string
   }
 
   filters?: {

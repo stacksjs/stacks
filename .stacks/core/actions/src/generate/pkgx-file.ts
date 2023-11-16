@@ -1,8 +1,9 @@
 // generates the pkgx file based on the user configuration
-// @ts-ignore
-import data from '../../../../../pkgx.yaml'
 import { config } from '@stacksjs/config'
 import { runCommand } from '@stacksjs/cli'
+
+// @ts-expect-error - no types
+import data from '../../../../../pkgx.yaml'
 
 if (!data)
   throw new Error('pkgx.yaml file not found')

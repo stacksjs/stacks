@@ -1,8 +1,8 @@
 import { log } from '@stacksjs/logging'
 import { runCommand } from '@stacksjs/cli'
-import { runAction } from '../helpers'
 import type { DevOptions } from '@stacksjs/types'
 import { Action, NpmScript } from '@stacksjs/types'
+import { runAction } from '../helpers'
 
 export async function runDevServer(options: DevOptions) {
   log.info('Starting your Frontend Engine...')

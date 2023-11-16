@@ -12,7 +12,7 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 
 - Single quotes, no semi
 - Auto fix for formatting (aimed to be used standalone **without** Prettier)
-- Designed to work with TypeScript, Vue out-of-box
+- Designed to work with TypeScript, JSX, Vue out-of-box
 - Lints also for json, yaml, markdown
 - Sorted imports, dangling commas
 - Reasonable defaults, best practices, only one-line of config
@@ -22,7 +22,7 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 - **Style principle**: Minimal for reading, stable for diff, consistent
 
 > [!IMPORTANT]
-> The main branch is for v1.0-beta, which rewrites to the new [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new), check [#250](https://github.com/antfu/eslint-config/pull/250) for more details.
+> Since v1.0.0, this config is rewritten to the new [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new), check the [release note](https://github.com/antfu/eslint-config/releases/tag/v1.0.0) for more details.
 
 ## Usage
 
@@ -52,6 +52,32 @@ const antfu = require('@antfu/eslint-config').default
 module.exports = antfu()
 ```
 
+Combined with legacy config:
+
+```js
+// eslint.config.js
+const antfu = require('@antfu/eslint-config').default
+const { FlatCompat } = require('@eslint/eslintrc')
+
+const compat = new FlatCompat()
+
+module.exports = antfu(
+  {
+    ignores: [],
+  },
+
+  // Legacy config
+  ...compat.config({
+    extends: [
+      'eslint:recommended',
+      // Other extends...
+    ],
+  })
+
+  // Other flat configs...
+)
+```
+
 > Note that `.eslintignore` no longer works in Flat config, see [customization](#customization) for more details.
 
 ### Add script for package.json
@@ -66,6 +92,16 @@ For example:
   }
 }
 ```
+
+### Migration
+
+We provided an experimental cli tool to help you migrate from the legacy config to the new flat config.
+
+```bash
+npx @antfu/eslint-config migrate
+```
+
+Before running the migration, make sure to commit your changes first.
 
 ## VS Code support (auto fix)
 
@@ -84,7 +120,7 @@ Add the following settings to your `.vscode/settings.json`:
 
   // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
   },
 
@@ -121,13 +157,13 @@ Add the following settings to your `.vscode/settings.json`:
 
 Since v1.0, we migrated to [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new). It provides much better organization and composition.
 
-Normally you only need to import the `antfu` preset:
+Normally you only need to import the `stacks` preset:
 
 ```js
 // eslint.config.js
-import antfu from '@antfu/eslint-config'
+import stacks from '@stacksjs/eslint-config'
 
-export default antfu()
+export default stacks()
 ```
 
 And that's it! Or you can configure each integration individually, for example:
@@ -210,7 +246,7 @@ import {
   unicorn,
   vue,
   yaml,
-} from '@stacksjs/eslint-config'
+} from '@antfu/eslint-config'
 
 export default [
   ...ignores(),
@@ -244,7 +280,7 @@ Since flat config requires us to explicitly provide the plugin names (instead of
 | `import/*` | `i/*` | [eslint-plugin-i](https://github.com/un-es/eslint-plugin-i) |
 | `node/*` | `n/*` | [eslint-plugin-n](https://github.com/eslint-community/eslint-plugin-n) |
 | `yaml/*` | `yml/*` | [eslint-plugin-yml](https://github.com/ota-meshi/eslint-plugin-yml) |
-| `ts/*` | `ts/*` | [ts/eslint-plugin](https://github.com/typescript-eslint/typescript-eslint) |
+| `ts/*` | `@typescript-eslint/*` | [@typescript-eslint/eslint-plugin](https://github.com/typescript-eslint/typescript-eslint) |
 | `style/*` | `@stylistic/*` | [@stylistic/eslint-plugin](https://github.com/eslint-stylistic/eslint-stylistic) |
 | `test/*` | `vitest/*` | [eslint-plugin-vitest](https://github.com/veritem/eslint-plugin-vitest) |
 | `test/*` | `no-only-tests/*` | [eslint-plugin-no-only-tests](https://github.com/levibuzolic/eslint-plugin-no-only-tests) |
@@ -252,7 +288,7 @@ Since flat config requires us to explicitly provide the plugin names (instead of
 When you want to override rules, or disable them inline, you need to update to the new prefix:
 
 ```diff
--// eslint-disable-next-line ts/consistent-type-definitions
+-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 +// eslint-disable-next-line ts/consistent-type-definitions
 type foo = { bar: 2 }
 ```
@@ -307,22 +343,22 @@ export default antfu({
 
 This config also provides some optional plugins/rules for extended usages.
 
-#### `sort-keys`
+#### `perfectionist` (sorting)
 
-This plugin [`eslint-plugin-sort-keys`](https://github.com/namnm/eslint-plugin-sort-keys) allows you to keep object keys sorted with auto-fix.
+This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sorted object keys, imports, etc, with auto-fix.
 
-It's installed but no rules are enabled by default.
+The plugin is installed but no rules are enabled by default.
 
 It's recommended to opt-in on each file individually using [configuration comments](https://eslint.org/docs/latest/use/configure/rules#using-configuration-comments-1).
 
 ```js
-/* eslint sort-keys/sort-keys-fix: "error" */
+/* eslint perfectionist/sort-objects: "error" */
 const objectWantedToSort = {
   a: 2,
   b: 1,
   c: 3,
 }
-/* eslint sort-keys/sort-keys-fix: "off" */
+/* eslint perfectionist/sort-objects: "off" */
 ```
 
 ### Type Aware Rules
@@ -360,6 +396,23 @@ and then
 ```bash
 npm i -D lint-staged simple-git-hooks
 ```
+
+## Versioning Policy
+
+This project follows [Semantic Versioning](https://semver.org/) for releases. However, since this is just a config and involved with opinions and many moving parts, we don't treat rules changes as breaking changes.
+
+### Changes Considered as Breaking Changes
+
+- Node.js version requirement changes
+- Huge refactors that might break the config
+- Plugins made major changes that might break the config
+- Changes that might affect most of the codebases
+
+### Changes Considered as Non-breaking Changes
+
+- Enable/disable rules and plugins (that might become stricter)
+- Rules options changes
+- Version bumps of dependencies
 
 ## Badge
 

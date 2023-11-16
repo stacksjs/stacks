@@ -9,9 +9,9 @@ export async function localUrl({
   type = 'frontend' as LocalUrlType,
   localhost = false,
   https = undefined as boolean | undefined,
-  network = undefined as boolean | undefined
+  network = undefined as boolean | undefined,
 } = {}) {
-    // Ensure url starts with http:// or https://
+  // Ensure url starts with http:// or https://
   // if (!url.startsWith('http://') && !url.startsWith('https://'))
   //   url = 'https://' + url
   let url
@@ -143,7 +143,7 @@ export async function localUrl({
       if (https)
         return `https://${url}`
 
-        return url
+      return url
   }
 }
 

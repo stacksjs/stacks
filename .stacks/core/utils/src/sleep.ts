@@ -4,7 +4,7 @@
  * @returns A promise that resolves after the specified delay.
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -13,7 +13,7 @@ export function sleep(ms: number): Promise<void> {
  * @returns A promise that resolves after the specified delay.
  */
 export function wait(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -22,7 +22,7 @@ export function wait(ms: number): Promise<void> {
  * @returns A promise that resolves after the specified delay.
  */
 export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -32,14 +32,14 @@ export function delay(ms: number): Promise<void> {
  * @returns A promise that resolves when the condition is met.
  */
 export function waitUntil(condition: () => boolean, interval: number = 1000): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const check = setInterval(() => {
       if (condition()) {
-        clearInterval(check);
-        resolve();
+        clearInterval(check)
+        resolve()
       }
-    }, interval);
-  });
+    }, interval)
+  })
 }
 
 /**
@@ -49,13 +49,12 @@ export function waitUntil(condition: () => boolean, interval: number = 1000): Pr
  * @returns A promise that resolves when the condition is no longer met.
  */
 export function waitWhile(condition: () => boolean, interval: number = 1000): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const check = setInterval(() => {
       if (!condition()) {
-        clearInterval(check);
-        resolve();
+        clearInterval(check)
+        resolve()
       }
-    }, interval);
-  });
+    }, interval)
+  })
 }
-

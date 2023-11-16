@@ -63,6 +63,7 @@
     "./core/build/**/*",
     "./core/bun-create/**/*",
     "./core/cloud/*",
+    "./core/eslint-config/*",
     "./core/utils/scripts/*",
     "./core/**/build.ts",
     "./core/**/build-*.ts",

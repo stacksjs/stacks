@@ -37,7 +37,7 @@
     "README.md",
     "dist"
   ],
-   "scripts": {
+  "scripts": {
     "buddy": "bun --bun .stacks/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./.stacks/scripts/setup.sh",

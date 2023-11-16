@@ -1,6 +1,8 @@
+import process from 'node:process'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 import { db } from '@stacksjs/database'
+import { ExitCode } from '@stacksjs/types'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
@@ -15,4 +17,4 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 await up(db)
 
-process.exit(0)
+process.exit(ExitCode.Success)

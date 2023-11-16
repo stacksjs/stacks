@@ -421,7 +421,8 @@
     "test": "bun buddy test",
     "test:ui": "bun buddy test:ui",
     "test:coverage": "bun buddy test:coverage",
-    "test:types": "bun buddy test:types"
+    "test:types": "bun buddy test:types",
+    "prepare": "simple-git-hooks"
   },
   "web-types": "./web-types.json",
   "peerDependencies": {

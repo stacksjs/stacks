@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable vue/valid-v-on */
 import Alert from '../components/Modals/Popups/Alert.vue'
 import BaseModal from '../components/Modals/BaseModal.vue'
 </script>

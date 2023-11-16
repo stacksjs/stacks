@@ -1,3 +1,4 @@
+import type { DeepPartial } from './utils'
 import type { CountryCode } from './cloud'
 
 export interface FirewallOptions {
@@ -19,4 +20,4 @@ export interface SecurityOptions {
   firewall: FirewallOptions
 }
 
-export type SecurityConfig = Partial<SecurityOptions>
+export type SecurityConfig = DeepPartial<SecurityOptions>

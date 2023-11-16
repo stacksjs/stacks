@@ -24,8 +24,10 @@ export function test(options: OptionsIsInEditor & OptionsOverrides = {}): Config
     },
     {
       files: GLOB_TESTS,
-      name: 'antfu:test:rules',
+      name: 'stacks:test:rules',
       rules: {
+        'node/prefer-global/process': 'off',
+
         'test/consistent-test-it': ['error', { fn: 'it', withinDescribe: 'it' }],
         'test/no-identical-title': 'error',
         'test/no-only-tests': isInEditor ? 'off' : 'error',

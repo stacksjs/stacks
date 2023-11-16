@@ -1,5 +1,6 @@
 // import { storage } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
+import { log } from '@stacksjs/cli'
 
 // import type { Model, SchemaOptions } from '@stacksjs/types'
 // import { titleCase } from '@stacksjs/strings'
@@ -68,5 +69,5 @@ export function generateMigrationFile(options: MigrationOptions) {
   // TODO: use Bun.write
   fs.writeFileSync(filePath, fileContent)
 
-  console.log(`Created migration file: ${fileName}`)
+  log.info(`Created migration file: ${fileName}`)
 }

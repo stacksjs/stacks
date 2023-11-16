@@ -1,5 +1,5 @@
-import analytics from '../../../config/analytics'
 import type { HeadConfig } from 'vitepress'
+import analytics from '../../../config/analytics'
 
 export const faviconHead: HeadConfig[] = [
   [

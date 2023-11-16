@@ -32,7 +32,7 @@ export interface ModelOptions extends Base {
     model: string // should be typed as ModelName
     foreignKey?: string
   }
-  belongsToMany: {}
+  belongsToMany: object
   hasThrough: {
     model: string // should be typed as ModelName
     through: string

@@ -80,7 +80,7 @@ _You may also use any of the following CLI utilities:_
 import {
   ansi256Bg, bold, dim, hidden, inverse, italic, link, reset, strikethrough, underline,
   bgBlack, bgBlue, bgCyan, bgGray, bgGreen, bgLightBlue, bgLightCyan, bgLightGray, bgLightGreen, bgLightMagenta, bgLightRed, bgLightYellow, bgMagenta, bgRed, bgWhite, bgYellow,
-  black, blue, cyan, gray, green, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, magenta, red, white, yellow,
+  black, blue, cyan, gray, green, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, magenta, red, white, yellow
 } from '@stacksjs/cli'
 
 log.info(`hello ${bold(italic('world'))`)

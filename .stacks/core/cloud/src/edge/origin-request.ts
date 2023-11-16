@@ -35,7 +35,7 @@ export function handler(event, context, callback) {
   //       location: [{
   //         key: 'Location',
   //         value: uri.slice(0, -1),
-  // 			 }],
+  //       }],
   //     },
   //     status: '301',
   //     statusDescription: 'Moved Permanently',

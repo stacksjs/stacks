@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import process from 'node:process'
 import { BuildCommand } from './build-layer'
 
 export class PublishCommand extends BuildCommand {
@@ -31,7 +32,7 @@ export class PublishCommand extends BuildCommand {
         { exit: 1 },
       )
     }
-    const { layer, region, arch, output, public: isPublic } = flags
+    const { layer, region, arch, output, public: _isPublic } = flags
     if (region.includes('*')) {
       // prettier-ignore
       const result = this.#aws([

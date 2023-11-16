@@ -27,6 +27,6 @@ ViteSSG(
     Object.values(import.meta.glob<{ install: UserModule }>('../../../.stacks/core/modules/*.ts', { eager: true }))
       .forEach(i => i.install?.(ctx))
 
-      ctx.app.use(head)
+    ctx.app.use(head)
   },
 )

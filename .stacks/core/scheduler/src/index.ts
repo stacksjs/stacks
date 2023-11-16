@@ -109,7 +109,7 @@ export class ScheduleImpl implements Schedule {
     return this
   }
 
-  twiceDaily(hour1: number, hour2: number): this {
+  twiceDaily(_hour1: number, _hour2: number): this {
     // implementation here
     return this
   }

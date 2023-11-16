@@ -53,6 +53,10 @@ export const GLOB_EXCLUDE = [
   '**/output',
   '**/coverage',
   '**/temp',
+  '**/.temp',
+  '**/tmp',
+  '**/.tmp',
+  '**/.history',
   '**/.vitepress/cache',
   '**/.nuxt',
   '**/.next',
@@ -73,4 +77,8 @@ export const GLOB_EXCLUDE = [
   // stacks relating
   '**/cdk.out/**',
   '**/runtime/server.js',
+  '**/framework/**',
+  '**/env/src/index.js',
+  '**/strings/README.md',
+  '**/cli/README.md',
 ]
