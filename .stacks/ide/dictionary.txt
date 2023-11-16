@@ -228,6 +228,7 @@ sesv
 sfc
 sfcs
 shiki
+shikiji
 showcaseable
 singleline
 singlestore
@@ -290,6 +291,7 @@ vue-demi
 vueform
 vueuse
 wafv
+webfont
 whois
 wmaurer
 xvda

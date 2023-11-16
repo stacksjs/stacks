@@ -156,3 +156,11 @@ elif [ $(basename "/$0") != 'installer.sh' ]; then
 fi
 
 eval "$(pkgx integrate)"
+
+# todo: need to check if this repo already exists
+git clone https://github.com/stacksjs/stacks.git $1
+
+cd $1
+
+# need to log to console: "in order to finish the setup,
+# please run 

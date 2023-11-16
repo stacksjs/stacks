@@ -1,9 +1,7 @@
 const { readdirSync } = require('node:fs')
 const { resolve } = require('node:path')
 const { kebabCase } = require('change-case')
-const jiti = require('jiti')(__filename)
-
-const git = jiti('./config/git.ts')
+const git = require('./config/git.ts')
 
 const toDelete = ['readme-md']
 

@@ -32,6 +32,14 @@ export interface AppOptions {
   name: string
 
   /**
+   * **Application Description**
+   *
+   * This value is the description of your application. This value is used when the
+   * framework generates meta tags for the frontend.
+   */
+  description: string
+
+  /**
    * **Application Environment**
    *
    * This value determines the "environment" your application is currently

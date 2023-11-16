@@ -277,6 +277,10 @@ export function paymentsPath(path?: string) {
 export function projectPath(filePath = '') {
   let path = process.cwd()
 
+  // need to also account for this being called in the ./storage/framework folder
+  while (path.includes('storage'))
+    path = resolve(path, '..')
+
   // simple way to determine the project path
   while (path.includes('.stacks'))
     path = resolve(path, '..')
