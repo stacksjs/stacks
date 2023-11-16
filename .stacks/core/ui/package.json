@@ -76,11 +76,11 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
-    "@unhead/vue": "^1.8.3",
+    "@unhead/vue": "^1.8.4",
     "@unocss/transformer-compile-class": "^0.57.4",
     "add": "^2.0.6",
     "pinia": "^2.1.7",
-    "unhead": "^1.8.3",
+    "unhead": "^1.8.4",
     "unocss": "^0.57.4",
     "vue": "^3.3.8",
     "vue-tsc": "^1.8.22"

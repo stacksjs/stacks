@@ -72,7 +72,7 @@
     "unocss": "^0.57.4",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
-    "vite": "^5.0.0-beta.15",
+    "vite": "^5.0.0-beta.20",
     "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pwa": "^0.16.7",
     "vite-ssg": "^0.23.5",
@@ -80,7 +80,7 @@
     "vue": "^3.3.8"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.108.1",
+    "aws-cdk-lib": "^2.109.0",
     "typescript": "^5.2.2"
   }
 }
