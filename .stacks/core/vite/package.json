@@ -91,7 +91,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "vite": "^5.0.0-beta.15"
+    "vite": "^5.0.0-beta.20"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -109,7 +109,7 @@
     "markdown-it-shiki": "^0.9.0",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
-    "vite": "^5.0.0-beta.15",
+    "vite": "^5.0.0-beta.20",
     "vite-plugin-full-reload": "^1.0.5",
     "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pages": "^0.31.0",
