@@ -13,7 +13,7 @@ declare global {
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
   const ...rest: typeof import('../../../.stacks/core/desktop/src/drivers/tauri/index')['...rest']
-  const Action: typeof import('../../../.stacks/core/types/src/cli')['Action']
+  const Action: typeof import('../../../.stacks/core/actions/src/action')['Action']
   const CssEngine: typeof import('../../../.stacks/core/ui/src/index')['CssEngine']
   const EffectScope: typeof import('vue')['EffectScope']
   const Err: typeof import('../../../.stacks/core/error-handling/src/index')['Err']
@@ -245,7 +245,8 @@ declare global {
   const emailPath: typeof import('../../../.stacks/core/path/src/index')['emailPath']
   const encrypt: typeof import('../../../.stacks/core/security/src/crypt')['encrypt']
   const ensureProjectIsInitialized: typeof import('../../../.stacks/core/utils/src/helpers')['ensureProjectIsInitialized']
-  const enums: typeof import('../../../.stacks/core/env/src/index')['enums']
+  const enums: typeof import('../../../.stacks/src/index')['enums']
+  const enumsPath: typeof import('../../../.stacks/core/path/src/index')['enumsPath']
   const env: typeof import('../../../.stacks/core/env/src/index')['env']
   const envSchema: typeof import('../../../.stacks/core/env/src/types')['envSchema']
   const equal: typeof import('../../../.stacks/core/utils/src/currency')['equal']
@@ -740,7 +741,7 @@ declare global {
   const useFullscreen: typeof import('../../../.stacks/core/utils/src/vendors')['useFullscreen']
   const useGamepad: typeof import('../../../.stacks/core/utils/src/vendors')['useGamepad']
   const useGeolocation: typeof import('../../../.stacks/core/utils/src/vendors')['useGeolocation']
-  const useHead: typeof import('@vueuse/head')['useHead']
+  const useHead: typeof import('@unhead/vue')['useHead']
   const useHeadSafe: typeof import('@unhead/vue')['useHeadSafe']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useIdle: typeof import('../../../.stacks/core/utils/src/vendors')['useIdle']
@@ -804,7 +805,7 @@ declare global {
   const useScroll: typeof import('../../../.stacks/core/utils/src/vendors')['useScroll']
   const useScrollLock: typeof import('../../../.stacks/core/utils/src/vendors')['useScrollLock']
   const useSearchEngine: typeof import('../../../.stacks/core/search-engine/src/index')['useSearchEngine']
-  const useSeoMeta: typeof import('@vueuse/head')['useSeoMeta']
+  const useSeoMeta: typeof import('@unhead/vue')['useSeoMeta']
   const useServerHead: typeof import('@unhead/vue')['useServerHead']
   const useServerHeadSafe: typeof import('@unhead/vue')['useServerHeadSafe']
   const useServerSeoMeta: typeof import('@unhead/vue')['useServerSeoMeta']
@@ -907,15 +908,8 @@ declare global {
 import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
-    readonly $$: UnwrapRef<typeof import('vue/macros')['$$']>
-    readonly $: UnwrapRef<typeof import('vue/macros')['$']>
-    readonly $computed: UnwrapRef<typeof import('vue/macros')['$computed']>
-    readonly $customRef: UnwrapRef<typeof import('vue/macros')['$customRef']>
-    readonly $ref: UnwrapRef<typeof import('vue/macros')['$ref']>
-    readonly $shallowRef: UnwrapRef<typeof import('vue/macros')['$shallowRef']>
-    readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
     readonly // makeFactory: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['// makeFactory']>
-    readonly Action: UnwrapRef<typeof import('../../../.stacks/core/types/src/cli')['Action']>
+    readonly Action: UnwrapRef<typeof import('../../../.stacks/core/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../../../.stacks/core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/index')['Err']>
@@ -928,7 +922,6 @@ declare module 'vue' {
     readonly Middleware: UnwrapRef<typeof import('../../../.stacks/core/router/src/middleware')['Middleware']>
     readonly MoneyValidator: UnwrapRef<typeof import('../../../.stacks/core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['MysqlDialect']>
-    readonly NpmScript: UnwrapRef<typeof import('../../../.stacks/core/types/src/cli')['NpmScript']>
     readonly Ok: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['PostgresDialect']>
     readonly QueryBuilder: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['QueryBuilder']>
@@ -1147,7 +1140,8 @@ declare module 'vue' {
     readonly emailPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../../../.stacks/core/security/src/crypt')['encrypt']>
     readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['ensureProjectIsInitialized']>
-    readonly enums: UnwrapRef<typeof import('../../../.stacks/core/env/src/index')['enums']>
+    readonly enums: UnwrapRef<typeof import('../../../.stacks/src/index')['enums']>
+    readonly enumsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../../../.stacks/core/env/src/index')['env']>
     readonly envSchema: UnwrapRef<typeof import('../../../.stacks/core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['equal']>
@@ -1637,7 +1631,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useGeolocation']>
-    readonly useHead: UnwrapRef<typeof import('@vueuse/head')['useHead']>
+    readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIdle']>
@@ -1701,7 +1695,7 @@ declare module 'vue' {
     readonly useScroll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useScroll']>
     readonly useScrollLock: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useScrollLock']>
     readonly useSearchEngine: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['useSearchEngine']>
-    readonly useSeoMeta: UnwrapRef<typeof import('@vueuse/head')['useSeoMeta']>
+    readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
     readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
     readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
     readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>
@@ -1798,15 +1792,8 @@ declare module 'vue' {
 }
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    readonly $$: UnwrapRef<typeof import('vue/macros')['$$']>
-    readonly $: UnwrapRef<typeof import('vue/macros')['$']>
-    readonly $computed: UnwrapRef<typeof import('vue/macros')['$computed']>
-    readonly $customRef: UnwrapRef<typeof import('vue/macros')['$customRef']>
-    readonly $ref: UnwrapRef<typeof import('vue/macros')['$ref']>
-    readonly $shallowRef: UnwrapRef<typeof import('vue/macros')['$shallowRef']>
-    readonly $toRef: UnwrapRef<typeof import('vue/macros')['$toRef']>
     readonly // makeFactory: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['// makeFactory']>
-    readonly Action: UnwrapRef<typeof import('../../../.stacks/core/types/src/cli')['Action']>
+    readonly Action: UnwrapRef<typeof import('../../../.stacks/core/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../../../.stacks/core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/index')['Err']>
@@ -1819,7 +1806,6 @@ declare module '@vue/runtime-core' {
     readonly Middleware: UnwrapRef<typeof import('../../../.stacks/core/router/src/middleware')['Middleware']>
     readonly MoneyValidator: UnwrapRef<typeof import('../../../.stacks/core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['MysqlDialect']>
-    readonly NpmScript: UnwrapRef<typeof import('../../../.stacks/core/types/src/cli')['NpmScript']>
     readonly Ok: UnwrapRef<typeof import('../../../.stacks/core/error-handling/src/index')['Ok']>
     readonly PostgresDialect: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['PostgresDialect']>
     readonly QueryBuilder: UnwrapRef<typeof import('../../../.stacks/core/query-builder/src/kysely')['QueryBuilder']>
@@ -2038,7 +2024,8 @@ declare module '@vue/runtime-core' {
     readonly emailPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../../../.stacks/core/security/src/crypt')['encrypt']>
     readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['ensureProjectIsInitialized']>
-    readonly enums: UnwrapRef<typeof import('../../../.stacks/core/env/src/index')['enums']>
+    readonly enums: UnwrapRef<typeof import('../../../.stacks/src/index')['enums']>
+    readonly enumsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../../../.stacks/core/env/src/index')['env']>
     readonly envSchema: UnwrapRef<typeof import('../../../.stacks/core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/currency')['equal']>
@@ -2528,7 +2515,7 @@ declare module '@vue/runtime-core' {
     readonly useFullscreen: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useGeolocation']>
-    readonly useHead: UnwrapRef<typeof import('@vueuse/head')['useHead']>
+    readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIdle']>
@@ -2592,7 +2579,7 @@ declare module '@vue/runtime-core' {
     readonly useScroll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useScroll']>
     readonly useScrollLock: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useScrollLock']>
     readonly useSearchEngine: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['useSearchEngine']>
-    readonly useSeoMeta: UnwrapRef<typeof import('@vueuse/head')['useSeoMeta']>
+    readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
     readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
     readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
     readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>

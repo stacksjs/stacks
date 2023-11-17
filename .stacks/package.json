@@ -140,6 +140,11 @@
       "types": "./core/email/dist/index.d.ts",
       "import": "./core/email/dist/index.js"
     },
+    "./enums": {
+      "bun": "./core/enums/src/index.ts",
+      "types": "./core/enums/dist/index.d.ts",
+      "import": "./core/enums/dist/index.js"
+    },
     "./error-handling": {
       "bun": "./core/error-handling/src/index.ts",
       "types": "./core/error-handling/dist/index.d.ts",
@@ -450,6 +455,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
+    "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
@@ -498,6 +504,7 @@
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
+    "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",

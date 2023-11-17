@@ -1,12 +1,14 @@
 button:
-  counter: Klicker
-  toggle_langs: Sprache Wechseln
-  toggle_dark: Toggle Dunkel Modus
-
-hello_world:
-  title_1: Dokumentation
-  title_2: Komponenten
-  title_3: Funktionen
-  title_4: Seiten
-  title_5: Modernes DX
-  title_6: Vibrantes Ecosystem
+  about: Über
+  back: Zurück
+  go: Los
+  home: Startseite
+  toggle_dark: Dunkelmodus umschalten
+  toggle_langs: Sprachen ändern
+intro:
+  desc: Vite Startvorlage mit Vorlieben
+  dynamic-route: Demo einer dynamischen Route
+  hi: Hi, {name}!
+  aka: Auch bekannt als
+  whats-your-name: Wie heißt du?
+not-found: Nicht gefunden

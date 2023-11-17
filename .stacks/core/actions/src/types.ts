@@ -1,7 +1,8 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { runNpmScript } from '@stacksjs/utils'
-import { NpmScript, type TypesOptions } from '@stacksjs/types'
+import type { TypesOptions } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/enums'
 
 export async function invoke(options?: TypesOptions) {
   const results = await runNpmScript(NpmScript.TypesFix, options)

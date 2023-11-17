@@ -3,8 +3,9 @@ import { runAction } from '@stacksjs/actions'
 import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
-import { Action, ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 
 export function domains(buddy: CLI) {
   const descriptions = {

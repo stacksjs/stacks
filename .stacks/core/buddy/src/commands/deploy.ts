@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 import process from 'node:process'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro } from '@stacksjs/cli'
-import { Action, ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 

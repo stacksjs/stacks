@@ -1,7 +1,9 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, prompt } from '@stacksjs/cli'
-import { Action, type BuildOptions, type CLI, ExitCode } from '@stacksjs/types'
+import type { BuildOptions, CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 import { isString } from '@stacksjs/validation'
 
 export function build(buddy: CLI) {

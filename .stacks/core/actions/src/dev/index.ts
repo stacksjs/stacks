@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { runCommand } from '@stacksjs/cli'
 import type { DevOptions } from '@stacksjs/types'
-import { Action, NpmScript } from '@stacksjs/types'
+import { Action, NpmScript } from '@stacksjs/enums'
 import { runAction } from '../helpers'
 
 export async function runDevServer(options: DevOptions) {
@@ -11,7 +11,7 @@ export async function runDevServer(options: DevOptions) {
 
 export async function runFrontendDevServer(options: DevOptions) {
   log.info('Starting your UI Engine...')
-  await runAction(Action.DevViews, options)
+  await runAction(Action.Dev, options)
 }
 
 export async function runBackendDevServer(options: DevOptions) {

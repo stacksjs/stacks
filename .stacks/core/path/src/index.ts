@@ -167,6 +167,10 @@ export function emailPath(path?: string) {
   return notificationsPath(`email/${path || ''}`)
 }
 
+export function enumsPath(path?: string) {
+  return corePath(`enums/${path || ''}`)
+}
+
 export function errorHandlingPath(path?: string) {
   return corePath(`error-handling/${path || ''}`)
 }
@@ -233,7 +237,7 @@ export function modelsPath(path?: string) {
 }
 
 export function modulesPath(path?: string) {
-  return corePath(`modules/${path || ''}`)
+  return resourcesPath(`modules/${path || ''}`)
 }
 
 export function notificationsPath(path?: string) {
@@ -454,6 +458,7 @@ export const path = {
   docsPath,
   dnsPath,
   emailPath,
+  enumsPath,
   errorHandlingPath,
   eventsPath,
   coreEnvPath,

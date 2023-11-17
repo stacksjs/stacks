@@ -1,4 +1,4 @@
-import { NpmScript } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/enums'
 import { runCommand } from '@stacksjs/cli'
 import { frameworkPath } from '@stacksjs/path'
 

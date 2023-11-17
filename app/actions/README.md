@@ -12,9 +12,9 @@ One unique Stacks feature of Actions is that they may also be called from anywhe
 ```ts
 import { action } from '@stacksjs/actions'
 
-await runAction('NewActionName', { foo: 'bar' })
+await runAction('MyCustomActionName', { foo: 'bar' })
 // or
-await runAction('NewActionName', { foo: 'bar' }, { queue: 'default' })
+await runAction('MyCustomActionName', { foo: 'bar' }, { queue: 'default' })
 ```
 
 _Please note, Actions are not limited to these use cases, but these are the most common ones._

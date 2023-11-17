@@ -1,13 +1,14 @@
-# For ease of use, nest the translations based on component names (paths) utilized
 button:
-  counter: Counter
-  toggle_langs: Toggle Language
-  toggle_dark: Toggle Dark Mode
-
-hello_world:
-  title_1: Documentation
-  title_2: Components
-  title_3: Functions
-  title_4: Pages
-  title_5: Modern DX
-  title_6: Vibrant Ecosystem
+  about: About
+  back: Back
+  go: GO
+  home: Home
+  toggle_dark: Toggle dark mode
+  toggle_langs: Change languages
+intro:
+  desc: Opinionated Vite Starter Template
+  dynamic-route: Demo of dynamic route
+  hi: Hi, {name}!
+  aka: Also known as
+  whats-your-name: What's your name?
+not-found: Not found

@@ -2,9 +2,11 @@ import Vue from '@vitejs/plugin-vue'
 import type { Plugin } from 'vite'
 
 export function uiEngine(isWebComponent = false): Plugin {
+  const include = [/\.vue$/, /\.md$/]
+
   if (isWebComponent) {
     return Vue({
-      include: [/\.vue$/, /\.md$/],
+      include,
       template: {
         compilerOptions: {
           isCustomElement: () => true,
@@ -14,6 +16,6 @@ export function uiEngine(isWebComponent = false): Plugin {
   }
 
   return Vue({
-    include: [/\.vue$/, /\.md$/],
+    include,
   })
 }

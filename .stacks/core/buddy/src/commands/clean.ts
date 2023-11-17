@@ -1,8 +1,9 @@
 import process from 'node:process'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, CleanOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
-import { Action, ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 
 export function clean(buddy: CLI) {
   const descriptions = {

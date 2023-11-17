@@ -6,7 +6,7 @@ import { fs } from '@stacksjs/storage'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { Route53Domains } from '@aws-sdk/client-route-53-domains'
-import { Action } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 import type { DeployOptions } from '@stacksjs/types'
 
 export async function deleteHostedZone(domainName: string) {

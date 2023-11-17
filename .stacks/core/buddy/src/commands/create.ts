@@ -1,10 +1,11 @@
 import process from 'node:process'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, CreateOptions } from '@stacksjs/types'
 import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
-import { Action, ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 import { runAction } from '@stacksjs/actions'
 
 export function create(buddy: CLI) {

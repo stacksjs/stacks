@@ -5,7 +5,7 @@
   "packageManager": "bun@1.0.12",
   "scripts": {
     "build": "vite-ssg build",
-    "dev": "vite --port 3333 --open",
+    "dev": "vite . --port 3333 --open",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "postinstall": "bunx simple-git-hooks",
@@ -26,7 +26,10 @@
   "devDependencies": {
     "@iconify-json/carbon": "^1.1.21",
     "@intlify/unplugin-vue-i18n": "^1.5.0",
+    "@julr/unocss-preset-forms": "^0.1.0",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@stacksjs/vite": "workspace:*",
     "@types/markdown-it-link-attributes": "^3.0.4",
