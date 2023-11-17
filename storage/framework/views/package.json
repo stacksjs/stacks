@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@unhead/vue": "^1.8.4",
-    "@unocss/reset": "^0.57.4",
+    "@unocss/reset": "^0.57.5",
     "@vueuse/core": "^10.6.1",
     "@vueuse/head": "^2.0.0",
     "nprogress": "^0.2.0",
@@ -31,7 +31,7 @@
     "@stacksjs/vite": "workspace:*",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/nprogress": "^0.2.3",
-    "@unocss/eslint-config": "^0.57.4",
+    "@unocss/eslint-config": "^0.57.5",
     "@vitejs/plugin-vue": "^4.5.0",
     "@vue-macros/volar": "^0.17.3",
     "@vue/test-utils": "^2.4.2",
@@ -48,7 +48,7 @@
     "simple-git-hooks": "^2.9.0",
     "taze": "^0.12.0",
     "typescript": "^5.2.2",
-    "unocss": "^0.57.4",
+    "unocss": "^0.57.5",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "unplugin-vue-macros": "^2.7.0",
@@ -60,9 +60,9 @@
     "vite-plugin-pwa": "^0.16.7",
     "vite-plugin-vue-devtools": "^1.0.0-rc.5",
     "vite-plugin-vue-layouts": "^0.8.0",
-    "vite-plugin-webfont-dl": "^3.9.0",
+    "vite-plugin-webfont-dl": "^3.9.1",
     "vite-ssg": "^0.23.5",
-    "vite-ssg-sitemap": "^0.6.0",
+    "vite-ssg-sitemap": "^0.6.1",
     "vitest": "^0.34.6",
     "vue-tsc": "^1.8.22"
   }

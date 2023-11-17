@@ -69,14 +69,14 @@
     "meilisearch": "^0.35.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
-    "unocss": "^0.57.4",
+    "unocss": "^0.57.5",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^5.0.0",
     "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pwa": "^0.16.7",
     "vite-ssg": "^0.23.5",
-    "vitepress": "1.0.0-rc.26",
+    "vitepress": "1.0.0-rc.27",
     "vue": "^3.3.8"
   },
   "devDependencies": {
