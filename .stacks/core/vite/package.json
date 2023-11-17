@@ -110,7 +110,7 @@
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^5.0.0",
-    "vite-plugin-full-reload": "^1.0.5",
+    "vite-plugin-full-reload": "^1.1.0",
     "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pages": "^0.31.0",
     "vite-plugin-pwa": "^0.16.7",
