@@ -21,7 +21,6 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
       'vue-i18n',
       '@vueuse/head',
-      '@vueuse/core',
       VueRouterAutoImports,
       {
         // add any other imports you were relying on

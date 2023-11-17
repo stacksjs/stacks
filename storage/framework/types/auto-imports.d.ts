@@ -345,7 +345,7 @@ declare global {
   const initProject: typeof import('../../../.stacks/core/utils/src/helpers')['initProject']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
-  const injectLocal: typeof import('@vueuse/core')['injectLocal']
+  const injectLocal: typeof import('../../../.stacks/core/utils/src/vendors')['injectLocal']
   const installIfVersionMismatch: typeof import('../../../.stacks/core/utils/src/helpers')['installIfVersionMismatch']
   const invoke: typeof import('../../../.stacks/core/actions/src/generate/index')['invoke']
   const isAbsolute: typeof import('../../../.stacks/core/path/src/index')['isAbsolute']
@@ -420,7 +420,7 @@ declare global {
   const loop: typeof import('../../../.stacks/core/utils/src/base')['loop']
   const makeComponent: typeof import('../../../.stacks/core/actions/src/index')['makeComponent']
   const makeDatabase: typeof import('../../../.stacks/core/actions/src/index')['makeDatabase']
-  const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
+  const makeDestructurable: typeof import('../../../.stacks/core/utils/src/vendors')['makeDestructurable']
   const makeFunction: typeof import('../../../.stacks/core/actions/src/index')['makeFunction']
   const makeHash: typeof import('../../../.stacks/core/security/src/hash')['makeHash']
   const makeLanguage: typeof import('../../../.stacks/core/actions/src/index')['makeLanguage']
@@ -501,7 +501,7 @@ declare global {
   const parseYaml: typeof import('../../../.stacks/core/utils/src/helpers')['parseYaml']
   const path: typeof import('../../../.stacks/core/path/src/index')['path']
   const pathPath: typeof import('../../../.stacks/core/path/src/index')['pathPath']
-  const pausableWatch: typeof import('@vueuse/core')['pausableWatch']
+  const pausableWatch: typeof import('../../../.stacks/core/utils/src/vendors')['pausableWatch']
   const paymentsPath: typeof import('../../../.stacks/core/path/src/index')['paymentsPath']
   const perPage: typeof import('../../../.stacks/core/search-engine/src/index')['perPage']
   const plivo: typeof import('../../../.stacks/core/sms/src/drivers/index')['plivo']
@@ -512,7 +512,7 @@ declare global {
   const projectPath: typeof import('../../../.stacks/core/path/src/index')['projectPath']
   const projectStoragePath: typeof import('../../../.stacks/core/path/src/index')['projectStoragePath']
   const provide: typeof import('vue')['provide']
-  const provideLocal: typeof import('@vueuse/core')['provideLocal']
+  const provideLocal: typeof import('../../../.stacks/core/utils/src/vendors')['provideLocal']
   const publicPath: typeof import('../../../.stacks/core/path/src/index')['publicPath']
   const pushPath: typeof import('../../../.stacks/core/path/src/index')['pushPath']
   const put: typeof import('../../../.stacks/core/storage/src/files')['put']
@@ -521,12 +521,12 @@ declare global {
   const queue: typeof import('../../../.stacks/src/index')['queue']
   const queuePath: typeof import('../../../.stacks/core/path/src/index')['queuePath']
   const rand: typeof import('../../../.stacks/core/utils/src/math')['rand']
-  const reactify: typeof import('@vueuse/core')['reactify']
-  const reactifyObject: typeof import('@vueuse/core')['reactifyObject']
+  const reactify: typeof import('../../../.stacks/core/utils/src/vendors')['reactify']
+  const reactifyObject: typeof import('../../../.stacks/core/utils/src/vendors')['reactifyObject']
   const reactive: typeof import('vue')['reactive']
-  const reactiveComputed: typeof import('@vueuse/core')['reactiveComputed']
-  const reactiveOmit: typeof import('@vueuse/core')['reactiveOmit']
-  const reactivePick: typeof import('@vueuse/core')['reactivePick']
+  const reactiveComputed: typeof import('../../../.stacks/core/utils/src/vendors')['reactiveComputed']
+  const reactiveOmit: typeof import('../../../.stacks/core/utils/src/vendors')['reactiveOmit']
+  const reactivePick: typeof import('../../../.stacks/core/utils/src/vendors')['reactivePick']
   const readJsonFile: typeof import('../../../.stacks/core/storage/src/files')['readJsonFile']
   const readPackageJson: typeof import('../../../.stacks/core/storage/src/files')['readPackageJson']
   const readTextFile: typeof import('../../../.stacks/core/storage/src/files')['readTextFile']
@@ -535,11 +535,11 @@ declare global {
   const realtimePath: typeof import('../../../.stacks/core/path/src/index')['realtimePath']
   const realtimeWip: typeof import('../../../.stacks/core/realtime/src/drivers/index')['realtimeWip']
   const ref: typeof import('vue')['ref']
-  const refAutoReset: typeof import('@vueuse/core')['refAutoReset']
-  const refDebounced: typeof import('@vueuse/core')['refDebounced']
-  const refDefault: typeof import('@vueuse/core')['refDefault']
-  const refThrottled: typeof import('@vueuse/core')['refThrottled']
-  const refWithControl: typeof import('@vueuse/core')['refWithControl']
+  const refAutoReset: typeof import('../../../.stacks/core/utils/src/vendors')['refAutoReset']
+  const refDebounced: typeof import('../../../.stacks/core/utils/src/vendors')['refDebounced']
+  const refDefault: typeof import('../../../.stacks/core/utils/src/vendors')['refDefault']
+  const refThrottled: typeof import('../../../.stacks/core/utils/src/vendors')['refThrottled']
+  const refWithControl: typeof import('../../../.stacks/core/utils/src/vendors')['refWithControl']
   const relative: typeof import('../../../.stacks/core/path/src/index')['relative']
   const relativeActionsPath: typeof import('../../../.stacks/core/path/src/index')['relativeActionsPath']
   const renderHeadToString: typeof import('../../../.stacks/core/utils/src/vendors')['renderHeadToString']
@@ -547,8 +547,8 @@ declare global {
   const request: typeof import('../../../.stacks/core/router/src/request')['request']
   const resolve: typeof import('../../../.stacks/core/path/src/index')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
-  const resolveRef: typeof import('@vueuse/core')['resolveRef']
-  const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const resolveRef: typeof import('../../../.stacks/core/utils/src/vendors')['resolveRef']
+  const resolveUnref: typeof import('../../../.stacks/core/utils/src/vendors')['resolveUnref']
   const resourcesPath: typeof import('../../../.stacks/core/path/src/index')['resourcesPath']
   const results: typeof import('../../../.stacks/core/search-engine/src/index')['results']
   const rimraf: typeof import('../../../.stacks/core/utils/src/delete')['rimraf']
@@ -667,18 +667,18 @@ declare global {
   const useAbs: typeof import('../../../.stacks/core/utils/src/math')['useAbs']
   const useActiveElement: typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']
   const useAnimate: typeof import('../../../.stacks/core/utils/src/vendors')['useAnimate']
-  const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
-  const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
-  const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
-  const useArrayFind: typeof import('@vueuse/core')['useArrayFind']
-  const useArrayFindIndex: typeof import('@vueuse/core')['useArrayFindIndex']
+  const useArrayDifference: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayDifference']
+  const useArrayEvery: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayEvery']
+  const useArrayFilter: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFilter']
+  const useArrayFind: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFind']
+  const useArrayFindIndex: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFindIndex']
   const useArrayFindLast: typeof import('@vueuse/core')['useArrayFindLast']
-  const useArrayIncludes: typeof import('@vueuse/core')['useArrayIncludes']
+  const useArrayIncludes: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayIncludes']
   const useArrayJoin: typeof import('@vueuse/core')['useArrayJoin']
-  const useArrayMap: typeof import('@vueuse/core')['useArrayMap']
-  const useArrayReduce: typeof import('@vueuse/core')['useArrayReduce']
-  const useArraySome: typeof import('@vueuse/core')['useArraySome']
-  const useArrayUnique: typeof import('@vueuse/core')['useArrayUnique']
+  const useArrayMap: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayMap']
+  const useArrayReduce: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayReduce']
+  const useArraySome: typeof import('../../../.stacks/core/utils/src/vendors')['useArraySome']
+  const useArrayUnique: typeof import('../../../.stacks/core/utils/src/vendors')['useArrayUnique']
   const useAsyncQueue: typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncQueue']
   const useAsyncState: typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
@@ -694,11 +694,11 @@ declare global {
   const useChat: typeof import('../../../.stacks/core/notifications/src/index')['useChat']
   const useClamp: typeof import('../../../.stacks/core/utils/src/math')['useClamp']
   const useClipboard: typeof import('../../../.stacks/core/utils/src/vendors')['useClipboard']
-  const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
+  const useClipboardItems: typeof import('../../../.stacks/core/utils/src/vendors')['useClipboardItems']
   const useCloned: typeof import('../../../.stacks/core/utils/src/vendors')['useCloned']
   const useColorMode: typeof import('../../../.stacks/core/utils/src/vendors')['useColorMode']
   const useConfirmDialog: typeof import('../../../.stacks/core/utils/src/vendors')['useConfirmDialog']
-  const useCounter: typeof import('@vueuse/core')['useCounter']
+  const useCounter: typeof import('../../../.stacks/core/utils/src/vendors')['useCounter']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVar: typeof import('../../../.stacks/core/utils/src/vendors')['useCssVar']
   const useCssVars: typeof import('vue')['useCssVars']
@@ -706,8 +706,8 @@ declare global {
   const useCycleList: typeof import('../../../.stacks/core/utils/src/vendors')['useCycleList']
   const useDark: typeof import('../../../.stacks/core/utils/src/vendors')['useDark']
   const useDateFormat: typeof import('../../../.stacks/core/utils/src/vendors')['useDateFormat']
-  const useDebounce: typeof import('@vueuse/core')['useDebounce']
-  const useDebounceFn: typeof import('@vueuse/core')['useDebounceFn']
+  const useDebounce: typeof import('../../../.stacks/core/utils/src/vendors')['useDebounce']
+  const useDebounceFn: typeof import('../../../.stacks/core/utils/src/vendors')['useDebounceFn']
   const useDebouncedRefHistory: typeof import('../../../.stacks/core/utils/src/vendors')['useDebouncedRefHistory']
   const useDeviceMotion: typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceMotion']
   const useDeviceOrientation: typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceOrientation']
@@ -747,10 +747,10 @@ declare global {
   const useImage: typeof import('../../../.stacks/core/utils/src/vendors')['useImage']
   const useInfiniteScroll: typeof import('../../../.stacks/core/utils/src/vendors')['useInfiniteScroll']
   const useIntersectionObserver: typeof import('../../../.stacks/core/utils/src/vendors')['useIntersectionObserver']
-  const useInterval: typeof import('@vueuse/core')['useInterval']
-  const useIntervalFn: typeof import('@vueuse/core')['useIntervalFn']
+  const useInterval: typeof import('../../../.stacks/core/utils/src/vendors')['useInterval']
+  const useIntervalFn: typeof import('../../../.stacks/core/utils/src/vendors')['useIntervalFn']
   const useKeyModifier: typeof import('../../../.stacks/core/utils/src/vendors')['useKeyModifier']
-  const useLastChanged: typeof import('@vueuse/core')['useLastChanged']
+  const useLastChanged: typeof import('../../../.stacks/core/utils/src/vendors')['useLastChanged']
   const useLink: typeof import('vue-router/auto')['useLink']
   const useLocalStorage: typeof import('../../../.stacks/core/utils/src/vendors')['useLocalStorage']
   const useMagicKeys: typeof import('../../../.stacks/core/utils/src/vendors')['useMagicKeys']
@@ -825,17 +825,17 @@ declare global {
   const useTextDirection: typeof import('../../../.stacks/core/utils/src/vendors')['useTextDirection']
   const useTextSelection: typeof import('../../../.stacks/core/utils/src/vendors')['useTextSelection']
   const useTextareaAutosize: typeof import('../../../.stacks/core/utils/src/vendors')['useTextareaAutosize']
-  const useThrottle: typeof import('@vueuse/core')['useThrottle']
-  const useThrottleFn: typeof import('@vueuse/core')['useThrottleFn']
+  const useThrottle: typeof import('../../../.stacks/core/utils/src/vendors')['useThrottle']
+  const useThrottleFn: typeof import('../../../.stacks/core/utils/src/vendors')['useThrottleFn']
   const useThrottledRefHistory: typeof import('../../../.stacks/core/utils/src/vendors')['useThrottledRefHistory']
   const useTimeAgo: typeof import('../../../.stacks/core/utils/src/vendors')['useTimeAgo']
-  const useTimeout: typeof import('@vueuse/core')['useTimeout']
-  const useTimeoutFn: typeof import('@vueuse/core')['useTimeoutFn']
+  const useTimeout: typeof import('../../../.stacks/core/utils/src/vendors')['useTimeout']
+  const useTimeoutFn: typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutFn']
   const useTimeoutPoll: typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutPoll']
   const useTimestamp: typeof import('../../../.stacks/core/utils/src/vendors')['useTimestamp']
   const useTitle: typeof import('../../../.stacks/core/utils/src/vendors')['useTitle']
-  const useToNumber: typeof import('@vueuse/core')['useToNumber']
-  const useToString: typeof import('@vueuse/core')['useToString']
+  const useToNumber: typeof import('../../../.stacks/core/utils/src/vendors')['useToNumber']
+  const useToString: typeof import('../../../.stacks/core/utils/src/vendors')['useToString']
   const useToggle: typeof import('../../../.stacks/core/utils/src/vendors')['useToggle']
   const useTransition: typeof import('../../../.stacks/core/utils/src/vendors')['useTransition']
   const useTrunc: typeof import('../../../.stacks/core/utils/src/math')['useTrunc']
@@ -1247,7 +1247,7 @@ declare module 'vue' {
     readonly initProject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['initProject']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
-    readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
+    readonly injectLocal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['injectLocal']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['installIfVersionMismatch']>
     readonly invoke: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['invoke']>
     readonly isAbsolute: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['isAbsolute']>
@@ -1322,7 +1322,7 @@ declare module 'vue' {
     readonly loop: UnwrapRef<typeof import('../../../.stacks/core/utils/src/base')['loop']>
     readonly makeComponent: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeComponent']>
     readonly makeDatabase: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeDatabase']>
-    readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
+    readonly makeDestructurable: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['makeDestructurable']>
     readonly makeFunction: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeFunction']>
     readonly makeHash: UnwrapRef<typeof import('../../../.stacks/core/security/src/hash')['makeHash']>
     readonly makeLanguage: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeLanguage']>
@@ -1402,7 +1402,7 @@ declare module 'vue' {
     readonly parseYaml: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['parseYaml']>
     readonly path: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['path']>
     readonly pathPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['pathPath']>
-    readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
+    readonly pausableWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['pausableWatch']>
     readonly paymentsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['paymentsPath']>
     readonly perPage: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['perPage']>
     readonly plivo: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['plivo']>
@@ -1413,7 +1413,7 @@ declare module 'vue' {
     readonly projectPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['projectPath']>
     readonly projectStoragePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['projectStoragePath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
-    readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
+    readonly provideLocal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['provideLocal']>
     readonly publicPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['publicPath']>
     readonly pushPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['pushPath']>
     readonly put: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['put']>
@@ -1422,12 +1422,12 @@ declare module 'vue' {
     readonly queue: UnwrapRef<typeof import('../../../.stacks/src/index')['queue']>
     readonly queuePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['queuePath']>
     readonly rand: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['rand']>
-    readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
-    readonly reactifyObject: UnwrapRef<typeof import('@vueuse/core')['reactifyObject']>
+    readonly reactify: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactify']>
+    readonly reactifyObject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactifyObject']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
-    readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
-    readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
-    readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
+    readonly reactiveComputed: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactiveComputed']>
+    readonly reactiveOmit: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactiveOmit']>
+    readonly reactivePick: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactivePick']>
     readonly readJsonFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readJsonFile']>
     readonly readPackageJson: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readPackageJson']>
     readonly readTextFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readTextFile']>
@@ -1436,11 +1436,11 @@ declare module 'vue' {
     readonly realtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['realtimePath']>
     readonly realtimeWip: UnwrapRef<typeof import('../../../.stacks/core/realtime/src/drivers/index')['realtimeWip']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
-    readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
-    readonly refDebounced: UnwrapRef<typeof import('@vueuse/core')['refDebounced']>
-    readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
-    readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
-    readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly refAutoReset: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refAutoReset']>
+    readonly refDebounced: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refDebounced']>
+    readonly refDefault: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refDefault']>
+    readonly refThrottled: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refThrottled']>
+    readonly refWithControl: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refWithControl']>
     readonly relative: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['relative']>
     readonly relativeActionsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['renderHeadToString']>
@@ -1448,8 +1448,8 @@ declare module 'vue' {
     readonly request: UnwrapRef<typeof import('../../../.stacks/core/router/src/request')['request']>
     readonly resolve: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
-    readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly resolveRef: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['resolveRef']>
+    readonly resolveUnref: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['resolveUnref']>
     readonly resourcesPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['resourcesPath']>
     readonly results: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['results']>
     readonly rimraf: UnwrapRef<typeof import('../../../.stacks/core/utils/src/delete')['rimraf']>
@@ -1566,18 +1566,16 @@ declare module 'vue' {
     readonly useAbs: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAnimate']>
-    readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
-    readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
-    readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
-    readonly useArrayFind: UnwrapRef<typeof import('@vueuse/core')['useArrayFind']>
-    readonly useArrayFindIndex: UnwrapRef<typeof import('@vueuse/core')['useArrayFindIndex']>
-    readonly useArrayFindLast: UnwrapRef<typeof import('@vueuse/core')['useArrayFindLast']>
-    readonly useArrayIncludes: UnwrapRef<typeof import('@vueuse/core')['useArrayIncludes']>
-    readonly useArrayJoin: UnwrapRef<typeof import('@vueuse/core')['useArrayJoin']>
-    readonly useArrayMap: UnwrapRef<typeof import('@vueuse/core')['useArrayMap']>
-    readonly useArrayReduce: UnwrapRef<typeof import('@vueuse/core')['useArrayReduce']>
-    readonly useArraySome: UnwrapRef<typeof import('@vueuse/core')['useArraySome']>
-    readonly useArrayUnique: UnwrapRef<typeof import('@vueuse/core')['useArrayUnique']>
+    readonly useArrayDifference: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayDifference']>
+    readonly useArrayEvery: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayEvery']>
+    readonly useArrayFilter: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFilter']>
+    readonly useArrayFind: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFind']>
+    readonly useArrayFindIndex: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFindIndex']>
+    readonly useArrayIncludes: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayIncludes']>
+    readonly useArrayMap: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayMap']>
+    readonly useArrayReduce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayReduce']>
+    readonly useArraySome: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArraySome']>
+    readonly useArrayUnique: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayUnique']>
     readonly useAsyncQueue: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
@@ -1593,11 +1591,11 @@ declare module 'vue' {
     readonly useChat: UnwrapRef<typeof import('../../../.stacks/core/notifications/src/index')['useChat']>
     readonly useClamp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useClamp']>
     readonly useClipboard: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useClipboard']>
-    readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>
+    readonly useClipboardItems: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useClipboardItems']>
     readonly useCloned: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCloned']>
     readonly useColorMode: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useColorMode']>
     readonly useConfirmDialog: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useConfirmDialog']>
-    readonly useCounter: UnwrapRef<typeof import('@vueuse/core')['useCounter']>
+    readonly useCounter: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCounter']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVar: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCssVar']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
@@ -1605,8 +1603,8 @@ declare module 'vue' {
     readonly useCycleList: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCycleList']>
     readonly useDark: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDark']>
     readonly useDateFormat: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDateFormat']>
-    readonly useDebounce: UnwrapRef<typeof import('@vueuse/core')['useDebounce']>
-    readonly useDebounceFn: UnwrapRef<typeof import('@vueuse/core')['useDebounceFn']>
+    readonly useDebounce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebounce']>
+    readonly useDebounceFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebounceFn']>
     readonly useDebouncedRefHistory: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebouncedRefHistory']>
     readonly useDeviceMotion: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceMotion']>
     readonly useDeviceOrientation: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceOrientation']>
@@ -1646,10 +1644,10 @@ declare module 'vue' {
     readonly useImage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useInfiniteScroll']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIntersectionObserver']>
-    readonly useInterval: UnwrapRef<typeof import('@vueuse/core')['useInterval']>
-    readonly useIntervalFn: UnwrapRef<typeof import('@vueuse/core')['useIntervalFn']>
+    readonly useInterval: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useInterval']>
+    readonly useIntervalFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIntervalFn']>
     readonly useKeyModifier: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useKeyModifier']>
-    readonly useLastChanged: UnwrapRef<typeof import('@vueuse/core')['useLastChanged']>
+    readonly useLastChanged: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useMagicKeys']>
@@ -1724,17 +1722,17 @@ declare module 'vue' {
     readonly useTextDirection: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextSelection']>
     readonly useTextareaAutosize: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextareaAutosize']>
-    readonly useThrottle: UnwrapRef<typeof import('@vueuse/core')['useThrottle']>
-    readonly useThrottleFn: UnwrapRef<typeof import('@vueuse/core')['useThrottleFn']>
+    readonly useThrottle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottle']>
+    readonly useThrottleFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottleFn']>
     readonly useThrottledRefHistory: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottledRefHistory']>
     readonly useTimeAgo: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeAgo']>
-    readonly useTimeout: UnwrapRef<typeof import('@vueuse/core')['useTimeout']>
-    readonly useTimeoutFn: UnwrapRef<typeof import('@vueuse/core')['useTimeoutFn']>
+    readonly useTimeout: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeout']>
+    readonly useTimeoutFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutFn']>
     readonly useTimeoutPoll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutPoll']>
     readonly useTimestamp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimestamp']>
     readonly useTitle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTitle']>
-    readonly useToNumber: UnwrapRef<typeof import('@vueuse/core')['useToNumber']>
-    readonly useToString: UnwrapRef<typeof import('@vueuse/core')['useToString']>
+    readonly useToNumber: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToNumber']>
+    readonly useToString: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToString']>
     readonly useToggle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToggle']>
     readonly useTransition: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTransition']>
     readonly useTrunc: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useTrunc']>
@@ -2140,7 +2138,7 @@ declare module '@vue/runtime-core' {
     readonly initProject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['initProject']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
-    readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
+    readonly injectLocal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['injectLocal']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['installIfVersionMismatch']>
     readonly invoke: UnwrapRef<typeof import('../../../.stacks/core/actions/src/generate/index')['invoke']>
     readonly isAbsolute: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['isAbsolute']>
@@ -2215,7 +2213,7 @@ declare module '@vue/runtime-core' {
     readonly loop: UnwrapRef<typeof import('../../../.stacks/core/utils/src/base')['loop']>
     readonly makeComponent: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeComponent']>
     readonly makeDatabase: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeDatabase']>
-    readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
+    readonly makeDestructurable: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['makeDestructurable']>
     readonly makeFunction: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeFunction']>
     readonly makeHash: UnwrapRef<typeof import('../../../.stacks/core/security/src/hash')['makeHash']>
     readonly makeLanguage: UnwrapRef<typeof import('../../../.stacks/core/actions/src/index')['makeLanguage']>
@@ -2295,7 +2293,7 @@ declare module '@vue/runtime-core' {
     readonly parseYaml: UnwrapRef<typeof import('../../../.stacks/core/utils/src/helpers')['parseYaml']>
     readonly path: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['path']>
     readonly pathPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['pathPath']>
-    readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
+    readonly pausableWatch: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['pausableWatch']>
     readonly paymentsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['paymentsPath']>
     readonly perPage: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['perPage']>
     readonly plivo: UnwrapRef<typeof import('../../../.stacks/core/sms/src/drivers/index')['plivo']>
@@ -2306,7 +2304,7 @@ declare module '@vue/runtime-core' {
     readonly projectPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['projectPath']>
     readonly projectStoragePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['projectStoragePath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
-    readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
+    readonly provideLocal: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['provideLocal']>
     readonly publicPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['publicPath']>
     readonly pushPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['pushPath']>
     readonly put: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['put']>
@@ -2315,12 +2313,12 @@ declare module '@vue/runtime-core' {
     readonly queue: UnwrapRef<typeof import('../../../.stacks/src/index')['queue']>
     readonly queuePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['queuePath']>
     readonly rand: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['rand']>
-    readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
-    readonly reactifyObject: UnwrapRef<typeof import('@vueuse/core')['reactifyObject']>
+    readonly reactify: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactify']>
+    readonly reactifyObject: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactifyObject']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
-    readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
-    readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
-    readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
+    readonly reactiveComputed: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactiveComputed']>
+    readonly reactiveOmit: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactiveOmit']>
+    readonly reactivePick: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['reactivePick']>
     readonly readJsonFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readJsonFile']>
     readonly readPackageJson: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readPackageJson']>
     readonly readTextFile: UnwrapRef<typeof import('../../../.stacks/core/storage/src/files')['readTextFile']>
@@ -2329,11 +2327,11 @@ declare module '@vue/runtime-core' {
     readonly realtimePath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['realtimePath']>
     readonly realtimeWip: UnwrapRef<typeof import('../../../.stacks/core/realtime/src/drivers/index')['realtimeWip']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
-    readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
-    readonly refDebounced: UnwrapRef<typeof import('@vueuse/core')['refDebounced']>
-    readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
-    readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
-    readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly refAutoReset: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refAutoReset']>
+    readonly refDebounced: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refDebounced']>
+    readonly refDefault: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refDefault']>
+    readonly refThrottled: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refThrottled']>
+    readonly refWithControl: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['refWithControl']>
     readonly relative: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['relative']>
     readonly relativeActionsPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['renderHeadToString']>
@@ -2341,8 +2339,8 @@ declare module '@vue/runtime-core' {
     readonly request: UnwrapRef<typeof import('../../../.stacks/core/router/src/request')['request']>
     readonly resolve: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
-    readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly resolveRef: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['resolveRef']>
+    readonly resolveUnref: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['resolveUnref']>
     readonly resourcesPath: UnwrapRef<typeof import('../../../.stacks/core/path/src/index')['resourcesPath']>
     readonly results: UnwrapRef<typeof import('../../../.stacks/core/search-engine/src/index')['results']>
     readonly rimraf: UnwrapRef<typeof import('../../../.stacks/core/utils/src/delete')['rimraf']>
@@ -2459,18 +2457,16 @@ declare module '@vue/runtime-core' {
     readonly useAbs: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAnimate']>
-    readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
-    readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
-    readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
-    readonly useArrayFind: UnwrapRef<typeof import('@vueuse/core')['useArrayFind']>
-    readonly useArrayFindIndex: UnwrapRef<typeof import('@vueuse/core')['useArrayFindIndex']>
-    readonly useArrayFindLast: UnwrapRef<typeof import('@vueuse/core')['useArrayFindLast']>
-    readonly useArrayIncludes: UnwrapRef<typeof import('@vueuse/core')['useArrayIncludes']>
-    readonly useArrayJoin: UnwrapRef<typeof import('@vueuse/core')['useArrayJoin']>
-    readonly useArrayMap: UnwrapRef<typeof import('@vueuse/core')['useArrayMap']>
-    readonly useArrayReduce: UnwrapRef<typeof import('@vueuse/core')['useArrayReduce']>
-    readonly useArraySome: UnwrapRef<typeof import('@vueuse/core')['useArraySome']>
-    readonly useArrayUnique: UnwrapRef<typeof import('@vueuse/core')['useArrayUnique']>
+    readonly useArrayDifference: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayDifference']>
+    readonly useArrayEvery: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayEvery']>
+    readonly useArrayFilter: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFilter']>
+    readonly useArrayFind: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFind']>
+    readonly useArrayFindIndex: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayFindIndex']>
+    readonly useArrayIncludes: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayIncludes']>
+    readonly useArrayMap: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayMap']>
+    readonly useArrayReduce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayReduce']>
+    readonly useArraySome: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArraySome']>
+    readonly useArrayUnique: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useArrayUnique']>
     readonly useAsyncQueue: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
@@ -2486,11 +2482,11 @@ declare module '@vue/runtime-core' {
     readonly useChat: UnwrapRef<typeof import('../../../.stacks/core/notifications/src/index')['useChat']>
     readonly useClamp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useClamp']>
     readonly useClipboard: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useClipboard']>
-    readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>
+    readonly useClipboardItems: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useClipboardItems']>
     readonly useCloned: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCloned']>
     readonly useColorMode: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useColorMode']>
     readonly useConfirmDialog: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useConfirmDialog']>
-    readonly useCounter: UnwrapRef<typeof import('@vueuse/core')['useCounter']>
+    readonly useCounter: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCounter']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVar: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCssVar']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
@@ -2498,8 +2494,8 @@ declare module '@vue/runtime-core' {
     readonly useCycleList: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useCycleList']>
     readonly useDark: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDark']>
     readonly useDateFormat: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDateFormat']>
-    readonly useDebounce: UnwrapRef<typeof import('@vueuse/core')['useDebounce']>
-    readonly useDebounceFn: UnwrapRef<typeof import('@vueuse/core')['useDebounceFn']>
+    readonly useDebounce: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebounce']>
+    readonly useDebounceFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebounceFn']>
     readonly useDebouncedRefHistory: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDebouncedRefHistory']>
     readonly useDeviceMotion: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceMotion']>
     readonly useDeviceOrientation: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useDeviceOrientation']>
@@ -2539,10 +2535,10 @@ declare module '@vue/runtime-core' {
     readonly useImage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useInfiniteScroll']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIntersectionObserver']>
-    readonly useInterval: UnwrapRef<typeof import('@vueuse/core')['useInterval']>
-    readonly useIntervalFn: UnwrapRef<typeof import('@vueuse/core')['useIntervalFn']>
+    readonly useInterval: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useInterval']>
+    readonly useIntervalFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useIntervalFn']>
     readonly useKeyModifier: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useKeyModifier']>
-    readonly useLastChanged: UnwrapRef<typeof import('@vueuse/core')['useLastChanged']>
+    readonly useLastChanged: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useMagicKeys']>
@@ -2617,17 +2613,17 @@ declare module '@vue/runtime-core' {
     readonly useTextDirection: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextSelection']>
     readonly useTextareaAutosize: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTextareaAutosize']>
-    readonly useThrottle: UnwrapRef<typeof import('@vueuse/core')['useThrottle']>
-    readonly useThrottleFn: UnwrapRef<typeof import('@vueuse/core')['useThrottleFn']>
+    readonly useThrottle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottle']>
+    readonly useThrottleFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottleFn']>
     readonly useThrottledRefHistory: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useThrottledRefHistory']>
     readonly useTimeAgo: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeAgo']>
-    readonly useTimeout: UnwrapRef<typeof import('@vueuse/core')['useTimeout']>
-    readonly useTimeoutFn: UnwrapRef<typeof import('@vueuse/core')['useTimeoutFn']>
+    readonly useTimeout: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeout']>
+    readonly useTimeoutFn: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutFn']>
     readonly useTimeoutPoll: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimeoutPoll']>
     readonly useTimestamp: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTimestamp']>
     readonly useTitle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTitle']>
-    readonly useToNumber: UnwrapRef<typeof import('@vueuse/core')['useToNumber']>
-    readonly useToString: UnwrapRef<typeof import('@vueuse/core')['useToString']>
+    readonly useToNumber: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToNumber']>
+    readonly useToString: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToString']>
     readonly useToggle: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useToggle']>
     readonly useTransition: UnwrapRef<typeof import('../../../.stacks/core/utils/src/vendors')['useTransition']>
     readonly useTrunc: UnwrapRef<typeof import('../../../.stacks/core/utils/src/math')['useTrunc']>
