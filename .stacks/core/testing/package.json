@@ -51,10 +51,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.39.0"
+    "@playwright/test": "^1.40.0"
   },
   "dependencies": {
-    "@playwright/test": "^1.39.0"
+    "@playwright/test": "^1.40.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
