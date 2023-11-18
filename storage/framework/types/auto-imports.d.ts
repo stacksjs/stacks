@@ -26,7 +26,6 @@ declare global {
   const Middleware: typeof import('../../../.stacks/core/router/src/middleware')['Middleware']
   const MoneyValidator: typeof import('../../../.stacks/core/validation/src/types/money')['MoneyValidator']
   const MysqlDialect: typeof import('../../../.stacks/core/query-builder/src/kysely')['MysqlDialect']
-  const NpmScript: typeof import('../../../.stacks/core/types/src/cli')['NpmScript']
   const Ok: typeof import('../../../.stacks/core/error-handling/src/index')['Ok']
   const PostgresDialect: typeof import('../../../.stacks/core/query-builder/src/kysely')['PostgresDialect']
   const QueryBuilder: typeof import('../../../.stacks/core/query-builder/src/kysely')['QueryBuilder']
