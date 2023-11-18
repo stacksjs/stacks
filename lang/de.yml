@@ -6,7 +6,7 @@ button:
   toggle_dark: Dunkelmodus umschalten
   toggle_langs: Sprachen ändern
 intro:
-  desc: Vite Startvorlage mit Vorlieben
+  desc: Rapid Application Development
   dynamic-route: Demo einer dynamischen Route
   hi: Hi, {name}!
   aka: Auch bekannt als

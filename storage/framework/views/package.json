@@ -5,8 +5,8 @@
   "packageManager": "bun@1.0.12",
   "scripts": {
     "build": "vite-ssg build",
-    "dev": "vite . --port 3333 --open",
-    "preview": "vite preview",
+    "dev": "bunx --bun vite . --port 3333 --open",
+    "preview": "bunx --bun vite preview",
     "typecheck": "vue-tsc --noEmit",
     "postinstall": "bunx simple-git-hooks",
     "sizecheck": "bunx vite-bundle-visualizer"
