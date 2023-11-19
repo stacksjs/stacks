@@ -22,10 +22,10 @@ for dir in $dirs; do
   cd $dir
 
   # Check if the directory is one of the two specified
-  ## This is because eslint requires cjs builds which we use unbuild for
+  ## This is because eslint requires cjs builds which we use tsup for
   case "$dir" in
   *"/eslint-config")
-    # Run the bun unbuild command
+    # build the package
     bun run build
     ;;
   *)
@@ -39,12 +39,12 @@ for dir in $dirs; do
 
     # Check if build-server.ts exists in the directory
     # the cloud package needs this check
-    if [ -f "build-server.ts" ]; then
-      # Extract the command from build-server.ts
-      cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build-server.ts)
-      # Run the extracted command
-      eval $cmd
-    fi
+    # if [ -f "build-server.ts" ]; then
+    #   # Extract the command from build-server.ts
+    #   cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build-server.ts)
+    #   # Run the extracted command
+    #   eval $cmd
+    # fi
     ;;
   esac
 

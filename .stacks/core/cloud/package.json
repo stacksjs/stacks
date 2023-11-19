@@ -49,7 +49,7 @@
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
     "build-layer": "bun ./src/runtime/scripts/build-layer.ts",
     "publish-layer": "bun ./src/runtime/scripts/publish-layer.ts",
-    "build-server": "bun --bun build-server.ts",
+    "build-server": "echo 'bun --bun build-server.ts'",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
@@ -108,6 +108,7 @@
   },
   "devDependencies": {
     "@oclif/plugin-plugins": "^4.1.8",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",

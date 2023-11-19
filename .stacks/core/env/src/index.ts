@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { fs } from '@stacksjs/storage'
 import p from 'node:process'
-import type { Env } from '@stacksjs/env'
+import type { Env } from './types'
 import { projectPath } from '@stacksjs/path'
 import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
 import type { EnvKey } from '~/storage/framework/stacks/env'
@@ -53,7 +53,7 @@ export const env: Env = new Proxy(process(), handler)
 
 export function writeEnv(key: EnvKey, value: string, options?: { path: string }) {
   const envPath = options?.path || projectPath('.env')
-  const env = readFileSync(envPath, 'utf-8')
+  const env = fs.readFileSync(envPath, 'utf-8')
 
   // Split the file into lines
   const lines = env.split('\n')
@@ -70,7 +70,7 @@ export function writeEnv(key: EnvKey, value: string, options?: { path: string })
     lines.push(`${key}=${value}`)
 
   // Join the lines back into a string and write it to the .env file
-  writeFileSync(envPath, lines.join('\n'))
+  fs.writeFileSync(envPath, lines.join('\n'))
 }
 
 export * from './types'

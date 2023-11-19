@@ -19,13 +19,13 @@ export default {
 
   ports: {
     frontend: env.APP_PORT || 3333,
-    backend: env.APP_PORT + 1,
-    admin: env.APP_PORT + 2,
-    library: env.APP_PORT + 3,
-    desktop: env.APP_PORT + 4,
-    email: env.APP_PORT + 5,
-    docs: env.APP_PORT + 6,
-    inspect: env.APP_PORT + 7,
+    backend: env.APP_PORT + 1 || 3334,
+    admin: env.APP_PORT + 2 || 3335,
+    library: env.APP_PORT + 3 || 3336,
+    desktop: env.APP_PORT + 4 || 3337,
+    email: env.APP_PORT + 5 || 3338,
+    docs: env.APP_PORT + 6 || 3339,
+    inspect: env.APP_PORT + 7 || 3340,
     api: 3999,
   },
 

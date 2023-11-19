@@ -11,7 +11,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import VueDevTools from 'vite-plugin-vue-devtools'
+import DevTools from 'vite-plugin-vue-devtools'
 import Unocss from 'unocss/vite'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
@@ -21,8 +21,10 @@ import VueMacros from 'unplugin-vue-macros/vite'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shikiji'
 
+console.log('vite.config.ts')
+
 export default defineConfig({
-  root: p.viewsPath(),
+  root: p.frameworkStoragePath('views'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.publicPath(),
@@ -34,6 +36,18 @@ export default defineConfig({
   server: server({
     type: 'frontend',
   }),
+
+
+  // externalize @stacksjs/config
+  optimizeDeps: {
+    exclude: ['@stacksjs/config', '@stacksjs/path', '@stacksjs/types', '@stacksjs/env', '@stacksjs/storage', '@stacksjs/utils', 'node:fs'],
+  },
+
+  build: {
+    rollupOptions: {
+      external: ['@stacksjs/config', '@stacksjs/path', '@stacksjs/types', '@stacksjs/env', '@stacksjs/storage', '@stacksjs/utils', 'node:fs'],
+    },
+  },
 
   plugins: [
     VueMacros({
@@ -172,7 +186,7 @@ export default defineConfig({
     WebfontDownload(),
 
     // https://github.com/webfansplz/vite-plugin-vue-devtools
-    VueDevTools(),
+    DevTools(),
   ],
 
   // https://github.com/vitest-dev/vitest
