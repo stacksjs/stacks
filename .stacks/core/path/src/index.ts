@@ -1,9 +1,6 @@
 import process from 'node:process'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
-// also exported in stacks/validation
-const isBrowser = typeof window !== 'undefined'
-
 /**
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action
