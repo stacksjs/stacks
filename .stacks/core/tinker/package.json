@@ -57,6 +57,6 @@
     "@vue/repl": "^2.8.0"
   },
   "devDependencies": {
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   }
 }

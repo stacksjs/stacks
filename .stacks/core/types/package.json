@@ -60,13 +60,13 @@
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^20.9.2",
+    "@types/node": "^20.9.3",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^1.6.0",
     "bun-types": "canary",
     "cac": "^6.7.14",
     "markdown-it": "^13.0.2",
-    "meilisearch": "^0.35.0",
+    "meilisearch": "^0.36.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
     "unocss": "^0.57.6",
@@ -81,6 +81,6 @@
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.110.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   }
 }

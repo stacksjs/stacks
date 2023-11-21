@@ -82,7 +82,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/semver": "^7.5.5",
+    "@types/semver": "^7.5.6",
     "@vueuse/core": "^10.6.1",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^10.6.1",
@@ -105,7 +105,7 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@types/semver": "^7.5.5",
+    "@types/semver": "^7.5.6",
     "markdown-table": "^3.0.3",
     "vue-starport": "^0.4.0"
   }
