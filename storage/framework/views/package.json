@@ -1,4 +1,5 @@
 {
+  "name": "stacks-views",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@8.10.5",
