@@ -36,12 +36,12 @@
   "dependencies": {
     "@antfu/eslint-define-config": "^1.23.0-2",
     "@eslint-types/jsdoc": "46.9.0",
-    "@eslint-types/typescript-eslint": "^6.11.0",
+    "@eslint-types/typescript-eslint": "^6.12.0",
     "@eslint-types/unicorn": "^49.0.0",
     "@stacksjs/cli": "workspace:*",
     "@stylistic/eslint-plugin": "^1.4.0",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
     "eslint-config-flat-gitignore": "^0.1.1",
     "eslint-plugin-antfu": "^1.0.10",
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -68,12 +68,12 @@
     "@stacksjs/utils": "workspace:*",
     "@stylistic/eslint-plugin-migrate": "^1.4.0",
     "@types/eslint": "^8.44.7",
-    "@types/node": "^20.9.2",
+    "@types/node": "^20.9.3",
     "eslint": "^8.54.0",
     "eslint-flat-config-viewer": "^0.1.3",
     "lint-staged": "^15.1.0",
     "rimraf": "^5.0.5",
     "tsup": "^8.0.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   }
 }
