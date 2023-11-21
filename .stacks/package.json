@@ -340,7 +340,7 @@
     "package.json",
     "pkgx.yaml",
     "scripts",
-    "simple-git-hooks.cjs",
+    "simple-git-hooks.js",
     "src",
     "stacks",
     "tsconfig.json",
@@ -432,8 +432,7 @@
     "test": "bun buddy test",
     "test:ui": "bun buddy test:ui",
     "test:coverage": "bun buddy test:coverage",
-    "test:types": "bun buddy test:types",
-    "prepare": "simple-git-hooks"
+    "test:types": "bun buddy test:types"
   },
   "web-types": "./web-types.json",
   "peerDependencies": {
