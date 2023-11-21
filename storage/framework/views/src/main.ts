@@ -1,13 +1,13 @@
-// @ts-expect-error - so createApp doesn't complain about missing types
-import { ViteSSG, ViteSSGContext } from 'vite-ssg'
+import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
 
 // import Previewer from 'virtual:vue-component-preview'
 import { routes } from 'vue-router/auto/routes'
 import App from './App.vue'
-import type { UserModule } from '@stacksjs/types'
+import type { UserModule } from './types'
+
 import '@unocss/reset/tailwind.css'
-import '../../../../resources/styles/main.css'
+import './styles/main.css'
 import 'uno.css'
 
 // const routes = setupLayouts(generatedRoutes)

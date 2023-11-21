@@ -1,51 +1,28 @@
-import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
-import { server } from '@stacksjs/server'
+import path from 'node:path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
-// @ts-ignore - no types
 import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
-import { unheadVueComposablesImports } from '@unhead/vue'
+import Markdown from 'unplugin-vue-markdown/vite'
+import VueMacros from 'unplugin-vue-macros/vite'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import DevTools from 'vite-plugin-vue-devtools'
+import VueDevTools from 'vite-plugin-vue-devtools'
+import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from 'unocss/vite'
+import Shiki from 'markdown-it-shikiji'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
-import Markdown from 'unplugin-vue-markdown/vite'
-import VueMacros from 'unplugin-vue-macros/vite'
-import LinkAttributes from 'markdown-it-link-attributes'
-import Shiki from 'markdown-it-shikiji'
-
-console.log('vite.config.ts')
 
 export default defineConfig({
-  root: p.frameworkStoragePath('views'),
-  envDir: p.projectPath(),
-  envPrefix: 'FRONTEND_',
-  publicDir: p.publicPath(),
+  publicDir: '../../../public',
 
   resolve: {
-    alias,
-  },
-
-  server: server({
-    type: 'frontend',
-  }),
-
-
-  // externalize @stacksjs/config
-  optimizeDeps: {
-    exclude: ['@stacksjs/config', '@stacksjs/path', '@stacksjs/types', '@stacksjs/env', '@stacksjs/storage', '@stacksjs/utils', 'node:fs'],
-  },
-
-  build: {
-    rollupOptions: {
-      external: ['@stacksjs/config', '@stacksjs/path', '@stacksjs/types', '@stacksjs/env', '@stacksjs/storage', '@stacksjs/utils', 'node:fs'],
+    alias: {
+      '~/': `${path.resolve(__dirname, 'src')}/`,
     },
   },
 
@@ -60,14 +37,14 @@ export default defineConfig({
 
     // https://github.com/posva/unplugin-vue-router
     VueRouter({
-      routesFolder: p.routesPath(),
       extensions: ['.vue', '.md'],
-      dts: p.frameworkStoragePath('types/router.d.ts'),
+      dts: '../types/router.d.ts',
+      routesFolder: '../../../resources/views',
     }),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     Layouts({
-      layoutsDir: p.resourcesPath('layouts'),
+      layoutsDir: '../../../resources/layouts',
     }),
 
     // https://github.com/antfu/unplugin-auto-import
@@ -75,55 +52,40 @@ export default defineConfig({
       imports: [
         'vue',
         'vue-i18n',
+        '@vueuse/head',
+        '@vueuse/core',
         VueRouterAutoImports,
         {
           // add any other imports you were relying on
           'vue-router/auto': ['useLink'],
         },
-        'pinia',
-        unheadVueComposablesImports,
-        // 'vitepress'
-        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
       ],
-
+      dts: '../types/auto-imports.d.ts',
       dirs: [
-        p.resourcesPath('functions'),
-        p.resourcesPath('stores'),
-        p.resourcesPath('components'),
-
-        // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
-        p.frameworkPath('src'),
+        '../../../resources/functions',
+        '../../../resources/stores',
       ],
-
-      dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
       vueTemplate: true,
-      eslintrc: {
-        enabled: false,
-        // filepath: frameworkPath('.eslintrc-auto-import.json'),
-      },
     }),
 
     // https://github.com/antfu/unplugin-vue-components
     Components({
-      // also allow auto-loading markdown components
+      // allow auto load markdown components under `./src/components/`
       extensions: ['vue', 'md'],
+      // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+      dts: '../types/components.d.ts',
       dirs: [
-        p.componentsPath(),
-        // viewsPath(),
+        '../../../resources/components',
       ],
-      dts: p.frameworkStoragePath('types/components.d.ts'),
     }),
 
     // https://github.com/antfu/unocss
     // see uno.config.ts for config
-    Unocss({
-      configFile: p.corePath('vite/src/uno.config.ts'),
-    }),
+    Unocss(),
 
     // https://github.com/unplugin/unplugin-vue-markdown
+    // Don't need this? Try vitesse-lite: https://github.com/antfu/vitesse-lite
     Markdown({
       wrapperClasses: 'prose prose-sm m-auto text-left',
       headEnabled: true,
@@ -150,8 +112,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
       manifest: {
-        name: 'Stacks',
-        short_name: 'Stacks',
+        name: 'Vitesse',
+        short_name: 'Vitesse',
         theme_color: '#ffffff',
         icons: [
           {
@@ -179,21 +141,21 @@ export default defineConfig({
       runtimeOnly: true,
       compositionOnly: true,
       fullInstall: true,
-      include: [p.projectPath('lang/**')],
+      include: [path.resolve(__dirname, '../../../lang/**')],
     }),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     WebfontDownload(),
 
     // https://github.com/webfansplz/vite-plugin-vue-devtools
-    DevTools(),
+    VueDevTools(),
   ],
 
   // https://github.com/vitest-dev/vitest
-  // test: {
-  //   include: ['test/**/*.test.ts'],
-  //   environment: 'jsdom',
-  // },
+  test: {
+    include: ['test/**/*.test.ts'],
+    environment: 'jsdom',
+  },
 
   // https://github.com/antfu/vite-ssg
   ssgOptions: {
