@@ -60,19 +60,19 @@
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^20.9.3",
+    "@types/node": "^20.9.4",
     "@types/nprogress": "^0.2.3",
-    "@vinejs/vine": "^1.6.0",
+    "@vinejs/vine": "^1.7.0",
     "bun-types": "canary",
     "cac": "^6.7.14",
     "markdown-it": "^13.0.2",
     "meilisearch": "^0.36.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
-    "unocss": "^0.57.6",
+    "unocss": "^0.57.7",
     "unplugin-auto-import": "^0.16.7",
     "unplugin-vue-components": "^0.25.2",
-    "vite": "^5.0.0",
+    "vite": "^5.0.2",
     "vite-plugin-inspect": "^0.7.42",
     "vite-plugin-pwa": "^0.17.0",
     "vite-ssg": "^0.23.5",
@@ -80,7 +80,7 @@
     "vue": "^3.3.8"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.110.0",
+    "aws-cdk-lib": "^2.110.1",
     "typescript": "^5.3.2"
   }
 }

@@ -53,14 +53,14 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "vite": "^5.0.0"
+    "vite": "^5.0.2"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "vite": "^5.0.0"
+    "vite": "^5.0.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
