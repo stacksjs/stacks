@@ -5,11 +5,11 @@ const git = require('./config/git.ts')
 
 const toDelete = ['readme-md']
 
-const components = readdirSync(resolve(__dirname, './components'))
+const components = readdirSync(resolve(__dirname, './resources/components'))
   .map(item => kebabCase(item.replace(/.vue/g, '')))
   .filter(item => !toDelete.includes(item))
 
-const functions = readdirSync(resolve(__dirname, './functions'))
+const functions = readdirSync(resolve(__dirname, './resources/functions'))
   .map(item => kebabCase(item.replace(/.ts/g, '')))
   .filter(item => !toDelete.includes(item))
 

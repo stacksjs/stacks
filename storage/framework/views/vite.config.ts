@@ -1,4 +1,4 @@
-import path from 'node:path'
+import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
@@ -21,7 +21,8 @@ import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export default defineConfig({
-  publicDir: '../../../public',
+  root: p.frameworkStoragePath('views'),
+  publicDir: p.publicPath(),
 
   server: server({
     type: 'frontend',
@@ -145,7 +146,7 @@ export default defineConfig({
       runtimeOnly: true,
       compositionOnly: true,
       fullInstall: true,
-      include: [path.resolve(__dirname, '../../../lang/**')],
+      include: [p.resolve(__dirname, '../../../lang/**')],
     }),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl

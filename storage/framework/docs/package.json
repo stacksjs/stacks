@@ -10,8 +10,10 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "@stacksjs/vite": "workspace:*",
     "vitepress": "1.0.0-rc.29"
   }
