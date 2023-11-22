@@ -4,8 +4,8 @@ import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import type { UserConfig } from 'vitepress'
-import userConfig from '../../../config/docs'
-import { version } from '../../package.json'
+import userConfig from '../../../../config/docs'
+import { version } from '../../../../.stacks/package.json'
 import { analyticsHead, faviconHead } from './head'
 
 // this is the resolved user config
@@ -14,9 +14,8 @@ export default {
   base: config.app.docMode ? '/' : '/docs/',
   cleanUrls: true,
   srcDir: p.projectPath('docs'),
-  outDir: p.projectStoragePath('framework/docs'),
+  outDir: p.projectStoragePath('framework/docs/dist'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
-  // @ts-expect-error - this may not be specified so we need to set a default
   lastUpdated: true,
 
   // sitemap: {

@@ -7,7 +7,7 @@ import App from './App.vue'
 import type { UserModule } from './types'
 
 import '@unocss/reset/tailwind.css'
-import './styles/main.css'
+import '../../../../resources/styles/main.css'
 import 'uno.css'
 
 // const routes = setupLayouts(generatedRoutes)

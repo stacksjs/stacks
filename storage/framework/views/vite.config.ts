@@ -2,6 +2,8 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
+import { server } from '@stacksjs/server'
+import { alias } from '@stacksjs/alias'
 // @ts-expect-error missing types
 import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
@@ -21,10 +23,12 @@ import { VueRouterAutoImports } from 'unplugin-vue-router'
 export default defineConfig({
   publicDir: '../../../public',
 
+  server: server({
+    type: 'frontend',
+  }),
+
   resolve: {
-    alias: {
-      '~/': `${path.resolve(__dirname, 'src')}/`,
-    },
+    alias,
   },
 
   plugins: [

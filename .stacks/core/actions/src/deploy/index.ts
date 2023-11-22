@@ -6,7 +6,7 @@ await runCommand('bun run build', {
 })
 
 await runCommand('bun run build', {
-  cwd: p.frameworkPath('docs'),
+  cwd: p.frameworkStoragePath('docs'),
 })
 
 await runCommand('bun run build-layer', {

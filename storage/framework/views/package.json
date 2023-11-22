@@ -12,6 +12,8 @@
     "sizecheck": "npx vite-bundle-visualizer"
   },
   "dependencies": {
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/server": "workspace:*",
     "@unhead/vue": "^1.8.7",
     "@unocss/reset": "^0.57.7",
     "@vueuse/core": "^10.6.1",

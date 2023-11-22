@@ -1,7 +1,7 @@
 import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { frameworkStoragePath } from '@stacksjs/path'
 
 await runCommand('bun run dev', {
-  cwd: frameworkPath('docs'),
+  cwd: frameworkStoragePath('docs'),
   // verbose: true,
 })

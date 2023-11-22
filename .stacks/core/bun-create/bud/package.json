@@ -132,7 +132,6 @@
     ".stacks/core/*",
     ".stacks/core/bun-create/*",
     ".stacks/core/cloud/src/server",
-    ".stacks/docs/*",
     ".stacks/fonts/*",
     ".stacks/ide/*",
     ".stacks/scripts/*",

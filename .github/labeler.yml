@@ -124,7 +124,7 @@ dns:
 
 docs:
   - '.stacks/core/docs/**'
-  - '.stacks/docs/**'
+  - 'storage/framework/docs/**'
   - docs/**
   - config/docs.ts
 
