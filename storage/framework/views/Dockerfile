@@ -3,12 +3,11 @@ FROM node:21-alpine as build-stage
 WORKDIR /app
 RUN corepack enable
 
-COPY .npmrc package.json pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
+COPY .npmrc package.json ./
+RUN bun install
 
 COPY . .
-RUN pnpm build
+RUN bun run build
 
 FROM nginx:stable-alpine as production-stage
 
