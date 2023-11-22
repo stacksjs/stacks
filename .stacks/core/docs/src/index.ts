@@ -13,7 +13,7 @@ export const frameworkDefaults = {
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('framework/docs'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
-  assetsDir: p.resourcesPath('assets'),
+  assetsDir: p.assetsPath(),
   // sitemap: {
   //   hostname: 'stacks.test',
   // },

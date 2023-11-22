@@ -43,6 +43,10 @@ export function aiPath(path?: string) {
   return corePath(`ai/${path || ''}`)
 }
 
+export function assetsPath(path?: string) {
+  return resourcesPath(`assets/${path || ''}`)
+}
+
 export function aliasPath() {
   return corePath('alias/src/index.ts')
 }
@@ -429,8 +433,9 @@ export function xRayPath(path?: string) {
 }
 
 export const path = {
-  aiPath,
   actionsPath,
+  aiPath,
+  assetsPath,
   relativeActionsPath,
   aliasPath,
   analyticsPath,
