@@ -55,7 +55,7 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-cloudformation": "^3.454.0",
-    "@aws-sdk/client-cloudfront": "^3.456.0",
+    "@aws-sdk/client-cloudfront": "^3.457.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.454.0",
     "@aws-sdk/client-dynamodb": "3.454.0",
     "@aws-sdk/client-ec2": "^3.456.0",
@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.454.0",
-    "@aws-sdk/client-cloudfront": "^3.456.0",
+    "@aws-sdk/client-cloudfront": "^3.457.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.454.0",
     "@aws-sdk/client-ec2": "^3.456.0",
     "@aws-sdk/client-efs": "^3.454.0",
