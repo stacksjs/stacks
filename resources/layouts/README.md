@@ -4,7 +4,7 @@ Vue components in this dir are used as layouts.
 
 By default, `default.vue` will be used unless an alternative is specified in the route meta.
 
-With [`vite-plugin-pages`](https://github.com/hannoeru/vite-plugin-pages) and [`@stacksjs/vite-plugin-vue-layouts`](https://github.com/stacksjs/stacks/tree/main/.stacks/core/vite-plugin-vue-layouts#readme), you can specify the layout in the page's SFCs like this:
+With [`vite-plugin-pages`](https://github.com/hannoeru/vite-plugin-pages) and [`@stacksjs/vite-plugin-vue-layouts`](https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/core/vite-plugin-vue-layouts#readme), you can specify the layout in the page's SFCs like this:
 
 ```html
 <route lang="yaml">

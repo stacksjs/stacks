@@ -19,9 +19,9 @@
     "Chris Breuer <chris@ow3.org>"
   ],
   "scripts": {
-    "buddy": "bun --bun .stacks/core/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/.stacks/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
-    "setup": "./.stacks/scripts/setup.sh",
+    "setup": "./storage/framework/.stacks/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
     "clean": "bun run buddy clean",
     "upgrade": "bun run buddy upgrade",
@@ -103,18 +103,17 @@
   },
   "config": {
     "commitizen": {
-      "path": ".stacks/node_modules/cz-git"
+      "path": "./storage/framework/.stacks/node_modules/cz-git"
     }
   },
   "workspaces": [
-    ".stacks/core/*",
-    ".stacks/core/bun-create/*",
-    ".stacks/core/cloud/src/server",
-    ".stacks/ide/*",
-    ".stacks/scripts/*",
-    ".stacks/stacks/*",
-    ".stacks/vcs/*",
-    ".stacks",
-    "storage/framework/*"
+    "storage/framework/*",
+    "storage/framework/.stacks/*",
+    "storage/framework/.stacks/scripts/*",
+    "storage/framework/.stacks/vcs/*",
+    "storage/framework/.stacks/core/cloud/src/server",
+    "storage/framework/.stacks/core/bun-create/*",
+    "storage/framework/.stacks/core/*",
+    "storage/framework/stacks/*"
   ]
 }

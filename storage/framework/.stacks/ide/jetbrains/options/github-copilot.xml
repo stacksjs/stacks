@@ -1,0 +1,5 @@
+<application>
+  <component name="github-copilot">
+    <option name="signinNotificationShown" value="true" />
+  </component>
+</application>

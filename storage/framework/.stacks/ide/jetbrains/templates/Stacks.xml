@@ -1,0 +1,8 @@
+<templateSet group="Stacks">
+  <template name="job" value="export default {&#10;  // required&#10;  schedule: Every.FifthMinute, // or '*/5 * * * *'&#10;  action: () =&gt; {&#10;    log.info('This cron job runs at every 5th minute')&#10;  },&#10;&#10;  // optional&#10;  name: 'Demo Job',&#10;  description: 'A demo cron job that runs every 5th minute',&#10;} satisfies CronJob&#10;" description="Cron Job Template" toReformat="false" toShortenFQNames="true">
+    <context>
+      <option name="TypeScript" value="true" />
+      <option name="Vue" value="true" />
+    </context>
+  </template>
+</templateSet>

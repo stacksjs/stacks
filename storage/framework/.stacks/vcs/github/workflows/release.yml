@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Set Application Key
+        run: ./buddy key:generate
+
+      - name: Prepublish # these packages are required for the "Publish framework" step
+        run: pnpm --filter='./storage/framework/.stacks' build
+
+      - name: Publish framework
+        run: pnpm --filter='./storage/framework/.stacks' publish:framework
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Publish dummy libraries
+        run: pnpm --filter='./storage/framework/.stacks' publish:dummy-libs
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Publish VS Code Extension
+        run: pnpm --filter './.stacks/ide/vscode' release
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Create GitHub release
+        run: bunx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

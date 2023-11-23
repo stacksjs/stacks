@@ -1,0 +1,81 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": [
+      "esnext"
+    ],
+    "moduleDetection": "force",
+    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@stacksjs/*": ["./core/*/src"],
+      "stacks/*": ["./core/*/src"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
+      "~/*": ["../../../*"]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "vite/client",
+      // "vue/ref-macros",
+      "vite-plugin-pages/client",
+      "vite-plugin-pwa/client",
+      "bun-types"
+    ],
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "vueCompilerOptions": {
+    "plugins": [
+      "@vue-macros/volar/define-models",
+      "@vue-macros/volar/define-slots"
+    ]
+  },
+  "include": [
+    "../*.ts",
+    "../*.d.ts",
+    "../**/*.ts",
+    "../**/*.d.ts",
+    "./playwright.config.ts",
+    "./docs/*",
+    "./docs/.vitepress/*",
+    "./scripts/*",
+    "./stacks/**/*",
+    "./core/*/src",
+    "./core/*/tests/*",
+    "./core/*/tests/**/*",
+    "./core/build/**/*",
+    "./core/bun-create/**/*",
+    "./core/cloud/*",
+    "./core/eslint-config/*",
+    "./core/utils/scripts/*",
+    "./core/**/build.ts",
+    "./core/**/build-*.ts",
+    "./core/**/build.config.ts",
+    "../storage/**/*.ts"
+  ],
+  "exclude": [
+    "../**/cdk.out",
+    "../commitlint.config.cjs",
+    "../**/dist",
+    "../**/fixtures",
+    "../node_modules",
+    "../**/node_modules"
+  ]
+}

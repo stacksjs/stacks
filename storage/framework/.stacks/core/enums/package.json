@@ -1,0 +1,50 @@
+{
+  "name": "@stacksjs/enums",
+  "type": "module",
+  "version": "0.57.4",
+  "private": true,
+  "description": "Stacks enums.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/core/enums#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/.stacks/core/enums"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "enums",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./*",
+      "import": "./dist/*"
+    }
+  },
+  "files": [
+    "README.md",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

@@ -295,7 +295,7 @@ Read more here about the Stacks CLI in the documentation.
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
-- [Table](https://github.com/stacksjs/stacks/tree/main/.stacks/stacks/tables) (Data tables with ease)
+- [Table](https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/stacks/tables) (Data tables with ease)
 - [Calendar](https://github.com/stacksjs/calendar) (Add to Calendar utilities—iCal, Google, and more)
 - [Command Palette](https://github.com/stacksjs/command-palette) (`⌘ + k` for the web)
 - [Date Picker](https://github.com/stacksjs/date-picker) (Beautiful, modern date picker)

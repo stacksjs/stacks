@@ -1,0 +1,54 @@
+{
+  "name": "@stacksjs/analytics",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "Stacks Analytics. Privacy-friendly.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/core/analytics#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/.stacks/core/analytics"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "analytics",
+    "singlestore",
+    "gdpr compliant",
+    "zero cookies",
+    "privacy-first",
+    "api",
+    "functions",
+    "components",
+    "npm stats",
+    "fathom",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@ow3.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

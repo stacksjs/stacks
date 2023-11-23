@@ -1,3 +1,3 @@
 {
-  "extends": "./.stacks/tsconfig.json"
+  "extends": "./storage/framework/.stacks/tsconfig.json"
 }
