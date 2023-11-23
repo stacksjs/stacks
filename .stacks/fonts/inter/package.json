@@ -1,6 +1,6 @@
 {
   "name": "inter-font",
-  "version": "3.19.0",
+  "version": "4.0.0",
   "description": "Mona Sans, a variable font from GitHub.",
   "author": {
     "name": "Rasmus Andersson"
@@ -21,10 +21,13 @@
     "rsms"
   ],
   "files": [
-    "Inter-VariableFont_slnt,wght.ttf",
-    "OFL.txt",
-    "README.md",
-    "README.txt",
-    "ttf"
+    "web",
+    "extra",
+    "ttf",
+    "Inter.ttc",
+    "InterVariable-Italic.ttf",
+    "InterVariable.ttf",
+    "LICENSE.txt",
+    "README.md"
   ]
 }

@@ -1,6 +1,11 @@
 # The Assets Folder
 
-WIP. This is where you store all your assets.
+This is where you store your project's assets.
+
+- `images/` - Images
+- `audio/` - Audio files
+- `video/` - Video files
+- `styles/` - CSS files
 
 > **Note**
 > If your project does not require any assets, you can remove this folder.
