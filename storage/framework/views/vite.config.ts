@@ -44,13 +44,13 @@ export default defineConfig({
     // https://github.com/posva/unplugin-vue-router
     VueRouter({
       extensions: ['.vue', '.md'],
-      dts: '../types/router.d.ts',
-      routesFolder: '../../../resources/views',
+      dts: p.frameworkStoragePath('types/router.d.ts'),
+      routesFolder: p.resourcesPath('views'),
     }),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     Layouts({
-      layoutsDir: '../../../resources/layouts',
+      layoutsDir: p.resourcesPath('layouts'),
     }),
 
     // https://github.com/antfu/unplugin-auto-import
@@ -66,10 +66,10 @@ export default defineConfig({
           'vue-router/auto': ['useLink'],
         },
       ],
-      dts: '../types/auto-imports.d.ts',
+      dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
       dirs: [
-        '../../../resources/functions',
-        '../../../resources/stores',
+        p.resourcesPath('functions'),
+        p.resourcesPath('stores'),
       ],
       vueTemplate: true,
     }),
@@ -80,9 +80,9 @@ export default defineConfig({
       extensions: ['vue', 'md'],
       // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: '../types/components.d.ts',
+      dts: p.frameworkStoragePath('types/components.d.ts'),
       dirs: [
-        '../../../resources/components',
+        p.resourcesPath('components'),
       ],
     }),
 
@@ -146,7 +146,9 @@ export default defineConfig({
       runtimeOnly: true,
       compositionOnly: true,
       fullInstall: true,
-      include: [p.resolve(__dirname, '../../../lang/**')],
+      include: [
+        p.resolve(__dirname, '../../../lang/**')
+      ],
     }),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl

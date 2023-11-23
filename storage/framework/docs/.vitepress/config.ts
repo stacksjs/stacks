@@ -23,6 +23,9 @@ export default {
   // },
 
   vite: {
+    root: p.projectPath('docs'),
+    base: config.app.docMode ? '/' : '/docs/',
+    cacheDir: p.projectStoragePath('framework/cache/docs/vite'),
     envDir: p.projectPath(),
     envPrefix: 'FRONTEND_',
 
@@ -43,9 +46,9 @@ export default {
           server.printUrls = () => { // eslint-disable-next-line no-console
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
-            // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.test:3333/docs')}`)
+            // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('http://stacks.test:3333/docs')}`)
             // eslint-disable-next-line no-console
-            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
+            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('https://stacks.localhost/docs')}`)
           }
         },
       },
