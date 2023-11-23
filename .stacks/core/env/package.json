@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.57.4",
   "private": true,
-  "description": "The Stacks env helper methods.",
+  "description": "Stacks env helper methods.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -45,7 +45,8 @@
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "fs-extra": "^11.1.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

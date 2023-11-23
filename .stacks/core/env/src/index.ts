@@ -1,4 +1,4 @@
-import { fs } from '@stacksjs/storage'
+import fs from 'fs-extra'
 import p from 'node:process'
 import type { Env } from './types'
 import { projectPath } from '@stacksjs/path'

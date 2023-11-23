@@ -78,7 +78,7 @@ export const GLOB_EXCLUDE = [
   '**/cdk.out/**',
   '**/runtime/server.js',
   '**/framework/**',
-  '**/env/src/index.js',
+  // '**/env/src/index.js',
   '**/strings/README.md',
   '**/cli/README.md',
 ]
