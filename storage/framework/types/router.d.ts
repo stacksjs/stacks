@@ -45,8 +45,8 @@ declare module 'vue-router/auto/routes' {
     '/errors/403': RouteRecordInfo<'/errors/403', '/errors/403', Record<never, never>, Record<never, never>>,
     '/errors/404': RouteRecordInfo<'/errors/404', '/errors/404', Record<never, never>, Record<never, never>>,
     '/errors/500': RouteRecordInfo<'/errors/500', '/errors/500', Record<never, never>, Record<never, never>>,
+    '/errors/maintenance': RouteRecordInfo<'/errors/maintenance', '/errors/maintenance', Record<never, never>, Record<never, never>>,
     '/hi/[name]': RouteRecordInfo<'/hi/[name]', '/hi/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
-    '/maintenance': RouteRecordInfo<'/maintenance', '/maintenance', Record<never, never>, Record<never, never>>,
     '/README': RouteRecordInfo<'/README', '/README', Record<never, never>, Record<never, never>>,
   }
 }

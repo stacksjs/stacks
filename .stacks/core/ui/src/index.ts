@@ -1,6 +1,5 @@
 import * as CssEngine from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
-import transformerCompileClass from '@unocss/transformer-compile-class'
 import * as UiEngine from 'vue'
 import * as Store from 'pinia'
 import { ui } from '@stacksjs/config'
@@ -11,7 +10,6 @@ export {
   UiEngine,
   Store,
   presetForms,
-  transformerCompileClass,
   UnocssConfig,
   ui,
 }

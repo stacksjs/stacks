@@ -15,7 +15,7 @@ export const frameworkDefaults = {
   cacheDir: p.projectStoragePath('framework/cache/docs'),
   assetsDir: p.assetsPath(),
   // sitemap: {
-  //   hostname: 'stacks.test',
+  //   hostname: 'stacks.localhost',
   // },
 
   vite: {
@@ -39,7 +39,7 @@ export const frameworkDefaults = {
           server.printUrls = () => { // eslint-disable-next-line no-console
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
-            // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.test:3333/docs')}`)
+            // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.localhost:3333/docs')}`)
             // eslint-disable-next-line no-console
             console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
             // eslint-disable-next-line no-console

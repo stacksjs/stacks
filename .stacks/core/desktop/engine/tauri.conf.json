@@ -3,7 +3,7 @@
   "build": {
     "beforeBuildCommand": "bun run build",
     "beforeDevCommand": "bun run dev",
-    "devPath": "http://stacks.test:3333",
+    "devPath": "http://stacks.localhost:3333",
     "distDir": "../../../views/desktop/dashboard/dist",
     "withGlobalTauri": true
   },
@@ -117,7 +117,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.stacks.test",
+      "identifier": "com.stacks.localhost",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

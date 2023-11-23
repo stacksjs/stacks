@@ -14,6 +14,7 @@ export default {
   APP_KEY: validate.string(),
   APP_URL: validate.string(),
   APP_PORT: validate.number(),
+  APP_MAINTENANCE: validate.boolean(),
   DEBUG: validate.boolean(),
 
   API_PREFIX: validate.string(),

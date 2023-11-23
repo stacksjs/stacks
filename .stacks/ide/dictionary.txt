@@ -281,6 +281,7 @@ vite
 vitebook
 vitejs
 vitepress
+vitesse
 vitest
 vmodel
 vonage

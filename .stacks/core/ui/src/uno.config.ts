@@ -1,6 +1,15 @@
-import { defineConfig, presetIcons, presetTypography, presetWebFonts, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
+import {
+  defineConfig,
+  // presetAttributify,
+  presetIcons,
+  presetTypography,
+  presetWind,
+  presetWebFonts,
+  transformerDirectives,
+  transformerVariantGroup,
+  transformerCompileClass,
+} from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
-import transformerCompileClass from '@unocss/transformer-compile-class'
 import { ui } from '@stacksjs/config'
 
 export default defineConfig({
@@ -23,11 +32,13 @@ export default defineConfig({
     presetWebFonts({
       provider: 'bunny', // privacy-friendly Google Web Fonts proxy
       fonts: {
-        // these will extend the default theme
         sans: 'Inter',
+        serif: 'Inter',
         mono: 'Inter',
       },
     }),
+
+    // presetAttributify(),
   ],
 
   transformers: [

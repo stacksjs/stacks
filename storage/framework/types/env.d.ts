@@ -9,6 +9,7 @@ declare module 'bun' {
     const APP_ENV: 'development' | 'staging' | 'production'
     const APP_KEY: string
     const APP_PORT: number
+    const APP_MAINTENANCE: boolean
     const APP_URL: string
     const API_PREFIX: string
     const DOCS_PREFIX: string
