@@ -13,7 +13,7 @@ export default defineConfig({
   srcDir: p.projectPath('docs'),
   outDir: p.projectStoragePath('framework/docs/dist'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
-  assetsDir: p.resourcePath('assets'),
+  assetsDir: p.assetsPath(),
   lastUpdated: true,
 
   // sitemap: {
