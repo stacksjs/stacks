@@ -35,9 +35,15 @@ export function dev(buddy: CLI) {
     .action(async (server: string | undefined, options: DevOptions) => {
       const perf = await intro('buddy dev')
 
-      log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
+      // log.info('Ensuring web server/s running...') // in other words, ensure caddy is running
 
-      runAction(Action.StartCaddy, { ...options, silent: true })
+      // // check if port 443 is open
+      // const result = await runCommand('lsof -i :443', { silent: true })
+
+      // if (result.isErr())
+      //   log.warn('While checking if port 443 is open, we noticed it may be in use')
+
+      // runAction(Action.StartCaddy, { ...options, silent: true })
 
       // just for a better UX
       await sleep(100)
