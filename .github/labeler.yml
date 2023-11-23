@@ -11,9 +11,6 @@ deps:
 core:
   - '.stacks/**'
 
-fonts:
-  - '.stacks/fonts/**'
-
 ide:
   - '.stacks/ide/**'
 
