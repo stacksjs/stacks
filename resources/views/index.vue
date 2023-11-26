@@ -40,15 +40,37 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="bg-white h-full flex flex-col items-center justify-center">
-    <div class="border-2 border-gray-100 p-4 rounded">
-      <h1 class="text-gray-900 text-7xl tracking-tight uppercase font-semibold">
-        Stacks
-      </h1>
+  <div>
+    <div class="text-4xl">
+      <div class="i-carbon-campsite inline-block" />
     </div>
+    <p>
+      <a rel="noreferrer" href="https://github.com/stacksjs/stacks" target="_blank">
+        Stacks
+      </a>
+    </p>
+    <p>
+      <em class="text-sm opacity-75">{{ t('intro.desc') }}</em>
+    </p>
 
-    <h2 class="text-gray-700 text-2xl pt-6 tracking-tighter">
-      Coming soon, 2024 — in a fresh paint.
-    </h2>
+    <div class="py-4" />
+
+    <TheInput
+      v-model="name"
+      :placeholder="t('intro.whats-your-name')"
+      autocomplete="false"
+      @keydown.enter="go"
+    />
+    <label class="hidden" for="input">{{ t('intro.whats-your-name') }}</label>
+
+    <div>
+      <button
+        class="m-3 text-sm btn"
+        :disabled="!name"
+        @click="go"
+      >
+        {{ t('button.go') }}
+      </button>
+    </div>
   </div>
 </template>

@@ -10,10 +10,12 @@ import Layouts from 'vite-plugin-vue-layouts'
 import { autoImports } from './plugin/auto-imports'
 import { components } from './plugin/components'
 import { layouts } from './plugin/layouts'
+import { fonts } from './plugin/fonts'
+// import { i18n } from './plugin/i18n'
+import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 // import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
-import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import LinkAttributes from 'markdown-it-link-attributes'
@@ -167,6 +169,7 @@ export default defineConfig({
     }),
 
     // https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n
+    // i18n(),
     VueI18n({
       runtimeOnly: true,
       compositionOnly: true,
@@ -177,7 +180,7 @@ export default defineConfig({
     }),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
-    WebfontDownload(),
+    fonts(),
 
     // https://github.com/webfansplz/vite-plugin-vue-devtools
     VueDevTools(),
