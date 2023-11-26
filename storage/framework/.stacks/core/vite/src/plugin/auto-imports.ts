@@ -12,13 +12,12 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       'pinia',
       'vue',
       'vue-i18n',
-      '@vueuse/head',
       // '@vueuse/core',
       // 'vitepress'
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
       // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
       // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-      VueHeadImports,
+      VueHeadImports, // '@vueuse/head' alternatively
       VueRouterAutoImports,
       {
         'vue-router/auto': ['useLink'],

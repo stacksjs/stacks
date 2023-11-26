@@ -67,7 +67,8 @@
     "./core/utils/scripts/*",
     "./core/**/build.ts",
     "./core/**/build-*.ts",
-    "./core/**/build.config.ts"
+    "./core/**/build.config.ts",
+    "./core/vite-plugin-vue-layouts/client.d.ts"
   ],
   "exclude": [
     "../**/cdk.out",
