@@ -1,4 +1,4 @@
-import { frameworkPath, projectStoragePath, resourcesPath } from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { defu } from 'defu'
@@ -28,14 +28,14 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       },
     ],
     dirs: [
-      resourcesPath('functions'),
-      resourcesPath('stores'),
-      resourcesPath('components'),
+      p.resourcesPath('functions'),
+      p.resourcesPath('stores'),
+      p.resourcesPath('components'),
 
       // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
-      frameworkPath('src'),
+      p.frameworkPath('src'),
     ],
-    dts: frameworkStoragePath('types/auto-imports.d.ts'),
+    dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
     vueTemplate: true,
     eslintrc: {
       enabled: false,
