@@ -6,7 +6,7 @@
 // they will be rendered correctly in the html results with vite-ssg
 useHead({
   // title: app.name,
-  title: 'Danyel Group',
+  title: 'Stacks',
   meta: [
     { name: 'description', content: 'Coming soon.' },
     {

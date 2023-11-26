@@ -62,8 +62,6 @@ cssnanorc
 customresources
 czrc
 dangerfile
-Danyel
-danyelgroup
 datetime
 davidanson
 dbaeumer
