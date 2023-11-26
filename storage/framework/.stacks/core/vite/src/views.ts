@@ -9,6 +9,7 @@ import { config } from '@stacksjs/config'
 import Layouts from 'vite-plugin-vue-layouts'
 import { autoImports } from './plugin/auto-imports'
 import { components } from './plugin/components'
+import { layouts } from './plugin/layouts'
 // import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
@@ -99,13 +100,7 @@ export default defineConfig({
     }),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
-    Layouts({
-      layoutsDir: p.resourcesPath('layouts'),
-      defaultLayout: p.resourcesPath('layouts/default.vue'),
-      exclude: [
-        p.resourcesPath('layouts/mails'),
-      ],
-    }),
+    layouts(),
 
     // https://github.com/antfu/unplugin-auto-import
     autoImports(),
