@@ -4,6 +4,7 @@ import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
+import { config } from '@stacksjs/config'
 // @ts-expect-error missing types
 import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
@@ -20,9 +21,55 @@ import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 
+// const isMaintenanceMode = config.app.maintenanceMode
+// const maintenancePath = isMaintenanceMode ? '' : './maintenance'
+
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
+    }
+  },
+
+  // define: {
+  //   'process.env': {
+  //     APP_NAME: JSON.stringify(process.env.APP_NAME),
+  //     APP_ENV: JSON.stringify(process.env.APP_ENV),
+  //     APP_KEY: JSON.stringify(process.env.APP_KEY),
+  //     APP_DEBUG: JSON.stringify(process.env.APP_DEBUG),
+  //     APP_URL: JSON.stringify(process.env.APP_URL),
+  //     APP_PORT: JSON.stringify(process.env.APP_PORT),
+  //     APP_MAINTENANCE: JSON.stringify(process.env.APP_MAINTENANCE),
+  //     DB_CONNECTION: JSON.stringify(process.env.DB_CONNECTION),
+  //     DB_HOST: JSON.stringify(process.env.DB_HOST),
+  //     DB_PORT: JSON.stringify(process.env.DB_PORT),
+  //     DB_DATABASE: JSON.stringify(process.env.DB_DATABASE),
+  //     DB_USERNAME: JSON.stringify(process.env.DB_USERNAME),
+  //     DB_PASSWORD: JSON.stringify(process.env.DB_PASSWORD),
+  //     AWS_ACCESS_KEY_ID: JSON.stringify(process.env.AWS_ACCESS_KEY_ID),
+  //     AWS_SECRET_ACCESS_KEY: JSON.stringify(process.env.AWS_SECRET_ACCESS_KEY),
+  //     AWS_DEFAULT_PASSWORD: JSON.stringify(process.env.AWS_DEFAULT_PASSWORD),
+  //     AWS_REGION: JSON.stringify(process.env.AWS_REGION),
+  //     MAIL_MAILER: JSON.stringify(process.env.MAIL_MAILER),
+  //     MAIL_HOST: JSON.stringify(process.env.MAIL_HOST),
+  //     MAIL_PORT: JSON.stringify(process.env.MAIL_PORT),
+  //     MAIL_USERNAME: JSON.stringify(process.env.MAIL_USERNAME),
+  //     MAIL_PASSWORD: JSON.stringify(process.env.MAIL_PASSWORD),
+  //     MAIL_ENCRYPTION: JSON.stringify(process.env.MAIL_ENCRYPTION),
+  //     MAIL_FROM_NAME: JSON.stringify(process.env.MAIL_FROM_NAME),
+  //     MAIL_FROM_ADDRESS: JSON.stringify(process.env.MAIL_FROM_ADDRESS),
+  //     SEARCH_ENGINE_DRIVER: JSON.stringify(process.env.SEARCH_ENGINE_DRIVER),
+  //     MEILISEARCH_HOST: JSON.stringify(process.env.MEILISEARCH_HOST),
+  //     MEILISEARCH_KEY: JSON.stringify(process.env.MEILISEARCH_KEY),
+  //     FRONTEND_APP_ENV: JSON.stringify(process.env.FRONTEND_APP_ENV),
+  //     FRONTEND_APP_URL: JSON.stringify(process.env.FRONTEND_APP_URL),
+  //   },
+  // },
+
   root: p.frameworkStoragePath('views'),
   publicDir: p.publicPath(),
+  envDir: p.projectPath(),
+  envPrefix: 'FRONTEND_',
 
   server: server({
     type: 'frontend',
@@ -45,12 +92,19 @@ export default defineConfig({
     VueRouter({
       extensions: ['.vue', '.md'],
       dts: p.frameworkStoragePath('types/router.d.ts'),
-      routesFolder: p.resourcesPath('views'),
+      routesFolder: [
+        p.resourcesPath('views'),
+      ],
+      logs: config.app.debug || false,
     }),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     Layouts({
       layoutsDir: p.resourcesPath('layouts'),
+      defaultLayout: p.resourcesPath('layouts/default.vue'),
+      exclude: [
+        p.resourcesPath('layouts/mails'),
+      ],
     }),
 
     // https://github.com/antfu/unplugin-auto-import
@@ -165,9 +219,11 @@ export default defineConfig({
   ssgOptions: {
     script: 'async',
     formatting: 'minify',
+
     crittersOptions: {
       reduceInlineStyles: false,
     },
+
     onFinished() {
       generateSitemap()
     },

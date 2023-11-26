@@ -99,7 +99,11 @@ export function isFile(path: string): boolean {
  * Determine whether a folder has any files in it.
  */
 export function hasFiles(folder: string): boolean {
-  return fs.readdirSync(folder).length > 0
+  try {
+    return fs.default.readdirSync(folder).length > 0
+  } catch (err) {
+    return false
+  }
 }
 
 export function hasComponents(): boolean {

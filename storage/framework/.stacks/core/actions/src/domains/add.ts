@@ -39,7 +39,7 @@ if (result.isErr()) {
 const nameServers = await getNameservers(options.domain)
 
 if (!nameServers) {
-  handleError(`No nameservers found for domain: ${options.domain}`)
+  handleError(`No nameservers found for domain: ${options.domain}. Please ensure the Hosted Zone exists in Route53.`)
   process.exit(1)
 }
 

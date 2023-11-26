@@ -67,8 +67,7 @@
     "./core/utils/scripts/*",
     "./core/**/build.ts",
     "./core/**/build-*.ts",
-    "./core/**/build.config.ts",
-    "../storage/**/*.ts"
+    "./core/**/build.config.ts"
   ],
   "exclude": [
     "../**/cdk.out",

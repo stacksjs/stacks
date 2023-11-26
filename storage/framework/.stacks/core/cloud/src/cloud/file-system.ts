@@ -13,7 +13,7 @@ export class FileSystemStack {
 
   constructor(scope: Construct, props: FileSystemStackProps) {
     this.fileSystem = new efs.FileSystem(scope, 'FileSystem', {
-      fileSystemName: `${props.appName}-${props.appEnv}-efs`,
+      fileSystemName: `${props.slug}-${props.appEnv}-efs`,
       vpc: props.vpc,
       removalPolicy: RemovalPolicy.DESTROY,
       lifecyclePolicy: efs.LifecyclePolicy.AFTER_7_DAYS,

@@ -14,4 +14,4 @@ const websiteSrc = [
   // p.projectPath('config/app.ts'),
 ]
 
-export const websiteSourceHash = config.app.docMode ? hashPaths(docsSrc) : hashPaths(websiteSrc)
+export const websiteSourceHash = config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)

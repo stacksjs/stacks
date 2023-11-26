@@ -4,6 +4,7 @@ import { AssetHashType, CfnOutput as Output, RemovalPolicy, aws_lambda as lambda
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 import { originRequestFunctionHash } from '@stacksjs/utils'
 import type { NestedCloudProps } from '../types'
 
@@ -23,7 +24,7 @@ export class DocsStack {
     this.originRequestFunction = new lambda.Function(scope, 'OriginRequestFunction', {
       // this needs to have timestamp to ensure uniqueness. Since Origin Request (Lambda@Edge) functions are replicated functions, the
       // deletion process takes a "long time". This way, the function is always unique in cases of quick recreations.
-      functionName: `${props.appName}-${props.appEnv}-origin-request-${props.timestamp}`,
+      functionName: `${props.slug}-${props.appEnv}-origin-request-${props.timestamp}`,
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
@@ -40,7 +41,7 @@ export class DocsStack {
     const cfnOriginRequestFunction = this.originRequestFunction.node.defaultChild as CfnResource
     cfnOriginRequestFunction.applyRemovalPolicy(RemovalPolicy.RETAIN)
 
-    if (!config.app.docMode) {
+    if (!config.app.docMode && storage.hasFiles(p.projectPath('docs'))) {
       new Output(scope, 'DocsUrl', {
         value: `https://${props.domain}/${docsPrefix}`,
         description: 'The URL of the deployed documentation',

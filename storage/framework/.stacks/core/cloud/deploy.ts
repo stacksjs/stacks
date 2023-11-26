@@ -1,7 +1,9 @@
 /* eslint-disable no-new */
 import process from 'node:process'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
+import { slug as slugify } from '@stacksjs/strings'
 import { env } from '@stacksjs/env'
 import { App } from 'aws-cdk-lib'
 import { Cloud } from './src/cloud'
@@ -12,10 +14,12 @@ const app = new App()
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const appKey = config.app.key
 const domain = config.app.url
-const name = `stacks-cloud-${appEnv}`
-const appName = config.app.name?.toLowerCase()
+const appName = config.app.name?.toLowerCase() ?? 'stacks'
+const slug = slugify(appName)
+const name = `${slug}-cloud-${appEnv}`
 const account = env.AWS_ACCOUNT_ID
-const region = env.AWS_DEFAULT_REGION
+// const region = env.AWS_DEFAULT_REGION
+const region = 'us-east-1' // currently, us-east-1 is the only fully-supported region
 let timestamp
 
 if (!appKey) {
@@ -55,6 +59,7 @@ catch (error) {
 export const options = {
   env: usEnv,
   name,
+  slug,
   appEnv: appEnv ?? 'dev',
   appName,
   domain,

@@ -7,6 +7,7 @@ export interface CloudOptions extends StackProps {
     account: string
     region: string
   }
+  slug: string
   appEnv: AppEnvType
   appName: string
   domain: string
@@ -19,6 +20,7 @@ export interface NestedCloudProps {
     account: string
     region: string
   }
+  slug: string
   appEnv: AppEnvType
   appName: string
   domain: string

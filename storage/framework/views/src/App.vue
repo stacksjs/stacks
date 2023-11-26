@@ -1,24 +1,10 @@
 <script setup lang="ts">
-// https://github.com/vueuse/head
-// you can use this to manipulate the document head in any components,
-// they will be rendered correctly in the html results with vite-ssg
-useHead({
-  title: 'Stacks',
-  meta: [
-    { name: 'description', content: 'Rapid application development with Stacks.' },
-    {
-      name: 'theme-color',
-      content: () => isDark.value ? '#00aba9' : '#ffffff',
-    },
-  ],
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/svg+xml',
-      href: () => preferredDark.value ? '/favicon-dark.svg' : '/favicon.svg',
-    },
-  ],
-})
+// const router = useRouter()
+
+// onMounted(() => {
+//   if (app.maintenanceMode && router.currentRoute.value.path !== '/maintenance')
+//     router.push('/maintenance')
+// })
 </script>
 
 <template>

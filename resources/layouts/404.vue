@@ -1,28 +1,21 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 const router = useRouter()
-const { t } = useI18n(),
+const { t } = useI18n()
+</script>
 
 <template>
-  <main
-    p="x4 y10"
-    text="center teal-700 dark:gray-200"
-  >
-    <div text-4xl>
-      <div
-        i-carbon-warning
-        inline-block
-      />
+  <main class="px-4 py-10 text-center text-teal-700 text-dark:gray-200">
+    <div class="text-4xl">
+      <div class="i-carbon-warning inline-block" />
+      testing this
     </div>
+
     <RouterView />
+
     <div>
-      <button
-        btn
-        text-sm
-        m="3 t8"
-        @click="router.</script>back()"
-      >
+      <button class="text-sm btn m-3 mt-8" @click="router.back()">
         {{ t('button.back') }}
       </button>
     </div>
   </main>
-</template> -->
+</template>

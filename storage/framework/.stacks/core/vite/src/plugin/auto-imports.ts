@@ -35,7 +35,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // here, we say that everything that lives here in .stacks/src/index.ts will be auto-imported
       frameworkPath('src'),
     ],
-    dts: frameworkPath('types/auto-imports.d.ts'),
+    dts: frameworkStoragePath('types/auto-imports.d.ts'),
     vueTemplate: true,
     eslintrc: {
       enabled: false,

@@ -41,7 +41,7 @@ export class CdnStack {
 
     this.cdnCachePolicy = new cloudfront.CachePolicy(scope, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
-      cachePolicyName: `${props.appName}-${props.appEnv}-cdn-cache-policy`,
+      cachePolicyName: `${props.slug}-${props.appEnv}-cdn-cache-policy`,
       minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
       maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
@@ -279,7 +279,7 @@ export class CdnStack {
 
     this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
-      cachePolicyName: `${this.props.appName}-${this.props.appEnv}-api-cache-policy`,
+      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy`,
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),

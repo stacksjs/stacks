@@ -12,7 +12,7 @@ export class EmailStack {
   emailBucket: s3.Bucket
 
   constructor(scope: Construct, props: EmailStackProps) {
-    const bucketPrefix = `${props.appName}-${props.appEnv}`
+    const bucketPrefix = `${props.slug}-${props.appEnv}`
     this.emailBucket = new s3.Bucket(scope, 'EmailBucket', {
       bucketName: `${bucketPrefix}-email-${props.timestamp}`,
       versioned: true,
@@ -56,8 +56,8 @@ export class EmailStack {
     Tags.of(this.emailBucket).add('daily-backup', 'true')
 
     const sesPrincipal = new iam.ServicePrincipal('ses.amazonaws.com')
-    const ruleSetName = `${props.appName}-${props.appEnv}-email-receipt-rule-set`
-    const receiptRuleName = `${props.appName}-${props.appEnv}-email-receipt-rule`
+    const ruleSetName = `${props.slug}-${props.appEnv}-email-receipt-rule-set`
+    const receiptRuleName = `${props.slug}-${props.appEnv}-email-receipt-rule`
 
     const ruleSet = new ses.CfnReceiptRuleSet(scope, 'SESReceiptRuleSet', {
       ruleSetName,
@@ -109,7 +109,7 @@ export class EmailStack {
     receiptRule.node.addDependency(this.emailBucket)
 
     const iamGroup = new iam.Group(scope, 'IAMGroup', {
-      groupName: `${props.appName}-${props.appEnv}-email-management-s3-group`,
+      groupName: `${props.slug}-${props.appEnv}-email-management-s3-group`,
     })
 
     const listBucketsPolicyStatement = new iam.PolicyStatement({
@@ -137,7 +137,7 @@ export class EmailStack {
     })
 
     const policy = new iam.Policy(scope, 'EmailAccessPolicy', {
-      policyName: `${props.appName}-${props.appEnv}-email-management-s3-policy`,
+      policyName: `${props.slug}-${props.appEnv}-email-management-s3-policy`,
       statements: [policyStatement, listBucketsPolicyStatement],
     })
 
@@ -213,7 +213,7 @@ export class EmailStack {
     })
 
     const lambdaEmailOutboundRole = new iam.Role(scope, 'LambdaEmailOutboundRole', {
-      roleName: `${props.appName}-${props.appEnv}-email-outbound`,
+      roleName: `${props.slug}-${props.appEnv}-email-outbound`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -221,7 +221,7 @@ export class EmailStack {
     })
 
     const lambdaEmailOutbound = new lambda.Function(scope, 'LambdaEmailOutbound', {
-      functionName: `${props.appName}-${props.appEnv}-email-outbound`,
+      functionName: `${props.slug}-${props.appEnv}-email-outbound`,
       description: 'Take the JSON and convert it in to an raw email.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
@@ -245,7 +245,7 @@ export class EmailStack {
     lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
 
     const lambdaEmailInboundRole = new iam.Role(scope, 'LambdaEmailInboundRole', {
-      roleName: `${props.appName}-${props.appEnv}-email-inbound`,
+      roleName: `${props.slug}-${props.appEnv}-email-inbound`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -253,7 +253,7 @@ export class EmailStack {
     })
 
     const lambdaEmailInbound = new lambda.Function(scope, 'LambdaEmailInbound', {
-      functionName: `${props.appName}-${props.appEnv}-email-inbound`,
+      functionName: `${props.slug}-${props.appEnv}-email-inbound`,
       description: 'This Lambda organizes all the incoming emails based on the From and To field.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',
@@ -292,7 +292,7 @@ export class EmailStack {
     lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
 
     const lambdaEmailConverterRole = new iam.Role(scope, 'LambdaEmailConverterRole', {
-      roleName: `${props.appName}-${props.appEnv}-email-converter`,
+      roleName: `${props.slug}-${props.appEnv}-email-converter`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
@@ -300,7 +300,7 @@ export class EmailStack {
     })
 
     const lambdaEmailConverter = new lambda.Function(scope, 'LambdaEmailConverter', {
-      functionName: `${props.appName}-${props.appEnv}-email-converter`,
+      functionName: `${props.slug}-${props.appEnv}-email-converter`,
       description: 'This Lambda converts raw emails files in to HTML and text.',
       code: lambda.Code.fromInline('exports.handler = async (event) => {console.log("hello world email converter");return true;};'), // this needs to be updated with the real lambda code
       handler: 'index.handler',

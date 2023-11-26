@@ -18,9 +18,9 @@ export class DeploymentStack {
   websiteSource: string
 
   constructor(scope: Construct, props: DeploymentStackProps) {
-    this.privateSource = '../../../storage/private'
-    this.docsSource = '../../../storage/framework/docs'
-    this.websiteSource = config.app.docMode ? this.docsSource : '../../../storage/public'
+    this.privateSource = '../../../../../storage/private'
+    this.docsSource = '../../../../../storage/framework/docs'
+    this.websiteSource = config.app.docMode === true ? this.docsSource : '../../../../../storage/framework/views/dist/'
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [s3deploy.Source.asset(this.websiteSource, {

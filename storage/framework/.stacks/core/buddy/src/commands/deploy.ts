@@ -57,7 +57,7 @@ export function deploy(buddy: CLI) {
       // and then exit the process with prompts for the user to update their nameservers
       else {
         console.log('')
-        log.info(`👋  It appears to be your first ${italic(domain)} deployment.`)
+        log.info(`  👋  It appears to be your first ${italic(domain)} deployment.`)
         console.log('')
         log.info(italic('Let’s ensure it is all connected properly.'))
         log.info(italic('One moment...'))

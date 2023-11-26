@@ -64,10 +64,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('Installed node_modules')
-  await new Promise(resolve => setTimeout(resolve, 300))
-
   log.info('⏳ Ensuring .env exists...')
-  await new Promise(resolve => setTimeout(resolve, 800))
 
   const envResult = await runCommand('cp .env.example .env', {
     cwd: options.cwd || p.projectPath(),
@@ -79,9 +76,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('.env exists')
-
   log.info('⏳ Generating application key...')
-  await new Promise(resolve => setTimeout(resolve, 1200))
 
   const keyResult = await runCommand('buddy key:generate', {
     cwd: options.cwd || p.projectPath(),
@@ -93,10 +88,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('Generated application key')
-  await new Promise(resolve => setTimeout(resolve, 300))
-
   log.info('⏳ Ensuring AWS is connected...')
-  await new Promise(resolve => setTimeout(resolve, 1200))
 
   const awsResult = await runCommand('buddy configure:aws', {
     cwd: options.cwd || p.projectPath(),
@@ -110,7 +102,8 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.success('Configured AWS')
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  // ensure the IDE is setup
+  // 1. ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
+  // 2. ensure the project 
 
   log.success('Project is setup')
   await new Promise(resolve => setTimeout(resolve, 300))

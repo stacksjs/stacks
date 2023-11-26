@@ -17,7 +17,7 @@ export class StorageStack {
   backupRole: iam.Role
 
   constructor(scope: Construct, props: StorageStackProps) {
-    this.bucketPrefix = `${props.appName}-${props.appEnv}`
+    this.bucketPrefix = `${props.slug}-${props.appEnv}`
 
     this.publicBucket = new s3.Bucket(scope, 'PublicBucket', {
       bucketName: `${this.bucketPrefix}-public-${props.timestamp}`,
@@ -66,7 +66,7 @@ export class StorageStack {
 
     // Daily 35 day retention
     this.vault = new backup.BackupVault(scope, 'BackupVault', {
-      backupVaultName: `${props.appName}-${props.appEnv}-daily-backup-vault`,
+      backupVaultName: `${props.slug}-${props.appEnv}-daily-backup-vault`,
       encryptionKey: props.kmsKey,
       removalPolicy: RemovalPolicy.DESTROY,
     })

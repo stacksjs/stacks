@@ -11,39 +11,39 @@ export class NetworkStack {
 
   constructor(scope: Construct, props: NetworkStackProps) {
     this.vpc = new ec2.Vpc(scope, 'Network', {
-      vpcName: `${props.appName}-${props.appEnv}-vpc`,
+      vpcName: `${props.slug}-${props.appEnv}-vpc`,
       ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
       maxAzs: 3,
       natGateways: 0,
       subnetConfiguration: [
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-public-subnet-1`,
+          name: `${props.slug}-${props.appEnv}-public-subnet-1`,
           subnetType: ec2.SubnetType.PUBLIC,
         },
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-public-subnet-2`,
+          name: `${props.slug}-${props.appEnv}-public-subnet-2`,
           subnetType: ec2.SubnetType.PUBLIC,
         },
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-public-subnet-3`,
+          name: `${props.slug}-${props.appEnv}-public-subnet-3`,
           subnetType: ec2.SubnetType.PUBLIC,
         },
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-private-subnet-1`,
+          name: `${props.slug}-${props.appEnv}-private-subnet-1`,
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-private-subnet-2`,
+          name: `${props.slug}-${props.appEnv}-private-subnet-2`,
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
         {
           cidrMask: 21,
-          name: `${props.appName}-${props.appEnv}-private-subnet-3`,
+          name: `${props.slug}-${props.appEnv}-private-subnet-3`,
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
       ],

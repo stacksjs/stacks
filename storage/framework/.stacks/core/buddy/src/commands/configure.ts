@@ -2,6 +2,7 @@ import process from 'node:process'
 import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI) {
@@ -42,7 +43,7 @@ export function configure(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
       const startTime = performance.now()
-      const result = await runCommand('aws configure', {
+      const result = await runCommand(`aws configure --profile ${config.app.url}`, {
         ...options,
         cwd: p.cloudPath(),
         stdin: 'inherit',

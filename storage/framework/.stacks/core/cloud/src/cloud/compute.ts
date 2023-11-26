@@ -43,7 +43,7 @@ export class ComputeStack {
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
-      secretName: `${props.appName}-${props.appEnv}-secrets`,
+      secretName: `${props.slug}-${props.appEnv}-secrets`,
       description: 'Secrets for the Stacks application',
       generateSecretString: {
         secretStringTemplate: JSON.stringify(env),
