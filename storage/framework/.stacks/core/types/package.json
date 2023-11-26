@@ -74,10 +74,10 @@
     "unplugin-vue-components": "^0.25.2",
     "vite": "^5.0.2",
     "vite-plugin-inspect": "^0.7.42",
-    "vite-plugin-pwa": "^0.17.0",
+    "vite-plugin-pwa": "^0.17.2",
     "vite-ssg": "^0.23.5",
-    "vitepress": "1.0.0-rc.30",
-    "vue": "^3.3.8"
+    "vitepress": "1.0.0-rc.31",
+    "vue": "^3.3.9"
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.110.1",
