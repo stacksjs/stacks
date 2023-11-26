@@ -6,7 +6,7 @@ import generatedRoutes from '~pages'
 import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
 
-import '../../../../.stacks/stacks/dashboard/src/styles/main.css'
+import '../../../../resources/assets/styles/main.css'
 
 import 'uno.css'
 
