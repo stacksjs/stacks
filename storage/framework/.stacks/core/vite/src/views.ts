@@ -7,8 +7,8 @@ import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 // @ts-expect-error missing types
 import Layouts from 'vite-plugin-vue-layouts'
-import Components from 'unplugin-vue-components/vite'
 import { autoImports } from './plugin/auto-imports'
+import { components } from './plugin/components'
 // import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
@@ -20,7 +20,6 @@ import Unocss from 'unocss/vite'
 import Shiki from 'markdown-it-shikiji'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
@@ -112,16 +111,7 @@ export default defineConfig({
     autoImports(),
 
     // https://github.com/antfu/unplugin-vue-components
-    Components({
-      // allow auto load markdown components under `./resources/components/`
-      extensions: ['vue', 'md'],
-      // allow auto import and register components used in markdown
-      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: p.frameworkStoragePath('types/components.d.ts'),
-      dirs: [
-        p.resourcesPath('components'),
-      ],
-    }),
+    components(),
 
     // https://github.com/antfu/unocss
     // see uno.config.ts for config
