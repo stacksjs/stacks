@@ -1,7 +1,9 @@
+import { path } from '@stacksjs/path'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export function pwa() {
   return VitePWA({
+    srcDir: path.publicPath(),
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
     manifest: {

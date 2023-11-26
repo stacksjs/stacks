@@ -1,11 +1,13 @@
-// export function i18n(options?: i18nOptions) {
-//   const defaultOptions: i18nOptions = {
-//     runtimeOnly: true,
-//     compositionOnly: true,
-//     include: [langPath('./**')],
-//   }
+import VueI18n from '@intlify/unplugin-vue-i18n/vite'
+import { path as p } from '@stacksjs/path'
 
-//   const newOptions = defu(options, defaultOptions)
-
-//   return VueI18n(newOptions)
-// }
+export function i18n() {
+ return VueI18n({
+    runtimeOnly: true,
+    compositionOnly: true,
+    fullInstall: true,
+    include: [
+      p.resolve(__dirname, '../../../../../../lang/**')
+    ],
+  })
+}
