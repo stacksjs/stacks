@@ -43,7 +43,7 @@ const { t } = useI18n()
   <div class="bg-white h-full flex flex-col items-center justify-center">
     <div class="border-2 border-gray-100 p-4 rounded">
       <h1 class="text-gray-900 text-7xl tracking-tight uppercase font-semibold">
-        Danyel Group
+        Stacks
       </h1>
     </div>
 

@@ -8,7 +8,8 @@ import { config } from '@stacksjs/config'
 // @ts-expect-error missing types
 import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
-import AutoImport from 'unplugin-auto-import/vite'
+import { autoImports } from './plugin/auto-imports'
+// import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
@@ -108,25 +109,7 @@ export default defineConfig({
     }),
 
     // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: [
-        'vue',
-        'vue-i18n',
-        '@vueuse/head',
-        '@vueuse/core',
-        VueRouterAutoImports,
-        {
-          // add any other imports you were relying on
-          'vue-router/auto': ['useLink'],
-        },
-      ],
-      dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
-      dirs: [
-        p.resourcesPath('functions'),
-        p.resourcesPath('stores'),
-      ],
-      vueTemplate: true,
-    }),
+    autoImports(),
 
     // https://github.com/antfu/unplugin-vue-components
     Components({
