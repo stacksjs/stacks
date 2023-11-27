@@ -2,13 +2,14 @@ import type { ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'
-
+import Components from 'unplugin-vue-components/vite'
 import UnoCSS from 'unocss/vite'
 import { layouts, pages, uiEngine } from './stacks'
+import AutoImport from 'unplugin-auto-import/vite'
 import { defineConfig } from './'
 
 export const pagesConfig = {
-  root: p.projectStoragePath('framework/desktop/dashboard'),
+  root: p.projectStoragePath('framework/stacks/dashboard'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.projectPath('public'),
@@ -24,15 +25,34 @@ export const pagesConfig = {
 
   plugins: [
     uiEngine(),
+    Components({
+      // allow auto load markdown components under `./src/components/`
+      extensions: ['vue', 'md'],
+      // allow auto import and register components used in markdown
+      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+      dts: p.projectStoragePath('framework/stacks/dashboard/components.d.ts'),
+    }),
+    AutoImport({
+      imports: [
+        'pinia',
+        'vue',
+        'vue-i18n',
+      ],
+      dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
+      dirs: [
+        p.projectStoragePath('framework/stacks/dashboard/src/functions'),
+      ],
+    }),
     pages({
-      dirs: p.frameworkPath('stacks/dashboard/src/pages'),
+      routesFolder: p.projectStoragePath('framework/stacks/dashboard/src/pages'),
     }),
     UnoCSS({
-      configFile: p.corePath('vite/src/uno.config.ts'),
+      configFile: p.projectStoragePath('framework/.stacks/core/ui/src/uno.config.ts'),
     }),
     layouts({
-      layoutsDirs: p.frameworkPath('stacks/dashboard/src/layouts'),
-    }),
+      layoutsDirs: p.projectStoragePath('framework/stacks/dashboard/src/layouts'),
+    }, false),
+
   ],
 
   // https://github.com/antfu/vite-ssg

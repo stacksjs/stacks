@@ -1,5 +1,6 @@
 export * from '../core/actions/src'
 export * from '../core/ai/src'
+export * from '../core/api/src'
 export * from '../core/alias/src'
 export * from '../core/analytics/src'
 export * as arrays from '../core/arrays/src'

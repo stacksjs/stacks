@@ -1,7 +1,6 @@
 import { ofetch } from 'ofetch'
-import { flare } from '@flareapp/flare-client'
 import { config, localUrl } from '@stacksjs/config'
-
+import { ref } from 'vue'
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }
@@ -24,11 +23,6 @@ interface FetchResponse {
 const loading = ref(false)
 const token = ref('')
 
-let bearerToken: string | null = ''
-
-if (typeof window !== 'undefined')
-  bearerToken = window.localStorage.getItem('bearerToken')
-
 export async function useHttpFetch(endpoint = '') {
   let baseURL = await localUrl({ domain: config.app.url })
 
@@ -39,7 +33,7 @@ export async function useHttpFetch(endpoint = '') {
     const parameters: FetchParams = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value || bearerToken}` },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
         parseResponse: JSON.parse,
         method: 'POST',
         baseURL,
@@ -55,11 +49,6 @@ export async function useHttpFetch(endpoint = '') {
       return result
     }
     catch (err: any) {
-      flare.report(errReport)
-
-      if (err.status === 401)
-        logout()
-
       loading.value = false
 
       throw err
@@ -70,7 +59,7 @@ export async function useHttpFetch(endpoint = '') {
     const parameters: FetchParams = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value || bearerToken}` },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
         parseResponse: JSON.parse,
         method: 'GET',
         baseURL,
@@ -82,10 +71,6 @@ export async function useHttpFetch(endpoint = '') {
       return result
     }
     catch (err: any) {
-      flare.report(err)
-      if (err.status === 401)
-        logout()
-
       throw err
     }
   }
@@ -94,7 +79,7 @@ export async function useHttpFetch(endpoint = '') {
     const parameters: FetchParams = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value || bearerToken}` },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
         parseResponse: JSON.parse,
         method: 'PATCH',
         baseURL,
@@ -109,8 +94,6 @@ export async function useHttpFetch(endpoint = '') {
       return result
     }
     catch (err: any) {
-      flare.report(err)
-      loading.value = false
       throw err
     }
   }
@@ -119,7 +102,7 @@ export async function useHttpFetch(endpoint = '') {
     const parameters: FetchParams = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value || bearerToken}` },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
         method: 'DELETE',
         baseURL,
       },
@@ -133,22 +116,12 @@ export async function useHttpFetch(endpoint = '') {
       return result
     }
     catch (err: any) {
-      flare.report(err)
-      loading.value = false
-
       throw err
     }
   }
 
   function setToken(authToken: string) {
     token.value = authToken
-  }
-
-  function logout() {
-    if (typeof window !== 'undefined')
-      window.localStorage.clear()
-
-    window.location.href = '/login'
   }
 
   return { post, get, patch, destroy, baseURL, loading, token, setToken }
