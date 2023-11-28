@@ -9,7 +9,7 @@ const numberOfCommits = 10;
 // Assuming you are using a library like Axios for HTTP requests
 const apiUrl = `https://api.github.com/repos/${owner}/${repo}`
 
-const token = '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'
+const token = ''
 
 export const useGitStore = defineStore('git', {
   state: (): any => {
