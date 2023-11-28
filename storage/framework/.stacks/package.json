@@ -51,9 +51,9 @@
       "import": "./core/ai/dist/index.js"
     },
     "./api": {
-      "bun": "./core/ai/src/index.ts",
-      "types": "./core/ai/dist/index.d.ts",
-      "import": "./core/ai/dist/index.js"
+      "bun": "./core/api/src/index.ts",
+      "types": "./core/api/dist/index.d.ts",
+      "import": "./core/api/dist/index.js"
     },
     "./alias": {
       "bun": "./core/alias/src/index.ts",

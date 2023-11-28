@@ -73,4 +73,4 @@
 
       return 'text-gray-500 bg-gray-100/10'
     }
-</script>
+</script>../../stores/gitHelper

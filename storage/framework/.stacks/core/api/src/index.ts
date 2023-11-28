@@ -1,22 +1,10 @@
 import { ofetch } from 'ofetch'
+import type { FetchOptions } from 'ofetch'
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }
 
-interface FetchParams {
-  headers: {
-    Accept: string
-    Authorization: string
-  }
-  parseResponse: (text: string) => any
-  method: string
-  baseURL: string
-  [key: string]: any // To account for the spread of the '...params'
-}
-
-interface FetchResponse {
-  data: any // Replace 'any' with more specific types if possible
-}
+type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
 
 const loading = ref(false)
 const token = ref('')
@@ -28,10 +16,16 @@ export async function useHttpFetch(endpoint = '') {
     baseURL = endpoint
 
   async function post(url: string, params?: Params): Promise<any> {
-    const parameters: FetchParams = {
+    const headers: any = { Accept: 'application/json' };
+
+    if (token.value) {
+      headers.Authorization = `Bearer ${token.value}`;
+    }
+
+    const parameters: FetchOptions = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
+        headers,
         parseResponse: JSON.parse,
         method: 'POST',
         baseURL,
@@ -41,7 +35,7 @@ export async function useHttpFetch(endpoint = '') {
     loading.value = true
 
     try {
-      const result: FetchResponse = await ofetch(url, parameters)
+      const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(url, parameters)
 
       loading.value = false
       return result
@@ -54,10 +48,16 @@ export async function useHttpFetch(endpoint = '') {
   }
 
   async function get(url: string, params?: Params): Promise<any> {
-    const parameters: FetchParams = {
+    const headers: any = { Accept: 'application/json' };
+
+    if (token.value) {
+      headers.Authorization = `Bearer ${token.value}`;
+    }
+    
+    const parameters: FetchOptions = {
       ...params,
       ...{
-        headers: { Accept: 'application/json' },
+        headers,
         parseResponse: JSON.parse,
         method: 'GET',
         baseURL,
@@ -74,10 +74,16 @@ export async function useHttpFetch(endpoint = '') {
   }
 
   async function patch(url: string, params?: Params): Promise<any> {
-    const parameters: FetchParams = {
+    const headers: any = { Accept: 'application/json' };
+
+    if (token.value) {
+      headers.Authorization = `Bearer ${token.value}`;
+    }
+
+    const parameters: FetchOptions = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
+        headers,
         parseResponse: JSON.parse,
         method: 'PATCH',
         baseURL,
@@ -97,10 +103,16 @@ export async function useHttpFetch(endpoint = '') {
   }
 
   async function destroy(url: string, params?: Params): Promise<any> {
-    const parameters: FetchParams = {
+    const headers: any = { Accept: 'application/json' };
+
+    if (token.value) {
+      headers.Authorization = `Bearer ${token.value}`;
+    }
+
+    const parameters: FetchOptions = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
+        headers,
         method: 'DELETE',
         baseURL,
       },

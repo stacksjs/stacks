@@ -34,14 +34,15 @@ export const pagesConfig = {
     }),
     AutoImport({
       imports: [
-        'pinia',
         'vue',
+        'vue-router',
         'vue-i18n',
+        '@vueuse/head',
+        '@vueuse/core'
       ],
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
       dirs: [
         p.projectStoragePath('framework/stacks/dashboard/src/functions'),
-        p.projectStoragePath('framework/stacks/dashboard/src/store'),
       ],
     }),
     pages({

@@ -15,7 +15,8 @@ export const useGitStore = defineStore('git', {
   state: (): any => {
     return { 
       commitLists: [] as GithubCommit[],
-      workflowRuns: [] as WorkflowRun[]
+      workflowRuns: [] as WorkflowRun[],
+      workflowRun: {} as WorkflowRun
     }
   },
   actions: {
@@ -36,6 +37,15 @@ export const useGitStore = defineStore('git', {
         const response = await fetch.get(`/actions/runs?per_page=${numberOfCommits}`)
 
         this.workflowRuns = response.workflow_runs
+    },
+    async fetchWorkflowAction(id: number): Promise<void> {
+      const fetch = await useHttpFetch(apiUrl)
+
+      fetch.setToken(token)
+
+      const response = await fetch.get(`/actions/runs/${id}`)
+
+      this.workflowRun = response
     }
   },
   getters: {

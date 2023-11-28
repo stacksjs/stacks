@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useHead({
+  title: 'Dashboard - Environment',
+})
+
+
 import AppButton from '../../components/Buttons/AppButton.vue'
 </script>
 

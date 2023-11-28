@@ -1,4 +1,8 @@
 <script setup lang="ts">
+useHead({
+  title: 'Dashboard - Commands',
+})
+
 import { ref } from 'vue'
 import AppButton from '../../components/Buttons/AppButton.vue'
 

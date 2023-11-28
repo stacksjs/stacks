@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+useHead({
+  title: 'Dashboard - Health',
+})
+</script>
+
 <template>
   <div
     class="px-4 sm:px-6 lg:px-8 py-8"

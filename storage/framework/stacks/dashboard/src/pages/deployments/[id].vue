@@ -1,11 +1,31 @@
 <script setup lang="ts">
+import { useGitStore } from '../../stores/git'
+
+const gitStore = useGitStore()
+const github = useGithub()
+const route = useRoute()
+
+onMounted(async () =>{
+  await gitStore.fetchWorkflowAction(route.params.id)
+})
+
+useHead({
+  title: `Deployments - ${route.params.id}`,
+})
+
 import { ref } from 'vue'
 
 const flag = ref(false)
+
+function getStatus(conclusion: string) {
+  if (conclusion === 'success') return 'Ready'
+
+  return 'Failed'
+}
 </script>
 
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div v-if="gitStore.workflowRun" class="px-4 sm:px-6 lg:px-8 py-8">
     <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
       <div class="px-4 sm:px-0">
         <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
@@ -18,24 +38,20 @@ const flag = ref(false)
             <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Status
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
-              Ready
+            <dd class="mt-1 text-sm leading-6 text-gray-700 flex items-center sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
+              <span> {{ getStatus(gitStore.workflowRun.conclusion) }} </span>
+              <svg fill="none" class="text-green-500 w-5 h-5 ml-2" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
             </dd>
           </div>
-          <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-              Environment
-            </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
-              Production
-            </dd>
-          </div>
+        
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Duration
             </dt>
             <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
-              50s
+              {{ github.getActionRunDuration(gitStore.workflowRun.created_at, gitStore.workflowRun.updated_at) }}
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -103,10 +119,11 @@ const flag = ref(false)
                 <a
                   href="#"
                   class="hover:underline"
+                  v-if="gitStore.workflowRun.head_commit"
                 >
 
-                  <code class="text-xs">b0f6755</code>
-                  <span class="pl-1">chore: readme</span>
+                  <code class="text-xs">{{ gitStore.workflowRun.head_commit.id.slice(0, 10) }}</code>
+                  <span class="pl-1">{{ gitStore.workflowRun.head_commit.message }}</span>
                 </a>
               </div>
             </dd>

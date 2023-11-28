@@ -1,3 +1,14 @@
+
+<script setup lang="ts">
+    import { useGitStore } from '../../stores/git';
+    const githubStore = useGitStore()
+    const github = useGithub()
+
+    onMounted(async () => {
+        await githubStore.fetchCommits()
+    })
+</script>
+
 <template>
     <aside class="bg-black/2 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
         <header class="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
@@ -15,13 +26,3 @@
         </ul>
     </aside>
 </template>
-
-<script setup lang="ts">
-    import { useGitStore } from '../../stores/git';
-    const githubStore = useGitStore()
-    const github = useGithub()
-
-    onMounted(async () => {
-        await githubStore.fetchCommits()
-    })
-</script>

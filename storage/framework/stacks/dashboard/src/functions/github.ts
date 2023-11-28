@@ -36,6 +36,24 @@ export function useGithub() {
 
         return `${weeksDifference}w`;
     }
+
+    function formatDuration(durationInSeconds: number): string {
+        const minutes = Math.floor(durationInSeconds / 60);
+        const seconds = durationInSeconds % 60;
+      
+        if (minutes > 1)
+            return `${minutes}m ${seconds}s`;
+      
+        return `${seconds}s`;
+      }
+      
+    function getActionRunDuration(startTime: Date, endTime: Date): string {
+        const start = new Date(startTime)
+        const end = new Date(endTime)
+        const durationInSeconds = Math.floor((end.getTime() - start.getTime()) / 1000)
+        
+        return formatDuration(durationInSeconds)
+    }
     
-    return { getTimeDifference }
+    return { getTimeDifference, formatDuration, getActionRunDuration }
 }

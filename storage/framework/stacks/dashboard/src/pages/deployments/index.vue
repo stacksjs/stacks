@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-
+useHead({
+  title: 'Dashboard - Deployments',
+})
 </script>
 
 <template>
