@@ -57,7 +57,7 @@ export async function useHttpFetch(endpoint = '') {
     const parameters: FetchParams = {
       ...params,
       ...{
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token.value}` },
+        headers: { Accept: 'application/json' },
         parseResponse: JSON.parse,
         method: 'GET',
         baseURL,
