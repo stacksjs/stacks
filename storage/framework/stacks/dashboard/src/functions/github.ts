@@ -1,45 +1,41 @@
-import { useHttpFetch } from '@stacksjs/api'
-
-import { GithubCommit } from '../types';
-import { ref } from 'vue'
 
 export function useGithub() {
-    const commitLists: Ref<GithubCommit[]> = ref([])
-
-    async function getCommits() {
-        const fetch = await useHttpFetch()
-
-        fetch.setToken('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')
-        // Assuming you are using a library like Axios for HTTP requests
-        const owner = 'stacksjs';
-        const repo = 'stacks';
-        const numberOfCommits = 10;
+    function getTimeDifference(givenDateString: string): string {
+        // Convert the given date string to a Date object
+        const givenDate: Date = new Date(givenDateString);
         
+        // Get the current date and time
+        const currentDate: Date = new Date();
+        
+        // Calculate the time difference in milliseconds
+        const timeDifference: number = currentDate.getTime() - givenDate.getTime();
+        
+        // Calculate the difference in seconds, minutes, hours, and days
+        const secondsDifference: number = Math.floor(timeDifference / 1000);
+        const minutesDifference: number = Math.floor(secondsDifference / 60);
+        const hoursDifference: number = Math.floor(minutesDifference / 60);
+        const daysDifference: number = Math.floor(hoursDifference / 24);
+        const weeksDifference: number = Math.floor(daysDifference / 7);
+        
+        if (secondsDifference < 60) {
+            // If less than 60 seconds, return seconds only
+            return `${secondsDifference}s`;
+        } else if (minutesDifference < 60) {
+            // If less than 60 minutes, return minutes and remaining seconds
+            const remainingSeconds = secondsDifference % 60;
+            return `${minutesDifference}m ${remainingSeconds}s`;
+        } else if (hoursDifference < 24) {
+            // If less than 24 hours, return hours and remaining minutes
+            const remainingMinutes = minutesDifference % 60;
+            return `${hoursDifference}h ${remainingMinutes}m`;
+        } else if (weeksDifference < 7) {
+            const remainingHours: number = hoursDifference % 24;
 
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${numberOfCommits}`;
+            return `${daysDifference}d ${remainingHours}h`;
+        }
 
-        // You might need to include authentication, depending on the repository's visibility
-        // For public repositories, you might not need authentication
-        // For private repositories, you'll need to use a personal access token
-
-        // Example with authentication (replace 'YOUR_ACCESS_TOKEN' with your actual token)
-        // const headers = { Authorization: 'Bearer YOUR_ACCESS_TOKEN' };
-        // const response = await axios.get(apiUrl, { headers });
-
-        // Example without authentication (for public repositories)
-        const response = await fetch.get(apiUrl);
-
-        console.log(response)
-
-        const commitList = response.data;
-
-        // Now 'commitList' contains information about the latest commits
-        console.log(commitList);
-
+        return `${weeksDifference}w`;
     }
-
-    return { getCommits }
+    
+    return { getTimeDifference }
 }
-
-
-useGithub().getCommits()

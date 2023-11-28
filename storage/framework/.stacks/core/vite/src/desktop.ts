@@ -41,6 +41,7 @@ export const pagesConfig = {
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
       dirs: [
         p.projectStoragePath('framework/stacks/dashboard/src/functions'),
+        p.projectStoragePath('framework/stacks/dashboard/src/store'),
       ],
     }),
     pages({

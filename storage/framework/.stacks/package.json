@@ -50,6 +50,11 @@
       "types": "./core/ai/dist/index.d.ts",
       "import": "./core/ai/dist/index.js"
     },
+    "./api": {
+      "bun": "./core/ai/src/index.ts",
+      "types": "./core/ai/dist/index.d.ts",
+      "import": "./core/ai/dist/index.js"
+    },
     "./alias": {
       "bun": "./core/alias/src/index.ts",
       "types": "./core/alias/dist/index.d.ts",

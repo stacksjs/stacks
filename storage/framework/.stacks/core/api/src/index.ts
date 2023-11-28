@@ -1,6 +1,4 @@
 import { ofetch } from 'ofetch'
-import { config, localUrl } from '@stacksjs/config'
-import { ref } from 'vue'
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }
@@ -24,7 +22,7 @@ const loading = ref(false)
 const token = ref('')
 
 export async function useHttpFetch(endpoint = '') {
-  let baseURL = await localUrl({ domain: config.app.url })
+  let baseURL = '/'
 
   if (endpoint)
     baseURL = endpoint

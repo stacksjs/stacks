@@ -6,6 +6,10 @@ import { routes } from 'vue-router/auto/routes'
 import '@unocss/reset/tailwind.css'
 import 'highlight.js/styles/atom-one-light.css'
 import './styles/main.css'
+import { createPinia } from 'pinia'
+
+const pinia = createPinia()
+
 
 import 'uno.css'
 ViteSSG(
@@ -16,5 +20,6 @@ ViteSSG(
   },
   (ctx) => {
     ctx.app.use(VueHighlightJS)
+    ctx.app.use(pinia)
   },
 )
