@@ -49,17 +49,17 @@
   },
   "peerDependencies": {
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.44.7",
-    "eslint": "^8.54.0",
-    "lint-staged": "^15.1.0",
-    "publint": "^0.2.5"
+    "@types/eslint": "^8.44.8",
+    "eslint": "^8.55.0",
+    "lint-staged": "^15.2.0",
+    "publint": "^0.2.6"
   },
   "dependencies": {
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.44.7",
-    "eslint": "^8.54.0",
-    "lint-staged": "^15.1.0",
-    "publint": "^0.2.5"
+    "@types/eslint": "^8.44.8",
+    "eslint": "^8.55.0",
+    "lint-staged": "^15.2.0",
+    "publint": "^0.2.6"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
