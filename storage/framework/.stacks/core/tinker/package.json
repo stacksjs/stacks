@@ -51,10 +51,10 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@vue/repl": "^2.8.0"
+    "@vue/repl": "^3.0.0"
   },
   "dependencies": {
-    "@vue/repl": "^2.8.0"
+    "@vue/repl": "^3.0.0"
   },
   "devDependencies": {
     "typescript": "^5.3.2"
