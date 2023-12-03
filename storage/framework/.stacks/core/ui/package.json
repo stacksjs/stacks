@@ -52,24 +52,24 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@iconify-json/heroicons": "^1.1.14",
-    "@iconify-json/heroicons-outline": "^1.1.8",
-    "@iconify-json/heroicons-solid": "^1.1.9",
-    "@iconify/json": "^2.2.147",
+    "@iconify-json/heroicons": "^1.1.15",
+    "@iconify-json/heroicons-outline": "^1.1.9",
+    "@iconify-json/heroicons-solid": "^1.1.10",
+    "@iconify/json": "^2.2.151",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "pinia": "^2.1.7",
-    "unocss": "^0.57.7",
+    "unocss": "^0.58.0",
     "vue": "^3.3.9",
-    "vue-tsc": "^1.8.22"
+    "vue-tsc": "^1.8.24"
   },
   "dependencies": {
-    "@iconify-json/heroicons": "^1.1.14",
-    "@iconify-json/heroicons-outline": "^1.1.8",
-    "@iconify-json/heroicons-solid": "^1.1.9",
+    "@iconify-json/heroicons": "^1.1.15",
+    "@iconify-json/heroicons-outline": "^1.1.9",
+    "@iconify-json/heroicons-solid": "^1.1.10",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -79,9 +79,9 @@
     "add": "^2.0.6",
     "pinia": "^2.1.7",
     "unhead": "^1.8.8",
-    "unocss": "^0.57.7",
+    "unocss": "^0.58.0",
     "vue": "^3.3.9",
-    "vue-tsc": "^1.8.22"
+    "vue-tsc": "^1.8.24"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
