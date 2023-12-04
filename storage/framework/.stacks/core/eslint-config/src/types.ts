@@ -1,5 +1,6 @@
 import type { FlatGitignoreOptions } from 'eslint-config-flat-gitignore'
 import type { ParserOptions } from '@typescript-eslint/parser'
+import type { Linter } from 'eslint'
 import type {
   EslintCommentsRules,
   EslintRules,
@@ -9,6 +10,8 @@ import type {
   MergeIntersection,
   NRules,
   Prefix,
+  ReactHooksRules,
+  ReactRules,
   RenamePrefix,
   RuleConfig,
   VitestRules,
@@ -19,11 +22,14 @@ import type { RuleOptions as JSDocRules } from '@eslint-types/jsdoc/types'
 import type { RuleOptions as TypeScriptRules } from '@eslint-types/typescript-eslint/types'
 import type { RuleOptions as UnicornRules } from '@eslint-types/unicorn/types'
 import type { Rules as AntfuRules } from 'eslint-plugin-antfu'
-import type { UnprefixedRuleOptions as StylisticRules } from '@stylistic/eslint-plugin'
+import type { StylisticCustomizeOptions, UnprefixedRuleOptions as StylisticRules } from '@stylistic/eslint-plugin'
+import type { VendoredPrettierOptions } from './vender/prettier-types'
 
 export type WrapRuleConfig<T extends { [key: string]: any }> = {
   [K in keyof T]: T[K] extends RuleConfig ? T[K] : RuleConfig<T[K]>
 }
+
+export type Awaitable<T> = T | Promise<T>
 
 export type Rules = WrapRuleConfig<
   MergeIntersection<
@@ -33,6 +39,8 @@ export type Rules = WrapRuleConfig<
     RenamePrefix<NRules, 'n/', 'node/'> &
     Prefix<StylisticRules, 'style/'> &
     Prefix<AntfuRules, 'antfu/'> &
+    ReactHooksRules &
+    ReactRules &
     JSDocRules &
     ImportRules &
     EslintRules &
@@ -46,7 +54,7 @@ export type Rules = WrapRuleConfig<
   >
 >
 
-export type ConfigItem = Omit<FlatESLintConfigItem<Rules, false>, 'plugins'> & {
+export type FlatConfigItem = Omit<FlatESLintConfigItem<Rules, false>, 'plugins'> & {
   /**
    * Custom name of each config item
    */
@@ -59,6 +67,66 @@ export type ConfigItem = Omit<FlatESLintConfigItem<Rules, false>, 'plugins'> & {
    * @see [Using plugins in your configuration](https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration)
    */
   plugins?: Record<string, any>
+}
+
+export type UserConfigItem = FlatConfigItem | Linter.FlatConfig
+
+export interface OptionsFiles {
+  /**
+   * Override the `files` option to provide custom globs.
+   */
+  files?: string[]
+}
+
+export interface OptionsFormatters {
+  /**
+   * Enable formatting support for CSS, Less, Sass, and SCSS.
+   *
+   * Currently only support Prettier.
+   */
+  css?: 'prettier' | boolean
+
+  /**
+   * Enable formatting support for HTML.
+   *
+   * Currently only support Prettier.
+   */
+  html?: 'prettier' | boolean
+
+  /**
+   * Enable formatting support for TOML.
+   *
+   * Currently only support dprint.
+   */
+  toml?: 'dprint' | boolean
+
+  /**
+   * Enable formatting support for Markdown.
+   *
+   * Support both Prettier and dprint.
+   *
+   * When set to `true`, it will use Prettier.
+   */
+  markdown?: 'prettier' | 'dprint' | boolean
+
+  /**
+   * Enable formatting support for GraphQL.
+   */
+  graphql?: 'prettier' | boolean
+
+  /**
+   * Custom options for Prettier.
+   *
+   * By default it's controlled by our own config.
+   */
+  prettierOptions?: VendoredPrettierOptions
+
+  /**
+   * Custom options for dprint.
+   *
+   * By default it's controlled by our own config.
+   */
+  dprintOptions?: boolean
 }
 
 export interface OptionsComponentExts {
@@ -94,18 +162,28 @@ export interface OptionsStylistic {
   stylistic?: boolean | StylisticConfig
 }
 
-export interface StylisticConfig {
-  indent?: number | 'tab'
-  quotes?: 'single' | 'double'
-  jsx?: boolean
+export interface StylisticConfig extends Pick<StylisticCustomizeOptions, 'indent' | 'quotes' | 'jsx' | 'semi'> {
 }
 
 export interface OptionsOverrides {
-  overrides?: ConfigItem['rules']
+  overrides?: FlatConfigItem['rules']
 }
 
 export interface OptionsIsInEditor {
   isInEditor?: boolean
+}
+
+export interface OptionsUnoCSS {
+  /**
+   * Enable attributify support.
+   * @default true
+   */
+  attributify?: boolean
+  /**
+   * Enable strict mode by throwing errors about blocklisted classes.
+   * @default false
+   */
+  strict?: boolean
 }
 
 export interface OptionsConfig extends OptionsComponentExts {
@@ -180,6 +258,40 @@ export interface OptionsConfig extends OptionsComponentExts {
   stylistic?: boolean | StylisticConfig
 
   /**
+   * Enable react rules.
+   *
+   * Requires installing:
+   * - `eslint-plugin-react`
+   * - `eslint-plugin-react-hooks`
+   * - `eslint-plugin-react-refresh`
+   *
+   * @default false
+   */
+  react?: boolean
+
+  /**
+   * Enable unocss rules.
+   *
+   * Requires installing:
+   * - `@unocss/eslint-plugin`
+   *
+   * @default false
+   */
+  unocss?: boolean | OptionsUnoCSS
+
+  /**
+   * Use external formatters to format files.
+   *
+   * Requires installing:
+   * - `eslint-plugin-format`
+   *
+   * When set to `true`, it will enable all formatters.
+   *
+   * @default false
+   */
+  formatters?: boolean | OptionsFormatters
+
+  /**
    * Control to disable some rules in editors.
    * @default auto-detect based on the process.env
    */
@@ -189,12 +301,13 @@ export interface OptionsConfig extends OptionsComponentExts {
    * Provide overrides for rules for each integration.
    */
   overrides?: {
-    javascript?: ConfigItem['rules']
-    typescript?: ConfigItem['rules']
-    test?: ConfigItem['rules']
-    vue?: ConfigItem['rules']
-    jsonc?: ConfigItem['rules']
-    markdown?: ConfigItem['rules']
-    yaml?: ConfigItem['rules']
+    javascript?: FlatConfigItem['rules']
+    typescript?: FlatConfigItem['rules']
+    test?: FlatConfigItem['rules']
+    vue?: FlatConfigItem['rules']
+    jsonc?: FlatConfigItem['rules']
+    markdown?: FlatConfigItem['rules']
+    yaml?: FlatConfigItem['rules']
+    react?: FlatConfigItem['rules']
   }
 }

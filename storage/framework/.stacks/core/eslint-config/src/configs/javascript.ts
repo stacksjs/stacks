@@ -1,9 +1,11 @@
 import globals from 'globals'
-import type { ConfigItem, OptionsIsInEditor, OptionsOverrides } from '../types'
+import type { FlatConfigItem, OptionsIsInEditor, OptionsOverrides } from '../types'
 import { pluginAntfu, pluginUnusedImports } from '../plugins'
 import { GLOB_SRC, GLOB_SRC_EXT } from '../globs'
 
-export function javascript(options: OptionsIsInEditor & OptionsOverrides = {}): ConfigItem[] {
+export async function javascript(
+  options: OptionsIsInEditor & OptionsOverrides = {},
+): Promise<FlatConfigItem[]> {
   const {
     isInEditor = false,
     overrides = {},
@@ -79,7 +81,6 @@ export function javascript(options: OptionsIsInEditor & OptionsOverrides = {}): 
         'no-implied-eval': 'error',
         'no-import-assign': 'error',
         'no-invalid-regexp': 'error',
-        'no-invalid-this': 'error',
         'no-irregular-whitespace': 'error',
         'no-iterator': 'error',
         'no-labels': ['error', { allowLoop: false, allowSwitch: false }],

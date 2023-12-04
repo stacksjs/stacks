@@ -743,6 +743,7 @@ declare global {
   const useGeolocation: typeof import('../.stacks/core/utils/src/vendors')['useGeolocation']
   const useHead: typeof import('@unhead/vue')['useHead']
   const useHeadSafe: typeof import('@unhead/vue')['useHeadSafe']
+  const useHttpFetch: typeof import('../.stacks/core/api/src/index')['useHttpFetch']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useIdle: typeof import('../.stacks/core/utils/src/vendors')['useIdle']
   const useImage: typeof import('../.stacks/core/utils/src/vendors')['useImage']
@@ -1634,6 +1635,7 @@ declare module 'vue' {
     readonly useGeolocation: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useGeolocation']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
+    readonly useHttpFetch: UnwrapRef<typeof import('../.stacks/core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useImage']>
@@ -2518,6 +2520,7 @@ declare module '@vue/runtime-core' {
     readonly useGeolocation: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useGeolocation']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
+    readonly useHttpFetch: UnwrapRef<typeof import('../.stacks/core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['useImage']>

@@ -237,6 +237,7 @@ sizecheck
 solana
 stackblitz
 stacksjs
+stedolan
 stepfunctions
 strikethrough
 styleci

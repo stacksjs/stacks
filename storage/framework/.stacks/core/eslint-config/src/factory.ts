@@ -1,8 +1,7 @@
 import process from 'node:process'
 import fs from 'node:fs'
 import { isPackageExists } from 'local-pkg'
-import gitignore from 'eslint-config-flat-gitignore'
-import type { ConfigItem, OptionsConfig } from './types'
+import type { Awaitable, FlatConfigItem, OptionsConfig, UserConfigItem } from './types'
 import {
   comments,
   ignores,
@@ -13,18 +12,21 @@ import {
   markdown,
   node,
   perfectionist,
+  react,
   sortPackageJson,
   sortTsconfig,
   stylistic,
   test,
   typescript,
   unicorn,
+  unocss,
   vue,
   yaml,
 } from './configs'
-import { combine } from './utils'
+import { combine, interopDefault } from './utils'
+import { formatters } from './configs/formatters'
 
-const flatConfigProps: (keyof ConfigItem)[] = [
+const flatConfigProps: (keyof FlatConfigItem)[] = [
   'files',
   'ignores',
   'languageOptions',
@@ -45,13 +47,18 @@ const VuePackages = [
 /**
  * Construct an array of ESLint flat config items.
  */
-export function antfu(options: OptionsConfig & ConfigItem = {}, ...userConfigs: (ConfigItem | ConfigItem[])[]) {
+export async function antfu(
+  options: OptionsConfig & FlatConfigItem = {},
+  ...userConfigs: Awaitable<UserConfigItem | UserConfigItem[]>[]
+): Promise<UserConfigItem[]> {
   const {
     componentExts = [],
     gitignore: enableGitignore = true,
     isInEditor = !!((process.env.VSCODE_PID || process.env.JETBRAINS_IDE) && !process.env.CI),
     overrides = {},
+    react: enableReact = false,
     typescript: enableTypeScript = isPackageExists('typescript'),
+    unocss: enableUnoCSS = false,
     vue: enableVue = VuePackages.some(i => isPackageExists(i)),
   } = options
 
@@ -63,15 +70,15 @@ export function antfu(options: OptionsConfig & ConfigItem = {}, ...userConfigs: 
   if (stylisticOptions && !('jsx' in stylisticOptions))
     stylisticOptions.jsx = options.jsx ?? true
 
-  const configs: ConfigItem[][] = []
+  const configs: Awaitable<FlatConfigItem[]>[] = []
 
   if (enableGitignore) {
     if (typeof enableGitignore !== 'boolean') {
-      configs.push([gitignore(enableGitignore)])
+      configs.push(interopDefault(import('eslint-config-flat-gitignore')).then(r => [r(enableGitignore)]))
     }
     else {
       if (fs.existsSync('.gitignore'))
-        configs.push([gitignore()])
+        configs.push(interopDefault(import('eslint-config-flat-gitignore')).then(r => [r()]))
     }
   }
 
@@ -127,6 +134,19 @@ export function antfu(options: OptionsConfig & ConfigItem = {}, ...userConfigs: 
     }))
   }
 
+  if (enableReact) {
+    configs.push(react({
+      overrides: overrides.react,
+      typescript: !!enableTypeScript,
+    }))
+  }
+
+  if (enableUnoCSS) {
+    configs.push(unocss(
+      typeof enableUnoCSS === 'boolean' ? {} : enableUnoCSS,
+    ))
+  }
+
   if (options.jsonc ?? true) {
     configs.push(
       jsonc({
@@ -146,10 +166,22 @@ export function antfu(options: OptionsConfig & ConfigItem = {}, ...userConfigs: 
   }
 
   if (options.markdown ?? true) {
-    configs.push(markdown({
-      componentExts,
-      overrides: overrides.markdown,
-    }))
+    configs.push(
+      markdown(
+        {
+          componentExts,
+          overrides: overrides.markdown,
+        },
+        options.formatters === true || !!(options.formatters || {})?.markdown,
+      ),
+    )
+  }
+
+  if (options.formatters) {
+    configs.push(formatters(
+      options.formatters,
+      typeof stylisticOptions === 'boolean' ? {} : stylisticOptions,
+    ))
   }
 
   // User can optionally pass a flat config item to the first argument
@@ -158,7 +190,7 @@ export function antfu(options: OptionsConfig & ConfigItem = {}, ...userConfigs: 
     if (key in options)
       acc[key] = options[key] as any
     return acc
-  }, {} as ConfigItem)
+  }, {} as FlatConfigItem)
   if (Object.keys(fusedConfig).length)
     configs.push([fusedConfig])
 

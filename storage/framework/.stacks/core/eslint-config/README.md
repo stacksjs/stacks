@@ -16,9 +16,10 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 - Lints also for json, yaml, markdown
 - Sorted imports, dangling commas
 - Reasonable defaults, best practices, only one-line of config
-- Respects `.gitignore` by default
+- Opinionated, but [very customizable](#customization)
 - [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new), compose easily!
 - Using [ESLint Stylistic](https://github.com/eslint-stylistic/eslint-stylistic)
+- Respects `.gitignore` by default
 - **Style principle**: Minimal for reading, stable for diff, consistent
 
 > [!IMPORTANT]
@@ -29,7 +30,7 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 ### Install
 
 ```bash
-pnpm i -D eslint @stacksjs/eslint-config
+pnpm i -D eslint @antfu/eslint-config
 ```
 
 ### Create config file
@@ -95,13 +96,13 @@ For example:
 
 ### Migration
 
-We provided an experimental cli tool to help you migrate from the legacy config to the new flat config.
+We provided an experimental CLI tool to help you migrate from the legacy config to the new flat config.
 
 ```bash
-npx @antfu/eslint-config migrate
+npx @antfu/eslint-config@latest
 ```
 
-Before running the migration, make sure to commit your changes first.
+Before running the migration, make sure to commit your unsaved changes first.
 
 ## VS Code support (auto fix)
 
@@ -127,6 +128,7 @@ Add the following settings to your `.vscode/settings.json`:
   // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
     { "rule": "style/*", "severity": "off" },
+    { "rule": "format/*", "severity": "off" },
     { "rule": "*-indent", "severity": "off" },
     { "rule": "*-spacing", "severity": "off" },
     { "rule": "*-spaces", "severity": "off" },
@@ -157,13 +159,13 @@ Add the following settings to your `.vscode/settings.json`:
 
 Since v1.0, we migrated to [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new). It provides much better organization and composition.
 
-Normally you only need to import the `stacks` preset:
+Normally you only need to import the `antfu` preset:
 
 ```js
 // eslint.config.js
-import stacks from '@stacksjs/eslint-config'
+import antfu from '@antfu/eslint-config'
 
-export default stacks()
+export default antfu()
 ```
 
 And that's it! Or you can configure each integration individually, for example:
@@ -231,6 +233,7 @@ We don't recommend using this style in general usages, as there are shared optio
 ```js
 // eslint.config.js
 import {
+  combine,
   comments,
   ignores,
   imports,
@@ -248,21 +251,21 @@ import {
   yaml,
 } from '@antfu/eslint-config'
 
-export default [
-  ...ignores(),
-  ...javascript(/* Options */),
-  ...comments(),
-  ...node(),
-  ...jsdoc(),
-  ...imports(),
-  ...unicorn(),
-  ...typescript(/* Options */),
-  ...stylistic(),
-  ...vue(),
-  ...jsonc(),
-  ...yaml(),
-  ...markdown(),
-]
+export default combine(
+  ignores(),
+  javascript(/* Options */),
+  comments(),
+  node(),
+  jsdoc(),
+  imports(),
+  unicorn(),
+  typescript(/* Options */),
+  stylistic(),
+  vue(),
+  jsonc(),
+  yaml(),
+  markdown(),
+)
 ```
 
 </details>
@@ -273,17 +276,17 @@ Check out the [configs](https://github.com/antfu/eslint-config/blob/main/src/con
 
 ### Plugins Renaming
 
-Since flat config requires us to explicitly provide the plugin names (instead of mandatory convention from npm package name), we renamed some plugins to make overall scope more consistent and easier to write.
+Since flat config requires us to explicitly provide the plugin names (instead of the mandatory convention from npm package name), we renamed some plugins to make the overall scope more consistent and easier to write.
 
-| New Prefix | Original Prefix | Source Plugin |
-| --- | --- | --- |
-| `import/*` | `i/*` | [eslint-plugin-i](https://github.com/un-es/eslint-plugin-i) |
-| `node/*` | `n/*` | [eslint-plugin-n](https://github.com/eslint-community/eslint-plugin-n) |
-| `yaml/*` | `yml/*` | [eslint-plugin-yml](https://github.com/ota-meshi/eslint-plugin-yml) |
-| `ts/*` | `@typescript-eslint/*` | [@typescript-eslint/eslint-plugin](https://github.com/typescript-eslint/typescript-eslint) |
-| `style/*` | `@stylistic/*` | [@stylistic/eslint-plugin](https://github.com/eslint-stylistic/eslint-stylistic) |
-| `test/*` | `vitest/*` | [eslint-plugin-vitest](https://github.com/veritem/eslint-plugin-vitest) |
-| `test/*` | `no-only-tests/*` | [eslint-plugin-no-only-tests](https://github.com/levibuzolic/eslint-plugin-no-only-tests) |
+| New Prefix | Original Prefix        | Source Plugin                                                                              |
+| ---------- | ---------------------- | ------------------------------------------------------------------------------------------ |
+| `import/*` | `i/*`                  | [eslint-plugin-i](https://github.com/un-es/eslint-plugin-i)                                |
+| `node/*`   | `n/*`                  | [eslint-plugin-n](https://github.com/eslint-community/eslint-plugin-n)                     |
+| `yaml/*`   | `yml/*`                | [eslint-plugin-yml](https://github.com/ota-meshi/eslint-plugin-yml)                        |
+| `ts/*`     | `@typescript-eslint/*` | [@typescript-eslint/eslint-plugin](https://github.com/typescript-eslint/typescript-eslint) |
+| `style/*`  | `@stylistic/*`         | [@stylistic/eslint-plugin](https://github.com/eslint-stylistic/eslint-stylistic)           |
+| `test/*`   | `vitest/*`             | [eslint-plugin-vitest](https://github.com/veritem/eslint-plugin-vitest)                    |
+| `test/*`   | `no-only-tests/*`      | [eslint-plugin-no-only-tests](https://github.com/levibuzolic/eslint-plugin-no-only-tests)  |
 
 When you want to override rules, or disable them inline, you need to update to the new prefix:
 
@@ -337,6 +340,75 @@ export default antfu({
     // ...
   }
 })
+```
+
+### Optional Configs
+
+We provide some optional configs for specific use cases, that we don't include their dependencies by default.
+
+#### Formatters
+
+> [!WARNING]
+> Experimental feature, changes might not follow semver.
+
+Use external formatters to format files that ESLint cannot handle yet (`.css`, `.html`, etc). Powered by [`eslint-plugin-format`](https://github.com/antfu/eslint-plugin-format).
+
+```js
+// eslint.config.js
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  formatters: {
+    css: true, // by default use Prettier
+    html: true, // by default use Prettier
+    toml: 'dprint', // use dprint for TOML
+    markdown: 'prettier' // use prettier for markdown
+  }
+})
+```
+
+Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+
+```bash
+npm i -D eslint-plugin-format
+```
+
+#### React
+
+To enable React support, you need to explicitly turn it on:
+
+```js
+// eslint.config.js
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  react: true,
+})
+```
+
+Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+
+```bash
+npm i -D eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-refresh
+```
+
+#### UnoCSS
+
+To enable UnoCSS support, you need to explicitly turn it on:
+
+```js
+// eslint.config.js
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  unocss: true,
+})
+```
+
+Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+
+```bash
+npm i -D @unocss/eslint-plugin
 ```
 
 ### Optional Rules
@@ -397,9 +469,19 @@ and then
 npm i -D lint-staged simple-git-hooks
 ```
 
+## View what rules are enabled
+
+I built a visual tool to help you view what rules are enabled in your project and apply them to what files, [eslint-flat-config-viewer](https://github.com/antfu/eslint-flat-config-viewer)
+
+Go to your project root that contains `eslint.config.js` and run:
+
+```bash
+npx eslint-flat-config-viewer
+```
+
 ## Versioning Policy
 
-This project follows [Semantic Versioning](https://semver.org/) for releases. However, since this is just a config and involved with opinions and many moving parts, we don't treat rules changes as breaking changes.
+This project follows [Semantic Versioning](https://semver.org/) for releases. However, since this is just a config and involves opinions and many moving parts, we don't treat rules changes as breaking changes.
 
 ### Changes Considered as Breaking Changes
 
@@ -430,13 +512,13 @@ If you enjoy this code style, and would like to mention it in your project, here
 
 [Why I don't use Prettier](https://antfu.me/posts/why-not-prettier)
 
-### How to lint CSS?
+### How to format CSS?
 
-This config does NOT lint CSS. I personally use [UnoCSS](https://github.com/unocss/unocss) so I don't write CSS. If you still prefer CSS, you can use [stylelint](https://stylelint.io/) for CSS linting.
+This config does NOT lint CSS. I personally use [UnoCSS](https://github.com/unocss/unocss) so I don't write CSS. For better linting, we recommend trying [stylelint](https://stylelint.io/).
 
-### I prefer XXX
+### I prefer XXX...
 
-Sure, you can config and override rules locally in your project to fit your needs. If that still does not work for you, you can always fork this repo and maintain your own.
+Sure, you can configure and override rules locally in your project to fit your needs. If that still does not work for you, you can always fork this repo and maintain your own.
 
 ## Check Also
 

@@ -1,7 +1,7 @@
-import type { ConfigItem } from '../types'
+import type { FlatConfigItem } from '../types'
 import { pluginComments } from '../plugins'
 
-export function comments(): ConfigItem[] {
+export async function comments(): Promise<FlatConfigItem[]> {
   return [
     {
       name: 'antfu:eslint-comments',
@@ -11,7 +11,6 @@ export function comments(): ConfigItem[] {
       rules: {
         'eslint-comments/no-aggregating-enable': 'error',
         'eslint-comments/no-duplicate-disable': 'error',
-        // TODO: enable this rule once Stacks errors are resolved
         // 'eslint-comments/no-unlimited-disable': 'error',
         'eslint-comments/no-unused-enable': 'error',
       },
