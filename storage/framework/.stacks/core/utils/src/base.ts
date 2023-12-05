@@ -1,4 +1,4 @@
-export { toString } from '@stacksjs/strings'
+export { toString } from 'stacks:strings'
 
 export function assert(condition: boolean, message: string): asserts condition {
   if (!condition)

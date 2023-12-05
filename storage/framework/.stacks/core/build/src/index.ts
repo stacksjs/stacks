@@ -6,6 +6,6 @@ export {
   vueComponents,
   webComponents,
   stacks,
-} from '@stacksjs/vite'
+} from 'stacks:vite'
 
 // export { build } from 'bun'

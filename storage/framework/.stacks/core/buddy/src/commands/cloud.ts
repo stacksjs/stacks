@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
-import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
-import { path as p } from '@stacksjs/path'
-import type { CLI, CloudCliOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import { loop } from '@stacksjs/utils'
+import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from 'stacks:cli'
+import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from 'stacks:cloud'
+import { path as p } from 'stacks:path'
+import type { CLI, CloudCliOptions } from 'stacks:types'
+import { ExitCode } from 'stacks:types'
+import { loop } from 'stacks:utils'
 
 export function cloud(buddy: CLI) {
   const descriptions = {

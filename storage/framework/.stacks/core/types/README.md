@@ -21,7 +21,7 @@ bun install -d @stacksjs/types
 Now, you can use it in your project:
 
 ```js
-// import * as types from '@stacksjs/types'
+// import * as types from 'stacks:types'
 
 // wip
 ```

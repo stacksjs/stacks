@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
+import { type Result, err, handleError, ok } from 'stacks:error-handling'
+import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from 'stacks:types'
+import { ExitCode } from 'stacks:types'
 
 /**
  * Execute a command.

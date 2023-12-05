@@ -21,7 +21,7 @@ bun install -d @stacksjs/arrays
 Now, you can use it in your project:
 
 ```js
-import * as arrays from '@stacksjs/arrays'
+import * as arrays from 'stacks:arrays'
 
 // wip
 ```

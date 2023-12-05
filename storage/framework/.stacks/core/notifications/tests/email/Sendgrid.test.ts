@@ -1,5 +1,5 @@
-// import { email, useEmail } from '@stacksjs/notifications'
-// import { notification as env } from '@stacksjs/config'
+// import { email, useEmail } from 'stacks:notifications'
+// import { notification as env } from 'stacks:config'
 //
 // describe('Sendgrid Test', () => {
 //   it('should send email', async () => {

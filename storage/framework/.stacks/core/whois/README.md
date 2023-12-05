@@ -15,7 +15,7 @@ bun install -d @stacksjs/whois
 Now, you can use it in your project:
 
 ```js
-import { lookup } from '@stacksjs/whois'
+import { lookup } from 'stacks:whois'
 
 const result = await lookup('google.com')
 

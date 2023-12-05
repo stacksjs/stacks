@@ -1,4 +1,4 @@
-import type { ViteConfig } from '@stacksjs/types'
+import type { ViteConfig } from 'stacks:types'
 
 export const apiConfig: ViteConfig = {
   base: '/api/',

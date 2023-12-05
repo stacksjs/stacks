@@ -1,5 +1,5 @@
-import { installPackage } from '@stacksjs/cli'
-import type { AddOptions } from '@stacksjs/types'
+import { installPackage } from 'stacks:cli'
+import type { AddOptions } from 'stacks:types'
 
 export async function invoke(options: AddOptions) {
   if (options?.table)
@@ -14,11 +14,11 @@ export async function add(options: AddOptions) {
 }
 
 export async function addTable() {
-  await installPackage('@stacksjs/table')
+  await installPackage('stacks:table')
 }
 
 export async function addCalendar() {
-  await installPackage('@stacksjs/calendar')
+  await installPackage('stacks:calendar')
 }
 
 export async function installPackages(names: string[]) {

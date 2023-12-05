@@ -1,6 +1,6 @@
-import { frameworkPath, vitePath } from '@stacksjs/path'
-import { parseOptions, runCommand } from '@stacksjs/cli'
-import type { DeployOptions } from '@stacksjs/types'
+import { frameworkPath, vitePath } from 'stacks:path'
+import { parseOptions, runCommand } from 'stacks:cli'
+import type { DeployOptions } from 'stacks:types'
 
 const options: DeployOptions = parseOptions()
 

@@ -1,8 +1,8 @@
 // import { SlackProvider } from '@novu/slack'
-// import { italic } from '@stacksjs/cli'
-// import type { ChatOptions } from '@stacksjs/types'
-// import { ResultAsync } from '@stacksjs/error-handling'
-// import { notification } from '@stacksjs/config'
+// import { italic } from 'stacks:cli'
+// import type { ChatOptions } from 'stacks:types'
+// import { ResultAsync } from 'stacks:error-handling'
+// import { notification } from 'stacks:config'
 
 // const env = notification.chat.slack
 

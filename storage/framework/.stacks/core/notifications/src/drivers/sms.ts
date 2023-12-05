@@ -1,1 +1,1 @@
-export * as sms from '@stacksjs/sms'
+export * as sms from 'stacks:sms'

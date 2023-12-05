@@ -18,7 +18,7 @@ bun install -d @stacksjs/dns
 Now, you can use it in your project:
 
 ```js
-import { domains } from '@stacksjs/dns'
+import { domains } from 'stacks:dns'
 
 // wip - coming soon
 ```

@@ -16,7 +16,7 @@ bun install -d @stacksjs/collections
 Now, you can easily access it in your project:
 
 ```js
-import { collect } from '@stacksjs/collections'
+import { collect } from 'stacks:collections'
 
 const collection = collect([{
   name: 'My story',

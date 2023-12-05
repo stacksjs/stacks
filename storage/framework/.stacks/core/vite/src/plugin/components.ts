@@ -1,6 +1,6 @@
 import Components from 'unplugin-vue-components/vite'
-import { path as p } from '@stacksjs/path'
-import type { ComponentOptions } from '@stacksjs/types'
+import { path as p } from 'stacks:path'
+import type { ComponentOptions } from 'stacks:types'
 import { defu } from 'defu'
 import type { Plugin } from 'vite'
 

@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryConfig } from 'stacks:types'
 
 /**
  * **Library Configuration**

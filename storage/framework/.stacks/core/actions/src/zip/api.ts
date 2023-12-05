@@ -1,8 +1,8 @@
 // TODO: we likely won't need this once we use docker images for the runtime
 // zip the api for deployment
-import { log } from '@stacksjs/logging'
-import { path as p } from '@stacksjs/path'
-import { zip } from '@stacksjs/storage'
+import { log } from 'stacks:logging'
+import { path as p } from 'stacks:path'
+import { zip } from 'stacks:storage'
 
 log.info('zipping your API for Lambda usage...')
 

@@ -21,7 +21,7 @@ bun install -d @stacksjs/testing
 Now, you can use it in your project:
 
 ```js
-import { tests } from '@stacksjs/testing'
+import { tests } from 'stacks:testing'
 
 // wip
 ```

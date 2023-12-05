@@ -29,7 +29,7 @@ bun install -d @stacksjs/cloud
 Now, you can use it in your project:
 
 ```ts
-import cloud from '@stacksjs/cloud'
+import cloud from 'stacks:cloud'
 
 // wip
 ```

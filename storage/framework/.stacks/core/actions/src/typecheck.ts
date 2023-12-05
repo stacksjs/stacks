@@ -1,5 +1,5 @@
-import { NpmScript } from '@stacksjs/enums'
-import { runCommands } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
+import { NpmScript } from 'stacks:enums'
+import { runCommands } from 'stacks:cli'
+import { projectPath } from 'stacks:path'
 
 await runCommands([NpmScript.TestTypes], { cwd: projectPath() })

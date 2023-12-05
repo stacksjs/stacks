@@ -1,4 +1,4 @@
-import type { FileSystemConfig } from '@stacksjs/types'
+import type { FileSystemConfig } from 'stacks:types'
 
 /**
  * **File System Configuration**

@@ -1,6 +1,6 @@
-import { handleError } from '@stacksjs/error-handling'
-import { runCommand } from '@stacksjs/cli'
-import { path as p } from '@stacksjs/path'
+import { handleError } from 'stacks:error-handling'
+import { runCommand } from 'stacks:cli'
+import { path as p } from 'stacks:path'
 
 console.log('Starting Caddy...')
 

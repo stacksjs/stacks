@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import { app } from '@stacksjs/config'
+// import { app } from 'stacks:config'
 
 // https://github.com/vueuse/head
 // you can use this to manipulate the document head in any components,

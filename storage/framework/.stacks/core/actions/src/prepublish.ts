@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
-import { runtimePath } from '@stacksjs/path'
-import { runNpmScript } from '@stacksjs/utils'
-import { NpmScript } from '@stacksjs/enums'
+import { log } from 'stacks:logging'
+import { runtimePath } from 'stacks:path'
+import { runNpmScript } from 'stacks:utils'
+import { NpmScript } from 'stacks:enums'
 
 log.info('Running prepublish command...')
 

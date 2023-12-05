@@ -1,4 +1,4 @@
-import { runCommand } from '@stacksjs/cli'
+import { runCommand } from 'stacks:cli'
 import type { ZlibCompressionOptions } from 'bun'
 
 interface ZipOptions {

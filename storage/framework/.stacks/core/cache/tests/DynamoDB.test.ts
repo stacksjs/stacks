@@ -1,5 +1,5 @@
 import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-import { expect, it } from '@stacksjs/testing'
+import { expect, it } from 'stacks:testing'
 
 const dynamodb = new DynamoDB({ region: 'us-east-1' })
 

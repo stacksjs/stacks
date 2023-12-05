@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { log } from '@stacksjs/logging'
-import { hasComponents, hasFunctions } from '@stacksjs/storage'
+import { log } from 'stacks:logging'
+import { hasComponents, hasFunctions } from 'stacks:storage'
 import { generateLibEntry } from '../helpers/lib-entries'
 
 if (hasComponents()) {

@@ -24,7 +24,7 @@ bun install -d @stacksjs/signals
 You may now use it in your project:
 
 ```ts
-import { computedSignal, effect, root, signal, tick } from '@stacksjs/signals'
+import { computedSignal, effect, root, signal, tick } from 'stacks:signals'
 
 root((dispose) => {
   // Create - all types supported (string, array, object, etc.)

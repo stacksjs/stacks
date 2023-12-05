@@ -1,5 +1,5 @@
-// import { schedule as run } from '@stacksjs/scheduler'
-// import type { Scheduler } from '@stacksjs/types'
+// import { schedule as run } from 'stacks:scheduler'
+// import type { Scheduler } from 'stacks:types'
 
 // export default {
 //   schedule() {

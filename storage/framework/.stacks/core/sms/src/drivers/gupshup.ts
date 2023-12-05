@@ -1,8 +1,8 @@
 import { GupshupSmsProvider } from '@novu/gupshup'
-import { italic } from '@stacksjs/cli'
-import type { SmsOptions } from '@stacksjs/types'
-import { ResultAsync } from '@stacksjs/error-handling'
-import { notification } from '@stacksjs/config'
+import { italic } from 'stacks:cli'
+import type { SmsOptions } from 'stacks:types'
+import { ResultAsync } from 'stacks:error-handling'
+import { notification } from 'stacks:config'
 
 const env = notification.sms?.drivers.gupshup
 

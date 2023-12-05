@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { path as p } from '@stacksjs/path'
-import { handleError } from '@stacksjs/error-handling'
-import { log, runCommand } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, CliOptions } from '@stacksjs/types'
+import { path as p } from 'stacks:path'
+import { handleError } from 'stacks:error-handling'
+import { log, runCommand } from 'stacks:cli'
+import { ExitCode } from 'stacks:types'
+import type { CLI, CliOptions } from 'stacks:types'
 
 export function setup(buddy: CLI) {
   const descriptions = {
@@ -103,7 +103,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 300))
 
   // 1. ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
-  // 2. ensure the project 
+  // 2. ensure the project
 
   log.success('Project is setup')
   await new Promise(resolve => setTimeout(resolve, 300))

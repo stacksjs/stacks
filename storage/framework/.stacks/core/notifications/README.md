@@ -30,7 +30,7 @@ NOTIFICATION_DRIVER=sendgrid
 You may now use it in your project:
 
 ```ts
-import { notification } from '@stacksjs/notifications'
+import { notification } from 'stacks:notifications'
 
 notification.send(options)
 ```

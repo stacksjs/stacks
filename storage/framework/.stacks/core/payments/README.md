@@ -18,7 +18,7 @@ bun install -d @stacksjs/path
 Now, you can easily access it in your project:
 
 ```js
-import { filename, normalizeAliases, resolve, resolveAlias } from '@stacksjs/path'
+import { filename, normalizeAliases, resolve, resolveAlias } from 'stacks:path'
 
 // and more...
 ```

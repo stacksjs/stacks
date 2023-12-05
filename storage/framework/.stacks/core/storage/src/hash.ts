@@ -1,5 +1,5 @@
 import * as crypto from 'node:crypto'
-import { path as p } from '@stacksjs/path'
+import { path as p } from 'stacks:path'
 import { fs } from './fs'
 
 export function hashFileOrDirectory(path: string, hash: crypto.Hash): void {

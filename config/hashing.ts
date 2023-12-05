@@ -1,4 +1,4 @@
-import type { HashingConfig } from '@stacksjs/types'
+import type { HashingConfig } from 'stacks:types'
 
 /**
  * **Hashing Configuration**

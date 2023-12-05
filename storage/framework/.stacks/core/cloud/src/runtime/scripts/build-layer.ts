@@ -2,7 +2,7 @@
 import { createReadStream, createWriteStream } from 'node:fs'
 import process from 'node:process'
 import { Command, Flags } from '@oclif/core'
-import { path as p } from '@stacksjs/path'
+import { path as p } from 'stacks:path'
 import JSZip from 'jszip'
 
 process.stdout.getWindowSize = () => [80, 80]

@@ -15,7 +15,7 @@ bun install -d @stacksjs/git
 Now, you can easily access it in your project:
 
 ```js
-import { changelogen } from '@stacksjs/git'
+import { changelogen } from 'stacks:git'
 
 // changelogen()
 ```

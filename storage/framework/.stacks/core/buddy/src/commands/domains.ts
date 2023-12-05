@@ -1,11 +1,11 @@
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
-import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
-import { addDomain } from '@stacksjs/dns'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, DomainsOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
+import { runAction } from 'stacks:actions'
+import { bgCyan, bold, intro, italic, outro, prompts } from 'stacks:cli'
+import { config } from 'stacks:config'
+import { addDomain } from 'stacks:dns'
+import { ExitCode } from 'stacks:types'
+import type { CLI, DomainsOptions } from 'stacks:types'
+import { Action } from 'stacks:enums'
 
 export function domains(buddy: CLI) {
   const descriptions = {

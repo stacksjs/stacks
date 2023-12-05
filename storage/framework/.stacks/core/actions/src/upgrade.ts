@@ -1,12 +1,12 @@
 import process from 'node:process'
-import { intro, outro, runCommand } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
-import { projectPath } from '@stacksjs/path'
-import * as storage from '@stacksjs/storage'
-import type { UpgradeOptions } from '@stacksjs/types'
+import { intro, outro, runCommand } from 'stacks:cli'
+import { log } from 'stacks:logging'
+import { projectPath } from 'stacks:path'
+import * as storage from 'stacks:storage'
+import type { UpgradeOptions } from 'stacks:types'
 import { version } from '../../../package.json'
 
-// import { determineDebugLevel } from '@stacksjs/utils'
+// import { determineDebugLevel } from 'stacks:utils'
 
 // export async function checkForUncommittedChanges(path = './.stacks', options: UpgradeOptions) {
 export function checkForUncommittedChanges(options: UpgradeOptions) {

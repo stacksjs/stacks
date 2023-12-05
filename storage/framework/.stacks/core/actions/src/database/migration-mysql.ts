@@ -8,7 +8,7 @@ const driver = 'mysql'
 const writer = file.writer()
 
 writer.write('import { Kysely, sql } from \'kysely\'\n')
-writer.write('import { db } from \'@stacksjs/database\'\n')
+writer.write('import { db } from \'stacks:database\'\n')
 writer.write('\n')
 writer.write('export async function up(db: Kysely<any>): Promise<void> {\n')
 

@@ -1,5 +1,5 @@
-import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { runCommand } from 'stacks:cli'
+import { frameworkPath } from 'stacks:path'
 
 await runCommand(
   'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --execute "buddy changelog --quiet" --all',

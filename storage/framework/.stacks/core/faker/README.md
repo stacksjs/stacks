@@ -15,7 +15,7 @@ bun install -d @stacksjs/faker
 You may now use:
 
 ```ts
-import { faker } from '@stacksjs/faker'
+import { faker } from 'stacks:faker'
 
 faker.name()
 ```

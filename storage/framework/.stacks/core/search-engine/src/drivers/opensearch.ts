@@ -1,7 +1,7 @@
-import { searchEngine } from '@stacksjs/config'
+import { searchEngine } from 'stacks:config'
 import type { ApiResponse } from '@opensearch-project/opensearch'
 import { Client } from '@opensearch-project/opensearch'
-import type { SearchEngineDriver } from '@stacksjs/types'
+import type { SearchEngineDriver } from 'stacks:types'
 
 const host = searchEngine.openSearch?.host
 const protocol = searchEngine.openSearch?.protocol

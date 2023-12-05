@@ -38,7 +38,7 @@ import {
   fromThrowable,
   ok,
   okAsync,
-} from '@stacksjs/error-handling'
+} from 'stacks:error-handling'
 
 // ...
 ```

@@ -21,7 +21,7 @@ bun install -d @stacksjs/http
 Now, you can use it in your project:
 
 ```js
-import * as http from '@stacksjs/http'
+import * as http from 'stacks:http'
 
 // wip
 ```

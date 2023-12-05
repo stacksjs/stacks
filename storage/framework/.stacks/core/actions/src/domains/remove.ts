@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
-import { logger } from '@stacksjs/logging'
-import { deleteHostedZoneRecords } from '@stacksjs/dns'
-import { app } from '@stacksjs/config'
-import { parseOptions } from '@stacksjs/cli'
+import { handleError } from 'stacks:error-handling'
+import { logger } from 'stacks:logging'
+import { deleteHostedZoneRecords } from 'stacks:dns'
+import { app } from 'stacks:config'
+import { parseOptions } from 'stacks:cli'
 
 interface RemoveOptions {
   domain?: string

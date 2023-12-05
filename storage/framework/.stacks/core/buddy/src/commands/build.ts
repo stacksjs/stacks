@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
-import { intro, log, outro, prompt } from '@stacksjs/cli'
-import type { BuildOptions, CLI } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
-import { isString } from '@stacksjs/validation'
+import { runAction } from 'stacks:actions'
+import { intro, log, outro, prompt } from 'stacks:cli'
+import type { BuildOptions, CLI } from 'stacks:types'
+import { ExitCode } from 'stacks:types'
+import { Action } from 'stacks:enums'
+import { isString } from 'stacks:validation'
 
 export function build(buddy: CLI) {
   const descriptions = {

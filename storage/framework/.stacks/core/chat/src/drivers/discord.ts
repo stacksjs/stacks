@@ -1,7 +1,7 @@
 import { DiscordProvider } from '@novu/discord'
-import { italic } from '@stacksjs/cli'
-import type { ChatOptions } from '@stacksjs/types'
-import { ResultAsync } from '@stacksjs/error-handling'
+import { italic } from 'stacks:cli'
+import type { ChatOptions } from 'stacks:types'
+import { ResultAsync } from 'stacks:error-handling'
 
 const provider = new DiscordProvider({})
 

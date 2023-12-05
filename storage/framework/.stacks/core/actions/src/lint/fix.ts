@@ -1,5 +1,5 @@
-import { runCommands } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
-import { NpmScript } from '@stacksjs/enums'
+import { runCommands } from 'stacks:cli'
+import { projectPath } from 'stacks:path'
+import { NpmScript } from 'stacks:enums'
 
 await runCommands([NpmScript.LintFix], { cwd: projectPath() })

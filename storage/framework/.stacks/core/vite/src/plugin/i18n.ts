@@ -1,5 +1,5 @@
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
-import { path as p } from '@stacksjs/path'
+import { path as p } from 'stacks:path'
 
 export function i18n() {
  return VueI18n({

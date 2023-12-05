@@ -229,7 +229,22 @@ buddy migrate # runs database migrations
 buddy migrate:dns # sets the ./config/dns.ts file
 
 buddy dns example.com # list all DNS records for example.com
-buddy dns example.com --type MX # list MX records for example.com
+buddy dns example.com --type MX # list MX records for example.com (proxies dog)
+
+buddy https httpie.io/hello
+# http [flags] [METHOD] URL [ITEM [ITEM]]
+buddy http --help
+buddy http PUT pie.dev/put X-API-Token:123 name=John # Custom HTTP method, HTTP headers and JSON data
+buddy http -v pie.dev/get # See the request that is being sent using one of the output options
+buddy http -f POST pie.dev/post hello=World # submitting forms
+buddy http --offline pie.dev/post hello=offline
+buddy http -a USERNAME POST https://api.github.com/repos/httpie/cli/issues/83/comments body='HTTPie is awesome! :heart:'
+buddy http pie.dev/post < files/data.json
+buddy http pie.dev/image/png > image.png
+buddy http --download pie.dev/image/png
+buddy http --session=logged-in -a username:password pie.dev/get API-Key:123
+buddy http --session=logged-in pie.dev/headers
+buddy http localhost:8000 Host:example.com
 
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues
@@ -315,6 +330,8 @@ Part of the Stacks ecosystem are the following first-party supported stacks:
 - [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
 
 View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
+
+While we currently only fully support `us-east-1`, we are looking forward to expanding to other regions soon.
 
 ## 🧪 Testing
 

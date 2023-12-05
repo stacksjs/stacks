@@ -15,7 +15,7 @@ bun install -d @stacksjs/analytics
 You may now use:
 
 ```ts
-import { analytics } from '@stacksjs/analytics'
+import { analytics } from 'stacks:analytics'
 
 // analytics.track('event', {
 //   property: 'value'

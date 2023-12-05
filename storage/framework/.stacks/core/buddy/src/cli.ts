@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
-import { cli } from '@stacksjs/cli'
-import { ensureProjectIsInitialized } from '@stacksjs/utils'
+import { handleError } from 'stacks:error-handling'
+import { cli } from 'stacks:cli'
+import { ensureProjectIsInitialized } from 'stacks:utils'
 import * as cmd from './commands'
 
 // setup global error handlers
@@ -32,6 +32,7 @@ async function main() {
   cmd.configure(buddy)
   cmd.domains(buddy)
   cmd.fresh(buddy)
+  cmd.http(buddy)
   cmd.install(buddy)
   cmd.dns(buddy)
   // cmd.lint(buddy)

@@ -10,7 +10,7 @@ import {
   transformerCompileClass,
 } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
-import { ui } from '@stacksjs/config'
+import { ui } from 'stacks:config'
 
 export default defineConfig({
   shortcuts: ui.shortcuts,

@@ -16,7 +16,7 @@ bun install -d @stacksjs/objects
 Now, you can easily access it in your project:
 
 ```js
-import { collect } from '@stacksjs/objects'
+import { collect } from 'stacks:objects'
 
 const collection = collect([{
   name: 'My story',

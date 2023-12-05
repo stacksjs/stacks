@@ -1,4 +1,4 @@
-import type { StacksConfig } from '@stacksjs/types'
+import type { StacksConfig } from 'stacks:types'
 import api from '../../../../../../config/api'
 import app from '../../../../../../config/app'
 import cache from '../../../../../../config/cache'

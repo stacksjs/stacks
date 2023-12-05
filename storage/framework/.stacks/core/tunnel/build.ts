@@ -1,4 +1,4 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand } from 'stacks:cli'
 
 const result = await runCommand('bun build ./src/index.ts --outdir dist --external localtunnel --format esm --target bun', {
   cwd: import.meta.dir,

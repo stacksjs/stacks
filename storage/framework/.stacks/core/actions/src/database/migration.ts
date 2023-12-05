@@ -1,5 +1,5 @@
-// import { generateMigrationFile } from '@stacksjs/database'
-// import { config } from '@stacksjs/config'
+// import { generateMigrationFile } from 'stacks:database'
+// import { config } from 'stacks:config'
 
 // const driver = config.database.default
 const driver = 'sqlite'

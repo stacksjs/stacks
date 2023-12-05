@@ -26,7 +26,7 @@ bun install -d @stacksjs/lint
 Now, you can easily access it in your project:
 
 ```js
-import lint from '@stacksjs/lint'
+import lint from 'stacks:lint'
 
 // ...
 ```

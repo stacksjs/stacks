@@ -1,4 +1,4 @@
-import type { DocsConfig } from '@stacksjs/types'
+import type { DocsConfig } from 'stacks:types'
 
 const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },

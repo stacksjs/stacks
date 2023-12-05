@@ -1,5 +1,5 @@
 import type { Server } from 'bun'
-import { serverResponse } from '@stacksjs/router'
+import { serverResponse } from 'stacks:router'
 
 export default {
   async fetch(request: Request, server: Server): Promise<Response | undefined> {

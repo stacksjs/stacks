@@ -9,11 +9,11 @@ import { Lambda } from '@aws-sdk/client-lambda'
 import type { CountryCode } from '@aws-sdk/client-route-53-domains'
 import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
-import { config } from '@stacksjs/config'
-import { err, handleError, ok } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/logging'
-import { path as p } from '@stacksjs/path'
-import { rimraf } from '@stacksjs/utils'
+import { config } from 'stacks:config'
+import { err, handleError, ok } from 'stacks:error-handling'
+import { log } from 'stacks:logging'
+import { path as p } from 'stacks:path'
+import { rimraf } from 'stacks:utils'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`

@@ -1,6 +1,6 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand } from 'stacks:cli'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/faker --external @stacksjs/path --external @stacksjs/query-builder --external @stacksjs/storage --external @stacksjs/strings --external @stacksjs/utils --external kysely --external mysql2 --target bun', {
+const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external stacks:config --external stacks:faker --external stacks:path --external stacks:query-builder --external stacks:storage --external stacks:strings --external stacks:utils --external kysely --external mysql2 --target bun', {
   cwd: import.meta.dir,
 })
 

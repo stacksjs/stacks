@@ -1,4 +1,4 @@
-import { route } from '@stacksjs/router'
+import { route } from 'stacks:router'
 
 // route.group(() => {
 //   route.get('/get/:id', getUsers)

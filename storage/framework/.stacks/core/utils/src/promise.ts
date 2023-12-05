@@ -1,4 +1,4 @@
-import { remove } from '@stacksjs/arrays'
+import { remove } from 'stacks:arrays'
 
 export interface SingletonPromiseReturn<T> {
   (): Promise<T>

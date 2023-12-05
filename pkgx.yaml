@@ -10,3 +10,4 @@ dependencies:
   sqlite.org: ^3.42.0
   dns.lookup.dog: ^0.1.0
   stedolan.github.io/jq: ^1.7
+  httpie.io: ^3.2.2

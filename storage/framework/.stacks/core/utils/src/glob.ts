@@ -1,1 +1,1 @@
-export { glob } from '@stacksjs/storage'
+export { glob } from 'stacks:storage'

@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitepress'
 import type { UserConfig } from 'vitepress'
-import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
-import { docs } from '@stacksjs/config'
-import { server } from '@stacksjs/server'
-import { kolorist as c } from '@stacksjs/cli'
+import { alias } from 'stacks:alias'
+import { path as p } from 'stacks:path'
+import { docs } from 'stacks:config'
+import { server } from 'stacks:server'
+import { kolorist as c } from 'stacks:cli'
 import { version } from '../../../../../../package.json'
 
 export const frameworkDefaults = {

@@ -1,6 +1,6 @@
-import { log } from '@stacksjs/logging'
-import { customElementsDataPath } from '@stacksjs/path'
-import { writeTextFile } from '@stacksjs/storage'
+import { log } from 'stacks:logging'
+import { customElementsDataPath } from 'stacks:path'
+import { writeTextFile } from 'stacks:storage'
 import library from '~/config/library'
 
 export async function generateVsCodeCustomData() {

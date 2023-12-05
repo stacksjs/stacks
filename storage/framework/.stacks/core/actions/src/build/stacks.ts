@@ -1,5 +1,5 @@
-import { frameworkPath } from '@stacksjs/path'
-import { runCommands } from '@stacksjs/cli'
+import { frameworkPath } from 'stacks:path'
+import { runCommands } from 'stacks:cli'
 
 await runCommands([
   'bun build:cli', // command to build the Buddy CLI

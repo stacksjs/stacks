@@ -1,4 +1,4 @@
-import type { NotificationConfig } from '@stacksjs/types'
+import type { NotificationConfig } from 'stacks:types'
 
 /**
  * **Notification Configuration**

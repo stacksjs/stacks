@@ -15,7 +15,7 @@ bun install -d @stacksjs/email
 You may now use it in your project:
 
 ```ts
-import * as email from '@stacksjs/email'
+import * as email from 'stacks:email'
 
 /* Then choose a driver. E.g for sendgrid */
 const notification = email.sendgrid

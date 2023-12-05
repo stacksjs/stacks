@@ -1,6 +1,6 @@
-import { faker } from '@stacksjs/faker'
-import { validator } from '@stacksjs/validation'
-import type { Model } from '@stacksjs/types'
+import { faker } from 'stacks:faker'
+import { validator } from 'stacks:validation'
+import type { Model } from 'stacks:types'
 
 export default {
   name: 'User', // defaults to the sanitized file name

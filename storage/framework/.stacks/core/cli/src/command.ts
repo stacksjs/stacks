@@ -1,4 +1,4 @@
-import type { CliOptions } from '@stacksjs/types'
+import type { CliOptions } from 'stacks:types'
 import { runCommand } from './run'
 
 type CommandOptionTuple = [string, string, { default: boolean }]

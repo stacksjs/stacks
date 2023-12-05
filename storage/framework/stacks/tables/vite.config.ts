@@ -24,7 +24,7 @@ export const vueComponentsConfig: ViteConfig = {
   },
 
   optimizeDeps: {
-    exclude: ['stacks', 'vue', 'fsevents', 'emitter', '@stacksjs/utils', '@stacksjs/validation', '@stacksjs/vite', '@stacksjs/server', '@stacksjs/config', 'stacks/utils', 'stacks/validation'],
+    exclude: ['stacks', 'vue', 'fsevents', 'emitter', 'stacks:utils', 'stacks:validation', 'stacks:vite', 'stacks:server', 'stacks:config', 'stacks/utils', 'stacks/validation'],
   },
 
   plugins: [
@@ -64,7 +64,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@stacksjs/vite'],
+      external: ['vue', 'stacks:vite'],
       output: {
         globals: {
           vue: 'Vue',

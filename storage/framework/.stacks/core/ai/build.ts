@@ -1,4 +1,4 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand } from 'stacks:cli'
 
 const command: string = 'bun build ./src/index.ts --outdir dist --format esm'
 const result = await runCommand(command, {

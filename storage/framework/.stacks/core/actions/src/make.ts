@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { italic } from '@stacksjs/cli'
-import { log } from '@stacksjs/logging'
-import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
-import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
-import type { MakeOptions } from '@stacksjs/types'
+import { italic } from 'stacks:cli'
+import { log } from 'stacks:logging'
+import { createFolder, doesFolderExist, writeTextFile } from 'stacks:storage'
+import { frameworkPath, projectPath, resolve } from 'stacks:path'
+import type { MakeOptions } from 'stacks:types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)
@@ -235,7 +235,7 @@ export async function createNotification(options: MakeOptions) {
 
     await writeTextFile({
       path: `./notifications/${name}.ts`,
-      data: `import type { ${importOption} } from \'@stacksjs/types\'
+      data: `import type { ${importOption} } from \'stacks:types\'
 
 function content(): string {
   return 'example'
@@ -289,9 +289,9 @@ export async function createModel(options: MakeOptions) {
   try {
     await writeTextFile({
       path: `${path}`,
-      data: `import { faker } from '@stacksjs/faker'
-import { validate } from '@stacksjs/validation'
-import type { Model } from '@stacksjs/types'
+      data: `import { faker } from 'stacks:faker'
+import { validate } from 'stacks:validation'
+import type { Model } from 'stacks:types'
 
 export default <Model> {
   name: '${name}',

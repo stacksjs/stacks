@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, MigrateOptions } from '@stacksjs/types'
-import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
+import { ExitCode } from 'stacks:types'
+import type { CLI, MigrateOptions } from 'stacks:types'
+import { runAction } from 'stacks:actions'
+import { intro, outro } from 'stacks:cli'
+import { Action } from 'stacks:enums'
 
 export function migrate(buddy: CLI) {
   const descriptions = {

@@ -21,7 +21,7 @@ bun install -d @stacksjs/actions
 Now, you can use it in your project:
 
 ```js
-import * as build from '@stacksjs/build'
+import * as build from 'stacks:build'
 
 // wip
 ```

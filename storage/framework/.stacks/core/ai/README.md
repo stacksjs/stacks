@@ -2,17 +2,22 @@
 
 This package contains a set of tools to help you build AI-powered applications.
 
+1. Request model access from AWS: <https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess>
+2.
+
 ## ☘️ Features
 
-- 🤷🏼‍♂️ git Diff Interpreter
-- 🪐 GitHub PR integration
-- 🎨 UI Generator
-- 🐶 Buddy CLI commands
-- 💨 Zero-config
+- Chatbots
+- Image Generation
+- Text Generation & Summaries
+- git Diff Interpreter
+- GitHub PR integration
+- UI Generator
+- Zero-config
 
 ## TODO
 
-- [ ] Driver: OpenAI
+- [ ] Driver: Bedrock
 
 ## 🤖 Usage
 
@@ -23,7 +28,7 @@ bun install -d @stacksjs/ai
 You may now use:
 
 ```ts
-import { useAI } from '@stacksjs/ai'
+import { useAI } from 'stacks:ai'
 
 const client = useAI()
 // client...

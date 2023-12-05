@@ -1,8 +1,8 @@
 // import { Novu } from '@novu/node'
 // import notification from '~/config/notification'
-// import type { ExpoPushNotificationOptions } from '@stacksjs/types'
-// import { ResultAsync } from '@stacksjs/error-handling'
-// import { italic } from '@stacksjs/cli'
+// import type { ExpoPushNotificationOptions } from 'stacks:types'
+// import { ResultAsync } from 'stacks:error-handling'
+// import { italic } from 'stacks:cli'
 
 // const novu = new Novu(notification.novu.key)
 

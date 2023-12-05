@@ -1,11 +1,11 @@
 import process from 'node:process'
-import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
-import { app } from '@stacksjs/config'
-import { handleError } from '@stacksjs/error-handling'
-import { italic, parseOptions, runCommand } from '@stacksjs/cli'
-import { whois } from '@stacksjs/whois'
-import { logger } from '@stacksjs/logging'
-import { projectConfigPath } from '@stacksjs/path'
+import { createHostedZone, getNameservers, updateNameservers } from 'stacks:dns'
+import { app } from 'stacks:config'
+import { handleError } from 'stacks:error-handling'
+import { italic, parseOptions, runCommand } from 'stacks:cli'
+import { whois } from 'stacks:whois'
+import { logger } from 'stacks:logging'
+import { projectConfigPath } from 'stacks:path'
 
 interface AddOptions {
   domain?: string

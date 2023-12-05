@@ -1,7 +1,7 @@
 import { SendgridEmailProvider } from '@novu/sendgrid'
-import type { EmailOptions } from '@stacksjs/types'
-import type { ResultAsync } from '@stacksjs/error-handling'
-import { notification } from '@stacksjs/config'
+import type { EmailOptions } from 'stacks:types'
+import type { ResultAsync } from 'stacks:error-handling'
+import { notification } from 'stacks:config'
 import { send as sendEmail } from '../send'
 
 const env = notification.email

@@ -1,5 +1,5 @@
-// import { Cursor, MysqlDialect, PostgresDialect, createMysqlPool, createPostgresPool } from '@stacksjs/query-builder'
-// import { database } from '@stacksjs/config'
+// import { Cursor, MysqlDialect, PostgresDialect, createMysqlPool, createPostgresPool } from 'stacks:query-builder'
+// import { database } from 'stacks:config'
 
 // let dialect: any
 

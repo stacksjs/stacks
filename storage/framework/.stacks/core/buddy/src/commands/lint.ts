@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, LintOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
+import type { CLI, LintOptions } from 'stacks:types'
+import { intro, log, outro } from 'stacks:cli'
+import { Action } from 'stacks:enums'
+import { runAction } from 'stacks:actions'
 
 export function lint(buddy: CLI) {
   const descriptions = {

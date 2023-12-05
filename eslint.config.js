@@ -1,3 +1,3 @@
-import stacks from '@stacksjs/eslint-config'
+import stacks from 'stacks:eslint-config'
 
 export default stacks()

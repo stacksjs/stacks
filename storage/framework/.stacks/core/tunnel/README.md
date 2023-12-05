@@ -13,7 +13,7 @@ bun install -d @stacksjs/tunnel
 Now, you can use it in your project:
 
 ```js
-import { createLocalTunnel } from '@stacksjs/tunnel'
+import { createLocalTunnel } from 'stacks:tunnel'
 
 const url = await createLocalTunnel(3333)
 

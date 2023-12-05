@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
-import { intro, outro, prompt } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, UpgradeOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
-import { isString } from '@stacksjs/validation'
+import { runAction } from 'stacks:actions'
+import { intro, outro, prompt } from 'stacks:cli'
+import { ExitCode } from 'stacks:types'
+import type { CLI, UpgradeOptions } from 'stacks:types'
+import { Action } from 'stacks:enums'
+import { isString } from 'stacks:validation'
 
 export function upgrade(buddy: CLI) {
   const descriptions = {

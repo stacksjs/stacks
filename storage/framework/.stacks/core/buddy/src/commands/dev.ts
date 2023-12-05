@@ -1,11 +1,11 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/enums'
-import { runAction, runApiDevServer, runComponentsDevServer, runDocsDevServer, runFrontendDevServer } from '@stacksjs/actions'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, log, outro, prompt, runCommand } from '@stacksjs/cli'
-import { sleep } from '@stacksjs/utils'
-import { vitePath } from '@stacksjs/path'
+import { Action } from 'stacks:enums'
+import { runAction, runApiDevServer, runComponentsDevServer, runDocsDevServer, runFrontendDevServer } from 'stacks:actions'
+import { ExitCode } from 'stacks:types'
+import type { CLI, DevOptions } from 'stacks:types'
+import { intro, log, outro, prompt, runCommand } from 'stacks:cli'
+import { sleep } from 'stacks:utils'
+import { vitePath } from 'stacks:path'
 
 export function dev(buddy: CLI) {
   const descriptions = {

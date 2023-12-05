@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, KeyOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
+import type { CLI, KeyOptions } from 'stacks:types'
+import { intro, log, outro } from 'stacks:cli'
+import { Action } from 'stacks:enums'
+import { runAction } from 'stacks:actions'
 
 export function key(buddy: CLI) {
   const descriptions = {

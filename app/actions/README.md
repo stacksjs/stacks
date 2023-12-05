@@ -10,7 +10,7 @@ Actions introduce a concept of unique code reusability. They are "functions" tha
 One unique Stacks feature of Actions is that they may also be called from anywhere in the frontend, dramatically simplifying API integrations.
 
 ```ts
-import { action } from '@stacksjs/actions'
+import { action } from 'stacks:actions'
 
 await runAction('MyCustomActionName', { foo: 'bar' })
 // or

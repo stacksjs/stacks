@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv as viteLoadEnv } from 'vite'
 import type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
-import type { Env } from '@stacksjs/env'
+import type { Env } from 'stacks:env'
 
 export * as vueComponentExample from './example-vue'
 export * as webComponentExample from './example-wc'

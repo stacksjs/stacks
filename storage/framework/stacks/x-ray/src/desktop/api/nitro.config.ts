@@ -1,5 +1,5 @@
 // nitro.config.ts
-// import { defineServerConfig } from '@stacksjs/server'
+// import { defineServerConfig } from 'stacks:server'
 
 // export default defineServerConfig({
 //   storage: {

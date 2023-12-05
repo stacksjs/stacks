@@ -1,4 +1,4 @@
-import type { Fn, Nullable } from '@stacksjs/types'
+import type { Fn, Nullable } from 'stacks:types'
 
 /**
  * Call every function in an array

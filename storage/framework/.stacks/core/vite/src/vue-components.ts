@@ -1,9 +1,9 @@
-import { alias } from '@stacksjs/alias'
-import { server } from '@stacksjs/server'
-import { config as c } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
+import { alias } from 'stacks:alias'
+import { server } from 'stacks:server'
+import { config as c } from 'stacks:config'
+import { path as p } from 'stacks:path'
 import { defineConfig } from 'vite'
-import type { ViteConfig } from '@stacksjs/types'
+import type { ViteConfig } from 'stacks:types'
 import { components } from './plugin/components'
 import { cssEngine } from './plugin/css-engine'
 import { uiEngine } from './plugin/ui-engine'
@@ -64,7 +64,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     },
 
     rollupOptions: {
-      external: ['vue', '@stacksjs/path'],
+      external: ['vue', 'stacks:path'],
       input: p.libraryEntryPath('vue-components'),
       output: {
         globals: {

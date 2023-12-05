@@ -1,4 +1,4 @@
-import type { GitConfig } from '@stacksjs/types'
+import type { GitConfig } from 'stacks:types'
 
 /**
  * **Git Configuration**

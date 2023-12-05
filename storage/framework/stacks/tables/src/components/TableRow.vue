@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import type { Hit } from '@stacksjs/types'
+// import type { Hit } from 'stacks:types'
 
 // const { hit, index } = defineProps<{ hit: Hit; index: number }>()
 

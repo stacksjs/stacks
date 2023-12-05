@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/enums'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
+import { Action } from 'stacks:enums'
+import { ExitCode } from 'stacks:types'
+import type { CLI, ReleaseOptions } from 'stacks:types'
+import { intro, log, outro } from 'stacks:cli'
+import { runAction } from 'stacks:actions'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',

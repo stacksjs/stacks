@@ -1,11 +1,11 @@
 import { defineConfig } from 'vitepress'
-import { path as p } from '@stacksjs/path'
-import { server } from '@stacksjs/server'
+import { path as p } from 'stacks:path'
+import { server } from 'stacks:server'
 import { analyticsHead, faviconHead } from './head'
 import userConfig from '../../../../config/docs'
 
-// import { config } from '@stacksjs/config'
-// import { kolorist as c } from '@stacksjs/cli'
+// import { config } from 'stacks:config'
+// import { kolorist as c } from 'stacks:cli'
 // import { version } from '../../../../.stacks/package.json'
 
 // https://vitepress.dev/reference/site-config

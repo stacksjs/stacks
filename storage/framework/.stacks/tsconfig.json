@@ -13,6 +13,7 @@
     "paths": {
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
+      "stacks:*": ["./core/*/src/index.ts"],
       "buddy": ["./core/buddy/src/index.ts"],
       "buddy/*": ["./core/buddy/src/*"],
       "~/*": ["../../../*"]
