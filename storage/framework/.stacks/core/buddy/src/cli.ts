@@ -33,6 +33,7 @@ async function main() {
   cmd.domains(buddy)
   cmd.fresh(buddy)
   cmd.install(buddy)
+  cmd.dns(buddy)
   // cmd.lint(buddy)
   cmd.release(buddy)
   // cmd.make(buddy)
