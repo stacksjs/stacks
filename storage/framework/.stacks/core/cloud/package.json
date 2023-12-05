@@ -54,11 +54,11 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-cloudformation": "^3.466.0",
+    "@aws-sdk/client-cloudformation": "^3.467.0",
     "@aws-sdk/client-cloudfront": "^3.465.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.465.0",
     "@aws-sdk/client-dynamodb": "3.465.0",
-    "@aws-sdk/client-ec2": "^3.465.0",
+    "@aws-sdk/client-ec2": "^3.467.0",
     "@aws-sdk/client-efs": "^3.465.0",
     "@aws-sdk/client-iam": "^3.465.0",
     "@aws-sdk/client-lambda": "^3.465.0",
@@ -82,10 +82,10 @@
     "constructs": "^10.3.0"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.466.0",
+    "@aws-sdk/client-cloudformation": "^3.467.0",
     "@aws-sdk/client-cloudfront": "^3.465.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.465.0",
-    "@aws-sdk/client-ec2": "^3.465.0",
+    "@aws-sdk/client-ec2": "^3.467.0",
     "@aws-sdk/client-efs": "^3.465.0",
     "@aws-sdk/client-iam": "^3.465.0",
     "@aws-sdk/client-lambda": "^3.465.0",
@@ -108,7 +108,7 @@
     "constructs": "^10.3.0"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^4.1.8",
+    "@oclif/plugin-plugins": "^4.1.9",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
