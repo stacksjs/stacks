@@ -75,6 +75,7 @@ export enum Action {
   KeyGenerate = 'key-generate',
   MakeNotification = 'make-notification',
   Migrate = 'migrate',
+  MigrateDns = 'migrate/dns',
   Seed = 'seed',
   Lint = 'lint/index',
   LintFix = 'lint/fix',

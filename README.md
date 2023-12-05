@@ -225,6 +225,12 @@ buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
 buddy make:stack my-project # shares logic with `bunx stacks new my-project`
 
+buddy migrate # runs database migrations
+buddy migrate:dns # sets the ./config/dns.ts file
+
+buddy dns example.com # list all DNS records for example.com
+buddy dns example.com --type MX # list MX records for example.com
+
 buddy lint # runs linter
 buddy lint:fix # runs linter and fixes issues
 
