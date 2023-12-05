@@ -21,6 +21,7 @@
     "arrays",
     "alias",
     "helpers",
+    "magic-regexp",
     "utilities",
     "functions",
     "stacks"
@@ -68,7 +69,6 @@
     "export-size": "^0.7.0",
     "js-yaml": "^4.1.0",
     "rimraf": "^5.0.5",
-    "semver": "^7.5.4",
     "yaml": "^2.3.4"
   },
   "dependencies": {
@@ -82,7 +82,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/semver": "^7.5.6",
     "@vueuse/core": "^10.6.1",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^10.6.1",
@@ -100,13 +99,11 @@
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^5.0.5",
-    "semver": "^7.5.4",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@types/semver": "^7.5.6",
     "markdown-table": "^3.0.3",
     "vue-starport": "^0.4.0"
   }

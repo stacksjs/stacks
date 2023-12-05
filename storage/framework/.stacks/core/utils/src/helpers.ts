@@ -184,5 +184,4 @@ export function isIpv6(address: AddressInfo): boolean {
     || address.family === 6
 }
 
-// export { SemVer } from 'semver'
 export { dump as dumpYaml, load as loadYaml } from 'js-yaml'

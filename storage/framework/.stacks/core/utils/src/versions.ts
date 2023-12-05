@@ -1,4 +1,4 @@
 import { version } from '../package.json'
+import { semver } from 'bun'
 
-export { version }
-export * as semver from 'semver'
+export { version, semver }
