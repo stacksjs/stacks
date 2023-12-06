@@ -1,4 +1,4 @@
-import { fs, glob } from 'stacks:storage'
+import { fs, glob } from '@stacksjs/storage'
 
 export async function generateVueCompat(paths: string[]) {
   const files = await glob(paths, {

@@ -1,7 +1,7 @@
 // import { MandrillProvider } from '@novu/mandrill'
-// import type { EmailOptions } from 'stacks:types'
-// import { notification } from 'stacks:config'
-// import type { ResultAsync } from 'stacks:error-handling'
+// import type { EmailOptions } from '@stacksjs/types'
+// import { notification } from '@stacksjs/config'
+// import type { ResultAsync } from '@stacksjs/error-handling'
 // import { send as sendEmail } from '../actions/send'
 
 // const env = notification.email

@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { searchEngine } from 'stacks:config'
-import { log } from 'stacks:logging'
-import type { MeiliSearchOptions, SearchEngineDriver } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
+import { searchEngine } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
+import type { MeiliSearchOptions, SearchEngineDriver } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import type { DocumentOptions, EnqueuedTask, Index, IndexOptions, IndexesResults, SearchResponse } from 'meilisearch'
 import { MeiliSearch } from 'meilisearch'
 

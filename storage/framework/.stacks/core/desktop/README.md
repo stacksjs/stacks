@@ -13,7 +13,7 @@ bun install -d @stacksjs/desktop
 Now, you can use it in your project:
 
 ```js
-import desktop from 'stacks:desktop'
+import desktop from '@stacksjs/desktop'
 
 // wip
 ```

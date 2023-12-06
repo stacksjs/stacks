@@ -1,12 +1,12 @@
 import process from 'node:process'
-import { ExitCode } from 'stacks:types'
-import type { CLI, CreateOptions } from 'stacks:types'
-import { bold, cyan, dim, intro, log, runCommand } from 'stacks:cli'
-import { useOnline } from 'stacks:utils'
-import { isFolder } from 'stacks:storage'
-import { resolve } from 'stacks:path'
-import { Action } from 'stacks:enums'
-import { runAction } from 'stacks:actions'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI, CreateOptions } from '@stacksjs/types'
+import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
+import { useOnline } from '@stacksjs/utils'
+import { isFolder } from '@stacksjs/storage'
+import { resolve } from '@stacksjs/path'
+import { Action } from '@stacksjs/enums'
+import { runAction } from '@stacksjs/actions'
 
 export function create(buddy: CLI) {
   const descriptions = {

@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { glob } from 'stacks:storage'
-import { corePath } from 'stacks:path'
-import { ExitCode } from 'stacks:types'
-import { dim, italic, log, runCommand } from 'stacks:cli'
+import { glob } from '@stacksjs/storage'
+import { corePath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
+import { dim, italic, log, runCommand } from '@stacksjs/cli'
 
 log.info('Building core packages')
 

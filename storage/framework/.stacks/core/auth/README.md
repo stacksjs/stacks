@@ -21,7 +21,7 @@ bun install -d @stacksjs/auth
 Now, you can use it in your project:
 
 ```js
-import auth from 'stacks:auth'
+import auth from '@stacksjs/auth'
 
 // wip
 ```

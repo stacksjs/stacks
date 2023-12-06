@@ -13,7 +13,7 @@ bun install -d @stacksjs/server
 Now, you can use it in your project:
 
 ```js
-import { server } from 'stacks:server'
+import { server } from '@stacksjs/server'
 
 console.log('server config is', server)
 ```

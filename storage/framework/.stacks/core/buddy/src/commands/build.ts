@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { runAction } from 'stacks:actions'
-import { intro, log, outro, prompt } from 'stacks:cli'
-import type { BuildOptions, CLI } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
-import { Action } from 'stacks:enums'
-import { isString } from 'stacks:validation'
+import { runAction } from '@stacksjs/actions'
+import { intro, log, outro, prompt } from '@stacksjs/cli'
+import type { BuildOptions, CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
+import { isString } from '@stacksjs/validation'
 
 export function build(buddy: CLI) {
   const descriptions = {
@@ -16,7 +16,7 @@ export function build(buddy: CLI) {
     desktop: 'Build the Desktop Application',
     pages: 'Build your frontend',
     docs: 'Build your documentation',
-    stacks: 'Build Stacks framework',
+    framework: 'Build Stacks framework',
     select: 'What are you trying to build?',
     verbose: 'Enable verbose output',
   }
@@ -30,7 +30,7 @@ export function build(buddy: CLI) {
     .option('-f, --functions', descriptions.functions)
     .option('-p, --views', descriptions.pages)
     .option('-d, --docs', descriptions.docs)
-    .option('-s, --stacks', descriptions.stacks, { default: false })
+    .option('-s, --stacks', descriptions.framework, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
@@ -147,7 +147,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:stacks', 'Build the Stacks framework.')
-    .option('-s, --stacks', descriptions.stacks, { default: true })
+    .option('-s, --stacks', descriptions.framework, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:stacks')
@@ -168,5 +168,5 @@ export function build(buddy: CLI) {
 }
 
 function hasNoOptions(options: BuildOptions) {
-  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.pages && !options.docs && !options.stacks
+  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.pages && !options.docs && !options.framework
 }

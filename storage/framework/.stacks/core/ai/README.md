@@ -28,7 +28,7 @@ bun install -d @stacksjs/ai
 You may now use:
 
 ```ts
-import { useAI } from 'stacks:ai'
+import { useAI } from '@stacksjs/ai'
 
 const client = useAI()
 // client...

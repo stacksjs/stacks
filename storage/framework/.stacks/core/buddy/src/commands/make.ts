@@ -10,12 +10,12 @@ import {
   makeLanguage,
   makePage,
   makeStack,
-} from 'stacks:actions'
-import { intro, italic, outro, prompt } from 'stacks:cli'
-import { log } from 'stacks:logging'
-import type { CLI, MakeOptions } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
-import { isString } from 'stacks:validation'
+} from '@stacksjs/actions'
+import { intro, italic, outro, prompt } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+import type { CLI, MakeOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export function make(buddy: CLI) {
   const descriptions = {

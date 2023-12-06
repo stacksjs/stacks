@@ -1,8 +1,8 @@
-import { italic } from 'stacks:cli'
-import { log } from 'stacks:logging'
+import { italic } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 
-// import { italic } from 'stacks:cli'
-// import { ExitCode } from 'stacks:types'
+// import { italic } from '@stacksjs/cli'
+// import { ExitCode } from '@stacksjs/types'
 
 const version = 'alpha' // todo: get version from package.json
 

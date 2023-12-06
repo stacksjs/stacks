@@ -1,6 +1,6 @@
-import type { CLI } from 'stacks:types'
-import { bold, dim, green, intro, log } from 'stacks:cli'
-import { storage } from 'stacks:storage'
+import type { CLI } from '@stacksjs/types'
+import { bold, dim, green, intro, log } from '@stacksjs/cli'
+import { storage } from '@stacksjs/storage'
 
 export function version(buddy: CLI) {
   const descriptions = {
@@ -16,7 +16,7 @@ export function version(buddy: CLI) {
       const bunVersion = 'wip'
       const stacksVersion = pkg.version
 
-      log.info(green(bold('Stacks: ')) + dim(` ${stacksVersion}`))
+      log.info(green(bold('@stacksjs/ ')) + dim(` ${stacksVersion}`))
       log.info(green(bold('Bun: ')) + dim(`   ${bunVersion}`))
 
       // redis (or other cache/s), mysql (or other database/s),

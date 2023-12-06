@@ -1,4 +1,4 @@
-import type { AnalyticsConfig } from 'stacks:types'
+import type { AnalyticsConfig } from '@stacksjs/types'
 
 /**
  * **Analytics Configuration**

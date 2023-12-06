@@ -1,5 +1,5 @@
-import type { CliOptions, CommandError, Subprocess, SyncSubprocess } from 'stacks:types'
-import { type Result, err, ok } from 'stacks:error-handling'
+import type { CliOptions, CommandError, Subprocess, SyncSubprocess } from '@stacksjs/types'
+import { type Result, err, ok } from '@stacksjs/error-handling'
 import { exec, execSync } from './exec'
 import { italic, underline } from './utilities'
 import { log } from './console'

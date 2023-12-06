@@ -1,4 +1,4 @@
-import { getTypeName } from 'stacks:types'
+import { getTypeName } from '@stacksjs/types'
 
 export function isDeepEqual(value1: any, value2: any): boolean {
   const type1 = getTypeName(value1)

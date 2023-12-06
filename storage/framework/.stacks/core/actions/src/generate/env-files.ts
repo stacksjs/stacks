@@ -1,7 +1,7 @@
-import { path as p } from 'stacks:path'
-import { storage } from 'stacks:storage'
-import { env as e, enums } from 'stacks:env'
-import { logger } from 'stacks:logging'
+import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
+import { env as e, enums } from '@stacksjs/env'
+import { logger } from '@stacksjs/logging'
 import { envKeys } from '~/storage/framework/stacks/env'
 
 logger.log('Generating type env files...')

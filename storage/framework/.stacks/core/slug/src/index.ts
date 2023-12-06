@@ -1,7 +1,7 @@
 export const wipSlug = true
-// import { slug as slugify } from 'stacks:strings'
-// import type { ColumnOptions, Model } from 'stacks:types'
-// import { client as DatabaseClient } from 'stacks:database'
+// import { slug as slugify } from '@stacksjs/strings'
+// import type { ColumnOptions, Model } from '@stacksjs/types'
+// import { client as DatabaseClient } from '@stacksjs/database'
 
 // const database = new DatabaseClient()
 

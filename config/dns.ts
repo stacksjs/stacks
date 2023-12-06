@@ -1,5 +1,5 @@
-import { env } from 'stacks:env'
-import type { DnsConfig } from 'stacks:types'
+import { env } from '@stacksjs/env'
+import type { DnsConfig } from '@stacksjs/types'
 
 /**
  * **DNS Options**

@@ -1,8 +1,8 @@
 import fs from 'fs-extra'
 import p from 'node:process'
 import type { Env } from './types'
-import { projectPath } from 'stacks:path'
-import { ValidationBoolean, ValidationEnum, ValidationNumber } from 'stacks:validation'
+import { projectPath } from '@stacksjs/path'
+import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
 // interface EnumObject {

@@ -15,7 +15,7 @@ bun install -d @stacksjs/validation
 Now, you can use it in your project:
 
 ```js
-import { validate } from 'stacks:validation'
+import { validate } from '@stacksjs/validation'
 
 // wip
 ```

@@ -1,5 +1,5 @@
-import { NpmScript } from 'stacks:enums'
-import { runCommand } from 'stacks:cli'
-import { frameworkPath } from 'stacks:path'
+import { NpmScript } from '@stacksjs/enums'
+import { runCommand } from '@stacksjs/cli'
+import { frameworkPath } from '@stacksjs/path'
 
 await runCommand(NpmScript.TestCoverage, { cwd: frameworkPath(), verbose: true })

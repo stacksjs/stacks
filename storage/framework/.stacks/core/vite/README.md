@@ -21,7 +21,7 @@ bun install -d @stacksjs/vite-plugin
 Now, you can use it in your project:
 
 ```js
-import vitePlugin from 'stacks:vite-plugin'
+import vitePlugin from '@stacksjs/vite-plugin'
 
 // wip
 ```

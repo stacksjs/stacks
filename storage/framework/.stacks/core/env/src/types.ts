@@ -1,9 +1,9 @@
-import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from 'stacks:validation'
-import { validator } from 'stacks:validation'
+import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
+import { validator } from '@stacksjs/validation'
 import env from '../../../../../../config/env'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 
-// import type { Validate } from 'stacks:validation'
+// import type { Validate } from '@stacksjs/validation'
 
 // we need to get this just into right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]

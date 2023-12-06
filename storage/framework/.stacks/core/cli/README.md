@@ -20,7 +20,7 @@ Now, you can use it in your project:
 ```js
 // command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
-import { ExitCode, command, italic, prompts, spawn, spinner } from 'stacks:cli'
+import { ExitCode, command, italic, prompts, spawn, spinner } from '@stacksjs/cli'
 
 const stacks = command('stacks')
 
@@ -81,7 +81,7 @@ import {
   ansi256Bg, bold, dim, hidden, inverse, italic, link, reset, strikethrough, underline,
   bgBlack, bgBlue, bgCyan, bgGray, bgGreen, bgLightBlue, bgLightCyan, bgLightGray, bgLightGreen, bgLightMagenta, bgLightRed, bgLightYellow, bgMagenta, bgRed, bgWhite, bgYellow,
   black, blue, cyan, gray, green, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, magenta, red, white, yellow
-} from 'stacks:cli'
+} from '@stacksjs/cli'
 
 log.info(`hello ${bold(italic('world'))`)
 ```

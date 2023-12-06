@@ -1,5 +1,5 @@
-import { path as p } from 'stacks:path'
-import type { StacksOptions } from 'stacks:types'
+import { path as p } from '@stacksjs/path'
+import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
 

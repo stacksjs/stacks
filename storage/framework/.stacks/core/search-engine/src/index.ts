@@ -1,11 +1,11 @@
-import { searchEngine } from 'stacks:config'
-import type { UiEngine } from 'stacks:ui'
-import { useStorage } from 'stacks:utils'
+import { searchEngine } from '@stacksjs/config'
+import type { UiEngine } from '@stacksjs/ui'
+import { useStorage } from '@stacksjs/utils'
 
 // import { client as meilisearch } from './drivers/meilisearch'
 import { determineState } from './helpers'
 
-// import type { Ref } from 'stacks:types'
+// import type { Ref } from '@stacksjs/types'
 
 const table = (useStorage('table', determineState()).value)
 const totalHits = table.results?.estimatedTotalHits ?? 1

@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { log } from 'stacks:logging'
-import { hasComponents } from 'stacks:storage'
-import { runNpmScript } from 'stacks:utils'
-import type { ExamplesOptions } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
-import { NpmScript } from 'stacks:enums'
+import { log } from '@stacksjs/logging'
+import { hasComponents } from '@stacksjs/storage'
+import { runNpmScript } from '@stacksjs/utils'
+import type { ExamplesOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/enums'
 
 export async function invoke(options: ExamplesOptions) {
   if (options.components || options.vue)

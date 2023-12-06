@@ -1,4 +1,4 @@
-import type { JobOptions } from 'stacks:types'
+import type { JobOptions } from '@stacksjs/types'
 
 export class Job {
   name: JobOptions['name']

@@ -1,6 +1,6 @@
-import type { ViteConfig } from 'stacks:types'
-import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from 'stacks:path'
-import { alias } from 'stacks:alias'
+import type { ViteConfig } from '@stacksjs/types'
+import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
+import { alias } from '@stacksjs/alias'
 import { defineConfig } from './'
 import type { ViteBuildOptions } from './'
 

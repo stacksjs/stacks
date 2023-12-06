@@ -1,4 +1,4 @@
-import { Action } from 'stacks:actions'
+import { Action } from '@stacksjs/actions'
 
 export default new Action({
   name: 'SendWelcomeEmail',

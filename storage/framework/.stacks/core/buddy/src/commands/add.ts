@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { AddOptions, BuildOptions, CLI } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
-import { runAdd } from 'stacks:actions'
+import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { runAdd } from '@stacksjs/actions'
 
 export function add(buddy: CLI) {
   const descriptions = {

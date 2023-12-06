@@ -1,7 +1,7 @@
 // triggered via `$your-command inspire`
 import process from 'node:process'
-import { cli, log } from 'stacks:cli'
-import { collect } from 'stacks:collections'
+import { cli, log } from '@stacksjs/cli'
+import { collect } from '@stacksjs/collections'
 
 // for enhanced type safety
 interface InspireOptions {

@@ -1,8 +1,8 @@
-// import { outro } from 'stacks:cli'
-// import { log } from 'stacks:logging'
-// import * as storage from 'stacks:storage'
-// import { determineDebugLevel, loop } from 'stacks:utils'
-// import { frameworkPath, projectPath } from 'stacks:path'
+// import { outro } from '@stacksjs/cli'
+// import { log } from '@stacksjs/logging'
+// import * as storage from '@stacksjs/storage'
+// import { determineDebugLevel, loop } from '@stacksjs/utils'
+// import { frameworkPath, projectPath } from '@stacksjs/path'
 //
 // // await runCommand(NpmScript.UpgradeFramework, parseArgs())
 //

@@ -21,7 +21,7 @@ bun install -d @stacksjs/actions
 Now, you can use it in your project:
 
 ```js
-import * as router from 'stacks:router'
+import * as router from '@stacksjs/router'
 
 // wip
 ```

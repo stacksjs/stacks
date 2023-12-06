@@ -1,4 +1,4 @@
-import { path } from 'stacks:path'
+import { path } from '@stacksjs/path'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export function pwa() {

@@ -1,5 +1,5 @@
-import { contains } from 'stacks:arrays'
-import { join } from 'stacks:path'
+import { contains } from '@stacksjs/arrays'
+import { join } from '@stacksjs/path'
 import { fs } from './fs'
 
 export function copy(src: string | string[], dest: string, exclude: string[] = []): void {

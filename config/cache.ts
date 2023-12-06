@@ -1,5 +1,5 @@
-import { env } from 'stacks:env'
-import type { CacheConfig } from 'stacks:types'
+import { env } from '@stacksjs/env'
+import type { CacheConfig } from '@stacksjs/types'
 
 /**
  * **Cache Configuration**

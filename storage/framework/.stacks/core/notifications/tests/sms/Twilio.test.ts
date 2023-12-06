@@ -1,4 +1,4 @@
-// import { sms, useSMS } from 'stacks:notifications'
+// import { sms, useSMS } from '@stacksjs/notifications'
 // import notification from '~/config/notification'
 //
 // describe('Twilio Test', () => {

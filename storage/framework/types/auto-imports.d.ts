@@ -1388,7 +1388,6 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
-    readonly openaiWip: UnwrapRef<typeof import('../.stacks/core/ai/src/drivers/openai')['openaiWip']>
     readonly or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['or']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>
@@ -2273,7 +2272,6 @@ declare module '@vue/runtime-core' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
-    readonly openaiWip: UnwrapRef<typeof import('../.stacks/core/ai/src/drivers/openai')['openaiWip']>
     readonly or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['or']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>

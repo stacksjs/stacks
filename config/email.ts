@@ -1,5 +1,5 @@
-import { env } from 'stacks:env'
-import type { EmailConfig } from 'stacks:types'
+import { env } from '@stacksjs/env'
+import type { EmailConfig } from '@stacksjs/types'
 
 /**
  * **Email Configuration**

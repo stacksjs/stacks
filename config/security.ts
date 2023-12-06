@@ -1,4 +1,4 @@
-import type { SecurityConfig } from 'stacks:types'
+import type { SecurityConfig } from '@stacksjs/types'
 
 /**
  * **Services**

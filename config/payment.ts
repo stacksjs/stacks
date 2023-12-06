@@ -1,4 +1,4 @@
-import type { PaymentConfig } from 'stacks:types'
+import type { PaymentConfig } from '@stacksjs/types'
 
 /**
  * **Payment Configuration**

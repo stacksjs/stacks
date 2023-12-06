@@ -18,7 +18,7 @@ bun install -d @stacksjs/ui
 Now, you can use it in your project:
 
 ```js
-import ui from 'stacks:ui'
+import ui from '@stacksjs/ui'
 
 // wip
 ```

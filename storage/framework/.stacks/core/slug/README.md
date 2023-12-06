@@ -21,7 +21,7 @@ bun install -d @stacksjs/database
 Now, you can use it in your project:
 
 ```js
-import * as database from 'stacks:database'
+import * as database from '@stacksjs/database'
 
 // wip
 ```

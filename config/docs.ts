@@ -1,4 +1,22 @@
-import type { DocsConfig } from 'stacks:types'
+import type { DocsConfig } from '@stacksjs/types'
+
+interface SocialLink {
+  icon: SocialLinkIcon
+  link: string
+  ariaLabel?: string
+}
+
+type SocialLinkIcon =
+  | 'discord'
+  | 'facebook'
+  | 'github'
+  | 'instagram'
+  | 'linkedin'
+  | 'mastodon'
+  | 'slack'
+  | 'twitter'
+  | 'youtube'
+  | { svg: string }
 
 const nav = [
   { text: 'Config', link: '/config', activeMatch: '/config' },

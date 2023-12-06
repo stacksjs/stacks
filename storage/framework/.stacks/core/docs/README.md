@@ -21,7 +21,7 @@ bun install -d @stacksjs/docs
 Now, you can use it in your project:
 
 ```js
-import * as docs from 'stacks:docs'
+import * as docs from '@stacksjs/docs'
 
 // wip
 ```

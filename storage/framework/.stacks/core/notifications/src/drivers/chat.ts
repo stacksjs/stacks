@@ -1,1 +1,1 @@
-export * as chat from 'stacks:chat'
+export * as chat from '@stacksjs/chat'

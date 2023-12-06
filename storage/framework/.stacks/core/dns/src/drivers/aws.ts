@@ -1,13 +1,13 @@
 import { Route53 } from '@aws-sdk/client-route-53'
 import { Route53Domains } from '@aws-sdk/client-route-53-domains'
-import { err, handleError, ok } from 'stacks:error-handling'
-import { log } from 'stacks:logging'
-import { runAction } from 'stacks:actions'
-import { fs } from 'stacks:storage'
-import { config } from 'stacks:config'
-import { path as p } from 'stacks:path'
-import { Action } from 'stacks:enums'
-import type { DeployOptions } from 'stacks:types'
+import { err, handleError, ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
+import { runAction } from '@stacksjs/actions'
+import { fs } from '@stacksjs/storage'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { Action } from '@stacksjs/enums'
+import type { DeployOptions } from '@stacksjs/types'
 
 export async function deleteHostedZone(domainName: string) {
   const route53 = new Route53()

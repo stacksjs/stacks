@@ -1,9 +1,9 @@
-// import { storage } from 'stacks:storage'
-import { path as p } from 'stacks:path'
-import { log } from 'stacks:cli'
+// import { storage } from '@stacksjs/storage'
+import { path as p } from '@stacksjs/path'
+import { log } from '@stacksjs/cli'
 
-// import type { Model, SchemaOptions } from 'stacks:types'
-// import { titleCase } from 'stacks:strings'
+// import type { Model, SchemaOptions } from '@stacksjs/types'
+// import { titleCase } from '@stacksjs/strings'
 
 // const { fs } = storage
 
@@ -54,7 +54,7 @@ export function generateMigrationFile(options: MigrationOptions) {
   const fileName = `${timestamp}-${name}.ts`
   const filePath = p.frameworkPath(`database/migrations/${fileName}`)
   const fileContent = `
-    import { Migration } from 'stacks:database'
+    import { Migration } from '@stacksjs/database'
 
     export default new Migration({
       name: '${name}',

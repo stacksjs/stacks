@@ -1,11 +1,11 @@
 import process from 'node:process'
-import { log } from 'stacks:logging'
-import { Action, NpmScript } from 'stacks:enums'
-import type { GeneratorOptions } from 'stacks:types'
-import { runNpmScript } from 'stacks:utils'
+import { log } from '@stacksjs/logging'
+import { Action, NpmScript } from '@stacksjs/enums'
+import type { GeneratorOptions } from '@stacksjs/types'
+import { runNpmScript } from '@stacksjs/utils'
 
-// import { files } from 'stacks:storage'
-import { projectPath } from 'stacks:path'
+// import { files } from '@stacksjs/storage'
+import { projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
 
 export async function invoke(options?: GeneratorOptions) {

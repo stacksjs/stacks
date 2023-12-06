@@ -10,10 +10,10 @@ import {
   generateVueCompat,
   generateWebTypes,
   invoke as startGenerationProcess,
-} from 'stacks:actions'
-import { prompt } from 'stacks:cli'
-import { type CLI, ExitCode, type GeneratorOptions } from 'stacks:types'
-import { isString } from 'stacks:validation'
+} from '@stacksjs/actions'
+import { prompt } from '@stacksjs/cli'
+import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export function generate(buddy: CLI) {
   const descriptions = {

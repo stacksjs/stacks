@@ -1,19 +1,19 @@
 import process from 'node:process'
-import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from 'stacks:cli'
-import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from 'stacks:cloud'
-import { path as p } from 'stacks:path'
-import type { CLI, CloudCliOptions } from 'stacks:types'
-import { ExitCode } from 'stacks:types'
-import { loop } from 'stacks:utils'
+import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
+import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
+import { path as p } from '@stacksjs/path'
+import type { CLI, CloudCliOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
+import { loop } from '@stacksjs/utils'
 
 export function cloud(buddy: CLI) {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',
-    add: 'Add a resource to the Stacks Cloud.',
-    remove: 'Remove the Stacks Cloud. In case it fails, try again.',
-    optimizeCost: 'Optimize the cost of the Stacks Cloud. This removes certain resources that may be re-applied at a later time.',
-    cleanUp: 'Cleans up the Stacks Cloud. This removes all resources that were retained during the cloud deletion.',
+    add: 'Add a resource to the Stacks Cloud',
+    remove: 'Removes the Stacks Cloud. In case it fails, try again',
+    optimizeCost: 'Removes certain resources that may be re-applied at a later time',
+    cleanUp: 'Removes all resources that were retained during the cloud deletion',
     verbose: 'Enable verbose output',
   }
 

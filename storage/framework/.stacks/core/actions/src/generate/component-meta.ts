@@ -4,8 +4,8 @@
  * This action generates the component meta.
  */
 
-import { log } from 'stacks:logging'
-import { hasComponents } from 'stacks:storage'
+import { log } from '@stacksjs/logging'
+import { hasComponents } from '@stacksjs/storage'
 import { generateComponentMeta } from '../helpers/component-meta'
 
 if (hasComponents())

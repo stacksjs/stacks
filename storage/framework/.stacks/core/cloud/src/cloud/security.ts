@@ -1,5 +1,5 @@
 // waf and encryption
-import { config } from 'stacks:config'
+import { config } from '@stacksjs/config'
 import type { aws_route53 as route53 } from 'aws-cdk-lib'
 import { Duration, RemovalPolicy, Tags, aws_certificatemanager as acm, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'

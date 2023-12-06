@@ -1,5 +1,5 @@
 import NProgress from 'nprogress'
-import type { UserModule } from 'stacks:types'
+import type { UserModule } from '@stacksjs/types'
 
 export const install: UserModule = ({ isClient, router }) => {
   if (isClient) {

@@ -15,7 +15,7 @@ bun install -d @stacksjs/logging
 Now, you can use it in your project:
 
 ```js
-import { log } from 'stacks:logging'
+import { log } from '@stacksjs/logging'
 
 log('some description') // aliases to log.log()
 log.debug('some debug description')

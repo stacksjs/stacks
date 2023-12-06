@@ -15,7 +15,7 @@ bun install -d @stacksjs/repl
 Now, you can use it in your project:
 
 ```js
-import { repl } from 'stacks:repl'
+import { repl } from '@stacksjs/repl'
 
 // wip
 ```

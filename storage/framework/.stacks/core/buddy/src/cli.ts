@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { handleError } from 'stacks:error-handling'
-import { cli } from 'stacks:cli'
-import { ensureProjectIsInitialized } from 'stacks:utils'
+import { handleError } from '@stacksjs/error-handling'
+import { cli } from '@stacksjs/cli'
+import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import * as cmd from './commands'
 
 // setup global error handlers

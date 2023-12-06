@@ -1,4 +1,4 @@
-import type { BinaryConfig } from 'stacks:types'
+import type { BinaryConfig } from '@stacksjs/types'
 
 /**
  * **Binary / CLI Configuration**

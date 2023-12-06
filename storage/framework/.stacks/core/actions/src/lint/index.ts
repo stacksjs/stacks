@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { runCommands } from 'stacks:cli'
-import { projectPath } from 'stacks:path'
-import { ExitCode } from 'stacks:types'
-import { NpmScript } from 'stacks:enums'
+import { runCommands } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
+import { NpmScript } from '@stacksjs/enums'
 
 export default async function lintAction() {
   const result = await runCommands([

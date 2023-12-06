@@ -1,4 +1,4 @@
-// import type { CliOptions } from 'stacks:types'
+// import type { CliOptions } from '@stacksjs/types'
 import cac from 'cac'
 import { version } from '../package.json'
 

@@ -1,4 +1,4 @@
-import type { Money } from 'stacks:types'
+import type { Money } from '@stacksjs/types'
 import { BaseLiteralType } from '@vinejs/vine'
 import type { FieldOptions, Validation } from '@vinejs/vine/types'
 import { isMoney } from '../rules'

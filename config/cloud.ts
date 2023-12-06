@@ -1,4 +1,4 @@
-import type { CloudConfig } from 'stacks:types'
+import type { CloudConfig } from '@stacksjs/types'
 import security from './security'
 
 /**

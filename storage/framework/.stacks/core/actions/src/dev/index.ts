@@ -1,7 +1,7 @@
-import { log } from 'stacks:logging'
-import { runCommand } from 'stacks:cli'
-import type { DevOptions } from 'stacks:types'
-import { Action, NpmScript } from 'stacks:enums'
+import { log } from '@stacksjs/logging'
+import { runCommand } from '@stacksjs/cli'
+import type { DevOptions } from '@stacksjs/types'
+import { Action, NpmScript } from '@stacksjs/enums'
 import { runAction } from '../helpers'
 
 export async function runDevServer(options: DevOptions) {

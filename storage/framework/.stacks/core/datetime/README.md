@@ -18,7 +18,7 @@ bun install -d @stacksjs/datetime
 Now, you can easily access it in your project:
 
 ```js
-import { now, useDateFormat } from 'stacks:datetime'
+import { now, useDateFormat } from '@stacksjs/datetime'
 
 const formatted = useDateFormat(now(), 'YYYY-MM-DD HH:mm:ss')
 console.log(formatted) // 2022-11-01 17:06:01

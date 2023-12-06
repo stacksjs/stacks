@@ -1,5 +1,5 @@
-// import { ExitCode, parseArgs } from 'stacks:cli'
-// import { Action } from 'stacks:enums'
+// import { ExitCode, parseArgs } from '@stacksjs/cli'
+// import { Action } from '@stacksjs/enums'
 // import { runAction } from '../helpers'
 //
 // const options = parseArgs()

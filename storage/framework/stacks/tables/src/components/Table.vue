@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { isString } from 'stacks:utils'
-import type { Hits, SearchResponse } from 'stacks:types'
+import { isString } from '@stacksjs/utils'
+import type { Hits, SearchResponse } from '@stacksjs/types'
 import { useTable } from '../functions/table'
 
 interface Props {

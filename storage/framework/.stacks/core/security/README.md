@@ -19,7 +19,7 @@ bun install -d @stacksjs/security
 Now, you can easily access it in your project:
 
 ```js
-import { base64Encode, base64Verify, bcryptEncode, bcryptVerify, decrypt, encrypt, makeHash, md5Encode, verifyHash } from 'stacks:security'
+import { base64Encode, base64Verify, bcryptEncode, bcryptVerify, decrypt, encrypt, makeHash, md5Encode, verifyHash } from '@stacksjs/security'
 
 // and more...
 ```

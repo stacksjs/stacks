@@ -20,7 +20,7 @@ bun install -d @stacksjs/actions
 Now, you can use it in your project:
 
 ```ts
-import actions from 'stacks:actions'
+import actions from '@stacksjs/actions'
 
 // wip
 ```

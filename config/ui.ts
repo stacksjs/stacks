@@ -1,4 +1,4 @@
-import type { UiConfig } from 'stacks:types'
+import type { UiConfig } from '@stacksjs/types'
 
 /**
  * **UI Engine Options**

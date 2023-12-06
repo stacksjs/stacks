@@ -21,7 +21,7 @@ bun install -d @stacksjs/cache
 Now, you can use it in your project:
 
 ```js
-import * as cache from 'stacks:cache'
+import * as cache from '@stacksjs/cache'
 
 // wip
 ```

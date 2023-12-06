@@ -21,7 +21,7 @@ bun install -d @stacksjs/realtime
 Now, you can use it in your project:
 
 ```js
-import realtime from 'stacks:realtime'
+import realtime from '@stacksjs/realtime'
 
 // wip
 ```

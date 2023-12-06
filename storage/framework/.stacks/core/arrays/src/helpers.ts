@@ -1,5 +1,5 @@
-import type { Arrayable, Nullable } from 'stacks:types'
-import { clamp } from 'stacks:utils'
+import type { Arrayable, Nullable } from '@stacksjs/types'
+import { clamp } from '@stacksjs/utils'
 
 /**
  * Convert `Arrayable<T>` to `Array<T>`

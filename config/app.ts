@@ -1,5 +1,5 @@
-import type { AppConfig } from 'stacks:types'
-import { env } from 'stacks:env'
+import type { AppConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Application Configuration**

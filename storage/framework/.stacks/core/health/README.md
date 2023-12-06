@@ -17,7 +17,7 @@ bun install -d @stacksjs/health
 You may now use:
 
 ```ts
-import { useHealth } from 'stacks:health'
+import { useHealth } from '@stacksjs/health'
 
 const health = useHealth()
 // ...

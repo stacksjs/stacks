@@ -1,7 +1,7 @@
-import { log, runCommand } from 'stacks:cli'
-import { config } from 'stacks:config'
-import { path as p } from 'stacks:path'
-import { storage } from 'stacks:storage'
+import { log, runCommand } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 
 await runCommand('bun run build', {
   cwd: p.frameworkPath(),

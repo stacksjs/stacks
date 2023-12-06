@@ -22,4 +22,4 @@ export {
   defineServices,
   defineStorage,
   defineUi,
-} from 'stacks:config'
+} from '@stacksjs/config'

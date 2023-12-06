@@ -1,6 +1,6 @@
-import { log } from 'stacks:logging'
-import { writeTextFile } from 'stacks:storage'
-import { packageJsonPath } from 'stacks:path'
+import { log } from '@stacksjs/logging'
+import { writeTextFile } from '@stacksjs/storage'
+import { packageJsonPath } from '@stacksjs/path'
 import library from '~/config/library'
 
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'

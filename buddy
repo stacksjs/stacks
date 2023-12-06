@@ -1,2 +1,2 @@
 #!/usr/bin/env bun
-import('./storage/framework/.stacks/core/buddy/src/cli')
+import('./storage/framework/.stacks/core/buddy/dist/cli.js')

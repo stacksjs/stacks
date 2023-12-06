@@ -36,7 +36,7 @@ import {
   readTextFile,
   writeJsonFile,
   writeTextFile,
-} from 'stacks:storage'
+} from '@stacksjs/storage'
 
 // wip
 ```

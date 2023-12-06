@@ -1,5 +1,5 @@
-// import { chat, useChat } from 'stacks:notifications'
-// import { Err } from 'stacks:types'
+// import { chat, useChat } from '@stacksjs/notifications'
+// import { Err } from '@stacksjs/types'
 //
 // describe('Slack Test', () => {
 //   it('should send chat', async () => {

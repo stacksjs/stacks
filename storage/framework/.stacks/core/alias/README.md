@@ -15,7 +15,7 @@ bun install -d @stacksjs/alias
 You may now use:
 
 ```ts
-import { alias } from 'stacks:alias'
+import { alias } from '@stacksjs/alias'
 
 console.log(alias)
 ```

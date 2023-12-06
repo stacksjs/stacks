@@ -88,7 +88,7 @@ import {
   isISSN,
   isISO31661Alpha2,
   isISO31661Alpha3
-} from 'stacks:strings'
+} from '@stacksjs/strings'
 
 console.log(camelCase('hello world')) // => "helloWorld"
 console.log(plural('dog')) // => "dogs"

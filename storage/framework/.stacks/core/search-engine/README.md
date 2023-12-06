@@ -26,7 +26,7 @@ bun install -d @stacksjs/search-engine
 You may now use:
 
 ```ts
-import { useSearchEngine } from 'stacks:search-engine'
+import { useSearchEngine } from '@stacksjs/search-engine'
 
 const client = useSearchEngine()
 const index = client.index(name)

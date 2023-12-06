@@ -1,5 +1,5 @@
 // inspired by vue-use
-import { fs } from 'stacks:storage'
+import { fs } from '@stacksjs/storage'
 import type { PackageManifest } from '@vueuse/metadata'
 import filesize from 'filesize'
 import { markdownTable } from 'markdown-table'

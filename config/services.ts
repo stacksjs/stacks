@@ -1,5 +1,5 @@
-import { env } from 'stacks:env'
-import type { ServicesConfig } from 'stacks:types'
+import { env } from '@stacksjs/env'
+import type { ServicesConfig } from '@stacksjs/types'
 
 /**
  * **Services**

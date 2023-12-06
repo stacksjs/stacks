@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { log, parseOptions } from 'stacks:cli'
-import type { PurchaseOptions } from 'stacks:cloud'
-import { purchaseDomain } from 'stacks:cloud'
-import { config } from 'stacks:config'
-import { handleError } from 'stacks:error-handling'
-import { ExitCode } from 'stacks:types'
+import { log, parseOptions } from '@stacksjs/cli'
+import type { PurchaseOptions } from '@stacksjs/cloud'
+import { purchaseDomain } from '@stacksjs/cloud'
+import { config } from '@stacksjs/config'
+import { handleError } from '@stacksjs/error-handling'
+import { ExitCode } from '@stacksjs/types'
 
 const c = config.dns.contactInfo
 if (!c) {

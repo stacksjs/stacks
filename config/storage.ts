@@ -1,4 +1,4 @@
-import type { StorageConfig } from 'stacks:types'
+import type { StorageConfig } from '@stacksjs/types'
 
 /**
  * **Storage Options**

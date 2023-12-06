@@ -1,8 +1,8 @@
-import { ExitCode } from 'stacks:types'
-import type { CLI } from 'stacks:types'
-import { config } from 'stacks:config'
-// import { path } from 'stacks:path'
-import { runCommandSync } from 'stacks:cli'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
+// import { path } from '@stacksjs/path'
+import { runCommandSync } from '@stacksjs/cli'
 
 import { exec } from 'child_process'
 
@@ -20,8 +20,8 @@ import { exec } from 'child_process'
 //   })
 // }
 
-// import { Action } from 'stacks:enums'
-// import { runAction } from 'stacks:actions'
+// import { Action } from '@stacksjs/enums'
+// import { runAction } from '@stacksjs/actions'
 
 type HttpOptions = {
   verbose?: boolean

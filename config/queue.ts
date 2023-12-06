@@ -1,4 +1,4 @@
-import type { QueueConfig } from 'stacks:types'
+import type { QueueConfig } from '@stacksjs/types'
 
 /**
  * **Queue Options**

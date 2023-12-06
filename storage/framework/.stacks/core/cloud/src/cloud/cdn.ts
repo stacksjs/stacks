@@ -9,10 +9,10 @@ import {
   aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from 'stacks:config'
-import { hasFiles } from 'stacks:storage'
-import { path as p } from 'stacks:path'
-import { env } from 'stacks:env'
+import { config } from '@stacksjs/config'
+import { hasFiles } from '@stacksjs/storage'
+import { path as p } from '@stacksjs/path'
+import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '~/storage/framework/stacks/env'
 

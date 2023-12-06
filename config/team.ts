@@ -1,4 +1,4 @@
-import type { Team } from 'stacks:types'
+import type { Team } from '@stacksjs/types'
 
 /**
  * **Team Members**

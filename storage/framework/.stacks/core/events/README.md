@@ -15,7 +15,7 @@ bun install -d @stacksjs/events
 Now, you can use it in your project:
 
 ```js
-import { all, dispatch, listen, off } from 'stacks:events'
+import { all, dispatch, listen, off } from '@stacksjs/events'
 
 // listen to an event
 listen('foo', e => console.log('foo', e))

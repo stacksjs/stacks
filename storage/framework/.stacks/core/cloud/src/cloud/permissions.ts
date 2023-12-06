@@ -1,8 +1,8 @@
 import { SecretValue, aws_iam as iam } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from 'stacks:config'
-import { string } from 'stacks:strings'
-import { env } from 'stacks:env'
+import { config } from '@stacksjs/config'
+import { string } from '@stacksjs/strings'
+import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
 
 export interface PermissionsStackProps extends NestedCloudProps {

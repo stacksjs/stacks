@@ -1,5 +1,5 @@
-import { path as p } from 'stacks:path'
-import type { AutoImportsOptions } from 'stacks:types'
+import { path as p } from '@stacksjs/path'
+import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import { defu } from 'defu'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -14,9 +14,9 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       'vue-i18n',
       // '@vueuse/core',
       // 'vitepress'
-      // { 'stacks:ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-      // { 'stacks:logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-      // { 'stacks:validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
+      // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
+      // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
+      // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
       VueHeadImports, // '@vueuse/head' alternatively
       VueRouterAutoImports,
       {

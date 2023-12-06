@@ -1,5 +1,5 @@
-import { log } from 'stacks:cli'
-import { Middleware } from 'stacks:router'
+import { log } from '@stacksjs/cli'
+import { Middleware } from '@stacksjs/router'
 
 export default new Middleware({
   name: 'logger',

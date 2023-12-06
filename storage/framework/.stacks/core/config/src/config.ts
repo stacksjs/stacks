@@ -1,4 +1,4 @@
-import type { StacksOptions } from 'stacks:types'
+import type { StacksOptions } from '@stacksjs/types'
 import defaults from './defaults'
 import overrides from './overrides'
 

@@ -21,14 +21,14 @@ for dir in $dirs; do
   # Change to the directory
   cd $dir
 
-  # Check if the directory is one of the two specified
-  ## This is because eslint requires cjs builds which we use tsup for
+  # Check if the directory is one of the specified ones
   case "$dir" in
-  *"/eslint-config")
-    # build the package
-    bun run build
-    ;;
-  *)
+    ## This is because eslint requires cjs builds which we use tsup for
+    *"/eslint-config")
+      # build the package
+      bun run build
+      ;;
+    *)
     # Check if build.ts exists in the directory
     if [ -f "build.ts" ]; then
       # Extract the command from build.ts
@@ -44,6 +44,28 @@ for dir in $dirs; do
     #   cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build-server.ts)
     #   # Run the extracted command
     #   eval $cmd
+    # fi
+
+    # at the end of the build, we need to replace "stacks:" with "@stacksjs/"
+    # Check if dist directory exists
+    # if [ -d "dist" ]; then
+    #   # Change to the dist directory
+    #   cd dist
+
+    #   # Find all files in the dist directory
+    #   files=$(find . -type f)
+
+    #   # Loop through each file
+    #   for file in $files; do
+    #     # Check if the file contains "stacks:"
+    #     if grep -q "stacks:" "$file"; then
+    #       # Replace "stacks:" with "@stacksjs/" and write changes to the file
+    #       sed -i '' 's/stacks:/@stacksjs\//g' "$file" # unsure if this works outside of macos
+    #     fi
+    #   done
+
+    #   # Change back to the parent directory
+    #   cd ..
     # fi
     ;;
   esac

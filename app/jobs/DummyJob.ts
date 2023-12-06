@@ -1,4 +1,4 @@
-import { Job } from 'stacks:queue'
+import { Job } from '@stacksjs/queue'
 
 export default new Job({
   name: 'Send Welcome Email', // defaults to the file name

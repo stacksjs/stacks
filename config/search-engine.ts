@@ -1,4 +1,4 @@
-import type { SearchEngineConfig } from 'stacks:types'
+import type { SearchEngineConfig } from '@stacksjs/types'
 
 /**
  * **Search Engine Options**

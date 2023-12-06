@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { frameworkPath } from 'stacks:path'
-import { Action } from 'stacks:enums'
-import { log } from 'stacks:logging'
+import { frameworkPath } from '@stacksjs/path'
+import { Action } from '@stacksjs/enums'
+import { log } from '@stacksjs/logging'
 import { runActions } from './'
 import app from '~/config/app'
 

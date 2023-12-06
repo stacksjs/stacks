@@ -1,4 +1,4 @@
-// import { notification } from 'stacks:config'
+// import { notification } from '@stacksjs/config'
 
 // const email = notification.email
 

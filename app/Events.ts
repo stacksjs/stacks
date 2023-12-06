@@ -1,4 +1,4 @@
-import type { Events } from 'stacks:types'
+import type { Events } from '@stacksjs/types'
 
 /**
  * **Events Configuration**

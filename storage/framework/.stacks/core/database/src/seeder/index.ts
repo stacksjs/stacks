@@ -1,8 +1,8 @@
-// import { MysqlDialect, QueryBuilder, createPool } from 'stacks:query-builder'
-// import { filesystem } from 'stacks:storage'
-// import type { Model } from 'stacks:types'
-// import { projectPath } from 'stacks:path'
-// import { database as config } from 'stacks:config'
+// import { MysqlDialect, QueryBuilder, createPool } from '@stacksjs/query-builder'
+// import { filesystem } from '@stacksjs/storage'
+// import type { Model } from '@stacksjs/types'
+// import { projectPath } from '@stacksjs/path'
+// import { database as config } from '@stacksjs/config'
 
 // const { fs } = filesystem
 

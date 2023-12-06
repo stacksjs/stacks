@@ -1,10 +1,10 @@
-import { ExitCode } from 'stacks:types'
-import type { CLI } from 'stacks:types'
-import { config } from 'stacks:config'
-import { runCommand } from 'stacks:cli'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
+import { runCommand } from '@stacksjs/cli'
 
-// import { Action } from 'stacks:enums'
-// import { runAction } from 'stacks:actions'
+// import { Action } from '@stacksjs/enums'
+// import { runAction } from '@stacksjs/actions'
 
 type DnsOptions = {
   query?: string
