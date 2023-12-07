@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "build": "bun --bun build.ts",
-    "build:app": "vite build ../../../stacks/dashboard -c ../vite/src/desktop.ts",
+    "build:app": "bun --bun vite build ../../../stacks/dashboard -c ../vite/src/desktop.ts",
     "dev": "bun --bun vite ../../../stacks/dashboard -c ../vite/src/desktop.ts",
     "dev:app": "tauri dev",
     "tauri:build": "tauri build",

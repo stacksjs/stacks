@@ -1,9 +1,9 @@
 {
   "build": {
-    "beforeBuildCommand": "bun build",
+    "beforeBuildCommand": "bun build:app",
     "beforeDevCommand": "bun dev",
     "devPath": "http://127.0.0.1:3333/",
-    "distDir": "../dist"
+    "distDir": "../../../../stacks/dashboard/dist"
   },
   "package": {
     "productName": "stacks",
