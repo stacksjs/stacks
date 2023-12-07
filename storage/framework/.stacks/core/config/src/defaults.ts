@@ -4,6 +4,21 @@ import type { StacksOptions } from '@stacksjs/types'
 // import { userConfig as overrides } from './overrides'
 
 export default {
+  ai: {
+    models: [
+      'amazon.titan-embed-text-v1',
+      'amazon.titan-text-express-v1',
+      'amazon.titan-embed-image-v1',
+      'amazon.titan-image-generator-v1',
+      'anthropic.claude-v1',
+      'anthropic.claude-v2',
+      'anthropic.claude-v2:1',
+      'anthropic.claude-instant-v1',
+      'meta.llama2-13b-chat-v1',
+      'meta.llama2-70b-chat-v1',
+    ],
+  },
+
   analytics: {
     driver: undefined,
   },
@@ -19,6 +34,7 @@ export default {
 
   app: {
     name: 'Stacks',
+    description: 'A Stacks application.',
     env: 'local',
     url: 'stacks.localhost',
     debug: true,
@@ -28,6 +44,19 @@ export default {
     fallbackLocale: 'en',
     cipher: 'AES-256-CBC',
     docMode: false,
+    redirectUrls: [],
+    maintenanceMode: false,
+    ports: {
+      frontend: 3333,
+      backend: 3334,
+      admin: 3335,
+      library: 3336,
+      desktop: 3337,
+      email: 3338,
+      docs: 3339,
+      inspect: 3340,
+      api: 3999,
+    },
   },
 
   binary: {

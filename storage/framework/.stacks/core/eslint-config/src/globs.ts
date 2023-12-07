@@ -81,6 +81,6 @@ export const GLOB_EXCLUDE = [
   '**/runtime/server.js',
   '**/framework/**',
   // '**/env/src/index.js',
-  '**/strings/README.md',
-  '**/cli/README.md',
+  // '**/strings/README.md',
+  // '**/cli/README.md',
 ]

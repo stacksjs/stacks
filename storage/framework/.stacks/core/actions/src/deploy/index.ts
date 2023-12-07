@@ -33,8 +33,7 @@ await runCommand('bun actions/src/zip/api.ts', {
 
 log.info('Preparing deployment...')
 
-const profile = 'danyelgroup.com'
-// const profile = process.env.AWS_PROFILE || 'stacks'
+const profile = process.env.AWS_PROFILE || 'stacks'
 
 // TODO: ensure we check whether cdk bootstrap needs to be run
 await runCommand(`bunx cdk deploy --require-approval never --profile="${profile}"`, {

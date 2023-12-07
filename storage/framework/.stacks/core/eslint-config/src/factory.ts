@@ -128,6 +128,9 @@ export async function antfu(
 
   if (enableVue) {
     configs.push(vue({
+      ...typeof enableVue !== 'boolean'
+        ? enableVue
+        : {},
       overrides: overrides.vue,
       stylistic: stylisticOptions,
       typescript: !!enableTypeScript,
@@ -172,7 +175,6 @@ export async function antfu(
           componentExts,
           overrides: overrides.markdown,
         },
-        options.formatters === true || !!(options.formatters || {})?.markdown,
       ),
     )
   }
@@ -181,7 +183,6 @@ export async function antfu(
     configs.push(formatters(
       options.formatters,
       typeof stylisticOptions === 'boolean' ? {} : stylisticOptions,
-      options.markdown !== false,
     ))
   }
 

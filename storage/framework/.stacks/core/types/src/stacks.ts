@@ -1,4 +1,5 @@
 import type {
+  AiConfig,
   AnalyticsConfig,
   ApiConfig,
   AppConfig,
@@ -31,6 +32,8 @@ import type {
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export interface StacksOptions {
+  ai: AiConfig
+
   /**
    * **Analytics Options**
    *

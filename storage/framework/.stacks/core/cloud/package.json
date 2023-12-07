@@ -54,6 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
+    "@aws-sdk/client-bedrock": "^3.468.0",
     "@aws-sdk/client-cloudformation": "^3.468.0",
     "@aws-sdk/client-cloudfront": "^3.468.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.468.0",
@@ -82,6 +83,7 @@
     "constructs": "^10.3.0"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock": "^3.468.0",
     "@aws-sdk/client-cloudformation": "^3.468.0",
     "@aws-sdk/client-cloudfront": "^3.468.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.468.0",

@@ -1,11 +1,11 @@
-import type { Linter } from 'eslint'
+import * as parserPlain from 'eslint-parser-plain'
+import { mergeProcessors, processorPassThrough } from 'eslint-merge-processors'
 import type { FlatConfigItem, OptionsComponentExts, OptionsFiles, OptionsOverrides } from '../types'
 import { GLOB_MARKDOWN, GLOB_MARKDOWN_CODE, GLOB_MARKDOWN_IN_MARKDOWN } from '../globs'
 import { interopDefault } from '../utils'
 
 export async function markdown(
   options: OptionsFiles & OptionsComponentExts & OptionsOverrides = {},
-  formatMarkdown: boolean = false,
 ): Promise<FlatConfigItem[]> {
   const {
     componentExts = [],
@@ -15,43 +15,6 @@ export async function markdown(
 
   // @ts-expect-error missing types
   const markdown = await interopDefault(import('eslint-plugin-markdown'))
-  const baseProcessor = markdown.processors.markdown
-
-  // `eslint-plugin-markdown` only creates virtual files for code blocks,
-  // but not the markdown file itself. In order to format the whole markdown file,
-  // we need to create another virtual file for the markdown file itself.
-  const processor: Linter.Processor = !formatMarkdown
-    ? {
-        meta: {
-          name: 'markdown-processor',
-        },
-        supportsAutofix: true,
-        ...baseProcessor,
-      }
-    : {
-        meta: {
-          name: 'markdown-processor-with-content',
-        },
-        postprocess(messages, filename) {
-          const markdownContent = messages.pop()
-          const codeSnippets = baseProcessor.postprocess(messages, filename)
-          return [
-            ...markdownContent || [],
-            ...codeSnippets || [],
-          ]
-        },
-        preprocess(text, filename) {
-          const result = baseProcessor.preprocess(text, filename)
-          return [
-            ...result,
-            {
-              filename: '.__markdown_content__',
-              text,
-            },
-          ]
-        },
-        supportsAutofix: true,
-      }
 
   return [
     {
@@ -64,7 +27,20 @@ export async function markdown(
       files,
       ignores: [GLOB_MARKDOWN_IN_MARKDOWN],
       name: 'antfu:markdown:processor',
-      processor,
+      // `eslint-plugin-markdown` only creates virtual files for code blocks,
+      // but not the markdown file itself. We use `eslint-merge-processors` to
+      // add a pass-through processor for the markdown file itself.
+      processor: mergeProcessors([
+        markdown.processors.markdown,
+        processorPassThrough,
+      ]),
+    },
+    {
+      files,
+      languageOptions: {
+        parser: parserPlain,
+      },
+      name: 'antfu:markdown:parser',
     },
     {
       files: [

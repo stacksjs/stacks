@@ -1,3 +1,4 @@
+import * as parserPlain from 'eslint-parser-plain'
 import { GLOB_CSS, GLOB_LESS, GLOB_MARKDOWN, GLOB_POSTCSS, GLOB_SCSS } from '../globs'
 import type { VendoredPrettierOptions } from '../vender/prettier-types'
 import { ensurePackages, interopDefault } from '../utils'
@@ -7,7 +8,6 @@ import { StylisticConfigDefaults } from './stylistic'
 export async function formatters(
   options: OptionsFormatters | true = {},
   stylistic: StylisticConfig = {},
-  markdownEnabled = true,
 ): Promise<FlatConfigItem[]> {
   await ensurePackages([
     'eslint-plugin-format',
@@ -34,6 +34,7 @@ export async function formatters(
 
   const prettierOptions: VendoredPrettierOptions = Object.assign(
     {
+      endOfLine: 'auto',
       semi,
       singleQuote: quotes === 'single',
       tabWidth: typeof indent === 'number' ? indent : 2,
@@ -68,7 +69,7 @@ export async function formatters(
       {
         files: [GLOB_CSS, GLOB_POSTCSS],
         languageOptions: {
-          parser: pluginFormat.parserPlain,
+          parser: parserPlain,
         },
         name: 'antfu:formatter:css',
         rules: {
@@ -84,7 +85,7 @@ export async function formatters(
       {
         files: [GLOB_SCSS],
         languageOptions: {
-          parser: pluginFormat.parserPlain,
+          parser: parserPlain,
         },
         name: 'antfu:formatter:scss',
         rules: {
@@ -100,7 +101,7 @@ export async function formatters(
       {
         files: [GLOB_LESS],
         languageOptions: {
-          parser: pluginFormat.parserPlain,
+          parser: parserPlain,
         },
         name: 'antfu:formatter:less',
         rules: {
@@ -120,7 +121,7 @@ export async function formatters(
     configs.push({
       files: ['**/*.html'],
       languageOptions: {
-        parser: pluginFormat.parserPlain,
+        parser: parserPlain,
       },
       name: 'antfu:formatter:html',
       rules: {
@@ -139,7 +140,7 @@ export async function formatters(
     configs.push({
       files: ['**/*.toml'],
       languageOptions: {
-        parser: pluginFormat.parserPlain,
+        parser: parserPlain,
       },
       name: 'antfu:formatter:toml',
       rules: {
@@ -160,11 +161,9 @@ export async function formatters(
       : options.markdown
 
     configs.push({
-      files: markdownEnabled
-        ? ['**/*.__markdown_content__']
-        : [GLOB_MARKDOWN],
+      files: [GLOB_MARKDOWN],
       languageOptions: {
-        parser: pluginFormat.parserPlain,
+        parser: parserPlain,
       },
       name: 'antfu:formatter:markdown',
       rules: {
@@ -189,7 +188,7 @@ export async function formatters(
     configs.push({
       files: ['**/*.graphql'],
       languageOptions: {
-        parser: pluginFormat.parserPlain,
+        parser: parserPlain,
       },
       name: 'antfu:formatter:graphql',
       rules: {

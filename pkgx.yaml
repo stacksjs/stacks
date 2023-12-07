@@ -1,6 +1,6 @@
 dependencies:
-  aws.amazon.com/cli: ^2.13.7
   bun.sh: ^1.0.14
+  aws.amazon.com/cli: ^2.13.7
   caddyserver.com: ^2.7.4
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0

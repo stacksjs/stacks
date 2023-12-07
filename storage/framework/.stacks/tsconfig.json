@@ -52,9 +52,9 @@
     "../*.d.ts",
     "../**/*.ts",
     "../**/*.d.ts",
-    "../core/actions/src/domains/**/*.ts",
     "../docs/.vitepress/*",
     "../stacks/**/*",
+    "./core/**/*.ts",
     "./scripts/*",
   ],
   "exclude": [
