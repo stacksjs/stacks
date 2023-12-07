@@ -51,9 +51,10 @@
   ],
   "scripts": {
     "build": "bun --bun build.ts",
-    "build:app": "vite build ../../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
-    "dev": "bun --bun vite serve ../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
+    "build:app": "vite build ../../../stacks/dashboard -c ../vite/src/desktop.ts",
+    "dev": "bun --bun vite ../../../stacks/dashboard -c ../vite/src/desktop.ts",
     "dev:app": "tauri dev",
+    "tauri:build": "tauri build",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
