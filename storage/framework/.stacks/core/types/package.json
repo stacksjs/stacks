@@ -65,7 +65,7 @@
     "@vinejs/vine": "^1.7.0",
     "bun-types": "canary",
     "cac": "^6.7.14",
-    "markdown-it": "^13.0.2",
+    "markdown-it": "^14.0.0",
     "meilisearch": "^0.36.0",
     "neverthrow": "^6.1.0",
     "ora": "^7.0.1",
