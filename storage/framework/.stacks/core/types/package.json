@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mdit-vue/plugin-component": "^2.0.0",
-    "@mdit-vue/plugin-frontmatter": "^1.0.0",
+    "@mdit-vue/plugin-frontmatter": "^2.0.0",
     "@mdit-vue/types": "^1.0.0",
     "@novu/stateless": "^0.21.0",
     "@rollup/pluginutils": "^5.1.0",
