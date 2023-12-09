@@ -2,6 +2,7 @@
 import { Stack } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { CloudOptions } from '../types'
+import { AiStack } from './ai'
 import { CdnStack } from './cdn'
 import { DnsStack } from './dns'
 import { DocsStack } from './docs'
@@ -21,7 +22,6 @@ import { ComputeStack } from './compute'
 export class Cloud extends Stack {
   constructor(scope: Construct, id: string, props: CloudOptions) {
     super(scope, id, props)
-
     // please beware: be careful changing the order of the stack creations below
     const dns = new DnsStack(this, props)
 
@@ -85,5 +85,7 @@ export class Cloud extends Stack {
       privateBucket: storage.privateBucket,
       cdn: cdn.distribution,
     })
+
+    // new AiStack(this, props)
   }
 }

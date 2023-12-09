@@ -18,9 +18,10 @@ export class DeploymentStack {
   websiteSource: string
 
   constructor(scope: Construct, props: DeploymentStackProps) {
-    this.privateSource = '../../../../../storage/private'
-    this.docsSource = '../../../../../storage/framework/docs'
-    this.websiteSource = config.app.docMode === true ? this.docsSource : '../../../../../storage/framework/views/dist/'
+    // following paths are relative to where the command is run from
+    this.privateSource = '../../../../private'
+    this.docsSource = '../../../../framework/docs'
+    this.websiteSource = config.app.docMode === true ? this.docsSource : '../../../../framework/views/dist/'
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [s3deploy.Source.asset(this.websiteSource, {

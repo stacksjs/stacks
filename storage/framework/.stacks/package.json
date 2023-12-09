@@ -36,7 +36,7 @@
   ],
   "exports": {
     ".": {
-      "bun": "./stacks.ts",
+      "bun": "./src/index.ts",
       "types": "./core/buddy/dist/index.d.ts",
       "import": "./core/buddy/dist/index.js"
     },
@@ -332,14 +332,14 @@
   ],
   "files": [
     ".gitignore",
+    ".simple-git-hooks.js",
     "README.md",
     "buddy",
     "core",
     "custom-elements.json",
     "ide",
-    "scripts",
     "package.json",
-    ".simple-git-hooks.js",
+    "scripts",
     "src",
     "tsconfig.json",
     "vcs",

@@ -32,7 +32,7 @@ if (parts && parts.length < 2)
   throw new Error('Invalid format application key format. Expected a colon-separated string. You may need to run `buddy key:generate`.')
 
 if (!account || !region)
-  throw new Error('Missing accountId or region in config.')
+  throw new Error('Stacks is missing your accountId or region. Please ensure it is set in your .env file')
 
 if (!domain)
   throw new Error('Missing app.url in config.')

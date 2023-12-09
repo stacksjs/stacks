@@ -55,7 +55,7 @@
     "../docs/.vitepress/*",
     "../stacks/**/*",
     "./core/**/*.ts",
-    "./scripts/*",
+    "./scripts/*"
   ],
   "exclude": [
     "../**/cdk.out",

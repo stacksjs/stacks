@@ -7,6 +7,7 @@ import {
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { config } from '@stacksjs/config'
 
 export interface AiStackProps extends NestedCloudProps {
 }
@@ -35,7 +36,7 @@ export class AiStack {
     // Granting the Lambda permission to invoke the AI model
     aiLambda.role?.addToPrincipalPolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
-      resources: ['arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-express-v1'],
+      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:model/${model}`),
     }))
 
     new Output(scope, 'AiApiUrl', {

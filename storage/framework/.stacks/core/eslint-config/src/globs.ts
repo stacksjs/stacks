@@ -42,6 +42,9 @@ export const GLOB_ALL_SRC = [
   GLOB_VUE,
   GLOB_YAML,
   GLOB_HTML,
+  // include anything within the .stacks folder
+  '**/.stacks/**/*.ts',
+  "storage/framework/.stacks/core/cloud/src/cloud/ai.ts",
 ]
 
 export const GLOB_EXCLUDE = [
@@ -79,7 +82,6 @@ export const GLOB_EXCLUDE = [
   // stacks relating
   '**/cdk.out/**',
   '**/runtime/server.js',
-  '**/framework/**',
   // '**/env/src/index.js',
   // '**/strings/README.md',
   // '**/cli/README.md',
