@@ -20,7 +20,19 @@ export class AiStack {
       description: 'Layer with aws-sdk',
     })
 
-    // Defining the Node.js Lambda function
+    const aiRole = new iam.Role(scope, 'AiRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    })
+
+    // Granting the Lambda permission to invoke the AI model
+    aiRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
+        effect: iam.Effect.ALLOW,
+      }),
+    )
+
     const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai`,
       description: 'Lambda function to invoke the AI model',
@@ -28,6 +40,7 @@ export class AiStack {
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
       layers: [awsSdkLayer],
+      role: aiRole,
     })
 
     const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
@@ -37,14 +50,6 @@ export class AiStack {
         allowedOrigins: ['*'],
       },
     })
-
-    // Granting the Lambda permission to invoke the AI model
-    aiLambda.role?.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
-        resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
-      }),
-    )
 
     new Output(scope, 'AiApiUrl', {
       value: api.url,
