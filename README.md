@@ -44,7 +44,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
-- 🪄 **AI** _deep AI integrations_
+- 🪄 **AI** _deep AI integrations & foundational model access_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _Redis, DynamoDB, Upstash, SingleStore, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
