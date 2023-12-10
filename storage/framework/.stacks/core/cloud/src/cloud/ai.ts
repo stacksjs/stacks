@@ -24,12 +24,12 @@ export class AiStack {
     // Defining the Node.js Lambda function
     const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'ai-lambda.handler',
-      code: lambda.Code.fromAsset('ai-lambda'),
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('lambda'),
       // layers: [awsSdkLayer],
     })
 
-    const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
+    const api = new apigateway.LambdaRestApi(scope, "ApiGateway", {
       handler: aiLambda,
     })
 

@@ -23,7 +23,7 @@ const region = 'us-east-1' // currently, us-east-1 is the only fully-supported r
 let timestamp
 
 if (!appKey) {
-  log.info('Please set an application key. `buddy key:generate` is your friend, in this case.')
+  log.info('Please set an application key. You may need to run `buddy key:generate`.')
   process.exit(ExitCode.InvalidArgument)
 }
 

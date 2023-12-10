@@ -14,6 +14,7 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { rimraf } from '@stacksjs/utils'
+import { slug } from '@stacksjs/strings'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`
@@ -186,6 +187,29 @@ export async function deleteJumpBox(stackName?: string) {
     return err('Jump-box not found')
 
   return await deleteEc2Instance(jumpBoxId, stackName)
+}
+
+export async function deleteIamUsers() {
+  const iam = new IAM({ region: 'us-east-1' })
+  const data = await iam.listUsers({})
+  const teamName = slug(config.team.name)
+  const users = data.Users?.filter(user => user.UserName?.includes(teamName)) || []
+
+  if (!users || users.length === 0)
+    return ok(`No Stacks IAM users found for team ${teamName}`)
+
+  const promises = users.map((user) => {
+    // eslint-disable-next-line no-console
+    console.log(`Deleting IAM user: ${user.UserName}`)
+    return iam.deleteUser({ UserName: user.UserName || '' })
+  })
+
+  await Promise.all(promises).catch((error: Error) => {
+    console.error(`Error deleting user: ${error}`)
+    return err(handleError('Error deleting Stacks IAM users', error))
+  })
+
+  return ok(`Stacks IAM users deleted for team ${teamName}`)
 }
 
 export async function deleteStacksBuckets() {

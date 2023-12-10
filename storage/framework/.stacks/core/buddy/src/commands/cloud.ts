@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
-import { addJumpBox, deleteCdkRemnants, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
+import { addJumpBox, deleteCdkRemnants, deleteIamUsers, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -122,9 +122,12 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      log.info(`   ${italic('ℹ️   Removing your cloud resources takes a while to complete.')}`)
-      log.info(`   ${italic('Please note, your backups will not yet be deleted. Though,')}`)
-      log.info(`   ${italic('Backups are scheduled to delete themselves in 30 days.')}`)
+      // eslint-disable-next-line no-console
+      console.log(`   ${italic('ℹ️   Removing your cloud resources takes a while to complete.')}`)
+      // eslint-disable-next-line no-console
+      console.log(`   ${italic('Please note, your backups will not yet be deleted. Though,')}`)
+      // eslint-disable-next-line no-console
+      console.log(`   ${italic('Backups are scheduled to delete themselves in 30 days.')}`)
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -206,7 +209,7 @@ export function cloud(buddy: CLI) {
     .action(async () => {
       const startTime = await intro('buddy cloud:cleanup')
 
-      log.info(`ℹ️  ${italic('Cleaning up your cloud resources will take a while to complete. Please be patient.')}`)
+      log.info(`Cleaning up your cloud resources will take a while to complete. Please be patient.`)
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -271,6 +274,14 @@ export function cloud(buddy: CLI) {
 
       if (result6.isErr()) {
         await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result6.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      log.info('Removing any IAM users...')
+      const result8 = await deleteIamUsers()
+
+      if (result8.isErr()) {
+        await outro('While deleting the Stacks log groups, there was an issue', { startTime, useSeconds: true }, result8.error)
         process.exit(ExitCode.FatalError)
       }
 

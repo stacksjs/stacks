@@ -10,7 +10,7 @@ import type { CliOptions, Manifest, StacksError, SyncSubprocess } from '@stacksj
 import type { NpmScript } from '@stacksjs/enums'
 import { Action } from '@stacksjs/enums'
 import { parse } from 'yaml'
-import { semver } from './versions'
+// import { semver } from './versions'
 import app from '~/config/app'
 import ui from '~/config/ui'
 
@@ -52,10 +52,10 @@ export async function installIfVersionMismatch() {
   const requiredBunVersion = '0.8.1'
   const installedBunVersion = process.version
 
-  if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
-    log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
-    await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
-  }
+  // if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
+  //   log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
+  //   await runCommand(`tea +bun.sh${requiredBunVersion} >/dev/null 2>&1`)
+  // }
 }
 
 export async function frameworkVersion(): Promise<string> {

@@ -15,10 +15,11 @@ export class PermissionsStack {
     const users = config.team.members
     const password = env.AWS_DEFAULT_PASSWORD || string.random()
 
-    for (const userName in users) {
+    for (const name in users) {
       // const userEmail = users[userName]
-      const name = `User${string.pascalCase(teamName)}${string.pascalCase(userName)}`
-      const user = new iam.User(scope, name, {
+      const id = `User${string.pascalCase(teamName)}${string.pascalCase(name)}`
+      const userName = string.slug(`${teamName}-${name}`)
+      const user = new iam.User(scope, id, {
         userName,
         password: SecretValue.unsafePlainText(password),
         passwordResetRequired: true,

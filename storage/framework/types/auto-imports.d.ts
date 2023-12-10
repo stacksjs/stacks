@@ -1474,7 +1474,6 @@ declare module 'vue' {
     readonly searchFilters: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['securityPath']>
-    readonly semver: UnwrapRef<typeof import('../.stacks/core/utils/src/versions')['semver']>
     readonly sep: UnwrapRef<typeof import('../.stacks/core/path/src/index')['sep']>
     readonly serve: UnwrapRef<typeof import('../.stacks/core/router/src/server')['serve']>
     readonly server: UnwrapRef<typeof import('../.stacks/core/server/src/index')['server']>
@@ -2358,7 +2357,6 @@ declare module '@vue/runtime-core' {
     readonly searchFilters: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['securityPath']>
-    readonly semver: UnwrapRef<typeof import('../.stacks/core/utils/src/versions')['semver']>
     readonly sep: UnwrapRef<typeof import('../.stacks/core/path/src/index')['sep']>
     readonly serve: UnwrapRef<typeof import('../.stacks/core/router/src/server')['serve']>
     readonly server: UnwrapRef<typeof import('../.stacks/core/server/src/index')['server']>
