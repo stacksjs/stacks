@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { italic, log, runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
@@ -10,6 +10,7 @@ import type { CliOptions, Manifest, StacksError, SyncSubprocess } from '@stacksj
 import type { NpmScript } from '@stacksjs/enums'
 import { Action } from '@stacksjs/enums'
 import { parse } from 'yaml'
+
 // import { semver } from './versions'
 import app from '~/config/app'
 import ui from '~/config/ui'

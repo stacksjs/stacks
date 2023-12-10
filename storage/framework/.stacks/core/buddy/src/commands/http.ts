@@ -1,10 +1,9 @@
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
+
 // import { path } from '@stacksjs/path'
 import { runCommandSync } from '@stacksjs/cli'
-
-import { exec } from 'child_process'
 
 // function runCommand(command: string): Promise<string> {
 //   return new Promise((resolve, reject) => {
@@ -23,7 +22,7 @@ import { exec } from 'child_process'
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
 
-type HttpOptions = {
+interface HttpOptions {
   verbose?: boolean
 }
 
@@ -43,7 +42,7 @@ export function http(buddy: CLI) {
         .map(([key, value]) => `--${key} ${value}`)
         .join(' ')
 
-      const command = `http GET ${domain || config.app.url } ${optionsString}`
+      const command = `http GET ${domain || config.app.url} ${optionsString}`
       console.log(`Running command: ${command}`)
       runCommandSync(command)
 

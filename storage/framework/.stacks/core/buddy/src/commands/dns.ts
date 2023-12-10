@@ -6,7 +6,7 @@ import { runCommand } from '@stacksjs/cli'
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
 
-type DnsOptions = {
+interface DnsOptions {
   query?: string
   type?: string
   nameserver?: string
@@ -70,7 +70,7 @@ export function dns(buddy: CLI) {
         .map(([key, value]) => `--${key} ${value}`)
         .join(' ')
 
-      await runCommand(`dog ${domain || config.app.url } ${optionsString}`)
+      await runCommand(`dog ${domain || config.app.url} ${optionsString}`)
 
       process.exit(ExitCode.Success)
     })

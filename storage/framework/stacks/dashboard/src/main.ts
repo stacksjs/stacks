@@ -8,10 +8,9 @@ import 'highlight.js/styles/atom-one-light.css'
 import './styles/main.css'
 import { createPinia } from 'pinia'
 
-const pinia = createPinia()
-
-
 import 'uno.css'
+
+const pinia = createPinia()
 ViteSSG(
   App,
   {

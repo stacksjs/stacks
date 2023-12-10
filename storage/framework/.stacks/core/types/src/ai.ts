@@ -1,13 +1,13 @@
 type AiModel = 'amazon.titan-embed-text-v1'
-    | 'amazon.titan-text-express-v1'
-    | 'amazon.titan-embed-image-v1'
-    | 'amazon.titan-image-generator-v1'
-    | 'anthropic.claude-v1'
-    | 'anthropic.claude-v2'
-    | 'anthropic.claude-v2:1'
-    | 'anthropic.claude-instant-v1'
-    | 'meta.llama2-13b-chat-v1'
-    | 'meta.llama2-70b-chat-v1'
+  | 'amazon.titan-text-express-v1'
+  | 'amazon.titan-embed-image-v1'
+  | 'amazon.titan-image-generator-v1'
+  | 'anthropic.claude-v1'
+  | 'anthropic.claude-v2'
+  | 'anthropic.claude-v2:1'
+  | 'anthropic.claude-instant-v1'
+  | 'meta.llama2-13b-chat-v1'
+  | 'meta.llama2-70b-chat-v1'
 
 /**
  * **AI Options**

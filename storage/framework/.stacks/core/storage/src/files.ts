@@ -101,7 +101,8 @@ export function isFile(path: string): boolean {
 export function hasFiles(folder: string): boolean {
   try {
     return fs.default.readdirSync(folder).length > 0
-  } catch (err) {
+  }
+  catch (err) {
     return false
   }
 }

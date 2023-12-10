@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+import AppButton from '../../components/Buttons/AppButton.vue'
+
 useHead({
   title: 'Dashboard - Dependencies',
 })
-
-import AppButton from '../../components/Buttons/AppButton.vue'
 </script>
 
 <template>

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+defineOptions({
+  name: 'IndexPage',
+})
+
 // import { app } from '@stacksjs/config'
 
 // https://github.com/vueuse/head
@@ -21,10 +25,6 @@ useHead({
       href: () => preferredDark.value ? '/favicon-dark.svg' : '/favicon.svg',
     },
   ],
-})
-
-defineOptions({
-  name: 'IndexPage',
 })
 
 const user = useUserStore()

@@ -265,7 +265,6 @@ buddy cloud:remove # removes cloud setup
 buddy cloud:cleanup # removes cloud setup & cleans up all potentially leftover resources
 buddy cloud:add --jump-box # adds a jump box to your cloud setup
 
-
 # select the example to run (follow CLI prompts)
 buddy example # prompts you to select which example to run
 buddy example:vue # runs the Vue example

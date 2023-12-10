@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useGitStore } from '../../stores/git'
 
 const gitStore = useGitStore()
 const github = useGithub()
 const route = useRoute()
 
-onMounted(async () =>{
+onMounted(async () => {
   await gitStore.fetchWorkflowAction(route.params.id)
 })
 
@@ -13,12 +14,11 @@ useHead({
   title: `Deployments - ${route.params.id}`,
 })
 
-import { ref } from 'vue'
-
 const flag = ref(false)
 
 function getStatus(conclusion: string) {
-  if (conclusion === 'success') return 'Ready'
+  if (conclusion === 'success')
+    return 'Ready'
 
   return 'Failed'
 }
@@ -41,11 +41,11 @@ function getStatus(conclusion: string) {
             <dd class="mt-1 text-sm leading-6 text-gray-700 flex items-center sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               <span> {{ getStatus(gitStore.workflowRun.conclusion) }} </span>
               <svg fill="none" class="text-green-500 w-5 h-5 ml-2" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </dd>
           </div>
-        
+
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
               Duration
@@ -117,9 +117,9 @@ function getStatus(conclusion: string) {
                 /><path d="M1.05 12H7" /><path d="M17.01 12h5.95" /></svg>
 
                 <a
+                  v-if="gitStore.workflowRun.head_commit"
                   href="#"
                   class="hover:underline"
-                  v-if="gitStore.workflowRun.head_commit"
                 >
 
                   <code class="text-xs">{{ gitStore.workflowRun.head_commit.id.slice(0, 10) }}</code>

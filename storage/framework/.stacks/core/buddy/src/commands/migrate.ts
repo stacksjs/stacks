@@ -30,7 +30,7 @@ export function migrate(buddy: CLI) {
       process.exit(ExitCode.Success)
     })
 
-    buddy
+  buddy
     .command('migrate:dns', descriptions.migrate)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {

@@ -1,17 +1,14 @@
 <script setup lang="ts">
-
 const envValues = ref('')
 const envReader = useEnvReader()
 
 onMounted(async () => {
-   envValues.value = await envReader.read()
+  envValues.value = await envReader.read()
 })
 
 useHead({
   title: 'Dashboard - Environment',
 })
-
-
 </script>
 
 <template>
@@ -49,4 +46,3 @@ useHead({
     </form>
   </div>
 </template>
-

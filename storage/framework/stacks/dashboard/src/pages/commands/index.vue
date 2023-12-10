@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import AppButton from '../../components/Buttons/AppButton.vue'
+
 useHead({
   title: 'Dashboard - Commands',
 })
-
-import { ref } from 'vue'
-import AppButton from '../../components/Buttons/AppButton.vue'
 
 interface DummyRefItem {
   value: boolean

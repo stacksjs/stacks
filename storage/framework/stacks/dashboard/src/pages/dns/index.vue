@@ -1,11 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import AppButton from '../../components/Buttons/AppButton.vue'
+
 useHead({
   title: 'Dashboard - DNS',
 })
-
-
-import { ref } from 'vue'
-import AppButton from '../../components/Buttons/AppButton.vue'
 
 const addDnsSection = ref(false)
 

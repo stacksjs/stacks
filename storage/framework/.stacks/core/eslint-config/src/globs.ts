@@ -44,7 +44,7 @@ export const GLOB_ALL_SRC = [
   GLOB_HTML,
   // include anything within the .stacks folder
   '**/.stacks/**/*.ts',
-  "storage/framework/.stacks/core/cloud/src/cloud/ai.ts",
+  'storage/framework/.stacks/core/cloud/src/cloud/ai.ts',
 ]
 
 export const GLOB_EXCLUDE = [

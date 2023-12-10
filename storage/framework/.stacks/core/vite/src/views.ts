@@ -5,14 +5,11 @@ import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
+
 // @ts-expect-error missing types
-import Layouts from 'vite-plugin-vue-layouts'
-import { autoImports } from './plugin/auto-imports'
-import { components } from './plugin/components'
-import { layouts } from './plugin/layouts'
-import { fonts } from './plugin/fonts'
 // import { i18n } from './plugin/i18n'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
+
 // import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
@@ -21,8 +18,11 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from 'unocss/vite'
 import Shiki from 'markdown-it-shikiji'
-import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
+import { fonts } from './plugin/fonts'
+import { layouts } from './plugin/layouts'
+import { autoImports } from './plugin/auto-imports'
+import { components } from './plugin/components'
 
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
@@ -31,7 +31,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
-    }
+    },
   },
 
   // define: {
@@ -175,7 +175,7 @@ export default defineConfig({
       compositionOnly: true,
       fullInstall: true,
       include: [
-        p.resolve(__dirname, '../../../../../../lang/**')
+        p.resolve(__dirname, '../../../../../../lang/**'),
       ],
     }),
 

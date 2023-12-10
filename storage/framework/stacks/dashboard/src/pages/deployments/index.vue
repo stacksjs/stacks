@@ -26,5 +26,5 @@ useHead({
 
   <DeploymentList />
 
-  <ActivityFeed />  
+  <ActivityFeed />
 </template>

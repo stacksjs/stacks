@@ -1,13 +1,13 @@
 /* eslint-disable no-new */
 import {
-  aws_lambda as lambda,
+  CfnOutput as Output,
   aws_apigateway as apigateway,
   aws_iam as iam,
-  CfnOutput as Output,
+  aws_lambda as lambda,
 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import type { NestedCloudProps } from '../types'
 import { config } from '@stacksjs/config'
+import type { NestedCloudProps } from '../types'
 
 export interface AiStackProps extends NestedCloudProps {
 }
@@ -29,7 +29,7 @@ export class AiStack {
       // layers: [awsSdkLayer],
     })
 
-    const api = new apigateway.LambdaRestApi(scope, "ApiGateway", {
+    const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
       handler: aiLambda,
     })
 

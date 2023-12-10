@@ -4,8 +4,8 @@ import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'
 import Components from 'unplugin-vue-components/vite'
 import UnoCSS from 'unocss/vite'
-import { layouts, pages, uiEngine } from './stacks'
 import AutoImport from 'unplugin-auto-import/vite'
+import { layouts, pages, uiEngine } from './stacks'
 import { defineConfig } from './'
 
 export const pagesConfig = {
@@ -38,7 +38,7 @@ export const pagesConfig = {
         'vue-router',
         'vue-i18n',
         '@vueuse/head',
-        '@vueuse/core'
+        '@vueuse/core',
       ],
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
       dirs: [

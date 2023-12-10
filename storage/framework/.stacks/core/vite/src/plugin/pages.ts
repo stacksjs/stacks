@@ -16,20 +16,19 @@ export function pages(options?: Options) {
 
 function getFileBasedRouteName(node: TreeNode): string {
   // Base case: If node doesn't have a parent, return an empty string
-  if (!node.parent) {
-    return "";
-  }
+  if (!node.parent)
+    return ''
 
   // Recursive case: Concatenate the parent's value with the current node's value
-  const segment = node.value.rawSegment === "index" ? "" : node.value.rawSegment;
-  
-  const path = getFileBasedRouteName(node.parent) + (segment ? "/" + segment : "");
-  
+  const segment = node.value.rawSegment === 'index' ? '' : node.value.rawSegment
+
+  const path = getFileBasedRouteName(node.parent) + (segment ? `/${segment}` : '')
+
   // Process the path to get the desired format
   const cleanedPath = path
-    .replace(/^\//, "")  // Remove leading slash
-    .replace(/\//g, ".")  // Replace all remaining slashes with dots
-    .replace(/\[|\]/g, "");  // Remove [ and ]
-  
-  return cleanedPath;
+    .replace(/^\//, '') // Remove leading slash
+    .replace(/\//g, '.') // Replace all remaining slashes with dots
+    .replace(/\[|\]/g, '') // Remove [ and ]
+
+  return cleanedPath
 }
