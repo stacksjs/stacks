@@ -14,19 +14,19 @@ export interface AiStackProps extends NestedCloudProps {
 
 export class AiStack {
   constructor(scope: Construct, props: AiStackProps) {
-    // // Define the Lambda Layer for aws-sdk
-    // const awsSdkLayer = new lambda.LayerVersion(scope, 'AwsSdkLayer', {
-    //   code: lambda.Code.fromAsset('aws-sdk-layer'),
-    //   compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
-    //   description: 'Layer with aws-sdk',
-    // })
+    // Define the Lambda Layer for aws-sdk
+    const awsSdkLayer = new lambda.LayerVersion(scope, 'AwsSdkLayer', {
+      code: lambda.Code.fromAsset('src/cloud/aws-sdk-layer'),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+      description: 'Layer with aws-sdk',
+    })
 
     // Defining the Node.js Lambda function
     const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda'),
-      // layers: [awsSdkLayer],
+      code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
+      layers: [awsSdkLayer],
     })
 
     const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
