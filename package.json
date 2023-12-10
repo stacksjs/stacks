@@ -115,5 +115,9 @@
     "storage/framework/.stacks/core/bun-create/*",
     "storage/framework/.stacks/core/*",
     "storage/framework/stacks/*"
-  ]
+  ],
+  "devDependencies": {
+    "eslint": "npm:eslint-ts-patch@^8.55.0-1",
+    "eslint-ts-patch": "^8.55.0-1"
+  }
 }

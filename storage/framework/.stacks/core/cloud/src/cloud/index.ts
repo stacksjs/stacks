@@ -86,6 +86,6 @@ export class Cloud extends Stack {
       cdn: cdn.distribution,
     })
 
-    // new AiStack(this, props)
+    new AiStack(this, props)
   }
 }

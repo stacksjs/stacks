@@ -291,4 +291,3 @@ export interface GithubCommit {
       deployments_url: string;
     };
   }
-  

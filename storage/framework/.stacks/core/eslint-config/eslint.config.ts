@@ -1,6 +1,5 @@
 // @ts-check
-import styleMigrate from '@stylistic/eslint-plugin-migrate'
-import stacks from './dist/index.js'
+import stacks from './src'
 
 export default stacks(
   {
@@ -19,13 +18,13 @@ export default stacks(
       'perfectionist/sort-objects': 'error',
     },
   },
-  {
-    files: ['src/configs/*.ts'],
-    plugins: {
-      'style-migrate': styleMigrate,
-    },
-    rules: {
-      'style-migrate/migrate': ['error', { namespaceTo: 'style' }],
-    },
-  },
+  // {
+  //   files: ['src/configs/*.ts'],
+  //   plugins: {
+  //     'style-migrate': styleMigrate,
+  //   },
+  //   rules: {
+  //     'style-migrate/migrate': ['error', { namespaceTo: 'style' }],
+  //   },
+  // },
 )
