@@ -36,7 +36,6 @@ export class CdnStack {
   constructor(scope: Construct, props: CdnStackProps) {
     this.props = props
 
-    // proceed with cdn logic
     this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')
 
     this.cdnCachePolicy = new cloudfront.CachePolicy(scope, 'CdnCachePolicy', {
