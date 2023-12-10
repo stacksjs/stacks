@@ -65,8 +65,13 @@ export class AiStack {
     //   },
     // })
 
-    new Output(scope, 'AiApiUrl', {
+    new Output(scope, 'AiVanityApiUrl', {
       value: api.apiEndpoint,
+    })
+
+    new Output(scope, 'AiApiUrl', {
+      // value: 'https://stacksjs.org/ai/ask',
+      value: `${props.domain}/ai/ask`,
     })
   }
 }
