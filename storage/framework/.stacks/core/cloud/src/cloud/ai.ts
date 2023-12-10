@@ -1,7 +1,6 @@
 /* eslint-disable no-new */
 import {
   CfnOutput as Output,
-  aws_apigateway as apigateway,
   aws_iam as iam,
   aws_lambda as lambda,
 } from 'aws-cdk-lib'
@@ -31,17 +30,21 @@ export class AiStack {
       layers: [awsSdkLayer],
     })
 
-    const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
-      restApiName: `${props.slug}-${props.appEnv}-ai`,
-      description: 'API Gateway to invoke the AI model',
-      handler: aiLambda,
+    const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
+      function: aiLambda,
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ['*'],
+      },
     })
 
     // Granting the Lambda permission to invoke the AI model
-    aiLambda.role?.addToPrincipalPolicy(new iam.PolicyStatement({
-      actions: ['bedrock:InvokeModel'],
-      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
-    }))
+    aiLambda.role?.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
+      }),
+    )
 
     new Output(scope, 'AiApiUrl', {
       value: api.url,
