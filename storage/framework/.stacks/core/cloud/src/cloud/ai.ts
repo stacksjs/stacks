@@ -24,6 +24,7 @@ export class AiStack {
     // Defining the Node.js Lambda function
     const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai`,
+      description: 'Lambda function to invoke the AI model',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
@@ -32,13 +33,14 @@ export class AiStack {
 
     const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
       restApiName: `${props.slug}-${props.appEnv}-ai`,
+      description: 'API Gateway to invoke the AI model',
       handler: aiLambda,
     })
 
     // Granting the Lambda permission to invoke the AI model
     aiLambda.role?.addToPrincipalPolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
-      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:model/${model}`),
+      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
     }))
 
     new Output(scope, 'AiApiUrl', {
