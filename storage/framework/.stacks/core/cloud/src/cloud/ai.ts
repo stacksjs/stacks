@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 import {
+  Duration,
   CfnOutput as Output,
   aws_iam as iam,
   aws_lambda as lambda,
@@ -20,27 +21,38 @@ export class AiStack {
       description: 'Layer with aws-sdk',
     })
 
-    const aiRole = new iam.Role(scope, 'AiRole', {
-      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    const bedrockAccessPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel'], // See: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html
+      resources: ['*'],
     })
 
-    // Granting the Lambda permission to invoke the AI model
-    aiRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
-        resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
-        effect: iam.Effect.ALLOW,
-      }),
-    )
+    const bedrockAccessRole = new iam.Role(scope, 'BedrockAccessRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    })
 
-    const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
+    bedrockAccessRole.addToPolicy(bedrockAccessPolicy)
+
+    // aiRole.addToPolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ['bedrock:InvokeModel'],
+    //     resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
+    //     effect: iam.Effect.ALLOW,
+    //   }),
+    // )
+
+    const aiLambda = new lambda.Function(scope, 'AiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai`,
       description: 'Lambda function to invoke the AI model',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
       layers: [awsSdkLayer],
-      role: aiRole,
+      role: bedrockAccessRole,
+      timeout: Duration.seconds(30),
     })
 
     const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {

@@ -12,8 +12,16 @@ async function handler(event) {
   const res = await bedrockRuntime.invokeModel({
     modelId: 'amazon.titan-text-express-v1',
     contentType: 'application/json',
-    accept: '*/*',
-    body: `{"prompt": "${question}","maxTokens":200,"temperature":0.7,"topP":1,"stopSequences":[],"countPenalty":{"scale":0},"presencePenalty":{"scale":0},"frequencyPenalty":{"scale":0}}`,
+    accept: 'application/json',
+    body: JSON.stringify({
+      inputText: question,
+      textGenerationConfig: {
+        maxTokenCount: 300,
+        stopSequences: [],
+        temperature: 0,
+        topP: 0.9,
+      },
+    }),
   }).promise()
 
   return {

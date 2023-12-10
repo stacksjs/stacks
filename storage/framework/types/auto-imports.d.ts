@@ -150,6 +150,7 @@ declare global {
   const createLocalTunnel: typeof import('../.stacks/core/tunnel/src/index')['createLocalTunnel']
   const createMigration: typeof import('../.stacks/core/actions/src/index')['createMigration']
   const createModel: typeof import('../.stacks/core/actions/src/index')['createModel']
+  const createModelCustomizationJob: typeof import('../.stacks/core/ai/src/utils/client-bedrock')['createModelCustomizationJob']
   const createMysqlPool: typeof import('../.stacks/core/query-builder/src/kysely')['createMysqlPool']
   const createNotification: typeof import('../.stacks/core/actions/src/index')['createNotification']
   const createPage: typeof import('../.stacks/core/actions/src/index')['createPage']
@@ -306,6 +307,7 @@ declare global {
   const getExportsSize: typeof import('../.stacks/core/utils/src/export-size')['getExportsSize']
   const getFiles: typeof import('../.stacks/core/storage/src/files')['getFiles']
   const getFolders: typeof import('../.stacks/core/storage/src/folders')['getFolders']
+  const getModelCustomizationJob: typeof import('../.stacks/core/ai/src/utils/client-bedrock')['getModelCustomizationJob']
   const getNameservers: typeof import('../.stacks/core/dns/src/drivers/aws')['getNameservers']
   const getSSRHandler: typeof import('../.stacks/core/utils/src/vendors')['getSSRHandler']
   const getTypeName: typeof import('../.stacks/core/types/src/helpers')['getTypeName']
@@ -349,6 +351,8 @@ declare global {
   const injectLocal: typeof import('../.stacks/core/utils/src/vendors')['injectLocal']
   const installIfVersionMismatch: typeof import('../.stacks/core/utils/src/helpers')['installIfVersionMismatch']
   const invoke: typeof import('../.stacks/core/actions/src/generate/index')['invoke']
+  const invokeModel: typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModel']
+  const invokeModelWithResponseStream: typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModelWithResponseStream']
   const isAbsolute: typeof import('../.stacks/core/path/src/index')['isAbsolute']
   const isAppKeySet: typeof import('../.stacks/core/utils/src/helpers')['isAppKeySet']
   const isArray: typeof import('../.stacks/core/validation/src/is')['isArray']
@@ -410,6 +414,7 @@ declare global {
   const libsEntriesPath: typeof import('../.stacks/core/path/src/index')['libsEntriesPath']
   const libsPath: typeof import('../.stacks/core/path/src/index')['libsPath']
   const lintPath: typeof import('../.stacks/core/path/src/index')['lintPath']
+  const listFoundationModels: typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']
   const listen: typeof import('../.stacks/core/events/src/index')['listen']
   const loadYaml: typeof import('../.stacks/core/utils/src/helpers')['loadYaml']
   const log: typeof import('../.stacks/core/logging/src/index')['log']
@@ -1048,6 +1053,7 @@ declare module 'vue' {
     readonly createLocalTunnel: UnwrapRef<typeof import('../.stacks/core/tunnel/src/index')['createLocalTunnel']>
     readonly createMigration: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createMigration']>
     readonly createModel: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createModel']>
+    readonly createModelCustomizationJob: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['createModelCustomizationJob']>
     readonly createMysqlPool: UnwrapRef<typeof import('../.stacks/core/query-builder/src/kysely')['createMysqlPool']>
     readonly createNotification: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createNotification']>
     readonly createPage: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createPage']>
@@ -1204,6 +1210,7 @@ declare module 'vue' {
     readonly getExportsSize: UnwrapRef<typeof import('../.stacks/core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../.stacks/core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../.stacks/core/storage/src/folders')['getFolders']>
+    readonly getModelCustomizationJob: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['getNameservers']>
     readonly getSSRHandler: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../.stacks/core/types/src/helpers')['getTypeName']>
@@ -1247,6 +1254,8 @@ declare module 'vue' {
     readonly injectLocal: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['injectLocal']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['installIfVersionMismatch']>
     readonly invoke: UnwrapRef<typeof import('../.stacks/core/actions/src/generate/index')['invoke']>
+    readonly invokeModel: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModel']>
+    readonly invokeModelWithResponseStream: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModelWithResponseStream']>
     readonly isAbsolute: UnwrapRef<typeof import('../.stacks/core/path/src/index')['isAbsolute']>
     readonly isAppKeySet: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['isAppKeySet']>
     readonly isArray: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isArray']>
@@ -1308,6 +1317,7 @@ declare module 'vue' {
     readonly libsEntriesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsEntriesPath']>
     readonly libsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsPath']>
     readonly lintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['lintPath']>
+    readonly listFoundationModels: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../.stacks/core/events/src/index')['listen']>
     readonly loadYaml: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../.stacks/core/logging/src/index')['log']>
@@ -1931,6 +1941,7 @@ declare module '@vue/runtime-core' {
     readonly createLocalTunnel: UnwrapRef<typeof import('../.stacks/core/tunnel/src/index')['createLocalTunnel']>
     readonly createMigration: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createMigration']>
     readonly createModel: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createModel']>
+    readonly createModelCustomizationJob: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['createModelCustomizationJob']>
     readonly createMysqlPool: UnwrapRef<typeof import('../.stacks/core/query-builder/src/kysely')['createMysqlPool']>
     readonly createNotification: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createNotification']>
     readonly createPage: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['createPage']>
@@ -2087,6 +2098,7 @@ declare module '@vue/runtime-core' {
     readonly getExportsSize: UnwrapRef<typeof import('../.stacks/core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../.stacks/core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../.stacks/core/storage/src/folders')['getFolders']>
+    readonly getModelCustomizationJob: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['getNameservers']>
     readonly getSSRHandler: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../.stacks/core/types/src/helpers')['getTypeName']>
@@ -2130,6 +2142,8 @@ declare module '@vue/runtime-core' {
     readonly injectLocal: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['injectLocal']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['installIfVersionMismatch']>
     readonly invoke: UnwrapRef<typeof import('../.stacks/core/actions/src/generate/index')['invoke']>
+    readonly invokeModel: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModel']>
+    readonly invokeModelWithResponseStream: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock-runtime')['invokeModelWithResponseStream']>
     readonly isAbsolute: UnwrapRef<typeof import('../.stacks/core/path/src/index')['isAbsolute']>
     readonly isAppKeySet: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['isAppKeySet']>
     readonly isArray: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isArray']>
@@ -2191,6 +2205,7 @@ declare module '@vue/runtime-core' {
     readonly libsEntriesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsEntriesPath']>
     readonly libsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsPath']>
     readonly lintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['lintPath']>
+    readonly listFoundationModels: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../.stacks/core/events/src/index')['listen']>
     readonly loadYaml: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../.stacks/core/logging/src/index')['log']>

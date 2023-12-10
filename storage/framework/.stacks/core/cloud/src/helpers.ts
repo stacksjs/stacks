@@ -198,10 +198,28 @@ export async function deleteIamUsers() {
   if (!users || users.length === 0)
     return ok(`No Stacks IAM users found for team ${teamName}`)
 
-  const promises = users.map((user) => {
-    // eslint-disable-next-line no-console
-    console.log(`Deleting IAM user: ${user.UserName}`)
-    return iam.deleteUser({ UserName: user.UserName || '' })
+  const promises = users.map(async (user) => {
+    const userName = user.UserName || '';
+    console.log(`Deleting IAM user: ${userName}`)
+
+    // Get the list of policies attached to the user
+    const policies = await iam.listAttachedUserPolicies({ UserName: userName });
+
+    // Detach each policy
+    await Promise.all(policies.AttachedPolicies?.map(policy =>
+      iam.detachUserPolicy({ UserName: userName, PolicyArn: policy.PolicyArn || '' })
+    ) || []);
+
+    // Get the list of access keys for the user
+    const accessKeys = await iam.listAccessKeys({ UserName: userName });
+
+    // Delete each access key
+    await Promise.all(accessKeys.AccessKeyMetadata?.map(key =>
+      iam.deleteAccessKey({ UserName: userName, AccessKeyId: key.AccessKeyId || '' })
+    ) || []);
+
+    // Now delete the user
+    return iam.deleteUser({ UserName: userName })
   })
 
   await Promise.all(promises).catch((error: Error) => {
