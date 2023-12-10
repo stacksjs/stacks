@@ -23,6 +23,7 @@ export class AiStack {
 
     // Defining the Node.js Lambda function
     const aiLambda = new lambda.Function(scope, 'LambdaFunction', {
+      functionName: `${props.slug}-${props.appEnv}-ai`,
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
@@ -30,6 +31,7 @@ export class AiStack {
     })
 
     const api = new apigateway.LambdaRestApi(scope, 'ApiGateway', {
+      restApiName: `${props.slug}-${props.appEnv}-ai`,
       handler: aiLambda,
     })
 

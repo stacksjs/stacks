@@ -12,7 +12,7 @@ export default {
 
   models: [
     // 'amazon.titan-embed-text-v1',
-    // 'amazon.titan-text-express-v1',
+    'amazon.titan-text-express-v1',
     // 'amazon.titan-embed-image-v1',
     // 'amazon.titan-image-generator-v1',
     // 'anthropic.claude-v1',
