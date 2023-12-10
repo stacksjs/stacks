@@ -3,6 +3,7 @@ alrighty
 amazonses
 amazonwebservices
 antfu
+apigatewayv
 applypatch
 appsettings
 arrayable

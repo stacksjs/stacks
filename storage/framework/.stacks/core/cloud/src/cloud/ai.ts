@@ -5,6 +5,8 @@ import {
   aws_iam as iam,
   aws_lambda as lambda,
 } from 'aws-cdk-lib'
+import { HttpApi, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2'
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
@@ -23,8 +25,8 @@ export class AiStack {
 
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ['bedrock:InvokeModel'], // See: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html
-      resources: ['*'],
+      actions: ['bedrock:InvokeModel'],
+      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
     })
 
     const bedrockAccessRole = new iam.Role(scope, 'BedrockAccessRole', {
@@ -35,14 +37,6 @@ export class AiStack {
     })
 
     bedrockAccessRole.addToPolicy(bedrockAccessPolicy)
-
-    // aiRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ['bedrock:InvokeModel'],
-    //     resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1:${props.env.account}:foundation-model/${model}`),
-    //     effect: iam.Effect.ALLOW,
-    //   }),
-    // )
 
     const aiLambda = new lambda.Function(scope, 'AiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai`,
@@ -55,16 +49,24 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
-      function: aiLambda,
-      authType: lambda.FunctionUrlAuthType.NONE,
-      cors: {
-        allowedOrigins: ['*'],
-      },
+    const api = new HttpApi(scope, 'AiApi')
+
+    api.addRoutes({
+      path: '/prompt',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('AiIntegration', aiLambda),
     })
 
+    // const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
+    //   function: aiLambda,
+    //   authType: lambda.FunctionUrlAuthType.NONE,
+    //   cors: {
+    //     allowedOrigins: ['*'],
+    //   },
+    // })
+
     new Output(scope, 'AiApiUrl', {
-      value: api.url,
+      value: api.apiEndpoint,
     })
   }
 }
