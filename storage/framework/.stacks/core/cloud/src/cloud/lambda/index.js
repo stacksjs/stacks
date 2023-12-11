@@ -1,4 +1,3 @@
-// TODO: get eslint on save formatting to work
 const AWS = require('aws-sdk')
 
 async function handler(event) {

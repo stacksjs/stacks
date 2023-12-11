@@ -246,6 +246,35 @@ export class CdnStack {
     }
   }
 
+  aiBehaviorOptions(scope: Construct): Record<string, cloudfront.BehaviorOptions> {
+    return {
+      '/ai/ask': {
+        origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
+          originPath: '/prompt',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: false,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: this.setApiCachePolicy(scope),
+      },
+      // '/ai/summary': {
+      //   origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
+      //     originPath: '/prompt',
+      //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+      //   }),
+      //   compress: false,
+      //   allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+      //   viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      //   cachePolicy: this.setApiCachePolicy(scope),
+      // },
+    }
+  }
+
+  shouldDeployAiEndpoints() {
+    return true
+  }
+
   shouldDeployDocs() {
     return hasFiles(p.projectPath('docs'))
   }
@@ -269,6 +298,13 @@ export class CdnStack {
       }
     }
 
+    if (this.shouldDeployAiEndpoints()) {
+      behaviorOptions = {
+        ...this.aiBehaviorOptions(scope),
+        ...behaviorOptions,
+      }
+    }
+
     return behaviorOptions
   }
 
@@ -279,8 +315,8 @@ export class CdnStack {
     this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
       cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy`,
-      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       defaultTtl: Duration.seconds(0),
+      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
