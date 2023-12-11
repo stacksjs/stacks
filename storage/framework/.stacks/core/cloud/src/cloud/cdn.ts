@@ -258,6 +258,16 @@ export class CdnStack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.setApiCachePolicy(scope),
       },
+      '/ai/ask/*': {
+        origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
+          originPath: '/prompt',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: false,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: this.setApiCachePolicy(scope),
+      },
       // '/ai/summary': {
       //   origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
       //     originPath: '/prompt',
@@ -318,7 +328,7 @@ export class CdnStack {
       defaultTtl: Duration.seconds(0),
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization'),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
     })
 

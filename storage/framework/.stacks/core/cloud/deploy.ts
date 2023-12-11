@@ -1,4 +1,5 @@
 /* eslint-disable no-new */
+import 'source-map-support/register'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/cli'

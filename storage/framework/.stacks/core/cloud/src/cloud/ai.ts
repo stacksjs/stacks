@@ -25,7 +25,10 @@ export class AiStack {
 
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ['bedrock:InvokeModel'],
+      actions: [
+        'bedrock:InvokeModel',
+        'bedrock:InvokeModelWithResponseStream',
+      ],
       resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
     })
 
@@ -49,7 +52,10 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const api = new HttpApi(scope, 'AiApi')
+    const api = new HttpApi(scope, 'AiApi', {
+      apiName: `${props.slug}-${props.appEnv}-ai`,
+      description: 'Stacks API Gateway for the AI',
+    })
 
     api.addRoutes({
       path: '/prompt',
