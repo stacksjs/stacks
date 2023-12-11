@@ -1,13 +1,13 @@
 dependencies:
-  bun.sh: ^1.0.14
   aws.amazon.com/cli: ^2.13.7
+  bun.sh: ^1.0.16
   caddyserver.com: ^2.7.4
+  dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
   mailpit.axllent.org: ^1.10.0
   npmjs.com: ^9.7.2 # can soon be removed when Bun-native support is released
   redis.io: ^7.0.11
   sqlite.org: ^3.42.0
-  dns.lookup.dog: ^0.1.0
   stedolan.github.io/jq: ^1.7
   httpie.io: ^3.2.2

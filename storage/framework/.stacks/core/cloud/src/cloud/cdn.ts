@@ -249,8 +249,8 @@ export class CdnStack {
   aiBehaviorOptions(scope: Construct): Record<string, cloudfront.BehaviorOptions> {
     return {
       '/ai/ask': {
-        origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
-          originPath: '/prompt',
+        origin: new origins.HttpOrigin('juyejkyfu5.execute-api.us-east-1.amazonaws.com', {
+          originPath: '/prod',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
         }),
         compress: false,
@@ -259,8 +259,8 @@ export class CdnStack {
         cachePolicy: this.setApiCachePolicy(scope),
       },
       '/ai/ask/*': {
-        origin: new origins.HttpOrigin('s5p93gkv25.execute-api.us-east-1.amazonaws.com', {
-          originPath: '/prompt',
+        origin: new origins.HttpOrigin('juyejkyfu5.execute-api.us-east-1.amazonaws.com', {
+          originPath: '/prod',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
         }),
         compress: false,

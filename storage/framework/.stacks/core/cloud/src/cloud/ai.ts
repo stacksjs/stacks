@@ -1,12 +1,6 @@
 /* eslint-disable no-new */
-import {
-  Duration,
-  CfnOutput as Output,
-  aws_iam as iam,
-  aws_lambda as lambda,
-} from 'aws-cdk-lib'
-import { HttpApi, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2'
-import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations'
+import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
+import { AuthorizationType, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
@@ -52,16 +46,27 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const api = new HttpApi(scope, 'AiApi', {
-      apiName: `${props.slug}-${props.appEnv}-ai`,
-      description: 'Stacks API Gateway for the AI',
+    // const api = new HttpApi(scope, 'AiApi', {
+    //   apiName: `${props.slug}-${props.appEnv}-ai`,
+    //   description: 'Stacks API Gateway for the AI',
+    // })
+
+    const api = new RestApi(scope, 'AiRestApi', {
+      restApiName: `${props.slug}-${props.appEnv}-ai`,
+      description: 'Stacks AI API',
     })
 
-    api.addRoutes({
-      path: '/prompt',
-      methods: [HttpMethod.POST],
-      integration: new HttpLambdaIntegration('AiIntegration', aiLambda),
+    const aiIntegration = new LambdaIntegration(aiLambda)
+    api.root.addMethod('POST', aiIntegration, {
+      operationName: 'Stacks AI Trigger',
+      authorizationType: AuthorizationType.NONE,
     })
+
+    // api.addRoutes({
+    //   path: '/ai/ask',
+    //   methods: [HttpMethod.POST],
+    //   integration: new HttpLambdaIntegration('AiIntegration', aiLambda),
+    // })
 
     // const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
     //   function: aiLambda,
@@ -72,12 +77,12 @@ export class AiStack {
     // })
 
     new Output(scope, 'AiVanityApiUrl', {
-      value: api.apiEndpoint,
+      value: api.url,
     })
 
     new Output(scope, 'AiApiUrl', {
       // value: 'https://stacksjs.org/ai/ask',
-      value: `${props.domain}/ai/ask`,
+      value: `https://${props.domain}/ai/ask`,
     })
   }
 }
