@@ -36,11 +36,22 @@ export class AiStack {
     bedrockAccessRole.addToPolicy(bedrockAccessPolicy)
 
     const aiLambda = new lambda.Function(scope, 'AiFunction', {
-      functionName: `${props.slug}-${props.appEnv}-ai`,
+      functionName: `${props.slug}-${props.appEnv}-ai-ask`,
       description: 'Lambda function to invoke the AI model',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/cloud/lambda'), // path relative to the cloud root package dir
+      code: lambda.Code.fromAsset('src/cloud/lambda/ask'), // path relative to the cloud root package dir
+      layers: [awsSdkLayer],
+      role: bedrockAccessRole,
+      timeout: Duration.seconds(30),
+    })
+
+    const summarizeLambda = new lambda.Function(scope, 'AiFunction', {
+      functionName: `${props.slug}-${props.appEnv}-ai-summarize`,
+      description: 'Lambda function to summarize any given text',
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset('src/cloud/lambda/summarize'),
       layers: [awsSdkLayer],
       role: bedrockAccessRole,
       timeout: Duration.seconds(30),

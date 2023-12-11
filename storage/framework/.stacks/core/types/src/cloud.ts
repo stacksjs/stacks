@@ -73,11 +73,10 @@ export interface CloudOptions {
     }
   }
 
-  deploy: {
-    docs: boolean
-    api: boolean
-    fileSystem: boolean
-  }
+  ai: boolean
+  docs: boolean
+  api: boolean
+  fileSystem: boolean
 }
 
 export type CloudConfig = Partial<CloudOptions>

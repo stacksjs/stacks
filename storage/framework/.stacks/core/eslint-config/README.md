@@ -13,7 +13,7 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 - Single quotes, no semi
 - Auto fix for formatting (aimed to be used standalone **without** Prettier)
 - Designed to work with TypeScript, JSX, Vue out-of-box
-- Lints also for json, yaml, markdown
+- Lints also for json, yaml, toml, markdown
 - Sorted imports, dangling commas
 - Reasonable defaults, best practices, only one-line of config
 - Opinionated, but [very customizable](#customization)
@@ -151,7 +151,8 @@ Add the following settings to your `.vscode/settings.json`:
     "markdown",
     "json",
     "jsonc",
-    "yaml"
+    "yaml",
+    "toml"
   ]
 }
 ```
@@ -246,6 +247,7 @@ import {
   sortPackageJson,
   sortTsconfig,
   stylistic,
+  toml,
   typescript,
   unicorn,
   vue,
@@ -265,6 +267,7 @@ export default combine(
   vue(),
   jsonc(),
   yaml(),
+  toml(),
   markdown(),
 )
 ```
@@ -371,11 +374,6 @@ export default antfu({
      */
     html: true,
     /**
-     * Format TOML files
-     * Currently only supports dprint
-     */
-    toml: 'dprint',
-    /**
      * Format Markdown files
      * Supports Prettier and dprint
      * By default uses Prettier
@@ -385,7 +383,7 @@ export default antfu({
 })
 ```
 
-Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+Running `bunx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
 
 ```bash
 npm i -D eslint-plugin-format
@@ -536,13 +534,13 @@ Well, you can still use Prettier to format files that are not supported well by 
 
 [dprint](https://dprint.dev/) is also a great formatter that with more abilities to customize. However, it's in the same model as Prettier which reads the AST and reprints the code from scratch. This means it's similar to Prettier, which ignores the original line breaks and might also cause the inconsistent diff. So in general, we prefer to use ESLint to format and lint JavaScript/TypeScript code.
 
-Meanwhile, we do have dprint integrations for formatting other files such as `.toml` and `.md`. See [formatters](#formatters) for more details.
+Meanwhile, we do have dprint integrations for formatting other files such as `.md`. See [formatters](#formatters) for more details.
 
 ### How to format CSS?
 
 You can opt-in to the [`formatters`](#formatters) feature to format your CSS. Note that it's only doing formatting, but not linting. If you want proper linting support, give [`stylelint`](https://stylelint.io/) a try.
 
-### I prefer XXX...
+### I prefer XXX
 
 Sure, you can configure and override rules locally in your project to fit your needs. If that still does not work for you, you can always fork this repo and maintain your own.
 

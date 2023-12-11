@@ -40,10 +40,10 @@
     "eslint-ts-patch": "^8.55.0-1"
   },
   "peerDependenciesMeta": {
-    "eslint-plugin-format": {
+    "@unocss/eslint-plugin": {
       "optional": true
     },
-    "@unocss/eslint-plugin": {
+    "eslint-plugin-format": {
       "optional": true
     },
     "eslint-plugin-react": {
@@ -77,9 +77,10 @@
     "eslint-plugin-n": "^16.3.1",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-perfectionist": "^2.5.0",
+    "eslint-plugin-toml": "^0.7.1",
     "eslint-plugin-unicorn": "^49.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
-    "eslint-plugin-vitest": "^0.3.13",
+    "eslint-plugin-vitest": "^0.3.15",
     "eslint-plugin-vue": "^9.19.2",
     "eslint-plugin-yml": "^1.10.0",
     "eslint-processor-vue-blocks": "^0.1.1",
@@ -87,6 +88,7 @@
     "jsonc-eslint-parser": "^2.4.0",
     "local-pkg": "^0.5.0",
     "parse-gitignore": "^2.0.0",
+    "toml-eslint-parser": "^0.9.3",
     "vue-eslint-parser": "^9.3.2",
     "yaml-eslint-parser": "^1.2.2"
   },

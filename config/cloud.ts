@@ -31,14 +31,12 @@ export default {
     },
   },
 
-  deploy: {
-    docs: true, // deploys docs
-    api: true, // deploys api
-    fileSystem: true, // enables file system
-  },
+  ai: true, // deploys AI endpoints
+  docs: true, // deploys project documentation
+  api: true, // deploys project API
+  fileSystem: true, // enables file system
 
   // compute: {},
-
   // queues: false,
   // queue-concurrency: 50
 } satisfies CloudConfig

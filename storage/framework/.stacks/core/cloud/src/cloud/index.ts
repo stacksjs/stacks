@@ -69,6 +69,8 @@ export class Cloud extends Stack {
       certificate: security.certificate,
     })
 
+    new AiStack(this, props)
+
     const cdn = new CdnStack(this, {
       ...props,
       publicBucket: storage.publicBucket,
@@ -85,7 +87,5 @@ export class Cloud extends Stack {
       privateBucket: storage.privateBucket,
       cdn: cdn.distribution,
     })
-
-    new AiStack(this, props)
   }
 }

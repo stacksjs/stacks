@@ -193,30 +193,33 @@ export async function deleteIamUsers() {
   const iam = new IAM({ region: 'us-east-1' })
   const data = await iam.listUsers({})
   const teamName = slug(config.team.name)
-  const users = data.Users?.filter(user => user.UserName?.includes(teamName)) || []
+  const users = data.Users?.filter((user) => {
+    const userNameLower = user.UserName?.toLowerCase()
+    return userNameLower !== 'stacks' && userNameLower !== teamName.toLowerCase() && userNameLower?.includes(teamName.toLowerCase())
+  }) || []
 
   if (!users || users.length === 0)
     return ok(`No Stacks IAM users found for team ${teamName}`)
 
   const promises = users.map(async (user) => {
-    const userName = user.UserName || '';
+    const userName = user.UserName || ''
     console.log(`Deleting IAM user: ${userName}`)
 
     // Get the list of policies attached to the user
-    const policies = await iam.listAttachedUserPolicies({ UserName: userName });
+    const policies = await iam.listAttachedUserPolicies({ UserName: userName })
 
     // Detach each policy
     await Promise.all(policies.AttachedPolicies?.map(policy =>
-      iam.detachUserPolicy({ UserName: userName, PolicyArn: policy.PolicyArn || '' })
-    ) || []);
+      iam.detachUserPolicy({ UserName: userName, PolicyArn: policy.PolicyArn || '' }),
+    ) || [])
 
     // Get the list of access keys for the user
-    const accessKeys = await iam.listAccessKeys({ UserName: userName });
+    const accessKeys = await iam.listAccessKeys({ UserName: userName })
 
     // Delete each access key
     await Promise.all(accessKeys.AccessKeyMetadata?.map(key =>
-      iam.deleteAccessKey({ UserName: userName, AccessKeyId: key.AccessKeyId || '' })
-    ) || []);
+      iam.deleteAccessKey({ UserName: userName, AccessKeyId: key.AccessKeyId || '' }),
+    ) || [])
 
     // Now delete the user
     return iam.deleteUser({ UserName: userName })
@@ -563,7 +566,7 @@ export async function getOrCreateTimestamp(): Promise<string> {
   }
   catch (error: any) {
     const timestamp = new Date().getTime().toString()
-    log.info(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
+    log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
     await ssm.putParameter({
       Name: parameterName,
       Value: timestamp,

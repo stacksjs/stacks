@@ -114,11 +114,10 @@ export default {
       },
     },
 
-    deploy: {
-      docs: true,
-      api: true,
-      fileSystem: true,
-    },
+    ai: true,
+    docs: true,
+    api: true,
+    fileSystem: true,
   },
 
   database: {
