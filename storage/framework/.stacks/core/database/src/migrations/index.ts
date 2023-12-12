@@ -36,7 +36,7 @@ import { log } from '@stacksjs/cli'
 // }
 
 // async function migrate(path: string, options: SchemaOptions): Promise<void> {
-//   const models = await readModelsFromFolder(projectPath('app/models'))
+//   const models = await readModelsFromFolder(projectPath('app/Models'))
 
 //   generatePrismaSchema(models, path, options)
 // }

@@ -87,7 +87,7 @@ chat:
 
 cli:
   - 'storage/framework/.stacks/core/cli/**'
-  - app/commands/**
+  - app/Commands/**
 
 cloud:
   - 'storage/framework/.stacks/core/cloud/**'
@@ -129,7 +129,7 @@ error-handling:
 
 events:
   - 'storage/framework/.stacks/core/events/**'
-  - app/events/**
+  - app/Events/**
 
 faker:
   - 'storage/framework/.stacks/core/faker/**'
@@ -151,7 +151,7 @@ modules:
 
 notifications:
   - 'storage/framework/.stacks/core/notifications/**'
-  - app/notifications/**
+  - app/Notifications/**
 
 objects:
   - 'storage/framework/.stacks/core/utils/objects/**'
@@ -235,10 +235,10 @@ app:
   - app/**
 
 jobs:
-  - app/jobs/**
+  - app/Jobs/**
 
 models:
-  - app/models/**
+  - app/Models/**
 
 resources:
   - resources/**

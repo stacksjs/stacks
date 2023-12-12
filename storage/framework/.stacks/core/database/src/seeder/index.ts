@@ -47,7 +47,7 @@ async function seed() {
   //   }),
   // })
 
-  // const models = await readModels(projectPath('app/models'))
+  // const models = await readModels(projectPath('app/Models'))
 
   // const queries = models.flatMap((model) => {
   //   const { seedable, fields } = model

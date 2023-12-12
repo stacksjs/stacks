@@ -1,4 +1,4 @@
-import User from '../../../../../app/models/User'
+import User from '../../../../../../../app/Models/User'
 
 const fields = User.fields // Assuming you have a specific type for fields
 
@@ -17,7 +17,7 @@ export interface FieldArrayElement {
 const rules: string[] = []
 
 async function extractModelRule() {
-  const modelFile = Bun.file('../../../../../app/models/User.ts') // Assuming Bun is imported properly
+  const modelFile = Bun.file('../../../../../app/Models/User.ts') // Assuming Bun is imported properly
 
   const code = await modelFile.text()
 

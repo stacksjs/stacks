@@ -1,5 +1,5 @@
 // import { generateMigrationFile } from '@stacksjs/database'
-import User from '../../../../../app/models/User'
+import User from '../../../../../../../app/Models/User'
 import { fieldAssociation, modelEntity } from './fields'
 
 const file = Bun.file('user-migration.ts')

@@ -285,7 +285,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 export async function createModel(options: MakeOptions) {
   const optionName = options.name
   const name = optionName[0].toUpperCase() + optionName.slice(1)
-  const path = projectPath(`app/models/${name}.ts`)
+  const path = projectPath(`app/Models/${name}.ts`)
   try {
     await writeTextFile({
       path: `${path}`,
@@ -314,7 +314,7 @@ export default <Model> {
 }`,
     })
 
-    log.success(`Successfully created your model at app/models/${name}.ts`)
+    log.success(`Successfully created your model at app/Models/${name}.ts`)
   }
   catch (error) {
     log.error(error)
