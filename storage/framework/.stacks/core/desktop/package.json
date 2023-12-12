@@ -61,7 +61,7 @@
   "peerDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.1",
+    "@tauri-apps/api": "1.5.2",
     "@tauri-apps/cli": "1.5.7",
     "unified-network": "0.6.4",
     "unstorage": "^1.10.1",
@@ -71,7 +71,7 @@
   "dependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.1",
+    "@tauri-apps/api": "1.5.2",
     "@tauri-apps/cli": "1.5.7",
     "unified-network": "0.6.4",
     "unstorage": "^1.10.1",
