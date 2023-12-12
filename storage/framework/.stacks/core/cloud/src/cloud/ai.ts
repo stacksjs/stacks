@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
-import { AuthorizationType, LambdaIntegration, Resource, RestApi } from 'aws-cdk-lib/aws-apigateway'
+import { AuthorizationType, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
@@ -65,6 +65,14 @@ export class AiStack {
     const askResource = api.root.addResource('ask')
     const askIntegration = new LambdaIntegration(askLambda)
     askResource.addMethod('POST', askIntegration, {
+      operationName: 'Stacks AI Ask',
+      authorizationType: AuthorizationType.NONE,
+    })
+
+    // alias to ask
+    const promptResource = api.root.addResource('prompt')
+    const promptIntegration = new LambdaIntegration(askLambda)
+    promptResource.addMethod('POST', promptIntegration, {
       operationName: 'Stacks AI Ask',
       authorizationType: AuthorizationType.NONE,
     })
