@@ -11,7 +11,7 @@ async function handler(event) {
   const res = await bedrockRuntime.invokeModel({
     modelId: 'amazon.titan-text-express-v1',
     contentType: 'application/json',
-    accept: 'application/json',
+    accept: '*/*',
     body: JSON.stringify({
       inputText: question,
       textGenerationConfig: {

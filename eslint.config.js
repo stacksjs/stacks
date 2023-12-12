@@ -6,11 +6,13 @@ export default stacks({
     quotes: 'single', // or 'double'
   },
 
-  // TypeScript and Vue are auto-detected, you can also explicitly enable them:
+  // TypeScript & Vue are auto-detected
+  // you may also explicitly enable them:
   typescript: true,
   vue: true,
 
-  // Enable jsonc and yaml support
+  // Enable jsonc, yaml, toml support
   jsonc: true,
   yaml: true,
+  toml: true,
 })
