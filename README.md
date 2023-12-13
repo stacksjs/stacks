@@ -29,7 +29,7 @@ Stacks helps you every step along the way—in beginner & expert-friendly ways, 
 
 The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
 
-### Stacks UI
+### Stacks Frontend
 
 _Develop dynamic UIs with helpers for atomic design, and much more._
 
@@ -40,7 +40,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 📚 **Library** _auto-builds component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
-### Stacks Functions
+### Stacks Backend
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
