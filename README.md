@@ -46,7 +46,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 - 🪄 **AI** _deep AI integrations & foundational model access_
 - 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** _Redis, DynamoDB, Upstash, SingleStore, and more—serverless_
+- 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
 - 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
 - 👾 **Errors** _native type-safe error handling_
@@ -70,13 +70,14 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 
 - ☁️ **Server** _local development server & production-ready servers out-of-the-box_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _zero-config low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
+- 🚏 **CDN** _zero-config, low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
+- 🤖 **AI** _fine-tune a foundational model using your application data_
 - 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mailboxes_
 - 🔐 **Firewall** _native web application firewall support_
 - 📦 **Storage** _unlimited cloud storage & automatic backups_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
-- 🤖 **Infrastructure as Code** _version-controlled cloud infrastructure_
+- 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure_
 
 ### Stacks CI/CD
 

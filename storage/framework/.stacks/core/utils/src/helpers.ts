@@ -1,5 +1,4 @@
 import type { AddressInfo } from 'node:net'
-import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import type { Result } from '@stacksjs/error-handling'
@@ -12,8 +11,7 @@ import { Action } from '@stacksjs/enums'
 import { parse } from 'yaml'
 
 // import { semver } from './versions'
-import app from '~/config/app'
-import ui from '~/config/ui'
+import { app, ui } from '@stacksjs/config'
 
 export async function packageManager() {
   const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))
@@ -50,8 +48,8 @@ export async function ensureProjectIsInitialized() {
 }
 
 export async function installIfVersionMismatch() {
-  const requiredBunVersion = '0.8.1'
-  const installedBunVersion = process.version
+  // const requiredBunVersion = '0.8.1'
+  // const installedBunVersion = process.version
 
   // if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
   //   log.warn(`Installed Bun version ${italic(installedBunVersion)} does not satisfy required version ${italic(requiredBunVersion)}. Adding it to your environment. One moment...`)
