@@ -41,27 +41,35 @@ export const pagesConfig = {
         '@vueuse/core',
       ],
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
-      dirs: [
-        p.projectStoragePath('framework/stacks/dashboard/src/functions'),
-      ],
+      dirs: [p.projectStoragePath('framework/stacks/dashboard/src/functions')],
     }),
     pages({
-      routesFolder: p.projectStoragePath('framework/stacks/dashboard/src/pages'),
+      routesFolder: p.projectStoragePath(
+        'framework/stacks/dashboard/src/pages',
+      ),
     }),
     UnoCSS({
-      configFile: p.projectStoragePath('framework/.stacks/core/ui/src/uno.config.ts'),
+      configFile: p.projectStoragePath(
+        'framework/.stacks/core/ui/src/uno.config.ts',
+      ),
     }),
-    layouts({
-      layoutsDirs: p.projectStoragePath('framework/stacks/dashboard/src/layouts'),
-    }, false),
-
+    layouts(
+      {
+        layoutsDirs: p.projectStoragePath(
+          'framework/stacks/dashboard/src/layouts',
+        ),
+      },
+      false,
+    ),
   ],
 
   // https://github.com/antfu/vite-ssg
   ssgOptions: {
     script: 'async',
     formatting: 'minify',
-    onFinished() { generateSitemap() },
+    onFinished() {
+      generateSitemap()
+    },
   },
 
   ssr: {
@@ -71,8 +79,7 @@ export const pagesConfig = {
 } satisfies ViteConfig
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return pagesConfig
+  if (command === 'serve') return pagesConfig
 
   // command === 'build'
   return pagesConfig
