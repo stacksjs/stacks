@@ -83,7 +83,6 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unhead/vue": "^1.8.9",
-    "add": "^2.0.6",
     "pinia": "^2.1.7",
     "unhead": "^1.8.9",
     "unocss": "^0.58.0",
