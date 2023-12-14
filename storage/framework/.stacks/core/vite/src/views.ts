@@ -38,6 +38,10 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
+  optimizeDeps: {
+    exclude: ['bun:test', '@stacksjs/utils', '@stacksjs/actions'],
+  },
+
   server: server({
     type: 'frontend',
   }),

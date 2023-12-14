@@ -44,11 +44,13 @@ useHead({
   <main>
     <Hero />
     <PrimaryFeatures />
+  </main>
+  <!--
     <SecondaryFeatures />
     <CallToAction />
     <Testimonials />
     <Pricing />
     <Faqs />
   </main>
-  <Footer />
+  <Footer /> -->
 </template>

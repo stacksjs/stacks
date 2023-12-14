@@ -17,7 +17,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
       // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
       // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-      VueHeadImports, // '@vueuse/head' alternatively
+      VueHeadImports,
       VueRouterAutoImports,
       {
         'vue-router/auto': ['useLink'],
@@ -27,8 +27,6 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
     dirs: [
       p.resourcesPath('functions'),
       p.resourcesPath('stores'),
-      // p.resourcesPath('components'), do we need this?
-
       p.frameworkPath('src'),
     ],
     vueTemplate: true,
