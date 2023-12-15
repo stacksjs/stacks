@@ -12,7 +12,10 @@ export default {
 
   models: [
     // 'amazon.titan-embed-text-v1',
+    // Supported use cases – Retrieval augmented generation, open-ended text generation, brainstorming, summarizations, code generation, table creation, data formatting, paraphrasing, chain of thought, rewrite, extraction, QnA, and chat
     'amazon.titan-text-express-v1',
+    // Amazon Titan Text Lite is a light weight efficient model, ideal for fine-tuning of English-language tasks, including like summarizations and copy writing, where customers want a smaller, more cost-effective model that is also highly customizable
+    'amazon.titan-text-lite-v1',
     // 'amazon.titan-embed-image-v1',
     // 'amazon.titan-image-generator-v1',
     // 'anthropic.claude-v1',

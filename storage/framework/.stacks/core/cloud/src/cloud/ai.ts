@@ -92,12 +92,20 @@ export class AiStack {
     //   },
     // })
 
-    new Output(scope, 'AiVanityApiUrl', {
-      value: api.url,
+    new Output(scope, 'AiVanityAskApiUrl', {
+      value: `${api.url}/ask`,
     })
 
-    new Output(scope, 'AiApiUrl', {
+    new Output(scope, 'AiVanitySummarizeApiUrl', {
+      value: `${api.url}/summarize`,
+    })
+
+    new Output(scope, 'AiAskApiUrl', {
       value: `https://${props.domain}/ai/ask`,
+    })
+
+    new Output(scope, 'AiSummarizeApiUrl', {
+      value: `https://${props.domain}/ai/summary`,
     })
   }
 }

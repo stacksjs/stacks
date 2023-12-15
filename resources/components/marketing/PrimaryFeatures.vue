@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
-// import backgroundImage from '../../assets/images/background-features.jpg'
-// import screenshotExpenses from '../../assets/images/screenshots/expenses.png'
-// import screenshotPayroll from '../../assets/images/screenshots/payroll.png'
-// import screenshotReporting from '../../assets/images/screenshots/reporting.png'
-// import screenshotVatReturns from '../../assets/images/screenshots/vat-returns.png'
+import Container from '../Container.vue'
+
+import backgroundImage from '../../assets/images/background-features.jpg'
+import screenshotExpenses from '../../assets/images/screenshots/expenses.png'
+import screenshotPayroll from '../../assets/images/screenshots/payroll.png'
+import screenshotReporting from '../../assets/images/screenshots/reporting.png'
+import screenshotVatReturns from '../../assets/images/screenshots/vat-returns.png'
 
 const features = [
   {
@@ -43,8 +45,8 @@ const tabIndex = ref(0)
           Well everything you need if you aren’t that picky about minor details like tax compliance.
         </p>
       </div>
-      <TabGroup v-model="tabIndex" class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0">
-        <TabList v-slot="{ selectedIndex }" class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
+      <!-- <TabGroup v-model="tabIndex" class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0">
+        <TabList class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
           <Tab v-for="(feature, index) in features" :key="index" class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6">
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
@@ -70,7 +72,7 @@ const tabIndex = ref(0)
             </div>
           </TabPanel>
         </TabPanels>
-      </TabGroup>
+      </TabGroup> -->
     </Container>
   </section>
 </template>

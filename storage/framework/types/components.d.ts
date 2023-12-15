@@ -10,7 +10,6 @@ declare module 'vue' {
     Button: typeof import('./../../../resources/components/Button.vue')['default']
     CallToAction: typeof import('./../../../resources/components/marketing/CallToAction.vue')['default']
     Container: typeof import('./../../../resources/components/Container.vue')['default']
-    Counter: typeof import('./../../../resources/components/Buttons/Counter.vue')['default']
     Faqs: typeof import('./../../../resources/components/marketing/Faqs.vue')['default']
     Feature: typeof import('./../../../resources/components/marketing/Feature.vue')['default']
     Fields: typeof import('./../../../resources/components/marketing/Fields.vue')['default']
@@ -33,9 +32,5 @@ declare module 'vue' {
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     Testimonials: typeof import('./../../../resources/components/marketing/Testimonials.vue')['default']
-    TheCounter: typeof import('./../../../resources/components/TheCounter.vue')['default']
-    TheFooter: typeof import('./../../../resources/components/TheFooter.vue')['default']
-    TheInput: typeof import('./../../../resources/components/TheInput.vue')['default']
-    ToggleDark: typeof import('./../../../resources/components/Buttons/ToggleDark.vue')['default']
   }
 }

@@ -17,7 +17,7 @@ async function handler(event) {
       textGenerationConfig: {
         maxTokenCount: 300,
         stopSequences: [],
-        temperature: 0,
+        temperature: 0.1,
         topP: 0.9,
       },
     }),
