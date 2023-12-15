@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
-import { AuthorizationType, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
+import { AuthorizationType, Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
@@ -60,6 +60,10 @@ export class AiStack {
     const api = new RestApi(scope, 'AiRestApi', {
       restApiName: `${props.slug}-${props.appEnv}-ai`,
       description: 'Stacks AI API',
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS,
+      },
     })
 
     const askResource = api.root.addResource('ask')
