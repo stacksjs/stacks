@@ -14,7 +14,18 @@ declare global {
   const $toRef: typeof import('vue/macros')['$toRef']
   const ...rest: typeof import('../../../storage/framework/.stacks/core/desktop/src/drivers/tauri/index')['...rest']
   const Action: typeof import('../.stacks/core/actions/src/action')['Action']
+  const Combobox: typeof import('../.stacks/core/ui/src/components/select')['Combobox']
+  const ComboboxInput: typeof import('../.stacks/core/ui/src/components/select')['ComboboxInput']
+  const ComboboxOption: typeof import('../.stacks/core/ui/src/components/select')['ComboboxOption']
+  const ComboboxOptions: typeof import('../.stacks/core/ui/src/components/select')['ComboboxOptions']
   const CssEngine: typeof import('../.stacks/core/ui/src/index')['CssEngine']
+  const Dialog: typeof import('../.stacks/core/ui/src/components/modal')['Dialog']
+  const DialogDescription: typeof import('../.stacks/core/ui/src/components/modal')['DialogDescription']
+  const DialogPanel: typeof import('../.stacks/core/ui/src/components/modal')['DialogPanel']
+  const DialogTitle: typeof import('../.stacks/core/ui/src/components/modal')['DialogTitle']
+  const Disclosure: typeof import('../.stacks/core/ui/src/components/disclosure')['Disclosure']
+  const DisclosureButton: typeof import('../.stacks/core/ui/src/components/disclosure')['DisclosureButton']
+  const DisclosurePanel: typeof import('../.stacks/core/ui/src/components/disclosure')['DisclosurePanel']
   const EffectScope: typeof import('vue')['EffectScope']
   const Err: typeof import('../.stacks/core/error-handling/src/index')['Err']
   const ErrorHandler: typeof import('../.stacks/core/error-handling/src/handler')['ErrorHandler']
@@ -23,12 +34,22 @@ declare global {
   const Head: typeof import('../.stacks/core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('../.stacks/core/utils/src/vendors')['HeadVuePlugin']
   const Macroable: typeof import('../.stacks/core/utils/src/macroable')['Macroable']
+  const Menu: typeof import('../.stacks/core/ui/src/components/menu')['Menu']
+  const MenuButton: typeof import('../.stacks/core/ui/src/components/menu')['MenuButton']
+  const MenuItem: typeof import('../.stacks/core/ui/src/components/menu')['MenuItem']
+  const MenuItems: typeof import('../.stacks/core/ui/src/components/menu')['MenuItems']
   const Middleware: typeof import('../.stacks/core/router/src/middleware')['Middleware']
   const MoneyValidator: typeof import('../.stacks/core/validation/src/types/money')['MoneyValidator']
   const MysqlDialect: typeof import('../.stacks/core/query-builder/src/kysely')['MysqlDialect']
   const Ok: typeof import('../.stacks/core/error-handling/src/index')['Ok']
+  const Popover: typeof import('../.stacks/core/ui/src/components/popover')['Popover']
+  const PopoverButton: typeof import('../.stacks/core/ui/src/components/popover')['PopoverButton']
+  const PopoverPanel: typeof import('../.stacks/core/ui/src/components/popover')['PopoverPanel']
   const PostgresDialect: typeof import('../.stacks/core/query-builder/src/kysely')['PostgresDialect']
   const QueryBuilder: typeof import('../.stacks/core/query-builder/src/kysely')['QueryBuilder']
+  const RadioGroup: typeof import('../.stacks/core/ui/src/components/radio-group')['RadioGroup']
+  const RadioGroupLabel: typeof import('../.stacks/core/ui/src/components/radio-group')['RadioGroupLabel']
+  const RadioGroupOption: typeof import('../.stacks/core/ui/src/components/radio-group')['RadioGroupOption']
   const Request: typeof import('../.stacks/core/router/src/request')['Request']
   const Result: typeof import('../.stacks/core/error-handling/src/index')['Result']
   const ResultAsync: typeof import('../.stacks/core/error-handling/src/index')['ResultAsync']
@@ -42,6 +63,14 @@ declare global {
   const ScheduleImpl: typeof import('../.stacks/core/scheduler/src/index')['ScheduleImpl']
   const StacksError: typeof import('../.stacks/core/error-handling/src/handler')['StacksError']
   const Store: typeof import('../.stacks/core/ui/src/index')['Store']
+  const Switch: typeof import('../.stacks/core/ui/src/components/toggle')['Switch']
+  const Tab: typeof import('../.stacks/core/ui/src/components/tabs')['Tab']
+  const TabGroup: typeof import('../.stacks/core/ui/src/components/tabs')['TabGroup']
+  const TabList: typeof import('../.stacks/core/ui/src/components/tabs')['TabList']
+  const TabPanel: typeof import('../.stacks/core/ui/src/components/tabs')['TabPanel']
+  const TabPanels: typeof import('../.stacks/core/ui/src/components/tabs')['TabPanels']
+  const TransitionChild: typeof import('../.stacks/core/ui/src/components/transition')['TransitionChild']
+  const TransitionRoot: typeof import('../.stacks/core/ui/src/components/transition')['TransitionRoot']
   const USD: typeof import('../.stacks/core/utils/src/currency')['USD']
   const UiEngine: typeof import('../.stacks/core/ui/src/index')['UiEngine']
   const UnocssConfig: typeof import('../.stacks/core/ui/src/index')['UnocssConfig']
@@ -961,8 +990,6 @@ declare module 'vue' {
     readonly actionsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['add']>
     readonly addDomain: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['addDomain']>
-    readonly afterAll: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['afterAll']>
-    readonly afterEach: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['afterEach']>
     readonly aiPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../.stacks/core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['aliasPath']>
@@ -986,8 +1013,6 @@ declare module 'vue' {
     readonly batchInvoke: UnwrapRef<typeof import('../.stacks/core/utils/src/function')['batchInvoke']>
     readonly bcryptEncode: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['bcryptEncode']>
     readonly bcryptVerify: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['bcryptVerify']>
-    readonly beforeAll: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['beforeAll']>
-    readonly beforeEach: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['beforeEach']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsMasterCss']>
@@ -1128,7 +1153,6 @@ declare module 'vue' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../.stacks/core/path/src/index')['delimiter']>
-    readonly describe: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
@@ -1165,7 +1189,6 @@ declare module 'vue' {
     readonly executeTransition: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['exists']>
     readonly existsSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['existsSync']>
-    readonly expect: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['expect']>
     readonly expo: UnwrapRef<typeof import('../.stacks/core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../.stacks/core/path/src/index')['extname']>
@@ -1306,8 +1329,6 @@ declare module 'vue' {
     readonly isUndefined: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['isZero']>
-    readonly it: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['it']>
-    readonly jest: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['jest']>
     readonly join: UnwrapRef<typeof import('../.stacks/core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['lastPageNumber']>
@@ -1349,7 +1370,6 @@ declare module 'vue' {
     readonly minimum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../.stacks/core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['mkdirSync']>
-    readonly mock: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['mock']>
     readonly modelsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['money']>
@@ -1494,7 +1514,6 @@ declare module 'vue' {
     readonly setEnvValue: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['setEnvValue']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly setSSRHandler: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['setSSRHandler']>
-    readonly setSystemTime: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['setSystemTime']>
     readonly setTotalHits: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['setTotalHits']>
     readonly settingsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['settingsPath']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
@@ -1509,7 +1528,6 @@ declare module 'vue' {
     readonly sns: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['sns']>
     readonly sort: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['sorts']>
-    readonly spyOn: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['spyOn']>
     readonly sql: UnwrapRef<typeof import('../.stacks/core/query-builder/src/kysely')['sql']>
     readonly src: UnwrapRef<typeof import('../.stacks/core/events/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../.stacks/core/build/src/index')['stacks']>
@@ -1528,7 +1546,6 @@ declare module 'vue' {
     readonly telnyx: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['termii']>
-    readonly test: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['test']>
     readonly testingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['testingPath']>
     readonly testsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['testsPath']>
     readonly throttle: UnwrapRef<typeof import('../.stacks/core/utils/src/throttle')['throttle']>
@@ -1849,8 +1866,6 @@ declare module '@vue/runtime-core' {
     readonly actionsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['add']>
     readonly addDomain: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['addDomain']>
-    readonly afterAll: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['afterAll']>
-    readonly afterEach: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['afterEach']>
     readonly aiPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../.stacks/core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['aliasPath']>
@@ -1874,8 +1889,6 @@ declare module '@vue/runtime-core' {
     readonly batchInvoke: UnwrapRef<typeof import('../.stacks/core/utils/src/function')['batchInvoke']>
     readonly bcryptEncode: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['bcryptEncode']>
     readonly bcryptVerify: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['bcryptVerify']>
-    readonly beforeAll: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['beforeAll']>
-    readonly beforeEach: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['beforeEach']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['breakpointsMasterCss']>
@@ -2016,7 +2029,6 @@ declare module '@vue/runtime-core' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../.stacks/core/path/src/index')['delimiter']>
-    readonly describe: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['describe']>
     readonly desktopPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
@@ -2053,7 +2065,6 @@ declare module '@vue/runtime-core' {
     readonly executeTransition: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['exists']>
     readonly existsSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['existsSync']>
-    readonly expect: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['expect']>
     readonly expo: UnwrapRef<typeof import('../.stacks/core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../.stacks/core/path/src/index')['extname']>
@@ -2194,8 +2205,6 @@ declare module '@vue/runtime-core' {
     readonly isUndefined: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../.stacks/core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['isZero']>
-    readonly it: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['it']>
-    readonly jest: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['jest']>
     readonly join: UnwrapRef<typeof import('../.stacks/core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['lastPageNumber']>
@@ -2237,7 +2246,6 @@ declare module '@vue/runtime-core' {
     readonly minimum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../.stacks/core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['mkdirSync']>
-    readonly mock: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['mock']>
     readonly modelsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['money']>
@@ -2382,7 +2390,6 @@ declare module '@vue/runtime-core' {
     readonly setEnvValue: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['setEnvValue']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly setSSRHandler: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['setSSRHandler']>
-    readonly setSystemTime: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['setSystemTime']>
     readonly setTotalHits: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['setTotalHits']>
     readonly settingsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['settingsPath']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
@@ -2397,7 +2404,6 @@ declare module '@vue/runtime-core' {
     readonly sns: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['sns']>
     readonly sort: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['sorts']>
-    readonly spyOn: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['spyOn']>
     readonly sql: UnwrapRef<typeof import('../.stacks/core/query-builder/src/kysely')['sql']>
     readonly src: UnwrapRef<typeof import('../.stacks/core/events/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../.stacks/core/build/src/index')['stacks']>
@@ -2416,7 +2422,6 @@ declare module '@vue/runtime-core' {
     readonly telnyx: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['termii']>
-    readonly test: UnwrapRef<typeof import('../.stacks/core/testing/src/index')['test']>
     readonly testingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['testingPath']>
     readonly testsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['testsPath']>
     readonly throttle: UnwrapRef<typeof import('../.stacks/core/utils/src/throttle')['throttle']>

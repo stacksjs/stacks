@@ -1,21 +1,26 @@
 <script setup lang="ts">
-const router = useRouter()
-const { t } = useI18n()
+// const router = useRouter()
+// const { t } = useI18n()
 </script>
 
 <template>
-  <main class="px-4 py-10 text-center text-teal-700 text-dark:gray-200">
-    <div class="text-4xl">
-      <div class="i-carbon-warning inline-block" />
-      testing this
+  <SlimLayout>
+    <div class="flex">
+      <router-link to="/" aria-label="Home">
+        <Logo class="h-10 w-auto" />
+      </router-link>
     </div>
-
-    <RouterView />
-
-    <div>
-      <button class="text-sm btn m-3 mt-8" @click="router.back()">
-        {{ t('button.back') }}
-      </button>
-    </div>
-  </main>
+    <p class="mt-20 text-sm font-medium text-gray-700">
+      404
+    </p>
+    <h1 class="mt-3 text-lg font-semibold text-gray-900">
+      Page not found
+    </h1>
+    <p class="mt-3 text-sm text-gray-700">
+      Sorry, we couldn’t find the page you’re looking for.
+    </p>
+    <Button href="/" class="mt-10">
+      Go back home
+    </Button>
+  </SlimLayout>
 </template>

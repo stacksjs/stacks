@@ -6,7 +6,6 @@ import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 
-// @ts-expect-error missing types
 // import { i18n } from './plugin/i18n'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 
@@ -34,45 +33,14 @@ export default defineConfig({
     },
   },
 
-  // define: {
-  //   'process.env': {
-  //     APP_NAME: JSON.stringify(process.env.APP_NAME),
-  //     APP_ENV: JSON.stringify(process.env.APP_ENV),
-  //     APP_KEY: JSON.stringify(process.env.APP_KEY),
-  //     APP_DEBUG: JSON.stringify(process.env.APP_DEBUG),
-  //     APP_URL: JSON.stringify(process.env.APP_URL),
-  //     APP_PORT: JSON.stringify(process.env.APP_PORT),
-  //     APP_MAINTENANCE: JSON.stringify(process.env.APP_MAINTENANCE),
-  //     DB_CONNECTION: JSON.stringify(process.env.DB_CONNECTION),
-  //     DB_HOST: JSON.stringify(process.env.DB_HOST),
-  //     DB_PORT: JSON.stringify(process.env.DB_PORT),
-  //     DB_DATABASE: JSON.stringify(process.env.DB_DATABASE),
-  //     DB_USERNAME: JSON.stringify(process.env.DB_USERNAME),
-  //     DB_PASSWORD: JSON.stringify(process.env.DB_PASSWORD),
-  //     AWS_ACCESS_KEY_ID: JSON.stringify(process.env.AWS_ACCESS_KEY_ID),
-  //     AWS_SECRET_ACCESS_KEY: JSON.stringify(process.env.AWS_SECRET_ACCESS_KEY),
-  //     AWS_DEFAULT_PASSWORD: JSON.stringify(process.env.AWS_DEFAULT_PASSWORD),
-  //     AWS_REGION: JSON.stringify(process.env.AWS_REGION),
-  //     MAIL_MAILER: JSON.stringify(process.env.MAIL_MAILER),
-  //     MAIL_HOST: JSON.stringify(process.env.MAIL_HOST),
-  //     MAIL_PORT: JSON.stringify(process.env.MAIL_PORT),
-  //     MAIL_USERNAME: JSON.stringify(process.env.MAIL_USERNAME),
-  //     MAIL_PASSWORD: JSON.stringify(process.env.MAIL_PASSWORD),
-  //     MAIL_ENCRYPTION: JSON.stringify(process.env.MAIL_ENCRYPTION),
-  //     MAIL_FROM_NAME: JSON.stringify(process.env.MAIL_FROM_NAME),
-  //     MAIL_FROM_ADDRESS: JSON.stringify(process.env.MAIL_FROM_ADDRESS),
-  //     SEARCH_ENGINE_DRIVER: JSON.stringify(process.env.SEARCH_ENGINE_DRIVER),
-  //     MEILISEARCH_HOST: JSON.stringify(process.env.MEILISEARCH_HOST),
-  //     MEILISEARCH_KEY: JSON.stringify(process.env.MEILISEARCH_KEY),
-  //     FRONTEND_APP_ENV: JSON.stringify(process.env.FRONTEND_APP_ENV),
-  //     FRONTEND_APP_URL: JSON.stringify(process.env.FRONTEND_APP_URL),
-  //   },
-  // },
-
   root: p.frameworkStoragePath('views'),
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
+
+  optimizeDeps: {
+    exclude: ['bun:test', '@stacksjs/utils', '@stacksjs/actions'],
+  },
 
   server: server({
     type: 'frontend',

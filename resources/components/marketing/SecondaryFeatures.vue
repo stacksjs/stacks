@@ -1,0 +1,96 @@
+<script setup lang="ts">
+import screenshotContacts from '../../assets/images/screenshots/contacts.png'
+import screenshotInventory from '../../assets/images/screenshots/inventory.png'
+import screenshotProfitLoss from '../../assets/images/screenshots/profit-loss.png'
+
+const features = [
+  {
+    name: 'Reporting',
+    summary: 'Stay on top of things with always up-to-date reporting features.',
+    description:
+      'We talked about reporting in the section above but we needed three items here, so mentioning it one more time for posterity.',
+    image: screenshotProfitLoss,
+    icon: ReportingIcon,
+  },
+  {
+    name: 'Inventory',
+    summary:
+      'Never lose track of what’s in stock with accurate inventory tracking.',
+    description:
+      'We don’t offer this as part of our software but that statement is inarguably true. Accurate inventory tracking would help you for sure.',
+    image: screenshotInventory,
+    icon: InventoryIcon,
+  },
+  {
+    name: 'Contacts',
+    summary:
+      'Organize all of your contacts, service providers, and invoices in one place.',
+    description:
+      'This also isn’t actually a feature, it’s just some friendly advice. We definitely recommend that you do this, you’ll feel really organized and professional.',
+    image: screenshotContacts,
+    icon: ContactsIcon,
+  },
+]
+
+const tabIndex = ref(0)
+</script>
+
+<template>
+  <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 sm:pb-20 sm:pt-32 lg:pb-32">
+    <Container>
+      <div class="mx-auto max-w-2xl md:text-center">
+        <h2 class="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
+          Simplify everyday business tasks.
+        </h2>
+        <p class="mt-4 text-lg tracking-tight text-slate-700">
+          Because you’d probably be a little confused if we suggested you
+          complicate your everyday business tasks instead.
+        </p>
+      </div>
+      <!-- FeaturesMobile -->
+      <div class="-mx-4 mt-20 flex flex-col gap-y-10 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:hidden">
+        <div v-for="feature in features" :key="feature.summary">
+          <Feature :feature="feature" class="mx-auto max-w-2xl" :is-active="true" />
+          <div class="relative mt-10 pb-10">
+            <div class="absolute -inset-x-4 bottom-0 top-8 bg-slate-200 sm:-inset-x-6" />
+            <div class="relative mx-auto w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+              <img class="w-full" :src="feature.image" alt="" sizes="52.75rem">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FeaturesDesktop -->
+      <TabGroup as="div" class="hidden lg:mt-20 lg:block">
+        <TabList class="grid grid-cols-3 gap-x-8">
+          <div v-for="(feature, featureIndex) in features" :key="feature.summary" class="relative">
+            <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': featureIndex === selectedIndex, 'bg-slate-500': featureIndex !== selectedIndex }">
+              <svg aria-hidden="true" class="h-9 w-9" fill="none">
+                <!-- feature.icon -->
+              </svg>
+            </div>
+            <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': featureIndex === selectedIndex, 'text-slate-600': featureIndex !== selectedIndex }">
+              <Tab>{{ feature.name }}</Tab>
+            </h3>
+            <p class="mt-2 font-display text-xl text-slate-900">
+              {{ feature.summary }}
+            </p>
+            <p class="mt-4 text-sm text-slate-600">
+              {{ feature.description }}
+            </p>
+          </div>
+        </TabList>
+        <TabPanels class="relative mt-20 overflow-hidden rounded-4xl bg-slate-200 px-14 py-16 xl:px-16">
+          <div class="-mx-5 flex">
+            <TabPanel v-for="(feature, featureIndex) in features" :key="feature.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': featureIndex !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="featureIndex !== selectedIndex">
+              <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+                <img class="w-full" :src="feature.image" alt="" sizes="52.75rem">
+              </div>
+            </TabPanel>
+          </div>
+          <div class="pointer-events-none absolute inset-0 rounded-4xl ring-1 ring-inset ring-slate-900/10" />
+        </TabPanels>
+      </TabGroup>
+    </Container>
+  </section>
+</template>

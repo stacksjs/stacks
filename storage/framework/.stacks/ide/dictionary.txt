@@ -48,6 +48,7 @@ cmake
 codecov
 codeowners
 colorette
+Combobox
 commitizen
 commitlint
 commitlintrc
@@ -112,6 +113,7 @@ grammarly
 gruntfuggly
 gupshup
 gzipped
+headlessui
 heex
 heroicon
 heroicons
@@ -143,6 +145,7 @@ latexmk
 leex
 lighthouserc
 lintstagedrc
+Listbox
 lockb
 macroable
 mailgun

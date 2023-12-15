@@ -11,6 +11,7 @@ export function components(options?: ComponentOptions): Plugin {
     include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
       p.componentsPath(),
+      p.uiPath('src/components/'),
       // viewsPath(),
     ],
     dts: p.frameworkStoragePath('types/components.d.ts'),

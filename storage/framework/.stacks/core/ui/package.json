@@ -2,7 +2,7 @@
   "name": "@stacksjs/ui",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks atomic UI engine, powered by UnoCSS.",
+  "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./components": {
+      "bun": "./src/components.ts",
+      "types": "./dist/components.d.ts",
+      "import": "./dist/components.js"
+    },
     "./unocss": {
       "bun": "./src/unocss.ts",
       "types": "./dist/unocss.d.ts",
@@ -52,6 +57,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "@headlessui/vue": "^1.7.16",
     "@iconify-json/heroicons": "^1.1.16",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
@@ -67,6 +73,7 @@
     "vue-tsc": "^1.8.25"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.16",
     "@iconify-json/heroicons": "^1.1.16",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
@@ -76,7 +83,6 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "@unhead/vue": "^1.8.9",
-    "add": "^2.0.6",
     "pinia": "^2.1.7",
     "unhead": "^1.8.9",
     "unocss": "^0.58.0",

@@ -3,11 +3,11 @@ import {
   // presetAttributify,
   presetIcons,
   presetTypography,
-  presetWind,
   presetWebFonts,
+  presetWind,
+  transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
-  transformerCompileClass,
 } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
