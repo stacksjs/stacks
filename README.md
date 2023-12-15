@@ -373,7 +373,7 @@ Many thanks to the following core technologies & people who have contributed to 
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
-Made with ❤️
+Made with 💙
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/stacks?style=flat-square

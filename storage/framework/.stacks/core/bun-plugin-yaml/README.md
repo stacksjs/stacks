@@ -53,4 +53,4 @@ Many thanks to the following core technologies & people who have contributed to 
 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
-Made with ❤️
+Made with 💙

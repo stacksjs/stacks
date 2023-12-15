@@ -63,4 +63,4 @@ For casual chit-chat with others using this package:
 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
-Made with ❤️
+Made with 💙
