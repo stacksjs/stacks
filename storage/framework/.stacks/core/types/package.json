@@ -60,7 +60,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^20.10.4",
+    "@types/node": "^20.10.5",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^1.7.0",
     "bun-types": "canary",
