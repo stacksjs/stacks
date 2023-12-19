@@ -71,7 +71,7 @@
     "@stacksjs/types": "workspace:*",
     "@types/mailparser": "^3.4.4",
     "mailparser": "^3.6.5",
-    "mime": "^4.0.0",
+    "mime": "^4.0.1",
     "moment": "^2.29.4",
     "nodemailer": "^6.9.7",
     "uuid": "^9.0.1"
