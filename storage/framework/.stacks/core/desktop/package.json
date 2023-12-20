@@ -61,21 +61,21 @@
   "peerDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.2",
-    "@tauri-apps/cli": "1.5.8",
+    "@tauri-apps/api": "1.5.3",
+    "@tauri-apps/cli": "1.5.9",
     "unified-network": "0.6.4",
     "unstorage": "^1.10.1",
-    "vue": "3.3.12",
+    "vue": "3.3.13",
     "vue3-highlightjs": "^1.0.5"
   },
   "dependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.2",
-    "@tauri-apps/cli": "1.5.8",
+    "@tauri-apps/api": "1.5.3",
+    "@tauri-apps/cli": "1.5.9",
     "unified-network": "0.6.4",
     "unstorage": "^1.10.1",
-    "vue": "3.3.12",
+    "vue": "3.3.13",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
