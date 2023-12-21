@@ -29,7 +29,7 @@ function resolveOptions(userOptions: UserOptions): ResolvedOptions {
     {
       defaultLayout: 'default',
       layoutsDirs: 'src/layouts',
-      extensions: ['vue'],
+      extensions: ['stx', 'vue'],
       exclude: [],
       importMode: defaultImportMode,
     },

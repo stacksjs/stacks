@@ -34,9 +34,9 @@ export const vueComponentsConfig: ViteConfig = {
     autoImports(),
     Components({
       // allow auto load markdown components under `./src/components/`
-      extensions: ['vue', 'md'],
+      extensions: ['stx', 'vue', 'md'],
       // allow auto import and register components used in markdown
-      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+      include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: 'src/components.d.ts',
     }),
   ],

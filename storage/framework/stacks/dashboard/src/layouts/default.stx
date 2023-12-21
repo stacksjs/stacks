@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Sidebar from '../components/Sidebar.vue'
-import MobileSidebar from '../components/MobileSidebar.vue'
-import Navbar from '../components/Navbar.vue'
-import Toast from '../components/Modals/Popups/Toast.vue'
+import Sidebar from '../components/Sidebar.stx'
+import MobileSidebar from '../components/MobileSidebar.stx'
+import Navbar from '../components/Navbar.stx'
+import Toast from '../components/Modals/Popups/Toast.stx'
 </script>
 
 <template>

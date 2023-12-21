@@ -1,5 +1,6 @@
+
 <script setup>
-import Table from './components/Table.vue'
+import Table from './components/Table.stx'
 </script>
 
 <template>
@@ -17,7 +18,7 @@ import Table from './components/Table.vue'
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.vue:hover {
+.logo.stacks:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
 }
 </style>

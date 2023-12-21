@@ -51,7 +51,7 @@ export async function makeComponent(options: MakeOptions) {
 export async function createComponent(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./components/${name}.vue`,
+    path: `./components/${name}.stx`,
     data: `<script setup lang="ts">
 // eslint-disable-next-line no-console
 console.log('Hello World component created')
@@ -131,7 +131,7 @@ export async function makePage(options: MakeOptions) {
 export async function createPage(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./pages/${name}.vue`,
+    path: `./pages/${name}.stx`,
     data:
 `<script setup lang="ts">
 // eslint-disable-next-line no-console

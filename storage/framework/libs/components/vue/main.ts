@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import 'uno.css'
 
 // import Previewer from 'virtual:vue-component-preview'
-import Demo from '../../../../../resources/components/Playground.vue'
+import Demo from '../../../../../resources/components/Playground.stx'
 
 // prepare the messages object from the yaml language files
 // const messages = Object.fromEntries(

@@ -20,6 +20,7 @@ export const GLOB_JSONC = '**/*.jsonc'
 export const GLOB_MARKDOWN = '**/*.md'
 export const GLOB_MARKDOWN_IN_MARKDOWN = '**/*.md/*.md'
 export const GLOB_VUE = '**/*.vue'
+export const GLOB_STACKS = '**/*.stx'
 export const GLOB_YAML = '**/*.y?(a)ml'
 export const GLOB_TOML = '**/*.toml'
 export const GLOB_HTML = '**/*.htm?(l)'
@@ -41,6 +42,7 @@ export const GLOB_ALL_SRC = [
   GLOB_JSON5,
   GLOB_MARKDOWN,
   GLOB_VUE,
+  GLOB_STACKS,
   GLOB_YAML,
   GLOB_HTML,
   // include anything within the .stacks folder

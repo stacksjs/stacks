@@ -11,7 +11,7 @@ import { basename, delimiter, dirname, extname, format, isAbsolute, join, normal
  * ```ts
  * import { buildPath } from '@stacks/paths'
  *
- * buildPath('functions.vue')
+ * buildPath('functions.stx')
  * buildPath('any-path.ts')
  * ```
  */
@@ -83,8 +83,8 @@ export function frameworkStoragePath(path?: string) {
  * @returns string - absolute path to the file or directory
  * @example
  * ```ts
- * buildPath('functions.vue')
- * buildPath('vue-components.ts')
+ * buildPath('functions.stx')
+ * buildPath('components.ts')
  * ```
  */
 export function buildPath(path?: string) {

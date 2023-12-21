@@ -10,7 +10,7 @@ import { uiEngine } from './plugin/ui-engine'
 import { autoImports } from './plugin/auto-imports'
 import { inspect } from './plugin/inspect'
 import { stacks } from './plugin/stacks'
-import type { ViteBuildOptions } from './'
+import type { ViteBuildOptions } from '.'
 
 const config = {
   root: p.libsPath('components/vue'),

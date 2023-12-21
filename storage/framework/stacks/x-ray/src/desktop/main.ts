@@ -3,7 +3,7 @@ import 'highlight.js/styles/atom-one-dark.css'
 
 import { createApp } from 'vue'
 
-import App from './app.vue'
+import App from './app.stx'
 
 import '@unocss/reset/tailwind.css'
 

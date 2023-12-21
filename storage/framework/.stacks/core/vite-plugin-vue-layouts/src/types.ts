@@ -17,7 +17,7 @@ export interface LayoutOptions {
    */
   exclude: string[]
   /**
-   * Filename of default layout (".vue" is not needed)
+   * Filename of default layout (".stx" is not needed)
    * @default 'default'
    */
   defaultLayout: string

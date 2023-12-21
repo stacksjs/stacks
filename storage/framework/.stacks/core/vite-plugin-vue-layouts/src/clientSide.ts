@@ -24,7 +24,7 @@ async function createVirtualGlob(
   target: string,
   isSync: boolean,
 ) {
-  const g = `"${target}/**/*.vue"`
+  const g = `"${target}/**/*.stx"` // TODO: ensure ..vue is also captured as part of this glob
   if (await isVite2())
     return isSync ? `import.meta.globEager(${g})` : `import.meta.glob(${g})`
 
@@ -58,7 +58,7 @@ export async function createVirtualModuleCode(
   )}
 
       Object.entries(modules).forEach(([name, module]) => {
-          let key = name.replace("${normalizedTarget}/", '').replace('.vue', '')
+          let key = name.replace("${normalizedTarget}/", '').replace('.stx', '')
           layouts[key] = ${isSync ? 'module.default' : 'module'}
       })
 

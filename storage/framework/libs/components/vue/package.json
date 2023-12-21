@@ -31,7 +31,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../build/vue-components.ts",
+    "build": "vite build -c ../build/components.ts",
     "prepublishOnly": "bun --bun run build"
   },
   "devDependencies": {

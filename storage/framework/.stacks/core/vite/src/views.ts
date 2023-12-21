@@ -18,10 +18,11 @@ import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from 'unocss/vite'
 import Shiki from 'markdown-it-shikiji'
 import VueRouter from 'unplugin-vue-router/vite'
-import { fonts } from './plugin/fonts'
+// import { fonts } from './plugin/fonts'
 import { layouts } from './plugin/layouts'
 import { autoImports } from './plugin/auto-imports'
 import { components } from './plugin/components'
+import webfontDownload from 'vite-plugin-webfont-dl';
 
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
@@ -39,7 +40,7 @@ export default defineConfig({
   envPrefix: 'FRONTEND_',
 
   optimizeDeps: {
-    exclude: ['bun:test', '@stacksjs/utils', '@stacksjs/actions'],
+    exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
   },
 
   server: server({
@@ -54,14 +55,14 @@ export default defineConfig({
     VueMacros({
       plugins: {
         vue: Vue({
-          include: [/\.vue$/, /\.md$/],
+          include: [/\.stx$/, /\.vue$/, /\.md$/],
         }),
       },
     }),
 
     // https://github.com/posva/unplugin-vue-router
     VueRouter({
-      extensions: ['.vue', '.md'],
+      extensions: ['.stx', '.md'],
       dts: p.frameworkStoragePath('types/router.d.ts'),
       routesFolder: [
         p.resourcesPath('views'),
@@ -138,17 +139,18 @@ export default defineConfig({
 
     // https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n
     // i18n(),
-    VueI18n({
-      runtimeOnly: true,
-      compositionOnly: true,
-      fullInstall: true,
-      include: [
-        p.resolve(__dirname, '../../../../../../lang/**'),
-      ],
-    }),
+    // VueI18n({
+    //   runtimeOnly: true,
+    //   compositionOnly: true,
+    //   fullInstall: true,
+    //   include: [
+    //     p.resolve(__dirname, '../../../../../../lang/**'),
+    //   ],
+    // }),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
-    fonts(),
+    // fonts(),
+    // webfontDownload(),
 
     // https://github.com/webfansplz/vite-plugin-vue-devtools
     VueDevTools(),

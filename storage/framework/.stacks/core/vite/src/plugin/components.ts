@@ -7,8 +7,8 @@ import type { Plugin } from 'vite'
 export function components(options?: ComponentOptions): Plugin {
   const defaultOptions = {
     // also allow auto-loading markdown components
-    extensions: ['vue', 'md'],
-    include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+    extensions: ['stx', 'vue', 'md'],
+    include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
     dirs: [
       p.componentsPath(),
       p.uiPath('src/components/'),

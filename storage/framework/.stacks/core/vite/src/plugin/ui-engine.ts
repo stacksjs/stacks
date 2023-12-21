@@ -5,7 +5,7 @@ import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shikiji'
 
 export function uiEngine(isWebComponent = false): Plugin {
-  const include = [/\.vue$/, /\.md$/]
+  const include = [/\.stx/, /\.vue$/, /\.md$/]
 
   if (isWebComponent) {
     return Vue({

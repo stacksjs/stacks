@@ -1,4 +1,5 @@
-export const response = {}
+// export const response = {}
+
 export enum Response {
   // 1xx Informational
   HTTP_CONTINUE = 100,
