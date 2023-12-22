@@ -55,7 +55,7 @@ export function generateComponentMeta() {
     }
   }
 
-  const components = glob.sync(['components/*.vue', 'components/**/*.vue'], {
+  const components = glob.sync(['components/*.stx', 'components/**/*.stx'], {
     cwd: projectPath(),
     absolute: true,
   })

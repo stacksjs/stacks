@@ -12,7 +12,8 @@ export function dev(buddy: CLI) {
     dev: 'Starts development server',
     frontend: 'Starts the frontend development server',
     components: 'Start the Components development server',
-    desktop: 'Start the Desktop development server',
+    desktop: 'Start the Desktop App development server',
+    dashboard: 'Start the Dashboard development server',
     api: 'Start the local API development server',
     email: 'Start the Email development server',
     docs: 'Start the Documentation development server',
@@ -28,6 +29,8 @@ export function dev(buddy: CLI) {
     .option('-a, --api', descriptions.api)
     .option('-e, --email', descriptions.email)
     .option('-c, --components', descriptions.components)
+    .option('-d, --dashboard', descriptions.dashboard)
+    .option('-t, --desktop', descriptions.desktop)
     .option('-d, --docs', descriptions.docs)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
@@ -57,6 +60,12 @@ export function dev(buddy: CLI) {
           break
         case 'components':
           await runComponentsDevServer(options)
+          break
+        case 'dashboard':
+          await runDashboardDevServer(options)
+          break
+        case 'desktop':
+          await runDesktopDevServer(options)
           break
         // case 'email':
         //   await runEmailDevServer(options)
@@ -121,7 +130,7 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
-      const cmd = `bunx --bun vite --config ${vitePath('src/vue-components.ts')}`
+      const cmd = `bunx --bun vite --config ${vitePath('src/components.ts')}`
       const result = await runCommand(cmd, options)
 
       if (options.verbose)

@@ -13,7 +13,9 @@ async function make(password: string, algorithm = 'bcrypt') {
   throw new Error('Unsupported algorithm')
 }
 
-async function verify(password: string, hash: string, algorithm = 'bcrypt') {
+type Algorithm = 'bcrypt' | 'base64'
+
+async function verify(password: string, hash: string, algorithm?: Algorithm) {
   if (algorithm === 'bcrypt')
     return bcryptVerify(password, hash)
 

@@ -115,19 +115,19 @@ export interface LibraryBuildOptions {
   /**
    * This is where you define the components that need to be included in
    * your library. For example, including your `HelloWorld` to be built
-   * would require `../components/HelloWorld.vue` to be present.
+   * would require `../components/HelloWorld.stx` to be present.
    *
    * @example
    * {
    *   tags: [{
-   *     name: 'HelloWorld' // export { default as HelloWorld } from './components/HelloWorld.vue'
+   *     name: 'HelloWorld' // export { default as HelloWorld } from './components/HelloWorld.stx'
    *   }]
    * }
    *
    * @example
    * {
    *   tags: [{
-   *     name: ['HelloWorld', 'AppHelloWorld'] // export { default as AppHelloWorld } from './components/HelloWorld.vue'
+   *     name: ['HelloWorld', 'AppHelloWorld'] // export { default as AppHelloWorld } from './components/HelloWorld.stx'
    *   }]
    * }
    */

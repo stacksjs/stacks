@@ -47,7 +47,7 @@ export async function vue(
           ecmaFeatures: {
             jsx: true,
           },
-          extraFileExtensions: ['.vue'],
+          extraFileExtensions: ['.stx'],
           parser: options.typescript
             ? await interopDefault(import('@typescript-eslint/parser')) as any
             : null,
@@ -56,9 +56,9 @@ export async function vue(
       },
       name: 'antfu:vue:rules',
       processor: sfcBlocks === false
-        ? pluginVue.processors['.vue']
+        ? pluginVue.processors['.stx']
         : mergeProcessors([
-          pluginVue.processors['.vue'],
+          pluginVue.processors['.stx'],
           processorVueBlocks({
             ...sfcBlocks,
             blocks: {

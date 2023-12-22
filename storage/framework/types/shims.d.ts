@@ -13,7 +13,7 @@ declare module '*.md' {
   export default component
 }
 
-declare module '*.vue' {
+declare module '*.stx' {
   import type { DefineComponent } from 'vue'
 
   const component: DefineComponent<{}, {}, any>

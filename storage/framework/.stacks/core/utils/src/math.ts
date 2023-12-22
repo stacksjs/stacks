@@ -12,7 +12,7 @@ export {
   createProjection,
   logicNot,
   logicOr,
-  not,
+  // not, -> exported as well in ../regex
   or,
   useAbs,
   useAverage,

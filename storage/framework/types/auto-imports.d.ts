@@ -96,6 +96,7 @@ declare global {
   const allocate: typeof import('../.stacks/core/utils/src/currency')['allocate']
   const analyticsPath: typeof import('../.stacks/core/path/src/index')['analyticsPath']
   const and: typeof import('../.stacks/core/utils/src/math')['and']
+  const anyOf: typeof import('../.stacks/core/utils/src/regex')['anyOf']
   const appPath: typeof import('../.stacks/core/path/src/index')['appPath']
   const archive: typeof import('../.stacks/core/storage/src/zip')['archive']
   const arrays: typeof import('../.stacks/src/index')['arrays']
@@ -127,7 +128,12 @@ declare global {
   const cache: typeof import('../.stacks/src/index')['cache']
   const cachePath: typeof import('../.stacks/core/path/src/index')['cachePath']
   const calculatePagination: typeof import('../.stacks/core/search-engine/src/index')['calculatePagination']
+  const carriageReturn: typeof import('../.stacks/core/utils/src/regex')['carriageReturn']
+  const caseInsensitive: typeof import('../.stacks/core/utils/src/regex')['caseInsensitive']
   const changelog: typeof import('../.stacks/core/git/src/index')['changelog']
+  const char: typeof import('../.stacks/core/utils/src/regex')['char']
+  const charIn: typeof import('../.stacks/core/utils/src/regex')['charIn']
+  const charNotIn: typeof import('../.stacks/core/utils/src/regex')['charNotIn']
   const chat: typeof import('../.stacks/src/index')['chat']
   const chatPath: typeof import('../.stacks/core/path/src/index')['chatPath']
   const clamp: typeof import('../.stacks/core/utils/src/math')['clamp']
@@ -187,6 +193,7 @@ declare global {
   const createProjection: typeof import('../.stacks/core/utils/src/math')['createProjection']
   const createPromiseLock: typeof import('../.stacks/core/utils/src/promise')['createPromiseLock']
   const createReactiveFn: typeof import('../.stacks/core/utils/src/vendors')['createReactiveFn']
+  const createRegExp: typeof import('../.stacks/core/utils/src/regex')['createRegExp']
   const createReusableTemplate: typeof import('../.stacks/core/utils/src/vendors')['createReusableTemplate']
   const createSharedComposable: typeof import('../.stacks/core/utils/src/vendors')['createSharedComposable']
   const createSingletonPromise: typeof import('../.stacks/core/utils/src/promise')['createSingletonPromise']
@@ -259,6 +266,7 @@ declare global {
   const determineDebugLevel: typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']
   const determineResetPreset: typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']
   const developmentPath: typeof import('../.stacks/core/path/src/index')['developmentPath']
+  const digit: typeof import('../.stacks/core/utils/src/regex')['digit']
   const dinero: typeof import('../.stacks/core/utils/src/currency')['dinero']
   const dirname: typeof import('../.stacks/core/path/src/index')['dirname']
   const dispatch: typeof import('../.stacks/core/events/src/index')['dispatch']
@@ -266,6 +274,7 @@ declare global {
   const docsConfig: typeof import('../.stacks/src/index')['docsConfig']
   const docsPath: typeof import('../.stacks/core/path/src/index')['docsPath']
   const doesFolderExist: typeof import('../.stacks/core/storage/src/folders')['doesFolderExist']
+  const dotAll: typeof import('../.stacks/core/utils/src/regex')['dotAll']
   const dump: typeof import('../.stacks/core/logging/src/index')['dump']
   const dumpYaml: typeof import('../.stacks/core/utils/src/helpers')['dumpYaml']
   const eagerComputed: typeof import('../.stacks/core/utils/src/vendors')['eagerComputed']
@@ -287,6 +296,7 @@ declare global {
   const eslintPath: typeof import('../.stacks/core/path/src/index')['eslintPath']
   const events: typeof import('../.stacks/core/events/src/index')['events']
   const eventsPath: typeof import('../.stacks/core/path/src/index')['eventsPath']
+  const exactly: typeof import('../.stacks/core/utils/src/regex')['exactly']
   const examplesPath: typeof import('../.stacks/core/path/src/index')['examplesPath']
   const executeTransition: typeof import('../.stacks/core/utils/src/vendors')['executeTransition']
   const exists: typeof import('../.stacks/core/storage/src/fs')['exists']
@@ -342,6 +352,7 @@ declare global {
   const getTypeName: typeof import('../.stacks/core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../.stacks/core/path/src/index')['gitPath']
   const glob: typeof import('../.stacks/core/storage/src/glob')['glob']
+  const global: typeof import('../.stacks/core/utils/src/regex')['global']
   const goToNextPage: typeof import('../.stacks/core/search-engine/src/index')['goToNextPage']
   const goToPage: typeof import('../.stacks/core/search-engine/src/index')['goToPage']
   const goToPrevPage: typeof import('../.stacks/core/search-engine/src/index')['goToPrevPage']
@@ -439,9 +450,11 @@ declare global {
   const lastPageNumber: typeof import('../.stacks/core/search-engine/src/index')['lastPageNumber']
   const lessThan: typeof import('../.stacks/core/utils/src/currency')['lessThan']
   const lessThanOrEqual: typeof import('../.stacks/core/utils/src/currency')['lessThanOrEqual']
+  const letter: typeof import('../.stacks/core/utils/src/regex')['letter']
   const libraryEntryPath: typeof import('../.stacks/core/path/src/index')['libraryEntryPath']
   const libsEntriesPath: typeof import('../.stacks/core/path/src/index')['libsEntriesPath']
   const libsPath: typeof import('../.stacks/core/path/src/index')['libsPath']
+  const linefeed: typeof import('../.stacks/core/utils/src/regex')['linefeed']
   const lintPath: typeof import('../.stacks/core/path/src/index')['lintPath']
   const listFoundationModels: typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']
   const listen: typeof import('../.stacks/core/events/src/index')['listen']
@@ -470,6 +483,7 @@ declare global {
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const maximum: typeof import('../.stacks/core/utils/src/currency')['maximum']
+  const maybe: typeof import('../.stacks/core/utils/src/regex')['maybe']
   const md5Encode: typeof import('../.stacks/core/security/src/hash')['md5Encode']
   const middlewares: typeof import('../.stacks/core/router/src/middleware')['middlewares']
   const minimum: typeof import('../.stacks/core/utils/src/currency')['minimum']
@@ -479,6 +493,7 @@ declare global {
   const modelsPath: typeof import('../.stacks/core/path/src/index')['modelsPath']
   const modulesPath: typeof import('../.stacks/core/path/src/index')['modulesPath']
   const money: typeof import('../.stacks/core/utils/src/currency')['money']
+  const multiline: typeof import('../.stacks/core/utils/src/regex')['multiline']
   const multiply: typeof import('../.stacks/core/utils/src/currency')['multiply']
   const nexmo: typeof import('../.stacks/core/sms/src/drivers/index')['nexmo']
   const nextTick: typeof import('vue')['nextTick']
@@ -486,7 +501,7 @@ declare global {
   const normalize: typeof import('../.stacks/core/path/src/index')['normalize']
   const normalizeScale: typeof import('../.stacks/core/utils/src/currency')['normalizeScale']
   const normalizeString: typeof import('../.stacks/core/path/src/index')['normalizeString']
-  const not: typeof import('../.stacks/core/utils/src/math')['not']
+  const not: typeof import('../.stacks/core/utils/src/regex')['not']
   const notNullish: typeof import('../.stacks/core/utils/src/guards')['notNullish']
   const notUndefined: typeof import('../.stacks/core/utils/src/guards')['notUndefined']
   const notification: typeof import('../.stacks/core/notifications/src/index')['notification']
@@ -524,6 +539,7 @@ declare global {
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
   const onboardingPath: typeof import('../.stacks/core/path/src/index')['onboardingPath']
+  const oneOrMore: typeof import('../.stacks/core/utils/src/regex')['oneOrMore']
   const openShell: typeof import('../../../storage/framework/.stacks/core/desktop/src/drivers/tauri/index')['openShell']
   const openaiWip: typeof import('../.stacks/core/ai/src/drivers/openai')['openaiWip']
   const or: typeof import('../.stacks/core/utils/src/math')['or']
@@ -645,6 +661,7 @@ declare global {
   const src: typeof import('../.stacks/core/events/src/index')['default']
   const stacks: typeof import('../.stacks/core/build/src/index')['stacks']
   const stacksPath: typeof import('../.stacks/core/path/src/index')['stacksPath']
+  const sticky: typeof import('../.stacks/core/utils/src/regex')['sticky']
   const storage: typeof import('../.stacks/core/storage/src/index')['storage']
   const storagePath: typeof import('../.stacks/core/path/src/index')['storagePath']
   const storeToRefs: typeof import('pinia')['storeToRefs']
@@ -655,6 +672,7 @@ declare global {
   const subtract: typeof import('../.stacks/core/utils/src/currency')['subtract']
   const syncRef: typeof import('../.stacks/core/utils/src/vendors')['syncRef']
   const syncRefs: typeof import('../.stacks/core/utils/src/vendors')['syncRefs']
+  const tab: typeof import('../.stacks/core/utils/src/regex')['tab']
   const tap: typeof import('../.stacks/core/utils/src/function')['tap']
   const telnyx: typeof import('../.stacks/core/sms/src/drivers/index')['telnyx']
   const templateRef: typeof import('../.stacks/core/utils/src/vendors')['templateRef']
@@ -693,6 +711,7 @@ declare global {
   const ui: typeof import('../.stacks/core/ui/src/index')['ui']
   const uiPath: typeof import('../.stacks/core/path/src/index')['uiPath']
   const unarchive: typeof import('../.stacks/core/storage/src/zip')['unarchive']
+  const unicode: typeof import('../.stacks/core/utils/src/regex')['unicode']
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('../.stacks/core/utils/src/vendors')['unrefElement']
   const until: typeof import('../.stacks/core/utils/src/vendors')['until']
@@ -923,8 +942,13 @@ declare global {
   const webComponents: typeof import('../.stacks/core/build/src/index')['webComponents']
   const websiteSourceHash: typeof import('../.stacks/core/utils/src/hash')['websiteSourceHash']
   const whenever: typeof import('../.stacks/core/utils/src/vendors')['whenever']
+  const whitespace: typeof import('../.stacks/core/utils/src/regex')['whitespace']
   const wipOrm: typeof import('../.stacks/core/orm/src/index')['wipOrm']
   const wipSlug: typeof import('../.stacks/core/slug/src/index')['wipSlug']
+  const withIndices: typeof import('../.stacks/core/utils/src/regex')['withIndices']
+  const word: typeof import('../.stacks/core/utils/src/regex')['word']
+  const wordBoundary: typeof import('../.stacks/core/utils/src/regex')['wordBoundary']
+  const wordChar: typeof import('../.stacks/core/utils/src/regex')['wordChar']
   const writeEnv: typeof import('../.stacks/core/env/src/index')['writeEnv']
   const writeFile: typeof import('../.stacks/core/storage/src/files')['writeFile']
   const writeFileSync: typeof import('../.stacks/core/storage/src/fs')['writeFileSync']
@@ -945,6 +969,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
     readonly // makeFactory: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['// makeFactory']>
+    readonly // not: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['// not']>
     readonly Action: UnwrapRef<typeof import('../.stacks/core/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../.stacks/core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -997,6 +1022,7 @@ declare module 'vue' {
     readonly allocate: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['allocate']>
     readonly analyticsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['and']>
+    readonly anyOf: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['anyOf']>
     readonly appPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['appPath']>
     readonly archive: UnwrapRef<typeof import('../.stacks/core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../.stacks/src/index')['arrays']>
@@ -1026,7 +1052,12 @@ declare module 'vue' {
     readonly cache: UnwrapRef<typeof import('../.stacks/src/index')['cache']>
     readonly cachePath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['calculatePagination']>
+    readonly carriageReturn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['carriageReturn']>
+    readonly caseInsensitive: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['caseInsensitive']>
     readonly changelog: UnwrapRef<typeof import('../.stacks/core/git/src/index')['changelog']>
+    readonly char: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['char']>
+    readonly charIn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['charIn']>
+    readonly charNotIn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['charNotIn']>
     readonly chat: UnwrapRef<typeof import('../.stacks/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['chatPath']>
     readonly clamp: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['clamp']>
@@ -1086,6 +1117,7 @@ declare module 'vue' {
     readonly createProjection: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['createProjection']>
     readonly createPromiseLock: UnwrapRef<typeof import('../.stacks/core/utils/src/promise')['createPromiseLock']>
     readonly createReactiveFn: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createReactiveFn']>
+    readonly createRegExp: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['createRegExp']>
     readonly createReusableTemplate: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createReusableTemplate']>
     readonly createSharedComposable: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createSharedComposable']>
     readonly createSingletonPromise: UnwrapRef<typeof import('../.stacks/core/utils/src/promise')['createSingletonPromise']>
@@ -1157,6 +1189,7 @@ declare module 'vue' {
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
     readonly developmentPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['developmentPath']>
+    readonly digit: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['digit']>
     readonly dinero: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['dinero']>
     readonly dirname: UnwrapRef<typeof import('../.stacks/core/path/src/index')['dirname']>
     readonly dispatch: UnwrapRef<typeof import('../.stacks/core/events/src/index')['dispatch']>
@@ -1164,6 +1197,7 @@ declare module 'vue' {
     readonly docsConfig: UnwrapRef<typeof import('../.stacks/src/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['docsPath']>
     readonly doesFolderExist: UnwrapRef<typeof import('../.stacks/core/storage/src/folders')['doesFolderExist']>
+    readonly dotAll: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['dotAll']>
     readonly dump: UnwrapRef<typeof import('../.stacks/core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['dumpYaml']>
     readonly eagerComputed: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['eagerComputed']>
@@ -1185,6 +1219,7 @@ declare module 'vue' {
     readonly eslintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../.stacks/core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['eventsPath']>
+    readonly exactly: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['exactly']>
     readonly examplesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['examplesPath']>
     readonly executeTransition: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['exists']>
@@ -1239,6 +1274,7 @@ declare module 'vue' {
     readonly getTypeName: UnwrapRef<typeof import('../.stacks/core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../.stacks/core/storage/src/glob')['glob']>
+    readonly global: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['global']>
     readonly goToNextPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToNextPage']>
     readonly goToPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToPage']>
     readonly goToPrevPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToPrevPage']>
@@ -1334,9 +1370,11 @@ declare module 'vue' {
     readonly lastPageNumber: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['lastPageNumber']>
     readonly lessThan: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['lessThan']>
     readonly lessThanOrEqual: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['lessThanOrEqual']>
+    readonly letter: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['letter']>
     readonly libraryEntryPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libraryEntryPath']>
     readonly libsEntriesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsEntriesPath']>
     readonly libsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsPath']>
+    readonly linefeed: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['linefeed']>
     readonly lintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../.stacks/core/events/src/index')['listen']>
@@ -1365,6 +1403,7 @@ declare module 'vue' {
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly maximum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['maximum']>
+    readonly maybe: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['maybe']>
     readonly md5Encode: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['md5Encode']>
     readonly middlewares: UnwrapRef<typeof import('../.stacks/core/router/src/middleware')['middlewares']>
     readonly minimum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['minimum']>
@@ -1373,6 +1412,7 @@ declare module 'vue' {
     readonly modelsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['money']>
+    readonly multiline: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['multiline']>
     readonly multiply: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['multiply']>
     readonly nexmo: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['nexmo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
@@ -1380,7 +1420,7 @@ declare module 'vue' {
     readonly normalize: UnwrapRef<typeof import('../.stacks/core/path/src/index')['normalize']>
     readonly normalizeScale: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('../.stacks/core/path/src/index')['normalizeString']>
-    readonly not: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['not']>
+    readonly not: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['not']>
     readonly notNullish: UnwrapRef<typeof import('../.stacks/core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('../.stacks/core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('../.stacks/core/notifications/src/index')['notification']>
@@ -1418,7 +1458,7 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
-    readonly or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['or']>
+    readonly oneOrMore: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['oneOrMore']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../.stacks/core/utils/src/p')['p']>
@@ -1532,6 +1572,7 @@ declare module 'vue' {
     readonly src: UnwrapRef<typeof import('../.stacks/core/events/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../.stacks/core/build/src/index')['stacks']>
     readonly stacksPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['stacksPath']>
+    readonly sticky: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['sticky']>
     readonly storage: UnwrapRef<typeof import('../.stacks/core/storage/src/index')['storage']>
     readonly storagePath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['storagePath']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
@@ -1542,6 +1583,7 @@ declare module 'vue' {
     readonly subtract: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['subtract']>
     readonly syncRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['syncRefs']>
+    readonly tab: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['tab']>
     readonly tap: UnwrapRef<typeof import('../.stacks/core/utils/src/function')['tap']>
     readonly telnyx: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['templateRef']>
@@ -1578,6 +1620,7 @@ declare module 'vue' {
     readonly ui: UnwrapRef<typeof import('../.stacks/core/ui/src/index')['ui']>
     readonly uiPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['uiPath']>
     readonly unarchive: UnwrapRef<typeof import('../.stacks/core/storage/src/zip')['unarchive']>
+    readonly unicode: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['unicode']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['until']>
@@ -1805,9 +1848,17 @@ declare module 'vue' {
     readonly webComponentExample: UnwrapRef<typeof import('../.stacks/core/build/src/index')['webComponentExample']>
     readonly webComponents: UnwrapRef<typeof import('../.stacks/core/build/src/index')['webComponents']>
     readonly websiteSourceHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['websiteSourceHash']>
+    readonly well in ../regex
+  or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['well in ../regex
+  or']>
     readonly whenever: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['whenever']>
+    readonly whitespace: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['whitespace']>
     readonly wipOrm: UnwrapRef<typeof import('../.stacks/core/orm/src/index')['wipOrm']>
     readonly wipSlug: UnwrapRef<typeof import('../.stacks/core/slug/src/index')['wipSlug']>
+    readonly withIndices: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['withIndices']>
+    readonly word: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['word']>
+    readonly wordBoundary: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['wordBoundary']>
+    readonly wordChar: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['wordChar']>
     readonly writeEnv: UnwrapRef<typeof import('../.stacks/core/env/src/index')['writeEnv']>
     readonly writeFile: UnwrapRef<typeof import('../.stacks/core/storage/src/files')['writeFile']>
     readonly writeFileSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['writeFileSync']>
@@ -1821,6 +1872,7 @@ declare module 'vue' {
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     readonly // makeFactory: UnwrapRef<typeof import('../.stacks/core/actions/src/index')['// makeFactory']>
+    readonly // not: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['// not']>
     readonly Action: UnwrapRef<typeof import('../.stacks/core/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../.stacks/core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -1873,6 +1925,7 @@ declare module '@vue/runtime-core' {
     readonly allocate: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['allocate']>
     readonly analyticsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['and']>
+    readonly anyOf: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['anyOf']>
     readonly appPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['appPath']>
     readonly archive: UnwrapRef<typeof import('../.stacks/core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../.stacks/src/index')['arrays']>
@@ -1902,7 +1955,12 @@ declare module '@vue/runtime-core' {
     readonly cache: UnwrapRef<typeof import('../.stacks/src/index')['cache']>
     readonly cachePath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['cachePath']>
     readonly calculatePagination: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['calculatePagination']>
+    readonly carriageReturn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['carriageReturn']>
+    readonly caseInsensitive: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['caseInsensitive']>
     readonly changelog: UnwrapRef<typeof import('../.stacks/core/git/src/index')['changelog']>
+    readonly char: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['char']>
+    readonly charIn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['charIn']>
+    readonly charNotIn: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['charNotIn']>
     readonly chat: UnwrapRef<typeof import('../.stacks/src/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['chatPath']>
     readonly clamp: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['clamp']>
@@ -1962,6 +2020,7 @@ declare module '@vue/runtime-core' {
     readonly createProjection: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['createProjection']>
     readonly createPromiseLock: UnwrapRef<typeof import('../.stacks/core/utils/src/promise')['createPromiseLock']>
     readonly createReactiveFn: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createReactiveFn']>
+    readonly createRegExp: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['createRegExp']>
     readonly createReusableTemplate: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createReusableTemplate']>
     readonly createSharedComposable: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['createSharedComposable']>
     readonly createSingletonPromise: UnwrapRef<typeof import('../.stacks/core/utils/src/promise')['createSingletonPromise']>
@@ -2033,6 +2092,7 @@ declare module '@vue/runtime-core' {
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
     readonly developmentPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['developmentPath']>
+    readonly digit: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['digit']>
     readonly dinero: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['dinero']>
     readonly dirname: UnwrapRef<typeof import('../.stacks/core/path/src/index')['dirname']>
     readonly dispatch: UnwrapRef<typeof import('../.stacks/core/events/src/index')['dispatch']>
@@ -2040,6 +2100,7 @@ declare module '@vue/runtime-core' {
     readonly docsConfig: UnwrapRef<typeof import('../.stacks/src/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['docsPath']>
     readonly doesFolderExist: UnwrapRef<typeof import('../.stacks/core/storage/src/folders')['doesFolderExist']>
+    readonly dotAll: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['dotAll']>
     readonly dump: UnwrapRef<typeof import('../.stacks/core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['dumpYaml']>
     readonly eagerComputed: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['eagerComputed']>
@@ -2061,6 +2122,7 @@ declare module '@vue/runtime-core' {
     readonly eslintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../.stacks/core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['eventsPath']>
+    readonly exactly: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['exactly']>
     readonly examplesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['examplesPath']>
     readonly executeTransition: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['exists']>
@@ -2115,6 +2177,7 @@ declare module '@vue/runtime-core' {
     readonly getTypeName: UnwrapRef<typeof import('../.stacks/core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../.stacks/core/storage/src/glob')['glob']>
+    readonly global: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['global']>
     readonly goToNextPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToNextPage']>
     readonly goToPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToPage']>
     readonly goToPrevPage: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['goToPrevPage']>
@@ -2210,9 +2273,11 @@ declare module '@vue/runtime-core' {
     readonly lastPageNumber: UnwrapRef<typeof import('../.stacks/core/search-engine/src/index')['lastPageNumber']>
     readonly lessThan: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['lessThan']>
     readonly lessThanOrEqual: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['lessThanOrEqual']>
+    readonly letter: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['letter']>
     readonly libraryEntryPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libraryEntryPath']>
     readonly libsEntriesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsEntriesPath']>
     readonly libsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['libsPath']>
+    readonly linefeed: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['linefeed']>
     readonly lintPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../.stacks/core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../.stacks/core/events/src/index')['listen']>
@@ -2241,6 +2306,7 @@ declare module '@vue/runtime-core' {
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly maximum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['maximum']>
+    readonly maybe: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['maybe']>
     readonly md5Encode: UnwrapRef<typeof import('../.stacks/core/security/src/hash')['md5Encode']>
     readonly middlewares: UnwrapRef<typeof import('../.stacks/core/router/src/middleware')['middlewares']>
     readonly minimum: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['minimum']>
@@ -2249,6 +2315,7 @@ declare module '@vue/runtime-core' {
     readonly modelsPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['money']>
+    readonly multiline: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['multiline']>
     readonly multiply: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['multiply']>
     readonly nexmo: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['nexmo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
@@ -2256,7 +2323,7 @@ declare module '@vue/runtime-core' {
     readonly normalize: UnwrapRef<typeof import('../.stacks/core/path/src/index')['normalize']>
     readonly normalizeScale: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['normalizeScale']>
     readonly normalizeString: UnwrapRef<typeof import('../.stacks/core/path/src/index')['normalizeString']>
-    readonly not: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['not']>
+    readonly not: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['not']>
     readonly notNullish: UnwrapRef<typeof import('../.stacks/core/utils/src/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('../.stacks/core/utils/src/guards')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('../.stacks/core/notifications/src/index')['notification']>
@@ -2294,7 +2361,7 @@ declare module '@vue/runtime-core' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
-    readonly or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['or']>
+    readonly oneOrMore: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['oneOrMore']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../.stacks/core/utils/src/p')['p']>
@@ -2408,6 +2475,7 @@ declare module '@vue/runtime-core' {
     readonly src: UnwrapRef<typeof import('../.stacks/core/events/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../.stacks/core/build/src/index')['stacks']>
     readonly stacksPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['stacksPath']>
+    readonly sticky: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['sticky']>
     readonly storage: UnwrapRef<typeof import('../.stacks/core/storage/src/index')['storage']>
     readonly storagePath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['storagePath']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
@@ -2418,6 +2486,7 @@ declare module '@vue/runtime-core' {
     readonly subtract: UnwrapRef<typeof import('../.stacks/core/utils/src/currency')['subtract']>
     readonly syncRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['syncRefs']>
+    readonly tab: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['tab']>
     readonly tap: UnwrapRef<typeof import('../.stacks/core/utils/src/function')['tap']>
     readonly telnyx: UnwrapRef<typeof import('../.stacks/core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['templateRef']>
@@ -2454,6 +2523,7 @@ declare module '@vue/runtime-core' {
     readonly ui: UnwrapRef<typeof import('../.stacks/core/ui/src/index')['ui']>
     readonly uiPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['uiPath']>
     readonly unarchive: UnwrapRef<typeof import('../.stacks/core/storage/src/zip')['unarchive']>
+    readonly unicode: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['unicode']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['until']>
@@ -2681,9 +2751,17 @@ declare module '@vue/runtime-core' {
     readonly webComponentExample: UnwrapRef<typeof import('../.stacks/core/build/src/index')['webComponentExample']>
     readonly webComponents: UnwrapRef<typeof import('../.stacks/core/build/src/index')['webComponents']>
     readonly websiteSourceHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['websiteSourceHash']>
+    readonly well in ../regex
+  or: UnwrapRef<typeof import('../.stacks/core/utils/src/math')['well in ../regex
+  or']>
     readonly whenever: UnwrapRef<typeof import('../.stacks/core/utils/src/vendors')['whenever']>
+    readonly whitespace: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['whitespace']>
     readonly wipOrm: UnwrapRef<typeof import('../.stacks/core/orm/src/index')['wipOrm']>
     readonly wipSlug: UnwrapRef<typeof import('../.stacks/core/slug/src/index')['wipSlug']>
+    readonly withIndices: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['withIndices']>
+    readonly word: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['word']>
+    readonly wordBoundary: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['wordBoundary']>
+    readonly wordChar: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['wordChar']>
     readonly writeEnv: UnwrapRef<typeof import('../.stacks/core/env/src/index')['writeEnv']>
     readonly writeFile: UnwrapRef<typeof import('../.stacks/core/storage/src/files')['writeFile']>
     readonly writeFileSync: UnwrapRef<typeof import('../.stacks/core/storage/src/fs')['writeFileSync']>

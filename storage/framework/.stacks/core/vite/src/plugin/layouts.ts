@@ -12,7 +12,7 @@ export function layouts(options?: LayoutOptions, isMain = true) {
 
   return Layouts({
     layoutsDir: p.resourcesPath('layouts'),
-    defaultLayout: p.resourcesPath('layouts/default.vue'),
+    defaultLayout: p.resourcesPath('layouts/default.stx'),
     exclude: [
       p.resourcesPath('layouts/mails'),
     ],

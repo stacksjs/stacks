@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import ToastWrapper from '../ToastWrapper.vue'
+import ToastWrapper from '../ToastWrapper.stx'
 
 const show = ref(false)
 

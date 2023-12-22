@@ -302,7 +302,7 @@ type foo = { bar: 2 }
 
 ### Rules Overrides
 
-Certain rules would only be enabled in specific files, for example, `ts/*` rules would only be enabled in `.ts` files and `vue/*` rules would only be enabled in `.vue` files. If you want to override the rules, you need to specify the file extension:
+Certain rules would only be enabled in specific files, for example, `ts/*` rules would only be enabled in `.ts` files and `vue/*` rules would only be enabled in `.stx` && `.vue` files. If you want to override the rules, you need to specify the file extension:
 
 ```js
 // eslint.config.js
@@ -312,7 +312,7 @@ export default antfu(
   { vue: true, typescript: true },
   {
     // Remember to specify the file glob here, otherwise it might cause the vue plugin to handle non-vue files
-    files: ['**/*.vue'],
+    files: ['**/*.stx'],
     rules: {
       'vue/operator-linebreak': ['error', 'before'],
     },

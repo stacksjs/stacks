@@ -1,7 +1,7 @@
 # The Buddy CLI
 
 ```bash
-# buddy make:component HelloWorld # bootstraps HelloWorld.vue component
+# buddy make:component HelloWorld # bootstraps HelloWorld.stx component
 # buddy make:function hello-world # bootstraps hello-world.ts function
 # buddy make:stack hello-world # bootstraps component & function
 

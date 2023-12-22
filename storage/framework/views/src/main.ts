@@ -1,7 +1,7 @@
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { routes } from 'vue-router/auto/routes'
-import App from './App.vue'
+import App from './App.stx'
 import type { UserModule } from './types'
 import '@unocss/reset/tailwind.css'
 import '../../../../resources/assets/styles/main.css'

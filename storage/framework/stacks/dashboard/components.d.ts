@@ -7,21 +7,21 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    ActivityFeed: typeof import('./src/components/Deployments/ActivityFeed.vue')['default']
-    Alert: typeof import('./src/components/Modals/Popups/Alert.vue')['default']
-    AppButton: typeof import('./src/components/Buttons/AppButton.vue')['default']
-    BaseModal: typeof import('./src/components/Modals/BaseModal.vue')['default']
-    DeploymentList: typeof import('./src/components/Deployments/DeploymentList.vue')['default']
-    MobileSidebar: typeof import('./src/components/MobileSidebar.vue')['default']
-    Navbar: typeof import('./src/components/Navbar.vue')['default']
-    Pagination: typeof import('./src/components/Pagination.vue')['default']
+    ActivityFeed: typeof import('./src/components/Deployments/ActivityFeed.stx')['default']
+    Alert: typeof import('./src/components/Modals/Popups/Alert.stx')['default']
+    AppButton: typeof import('./src/components/Buttons/AppButton.stx')['default']
+    BaseModal: typeof import('./src/components/Modals/BaseModal.stx')['default']
+    DeploymentList: typeof import('./src/components/Deployments/DeploymentList.stx')['default']
+    MobileSidebar: typeof import('./src/components/MobileSidebar.stx')['default']
+    Navbar: typeof import('./src/components/Navbar.stx')['default']
+    Pagination: typeof import('./src/components/Pagination.stx')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SettingsHeader: typeof import('./src/components/SettingsHeader.vue')['default']
-    Sidebar: typeof import('./src/components/Sidebar.vue')['default']
+    SettingsHeader: typeof import('./src/components/SettingsHeader.stx')['default']
+    Sidebar: typeof import('./src/components/Sidebar.stx')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
-    Toast: typeof import('./src/components/Modals/Popups/Toast.vue')['default']
-    ToastWrapper: typeof import('./src/components/Modals/ToastWrapper.vue')['default']
+    Toast: typeof import('./src/components/Modals/Popups/Toast.stx')['default']
+    ToastWrapper: typeof import('./src/components/Modals/ToastWrapper.stx')['default']
   }
 }

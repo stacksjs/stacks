@@ -7,18 +7,18 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Demo: typeof import('./components/Demo.vue')['default']
+    Demo: typeof import('./components/Demo.stx')['default']
     README: typeof import('./components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Table: typeof import('./components/Table.vue')['default']
-    TableBody: typeof import('./components/TableBody.vue')['default']
-    TableCellActionItems: typeof import('./components/TableCellActionItems.vue')['default']
-    TableFilters: typeof import('./components/TableFilters.vue')['default']
-    TableHead: typeof import('./components/TableHead.vue')['default']
-    TablePagination: typeof import('./components/TablePagination.vue')['default']
-    TableRow: typeof import('./components/TableRow.vue')['default']
-    TableSearch: typeof import('./components/TableSearch.vue')['default']
-    Tooltip: typeof import('./components/Tooltip.vue')['default']
+    Table: typeof import('./components/Table.stx')['default']
+    TableBody: typeof import('./components/TableBody.stx')['default']
+    TableCellActionItems: typeof import('./components/TableCellActionItems.stx')['default']
+    TableFilters: typeof import('./components/TableFilters.stx')['default']
+    TableHead: typeof import('./components/TableHead.stx')['default']
+    TablePagination: typeof import('./components/TablePagination.stx')['default']
+    TableRow: typeof import('./components/TableRow.stx')['default']
+    TableSearch: typeof import('./components/TableSearch.stx')['default']
+    Tooltip: typeof import('./components/Tooltip.stx')['default']
   }
 }
