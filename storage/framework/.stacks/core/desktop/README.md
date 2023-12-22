@@ -1,5 +1,7 @@
 # Stacks Desktop
 
+- [ ] auto-generate Cargo.toml
+
 ## ☘️ Features
 
 - ⚡️
