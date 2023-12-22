@@ -70,7 +70,7 @@
     "macroable": "^7.0.2",
     "pluralize": "^8.0.0",
     "slugify": "^1.6.6",
-    "string-ts": "^1.3.3",
+    "string-ts": "^2.0.0",
     "title-case": "^4.2.0",
     "validator": "^13.11.0"
   },
