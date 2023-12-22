@@ -5,7 +5,7 @@ import VueRouter from 'unplugin-vue-router/vite'
 // https://github.com/posva/unplugin-vue-router
 export function pages(options?: Options) {
   const defaultOptions = {
-    extensions: ['.stx', '.md'],
+    extensions: ['.stx', '.vue', '.md'],
     getRouteName: (routeNode: TreeNode) => getFileBasedRouteName(routeNode),
   }
 

@@ -32,6 +32,7 @@ export const pagesConfig = {
       include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: p.projectStoragePath('framework/dashboard/components.d.ts'),
     }),
+
     AutoImport({
       imports: [
         'vue',
@@ -41,26 +42,22 @@ export const pagesConfig = {
         '@vueuse/core',
       ],
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
-      dirs: [p.projectStoragePath('framework/dashboard/src/functions')],
+      dirs: [
+        p.projectStoragePath('framework/dashboard/src/functions'),
+      ],
     }),
+
     pages({
-      routesFolder: p.projectStoragePath(
-        'framework/dashboard/src/pages',
-      ),
+      routesFolder: p.projectStoragePath('framework/dashboard/src/pages',),
     }),
+
     UnoCSS({
-      configFile: p.projectStoragePath(
-        'framework/.stacks/core/ui/src/uno.config.ts',
-      ),
+      configFile: p.uiPath('src/uno.config.ts'),
     }),
-    layouts(
-      {
-        layoutsDirs: p.projectStoragePath(
-          'framework/dashboard/src/layouts',
-        ),
-      },
-      false,
-    ),
+
+    layouts({
+      layoutsDirs: p.resourcesPath('layouts'),
+    }, false),
   ],
 
   // https://github.com/antfu/vite-ssg
