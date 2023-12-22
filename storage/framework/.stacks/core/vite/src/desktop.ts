@@ -9,7 +9,7 @@ import { layouts, pages, uiEngine } from './stacks'
 import { defineConfig } from './'
 
 export const pagesConfig = {
-  root: p.projectStoragePath('framework/stacks/dashboard'),
+  root: p.projectStoragePath('framework/dashboard'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.projectPath('public'),
@@ -30,7 +30,7 @@ export const pagesConfig = {
       extensions: ['stx', 'vue', 'md'],
       // allow auto import and register components used in markdown
       include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: p.projectStoragePath('framework/stacks/dashboard/components.d.ts'),
+      dts: p.projectStoragePath('framework/dashboard/components.d.ts'),
     }),
     AutoImport({
       imports: [
@@ -41,11 +41,11 @@ export const pagesConfig = {
         '@vueuse/core',
       ],
       dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
-      dirs: [p.projectStoragePath('framework/stacks/dashboard/src/functions')],
+      dirs: [p.projectStoragePath('framework/dashboard/src/functions')],
     }),
     pages({
       routesFolder: p.projectStoragePath(
-        'framework/stacks/dashboard/src/pages',
+        'framework/dashboard/src/pages',
       ),
     }),
     UnoCSS({
@@ -56,7 +56,7 @@ export const pagesConfig = {
     layouts(
       {
         layoutsDirs: p.projectStoragePath(
-          'framework/stacks/dashboard/src/layouts',
+          'framework/dashboard/src/layouts',
         ),
       },
       false,

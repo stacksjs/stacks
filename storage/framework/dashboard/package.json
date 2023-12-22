@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/dashboard"
+    "directory": "./storage/framework/dashboard"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -34,10 +34,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun --bun build d.ts",
-    "build:app": "bun --bun vite build ../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
-    "dev": "bun --bun vite -c ../../.stacks/core/vite/src/desktop.ts",
+    "dev": "bun --bun vite -c ../.stacks/core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
+    "build": "bun --bun build.ts",
+    "build:app": "bun --bun vite build ../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
