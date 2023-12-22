@@ -31,7 +31,7 @@ export async function runComponentsDevServer(options: DevOptions) {
 
 export async function runDesktopDevServer(options: DevOptions) {
   log.info('Starting your Desktop Engine...')
-  await runCommand(NpmScript.DevDesktop, options)
+  await runAction(Action.DevDesktop, options)
 }
 
 export async function runDocsDevServer(options: DevOptions) {
