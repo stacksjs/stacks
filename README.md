@@ -36,7 +36,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🧩 **Components** _primitive to develop user interfaces_
 - 🤖 **Functions** _primitive to develop business logic (and grant your UI superpowers)_
 - 🎨 **UI Kit** _modern & deeply-integrated components_
-- 🌐 **Web** _“a routing & templating engine that makes sense” using components_
+- 🌐 **Web** _“a routing & templating engine that makes sense”_
 - 🖥️ **Desktop** _automagically build a desktop app out of your web app_
 - 📚 **Library** _auto-builds component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
