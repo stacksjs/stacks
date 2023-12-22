@@ -262,6 +262,7 @@ declare global {
   const deleteHostedZoneRecords: typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZoneRecords']
   const delimiter: typeof import('../.stacks/core/path/src/index')['delimiter']
   const describe: typeof import('../.stacks/core/testing/src/index')['describe']
+  const desktop: typeof import('../.stacks/core/desktop/src/index')['desktop']
   const desktopPath: typeof import('../.stacks/core/path/src/index')['desktopPath']
   const determineDebugLevel: typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']
   const determineResetPreset: typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']
@@ -540,7 +541,7 @@ declare global {
   const onUpdated: typeof import('vue')['onUpdated']
   const onboardingPath: typeof import('../.stacks/core/path/src/index')['onboardingPath']
   const oneOrMore: typeof import('../.stacks/core/utils/src/regex')['oneOrMore']
-  const openShell: typeof import('../../../storage/framework/.stacks/core/desktop/src/drivers/tauri/index')['openShell']
+  const openShell: typeof import('../.stacks/core/desktop/src/index')['openShell']
   const openaiWip: typeof import('../.stacks/core/ai/src/drivers/openai')['openaiWip']
   const or: typeof import('../.stacks/core/utils/src/math')['or']
   const originRequestFunctionHash: typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']
@@ -1185,6 +1186,7 @@ declare module 'vue' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../.stacks/core/path/src/index')['delimiter']>
+    readonly desktop: UnwrapRef<typeof import('../.stacks/core/desktop/src/index')['desktop']>
     readonly desktopPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
@@ -1459,6 +1461,7 @@ declare module 'vue' {
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
     readonly oneOrMore: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['oneOrMore']>
+    readonly openShell: UnwrapRef<typeof import('../.stacks/core/desktop/src/index')['openShell']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../.stacks/core/utils/src/p')['p']>
@@ -2088,6 +2091,7 @@ declare module '@vue/runtime-core' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../.stacks/core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../.stacks/core/path/src/index')['delimiter']>
+    readonly desktop: UnwrapRef<typeof import('../.stacks/core/desktop/src/index')['desktop']>
     readonly desktopPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../.stacks/core/utils/src/helpers')['determineResetPreset']>
@@ -2362,6 +2366,7 @@ declare module '@vue/runtime-core' {
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onboardingPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['onboardingPath']>
     readonly oneOrMore: UnwrapRef<typeof import('../.stacks/core/utils/src/regex')['oneOrMore']>
+    readonly openShell: UnwrapRef<typeof import('../.stacks/core/desktop/src/index')['openShell']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../.stacks/core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../.stacks/core/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../.stacks/core/utils/src/p')['p']>
