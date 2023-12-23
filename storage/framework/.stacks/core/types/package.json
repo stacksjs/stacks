@@ -68,7 +68,7 @@
     "markdown-it": "^14.0.0",
     "meilisearch": "^0.36.0",
     "neverthrow": "^6.1.0",
-    "ora": "^8.0.0",
+    "ora": "^8.0.1",
     "unocss": "^0.58.0",
     "unplugin-auto-import": "^0.17.2",
     "unplugin-vue-components": "^0.26.0",

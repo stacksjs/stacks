@@ -110,7 +110,7 @@
     "constructs": "^10.3.0"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^4.1.10",
+    "@oclif/plugin-plugins": "^4.1.11",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
