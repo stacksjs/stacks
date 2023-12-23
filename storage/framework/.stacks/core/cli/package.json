@@ -66,7 +66,7 @@
     "@stacksjs/validation": "workspace:*",
     "@types/prompts": "^2.4.9",
     "cac": "^6.7.14",
-    "ora": "^7.0.1",
+    "ora": "^8.0.0",
     "prompts": "^2.4.2"
   },
   "dependencies": {
@@ -81,7 +81,7 @@
     "@types/prompts": "^2.4.9",
     "cac": "^6.7.14",
     "kolorist": "1.8.0",
-    "ora": "^7.0.1",
+    "ora": "^8.0.0",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
