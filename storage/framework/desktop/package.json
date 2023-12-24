@@ -1,34 +1,24 @@
 {
-  "name": "@stacksjs/desktop",
+  "name": "stacks-desktop-example",
   "type": "module",
   "version": "0.57.4",
-  "description": "The Stacks Desktop engine.",
+  "description": "The Stacks Desktop generated application.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/core/desktop#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/desktop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/.stacks/core/desktop"
+    "directory": "./storage/framework/desktop"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "application",
     "desktop",
-    "nexmo",
-    "twilio",
-    "aws",
-    "sms",
-    "email",
-    "database",
-    "slack",
-    "discord",
-    "webhooks",
-    "stacks",
-    "Maizzle",
-    "maizzle"
+    "stacks"
   ],
   "exports": {
     ".": {

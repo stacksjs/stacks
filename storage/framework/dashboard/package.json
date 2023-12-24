@@ -36,8 +36,7 @@
   "scripts": {
     "dev": "bun --bun vite -c ../.stacks/core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bun --bun build.ts",
-    "build:app": "bun --bun vite build ../../../storage/framework/desktop/dashboard -c ../../core/vite/src/desktop.ts",
+    "build": "bun --bun vite build -c .../.stacks/core/vite/src/desktop.ts",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
