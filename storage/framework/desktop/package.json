@@ -1,35 +1,30 @@
 {
-  "name": "stacks-desktop-example",
+  "name": "@stacksjs/dashboard",
   "type": "module",
-  "version": "0.57.4",
-  "description": "The Stacks Desktop generated application.",
+  "private": "true",
+  "version": "0.51.0",
+  "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/desktop#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/.stacks/core/dashboard#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/desktop"
+    "directory": "./storage/framework/dashboard"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "application",
-    "desktop",
+    "dashboard",
+    "reporting",
+    "analytics",
+    "logs",
+    "debugging",
+    "requests",
     "stacks"
   ],
-  "exports": {
-    ".": {
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
-    },
-    "./*": {
-      "bun": "./src/*",
-      "import": "./dist/*"
-    }
-  },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
@@ -42,32 +37,15 @@
   "scripts": {
     "dev": "bun --bun vite -c ../.stacks/core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bun --bun vite build -c ../.stacks/core/vite/src/desktop.ts",
-    "build:app": "tauri build",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "build": "bun --bun vite build -c .../.stacks/core/vite/src/desktop.ts",
+    "prepublishOnly": "bun --bun run build",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.3",
-    "@tauri-apps/cli": "1.5.9",
-    "unified-network": "0.6.4",
-    "unstorage": "^1.10.1",
-    "vue": "3.3.13",
-    "vue3-highlightjs": "^1.0.5"
-  },
-  "dependencies": {
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.3",
-    "@tauri-apps/cli": "1.5.9",
-    "unified-network": "0.6.4",
-    "unstorage": "^1.10.1",
-    "vue": "3.3.13",
-    "vue3-highlightjs": "^1.0.5"
+    "@stacksjs/desktop": "workspace:*"
   },
   "devDependencies": {
+    "@stacksjs/desktop": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

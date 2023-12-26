@@ -1,10 +1,25 @@
 # Stacks Desktop
 
-- [ ] auto-generate Cargo.toml
+The source for the Stacks Desktop applications, including the Dashboard & System Tray app.
 
 ## ☘️ Features
 
-- ⚡️
+- [ ] Log Viewer
+- [ ] Self-deployed or managed cloud error tracking
+- [ ] Performance Monitoring
+- [ ] Serverless/Server (host) Monitoring
+- [ ] Anomaly Detection
+- [ ] Metric Dashboards/Reports
+- [ ] Page view & function execution analytics, etc.
+- [ ] Uptime Monitoring
+- [ ] Queue Monitoring
+- [ ] Request Monitoring
+- [ ] Deployment Management UI
+- [ ] Local email testing & debugging
+- [ ] AWS Billing Details & Alerts
+- [ ] Invoice generation
+- [ ] AWS Cost Explorer
+- [ ] AWS Cost
 
 ## 🤖 Usage
 
@@ -15,10 +30,10 @@ bun install -d @stacksjs/desktop
 Now, you can use it in your project:
 
 ```js
-import desktop from '@stacksjs/desktop'
-
 // wip
 ```
+
+Learn more in the docs.
 
 ## 🧪 Testing
 
