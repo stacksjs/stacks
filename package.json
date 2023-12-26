@@ -108,13 +108,11 @@
   },
   "workspaces": [
     "storage/framework/*",
+    "storage/framework/libs/*",
     "storage/framework/stacks/*",
-    "storage/framework/stacks/scripts/*",
-    "storage/framework/stacks/vcs/*",
+    "storage/framework/stacks/core/*",
     "storage/framework/stacks/core/cloud/src/server",
     "storage/framework/stacks/core/bun-create/*",
-    "storage/framework/stacks/core/*",
-    "storage/framework/libs/*",
-    "storage/framework/stacks/*"
+    "storage/framework/vcs/*"
   ]
 }
