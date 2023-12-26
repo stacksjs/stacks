@@ -38,7 +38,7 @@ const config = {
     cssEngine(),
     inspect(),
     components(),
-    stacks(),
+    // stacks(),
   ],
 
   build: vueComponentsBuildOptions(),

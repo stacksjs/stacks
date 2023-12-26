@@ -114,6 +114,7 @@
     "storage/framework/.stacks/core/cloud/src/server",
     "storage/framework/.stacks/core/bun-create/*",
     "storage/framework/.stacks/core/*",
+    "storage/framework/libs/*",
     "storage/framework/stacks/*"
   ]
 }
