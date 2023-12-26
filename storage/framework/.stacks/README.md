@@ -131,7 +131,7 @@ buddy upgrade # auto-update all deps & the Stacks framework
 
 buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
-buddy make:page hello-world # scaffolds a page (https://my-project.test/hello-world)
+buddy make:view hello-world # scaffolds a page (https://my-project.test/hello-world)
 
 buddy --help
 ```
@@ -204,7 +204,7 @@ buddy key:generate
 
 buddy make:component HelloWorld # bootstraps a HelloWorld component
 buddy make:function hello-world # bootstraps a hello-world function
-buddy make:page hello-world # bootstraps a hello-word page
+buddy make:view hello-world # bootstraps a hello-word page
 buddy make:model Car # bootstraps a Car model
 buddy make:database cars # creates a cars database
 buddy make:migration create_cars_table # creates a cars migration file

@@ -133,7 +133,8 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:page', descriptions.page)
+    .command('make:view', descriptions.page)
+    .alias('make:page')
     .option('-n, --name', 'The name of the page')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
