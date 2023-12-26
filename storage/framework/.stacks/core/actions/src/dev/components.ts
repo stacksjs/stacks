@@ -8,7 +8,7 @@ if (options.verbose)
   // eslint-disable-next-line no-console
   console.log('dev components options', options)
 
-await runCommand(`bunx --bun vite --config ${vitePath('src/vue-components.ts')}`, {
+await runCommand(`bunx --bun vite --config ${vitePath('src/components.ts')}`, {
   ...options,
   cwd: frameworkPath(),
 })
