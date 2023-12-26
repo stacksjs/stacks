@@ -37,8 +37,8 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🤖 **Functions** _primitive to develop business logic (and grant your UI superpowers)_
 - 🎨 **UI Kit** _modern & deeply-integrated components_
 - 🌐 **Web** _“a routing & templating engine that makes sense”_
-- 🖥️ **Desktop** _auto-transforms your web app into desktop app, and more_
-- 📚 **Library** _auto-builds component & function libraries_
+- 🖥️ **Desktop** _transforms your web app into desktop app, plus more_
+- 📚 **Library** _auto-builds & manages component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
 ### Stacks Backend
@@ -360,7 +360,9 @@ For casual chit-chat with others using this package:
 
 ## 📄 Sponsors
 
-Once we launch a usable Stacks version, we hope people will start enjoying it! Coming soon.
+Once we launch a usable Stacks version, we hope people will start enjoying it! In the meantime, thanks to the following sponsors for helping to fund the development of this framework:
+
+- [The Solana Foundation](https://solana.com/)
 
 ## 🙏🏼 Credits
 
