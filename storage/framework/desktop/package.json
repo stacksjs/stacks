@@ -42,6 +42,7 @@
     "dev": "bun --bun vite -c ../.stacks/core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
     "build": "bun --bun vite build -c .../.stacks/core/vite/src/desktop.ts",
+    "build:app": "tauri build",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
