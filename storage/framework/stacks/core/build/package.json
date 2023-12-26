@@ -1,0 +1,63 @@
+{
+  "name": "@stacksjs/build",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "The Stacks framework build tools and configurations.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/build#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/stacks/core/build"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "build",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript",
+    "vite",
+    "nitro",
+    "vue"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/vite": "workspace:*",
+    "vue-docgen-web-types": "^0.1.8"
+  },
+  "dependencies": {
+    "@stacksjs/vite": "workspace:*",
+    "vue-docgen-web-types": "^0.1.8"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

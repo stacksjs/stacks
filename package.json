@@ -19,9 +19,9 @@
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/.stacks/core/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/stacks/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
-    "setup": "./storage/framework/.stacks/scripts/setup.sh",
+    "setup": "./storage/framework/stacks/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
     "clean": "bun run buddy clean",
     "upgrade": "bun run buddy upgrade",
@@ -103,17 +103,17 @@
   },
   "config": {
     "commitizen": {
-      "path": "./storage/framework/.stacks/node_modules/cz-git"
+      "path": "./storage/framework/stacks/node_modules/cz-git"
     }
   },
   "workspaces": [
     "storage/framework/*",
-    "storage/framework/.stacks/*",
-    "storage/framework/.stacks/scripts/*",
-    "storage/framework/.stacks/vcs/*",
-    "storage/framework/.stacks/core/cloud/src/server",
-    "storage/framework/.stacks/core/bun-create/*",
-    "storage/framework/.stacks/core/*",
+    "storage/framework/stacks/*",
+    "storage/framework/stacks/scripts/*",
+    "storage/framework/stacks/vcs/*",
+    "storage/framework/stacks/core/cloud/src/server",
+    "storage/framework/stacks/core/bun-create/*",
+    "storage/framework/stacks/core/*",
     "storage/framework/libs/*",
     "storage/framework/stacks/*"
   ]

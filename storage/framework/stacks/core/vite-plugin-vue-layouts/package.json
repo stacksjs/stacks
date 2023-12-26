@@ -1,0 +1,64 @@
+{
+  "name": "@stacksjs/vite-plugin-vue-layouts",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "Router based layout plugin for Vite and Vue.",
+  "authors": [
+    "johncampionjr <npm@relate.dev>",
+    "chrisbbreuer <chris@stacksjs.org>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/vite-plugin-vue-layouts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/stacks/core/vite-plugin-vue-layouts"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "vite-plugin-vue-layouts",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./client.d.ts"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/storage": "workspace:*"
+  },
+  "dependencies": {
+    "@stacksjs/storage": "workspace:*",
+    "local-pkg": "^0.5.0"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "@types/debug": "^4.1.12",
+    "vite": "^5.0.10"
+  }
+}

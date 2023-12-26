@@ -6,11 +6,11 @@
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/.stacks/vscode#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/vscode#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/stacksjs/stacks.git",
-    "directory": "./.stacks/vscode"
+    "directory": "./stacks/vscode"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

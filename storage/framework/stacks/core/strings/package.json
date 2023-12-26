@@ -1,0 +1,81 @@
+{
+  "name": "@stacksjs/strings",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "The Stacks string utilities.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/strings#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/stacks/core/strings"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "strings",
+    "camel case",
+    "capital case",
+    "constant case",
+    "dot case",
+    "header case",
+    "no case",
+    "param case",
+    "kebab case",
+    "pascal case",
+    "path case",
+    "sentence case",
+    "snake case",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "change-case": "^5.3.0",
+    "detect-indent": "^7.0.1",
+    "detect-newline": "^4.0.1",
+    "macroable": "^7.0.2",
+    "pluralize": "^8.0.0",
+    "slugify": "^1.6.6",
+    "string-ts": "^2.0.0",
+    "title-case": "^4.2.0",
+    "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "@types/validator": "^13.11.7"
+  }
+}

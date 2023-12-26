@@ -1,0 +1,69 @@
+{
+  "name": "@stacksjs/lint",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "The Stacks way to lint.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/lint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/stacks/core/lint"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "linter",
+    "formatter",
+    "eslint",
+    "pre-configured",
+    "zero-config",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/eslint-config": "workspace:*",
+    "@types/eslint": "^8.56.0",
+    "eslint": "npm:eslint-ts-patch@^8.55.0-1",
+    "eslint-ts-patch": "^8.55.0-1",
+    "lint-staged": "^15.2.0",
+    "publint": "^0.2.7"
+  },
+  "dependencies": {
+    "@stacksjs/eslint-config": "workspace:*",
+    "@types/eslint": "^8.56.0",
+    "eslint": "npm:eslint-ts-patch@^8.55.0-1",
+    "eslint-ts-patch": "^8.55.0-1",
+    "lint-staged": "^15.2.0",
+    "publint": "^0.2.7"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

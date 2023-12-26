@@ -1,4 +1,0 @@
-ru.adelf.idea.dotenv
-club.nutsoft.Github3Theme
-com.github.copilot
-mobi.hsz.idea.gitignore

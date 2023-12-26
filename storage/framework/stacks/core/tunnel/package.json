@@ -1,0 +1,57 @@
+{
+  "name": "@stacksjs/tunnel",
+  "type": "module",
+  "version": "0.57.4",
+  "description": "Local development tunnel.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/tunnel#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/stacks/core/tunnel"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "tunnel",
+    "localtunnel",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "localtunnel": "^2.0.2"
+  },
+  "dependencies": {
+    "localtunnel": "^2.0.2"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "@types/localtunnel": "^2.0.4"
+  }
+}

@@ -26,20 +26,20 @@ jobs:
         run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
-        run: pnpm --filter='./storage/framework/.stacks' build
+        run: pnpm --filter='./storage/framework/stacks' build
 
       - name: Publish framework
-        run: pnpm --filter='./storage/framework/.stacks' publish:framework
+        run: pnpm --filter='./storage/framework/stacks' publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries
-        run: pnpm --filter='./storage/framework/.stacks' publish:dummy-libs
+        run: pnpm --filter='./storage/framework/stacks' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './.stacks/ide/vscode' release
+        run: pnpm --filter './stacks/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

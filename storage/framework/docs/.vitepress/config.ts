@@ -7,7 +7,7 @@ import { analyticsHead, faviconHead } from './head'
 
 // import { config } from '@stacksjs/config'
 // import { kolorist as c } from '@stacksjs/cli'
-// import { version } from '../../../../.stacks/package.json'
+// import { version } from '../../../../stacks/package.json'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({

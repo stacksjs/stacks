@@ -51,7 +51,7 @@
   },
   "config": {
     "commitizen": {
-      "path": ".stacks/node_modules/cz-git"
+      "path": "stacks/node_modules/cz-git"
     }
   }
 }
