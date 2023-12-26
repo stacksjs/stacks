@@ -32,7 +32,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
     "README.md",

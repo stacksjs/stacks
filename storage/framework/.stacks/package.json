@@ -328,7 +328,7 @@
   },
   "types": "./core/types/dist/index.d.ts",
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
     ".gitignore",

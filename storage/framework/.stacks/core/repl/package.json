@@ -36,7 +36,7 @@
   },
   "module": "dist/index.js",
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
     "README.md",

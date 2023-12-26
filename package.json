@@ -16,7 +16,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "scripts": {
     "buddy": "bun --bun ./storage/framework/.stacks/core/buddy/src/cli.ts",

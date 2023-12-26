@@ -17,7 +17,11 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
+    "developer experience",
+    "dx",
+    "admin panel",
     "dashboard",
+    "application",
     "reporting",
     "analytics",
     "logs",
@@ -28,7 +32,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
     "README.md",

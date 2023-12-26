@@ -24,7 +24,7 @@
     "javascript"
   ],
   "contributors": [
-    "Chris Breuer <chris@ow3.org>"
+    "Chris Breuer <chris@stacksjs.org>"
   ],
   "scripts": {
     "dev": "vite",
