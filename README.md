@@ -38,6 +38,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🎨 **UI Kit** _modern & deeply-integrated components_
 - 🌐 **Web** _“a routing & templating engine that makes sense”_
 - 🖥️ **Desktop** _transforms your web app into desktop app, plus more_
+- 📝 **Documentation** _markdown-based documentation, auto-generated_
 - 📚 **Library** _auto-builds & manages component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
@@ -74,7 +75,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - 🚏 **CDN** _zero-config, low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
 - 🤖 **AI** _fine-tune a foundational model using your application data_
-- 📧 **Email** _secure & simplistic <easy-peasy@custom-domains.com> mailboxes_
+- 📧 **Email** _secure & zero-setup <easy-peasy@custom-domains.com> mailboxes_
 - 🔐 **Firewall** _native web application firewall support_
 - 📦 **Storage** _unlimited cloud storage & automatic backups_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_

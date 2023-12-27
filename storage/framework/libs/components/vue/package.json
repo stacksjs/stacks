@@ -31,7 +31,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build -c ../build/components.ts",
+    "dev": "vite -c ../../../stacks/core/vite/src/components.ts",
+    "build": "vite build -c ../../../stacks/core/vite/src/components.ts",
     "prepublishOnly": "bun --bun run build"
   },
   "devDependencies": {

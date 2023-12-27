@@ -1,3 +1,3 @@
 import '@unocss/reset/tailwind.css'
 
-export { default as AppHelloWorld } from '/Users/ChrisBreuer/Code/stacks/resources/components/HelloWorld.stx'
+export { default as AppHelloWorld } from '/Users/ChrisBreuer/Code/stacks/resources/components/HelloWorld'
