@@ -1,13 +1,13 @@
 import { mergeProcessors } from 'eslint-merge-processors'
 import { interopDefault } from '../utils'
 import type { FlatConfigItem, OptionsFiles, OptionsHasTypeScript, OptionsOverrides, OptionsStylistic, OptionsVue } from '../types'
-import { GLOB_VUE } from '../globs'
+import { GLOB_STACKS } from '../globs'
 
-export async function vue(
+export async function stacks(
   options: OptionsVue & OptionsHasTypeScript & OptionsOverrides & OptionsStylistic & OptionsFiles = {},
 ): Promise<FlatConfigItem[]> {
   const {
-    files = [GLOB_VUE],
+    files = [GLOB_STACKS],
     overrides = {},
     stylistic = true,
     vueVersion = 3,
@@ -34,7 +34,7 @@ export async function vue(
 
   return [
     {
-      name: 'antfu:vue:setup',
+      name: 'antfu:stacks:setup',
       plugins: {
         vue: pluginVue,
       },
@@ -47,18 +47,18 @@ export async function vue(
           ecmaFeatures: {
             jsx: true,
           },
-          extraFileExtensions: ['.vue'],
+          extraFileExtensions: ['.stx'],
           parser: options.typescript
             ? await interopDefault(import('@typescript-eslint/parser')) as any
             : null,
           sourceType: 'module',
         },
       },
-      name: 'antfu:vue:rules',
+      name: 'antfu:stacks:rules',
       processor: sfcBlocks === false
-        ? pluginVue.processors['.vue']
+        ? pluginVue.processors['.stx']
         : mergeProcessors([
-          pluginVue.processors['.vue'],
+          pluginVue.processors['.stx'],
           processorVueBlocks({
             ...sfcBlocks,
             blocks: {
