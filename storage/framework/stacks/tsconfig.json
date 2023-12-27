@@ -59,7 +59,7 @@
     "../desktop/*",
     "./core/**/*.ts",
     "../types/*",
-    "./scripts/*",
+    "./scripts/*"
   ],
   "exclude": [
     "../**/cdk.out",

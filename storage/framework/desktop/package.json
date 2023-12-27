@@ -1,8 +1,8 @@
 {
   "name": "stacks-app",
   "type": "module",
-  "private": "true",
   "version": "0.51.0",
+  "private": "true",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
   "license": "MIT",

@@ -48,7 +48,7 @@ export const pagesConfig = {
     }),
 
     pages({
-      routesFolder: p.projectStoragePath('framework/dashboard/src/pages',),
+      routesFolder: p.projectStoragePath('framework/dashboard/src/pages'),
     }),
 
     UnoCSS({
@@ -76,7 +76,8 @@ export const pagesConfig = {
 } satisfies ViteConfig
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve') return pagesConfig
+  if (command === 'serve')
+    return pagesConfig
 
   // command === 'build'
   return pagesConfig
