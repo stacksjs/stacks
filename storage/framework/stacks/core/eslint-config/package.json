@@ -68,7 +68,7 @@
     "@antfu/eslint-define-config": "^1.23.0-2",
     "@eslint-types/jsdoc": "46.9.1",
     "@eslint-types/typescript-eslint": "^6.16.0",
-    "@eslint-types/unicorn": "^49.0.0",
+    "@eslint-types/unicorn": "^50.0.1",
     "@stacksjs/cli": "workspace:*",
     "@stylistic/eslint-plugin": "^1.5.1",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
