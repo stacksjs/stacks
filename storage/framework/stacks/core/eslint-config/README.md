@@ -12,15 +12,16 @@ Forked from [`@antfu/eslint-config`](https://github.com/antfu/eslint-config)
 
 - Single quotes, no semi
 - Auto fix for formatting (aimed to be used standalone **without** Prettier)
+- Sorted imports, dangling commas
+- Reasonable defaults, best practices, only one line of config
 - Designed to work with TypeScript, JSX, Vue out-of-box
 - Lints also for json, yaml, toml, markdown
-- Sorted imports, dangling commas
-- Reasonable defaults, best practices, only one-line of config
 - Opinionated, but [very customizable](#customization)
 - [ESLint Flat config](https://eslint.org/docs/latest/use/configure/configuration-files-new), compose easily!
 - Using [ESLint Stylistic](https://github.com/eslint-stylistic/eslint-stylistic)
 - Respects `.gitignore` by default
-- Optional [formatters](#formatters) support for CSS, HTML, TOML, etc.
+- Optional [React](#react), [Svelte](#svelte), [UnoCSS](#unocss) support
+- Optional [formatters](#formatters) support for CSS, HTML, etc.
 - **Style principle**: Minimal for reading, stable for diff, consistent
 
 > [!IMPORTANT]
@@ -53,6 +54,9 @@ const antfu = require('@antfu/eslint-config').default
 
 module.exports = antfu()
 ```
+
+> [!TIP]
+> ESLint only detects `eslint.config.js` as the flat config entry, meaning you need to put `type: module` in your `package.json` or you have to use CJS in `eslint.config.js`. If you want explicit extension like `.mjs` or `.cjs`, or even `eslint.config.ts`, you can install [`eslint-ts-patch`](https://github.com/antfu/eslint-ts-patch) to fix it.
 
 Combined with legacy config:
 
@@ -309,7 +313,10 @@ Certain rules would only be enabled in specific files, for example, `ts/*` rules
 import antfu from '@antfu/eslint-config'
 
 export default antfu(
-  { vue: true, typescript: true },
+  {
+    vue: true,
+    typescript: true
+  },
   {
     // Remember to specify the file glob here, otherwise it might cause the vue plugin to handle non-vue files
     files: ['**/*.stx'],
@@ -326,23 +333,28 @@ export default antfu(
 )
 ```
 
-We also provided an `overrides` options to make it easier:
+We also provided a `overrides` options in each integration to make it easier:
 
 ```js
 // eslint.config.js
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
-  overrides: {
-    vue: {
+  vue: {
+    overrides: {
       'vue/operator-linebreak': ['error', 'before'],
     },
-    typescript: {
+  },
+  typescript: {
+    overrides: {
       'ts/consistent-type-definitions': ['error', 'interface'],
     },
-    yaml: {},
-    // ...
-  }
+  },
+  yaml: {
+    overrides: {
+      // ...
+    },
+  },
 })
 ```
 
@@ -406,6 +418,25 @@ Running `npx eslint` should prompt you to install the required dependencies, oth
 
 ```bash
 npm i -D eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-refresh
+```
+
+#### Svelte
+
+To enable svelte support, you need to explicitly turn it on:
+
+```js
+// eslint.config.js
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  svelte: true,
+})
+```
+
+Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+
+```bash
+npm i -D eslint-plugin-svelte
 ```
 
 #### UnoCSS
@@ -540,7 +571,7 @@ Meanwhile, we do have dprint integrations for formatting other files such as `.m
 
 You can opt-in to the [`formatters`](#formatters) feature to format your CSS. Note that it's only doing formatting, but not linting. If you want proper linting support, give [`stylelint`](https://stylelint.io/) a try.
 
-### I prefer XXX
+### I prefer XXX...
 
 Sure, you can configure and override rules locally in your project to fit your needs. If that still does not work for you, you can always fork this repo and maintain your own.
 
@@ -548,7 +579,7 @@ Sure, you can configure and override rules locally in your project to fit your n
 
 - [antfu/dotfiles](https://github.com/antfu/dotfiles) - My dotfiles
 - [antfu/vscode-settings](https://github.com/antfu/vscode-settings) - My VS Code settings
-- [antfu/ts-starter](https://github.com/antfu/ts-starter) - My starter template for TypeScript library
+- [antfu/starter-ts](https://github.com/antfu/starter-ts) - My starter template for TypeScript library
 - [antfu/vitesse](https://github.com/antfu/vitesse) - My starter template for Vue & Vite app
 
 ## License
