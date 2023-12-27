@@ -15,6 +15,7 @@ import {
   react,
   sortPackageJson,
   sortTsconfig,
+  stacks,
   stylistic,
   svelte,
   test,
@@ -62,6 +63,7 @@ export async function antfu(
     typescript: enableTypeScript = isPackageExists('typescript'),
     unocss: enableUnoCSS = false,
     vue: enableVue = VuePackages.some(i => isPackageExists(i)),
+    stacks: enableStacks = true,
   } = options
 
   const stylisticOptions = options.stylistic === false
@@ -109,6 +111,9 @@ export async function antfu(
   if (enableVue)
     componentExts.push('vue')
 
+  if (enableStacks)
+    componentExts.push('stx')
+
   if (enableTypeScript) {
     configs.push(typescript({
       ...resolveSubOptions(options, 'typescript'),
@@ -133,6 +138,14 @@ export async function antfu(
   if (enableVue) {
     configs.push(vue({
       ...resolveSubOptions(options, 'vue'),
+      stylistic: stylisticOptions,
+      typescript: !!enableTypeScript,
+    }))
+  }
+
+  if (enableStacks) {
+    configs.push(stacks({
+      ...resolveSubOptions(options, 'stacks'),
       stylistic: stylisticOptions,
       typescript: !!enableTypeScript,
     }))

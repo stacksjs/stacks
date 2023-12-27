@@ -256,6 +256,8 @@ export interface OptionsConfig extends OptionsComponentExts {
    */
   vue?: boolean | OptionsVue
 
+  stacks?: boolean | OptionsVue
+
   /**
    * Enable JSONC support.
    *

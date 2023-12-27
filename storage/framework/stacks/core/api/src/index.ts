@@ -62,13 +62,7 @@ export async function useHttpFetch(endpoint = '') {
       },
     }
 
-    try {
-      const result: FetchResponse = await ofetch(url, parameters)
-      return result
-    }
-    catch (err: any) {
-      throw err
-    }
+    return await ofetch(url, parameters) as FetchResponse
   }
 
   async function patch(url: string, params?: Params): Promise<any> {
@@ -88,15 +82,8 @@ export async function useHttpFetch(endpoint = '') {
     }
 
     loading.value = true
-    try {
-      const result: FetchResponse = await ofetch(url, parameters)
 
-      loading.value = false
-      return result
-    }
-    catch (err: any) {
-      throw err
-    }
+    return await ofetch(url, parameters) as FetchResponse
   }
 
   async function destroy(url: string, params?: Params): Promise<any> {
@@ -115,15 +102,8 @@ export async function useHttpFetch(endpoint = '') {
     }
 
     loading.value = true
-    try {
-      const result: FetchResponse = await ofetch(url, parameters)
-
-      loading.value = false
-      return result
-    }
-    catch (err: any) {
-      throw err
-    }
+    
+    return await ofetch(url, parameters) as FetchResponse
   }
 
   function setToken(authToken: string) {

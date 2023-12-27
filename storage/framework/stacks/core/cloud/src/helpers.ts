@@ -203,7 +203,7 @@ export async function deleteIamUsers() {
 
   const promises = users.map(async (user) => {
     const userName = user.UserName || ''
-    console.log(`Deleting IAM user: ${userName}`)
+    log.info(`Deleting IAM user: ${userName}`)
 
     // Get the list of policies attached to the user
     const policies = await iam.listAttachedUserPolicies({ UserName: userName })

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import * as AWS4 from 'aws4'
 
 // todo: Remove axios and use the AWS SDK instead if possible, but I couldn't get it to work. At least, move to our own fetch wrapper
@@ -11,10 +12,10 @@ import { ai } from '@stacksjs/config'
 process.env.AWS_REGION = 'us-east-1'
 
 config.getCredentials((err) => {
-  if (err) { console.log(err.stack) }
+  if (err) { log.info(err.stack) }
   else if (config.credentials) {
     const { accessKeyId, secretAccessKey, sessionToken } = config.credentials
-    console.log('AWS credentials are set', accessKeyId, secretAccessKey, sessionToken)
+    log.info('AWS credentials are set', accessKeyId, secretAccessKey, sessionToken)
 
     const endpoint = 'https://bedrock.us-east-1.amazonaws.com/foundation-model-entitlement'
     const region = 'us-east-1'
@@ -28,7 +29,7 @@ config.getCredentials((err) => {
     }
 
     for (const model of models) {
-      console.log(`Requesting access to model ${model}`)
+      log.info(`Requesting access to model ${model}`)
       const request = {
         host: 'bedrock.us-east-1.amazonaws.com',
         method: 'POST',
@@ -61,10 +62,10 @@ config.getCredentials((err) => {
         data: signedRequest.body,
       })
         .then((response) => {
-          console.log(response.data)
+          log.info(response.data)
         })
         .catch((error) => {
-          console.error(error.data)
+          log.error(error.data)
         })
     }
   }

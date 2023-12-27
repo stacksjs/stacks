@@ -21,11 +21,11 @@ export async function svelte(
   ])
 
   const [
-    // pluginSvelte,
-    // parserSvelte,
+    pluginSvelte,
+    parserSvelte,
   ] = await Promise.all([
-    // interopDefault(import('eslint-plugin-svelte')),
-    // interopDefault(import('svelte-eslint-parser')),
+    interopDefault(import('eslint-plugin-svelte')),
+    interopDefault(import('svelte-eslint-parser')),
   ] as const)
 
   return [
