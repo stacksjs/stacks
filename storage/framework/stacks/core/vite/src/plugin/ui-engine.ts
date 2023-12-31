@@ -5,11 +5,9 @@ import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shikiji'
 
 export function uiEngine(isWebComponent = false): Plugin {
-  const include = [/\.stx$/, /\.vue$/, /\.md$/]
-
   if (isWebComponent) {
     return Vue({
-      include,
+      include: [/\.stx$/],
       template: {
         compilerOptions: {
           isCustomElement: () => true,
@@ -19,7 +17,7 @@ export function uiEngine(isWebComponent = false): Plugin {
   }
 
   return Vue({
-    include,
+    include: [/\.stx$/, /\.vue$/, /\.md$/],
   })
 }
 
