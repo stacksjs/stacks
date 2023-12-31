@@ -1,5 +1,5 @@
-import { log } from 'src/logging/src'
-import { clean } from 'src/utils/src'
+import { log } from '@stacksjs/logging'
+import { clean } from '@stacksjs/utils'
 
 log.info('Running clean command...')
 

@@ -1,5 +1,5 @@
-import { frameworkPath, join, parse, projectPath } from 'src/path/src'
-import { existsSync, glob, mkdirSync, writeFileSync } from 'src/storage/src'
+import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
+import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
 

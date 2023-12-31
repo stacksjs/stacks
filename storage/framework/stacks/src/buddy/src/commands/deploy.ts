@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 import process from 'node:process'
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, DeployOptions } from 'src/types/src'
-import { runAction } from 'src/actions/src'
-import { intro, italic, log, outro } from 'src/cli/src'
-import { Action } from 'src/enums/src'
-import { app } from 'src/config/src'
-import { addDomain, hasUserDomainBeenAddedToCloud } from 'src/dns/src'
+import { runAction } from '@stacksjs/actions'
+import { intro, italic, log, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { app } from '@stacksjs/config'
+import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 
 export function deploy(buddy: CLI) {
   const descriptions = {

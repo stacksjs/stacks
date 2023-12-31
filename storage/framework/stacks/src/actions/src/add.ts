@@ -1,4 +1,4 @@
-import { installPackage } from 'src/cli/src'
+import { installPackage } from '@stacksjs/cli'
 import type { AddOptions } from 'src/types/src'
 
 export async function invoke(options: AddOptions) {

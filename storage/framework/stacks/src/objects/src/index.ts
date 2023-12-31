@@ -1,6 +1,6 @@
 import type { DeepMerge } from 'src/types/src'
-import { notNullish } from 'src/utils/src'
-import { isObject } from 'src/validation/src'
+import { notNullish } from '@stacksjs/utils'
+import { isObject } from '@stacksjs/validation'
 
 /**
  * Map key/value pairs for an object, and construct a new one

@@ -1,6 +1,6 @@
-import { handleError } from 'src/error-handling/src'
-import { runCommand } from 'src/cli/src'
-import { path as p } from 'src/path/src'
+import { handleError } from '@stacksjs/error-handling'
+import { runCommand } from '@stacksjs/cli'
+import { path as p } from '@stacksjs/path'
 
 // eslint-disable-next-line no-console
 console.log('Starting Caddy...')

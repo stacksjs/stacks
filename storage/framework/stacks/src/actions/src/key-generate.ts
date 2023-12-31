@@ -1,8 +1,8 @@
-import { runCommand } from 'src/cli/src'
-import { isFile } from 'src/storage/src'
-import { setEnvValue } from 'src/utils/src'
-import { projectPath } from 'src/path/src'
-import { generateAppKey } from 'src/security/src'
+import { runCommand } from '@stacksjs/cli'
+import { isFile } from '@stacksjs/storage'
+import { setEnvValue } from '@stacksjs/utils'
+import { projectPath } from '@stacksjs/path'
+import { generateAppKey } from '@stacksjs/security'
 
 if (!isFile('.env'))
   await runCommand('cp .env.example .env', { cwd: projectPath() })

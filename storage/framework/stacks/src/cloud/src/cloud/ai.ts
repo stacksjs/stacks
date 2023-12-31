@@ -2,7 +2,7 @@
 import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
 import { AuthorizationType, Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
 import type { Construct } from 'constructs'
-import { config } from 'src/config/src'
+import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
 
 export interface AiStackProps extends NestedCloudProps {

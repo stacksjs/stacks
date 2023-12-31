@@ -1,4 +1,4 @@
-import { expect, it } from 'src/testing/src'
+import { expect, it } from '@stacksjs/testing'
 
 import { createClient } from 'redis'
 

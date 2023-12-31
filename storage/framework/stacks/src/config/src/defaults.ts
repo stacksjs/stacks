@@ -1,4 +1,4 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'

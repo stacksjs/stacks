@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
-import { config } from 'src/config/src'
-import { handleError } from 'src/error-handling/src'
-import { log } from 'src/logging/src'
+import { config } from '@stacksjs/config'
+import { handleError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import type { IntroOptions, OutroOptions } from 'src/types/src'
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 import { version } from '../package.json'
 import { bgCyan, bold, cyan, dim, gray, green, italic } from './utilities'
 

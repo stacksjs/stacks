@@ -5,8 +5,8 @@
  * files for the components.
  */
 
-import { log } from 'src/logging/src'
-import { hasComponents } from 'src/storage/src'
+import { log } from '@stacksjs/logging'
+import { hasComponents } from '@stacksjs/storage'
 import { generateVsCodeCustomData } from '../helpers/vscode-custom-data'
 
 if (hasComponents())

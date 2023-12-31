@@ -1,4 +1,4 @@
-import { cache } from 'src/config/src'
+import { cache } from '@stacksjs/config'
 import Redis, { Command } from 'ioredis'
 
 export const client = new Redis({

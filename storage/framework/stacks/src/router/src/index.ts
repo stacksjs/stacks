@@ -1,5 +1,5 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from 'src/types/src'
-import { projectPath } from 'src/path/src'
+import { projectPath } from '@stacksjs/path'
 
 export * from './middleware'
 export * from './request'

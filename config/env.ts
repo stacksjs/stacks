@@ -1,5 +1,5 @@
 import type { EnvConfig } from 'src/env/src'
-import { validate } from 'src/validation/src'
+import { validate } from '@stacksjs/validation'
 
 /**
  * **Env Configuration & Validations**

@@ -1,5 +1,5 @@
-import { frameworkPath, vitePath } from 'src/path/src'
-import { parseOptions, runCommand } from 'src/cli/src'
+import { frameworkPath, vitePath } from '@stacksjs/path'
+import { parseOptions, runCommand } from '@stacksjs/cli'
 import type { DeployOptions } from 'src/types/src'
 
 const options: DeployOptions = parseOptions()

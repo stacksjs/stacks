@@ -1,8 +1,8 @@
 import process from 'node:process'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
-import { db } from 'src/database/src'
-import { ExitCode } from 'src/types/src'
+import { db } from '@stacksjs/database'
+import { ExitCode } from '@stacksjs/types'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema

@@ -1,4 +1,4 @@
-import { log, runCommand } from 'src/cli/src'
+import { log, runCommand } from '@stacksjs/cli'
 
 const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/cli --external @faker-js/faker --target bun', {
   cwd: import.meta.dir,

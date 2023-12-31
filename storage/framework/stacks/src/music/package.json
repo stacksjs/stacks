@@ -6,7 +6,7 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/dashboard#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/src/dashboard#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",

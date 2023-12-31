@@ -1,7 +1,7 @@
 import type { ViteConfig } from 'src/types/src'
-import { path as p } from 'src/path/src'
-import { server } from 'src/server/src'
-import { alias } from 'src/alias/src'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
+import { alias } from '@stacksjs/alias'
 import type { ViteBuildOptions } from '.'
 import { defineConfig } from '.'
 

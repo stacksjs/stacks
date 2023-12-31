@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { italic } from 'src/cli/src'
-import { log } from 'src/logging/src'
-import { createFolder, doesFolderExist, writeTextFile } from 'src/storage/src'
-import { frameworkPath, projectPath, resolve } from 'src/path/src'
+import { italic } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
+import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
 import type { MakeOptions } from 'src/types/src'
 
 export async function invoke(options: MakeOptions) {

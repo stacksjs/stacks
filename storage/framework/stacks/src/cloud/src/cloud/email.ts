@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import { Duration, RemovalPolicy, Stack, Tags, aws_iam as iam, aws_lambda as lambda, aws_route53 as route53, aws_s3 as s3, aws_s3_notifications as s3n, aws_ses as ses } from 'aws-cdk-lib'
-import { config } from 'src/config/src'
+import { config } from '@stacksjs/config'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 

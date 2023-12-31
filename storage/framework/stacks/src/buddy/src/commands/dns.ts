@@ -1,7 +1,7 @@
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI } from 'src/types/src'
-import { config } from 'src/config/src'
-import { runCommand } from 'src/cli/src'
+import { config } from '@stacksjs/config'
+import { runCommand } from '@stacksjs/cli'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'

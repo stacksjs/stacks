@@ -1,4 +1,4 @@
-import { serve } from 'src/router/src'
+import { serve } from '@stacksjs/router'
 
 serve({
   port: 3999,

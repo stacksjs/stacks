@@ -1,7 +1,7 @@
 import process from 'node:process'
 import type { CLI, InstallOptions } from 'src/types/src'
-import { runCommand } from 'src/cli/src'
-import { path as p } from 'src/path/src'
+import { runCommand } from '@stacksjs/cli'
+import { path as p } from '@stacksjs/path'
 
 export function install(buddy: CLI) {
   const descriptions = {

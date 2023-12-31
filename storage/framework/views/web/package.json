@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "vite-ssg build -c ../stacks/core/vite/src/views.ts",
-    "dev": "vite -c ../stacks/core/vite/src/views.ts",
+    "build": "vite-ssg build -c ../stacks/src/vite/src/views.ts",
+    "dev": "vite -c ../stacks/src/vite/src/views.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",

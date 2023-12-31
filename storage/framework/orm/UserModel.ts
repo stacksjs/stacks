@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { db } from 'src/database/src'
+import { db } from '@stacksjs/database'
 import type { Collection } from 'src/collections/src'
-import { collect } from 'src/collections/src'
+import { collect } from '@stacksjs/collections'
 
 export interface User {
   id: number

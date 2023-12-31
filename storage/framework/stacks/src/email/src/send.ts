@@ -1,5 +1,5 @@
-import { italic, log } from 'src/cli/src'
-import { ResultAsync } from 'src/error-handling/src'
+import { italic, log } from '@stacksjs/cli'
+import { ResultAsync } from '@stacksjs/error-handling'
 import type { EmailOptions } from 'src/types/src'
 import * as Maizzle from '@maizzle/framework'
 import { stringify } from 'json5'

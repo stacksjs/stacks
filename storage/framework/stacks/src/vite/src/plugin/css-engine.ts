@@ -1,5 +1,5 @@
 import UnoCSS from 'unocss/vite'
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 
 export function cssEngine(isWebComponent = false) {
   return UnoCSS({

@@ -36,7 +36,7 @@ export function relativeActionsPath(path?: string) {
  * import { aiPath } from '@stacks/paths'
  *
  * console.log('path is', aiPath())
- * // path is /Users/chrisbreuer/Code/stacks/storage/stacks/core/ai
+ * // path is /Users/chrisbreuer/Code/stacks/storage/stacks/src/ai
  * ```
  */
 export function aiPath(path?: string) {

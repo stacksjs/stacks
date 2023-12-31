@@ -3,7 +3,7 @@ import type Stream from 'node:stream'
 import * as AWS from 'aws-sdk'
 import moment from 'moment'
 import { simpleParser as parser } from 'mailparser'
-import { log } from 'src/logging/src'
+import { log } from '@stacksjs/logging'
 
 // Initialize S3
 const s3 = new AWS.S3({

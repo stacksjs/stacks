@@ -1,7 +1,7 @@
 import process from 'node:process'
 import type { CLI, PrepublishOptions } from 'src/types/src'
-import { Action } from 'src/enums/src'
-import { runAction } from 'src/actions/src'
+import { Action } from '@stacksjs/enums'
+import { runAction } from '@stacksjs/actions'
 
 export function prepublish(buddy: CLI) {
   const descriptions = {

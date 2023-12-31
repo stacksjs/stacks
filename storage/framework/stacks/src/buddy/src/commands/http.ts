@@ -1,9 +1,9 @@
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI } from 'src/types/src'
-import { config } from 'src/config/src'
+import { config } from '@stacksjs/config'
 
 // import { path } from '@stacksjs/path'
-import { runCommandSync } from 'src/cli/src'
+import { runCommandSync } from '@stacksjs/cli'
 
 // function runCommand(command: string): Promise<string> {
 //   return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-import { runCommand } from 'src/cli/src'
+import { runCommand } from '@stacksjs/cli'
 
 const command: string = 'bun build ./src/index.ts --outdir dist --format esm --target bun'
 

@@ -1,6 +1,6 @@
-import { log, runCommand } from 'src/cli/src'
+import { log, runCommand } from '@stacksjs/cli'
 
-// bun build ./storage/framework/stacks/core/buddy/src/cli.ts --external @stacksjs/utils --compile --outfile budd --minify
+// bun build ./storage/framework/stacks/src/buddy/src/cli.ts --external @stacksjs/utils --compile --outfile budd --minify
 const result = await runCommand('bun build ./src/cli.ts --compile --outfile budd', {
   cwd: import.meta.dir,
 })

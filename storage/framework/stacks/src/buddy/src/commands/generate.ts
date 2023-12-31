@@ -11,9 +11,9 @@ import {
   generateWebTypes,
   invoke as startGenerationProcess,
 } from 'src/actions/src'
-import { prompt } from 'src/cli/src'
-import { type CLI, ExitCode, type GeneratorOptions } from 'src/types/src'
-import { isString } from 'src/validation/src'
+import { prompt } from '@stacksjs/cli'
+import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export function generate(buddy: CLI) {
   const descriptions = {

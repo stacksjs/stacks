@@ -1,6 +1,6 @@
-import { type Result, err, ok } from 'src/error-handling/src'
-import { log } from 'src/logging/src'
-import { path } from 'src/path/src'
+import { type Result, err, ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
+import { path } from '@stacksjs/path'
 import { fs } from './fs'
 
 interface MoveOptions {

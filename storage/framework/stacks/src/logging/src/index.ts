@@ -1,6 +1,6 @@
 import process from 'node:process'
 import consola from 'consola'
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 
 export const logger = consola
 export const log = consola

@@ -1,9 +1,9 @@
 import * as storage from 'src/storage/src'
-import { italic, runCommand, runCommands, underline } from 'src/cli/src'
-import { log } from 'src/logging/src'
+import { italic, runCommand, runCommands, underline } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import * as p from 'src/path/src'
 import type { ActionOptions, StacksError, Subprocess } from 'src/types/src'
-import { type Result, err, handleError } from 'src/error-handling/src'
+import { type Result, err, handleError } from '@stacksjs/error-handling'
 
 function parseOptions(options?: ActionOptions) {
   if (!options)

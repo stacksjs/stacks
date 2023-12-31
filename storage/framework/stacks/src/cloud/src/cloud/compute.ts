@@ -2,8 +2,8 @@
 import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
 import { Duration, CfnOutput as Output, aws_lambda as lambda, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { path as p } from 'src/path/src'
-import { env } from 'src/env/src'
+import { path as p } from '@stacksjs/path'
+import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '../../../../../stack/env'
 

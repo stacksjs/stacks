@@ -1,6 +1,6 @@
 import process from 'node:process'
 import type { CLI } from 'src/types/src'
-import { generateTypes } from 'src/actions/src'
+import { generateTypes } from '@stacksjs/actions'
 
 export function types(buddy: CLI) {
   const descriptions = {

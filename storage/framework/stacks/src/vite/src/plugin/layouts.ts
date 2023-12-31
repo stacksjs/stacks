@@ -1,4 +1,4 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 
 // @ts-expect-error missing types - somehow, @stacksjs/vite-plugin-vue-layouts does not work
 import Layouts from 'vite-plugin-vue-layouts'

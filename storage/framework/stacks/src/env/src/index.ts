@@ -1,7 +1,7 @@
 import p from 'node:process'
 import fs from 'fs-extra'
-import { projectPath } from 'src/path/src'
-import { ValidationBoolean, ValidationEnum, ValidationNumber } from 'src/validation/src'
+import { projectPath } from '@stacksjs/path'
+import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
 import type { EnvKey } from '../../../../stack/env'
 import type { Env } from './types'
 

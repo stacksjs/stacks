@@ -1,4 +1,4 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 import { rimraf } from './delete'
 
 export async function cleanProject() {

@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { log, runCommand } from 'src/cli/src'
-import { config } from 'src/config/src'
-import { path as p } from 'src/path/src'
-import { storage } from 'src/storage/src'
+import { log, runCommand } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 
 await runCommand('bun run build', {
   cwd: p.frameworkPath(),

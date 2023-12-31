@@ -1,9 +1,9 @@
 import process from 'node:process'
 import type { CLI, TestOptions } from 'src/types/src'
-import { runAction } from 'src/actions/src'
-import { intro, outro } from 'src/cli/src'
-import { projectPath } from 'src/path/src'
-import { Action } from 'src/enums/src'
+import { runAction } from '@stacksjs/actions'
+import { intro, outro } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
+import { Action } from '@stacksjs/enums'
 
 export function test(buddy: CLI) {
   const descriptions = {

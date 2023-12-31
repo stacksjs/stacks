@@ -1,8 +1,8 @@
 import { PlivoSmsProvider } from '@novu/plivo'
-import { italic } from 'src/cli/src'
+import { italic } from '@stacksjs/cli'
 import type { SmsOptions } from 'src/types/src'
-import { ResultAsync } from 'src/error-handling/src'
-import { notification } from 'src/config/src'
+import { ResultAsync } from '@stacksjs/error-handling'
+import { notification } from '@stacksjs/config'
 
 const from = notification.sms?.from
 const env = notification.sms?.drivers.plivo

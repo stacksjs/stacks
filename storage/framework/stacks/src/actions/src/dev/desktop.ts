@@ -1,5 +1,5 @@
-import { runCommand } from 'src/cli/src'
-import { corePath } from 'src/path/src'
+import { runCommand } from '@stacksjs/cli'
+import { corePath } from '@stacksjs/path'
 
 await runCommand('bun run dev:app', {
   // ...options,

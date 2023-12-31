@@ -1,5 +1,5 @@
-import { italic } from 'src/cli/src'
-import { log } from 'src/logging/src'
+import { italic } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 
 // import { italic } from '@stacksjs/cli'
 // import { ExitCode } from '@stacksjs/types'

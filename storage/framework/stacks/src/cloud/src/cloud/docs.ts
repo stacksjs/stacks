@@ -2,10 +2,10 @@
 import type { CfnResource } from 'aws-cdk-lib'
 import { AssetHashType, CfnOutput as Output, RemovalPolicy, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from 'src/config/src'
-import { path as p } from 'src/path/src'
-import { storage } from 'src/storage/src'
-import { originRequestFunctionHash } from 'src/utils/src'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
+import { originRequestFunctionHash } from '@stacksjs/utils'
 import type { NestedCloudProps } from '../types'
 
 export interface DocsStackProps extends NestedCloudProps {

@@ -1,6 +1,6 @@
 import type { ViteConfig } from 'src/types/src'
-import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from 'src/path/src'
-import { alias } from 'src/alias/src'
+import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
+import { alias } from '@stacksjs/alias'
 import { defineConfig } from '.'
 import type { ViteBuildOptions } from '.'
 

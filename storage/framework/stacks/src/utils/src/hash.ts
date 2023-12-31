@@ -1,6 +1,6 @@
-import { hashPaths } from 'src/storage/src'
-import { path as p } from 'src/path/src'
-import { config } from 'src/config/src'
+import { hashPaths } from '@stacksjs/storage'
+import { path as p } from '@stacksjs/path'
+import { config } from '@stacksjs/config'
 
 export const originRequestFunctionHash = hashPaths(p.cloudPath('src/edge'))
 

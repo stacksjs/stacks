@@ -1,6 +1,6 @@
 import type { CLI } from 'src/types/src'
-import { bold, dim, green, intro, log } from 'src/cli/src'
-import { storage } from 'src/storage/src'
+import { bold, dim, green, intro, log } from '@stacksjs/cli'
+import { storage } from '@stacksjs/storage'
 
 export function version(buddy: CLI) {
   const descriptions = {

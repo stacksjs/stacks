@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
-import { kolorist as c, parseOptions } from 'src/cli/src'
-import { localUrl } from 'src/config/src'
+import { kolorist as c, parseOptions } from '@stacksjs/cli'
+import { localUrl } from '@stacksjs/config'
 import { version } from '../../package.json'
 
 interface StacksPluginOptions {

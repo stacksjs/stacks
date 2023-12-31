@@ -1,4 +1,4 @@
-import { log, runCommand } from 'src/cli/src'
+import { log, runCommand } from '@stacksjs/cli'
 
 const result = await runCommand('bun build ./src/server/inbound.ts --outdir dist --external aws-sdk --format esm --target node', {
   cwd: import.meta.dir,

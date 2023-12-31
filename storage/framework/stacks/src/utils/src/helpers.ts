@@ -1,18 +1,18 @@
 import type { AddressInfo } from 'node:net'
 
 // import { runAction } from '@stacksjs/actions'
-import { log, runCommand } from 'src/cli/src'
+import { log, runCommand } from '@stacksjs/cli'
 import type { Result } from 'src/error-handling/src'
-import { err, ok } from 'src/error-handling/src'
-import { frameworkPath, projectPath } from 'src/path/src'
+import { err, ok } from '@stacksjs/error-handling'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import * as storage from 'src/storage/src'
 import type { CliOptions, Manifest, StacksError, SyncSubprocess } from 'src/types/src'
 import type { NpmScript } from 'src/enums/src'
-import { Action } from 'src/enums/src'
+import { Action } from '@stacksjs/enums'
 import { parse } from 'yaml'
 
 // import { semver } from './versions'
-import { app, ui } from 'src/config/src'
+import { app, ui } from '@stacksjs/config'
 
 export async function packageManager() {
   const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))

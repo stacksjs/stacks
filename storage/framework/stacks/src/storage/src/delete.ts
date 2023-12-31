@@ -1,6 +1,6 @@
 import type { Result } from 'src/error-handling/src'
-import { err, ok } from 'src/error-handling/src'
-import { italic, log } from 'src/cli/src'
+import { err, ok } from '@stacksjs/error-handling'
+import { italic, log } from '@stacksjs/cli'
 import { isFile } from './files'
 import { isFolder } from './folders'
 import { glob } from './glob'

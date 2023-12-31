@@ -1,4 +1,4 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 import type { AutoImportsOptions } from 'src/types/src'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import { defu } from 'defu'

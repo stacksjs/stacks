@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
-import { alias } from 'src/alias/src'
-import { path as p } from 'src/path/src'
-import { server } from 'src/server/src'
+import { alias } from '@stacksjs/alias'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
 import userConfig from '../../../../config/docs'
 import { analyticsHead, faviconHead } from './head'
 

@@ -1,8 +1,8 @@
 import type { BunFile } from 'bun'
 import type { JsonFile, PackageJson, TextFile } from 'src/types/src'
-import { detectIndent, detectNewline } from 'src/strings/src'
-import { dirname, join, path as p } from 'src/path/src'
-import { contains } from 'src/arrays/src'
+import { detectIndent, detectNewline } from '@stacksjs/strings'
+import { dirname, join, path as p } from '@stacksjs/path'
+import { contains } from '@stacksjs/arrays'
 import { existsSync, fs } from './fs'
 
 /**

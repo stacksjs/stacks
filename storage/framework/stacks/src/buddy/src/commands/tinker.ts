@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from 'src/types/src'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, TinkerOptions } from 'src/types/src'
-import { runAction } from 'src/actions/src'
-import { intro, outro } from 'src/cli/src'
-import { Action } from 'src/enums/src'
+import { runAction } from '@stacksjs/actions'
+import { intro, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 
 export function tinker(buddy: CLI) {
   const descriptions = {

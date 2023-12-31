@@ -1,4 +1,4 @@
-import { env } from 'src/env/src'
+import { env } from '@stacksjs/env'
 import type { CacheConfig } from '@stacksjs/types'
 
 /**

@@ -1,5 +1,5 @@
-import { faker } from 'src/faker/src'
-import { validator } from 'src/validation/src'
+import { faker } from '@stacksjs/faker'
+import { validator } from '@stacksjs/validation'
 import type { Model } from 'src/types/src'
 
 export default {

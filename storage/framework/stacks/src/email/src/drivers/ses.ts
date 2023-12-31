@@ -1,6 +1,6 @@
 import { SESEmailProvider } from '@novu/ses'
 import type { EmailOptions } from 'src/types/src'
-import { notification } from 'src/config/src'
+import { notification } from '@stacksjs/config'
 import type { ResultAsync } from 'src/error-handling/src'
 
 const email = notification.email

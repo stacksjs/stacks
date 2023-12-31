@@ -1,4 +1,4 @@
-import { kolorist as c } from 'src/cli/src'
+import { kolorist as c } from '@stacksjs/cli'
 import type { ViteDevServer } from '..'
 import { version } from '../../../../package.json'
 

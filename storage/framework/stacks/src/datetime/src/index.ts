@@ -1,4 +1,4 @@
-import { useDateFormat, useNow } from 'src/utils/src'
+import { useDateFormat, useNow } from '@stacksjs/utils'
 
 const now = useNow
 const dateFormat = useDateFormat

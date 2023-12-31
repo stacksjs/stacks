@@ -1,5 +1,5 @@
-import { NpmScript } from 'src/enums/src'
-import { runCommand } from 'src/cli/src'
-import { frameworkPath } from 'src/path/src'
+import { NpmScript } from '@stacksjs/enums'
+import { runCommand } from '@stacksjs/cli'
+import { frameworkPath } from '@stacksjs/path'
 
 await runCommand(NpmScript.Test, { verbose: true, cwd: frameworkPath() })

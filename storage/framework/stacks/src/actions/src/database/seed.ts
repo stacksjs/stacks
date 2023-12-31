@@ -1,4 +1,4 @@
 // import { database } from '@stacksjs/config'
-import { seed } from 'src/database/src'
+import { seed } from '@stacksjs/database'
 
 await seed()

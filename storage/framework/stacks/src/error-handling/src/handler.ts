@@ -1,4 +1,4 @@
-import { logsPath } from 'src/path/src'
+import { logsPath } from '@stacksjs/path'
 
 interface ErrorOptions {
   silent?: boolean

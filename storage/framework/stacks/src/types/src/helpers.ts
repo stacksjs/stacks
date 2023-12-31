@@ -1,4 +1,4 @@
-import { toString } from 'src/strings/src'
+import { toString } from '@stacksjs/strings'
 
 export function getTypeName(v: any) {
   if (v === null)

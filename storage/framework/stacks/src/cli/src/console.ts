@@ -1,4 +1,4 @@
-import { log } from 'src/logging/src'
+import { log } from '@stacksjs/logging'
 import prompts from 'prompts'
 
 export class Prompt {

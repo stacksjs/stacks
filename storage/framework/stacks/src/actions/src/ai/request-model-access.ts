@@ -4,8 +4,8 @@ import * as AWS4 from 'aws4'
 // todo: Remove axios and use the AWS SDK instead if possible, but I couldn't get it to work. At least, move to our own fetch wrapper
 import axios from 'axios'
 import { config } from 'aws-sdk'
-import { log } from 'src/cli/src'
-import { ai } from 'src/config/src'
+import { log } from '@stacksjs/cli'
+import { ai } from '@stacksjs/config'
 
 // Specify the AWS profile
 // process.env.AWS_PROFILE = 'your-profile-name' -> no need to define this because of our .env file

@@ -1,6 +1,6 @@
 // import { storage } from '@stacksjs/storage'
-import { path as p } from 'src/path/src'
-import { log } from 'src/cli/src'
+import { path as p } from '@stacksjs/path'
+import { log } from '@stacksjs/cli'
 
 // import type { Model, SchemaOptions } from '@stacksjs/types'
 // import { titleCase } from '@stacksjs/strings'

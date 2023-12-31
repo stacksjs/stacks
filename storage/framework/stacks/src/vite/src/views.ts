@@ -1,10 +1,10 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
-import { server } from 'src/server/src'
-import { alias } from 'src/alias/src'
-import { config } from 'src/config/src'
+import { server } from '@stacksjs/server'
+import { alias } from '@stacksjs/alias'
+import { config } from '@stacksjs/config'
 
 // import { i18n } from './plugin/i18n'
 

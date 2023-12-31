@@ -19,7 +19,7 @@
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/stacks/core/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/stacks/src/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./storage/framework/stacks/scripts/setup.sh",
     "fresh": "bun run buddy fresh",

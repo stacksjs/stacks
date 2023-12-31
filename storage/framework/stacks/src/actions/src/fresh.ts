@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from 'src/types/src'
-import { runCommand } from 'src/cli/src'
-import { logger } from 'src/logging/src'
-import { projectPath } from 'src/path/src'
-import { cleanProject } from 'src/utils/src'
+import { ExitCode } from '@stacksjs/types'
+import { runCommand } from '@stacksjs/cli'
+import { logger } from '@stacksjs/logging'
+import { projectPath } from '@stacksjs/path'
+import { cleanProject } from '@stacksjs/utils'
 
 logger.log('Cleaning project...')
 await cleanProject()

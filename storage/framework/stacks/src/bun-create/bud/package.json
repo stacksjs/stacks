@@ -38,7 +38,7 @@
     "dist"
   ],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/stacks/core/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/stacks/src/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./storage/framework/stacks/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
@@ -129,9 +129,9 @@
     }
   },
   "workspaces": [
-    "stacks/core/*",
-    "stacks/core/bun-create/*",
-    "stacks/core/cloud/src/server",
+    "stacks/src/*",
+    "stacks/src/bun-create/*",
+    "stacks/src/cloud/src/server",
     "stacks/ide/*",
     "stacks/scripts/*",
     "stacks/stacks/*",

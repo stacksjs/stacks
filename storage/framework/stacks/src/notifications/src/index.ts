@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { err } from 'src/error-handling/src'
-import { notification as config } from 'src/config/src'
-import { log } from 'src/cli/src'
-import { ExitCode } from 'src/types/src'
+import { err } from '@stacksjs/error-handling'
+import { notification as config } from '@stacksjs/config'
+import { log } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
 
 function useChat(driver = 'slack') {

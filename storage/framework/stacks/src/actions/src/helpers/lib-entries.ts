@@ -1,11 +1,11 @@
 import process from 'node:process'
-import { log } from 'src/logging/src'
-import { kebabCase } from 'src/strings/src'
+import { log } from '@stacksjs/logging'
+import { kebabCase } from '@stacksjs/strings'
 import type { LibraryType } from 'src/path/src'
-import { componentsPath, functionsPath, libraryEntryPath } from 'src/path/src'
-import { writeTextFile } from 'src/storage/src'
-import { determineResetPreset } from 'src/utils/src'
-import { ExitCode } from 'src/types/src'
+import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
+import { writeTextFile } from '@stacksjs/storage'
+import { determineResetPreset } from '@stacksjs/utils'
+import { ExitCode } from '@stacksjs/types'
 import library from '~/config/library'
 
 /**

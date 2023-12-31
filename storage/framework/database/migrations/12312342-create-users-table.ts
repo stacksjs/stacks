@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { db } from 'src/database/src'
+import { db } from '@stacksjs/database'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 

@@ -2,7 +2,7 @@
  * The following configuration references local aliases.
  */
 
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 
 export const alias: Record<string, string> = {
   '@stacksjs/ai': p.aiPath('src/index.ts'),

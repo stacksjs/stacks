@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { path as p } from 'src/path/src'
-import { handleError } from 'src/error-handling/src'
-import { log, runCommand } from 'src/cli/src'
-import { ExitCode } from 'src/types/src'
+import { path as p } from '@stacksjs/path'
+import { handleError } from '@stacksjs/error-handling'
+import { log, runCommand } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from 'src/types/src'
 
 export function setup(buddy: CLI) {

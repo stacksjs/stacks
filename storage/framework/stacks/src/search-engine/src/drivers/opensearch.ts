@@ -1,4 +1,4 @@
-import { searchEngine } from 'src/config/src'
+import { searchEngine } from '@stacksjs/config'
 import type { ApiResponse } from '@opensearch-project/opensearch'
 import { Client } from '@opensearch-project/opensearch'
 import type { SearchEngineDriver } from 'src/types/src'

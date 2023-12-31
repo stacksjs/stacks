@@ -7,11 +7,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/core/enums#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/src/enums#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/core/enums"
+    "directory": "./storage/framework/stacks/src/enums"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

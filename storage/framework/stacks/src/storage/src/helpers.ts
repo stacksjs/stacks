@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { dirname } from 'src/path/src'
+import { dirname } from '@stacksjs/path'
 import { fs } from './fs'
 
 export const _dirname = typeof __dirname !== 'undefined'

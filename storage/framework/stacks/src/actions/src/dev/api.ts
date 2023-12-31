@@ -1,6 +1,6 @@
-import { path as p } from 'src/path/src'
-import { log, parseOptions, runCommand } from 'src/cli/src'
-import { serve } from 'src/router/src'
+import { path as p } from '@stacksjs/path'
+import { log, parseOptions, runCommand } from '@stacksjs/cli'
+import { serve } from '@stacksjs/router'
 
 const options = parseOptions()
 

@@ -1,4 +1,4 @@
-import { path as p } from 'src/path/src'
+import { path as p } from '@stacksjs/path'
 
 const modelGenerate = Bun.file('model-classes.ts') // Assuming Bun is imported properly
 const file = Bun.file(p.projectStoragePath('framework/orm/UserModel.ts'))

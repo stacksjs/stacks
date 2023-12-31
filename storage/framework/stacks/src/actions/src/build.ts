@@ -1,8 +1,8 @@
-import { log } from 'src/logging/src'
-import { hasComponents, hasFunctions } from 'src/storage/src'
-import { runNpmScript } from 'src/utils/src'
+import { log } from '@stacksjs/logging'
+import { hasComponents, hasFunctions } from '@stacksjs/storage'
+import { runNpmScript } from '@stacksjs/utils'
 import type { BuildOptions } from 'src/types/src'
-import { NpmScript } from 'src/enums/src'
+import { NpmScript } from '@stacksjs/enums'
 import { generateTypes } from './generate'
 
 export async function invoke(options: BuildOptions) {

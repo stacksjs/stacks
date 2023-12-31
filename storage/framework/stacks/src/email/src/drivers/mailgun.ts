@@ -1,7 +1,7 @@
 import { MailgunEmailProvider } from '@novu/mailgun'
 import type { EmailOptions } from 'src/types/src'
 import type { ResultAsync } from 'src/error-handling/src'
-import { notification } from 'src/config/src'
+import { notification } from '@stacksjs/config'
 import { send as sendEmail } from '../send'
 
 const env = notification.email

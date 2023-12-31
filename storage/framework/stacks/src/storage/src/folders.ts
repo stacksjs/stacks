@@ -1,4 +1,4 @@
-import { join } from 'src/path/src'
+import { join } from '@stacksjs/path'
 import { fs } from './fs'
 
 /**

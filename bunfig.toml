@@ -47,4 +47,4 @@ savePath = "bun.lockb"
 
 # whether to save the lockfile to disk
 save = true
-preload = [ "./storage/framework/.stacks/core/bun-plugin-yaml/src/index.ts" ]
+preload = [ "./storage/framework/.stacks/src/bun-plugin-yaml/src/index.ts" ]
