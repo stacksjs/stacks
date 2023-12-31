@@ -25,6 +25,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
     ],
     dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
     dirs: [
+      p.resourcesPath('components'),
       p.resourcesPath('functions'),
       p.resourcesPath('stores'),
       p.frameworkPath('src'),
