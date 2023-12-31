@@ -55,8 +55,8 @@
     "../**/*.d.ts",
     "../docs/.vitepress/*",
     "../stack/**/*",
-    "../desktop/**/*",
-    "../desktop/*",
+    "../views/desktop/**/*",
+    "../views/desktop/*",
     "./core/**/*.ts",
     "../types/*",
     "./scripts/*"
