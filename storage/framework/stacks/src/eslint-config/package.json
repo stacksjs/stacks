@@ -79,7 +79,7 @@
     "eslint-plugin-antfu": "^2.1.1",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-i": "^2.29.1",
-    "eslint-plugin-jsdoc": "^46.10.1",
+    "eslint-plugin-jsdoc": "^47.0.1",
     "eslint-plugin-jsonc": "^2.11.2",
     "eslint-plugin-markdown": "^3.0.1",
     "eslint-plugin-n": "^16.6.0",
