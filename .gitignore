@@ -14,3 +14,7 @@ dist*
 .fleet
 .idea
 .vscode
+
+!storage/framework/ide/jetbrains/.fleet
+!storage/framework/ide/jetbrains/.idea
+!storage/framework/ide/vscode/.vscode

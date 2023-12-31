@@ -1,4 +1,4 @@
-import { path as p } from '@stacksjs/path'
+import { path as p } from 'src/path/src'
 
 export function useEnvReader() {
   async function read(): Promise<string> {

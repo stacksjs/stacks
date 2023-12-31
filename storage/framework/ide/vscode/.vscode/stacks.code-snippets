@@ -1,0 +1,182 @@
+{
+	"Stacks Action": {
+		"scope": "typescript",
+		"prefix": "act",
+		"body": [
+			"public function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Bootstrap a Stacks Actions"
+	},
+	"Stacks Function": {
+		"scope": "typescript",
+		"prefix": "func",
+		"body": [
+			"public function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Bootstrap a Stacks Function"
+	},
+	"Stacks Method": {
+		"scope": "typescript",
+		"prefix": "met",
+		"body": [
+			"public function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Alias of the Stacks Function snippet"
+	},
+	"Stacks Protected Method": {
+		"scope": "typescript",
+		"prefix": "pmet",
+		"body": [
+			"protected function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Bootstrap a Protected Function"
+	},
+	"Stacks Protected Function": {
+		"scope": "typescript",
+		"prefix": "pfunct",
+		"body": [
+			"protected function $1($2)",
+			"{",
+			"    $3",
+			"}"
+		],
+		"description": "Alias of the Protected Function snippet"
+	},
+	"Print to console": {
+		"scope": "javascript,typescript",
+		"prefix": "clo",
+		"body": [
+			"// eslint-disable-next-line no-console",
+			"console.log('$1')$2",
+		],
+		"description": "Log output to console"
+	},
+	"Stacks Component": {
+		"prefix": "com",
+		"body": [
+			"<script setup lang=\"ts\">",
+			"\t$1",
+			"</script>",
+			"",
+			"<template>",
+			"",
+			"</template>",
+			"",
+			"<style scoped>",
+			"",
+			"</style>"
+		],
+	},
+	"Stacks v-for": {
+		"prefix": "vfor",
+		"body": [
+			"<${1:div} v-for=\"${2:item} in ${2:item}s\" :key=\"${2:item}.id\">",
+			"\t{{ ${2:item} }}",
+			"</${1:div}>"
+		],
+		"description": "vfor statement"
+	},
+	"Stacks v-model Directive": {
+		"prefix": "vmodel",
+		"body": [
+			"<input v-model=\"${1:data}\" type=\"text\" />"
+		],
+		"description": "v-model directive"
+	},
+	"Stacks v-model Number Directive": {
+		"prefix": "vmodel-num",
+		"body": [
+			"<input v-model.number=\"${1:numData}\" type=\"number\" step=\"1\" />"
+		],
+		"description": "v-model directive number input"
+	},
+	"Stacks v-on Shortcut Directive": {
+		"prefix": "von",
+		"body": [
+			"@click=\"${1:handler}(${2:arg}, $event)\""
+		],
+		"description": "v-on click handler with arguments"
+	},
+	"Stacks Component with Props Binding": {
+		"prefix": "vel-props",
+		"body": [
+			"<${1:component} :${1:propName}=\"${0}\"></${1:component}>"
+		],
+		"description": "component element with props"
+	},
+	"Stacks Named Slot": {
+		"prefix": "vslot-named",
+		"body": [
+			"<template v-slot:${0:name}>${1:defaultcontent}</template>"
+		],
+		"description": "named slot"
+	},
+	"Stacks Image Source Binding": {
+		"prefix": "vsrc",
+		"body": [
+			"<img :src=\"'/path/to/images/' + ${1:fileName}\" alt=\"${2:altText}\"/>"
+		],
+		"description": "image source binding"
+	},
+	"Stacks Style Binding": {
+		"prefix": "vstyle",
+		"body": [
+			"<${1:div} :style=\"{ fontSize: ${2:data} + 'px' }\"></${1:div}>"
+		],
+		"description": "vue inline style binding"
+	},
+	"Stacks Style Binding Object": {
+		"prefix": "vstyle-obj",
+		"body": [
+			"<${1:div} :style=\"[${2:styleObjectA}, ${3:styleObjectB]}\"></${1:div}>"
+		],
+		"description": "vue inline style binding, objects"
+	},
+	"Stacks Class Binding": {
+		"prefix": "vclass",
+		"body": [
+			"<${1:div} :class=\"{ ${2:className}: ${3:data} }\"></${1:div}>"
+		],
+		"description": "vue class binding"
+	},
+	"Stacks Class Binding Object": {
+		"prefix": "vclass-obj",
+		"body": [
+			"<${1:div} :class=\"[${2:classNameA}, ${3:classNameB}]\"></${1:div}>"
+		],
+		"description": "vue class binding"
+	},
+	"Stacks Multiple Conditional Class Bindings": {
+		"prefix": "vclass-obj-mult",
+		"body": [
+			"<${1:div} :class=\"[${2:classNameA}, {${3:classNameB} : ${4:condition}}]\"></${1:div}>"
+		],
+		"description": "vue multiple conditional class bindings"
+	},
+	"Stacks Emit from Child": {
+		"prefix": "vemit-child",
+		"body": [
+			"@change=\"$emit('change', $event.target.value)\""
+		],
+		"description": "Stacks Emit from Child Component"
+	},
+	"Stacks Emit to Parent": {
+		"prefix": "vemit-parent",
+		"body": [
+			"@change=\"${1:foo} = $$event\""
+		],
+		"description": "Stacks Emit to Parent Component"
+	}
+}

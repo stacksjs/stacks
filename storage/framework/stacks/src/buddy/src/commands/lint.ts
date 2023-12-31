@@ -1,0 +1,49 @@
+import process from 'node:process'
+import type { CLI, LintOptions } from 'src/types/src'
+import { intro, log, outro } from 'src/cli/src'
+import { Action } from 'src/enums/src'
+import { runAction } from 'src/actions/src'
+
+export function lint(buddy: CLI) {
+  const descriptions = {
+    lint: 'Automagically lints your project codebase',
+    lintFix: 'Automagically fixes all lint errors',
+    verbose: 'Enable verbose output',
+  }
+
+  buddy
+    .command('lint', descriptions.lint)
+    .option('-f, --fix', descriptions.lintFix, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: LintOptions) => {
+      const startTime = await intro('buddy lint')
+      const result = await runAction(Action.Lint, { ...options })
+      // console.log('res', result)
+      if (result.isErr()) {
+        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      await outro('Linted your project', { startTime, useSeconds: true })
+    })
+
+  buddy
+    .command('lint:fix', descriptions.lintFix)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: LintOptions) => {
+      log.info('Fixing lint errors...')
+      const result = await runAction(Action.LintFix, { ...options })
+
+      if (result.isErr()) {
+        log.error('There was an error lint fixing your code.', result.error)
+        process.exit()
+      }
+
+      log.success('Fixed lint errors')
+    })
+
+  buddy.on('lint:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
+}

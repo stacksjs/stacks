@@ -1,0 +1,139 @@
+import process from 'node:process'
+import { log } from 'src/logging/src'
+import { kebabCase } from 'src/strings/src'
+import type { LibraryType } from 'src/path/src'
+import { componentsPath, functionsPath, libraryEntryPath } from 'src/path/src'
+import { writeTextFile } from 'src/storage/src'
+import { determineResetPreset } from 'src/utils/src'
+import { ExitCode } from 'src/types/src'
+import library from '~/config/library'
+
+/**
+ * Based on the config values, this method
+ * will generate the library entry points.
+ *
+ * @param type LibraryType
+ */
+export async function generateLibEntry(type: LibraryType) {
+  await createLibraryEntryPoint(type)
+}
+
+export async function createLibraryEntryPoint(type: LibraryType) {
+  if (type === 'vue-components')
+    await createVueLibraryEntryPoint()
+
+  if (type === 'web-components')
+    await createWebComponentLibraryEntryPoint()
+
+  if (type === 'functions')
+    await createFunctionLibraryEntryPoint()
+}
+
+export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
+  log.info('Creating the Vue component library entry point...')
+
+  await writeTextFile({
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating the Vue component library entry point.', err)
+    process.exit(ExitCode.FatalError)
+  })
+
+  log.success('Created the Vue component library entry point')
+}
+
+export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
+  log.info('Creating the Web Component library entry point...')
+
+  await writeTextFile({
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating the Web Component library entry point', err)
+    process.exit(ExitCode.FatalError)
+  })
+
+  log.success('Created Web Component library entry point')
+}
+
+export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
+  log.info('Creating the Function library entry point...')
+
+  await writeTextFile({
+    path: libraryEntryPath(type),
+    data: generateEntryPointData(type),
+  }).catch((err) => {
+    log.error('There was an error generating Function library entry point', err)
+    process.exit(ExitCode.FatalError)
+  })
+
+  log.success('Created Functions library entry point')
+}
+
+export function generateEntryPointData(type: LibraryType): string {
+  let arr = []
+
+  if (type === 'functions') {
+    if (!library.functions?.functions) {
+      log.error(new Error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments'))
+      process.exit()
+    }
+
+    for (const fx of library.functions?.functions) {
+      if (Array.isArray(fx))
+        arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
+      else
+        arr.push(`export * from '${functionsPath(fx)}'`)
+    }
+
+    // join the array into a string with each element being on a new line
+    return arr.join('\r\n')
+  }
+
+  if (type === 'vue-components') {
+    if (!library.vueComponents?.tags) {
+      log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
+      process.exit()
+    }
+
+    arr = determineResetPreset()
+
+    for (const component of library.vueComponents?.tags.map(tag => tag.name)) {
+      if (Array.isArray(component))
+        arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.stx'`)
+      else
+        arr.push(`export { default as ${component} } from '${componentsPath(component)}.stx'`)
+    }
+
+    // join the array into a string with each element being on a new line
+    return arr.join('\r\n')
+  }
+
+  // at this point, we know it is a Web Component we are building
+  arr = determineResetPreset()
+  const imports = [...arr, 'import { defineCustomElement } from \'vue\'']
+  const declarations = []
+  const definitions = []
+
+  if (!library.webComponents?.tags) {
+    log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
+    process.exit()
+  }
+
+  for (const component of library.webComponents?.tags.map(tag => tag.name)) {
+    if (Array.isArray(component)) {
+      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
+      declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
+      definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
+    }
+    else {
+      imports.push(`import ${component} from '${componentsPath(component)}.stx'`)
+      declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
+      definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
+    }
+  }
+
+  // join the array into a string with each element being on a new line
+  return [...imports, ...declarations, ...definitions].join('\r\n')
+}

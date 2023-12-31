@@ -1,0 +1,7 @@
+import { runCommand } from 'src/cli/src'
+
+const command: string = 'bun build ./src/index.ts --outdir dist --format esm --target bun'
+
+await runCommand(command, {
+  cwd: import.meta.dir,
+})

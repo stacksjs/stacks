@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { italic, log } from '@stacksjs/cli'
-import { glob, storage } from '@stacksjs/storage'
-import { ExitCode } from '@stacksjs/types'
+import { italic, log } from 'src/cli/src'
+import { glob, storage } from 'src/storage/src'
+import { ExitCode } from 'src/types/src'
 
 log.info('Moving built src files to right path in the dist folder...')
 

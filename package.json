@@ -109,10 +109,8 @@
   "workspaces": [
     "storage/framework/*",
     "storage/framework/libs/*",
-    "storage/framework/stacks/*",
-    "storage/framework/stacks/core/*",
-    "storage/framework/stacks/core/cloud/src/server",
-    "storage/framework/stacks/core/bun-create/*",
-    "storage/framework/vcs/*"
+    "storage/framework/stacks/src/*",
+    "storage/framework/stacks/src/cloud/src/server",
+    "storage/framework/stacks/src/bun-create/*"
   ]
 }

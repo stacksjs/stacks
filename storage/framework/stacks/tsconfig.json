@@ -13,8 +13,8 @@
     "paths": {
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
-      "buddy": ["./core/buddy/src/index.ts"],
-      "buddy/*": ["./core/buddy/src/*"],
+      "buddy": ["src/buddy/src/index.ts"],
+      "buddy/*": ["src/buddy/src/*"],
       "~/*": ["../../../*"]
     },
     "resolveJsonModule": true,

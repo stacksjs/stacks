@@ -1,0 +1,21 @@
+import { MailgunEmailProvider } from '@novu/mailgun'
+import type { EmailOptions } from 'src/types/src'
+import type { ResultAsync } from 'src/error-handling/src'
+import { notification } from 'src/config/src'
+import { send as sendEmail } from '../send'
+
+const env = notification.email
+const service = notification.email?.drivers.mailgun
+
+const provider = new MailgunEmailProvider({
+  apiKey: service?.key || '',
+  domain: service?.domain || '',
+  username: service?.username || '',
+  from: env?.from.address || '',
+})
+
+async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {
+  return sendEmail(options, provider, 'Mailgun', css)
+}
+
+export { send as Send, send }
