@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 export function components(options?: ComponentOptions): Plugin {
   return Components({
     extensions: ['stx', 'vue', 'md'],
-    include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
+    include: /\.(stx|vue|md)($|\?)/,
     dirs: [
       p.componentsPath(),
       p.uiPath('src/components/'),

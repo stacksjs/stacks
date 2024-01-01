@@ -16,16 +16,9 @@ export default defineConfig({
   shortcuts: ui.shortcuts,
 
   content: {
-    filesystem: [
-      '../../../../../resources/**/*.vue',
-      '../../../../../resources/**/*.stx',
-    ],
-
     pipeline: {
       include: [
         /\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/,
-        // include js/ts files
-        '../../../../../**/*.{js,ts}',
       ],
       // exclude files
       // exclude: []

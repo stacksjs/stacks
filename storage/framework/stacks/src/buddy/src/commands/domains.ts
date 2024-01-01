@@ -84,7 +84,7 @@ export function domains(buddy: CLI) {
       }
 
       // set .env APP_URL to domain
-      const { writeEnv } = await import('src/env/src')
+      const { writeEnv } = await import('@stacksjs/env')
       writeEnv('APP_URL', domain)
 
       let message = `Great! ${italic(domain)} was added to your account.`

@@ -110,6 +110,7 @@ grammarly
 gruntfuggly
 gupshup
 gzipped
+headlessui
 heex
 heroicon
 heroicons
@@ -162,6 +163,8 @@ minzipped
 mkdirs
 mkdist
 mult
+mylesmmurphy
+mylesmurphy
 nameserver
 netcore
 neverthrow

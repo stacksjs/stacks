@@ -55,7 +55,8 @@
     "antfu.goto-alias",
     "mikestead.dotenv",
     "pflannery.vscode-versionlens",
-    "foxundermoon.shell-format"
+    "foxundermoon.shell-format",
+    "mylesmurphy.prettify-ts"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.22.0"
