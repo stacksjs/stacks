@@ -78,7 +78,7 @@
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "bun",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./storage/framework/stacks/src/ui/src/unocss.config.ts",
+  "unocss.root": "./storage/framework/stacks/src/ui/src/uno.config.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],

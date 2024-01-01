@@ -155,6 +155,19 @@ const sidebar = {
         },
         { text: 'Model-View-Action', link: '/guide/model-view-action' },
         {
+          text: 'Built-in Components',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'KeepAlive', link: '/guide/components/keep-alive' },
+            { text: 'Suspense', link: '/guide/components/suspense' },
+            { text: 'Table', link: '/guide/components/table' },
+            { text: 'Teleport', link: '/guide/components/teleport' },
+            { text: 'Transition', link: '/guide/components/transition' },
+            { text: 'TransitionGroup', link: '/guide/components/transition-group' },
+          ],
+        },
+        {
           text: 'Packages',
           collapsible: true,
           collapsed: true,
