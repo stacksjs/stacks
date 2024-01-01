@@ -64,7 +64,7 @@ const sidebar = {
       text: 'Getting Started',
       collapsible: true,
       items: [
-        { text: 'Introduction', link: '/guide/introduction' },
+        { text: 'Introduction', link: '/guide/intro' },
         { text: 'Quick Start', link: '/guide/get-started' },
       ],
     },
@@ -73,7 +73,7 @@ const sidebar = {
       text: 'Bootcamp',
       collapsible: true,
       items: [
-        { text: 'Get Started', link: '/bootcamp/intro' },
+        { text: 'Welcome', link: '/bootcamp/intro' },
         {
           text: 'Let’s Build',
           collapsible: true,
@@ -96,7 +96,7 @@ const sidebar = {
           ],
         },
         {
-          text: 'How To',
+          text: 'How-To',
           collapsible: true,
           collapsed: true,
           items: [
@@ -150,6 +150,13 @@ const sidebar = {
             { text: 'Teleport', link: '/guide/components/teleport' },
             { text: 'Transition', link: '/guide/components/transition' },
             { text: 'TransitionGroup', link: '/guide/components/transition-group' },
+            // { text: 'Audio', link: '/guide/components/audio' },
+            // { text: 'Calendar', link: '/guide/components/calendar' },
+            // { text: 'CommandPalette', link: '/guide/components/command-palette' },
+            // { text: 'Audio', link: '/guide/components/date-picker' },
+            // { text: 'FileManager', link: '/guide/components/file-manager' },
+            // { text: 'Image', link: '/guide/components/image' },
+            // { text: 'Video', link: '/guide/components/video' },
           ],
         },
         { text: 'CI / CD', link: '/guide/ci' },
