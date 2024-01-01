@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, CreateOptions } from 'src/types/src'
+import type { CLI, CreateOptions } from '@stacksjs/types'
 import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
 import { isFolder } from '@stacksjs/storage'

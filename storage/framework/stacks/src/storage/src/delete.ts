@@ -1,4 +1,4 @@
-import type { Result } from 'src/error-handling/src'
+import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { italic, log } from '@stacksjs/cli'
 import { isFile } from './files'

@@ -1,7 +1,7 @@
 import { SESEmailProvider } from '@novu/ses'
-import type { EmailOptions } from 'src/types/src'
+import type { EmailOptions } from '@stacksjs/types'
 import { notification } from '@stacksjs/config'
-import type { ResultAsync } from 'src/error-handling/src'
+import type { ResultAsync } from '@stacksjs/error-handling'
 
 const email = notification.email
 const env = email?.drivers?.ses

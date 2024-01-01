@@ -1,6 +1,6 @@
 import { extname } from 'node:path'
 import { URL } from 'node:url'
-import type { MiddlewareType, Route, StatusCode } from 'src/types/src'
+import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
 import { localUrl } from '@stacksjs/config'
 import { middlewares } from './middleware'
 import { request } from './request'

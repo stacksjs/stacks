@@ -1,6 +1,6 @@
 import { italic, log } from '@stacksjs/cli'
 import { ResultAsync } from '@stacksjs/error-handling'
-import type { EmailOptions } from 'src/types/src'
+import type { EmailOptions } from '@stacksjs/types'
 import * as Maizzle from '@maizzle/framework'
 import { stringify } from 'json5'
 import { config } from './tailwind.config'

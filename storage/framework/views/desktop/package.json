@@ -1,5 +1,5 @@
 {
-  "name": "stacks-app",
+  "name": "stacks-desktop",
   "type": "module",
   "version": "0.51.0",
   "private": "true",

@@ -15,6 +15,19 @@ import { ui } from '@stacksjs/config'
 export default defineConfig({
   shortcuts: ui.shortcuts,
 
+  content: {
+    pipeline: {
+      include: [
+        // the default
+        /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html|stx)($|\?)/,
+        // // include js/ts files
+        // 'src/**/*.{js,ts}',
+      ],
+      // exclude files
+      // exclude: []
+    },
+  },
+
   presets: [
     presetWind(), // allows for Tailwind utility classes
     presetForms(), // allows for form Tailwind's form styling

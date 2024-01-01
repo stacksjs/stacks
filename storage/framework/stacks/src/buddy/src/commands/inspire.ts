@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI } from 'src/types/src'
+import type { CLI } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'

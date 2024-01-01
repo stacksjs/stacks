@@ -1,5 +1,5 @@
 import { ExitCode } from '@stacksjs/types'
-import type { CLI } from 'src/types/src'
+import type { CLI } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { runCommand } from '@stacksjs/cli'
 

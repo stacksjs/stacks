@@ -1,6 +1,6 @@
 import { GupshupSmsProvider } from '@novu/gupshup'
 import { italic } from '@stacksjs/cli'
-import type { SmsOptions } from 'src/types/src'
+import type { SmsOptions } from '@stacksjs/types'
 import { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
 

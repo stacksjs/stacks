@@ -1,1 +1,1 @@
-export * as chat from 'src/chat/src'
+export * as chat from '@stacksjs/chat'

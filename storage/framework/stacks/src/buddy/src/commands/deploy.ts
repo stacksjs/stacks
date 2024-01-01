@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, DeployOptions } from 'src/types/src'
+import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'

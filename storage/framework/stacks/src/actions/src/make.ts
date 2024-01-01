@@ -3,7 +3,7 @@ import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
-import type { MakeOptions } from 'src/types/src'
+import type { MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component)

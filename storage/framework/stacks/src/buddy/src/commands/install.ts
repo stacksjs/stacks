@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, InstallOptions } from 'src/types/src'
+import type { CLI, InstallOptions } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 

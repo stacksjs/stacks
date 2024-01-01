@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, ConfigureOptions } from 'src/types/src'
+import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'

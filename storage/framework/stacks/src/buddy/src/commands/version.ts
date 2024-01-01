@@ -1,4 +1,4 @@
-import type { CLI } from 'src/types/src'
+import type { CLI } from '@stacksjs/types'
 import { bold, dim, green, intro, log } from '@stacksjs/cli'
 import { storage } from '@stacksjs/storage'
 

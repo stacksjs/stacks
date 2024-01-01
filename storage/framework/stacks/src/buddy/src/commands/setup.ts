@@ -3,7 +3,7 @@ import { path as p } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
 import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, CliOptions } from 'src/types/src'
+import type { CLI, CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI) {
   const descriptions = {

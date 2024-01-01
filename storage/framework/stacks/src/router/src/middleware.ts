@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { promisify } from 'node:util'
 import { appPath, path } from '@stacksjs/path'
-import type { MiddlewareType } from 'src/types/src'
+import type { MiddlewareType } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareType {
   name: string

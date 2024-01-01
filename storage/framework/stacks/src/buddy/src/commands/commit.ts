@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, FreshOptions } from 'src/types/src'
+import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runCommit } from '@stacksjs/actions'
 
 export function commit(buddy: CLI) {

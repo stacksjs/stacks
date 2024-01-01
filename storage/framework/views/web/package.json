@@ -1,5 +1,5 @@
 {
-  "name": "stacks-views",
+  "name": "stacks-web",
   "type": "module",
   "private": true,
   "scripts": {

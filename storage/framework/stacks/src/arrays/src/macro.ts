@@ -1,4 +1,4 @@
-import type { Arrayable, Nullable } from 'src/types/src'
+import type { Arrayable, Nullable } from '@stacksjs/types'
 import type { PartitionFilter } from './helpers'
 import { at, clampArrayRange, flatten, last, mergeArrayable, move, partition, remove, sample, shuffle, toArray, uniq, uniqueBy } from './helpers'
 import { average, median, mode, range, sum } from './math'

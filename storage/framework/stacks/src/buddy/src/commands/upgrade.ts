@@ -2,7 +2,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro, prompt } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, UpgradeOptions } from 'src/types/src'
+import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { Action } from '@stacksjs/enums'
 import { isString } from '@stacksjs/validation'
 

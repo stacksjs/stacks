@@ -10,7 +10,7 @@ import {
   generateVueCompat,
   generateWebTypes,
   invoke as startGenerationProcess,
-} from 'src/actions/src'
+} from '@stacksjs/actions'
 import { prompt } from '@stacksjs/cli'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'

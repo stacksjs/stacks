@@ -1,1 +1,1 @@
-export * as tinker from 'src/tinker/src'
+export * as tinker from '@stacksjs/tinker'

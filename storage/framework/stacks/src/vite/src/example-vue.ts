@@ -1,4 +1,4 @@
-import type { ViteConfig } from 'src/types/src'
+import type { ViteConfig } from '@stacksjs/types'
 import { examplesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'

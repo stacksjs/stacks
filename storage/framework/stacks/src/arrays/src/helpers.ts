@@ -1,4 +1,4 @@
-import type { Arrayable, Nullable } from 'src/types/src'
+import type { Arrayable, Nullable } from '@stacksjs/types'
 import { clamp } from '@stacksjs/utils'
 
 /**

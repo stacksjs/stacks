@@ -1,5 +1,5 @@
 import type { BunFile } from 'bun'
-import type { JsonFile, PackageJson, TextFile } from 'src/types/src'
+import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { dirname, join, path as p } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'

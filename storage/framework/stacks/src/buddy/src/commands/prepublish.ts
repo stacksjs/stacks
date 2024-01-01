@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, PrepublishOptions } from 'src/types/src'
+import type { CLI, PrepublishOptions } from '@stacksjs/types'
 import { Action } from '@stacksjs/enums'
 import { runAction } from '@stacksjs/actions'
 

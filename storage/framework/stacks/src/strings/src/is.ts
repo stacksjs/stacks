@@ -1,4 +1,4 @@
-import type { HashAlgorithm } from 'src/types/src'
+import type { HashAlgorithm } from '@stacksjs/types'
 import v from 'validator'
 
 export function isEmail(email: string) {

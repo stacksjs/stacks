@@ -1,1 +1,1 @@
-export * as email from 'src/email/src'
+export * as email from '@stacksjs/email'

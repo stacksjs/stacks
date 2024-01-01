@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { AddOptions, BuildOptions, CLI } from 'src/types/src'
+import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { runAdd } from '@stacksjs/actions'
 

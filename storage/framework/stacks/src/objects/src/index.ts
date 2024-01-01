@@ -1,4 +1,4 @@
-import type { DeepMerge } from 'src/types/src'
+import type { DeepMerge } from '@stacksjs/types'
 import { notNullish } from '@stacksjs/utils'
 import { isObject } from '@stacksjs/validation'
 

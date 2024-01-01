@@ -1,6 +1,6 @@
 import { EmailJsProvider } from '@novu/emailjs'
-import type { EmailOptions } from 'src/types/src'
-import type { ResultAsync } from 'src/error-handling/src'
+import type { EmailOptions } from '@stacksjs/types'
+import type { ResultAsync } from '@stacksjs/error-handling'
 import { notification } from '@stacksjs/config'
 import { send as sendEmail } from '../send'
 

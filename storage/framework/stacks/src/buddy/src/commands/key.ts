@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, KeyOptions } from 'src/types/src'
+import type { CLI, KeyOptions } from '@stacksjs/types'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { runAction } from '@stacksjs/actions'

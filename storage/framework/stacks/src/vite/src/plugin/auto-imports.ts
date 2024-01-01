@@ -1,5 +1,5 @@
 import { path as p } from '@stacksjs/path'
-import type { AutoImportsOptions } from 'src/types/src'
+import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import { defu } from 'defu'
 import AutoImport from 'unplugin-auto-import/vite'

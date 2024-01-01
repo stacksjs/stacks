@@ -2,7 +2,7 @@ import process from 'node:process'
 import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
 import { addJumpBox, deleteCdkRemnants, deleteIamUsers, deleteJumpBox, deleteLogGroups, deleteParameterStore, deleteStacksBuckets, deleteStacksFunctions, getJumpBoxInstanceId } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
-import type { CLI, CloudCliOptions } from 'src/types/src'
+import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { loop } from '@stacksjs/utils'
 

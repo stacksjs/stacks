@@ -1,4 +1,4 @@
-import type { EnvConfig } from 'src/env/src'
+import type { EnvConfig } from '@stacksjs/env'
 import { validate } from '@stacksjs/validation'
 
 /**

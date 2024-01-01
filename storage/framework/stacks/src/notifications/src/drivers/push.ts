@@ -1,1 +1,1 @@
-export * as push from 'src/push/src'
+export * as push from '@stacksjs/push'

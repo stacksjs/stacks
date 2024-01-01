@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
-import type { BuildOptions } from 'src/types/src'
+import type { BuildOptions } from '@stacksjs/types'
 import { NpmScript } from '@stacksjs/enums'
 import { generateTypes } from './generate'
 

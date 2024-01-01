@@ -10,10 +10,10 @@ import {
   makeLanguage,
   makePage,
   makeStack,
-} from 'src/actions/src'
+} from '@stacksjs/actions'
 import { intro, italic, outro, prompt } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import type { CLI, MakeOptions } from 'src/types/src'
+import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 

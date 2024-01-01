@@ -7,7 +7,7 @@ import { fs } from '@stacksjs/storage'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { Action } from '@stacksjs/enums'
-import type { DeployOptions } from 'src/types/src'
+import type { DeployOptions } from '@stacksjs/types'
 
 export async function deleteHostedZone(domainName: string) {
   const route53 = new Route53()

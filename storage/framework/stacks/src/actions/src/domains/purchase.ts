@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { log, parseOptions } from '@stacksjs/cli'
-import type { PurchaseOptions } from 'src/cloud/src'
+import type { PurchaseOptions } from '@stacksjs/cloud'
 import { purchaseDomain } from '@stacksjs/cloud'
 import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
