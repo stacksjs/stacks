@@ -61,11 +61,11 @@ const nav = [
 const sidebar = {
   '/guide/': [
     {
-      text: 'Introduction',
+      text: 'Getting Started',
       collapsible: true,
       items: [
-        { text: 'What is Stacks?', link: '/guide/what-is-stacks' },
-        { text: 'Get Started', link: '/guide/get-started' },
+        { text: 'Introduction', link: '/guide/introduction' },
+        { text: 'Quick Start', link: '/guide/get-started' },
       ],
     },
 
@@ -73,7 +73,7 @@ const sidebar = {
       text: 'Bootcamp',
       collapsible: true,
       items: [
-        { text: 'Introduction', link: '/bootcamp/intro' },
+        { text: 'Get Started', link: '/bootcamp/intro' },
         {
           text: 'Let’s Build',
           collapsible: true,
@@ -154,6 +154,7 @@ const sidebar = {
         },
         { text: 'CI / CD', link: '/guide/ci' },
         { text: 'Cloud', link: '/guide/cloud' },
+        { text: 'Custom Directives', link: '/guide/custom-directives' },
         { text: 'Dashboard', link: '/guide/dashboard' },
         {
           text: 'Libraries',
@@ -235,16 +236,7 @@ const sidebar = {
             { text: 'Vite', link: '/guide/packages/vite' },
           ],
         },
-        {
-          text: 'Reusability',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            // { text: 'Composables', link: '/guide/reusability/composables' }, -> functions
-            { text: 'Custom Directives', link: '/guide/reusability/custom-directives' },
-            { text: 'Plugins', link: '/guide/reusability/plugins' },
-          ],
-        },
+        { text: 'Plugins', link: '/guide/plugins' },
         { text: 'Testing', link: '/guide/testing' },
       ],
     },
