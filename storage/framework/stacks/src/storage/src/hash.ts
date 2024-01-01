@@ -3,8 +3,8 @@ import { path as p } from '@stacksjs/path'
 import { fs } from './fs'
 
 export function hashFileOrDirectory(path: string, hash: crypto.Hash): void {
-  if (fs.default.statSync(path).isDirectory()) {
-    const files = fs.default.readdirSync(path)
+  if (fs.statSync(path).isDirectory()) {
+    const files = fs.readdirSync(path)
     for (const file of files) {
       const filePath = p.join(path, file)
       hashFileOrDirectory(filePath, hash)

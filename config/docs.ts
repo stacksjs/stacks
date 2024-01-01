@@ -139,6 +139,19 @@ const sidebar = {
         { text: 'APIs', link: '/guide/apis' },
         { text: 'Apps', link: '/guide/apps' },
         { text: 'Buddy', link: '/guide/buddy' },
+        {
+          text: 'Built-in Components',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'KeepAlive', link: '/guide/components/keep-alive' },
+            { text: 'Suspense', link: '/guide/components/suspense' },
+            { text: 'Table', link: '/guide/components/table' },
+            { text: 'Teleport', link: '/guide/components/teleport' },
+            { text: 'Transition', link: '/guide/components/transition' },
+            { text: 'TransitionGroup', link: '/guide/components/transition-group' },
+          ],
+        },
         { text: 'CI / CD', link: '/guide/ci' },
         { text: 'Cloud', link: '/guide/cloud' },
         { text: 'Dashboard', link: '/guide/dashboard' },
@@ -154,19 +167,6 @@ const sidebar = {
           ],
         },
         { text: 'Model-View-Action', link: '/guide/model-view-action' },
-        {
-          text: 'Built-in Components',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            { text: 'KeepAlive', link: '/guide/components/keep-alive' },
-            { text: 'Suspense', link: '/guide/components/suspense' },
-            { text: 'Table', link: '/guide/components/table' },
-            { text: 'Teleport', link: '/guide/components/teleport' },
-            { text: 'Transition', link: '/guide/components/transition' },
-            { text: 'TransitionGroup', link: '/guide/components/transition-group' },
-          ],
-        },
         {
           text: 'Packages',
           collapsible: true,
@@ -233,6 +233,16 @@ const sidebar = {
             { text: 'Utils', link: '/guide/packages/utils' },
             { text: 'Validation', link: '/guide/packages/validation' },
             { text: 'Vite', link: '/guide/packages/vite' },
+          ],
+        },
+        {
+          text: 'Reusability',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            // { text: 'Composables', link: '/guide/reusability/composables' }, -> functions
+            { text: 'Custom Directives', link: '/guide/reusability/custom-directives' },
+            { text: 'Plugins', link: '/guide/reusability/plugins' },
           ],
         },
         { text: 'Testing', link: '/guide/testing' },
