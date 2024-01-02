@@ -61,9 +61,9 @@ export function dev(buddy: CLI) {
         case 'components':
           await runComponentsDevServer(options)
           break
-        case 'dashboard':
-          await runDashboardDevServer(options)
-          break
+        // case 'dashboard':
+        //   await runDashboardDevServer(options)
+        //   break
         case 'desktop':
           await runDesktopDevServer(options)
           break

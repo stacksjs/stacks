@@ -6,10 +6,10 @@ const { greeting = 'Welcome!' } = defineProps<{
 }>()
 
 // easily use any of the lifecycle hooks without needing to import them
-// onMounted(() => {
-//   // eslint-disable-next-line no-console
-//   console.log('HelloWorld component mounted & the greeting is', greeting)
-// })
+onMounted(() => {
+  // eslint-disable-next-line no-console
+  console.log('HelloWorld component mounted & the greeting is', greeting)
+})
 </script>
 
 <template>
@@ -253,7 +253,7 @@ const { greeting = 'Welcome!' } = defineProps<{
           </div>
 
           <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
-            Stacks Alpha (Bun v1.0.11)
+            Stacks Alpha (Bun v1.0.21)
           </div>
         </div>
       </div>

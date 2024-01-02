@@ -57,7 +57,7 @@
     "../stack/**/*",
     "../views/desktop/**/*",
     "../views/desktop/*",
-    "./core/**/*.ts",
+    "./src/**/*.ts",
     "../types/*",
     "./scripts/*"
   ],

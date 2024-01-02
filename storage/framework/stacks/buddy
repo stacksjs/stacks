@@ -1,2 +1,2 @@
 #!/usr/bin/env bun
-import('./core/buddy/src/cli')
+import('./src/buddy/src/cli')

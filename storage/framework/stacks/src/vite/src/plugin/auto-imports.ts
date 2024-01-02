@@ -7,6 +7,7 @@ import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   return AutoImport({
+    include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
     imports: [
       'pinia',
       'vue',

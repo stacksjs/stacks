@@ -3,11 +3,8 @@ import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'
 import Components from 'unplugin-vue-components/vite'
-import UnoCSS from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import { layouts, pages, uiEngine } from './stacks'
+import { layouts, pages, uiEngine, autoImports, cssEngine } from './stacks'
 import { defineConfig } from '.'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export const pagesConfig = {
   root: p.projectStoragePath('framework/dashboard'),
@@ -34,27 +31,13 @@ export const pagesConfig = {
       dts: p.projectStoragePath('framework/dashboard/components.d.ts'),
     }),
 
-    AutoImport({
-      imports: [
-        'vue',
-        VueRouterAutoImports,
-        'vue-i18n',
-        '@vueuse/head',
-        '@vueuse/core',
-      ],
-      dts: p.projectStoragePath('framework/stacks/auto-imports.d.ts'),
-      dirs: [
-        p.projectStoragePath('framework/dashboard/src/functions'),
-      ],
-    }),
+    autoImports(),
 
     pages({
       routesFolder: p.projectStoragePath('framework/dashboard/src/pages'),
     }),
 
-    UnoCSS({
-      configFile: p.uiPath('src/uno.config.ts'),
-    }),
+    cssEngine(),
 
     layouts({
       layoutsDirs: p.resourcesPath('layouts'),

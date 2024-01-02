@@ -7,7 +7,7 @@ import Shiki from 'markdown-it-shikiji'
 export function uiEngine(isWebComponent = false): Plugin {
   if (isWebComponent) {
     return Vue({
-      include: [/\.stx$/, /\.vue$/, /\.md$/],
+      include: /\.(stx|vue|md)($|\?)/,
       template: {
         compilerOptions: {
           isCustomElement: () => true,
@@ -17,7 +17,7 @@ export function uiEngine(isWebComponent = false): Plugin {
   }
 
   return Vue({
-    include: [/\.stx$/, /\.vue$/, /\.md$/],
+    include: /\.(stx|vue|md)($|\?)/,
   })
 }
 

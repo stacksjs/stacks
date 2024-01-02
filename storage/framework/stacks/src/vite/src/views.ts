@@ -13,14 +13,10 @@ import VueMacros from 'unplugin-vue-macros/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import LinkAttributes from 'markdown-it-link-attributes'
-import Unocss from 'unocss/vite'
 import Shiki from 'markdown-it-shikiji'
 import VueRouter from 'unplugin-vue-router/vite'
-
+import { layouts, autoImports, components, cssEngine } from './stacks'
 // import { fonts } from './plugin/fonts'
-import { layouts } from './plugin/layouts'
-import { autoImports } from './plugin/auto-imports'
-import { components } from './plugin/components'
 
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
@@ -53,7 +49,7 @@ export default defineConfig({
     VueMacros({
       plugins: {
         vue: Vue({
-          include: [/\.stx$/, /\.vue$/, /\.md$/],
+          include: /\.(stx|vue|md)($|\?)/,
         }),
       },
     }),
@@ -78,10 +74,7 @@ export default defineConfig({
     components(),
 
     // https://github.com/unocss/unocss
-    // see uno.config.ts for config
-    Unocss({
-      configFile: p.uiPath('src/uno.config.ts'),
-    }),
+    cssEngine(),
 
     // https://github.com/unplugin/unplugin-vue-markdown
     Markdown({

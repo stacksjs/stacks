@@ -7,7 +7,7 @@ export function cssEngine(isWebComponent = false) {
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
     content: {
       pipeline: {
-        include: [/\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/],
+        include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
         // exclude files
         // exclude: []
       },

@@ -132,7 +132,7 @@ export function configPath(path?: string) {
 }
 
 export function corePath(path?: string) {
-  return frameworkPath(`core/${path || ''}`)
+  return frameworkPath(`src/${path || ''}`)
 }
 
 export function customElementsDataPath() {

@@ -8,7 +8,7 @@ import * as maizzleConfig from './utils/config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string): Promise<ResultAsync<any, Error>> {
   const template = `
-  <extends src="./core/notifications/src/utils/template.html">
+  <extends src="./src/notifications/src/utils/template.html">
     <block name="template">
       ${options.html}
     </block>

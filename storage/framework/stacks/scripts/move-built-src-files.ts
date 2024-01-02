@@ -6,7 +6,7 @@ import { ExitCode } from '@stacksjs/types'
 log.info('Moving built src files to right path in the dist folder...')
 
 const files = await glob([
-  '../core/**/dist/src/**',
+  '../src/**/dist/src/**',
 ])
 
 if (files.length === 0) {
@@ -23,6 +23,6 @@ for (const file of files) {
 }
 
 // delete empty /dist/src folder
-await storage.del('../core/**/dist/src')
+await storage.del('../src/**/dist/src')
 
 log.success('Moved built src files to right path in the dist folder')

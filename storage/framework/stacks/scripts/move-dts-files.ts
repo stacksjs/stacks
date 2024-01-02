@@ -22,7 +22,7 @@ if (files.length === 0) {
 
 for (const file of files) {
   const path = file
-    .replace('../dist/types/storage/framework/stacks/src/', '../core/')
+    .replace('../dist/types/storage/framework/stacks/src/', '../src/')
     .replace('/src/', '/dist/')
 
   log.info('Moving', italic(file), 'to', italic(path))
