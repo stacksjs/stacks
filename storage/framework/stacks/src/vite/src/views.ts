@@ -7,7 +7,6 @@ import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 
 // import { i18n } from './plugin/i18n'
-
 // import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
@@ -72,13 +71,13 @@ export default defineConfig({
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     layouts(),
 
-    // https://github.com/antfu/unplugin-auto-import
+    // https://github.com/unplugin/unplugin-auto-import
     autoImports(),
 
-    // https://github.com/antfu/unplugin-vue-components
+    // https://github.com/unplugin/unplugin-vue-components
     components(),
 
-    // https://github.com/antfu/unocss
+    // https://github.com/unocss/unocss
     // see uno.config.ts for config
     Unocss({
       configFile: p.uiPath('src/uno.config.ts'),

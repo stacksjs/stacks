@@ -7,6 +7,7 @@ import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import { layouts, pages, uiEngine } from './stacks'
 import { defineConfig } from '.'
+import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export const pagesConfig = {
   root: p.projectStoragePath('framework/dashboard'),
@@ -36,7 +37,7 @@ export const pagesConfig = {
     AutoImport({
       imports: [
         'vue',
-        'vue-router',
+        VueRouterAutoImports,
         'vue-i18n',
         '@vueuse/head',
         '@vueuse/core',

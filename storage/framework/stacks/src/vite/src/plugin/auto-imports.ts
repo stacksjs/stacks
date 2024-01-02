@@ -1,13 +1,12 @@
 import { path as p } from '@stacksjs/path'
 import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
-import { defu } from 'defu'
 import AutoImport from 'unplugin-auto-import/vite'
 import type { Plugin } from 'vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
-  const defaultOptions: AutoImportsOptions = {
+  return AutoImport({
     imports: [
       'pinia',
       'vue',
@@ -23,17 +22,18 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
         'vue-router/auto': ['useLink'],
       },
     ],
+
     dts: p.frameworkStoragePath('types/auto-imports.d.ts'),
+
     dirs: [
       p.resourcesPath('components'),
       p.resourcesPath('functions'),
       p.resourcesPath('stores'),
       p.frameworkPath('src'),
     ],
+
     vueTemplate: true,
-  }
 
-  const newOptions = defu(options, defaultOptions)
-
-  return AutoImport(newOptions)
+    ...options,
+  } as AutoImportsOptions)
 }

@@ -66,8 +66,8 @@ Read more about these tips in the docs.
 
 ### Plugins
 
-- [`unplugin-vue-components`](https://github.com/antfu/unplugin-vue-components) - components auto import
-- [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use Vue Composition API and others without importing
+- [`unplugin-vue-components`](https://github.com/unplugin/unplugin-vue-components) - components auto import
+- [`unplugin-auto-import`](https://github.com/unplugin/unplugin-auto-import) - Directly use Vue Composition API and others without importing
 - [VueUse](https://github.com/antfu/vueuse) - Collection of useful composition APIs
 - [Collect.js](https://github.com/ecrmnn/collect.js) - Easily work with object via Laravel-like collections
 
