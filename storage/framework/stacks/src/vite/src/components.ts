@@ -4,11 +4,7 @@ import { config as c } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { components } from './plugin/components'
-import { cssEngine } from './plugin/css-engine'
-import { uiEngine } from './plugin/ui-engine'
-import { autoImports } from './plugin/auto-imports'
-import { inspect } from './plugin/inspect'
+import { devtools, components, cssEngine, uiEngine, autoImports, inspect } from './stacks'
 import type { ViteBuildOptions } from '.'
 
 const config = {
@@ -37,6 +33,7 @@ const config = {
     cssEngine(),
     inspect(),
     components(),
+    devtools(),
     // stacks(),
   ],
 
