@@ -88,7 +88,7 @@ const testimonials = [
           <ul role="list" class="flex flex-col gap-y-6 sm:gap-y-8">
             <li v-for="(testimonial, testimonialIndex) in column" :key="testimonialIndex">
               <figure class="relative rounded-2xl bg-white p-6 shadow-xl shadow-slate-900/10">
-                <QuoteIcon class="absolute left-6 top-6 fill-slate-100" />
+                <!-- <QuoteIcon class="absolute left-6 top-6 fill-slate-100" /> -->
                 <blockquote class="relative">
                   <p class="text-lg tracking-tight text-slate-900">
                     {{ testimonial.content }}

@@ -13,6 +13,6 @@ export default stacks({
 
   // Enable jsonc, yaml, toml support
   jsonc: true,
-  yaml: true,
+  yaml: false,
   toml: true,
 })

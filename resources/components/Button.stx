@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  variant?: string
-  color?: string
+  variant?: 'solid' | 'outline'
+  color?: 'blue' | 'slate' | 'white'
   href?: string
   className?: string
 }>()
@@ -25,6 +25,7 @@ const variantStyles = {
 
 const className = computed(() => {
   let classes = baseStyles[props.variant ?? 'solid']
+
   if (props.variant === 'outline')
     classes += ` ${variantStyles.outline[props.color ?? 'slate']}`
 
@@ -33,6 +34,8 @@ const className = computed(() => {
 
   if (props.className)
     classes += ` ${props.className}`
+
+  console.log('classes', classes)
 
   return classes
 })
@@ -44,11 +47,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Use the computed className in your template -->
-  <button v-if="!props.href" :class="className" v-bind="props">
+  <button v-if="!props.href" :class="className">
     <slot />
   </button>
-  <a v-else :class="className" v-bind="props">
+  <a v-else :class="className">
     <slot />
   </a>
 </template>

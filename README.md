@@ -106,13 +106,13 @@ _Enhanced productivity for developers. No more creating boilerplate._
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that's all you need to dive in now! _Or TypeScript ✌🏼_
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that’s all you need to dive in now! _Or TypeScript ✌🏼_
 
 > _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
 
 ## Get Started
 
-It's incredibly easy to get started with this framework. Simply run the following command in your terminal:
+It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
 sh <(curl stacksjs.org) my-project
@@ -273,7 +273,7 @@ buddy example # prompts you to select which example to run
 buddy example:vue # runs the Vue example
 buddy example:web-components # runs the Web Component example
 
-# you likely won't need to run these commands as they are auto-triggered, but they are available
+# you likely won’t need to run these commands as they are auto-triggered, but they are available
 buddy generate  # prompts you to select which generator to run
 buddy generate:entries # generates entry files for components, functions, & views
 buddy generate:vue-compat # generates Vue 2 compatibility layer

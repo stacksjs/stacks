@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
+
 import screenshotContacts from '../../assets/images/screenshots/contacts.png'
 import screenshotInventory from '../../assets/images/screenshots/inventory.png'
 import screenshotProfitLoss from '../../assets/images/screenshots/profit-loss.png'
@@ -10,7 +12,26 @@ const features = [
     description:
       'We talked about reporting in the section above but we needed three items here, so mentioning it one more time for posterity.',
     image: screenshotProfitLoss,
-    icon: ReportingIcon,
+    icon: `   <defs>
+            <linearGradient
+              id="profit-loss-gradient"
+              x1="11.5"
+              y1="18"
+              x2="36"
+              y2="15.5"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset=".194" stopColor="#fff" />
+              <stop offset="1" stopColor="#6692F1" />
+            </linearGradient>
+          </defs>
+          <path
+            d="m30 15-4 5-4-11-4 18-4-11-4 7-4-5"
+            stroke="url(#profit-loss-gradient)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />`,
   },
   {
     name: 'Inventory',
@@ -19,7 +40,7 @@ const features = [
     description:
       'We don’t offer this as part of our software but that statement is inarguably true. Accurate inventory tracking would help you for sure.',
     image: screenshotInventory,
-    icon: InventoryIcon,
+    icon: '',
   },
   {
     name: 'Contacts',
@@ -28,11 +49,13 @@ const features = [
     description:
       'This also isn’t actually a feature, it’s just some friendly advice. We definitely recommend that you do this, you’ll feel really organized and professional.',
     image: screenshotContacts,
-    icon: ContactsIcon,
+    icon: '',
   },
 ]
 
 const tabIndex = ref(0)
+const tabOrientation = ref('horizontal')
+const selectedIndex = computed(() => tabIndex.value)
 </script>
 
 <template>
@@ -48,7 +71,7 @@ const tabIndex = ref(0)
         </p>
       </div>
       <!-- FeaturesMobile -->
-      <div class="-mx-4 mt-20 flex flex-col gap-y-10 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:hidden">
+      <!-- <div class="-mx-4 mt-20 flex flex-col gap-y-10 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:hidden">
         <div v-for="feature in features" :key="feature.summary">
           <Feature :feature="feature" class="mx-auto max-w-2xl" :is-active="true" />
           <div class="relative mt-10 pb-10">
@@ -58,35 +81,77 @@ const tabIndex = ref(0)
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- FeaturesDesktop -->
       <TabGroup as="div" class="hidden lg:mt-20 lg:block">
         <TabList class="grid grid-cols-3 gap-x-8">
-          <div v-for="(feature, featureIndex) in features" :key="feature.summary" class="relative">
-            <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': featureIndex === selectedIndex, 'bg-slate-500': featureIndex !== selectedIndex }">
-              <svg aria-hidden="true" class="h-9 w-9" fill="none">
-                <!-- feature.icon -->
-              </svg>
-            </div>
-            <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': featureIndex === selectedIndex, 'text-slate-600': featureIndex !== selectedIndex }">
-              <Tab>{{ feature.name }}</Tab>
-            </h3>
-            <p class="mt-2 font-display text-xl text-slate-900">
-              {{ feature.summary }}
-            </p>
-            <p class="mt-4 text-sm text-slate-600">
-              {{ feature.description }}
-            </p>
-          </div>
+          <div class="relative">
+  <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 0 === selectedIndex, 'bg-slate-500': 0 !== selectedIndex }">
+    <svg aria-hidden="true" class="h-9 w-9" fill="none">
+      {{ features[0].icon }}
+    </svg>
+  </div>
+  <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 0 === selectedIndex, 'text-slate-600': 0 !== selectedIndex }">
+    <Tab>{{ features[0].name }}</Tab>
+  </h3>
+  <p class="mt-2 font-display text-xl text-slate-900">
+    {{ features[0].summary }}
+  </p>
+  <p class="mt-4 text-sm text-slate-600">
+    {{ features[0].description }}
+  </p>
+</div>
+<div class="relative">
+  <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 1 === selectedIndex, 'bg-slate-500': 1 !== selectedIndex }">
+    <svg aria-hidden="true" class="h-9 w-9" fill="none">
+      {{ features[1].icon }}
+    </svg>
+  </div>
+  <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 1 === selectedIndex, 'text-slate-600': 1 !== selectedIndex }">
+    <Tab>{{ features[1].name }}</Tab>
+  </h3>
+  <p class="mt-2 font-display text-xl text-slate-900">
+    {{ features[1].summary }}
+  </p>
+  <p class="mt-4 text-sm text-slate-600">
+    {{ features[1].description }}
+  </p>
+</div>
+<div class="relative">
+  <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 2 === selectedIndex, 'bg-slate-500': 2 !== selectedIndex }">
+    <svg aria-hidden="true" class="h-9 w-9" fill="none">
+      {{ features[2].icon }}
+    </svg>
+  </div>
+  <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 2 === selectedIndex, 'text-slate-600': 2 !== selectedIndex }">
+    <Tab>{{ features[2].name }}</Tab>
+  </h3>
+  <p class="mt-2 font-display text-xl text-slate-900">
+    {{ features[2].summary }}
+  </p>
+  <p class="mt-4 text-sm text-slate-600">
+    {{ features[2].description }}
+  </p>
+</div>
         </TabList>
         <TabPanels class="relative mt-20 overflow-hidden rounded-4xl bg-slate-200 px-14 py-16 xl:px-16">
           <div class="-mx-5 flex">
-            <TabPanel v-for="(feature, featureIndex) in features" :key="feature.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': featureIndex !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="featureIndex !== selectedIndex">
-              <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
-                <img class="w-full" :src="feature.image" alt="" sizes="52.75rem">
-              </div>
-            </TabPanel>
+            <TabPanel :key="features[0].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 0 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="0 !== selectedIndex">
+  <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+    <img class="w-full" :src="features[0].image" alt="" sizes="52.75rem">
+  </div>
+</TabPanel>
+<TabPanel :key="features[1].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 1 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="1 !== selectedIndex">
+  <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+    <img class="w-full" :src="features[1].image" alt="" sizes="52.75rem">
+  </div>
+</TabPanel>
+<TabPanel :key="features[2].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 2 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="2 !== selectedIndex">
+  <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+    <img class="w-full" :src="features[2].image" alt="" sizes="52.75rem">
+  </div>
+</TabPanel>
           </div>
           <div class="pointer-events-none absolute inset-0 rounded-4xl ring-1 ring-inset ring-slate-900/10" />
         </TabPanels>

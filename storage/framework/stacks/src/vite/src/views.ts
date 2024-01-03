@@ -7,9 +7,8 @@ import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import VueMacros from 'unplugin-vue-macros/vite'
 import VueRouter from 'unplugin-vue-router/vite'
-import { autoImports, components, cssEngine, devtools, layouts, markdown, pwa } from './stacks'
+import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa } from './stacks'
 
-// import { i18n } from './plugin/i18n'
 // import { fonts } from './plugin/fonts'
 
 // const isMaintenanceMode = config.app.maintenanceMode
@@ -65,17 +64,7 @@ export default defineConfig({
     markdown(),
     pwa(),
     devtools(),
-
-    // https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n
-    // i18n(),
-    // VueI18n({
-    //   runtimeOnly: true,
-    //   compositionOnly: true,
-    //   fullInstall: true,
-    //   include: [
-    //     p.resolve(__dirname, '../../../../../../lang/**'),
-    //   ],
-    // }),
+    i18n(),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     // fonts(),

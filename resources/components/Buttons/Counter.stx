@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-// TODO: should not need this because of unimport
-import { ref } from 'vue'
-
 const count = ref(0)
 
 function increment() {

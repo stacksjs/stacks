@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
-import Container from '../Container.stx'
 
 // import backgroundImage from '../../assets/images/background-features.jpg'
 import screenshotExpenses from '../../assets/images/screenshots/expenses.png'
@@ -10,28 +9,51 @@ import screenshotVatReturns from '../../assets/images/screenshots/vat-returns.pn
 
 const features = [
   {
-    title: 'Payroll',
-    description: 'Keep track of everyone\'s salaries and whether or not they\'ve been paid. Direct deposit not supported.',
+    title: 'Frontend',
+    description: 'Keep track of everyone’s salaries and whether or not they’ve been paid. Direct deposit not supported.',
     image: screenshotPayroll,
   },
   {
-    title: 'Claim expenses',
-    description: 'All of your receipts organized into one place, as long as you don\'t mind typing in the data by hand.',
+    title: 'Backend',
+    description: 'All of your receipts organized into one place, as long as you don’t mind typing in the data by hand.',
     image: screenshotExpenses,
   },
   {
-    title: 'VAT handling',
-    description: 'We only sell our software to companies who don\'t deal with VAT at all, so technically we do all the VAT stuff they need.',
+    title: 'Cloud',
+    description: 'We only sell our software to companies who don’t deal with VAT at all, so technically we do all the VAT stuff they need.',
     image: screenshotVatReturns,
   },
   {
-    title: 'Reporting',
+    title: 'DX',
     description: 'Easily export your data into an Excel spreadsheet where you can do whatever the hell you want with it.',
     image: screenshotReporting,
   },
 ]
 
 const tabIndex = ref(0)
+const tabOrientation = ref('horizontal')
+const selectedIndex = computed(() => tabIndex.value)
+const featureIndex = computed(() => {
+  if (selectedIndex.value === 0) return 0
+  if (selectedIndex.value === 1) return 1
+  if (selectedIndex.value === 2) return 2
+  if (selectedIndex.value === 3) return 3
+})
+
+onMounted(() => {
+  const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
+
+  const onMediaQueryChange = (event) => {
+    tabOrientation.value = event.matches ? 'vertical' : 'horizontal'
+  }
+
+  onMediaQueryChange(lgMediaQuery)
+  lgMediaQuery.addEventListener('change', onMediaQueryChange)
+
+  onUnmounted(() => {
+    lgMediaQuery.removeEventListener('change', onMediaQueryChange)
+  })
+})
 </script>
 
 <template>
@@ -45,16 +67,37 @@ const tabIndex = ref(0)
           Well everything you need if you aren’t that picky about minor details like tax compliance.
         </p>
       </div>
-      <TabGroup v-model="tabIndex" as="div" class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0">
-        <TabList class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-          <Tab class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6">
+
+      <TabGroup
+        v-model="tabIndex"
+        as="div"
+        class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
+        :vertical="tabOrientation === 'vertical'"
+      >
+        <TabList
+          class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5"
+          :class="selectedIndex === featureIndex
+            ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10'
+            : 'hover:bg-white/10 lg:hover:bg-white/5'"
+        >
+          <Tab
+            class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6"
+            :class="selectedIndex === featureIndex
+              ? 'text-blue-600 lg:text-white'
+              : 'text-blue-100 hover:text-white lg:text-white'"
+          >
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
                 <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
                 {{ features[0].title }}
               </span>
             </h3>
-            <p class="mt-2 hidden text-sm lg:block">
+            <p
+              class="mt-2 hidden text-sm lg:block"
+              :class="selectedIndex === featureIndex
+                ? 'text-white'
+                : 'text-blue-100 group-hover:text-white'"
+            >
               {{ features[0].description }}
             </p>
           </Tab>
@@ -145,35 +188,6 @@ const tabIndex = ref(0)
           </TabPanel>
         </TabPanels>
       </TabGroup>
-      <!-- <TabGroup v-model="tabIndex" class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0">
-        tet
-        <TabList class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-          <Tab v-for="(feature, index) in features" :key="index" class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6">
-            <h3>
-              <span class="font-display text-lg ui-not-focus-visible:outline-none">
-                <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                {{ feature.title }}
-              </span>
-            </h3>
-            <p class="mt-2 hidden text-sm lg:block">
-              {{ feature.description }}
-            </p>
-          </Tab>
-        </TabList>
-        <TabPanels class="lg:col-span-7">
-          <TabPanel v-for="(feature, index) in features" :key="index">
-            <div class="relative sm:px-6 lg:hidden">
-              <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
-              <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                {{ feature.description }}
-              </p>
-            </div>
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-              <img :src="feature.image" alt="" class="w-full">
-            </div>
-          </TabPanel>
-        </TabPanels>
-      </TabGroup> -->
     </Container>
   </section>
 </template>

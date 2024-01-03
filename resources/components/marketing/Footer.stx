@@ -18,15 +18,22 @@ const currentYear = computed(() => new Date().getFullYear())
             <NavLink href="#pricing">
               Pricing
             </NavLink>
+            <NavLink href="#pricing">
+              News
+            </NavLink>
+            <NavLink href="#pricing">
+              Changelog
+            </NavLink>
           </div>
         </nav>
       </div>
+
       <div class="flex flex-col items-center border-t border-slate-400/10 py-10 sm:flex-row-reverse sm:justify-between">
         <div class="flex gap-x-6">
           <a
-            href="https://twitter.com"
+            href="https://twitter.com/stacksjs"
             class="group"
-            aria-label="TaxPal on Twitter"
+            aria-label="Stacks on Twitter"
           >
             <svg
               aria-hidden="true"
@@ -36,9 +43,9 @@ const currentYear = computed(() => new Date().getFullYear())
             </svg>
           </a>
           <a
-            href="https://github.com"
+            href="https://github.com/stacksjs/stacks"
             class="group"
-            aria-label="TaxPal on GitHub"
+            aria-label="Stacks on GitHub"
           >
             <svg
               aria-hidden="true"
@@ -48,8 +55,9 @@ const currentYear = computed(() => new Date().getFullYear())
             </svg>
           </a>
         </div>
+
         <p class="mt-6 text-sm text-slate-500 sm:mt-0">
-          Copyright &copy; {{ currentYear }} TaxPal. All rights reserved.
+          Copyright &copy; {{ currentYear }} Stacks.js, Inc. All rights reserved.
         </p>
       </div>
     </Container>

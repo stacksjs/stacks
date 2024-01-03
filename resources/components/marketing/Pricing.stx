@@ -57,7 +57,6 @@ const plans = [
       <div class="md:text-center">
         <h2 class="font-display text-3xl tracking-tight text-white sm:text-4xl">
           <span class="relative whitespace-nowrap">
-            <!-- <SwirlyDoodle class="absolute left-0 top-1/2 h-[1em] w-full fill-blue-400" /> -->
             <svg
               aria-hidden="true"
               viewBox="0 0 281 40"
@@ -71,7 +70,7 @@ const plans = [
               />
             </svg>
             <span class="relative">Simple pricing,</span>
-          </span>{' '}
+          </span>
           for everyone.
         </h2>
         <p class="mt-4 text-lg text-slate-400">
@@ -80,7 +79,7 @@ const plans = [
         </p>
       </div>
       <div class="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
-        <Plan
+        <!-- <Plan
           v-for="(plan, index) in plans"
           :key="index"
           :name="plan.name"
@@ -89,7 +88,7 @@ const plans = [
           :href="plan.href"
           :features="plan.features"
           :featured="plan.featured"
-        />
+        /> -->
       </div>
     </Container>
   </section>
