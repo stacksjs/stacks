@@ -1,4 +1,3 @@
-
 <script setup>
 import Table from './components/Table.stx'
 </script>

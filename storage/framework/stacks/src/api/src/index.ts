@@ -102,7 +102,7 @@ export async function useHttpFetch(endpoint = '') {
     }
 
     loading.value = true
-    
+
     return await ofetch(url, parameters) as FetchResponse
   }
 

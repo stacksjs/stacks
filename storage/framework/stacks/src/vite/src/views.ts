@@ -7,7 +7,8 @@ import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import VueMacros from 'unplugin-vue-macros/vite'
 import VueRouter from 'unplugin-vue-router/vite'
-import { layouts, autoImports, components, cssEngine, devtools, markdown, pwa } from './stacks'
+import { autoImports, components, cssEngine, devtools, layouts, markdown, pwa } from './stacks'
+
 // import { i18n } from './plugin/i18n'
 // import { fonts } from './plugin/fonts'
 
@@ -63,7 +64,7 @@ export default defineConfig({
     cssEngine(),
     markdown(),
     pwa(),
-    devtools()
+    devtools(),
 
     // https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n
     // i18n(),

@@ -47,7 +47,7 @@ export async function vue(
           ecmaFeatures: {
             jsx: true,
           },
-          extraFileExtensions: ['.vue'],
+          extraFileExtensions: ['.vue', '.stx'],
           parser: options.typescript
             ? await interopDefault(import('@typescript-eslint/parser')) as any
             : null,

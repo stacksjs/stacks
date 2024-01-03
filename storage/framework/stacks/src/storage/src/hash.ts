@@ -1,4 +1,5 @@
-import { Hash, createHash } from 'node:crypto'
+import type { Hash } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { path as p } from '@stacksjs/path'
 import { fs } from './fs'
 
