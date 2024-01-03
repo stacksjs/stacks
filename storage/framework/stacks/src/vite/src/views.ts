@@ -5,12 +5,10 @@ import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
-
-// import { i18n } from './plugin/i18n'
-// import AutoImport from 'unplugin-auto-import/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import VueRouter from 'unplugin-vue-router/vite'
 import { layouts, autoImports, components, cssEngine, devtools, markdown, pwa } from './stacks'
+// import { i18n } from './plugin/i18n'
 // import { fonts } from './plugin/fonts'
 
 // const isMaintenanceMode = config.app.maintenanceMode

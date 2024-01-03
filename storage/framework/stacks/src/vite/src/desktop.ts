@@ -2,8 +2,7 @@ import type { ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
 import generateSitemap from 'vite-ssg-sitemap'
-import Components from 'unplugin-vue-components/vite'
-import { layouts, pages, uiEngine, autoImports, cssEngine } from './stacks'
+import { layouts, pages, uiEngine, autoImports, cssEngine, components } from './stacks'
 import { defineConfig } from '.'
 
 export const pagesConfig = {
@@ -22,21 +21,13 @@ export const pagesConfig = {
   },
 
   plugins: [
-    uiEngine(),
-    Components({
-      // allow auto load markdown components under `./src/components/`
-      extensions: ['stx', 'vue', 'md'],
-      // allow auto import and register components used in markdown
-      include: [/\.stx$/, /\.stx\?stx/, /\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: p.projectStoragePath('framework/dashboard/components.d.ts'),
-    }),
-
-    autoImports(),
-
     pages({
       routesFolder: p.projectStoragePath('framework/dashboard/src/pages'),
     }),
 
+    uiEngine(),
+    components(),
+    autoImports(),
     cssEngine(),
 
     layouts({

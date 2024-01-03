@@ -11,7 +11,7 @@ export function layouts(options?: LayoutOptions, isMain = true) {
     return Layouts(options)
 
   return Layouts({
-    layoutsDir: p.resourcesPath('layouts'),
+    layoutsDirs: p.resourcesPath('layouts'),
     defaultLayout: p.resourcesPath('layouts/default.stx'),
     exclude: [
       p.resourcesPath('layouts/mails'),
