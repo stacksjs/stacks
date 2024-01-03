@@ -180,7 +180,7 @@ export function isIpv6(address: AddressInfo): boolean {
   // in node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
   // See: https://github.com/laravel/vite-plugin/issues/103
 
-    // @ts-expect-error-next-line
+  // @ts-expect-error-next-line
     || address.family === 6
 }
 

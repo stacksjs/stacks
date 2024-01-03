@@ -112,7 +112,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
-          //
+        //
           .map((handler: any) => {
             if (evt)
               return handler(type, evt)

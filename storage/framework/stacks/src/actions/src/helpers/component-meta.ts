@@ -27,7 +27,7 @@ export function generateComponentMeta() {
   )
 
   const filterMeta = (meta: ComponentMeta): ComponentApi => {
-  // const clonedMeta: ComponentMeta = JSON.parse(JSON.stringify(meta))
+    // const clonedMeta: ComponentMeta = JSON.parse(JSON.stringify(meta))
 
     // Exclude global props
     const props: ComponentApiProps[] = []
