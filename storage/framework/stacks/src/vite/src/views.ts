@@ -28,7 +28,7 @@ export default defineConfig({
     },
   },
 
-  root: p.frameworkStoragePath('views'),
+  root: p.frameworkStoragePath('views/web'),
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',

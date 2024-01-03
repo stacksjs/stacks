@@ -4,8 +4,8 @@ import { routes } from 'vue-router/auto/routes'
 import App from './App.stx'
 import type { UserModule } from './types'
 import '@unocss/reset/tailwind.css'
-import '../../../../resources/assets/styles/main.css'
-import 'uno.css'
+import '../../../../../resources/assets/styles/main.css'
+import 'unocss'
 
 // import Previewer from 'virtual:vue-component-preview'
 // const routes = setupLayouts(generatedRoutes)
