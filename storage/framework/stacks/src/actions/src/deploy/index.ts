@@ -14,22 +14,26 @@ if (storage.hasFiles(p.projectPath('docs'))) {
   })
 }
 
-if (config.app.docMode === true) { // when it's doc mode, we don't need to build views
+if (config.app.docMode !== true) { // when in docs mode, we disregard building views
   await runCommand('bun run build', {
     cwd: p.frameworkStoragePath('views'),
   })
 }
 
-await runCommand('bun run build-layer', {
-  cwd: p.corePath('cloud'),
+// await runCommand('bun run build-layer', {
+//   cwd: p.corePath('cloud'),
+// })
+
+// await runCommand('bun run build-edge', {
+//   cwd: p.corePath('cloud'),
+// })
+
+await runCommand('bun zip/api.ts', {
+  cwd: p.actionsPath(),
 })
 
-await runCommand('bun run build-edge', {
-  cwd: p.corePath('cloud'),
-})
-
-await runCommand('bun actions/src/zip/api.ts', {
-  cwd: p.frameworkPath('core'),
+await runCommand('bun zip.ts', {
+  cwd: p.cloudPath(),
 })
 
 log.info('Preparing deployment...')

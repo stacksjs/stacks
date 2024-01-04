@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "bootstrap": "bunx cdk bootstrap",
-    "deploy": "cd ../.. && bun run build && cd docs && bun run build && cd ../src/cloud && bunx cdk deploy --require-approval never",
+    "deploy": "cd ../.. && bun run build && cd ../docs && bun run build && cd ../stacks/src/cloud && bunx cdk deploy --require-approval never",
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
     "build-layer": "bun ./src/runtime/scripts/build-layer.ts",
@@ -113,6 +113,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^4.1.3"
+    "oclif": "^4.1.3",
+    "source-map-support": "^0.5.21"
   }
 }

@@ -80,15 +80,130 @@ const plans = [
       </div>
       <div class="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
         <!-- <Plan
-          v-for="(plan, index) in plans"
           :key="index"
-          :name="plan.name"
-          :price="plan.price"
-          :description="plan.description"
-          :href="plan.href"
-          :features="plan.features"
-          :featured="plan.featured"
+          :name="plans[0].name"
+          :price="plans[0].price"
+          :description="plans[0].description"
+          :href="plans[0].href"
+          :features="plans[0].features"
+          :featured="plans[0].featured"
         /> -->
+        <section
+          class="flex flex-col rounded-3xl px-6 sm:px-8"
+          :class="[
+            false ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
+          ]"
+        >
+          <h3 class="mt-5 font-display text-lg text-white">
+            {{ plans[0].name }}
+          </h3>
+          <p
+            class="mt-2 text-base"
+            :class="[
+              false ? 'text-white' : 'text-slate-400',
+            ]"
+          >
+            {{ plans[0].description }}
+          </p>
+          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+            {{ plans[0].price }}
+          </p>
+          <ul
+            role="list"
+            class="order-last mt-10 flex flex-col gap-y-3 text-sm"
+            :class="[
+              false ? 'text-white' : 'text-slate-200',
+            ]"
+          >
+          </ul>
+          <Button
+            :href="plans[0].href"
+            :variant="false ? 'solid' : 'outline'"
+            color="white"
+            class="mt-8"
+            :aria-label="`Get started with the ${plans[0].name} plan for ${plans[0].price}`"
+          >
+            Get started
+          </Button>
+        </section>
+
+        <section
+          class="flex flex-col rounded-3xl px-6 sm:px-8"
+          :class="[
+            true ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
+          ]"
+        >
+          <h3 class="mt-5 font-display text-lg text-white">
+            {{ plans[1].name }}
+          </h3>
+          <p
+            class="mt-2 text-base"
+            :class="[
+              true ? 'text-white' : 'text-slate-400',
+            ]"
+          >
+            {{ plans[1].description }}
+          </p>
+          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+            {{ plans[1].price }}
+          </p>
+          <ul
+            role="list"
+            class="order-last mt-10 flex flex-col gap-y-3 text-sm"
+            :class="[
+              true ? 'text-white' : 'text-slate-200',
+            ]"
+          >
+          </ul>
+          <Button
+            :href="plans[1].href"
+            :variant="true ? 'solid' : 'outline'"
+            color="white"
+            class="mt-8"
+            :aria-label="`Get started with the ${plans[1].name} plan for ${plans[1].price}`"
+          >
+            Get started
+          </Button>
+        </section>
+
+        <section
+          class="flex flex-col rounded-3xl px-6 sm:px-8"
+          :class="[
+            false ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
+          ]"
+        >
+          <h3 class="mt-5 font-display text-lg text-white">
+            {{ plans[2].name }}
+          </h3>
+          <p
+            class="mt-2 text-base"
+            :class="[
+              false ? 'text-white' : 'text-slate-400',
+            ]"
+          >
+            {{ plans[2].description }}
+          </p>
+          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+            {{ plans[2].price }}
+          </p>
+          <ul
+            role="list"
+            class="order-last mt-10 flex flex-col gap-y-3 text-sm"
+            :class="[
+              false ? 'text-white' : 'text-slate-200',
+            ]"
+          >
+          </ul>
+          <Button
+            :href="plans[2].href"
+            :variant="false ? 'solid' : 'outline'"
+            color="white"
+            class="mt-8"
+            :aria-label="`Get started with the ${plans[2].name} plan for ${plans[2].price}`"
+          >
+            Get started
+          </Button>
+        </section>
       </div>
     </Container>
   </section>

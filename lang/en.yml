@@ -1,8 +1,8 @@
 button:
-  about: About
-  back: Back
-  go: GO
-  home: Home
+  about: "About"
+  back: "Back"
+  go: "GO"
+  home: "Home"
   toggle_dark: "Toggle dark mode"
   toggle_langs: "Change languages"
 intro:
@@ -11,4 +11,4 @@ intro:
   hi: "Hi, {name}!"
   aka: "Also known as"
   whats_your_name: "What’s your name?"
-not-found: "Not found"
+  not_found: "Not found"

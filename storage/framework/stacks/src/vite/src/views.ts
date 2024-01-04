@@ -4,10 +4,8 @@ import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import { config } from '@stacksjs/config'
 import VueMacros from 'unplugin-vue-macros/vite'
-import VueRouter from 'unplugin-vue-router/vite'
-import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa } from './stacks'
+import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 
 // import { fonts } from './plugin/fonts'
 
@@ -25,6 +23,11 @@ export default defineConfig({
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
+
+  assetsInclude: [
+    p.resourcesPath('assets/*'),
+    p.resourcesPath('assets/**/*'),
+  ],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
@@ -47,16 +50,7 @@ export default defineConfig({
       },
     }),
 
-    // https://github.com/posva/unplugin-vue-router
-    VueRouter({
-      extensions: ['.stx', '.md'],
-      dts: p.frameworkStoragePath('types/router.d.ts'),
-      routesFolder: [
-        p.resourcesPath('views'),
-      ],
-      logs: config.app.debug || false,
-    }),
-
+    router(),
     layouts(),
     autoImports(),
     components(),

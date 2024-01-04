@@ -33,7 +33,7 @@ const companies = ref([
     </h1>
     <p class="mx-auto mt-6 max-w-2xl text-lg tracking-tight text-slate-700">
       Stacks is a type-safe full-stack framework for Artisans.
-      <br>Rapid development, meeting the best team’s full stack needs.
+      <br>Rapid development, for the best full-stack teams, or individuals.
     </p>
     <div class="mt-10 flex justify-center gap-x-6">
       <Button href="/register">
