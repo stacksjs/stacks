@@ -4,18 +4,16 @@ import backgroundImage from '../../assets/images/background-faqs.jpg'
 const faqs = [
   [
     {
-      question: 'Does TaxPal handle VAT?',
-      answer:
-        'Well no, but if you move your company offshore you can probably ignore it.',
+      question: 'Where is the database folder?',
+      answer: 'Well no, but if you move your company offshore you can probably ignore it.',
     },
     {
-      question: 'Can I pay for my subscription via purchase order?',
+      question: 'What about the HTTP folder?',
       answer: 'Absolutely, we are happy to take your money in all forms.',
     },
     {
       question: 'How do I apply for a job at TaxPal?',
-      answer:
-        'We only hire our customers, so subscribe for a minimum of 6 months and then let’s talk.',
+      answer: 'We only hire our customers, so subscribe for a minimum of 6 months and then let’s talk.',
     },
   ],
   [

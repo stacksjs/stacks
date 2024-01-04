@@ -8,7 +8,7 @@ import Button from '../Button.stx'
       <nav class="relative z-50 flex justify-between">
         <div class="flex items-center md:gap-x-12">
           <router-link to="#" aria-label="Home">
-            <Logo class="h-10 w-auto" />
+            <Logo class="h-10 w-auto pb-1" />
           </router-link>
 
           <div class="hidden md:flex md:gap-x-6">
@@ -37,11 +37,11 @@ import Button from '../Button.stx'
             </NavLink>
           </div>
 
-          <div class="hidden md:block">
+          <!-- <div class="hidden md:block">
             <NavLink href="/login">
               Sign in
             </NavLink>
-          </div>
+          </div> -->
 
           <Button href="/docs" color="blue" variant="solid">
             <span>
