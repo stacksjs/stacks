@@ -86,7 +86,7 @@
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^10.7.1",
     "@vueuse/shared": "^10.7.1",
-    "defu": "^6.1.3",
+    "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
     "dinero.js": "2.0.0-alpha.14",
