@@ -7,9 +7,9 @@ import screenshotProfitLoss from '../../assets/images/screenshots/profit-loss.pn
 
 const features = [
   {
-    name: 'Reporting',
-    summary: 'Stay on top of things with always up-to-date reporting features.',
-    description: 'We talked about reporting in the section above but we needed three items here, so mentioning it one more time for posterity.',
+    name: 'Dashboard',
+    summary: 'The UI to your application.',
+    description: 'Whether you are a developer or a client, The Dashboard visualizes your data. Easily extend your admin panel.',
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
   },
@@ -39,7 +39,7 @@ const selectedIndex = computed(() => tabIndex.value)
     <Container>
       <div class="mx-auto max-w-2xl md:text-center">
         <h2 class="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-          Coding the simple way.
+          A Developer Experience Like No Other
         </h2>
         <p class="mt-4 text-lg tracking-tight text-slate-700">
           Remove the boilerplate. Remove the repetition. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam

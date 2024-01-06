@@ -10,13 +10,12 @@ import screenshotVatReturns from '../../assets/images/screenshots/vat-returns.pn
 const features = [
   {
     title: 'Frontend',
-    description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora in cum blanditiis? Qui omnis unde.',
-    // image: screenshotPayroll,
+    description: 'Powered by a progressive UI Engine, building application interfaces has never been easier.',
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
   {
     title: 'Backend',
-    description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora in cum blanditiis? Qui omnis unde.',
+    description: 'Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.',
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
   {
@@ -58,8 +57,7 @@ onUnmounted(() => {
           Build. Ship. Grow.
         </h2>
         <p class="mt-6 text-lg tracking-tight text-blue-100">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-          necessitatibus incidunt ut officiis explicabo inventore.
+          Stacks helps you build, ship, and grow your SaaS business with its powerful set of tools.
         </p>
       </div>
 
@@ -133,6 +131,7 @@ onUnmounted(() => {
             </p>
           </Tab>
         </TabList>
+
         <TabPanels class="lg:col-span-7">
           <TabPanel>
             <div class="relative sm:px-6 lg:hidden">
@@ -142,8 +141,6 @@ onUnmounted(() => {
               </p>
             </div>
             <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-              {{ screenshotExpenses }}
-              <!-- <img src="/expenses.png" alt="" class="w-full"> -->
               <img src="https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75" alt="" class="w-full">
             </div>
           </TabPanel>

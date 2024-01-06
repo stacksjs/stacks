@@ -21,7 +21,7 @@ import backgroundImage from '../../assets/images/background-call-to-action.jpg'
           It’s time to take control of your books. Buy our software so you can
           feel like you’re doing something productive.
         </p>
-        <Button href="/register" variant="solid" color="blue" class="mt-10">
+        <Button href="/register" variant="solid" color="white" class="mt-10">
           View Documentation
         </Button>
       </div>

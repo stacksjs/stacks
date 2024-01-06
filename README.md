@@ -79,13 +79,13 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 - 🔐 **Firewall** _native web application firewall support_
 - 📦 **Storage** _unlimited cloud storage & automatic backups_
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
-- 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure_
+- 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure (AWS, Google next?)_
 
 ### Stacks CI/CD
 
 _Focus on coding, not publishing._
 
-- 🚀 **Deployment Manager** _take the sweat out of production deployments (AWS, Google next?)_
+- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero setup push-to-deploy_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
 ### Stacks DX
