@@ -61,7 +61,7 @@ export class Cloud extends Stack {
 
     // new DashboardStack(this)
 
-    new ComputeStack(this, {
+    const api = new ComputeStack(this, {
       ...props,
       vpc: network.vpc,
       fileSystem: fileSystem.fileSystem,
@@ -79,6 +79,8 @@ export class Cloud extends Stack {
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
       zone: dns.zone,
+      webServer: api.apiServer,
+      webServerUrl: api.apiServerUrl,
     })
 
     new DeploymentStack(this, {

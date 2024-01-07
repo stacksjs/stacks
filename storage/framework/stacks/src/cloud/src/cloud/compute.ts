@@ -5,7 +5,7 @@ import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
-import type { EnvKey } from '../../../../../stack/env'
+import type { EnvKey } from '../../../../../stacks/env'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
@@ -15,6 +15,9 @@ export interface ComputeStackProps extends NestedCloudProps {
 }
 
 export class ComputeStack {
+  apiServer: lambda.Function
+  apiServerUrl: lambda.FunctionUrl
+
   constructor(scope: Construct, props: ComputeStackProps) {
     const vpc = props.vpc
     const fileSystem = props.fileSystem
@@ -26,7 +29,7 @@ export class ComputeStack {
     //   directory: p.cloudPath('src/server'),
     // })
 
-    const webServer = new lambda.Function(scope, 'WebServer', {
+    this.apiServer = new lambda.Function(scope, 'WebServer', {
       description: 'The web server for the Stacks application',
       code: lambda.Code.fromAssetImage(p.cloudPath('src/server')),
       handler: lambda.Handler.FROM_IMAGE,
@@ -51,18 +54,18 @@ export class ComputeStack {
       },
     })
 
-    secrets.grantRead(webServer)
-    webServer.addEnvironment('SECRETS_ARN', secrets.secretArn)
+    secrets.grantRead(this.apiServer)
+    this.apiServer.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
-    const api = new lambda.FunctionUrl(scope, 'StacksServerUrl', {
-      function: webServer,
+    this.apiServerUrl = new lambda.FunctionUrl(scope, 'StacksServerUrl', {
+      function: this.apiServer,
       authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
       cors: {
         allowedOrigins: ['*'],
       },
     })
 
-    const apiVanityUrl = api.url
+    const apiVanityUrl = this.apiServerUrl.url
     const apiPrefix = 'api'
 
     new Output(scope, 'ApiUrl', {

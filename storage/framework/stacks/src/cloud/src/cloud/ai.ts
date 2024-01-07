@@ -97,11 +97,11 @@ export class AiStack {
     // })
 
     new Output(scope, 'AiVanityAskApiUrl', {
-      value: `${api.url}/ask`,
+      value: `${api.url}ask`,
     })
 
     new Output(scope, 'AiVanitySummarizeApiUrl', {
-      value: `${api.url}/summarize`,
+      value: `${api.url}summarize`,
     })
 
     new Output(scope, 'AiAskApiUrl', {

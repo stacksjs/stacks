@@ -14,7 +14,7 @@ import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
-import type { EnvKey } from '../../../../../stack/env'
+import type { EnvKey } from '../../../../../stacks/env'
 
 export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
@@ -23,6 +23,8 @@ export interface CdnStackProps extends NestedCloudProps {
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
+  webServer: lambda.Function
+  webServerUrl: lambda.FunctionUrl
 }
 
 export class CdnStack {
@@ -190,29 +192,25 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const origin = new origins.HttpOrigin(props.lb.loadBalancerDnsName, {
+    const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(props.webServerUrl.url, {
       originPath: path,
-      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
     })
-    // const origin = (path: '/api' | '/api/*' = '/api') => new origins.LoadBalancerV2Origin(props.lb, {
-    //   originPath: path,
-    //   protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-    // })
 
     return {
       '/api': {
-        origin,
+        origin: origin(),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: this.setApiCachePolicy(scope),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       '/api/*': {
-        origin,
+        origin: origin('/api/*'),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        // cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: this.apiCachePolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
@@ -252,13 +250,13 @@ export class CdnStack {
     return {
       '/ai/ask': {
         origin: new origins.HttpOrigin('9qp44a2b7e.execute-api.us-east-1.amazonaws.com', {
-          originPath: '/prod',
+          originPath: '/ai',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
         }),
         compress: false,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
+        cachePolicy: new cloudfront.CachePolicy(scope, 'AiCachePolicy', {
           comment: 'Stacks AI Cache Policy',
           cachePolicyName: `${this.props.slug}-${this.props.appEnv}-ai-cache-policy`,
           defaultTtl: Duration.seconds(0),
@@ -300,7 +298,7 @@ export class CdnStack {
       const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
       keysToRemove.forEach(key => delete env[key as EnvKey])
 
-      // behaviorOptions = this.apiBehaviorOptions(scope, props)
+      behaviorOptions = this.apiBehaviorOptions(scope, props)
     }
 
     // if docMode is used, we don't need to add a behavior for the docs

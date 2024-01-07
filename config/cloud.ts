@@ -32,8 +32,8 @@ export default {
   },
 
   ai: true, // deploys AI endpoints
-  docs: true, // deploys project documentation
-  api: true, // deploys project API
+  docs: true, // deploys documentation
+  api: true, // deploys API
   fileSystem: true, // enables file system
 
   // compute: {},
