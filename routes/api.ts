@@ -1,4 +1,10 @@
 // the only difference between web and api routes is that the API middleware is associated by default
+import { route } from '@stacksjs/router'
+
+route.get('/', () => 'hello world 1')
+route.get('/api/', () => 'hello world 2')
+route.get('/api/welcome', () => 'hello world 3')
+route.get('/welcome', () => 'hello world 4')
 
 // route.group({ prefix: '/users' }, () => {
 //   route.before(async (params) => {
