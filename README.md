@@ -85,7 +85,7 @@ _Create your personal or professional Vercel-like cloud, based on MIT-licensed O
 
 _Focus on coding, not publishing._
 
-- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero setup push-to-deploy_
+- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero-setup push-to-deploy_
 - 0️⃣ **Zero Downtime** _deploy with confidence using a zero-downtime deployment strategy_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 

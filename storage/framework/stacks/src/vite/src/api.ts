@@ -5,7 +5,7 @@ export const apiConfig: ViteConfig = {
   server: {
     port: 3334,
     proxy: {
-      '/': 'http://localhost:3999',
+      '/': 'http://127.0.0.1:3999',
     },
   },
 }

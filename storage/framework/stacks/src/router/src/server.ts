@@ -9,20 +9,28 @@ import { route } from '.'
 interface ServeOptions {
   host?: string
   port?: number
-  // Add other options as needed
+  tunnel?: boolean
 }
 
 export async function serve(options: ServeOptions = {}) {
+  const hostname = options.host || options.tunnel ? await localUrl({ type: 'backend' }) : '127.0.0.1'
+  const port = options.port || 3000
+
   Bun.serve({
-    hostname: options.host || await localUrl({ type: 'backend' }),
-    port: options.port || 3000,
+    hostname,
+    port,
+
     fetch(req: Request) {
+      // eslint-disable-next-line no-console
+      console.log(req)
       return serverResponse(req)
     },
   })
 }
 
 export async function serverResponse(req: Request) {
+  // eslint-disable-next-line no-console
+  console.log('serverResponse', req)
   const routesList: Route[] = await route.getRoutes()
   const url = new URL(req.url)
 

@@ -14,8 +14,7 @@ export async function runFrontendDevServer(options: DevOptions) {
 }
 
 export async function runBackendDevServer(options: DevOptions) {
-  log.info('Starting your API...')
-  await runAction(Action.DevApi, options)
+  runApiDevServer(options)
 }
 
 export async function runApiDevServer(options: DevOptions) {
