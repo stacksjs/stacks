@@ -105,7 +105,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stylistic/eslint-plugin-migrate": "^1.5.3",
     "@types/eslint": "^8.56.1",
-    "@types/node": "^20.10.6",
+    "@types/node": "^20.10.7",
     "@unocss/eslint-plugin": "^0.58.3",
     "eslint": "npm:eslint-ts-patch@^8.55.0-1",
     "eslint-flat-config-viewer": "^0.1.4",
