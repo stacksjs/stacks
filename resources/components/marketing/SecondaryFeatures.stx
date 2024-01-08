@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
 
-import screenshotContacts from '../../assets/images/screenshots/contacts.png'
-import screenshotInventory from '../../assets/images/screenshots/inventory.png'
-import screenshotProfitLoss from '../../assets/images/screenshots/profit-loss.png'
-
 const features = [
   {
     name: 'Dashboard',

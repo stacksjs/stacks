@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
-import screenshotExpenses1 from '../../../public/expenses.png'
-import screenshotExpenses from '../../assets/images/screenshots/expenses.png'
-import screenshotPayroll from '../../assets/images/screenshots/payroll.png'
-import screenshotReporting from '../../assets/images/screenshots/reporting.png'
-import screenshotVatReturns from '../../assets/images/screenshots/vat-returns.png'
+
 // import backgroundImage from '../../assets/images/background-features.jpg'
 
 const features = [
@@ -33,7 +29,7 @@ const features = [
 const tabIndex = ref(0)
 const tabOrientation = ref('vertical')
 
-const onMediaQueryChange = (event) => {
+function onMediaQueryChange(event) {
   tabOrientation.value = event.matches ? 'vertical' : 'horizontal'
 }
 

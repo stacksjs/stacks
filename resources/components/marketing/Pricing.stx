@@ -114,8 +114,7 @@ const plans = [
             :class="[
               false ? 'text-white' : 'text-slate-200',
             ]"
-          >
-          </ul>
+          />
           <Button
             :href="plans[0].href"
             :variant="false ? 'solid' : 'outline'"
@@ -153,8 +152,7 @@ const plans = [
             :class="[
               true ? 'text-white' : 'text-slate-200',
             ]"
-          >
-          </ul>
+          />
           <Button
             :href="plans[1].href"
             :variant="true ? 'solid' : 'outline'"
@@ -192,8 +190,7 @@ const plans = [
             :class="[
               false ? 'text-white' : 'text-slate-200',
             ]"
-          >
-          </ul>
+          />
           <Button
             :href="plans[2].href"
             :variant="false ? 'solid' : 'outline'"

@@ -5,29 +5,29 @@ const faqs = [
   [
     {
       question: 'Where is the database folder?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
     {
       question: 'And where is the HTTP folder?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
     {
       question: 'How do I deploy an application?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
   ],
   [
     {
       question: 'Which cloud providers are supported?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
     {
       question: 'How do I release a component library?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
     {
       question: 'What is Buddy?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
   ],
   [
@@ -37,11 +37,11 @@ const faqs = [
     },
     {
       question: 'Can I use it in commercial projects?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
     {
       question: 'How do I contribute?',
-      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.'
+      answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam sed.',
     },
   ],
 ]
