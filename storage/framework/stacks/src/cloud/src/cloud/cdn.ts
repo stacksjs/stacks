@@ -1,13 +1,6 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
-import {
-  Duration,
-  CfnOutput as Output,
-  aws_cloudfront as cloudfront,
-  aws_cloudfront_origins as origins,
-  aws_route53 as route53,
-  aws_route53_targets as targets,
-} from 'aws-cdk-lib'
+import { Duration, Fn, CfnOutput as Output, aws_cloudfront as cloudfront, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { hasFiles } from '@stacksjs/storage'
@@ -192,10 +185,13 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const origin = (path: '/api' | '/api/*' = '/api') => new origins.HttpOrigin(props.webServerUrl.url, {
-      originPath: path,
-      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-    })
+    const hostname = Fn.select(2, Fn.split('/', props.webServerUrl.url))
+    const origin = (path: '/api' | '/api/*' = '/api') => {
+      return new origins.HttpOrigin(hostname, {
+        originPath: path,
+        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+      })
+    }
 
     return {
       '/api': {

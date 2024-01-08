@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, aws_lambda as lambda, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import { Duration, Fn, CfnOutput as Output, aws_lambda as lambda, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
@@ -65,16 +65,14 @@ export class ComputeStack {
       },
     })
 
-    const apiVanityUrl = this.apiServerUrl.url
     const apiPrefix = 'api'
-
     new Output(scope, 'ApiUrl', {
       value: `https://${props.domain}/${apiPrefix}`,
       description: 'The URL of the deployed application',
     })
 
     new Output(scope, 'ApiVanityUrl', {
-      value: apiVanityUrl,
+      value: this.apiServerUrl.url,
       description: 'The Vanity URL of the deployed application',
     })
   }
