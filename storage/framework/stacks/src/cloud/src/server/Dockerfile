@@ -17,4 +17,4 @@ COPY --from=builder /tmp/index ${LAMBDA_TASK_ROOT}
 COPY --from=builder /tmp/bootstrap ${LAMBDA_RUNTIME_DIR}
 
 # Set our handler method
-CMD ["index.hello"]
+CMD ["index.fetch"]

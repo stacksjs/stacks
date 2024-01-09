@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
+import { transformerTwoslash } from 'vitepress-plugin-twoslash'
 import userConfig from '../../../../config/docs'
 import { analyticsHead, faviconHead } from './head'
 
@@ -50,6 +51,12 @@ export default defineConfig({
     ...faviconHead,
     ...analyticsHead,
   ],
+
+  markdown: {
+    codeTransformers: [
+      transformerTwoslash(),
+    ],
+  },
 
   ...userConfig,
 })

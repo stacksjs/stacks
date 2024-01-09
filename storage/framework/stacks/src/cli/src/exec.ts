@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import type { CliOptions, StacksError, Subprocess, SyncSubprocess } from '@stacksjs/types'
+import type { CliOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 /**
@@ -60,23 +60,21 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * @returns The result of the command.
  * @example
  * ```ts
- * const result = execSync('ls')
+ * const output = execSync('ls')
  *
- * if (result.isErr())
- *   console.error(result.error)
- * else
- *   console.log(result)
+ * console.log(output)
  * ```
  * @example
  * ```ts
- * const result = execSync('ls', { cwd: '/home' })
+ * const output = execSync('ls', { cwd: '/home' })
  * ```
  */
-export function execSync(command: string | string[], options?: CliOptions): Result<SyncSubprocess, Error> {
+export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
   const cmd = Array.isArray(command) ? command : command.split(' ')
   const proc = Bun.spawnSync(cmd, {
     ...options,
-    stdout: options?.stdout ?? 'inherit',
+    // stdin: 'inherit',
+    stdout: options?.stdout ?? 'pipe',
     stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? import.meta.dir,
     // env: { ...Bun.env, ...options?.env },
@@ -87,8 +85,5 @@ export function execSync(command: string | string[], options?: CliOptions): Resu
     },
   })
 
-  if (proc.success)
-    return ok(proc)
-
-  return err(handleError(`Failed to execute command: ${cmd.join(' ')}`))
+  return proc.stdout.toString()
 }

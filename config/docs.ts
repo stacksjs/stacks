@@ -1,3 +1,4 @@
+import { SocialLinkIcon } from '@stacksjs/types'
 import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
@@ -265,9 +266,9 @@ export default {
     },
 
     socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-      { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      { icon: 'discord', link: 'https://discord.gg/stacksjs' },
+      { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
+      { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
+      { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
     ],
 
     // algolia: services.algolia,

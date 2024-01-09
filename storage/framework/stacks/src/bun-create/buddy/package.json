@@ -140,8 +140,13 @@
     "storage/framework/*"
   ],
   "bun-create": {
-    "preinstall": ["echo 'Installing...'", "git clone https://github.com/stacksjs/stacks.git ."],
-    "postinstall": ["echo 'Done!'"],
+    "preinstall": [
+      "echo 'Installing...'",
+      "git clone https://github.com/stacksjs/stacks.git ."
+    ],
+    "postinstall": [
+      "echo 'Done!'"
+    ],
     "start": "bun run echo 'Hello world!'"
   }
 }

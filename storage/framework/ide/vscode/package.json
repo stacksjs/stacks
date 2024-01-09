@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/stacksjs/stacks.git",
-    "directory": "./stacks/vscode"
+    "directory": "./storage/framework/ide/vscode"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -56,7 +56,8 @@
     "mikestead.dotenv",
     "pflannery.vscode-versionlens",
     "foxundermoon.shell-format",
-    "mylesmurphy.prettify-ts"
+    "mylesmurphy.prettify-ts",
+    "Orta.vscode-twoslash-queries"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.22.0"

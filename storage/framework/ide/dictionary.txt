@@ -184,6 +184,7 @@ opensearch
 opensearchservice
 openweb
 openweblabs
+orta
 outdir
 outfile
 outro
@@ -259,6 +260,7 @@ treeshaking
 triggerable
 tsdoc
 tsup
+twoslash
 typecheck
 typesense
 unconfig

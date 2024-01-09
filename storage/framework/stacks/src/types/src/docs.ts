@@ -9,14 +9,14 @@ export interface SocialLink {
   ariaLabel?: string
 }
 
-export type SocialLinkIcon =
-  | 'discord'
-  | 'facebook'
-  | 'github'
-  | 'instagram'
-  | 'linkedin'
-  | 'mastodon'
-  | 'slack'
-  | 'twitter'
-  | 'youtube'
-  | { svg: string }
+export enum SocialLinkIcon {
+  Discord = 'discord',
+  Facebook = 'facebook',
+  GitHub = 'github',
+  Instagram = 'instagram',
+  LinkedIn = 'linkedin',
+  Mastodon = 'mastodon',
+  Slack = 'slack',
+  Twitter = 'twitter',
+  YouTube = 'youtube',
+}

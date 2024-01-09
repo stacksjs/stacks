@@ -57,3 +57,5 @@ const config: UserConfig = {
 }
 
 export default defineConfig(config)
+
+export * from './plugins'
