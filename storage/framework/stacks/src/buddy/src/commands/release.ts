@@ -13,10 +13,10 @@ const descriptions = {
 export function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
-    .option('--verbose', descriptions.verbose, { default: true }) // it's on by default because it requires manual input
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, options)
+      const result = await runAction(Action.Release, { ...options, stdin: 'inherit' })
 
       if (result.isErr()) {
         log.error('Failed to release', result.error)

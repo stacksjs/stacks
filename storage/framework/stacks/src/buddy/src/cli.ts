@@ -24,7 +24,7 @@ async function main() {
   // cmd.generate(buddy)
   cmd.dev(buddy)
   cmd.build(buddy)
-  // cmd.changelog(buddy)
+  cmd.changelog(buddy)
   cmd.clean(buddy)
   cmd.cloud(buddy)
   // cmd.commit(buddy)

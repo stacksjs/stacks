@@ -18,14 +18,14 @@ Now, you can use it in your project:
 ```js
 import {
   // pluralize
-  isPlural,
-  isSingular,
-  singular,
-  plural,
   addIrregularRule,
   addPluralRule,
   addSingularRule,
   addUncountableRule,
+  isPlural,
+  isSingular,
+  singular,
+  plural,
 
   // case
   camelCase,

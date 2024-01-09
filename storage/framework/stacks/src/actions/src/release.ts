@@ -2,14 +2,14 @@
 import { projectPath } from '@stacksjs/path'
 import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
+import { app } from '@stacksjs/config'
 import { runActions } from '.'
-import app from '~/config/app'
 
 await runActions([
   Action.GenerateLibraryEntries, // generates the package/library entry points
   Action.LintFix, // ensure there are no lint errors
   // Action.Test, // run the tests
-  // Action.Bump, // bump the versions, create the git tag, generate the changelog, commit & push the changes
-], { verbose: true, cwd: projectPath() }) // debug mode needs to be enabled to see the output due to the interactive prompts
+  Action.Bump, // bump the versions, create the git tag, generate the changelog, commit & push the changes
+], { cwd: projectPath(), stdin: 'inherit' }) // debug mode needs to be enabled to see the output due to the interactive prompts
 
 log.success(`Successfully released ${app.name}`)

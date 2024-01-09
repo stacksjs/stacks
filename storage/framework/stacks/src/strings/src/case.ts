@@ -22,5 +22,6 @@ export {
   pathCase,
   sentenceCase,
   snakeCase,
+  split,
 } from 'change-case'
 export { titleCase } from 'title-case'

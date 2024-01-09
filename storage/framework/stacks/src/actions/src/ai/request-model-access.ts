@@ -12,7 +12,9 @@ import { ai } from '@stacksjs/config'
 process.env.AWS_REGION = 'us-east-1'
 
 config.getCredentials((err) => {
-  if (err) { log.info(err.stack) }
+  if (err) {
+    log.info(err.stack)
+  }
   else if (config.credentials) {
     const { accessKeyId, secretAccessKey, sessionToken } = config.credentials
     log.info('AWS credentials are set', accessKeyId, secretAccessKey, sessionToken)

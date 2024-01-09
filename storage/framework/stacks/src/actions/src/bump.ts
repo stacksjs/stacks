@@ -1,7 +1,7 @@
 import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 
 await runCommand(
-  'bunx bumpp ./package.json ./src/**/package.json ./ide/vscode/package.json --execute "buddy changelog --quiet" --all',
-  { verbose: true, cwd: frameworkPath() },
+  'bunx bumpp ./stacks/package.json ./stacks/src/**/package.json ./ide/vscode/package.json --execute "buddy changelog --quiet" --all',
+  { cwd: p.frameworkStoragePath(), stdin: 'inherit' },
 )

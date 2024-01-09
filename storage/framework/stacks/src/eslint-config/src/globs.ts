@@ -54,6 +54,7 @@ export const GLOB_EXCLUDE = [
   '**/dist',
   '**/package-lock.json',
   '**/yarn.lock',
+  '**/README.md', // TODO: remove this and then ensure there are no problems in our readmes
   '**/pnpm-lock.yaml',
   '**/bun.lockb',
 

@@ -53,7 +53,7 @@ declare global {
   const Request: typeof import('../stacks/src/router/src/request')['Request']
   const Result: typeof import('../stacks/src/error-handling/src/index')['Result']
   const ResultAsync: typeof import('../stacks/src/error-handling/src/index')['ResultAsync']
-  const Router: typeof import('../stacks/src/router/src/index')['Router']
+  const Router: typeof import('../stacks/src/router/src/router')['Router']
   const RuleAny: typeof import('../stacks/src/validation/src/validate')['RuleAny']
   const RuleArray: typeof import('../stacks/src/validation/src/validate')['RuleArray']
   const RuleBoolean: typeof import('../stacks/src/validation/src/validate')['RuleBoolean']
@@ -605,7 +605,7 @@ declare global {
   const results: typeof import('../stacks/src/search-engine/src/index')['results']
   const rimraf: typeof import('../stacks/src/utils/src/delete')['rimraf']
   const root: typeof import('../stacks/src/signals/src/index')['root']
-  const route: typeof import('../stacks/src/router/src/index')['route']
+  const route: typeof import('../stacks/src/router/src/router')['route']
   const routerPath: typeof import('../stacks/src/path/src/index')['routerPath']
   const routesPath: typeof import('../stacks/src/path/src/index')['routesPath']
   const runAction: typeof import('../stacks/src/actions/src/helpers/utils')['runAction']
@@ -990,7 +990,7 @@ declare module 'vue' {
     readonly Request: UnwrapRef<typeof import('../stacks/src/router/src/request')['Request']>
     readonly Result: UnwrapRef<typeof import('../stacks/src/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('../stacks/src/error-handling/src/index')['ResultAsync']>
-    readonly Router: UnwrapRef<typeof import('../stacks/src/router/src/index')['Router']>
+    readonly Router: UnwrapRef<typeof import('../stacks/src/router/src/router')['Router']>
     readonly RuleAny: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleAny']>
     readonly RuleArray: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleArray']>
     readonly RuleBoolean: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleBoolean']>
@@ -1523,7 +1523,7 @@ declare module 'vue' {
     readonly results: UnwrapRef<typeof import('../stacks/src/search-engine/src/index')['results']>
     readonly rimraf: UnwrapRef<typeof import('../stacks/src/utils/src/delete')['rimraf']>
     readonly root: UnwrapRef<typeof import('../stacks/src/signals/src/index')['root']>
-    readonly route: UnwrapRef<typeof import('../stacks/src/router/src/index')['route']>
+    readonly route: UnwrapRef<typeof import('../stacks/src/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../stacks/src/path/src/index')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../stacks/src/path/src/index')['routesPath']>
     readonly runAction: UnwrapRef<typeof import('../stacks/src/actions/src/helpers/utils')['runAction']>
@@ -1895,7 +1895,7 @@ declare module '@vue/runtime-core' {
     readonly Request: UnwrapRef<typeof import('../stacks/src/router/src/request')['Request']>
     readonly Result: UnwrapRef<typeof import('../stacks/src/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('../stacks/src/error-handling/src/index')['ResultAsync']>
-    readonly Router: UnwrapRef<typeof import('../stacks/src/router/src/index')['Router']>
+    readonly Router: UnwrapRef<typeof import('../stacks/src/router/src/router')['Router']>
     readonly RuleAny: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleAny']>
     readonly RuleArray: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleArray']>
     readonly RuleBoolean: UnwrapRef<typeof import('../stacks/src/validation/src/validate')['RuleBoolean']>
@@ -2428,7 +2428,7 @@ declare module '@vue/runtime-core' {
     readonly results: UnwrapRef<typeof import('../stacks/src/search-engine/src/index')['results']>
     readonly rimraf: UnwrapRef<typeof import('../stacks/src/utils/src/delete')['rimraf']>
     readonly root: UnwrapRef<typeof import('../stacks/src/signals/src/index')['root']>
-    readonly route: UnwrapRef<typeof import('../stacks/src/router/src/index')['route']>
+    readonly route: UnwrapRef<typeof import('../stacks/src/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../stacks/src/path/src/index')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../stacks/src/path/src/index')['routesPath']>
     readonly runAction: UnwrapRef<typeof import('../stacks/src/actions/src/helpers/utils')['runAction']>

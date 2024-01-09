@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
@@ -43,6 +44,7 @@ export function http(buddy: CLI) {
         .join(' ')
 
       const command = `http GET ${domain || config.app.url} ${optionsString}`
+      // eslint-disable-next-line no-console
       console.log(`Running command: ${command}`)
       runCommandSync(command)
 

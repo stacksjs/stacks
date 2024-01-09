@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
@@ -56,10 +57,10 @@ export function dns(buddy: CLI) {
     .option('-p, --pretty', descriptions.pretty, { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
-      let prettyOutput = false
+      // let prettyOutput = false
 
-      if (options.json && options.pretty)
-        prettyOutput = true
+      // if (options.json && options.pretty)
+      //   prettyOutput = true
 
       delete options.pretty
       delete options.p

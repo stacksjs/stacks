@@ -78,12 +78,51 @@ _You may also use any of the following CLI utilities:_
 
 ```js
 import {
-  ansi256Bg, bold, dim, hidden, inverse, italic, link, reset, strikethrough, underline,
-  bgBlack, bgBlue, bgCyan, bgGray, bgGreen, bgLightBlue, bgLightCyan, bgLightGray, bgLightGreen, bgLightMagenta, bgLightRed, bgLightYellow, bgMagenta, bgRed, bgWhite, bgYellow,
-  black, blue, cyan, gray, green, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, magenta, red, white, yellow
+  ansi256Bg,
+  bgBlack,
+  bgBlue,
+  bgCyan,
+  bgGray,
+  bgGreen,
+  bgLightBlue,
+  bgLightCyan,
+  bgLightGray,
+  bgLightGreen,
+  bgLightMagenta,
+  bgLightRed,
+  bgLightYellow,
+  bgMagenta,
+  bgRed,
+  bgWhite,
+  bgYellow,
+  black,
+  blue,
+  bold,
+  cyan,
+  dim,
+  gray,
+  green,
+  hidden,
+  inverse,
+  italic,
+  lightBlue,
+  lightCyan,
+  lightGray,
+  lightGreen,
+  lightMagenta,
+  lightRed,
+  lightYellow,
+  link,
+  magenta,
+  red,
+  reset,
+  strikethrough,
+  underline,
+  white,
+  yellow
 } from '@stacksjs/cli'
 
-log.info(`hello ${bold(italic('world'))`)
+log.info(`hello ${bold(italic('world'))}`)
 ```
 
 To view the full documentation, please visit [https://stacksjs.org/cli](https://stacksjs.org/cli).

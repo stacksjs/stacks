@@ -4,9 +4,9 @@
   any of the components developed.
 -->
 <script setup lang="ts">
-import { Demo } from './dist/index.mjs'
+// import { Demo } from './dist/index.mjs'
 </script>
 
-<template>
+<!-- <template>
   <Demo />
-</template>
+</template> -->
