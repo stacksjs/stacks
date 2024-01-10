@@ -24,7 +24,6 @@ jobs:
   lint:
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -44,14 +43,13 @@ jobs:
         run: cd storage/framework/stacks && bun run build
 
       - name: Lint
-        run: eslint .
+        run: bunx eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -76,7 +74,6 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -108,7 +105,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
 
     steps:
       - name: Checkout Code
