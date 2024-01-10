@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "@antfu/eslint-define-config": "^1.23.0-2",
-    "@eslint-types/jsdoc": "47.0.2",
+    "@eslint-types/jsdoc": "48.0.2",
     "@eslint-types/typescript-eslint": "^6.17.0",
     "@eslint-types/unicorn": "^50.0.1",
     "@stacksjs/cli": "workspace:*",
