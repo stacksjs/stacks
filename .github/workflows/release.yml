@@ -36,19 +36,18 @@ jobs:
       - name: Prepublish # these packages are required for the "Publish framework" step
         run: cd storage/framework/stacks && bun run build
 
-
       - name: Publish framework
         run: cd storage/framework/stacks && bun publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries
-        run: pnpm --filter='./storage/framework/stacks' publish:dummy-libs
+        run: bunx pnpm --filter='./storage/framework/stacks' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './stacks/ide/vscode' release
+        run: bunx pnpm --filter './stacks/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
