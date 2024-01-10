@@ -34,10 +34,10 @@ jobs:
         run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
-        run: pnpm --filter='./storage/framework/stacks' build
+        run: cd storage/framework/stacks && bun build
 
       - name: Publish framework
-        run: pnpm --filter='./storage/framework/stacks' publish:framework
+        run: cd storage/framework/stacks && bun publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
