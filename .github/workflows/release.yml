@@ -36,6 +36,7 @@ jobs:
       - name: Prepublish # these packages are required for the "Publish framework" step
         run: cd storage/framework/stacks && bun build
 
+
       - name: Publish framework
         run: cd storage/framework/stacks && bun publish:framework
         env:
