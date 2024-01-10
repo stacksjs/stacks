@@ -44,7 +44,7 @@ jobs:
         run: cd storage/framework/stacks && bun run build
 
       - name: Lint
-        run: bunx eslint .
+        run: bunx --bun eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
