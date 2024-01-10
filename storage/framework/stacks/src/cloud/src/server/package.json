@@ -1,7 +1,7 @@
 {
   "name": "stacks-cloud",
   "type": "module",
-  "version": "0.58.3",
+  "version": "0.58.4",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.485.0",
     "@aws-sdk/lib-dynamodb": "^3.485.0",
