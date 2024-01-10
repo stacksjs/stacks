@@ -19,7 +19,15 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Install dependencies
+      - name: Use cached node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            nodeModules-
+
+      - name: Install Dependencies
         run: bun install
 
       - name: Set Application Key
