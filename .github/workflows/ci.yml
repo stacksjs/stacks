@@ -40,11 +40,11 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Lint
+      - name: Build Core
         run: cd storage/framework/stacks && bun run build
 
       - name: Lint
-        run: bunx eslint
+        run: bunx eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
