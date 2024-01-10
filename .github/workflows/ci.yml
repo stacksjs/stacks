@@ -37,7 +37,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Use cached node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: nodeModules-${{ hashFiles('**/bun.lockb') }}
@@ -69,7 +69,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Use cached node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: nodeModules-${{ hashFiles('**/bun.lockb') }}
@@ -101,7 +101,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Use cached node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: nodeModules-${{ hashFiles('**/bun.lockb') }}
@@ -138,7 +138,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Use cached node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: nodeModules-${{ hashFiles('**/bun.lockb') }}
