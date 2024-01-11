@@ -5,7 +5,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, prompt, runCommand } from '@stacksjs/cli'
 import { sleep } from '@stacksjs/utils'
-import { frameworkStoragePath } from '@stacksjs/path'
+import { libsPath } from '@stacksjs/path'
 
 export function dev(buddy: CLI) {
   const descriptions = {
@@ -131,7 +131,7 @@ export function dev(buddy: CLI) {
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
       const result = await runCommand('bun run dev', {
-        cwd: frameworkStoragePath('libs/components/vue'),
+        cwd: libsPath('components/vue'),
         // silent: !options.verbose,
       })
 

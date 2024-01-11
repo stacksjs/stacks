@@ -6,6 +6,6 @@ await runCommand('buddy changelog --quiet', {
 })
 
 await runCommand(
-  'bunx bumpp ./package.json ./src/**/package.json ../ide/vscode/package.json --all',
-  { cwd: p.frameworkStoragePath('stacks'), stdin: 'inherit' },
+  'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all',
+  { cwd: p.frameworkPath(), stdin: 'inherit' },
 )

@@ -10,13 +10,13 @@ await runCommand('bun run build', {
 
 if (storage.hasFiles(p.projectPath('docs'))) {
   await runCommand('bun run build', {
-    cwd: p.frameworkStoragePath('docs'),
+    cwd: p.frameworkPath('docs'),
   })
 }
 
 if (config.app.docMode !== true) { // when in docs mode, we disregard building views
   await runCommand('bun run build', {
-    cwd: p.frameworkStoragePath('views'),
+    cwd: p.frameworkPath('views'),
   })
 }
 

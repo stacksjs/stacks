@@ -6,7 +6,7 @@ import { path as p } from '@stacksjs/path'
 export function router() {
   return VueRouter({
     extensions: ['.stx', '.md'],
-    dts: p.frameworkStoragePath('types/router.d.ts'),
+    dts: p.frameworkPath('types/router.d.ts'),
     routesFolder: [
       p.resourcesPath('views'),
     ],

@@ -71,10 +71,6 @@ export function authPath(path?: string) {
   return corePath(`auth/${path || ''}`)
 }
 
-export function frameworkStoragePath(path?: string) {
-  return projectStoragePath(`framework/${path || ''}`)
-}
-
 /**
  * Returns the path to the build directory. The build directory
  * contains Stacks' build engine & its tooling integrations.
@@ -96,7 +92,7 @@ export function buildEnginePath(path?: string) {
 }
 
 export function libsPath(path?: string) {
-  return frameworkStoragePath(`libs/${path || ''}`)
+  return frameworkPath(`libs/${path || ''}`)
 }
 
 export function libsEntriesPath(path?: string) {
@@ -132,15 +128,11 @@ export function configPath(path?: string) {
 }
 
 export function corePath(path?: string) {
-  return frameworkPath(`src/${path || ''}`)
+  return frameworkPath(`core/${path || ''}`)
 }
 
 export function customElementsDataPath() {
-  return frameworkPath('custom-elements.json')
-}
-
-export function dashboardPath(path?: string) {
-  return corePath(`dashboard/${path || ''}`)
+  return corePath('custom-elements.json')
 }
 
 export function databasePath(path?: string) {
@@ -196,7 +188,7 @@ export function fakerPath(path?: string) {
 }
 
 export function frameworkPath(path?: string) {
-  return frameworkStoragePath(`stacks/${path || ''}`)
+  return projectStoragePath(`framework/${path || ''}`)
 }
 
 export function healthPath(path?: string) {
@@ -467,7 +459,6 @@ export const path = {
   examplesPath,
   fakerPath,
   frameworkPath,
-  frameworkStoragePath,
   storagePath,
   functionsPath,
   gitPath,

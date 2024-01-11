@@ -318,7 +318,6 @@ declare global {
   const format: typeof import('../core/src/path/src/index')['format']
   const formatTimeAgo: typeof import('../core/src/utils/src/vendors')['formatTimeAgo']
   const frameworkPath: typeof import('../core/src/path/src/index')['frameworkPath']
-  const frameworkStoragePath: typeof import('../core/src/path/src/index')['frameworkStoragePath']
   const frameworkVersion: typeof import('../core/src/utils/src/helpers')['frameworkVersion']
   const fromPromise: typeof import('../core/src/error-handling/src/index')['fromPromise']
   const fromSafePromise: typeof import('../core/src/error-handling/src/index')['fromSafePromise']
@@ -1241,7 +1240,6 @@ declare module 'vue' {
     readonly format: UnwrapRef<typeof import('../core/src/path/src/index')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/src/utils/src/vendors')['formatTimeAgo']>
     readonly frameworkPath: UnwrapRef<typeof import('../core/src/path/src/index')['frameworkPath']>
-    readonly frameworkStoragePath: UnwrapRef<typeof import('../core/src/path/src/index')['frameworkStoragePath']>
     readonly frameworkVersion: UnwrapRef<typeof import('../core/src/utils/src/helpers')['frameworkVersion']>
     readonly fromPromise: UnwrapRef<typeof import('../core/src/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('../core/src/error-handling/src/index')['fromSafePromise']>
@@ -2143,7 +2141,6 @@ declare module '@vue/runtime-core' {
     readonly format: UnwrapRef<typeof import('../core/src/path/src/index')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/src/utils/src/vendors')['formatTimeAgo']>
     readonly frameworkPath: UnwrapRef<typeof import('../core/src/path/src/index')['frameworkPath']>
-    readonly frameworkStoragePath: UnwrapRef<typeof import('../core/src/path/src/index')['frameworkStoragePath']>
     readonly frameworkVersion: UnwrapRef<typeof import('../core/src/utils/src/helpers')['frameworkVersion']>
     readonly fromPromise: UnwrapRef<typeof import('../core/src/error-handling/src/index')['fromPromise']>
     readonly fromSafePromise: UnwrapRef<typeof import('../core/src/error-handling/src/index')['fromSafePromise']>

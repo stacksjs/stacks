@@ -12,7 +12,7 @@ export function components(options?: ComponentOptions): Plugin {
       p.uiPath('src/components/'),
       // viewsPath(),
     ],
-    dts: p.frameworkStoragePath('types/components.d.ts'),
+    dts: p.frameworkPath('types/components.d.ts'),
     ...options,
   })
 }
