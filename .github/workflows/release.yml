@@ -34,20 +34,20 @@ jobs:
         run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
-        run: cd storage/framework/core && bun run build
+        run: cd storage/framework/core && bun run build && cd ../../..
 
       - name: Publish framework
-        run: cd storage/framework/core && bun publish:framework
+        run: cd storage/framework/core && bun publish:framework && cd ../../..
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries
-        run: bunx pnpm --filter='./storage/framework/core' publish:dummy-libs
+        run: cd storage/framework/core && bun publish:dummy-libs && cd ../../..
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: bunx pnpm --filter './storage/framework/ide/vscode' release
+        run: cd storage/framework/ide/vscode && bun release && cd ../../../..
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
