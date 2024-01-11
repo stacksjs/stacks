@@ -37,10 +37,10 @@ scripts:
   - ./storage/framework/core/scripts/**
 
 stack:
-  - 'storage/framework/core/stacks/**'
+  - 'storage/framework/stacks/**'
 
 dashboard:
-  - 'storage/framework/core/stacks/dashboard/**'
+  - 'storage/framework/stacks/dashboard/**'
 
 vcs:
   - ./storage/framework/core/vcs/**
