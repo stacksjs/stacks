@@ -8,7 +8,8 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-_Open Beta coming soon._
+> [!WARNING]
+> Stay tuned. Open Beta coming soon.
 
 The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid development framework, meeting all your full stack needs.
 
