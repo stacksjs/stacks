@@ -347,7 +347,7 @@
   ],
   "scripts": {
     "buddy": "bun --bun run ./src/buddy/src/cli.ts",
-    "build": "./core/scripts/build",
+    "build": "./scripts/build",
     "dev": "bunx pnpm --filter='./src/**' dev",
     "up": "bunx taze major -I",
     "publish:framework": "bunx pnpm --filter './core/src/**' --filter './ide/vscode' publish --access public --no-git-checks",
