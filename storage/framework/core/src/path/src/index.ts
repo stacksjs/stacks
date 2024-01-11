@@ -128,7 +128,7 @@ export function configPath(path?: string) {
 }
 
 export function corePath(path?: string) {
-  return frameworkPath(`core/${path || ''}`)
+  return frameworkPath(`core/src/${path || ''}`)
 }
 
 export function customElementsDataPath() {
@@ -446,7 +446,6 @@ export const path = {
   databasePath,
   datetimePath,
   developmentPath,
-  dashboardPath,
   desktopPath,
   docsPath,
   dnsPath,
