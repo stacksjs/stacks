@@ -67,7 +67,7 @@
   "dependencies": {
     "@antfu/eslint-define-config": "^1.23.0-2",
     "@eslint-types/jsdoc": "48.0.2",
-    "@eslint-types/typescript-eslint": "^6.17.0",
+    "@eslint-types/typescript-eslint": "^6.18.1",
     "@eslint-types/unicorn": "^50.0.1",
     "@stacksjs/cli": "workspace:*",
     "@stylistic/eslint-plugin": "^1.5.3",
@@ -89,7 +89,7 @@
     "eslint-plugin-unicorn": "^50.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
     "eslint-plugin-vitest": "^0.3.20",
-    "eslint-plugin-vue": "^9.19.2",
+    "eslint-plugin-vue": "^9.20.0",
     "eslint-plugin-yml": "^1.11.0",
     "eslint-processor-vue-blocks": "^0.1.1",
     "globals": "^13.24.0",
