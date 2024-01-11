@@ -47,7 +47,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: bunx pnpm --filter './stacks/ide/vscode' release
+        run: bunx pnpm --filter './storage/framework/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

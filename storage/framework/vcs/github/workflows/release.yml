@@ -39,7 +39,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './stacks/ide/vscode' release
+        run: pnpm --filter './storage/framework/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

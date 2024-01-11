@@ -5,7 +5,7 @@ import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
-import type { EnvKey } from '../../../../../stacks/env'
+import type { EnvKey } from '../../../../env'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc

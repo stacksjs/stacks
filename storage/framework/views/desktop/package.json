@@ -39,9 +39,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "bun --bun vite -c ../stacks/src/vite/src/desktop.ts",
+    "dev": "bun --bun vite -c ../core/src/vite/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bun --bun vite build -c .../stacks/src/vite/src/desktop.ts",
+    "build": "bun --bun vite build -c ../core/src/vite/src/desktop.ts",
     "build:app": "tauri build",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"

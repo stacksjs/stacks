@@ -1,5 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { useHttpFetch } from '../../../../stacks/src/api/src'
+import { useHttpFetch } from '../../../../core/src/api/src'
 import type { GithubCommit, WorkflowRun } from '../types'
 
 const owner = 'stacksjs'
