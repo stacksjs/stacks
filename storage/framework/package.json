@@ -350,7 +350,7 @@
     "build": "./scripts/build",
     "dev": "bunx pnpm --filter='./src/**' dev",
     "up": "bunx taze major -I",
-    "publish:framework": "bunx pnpm --filter './core/src/**' --filter './ide/vscode' publish --access public --no-git-checks",
+    "publish:framework": "bunx pnpm --filter './src/**' publish --access public --no-git-checks",
     "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "bun buddy fresh",
     "clean": "bun buddy clean",
