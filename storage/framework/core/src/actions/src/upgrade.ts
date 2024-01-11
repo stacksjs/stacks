@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
 import type { UpgradeOptions } from '@stacksjs/types'
-import { version } from '../../../package.json'
+import { version } from '../package.json'
 
 // import { determineDebugLevel } from '@stacksjs/utils'
 
