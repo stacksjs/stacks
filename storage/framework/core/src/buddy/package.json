@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/src/buddy"
+    "directory": "./storage/framework/core/src/buddy"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

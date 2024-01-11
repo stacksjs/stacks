@@ -6,7 +6,7 @@
   "author": "Anthony Fu <anthonyfu117@hotmail.com> (https://github.com/antfu/)",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
-  "homepage": "https://github.com/stacksjs/stacks/blob/main/storage/framework/stacks/src/eslint-config",
+  "homepage": "https://github.com/stacksjs/stacks/blob/main/storage/framework/core/src/eslint-config",
   "keywords": [
     "stacks",
     "eslint-config"

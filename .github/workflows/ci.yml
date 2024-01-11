@@ -48,7 +48,7 @@ jobs:
         run: bun install
 
       - name: Build Core
-        run: cd storage/framework/stacks && bun run build
+        run: cd storage/framework/core && bun run build
 
       - name: Lint
         run: bunx --bun eslint .

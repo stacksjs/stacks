@@ -9,11 +9,11 @@
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/src/vite-plugin-vue-layouts#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/src/vite-plugin-vue-layouts#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/src/vite-plugin-vue-layouts"
+    "directory": "./storage/framework/core/src/vite-plugin-vue-layouts"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

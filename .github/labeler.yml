@@ -5,7 +5,7 @@ deps:
   - ./package.json
 
 core:
-  - 'storage/framework/stacks/**'
+  - 'storage/framework/core/**'
 
 ide:
   - 'storage/framework/ide/**'
@@ -34,202 +34,202 @@ functions:
   - resources/functions/**
 
 scripts:
-  - ./storage/framework/stacks/scripts/**
+  - ./storage/framework/core/scripts/**
 
 stack:
-  - 'storage/framework/stacks/stacks/**'
+  - 'storage/framework/core/stacks/**'
 
 dashboard:
-  - 'storage/framework/stacks/stacks/dashboard/**'
+  - 'storage/framework/core/stacks/dashboard/**'
 
 vcs:
-  - ./storage/framework/stacks/vcs/**
+  - ./storage/framework/core/vcs/**
 
 github:
-  - ./storage/framework/stacks/vcs/github/**
+  - ./storage/framework/core/vcs/github/**
 
 views:
-  - 'storage/framework/stacks/views/**'
+  - 'storage/framework/core/views/**'
   - resources/views/**
 
 web:
-  - ./storage/framework/stacks/views/web/**
+  - ./storage/framework/core/views/web/**
 
 actions:
-  - 'storage/framework/stacks/src/actions/**'
+  - 'storage/framework/core/src/actions/**'
 
 ai:
-  - 'storage/framework/stacks/src/ai/**'
+  - 'storage/framework/core/src/ai/**'
 
 alias:
-  - 'storage/framework/stacks/src/alias/**'
+  - 'storage/framework/core/src/alias/**'
 
 analytics:
-  - 'storage/framework/stacks/src/analytics/**'
+  - 'storage/framework/core/src/analytics/**'
 
 arrays:
-  - 'storage/framework/stacks/src/utils/arrays/**'
+  - 'storage/framework/core/src/utils/arrays/**'
 
 auth:
-  - 'storage/framework/stacks/src/auth/**'
+  - 'storage/framework/core/src/auth/**'
 
 buddy:
-  - 'storage/framework/stacks/src/buddy/**'
+  - 'storage/framework/core/src/buddy/**'
 
 build:
-  - 'storage/framework/stacks/src/build/**'
+  - 'storage/framework/core/src/build/**'
 
 cache:
-  - 'storage/framework/stacks/src/cache/**'
+  - 'storage/framework/core/src/cache/**'
 
 chat:
-  - 'storage/framework/stacks/src/notifications/chat/**'
+  - 'storage/framework/core/src/notifications/chat/**'
 
 cli:
-  - 'storage/framework/stacks/src/cli/**'
+  - 'storage/framework/core/src/cli/**'
   - app/Commands/**
 
 cloud:
-  - 'storage/framework/stacks/src/cloud/**'
+  - 'storage/framework/core/src/cloud/**'
 
 collections:
-  - 'storage/framework/stacks/src/utils/collections/**'
+  - 'storage/framework/core/src/utils/collections/**'
 
 config:
-  - 'storage/framework/stacks/src/config/**'
+  - 'storage/framework/core/src/config/**'
   - config/**
 
 database:
-  - 'storage/framework/stacks/src/database/**'
+  - 'storage/framework/core/src/database/**'
 
 datetime:
-  - 'storage/framework/stacks/src/utils/datetime/**'
+  - 'storage/framework/core/src/utils/datetime/**'
 
 desktop:
-  - 'storage/framework/stacks/src/desktop/**'
-  - ./storage/framework/stacks/views/desktop/**
+  - 'storage/framework/core/src/desktop/**'
+  - ./storage/framework/core/views/desktop/**
 
 development:
-  - 'storage/framework/stacks/src/development/**'
+  - 'storage/framework/core/src/development/**'
 
 dns:
-  - 'storage/framework/stacks/src/dns/**'
+  - 'storage/framework/core/src/dns/**'
 
 docs:
-  - 'storage/framework/stacks/src/docs/**'
+  - 'storage/framework/core/src/docs/**'
   - 'storage/framework/docs/**'
   - docs/**
   - config/docs.ts
 
 email:
-  - 'storage/framework/stacks/src/notifications/email/**'
+  - 'storage/framework/core/src/notifications/email/**'
 
 error-handling:
-  - 'storage/framework/stacks/src/error-handling/**'
+  - 'storage/framework/core/src/error-handling/**'
 
 events:
-  - 'storage/framework/stacks/src/events/**'
+  - 'storage/framework/core/src/events/**'
   - app/Events/**
 
 faker:
-  - 'storage/framework/stacks/src/faker/**'
+  - 'storage/framework/core/src/faker/**'
 
 git:
-  - 'storage/framework/stacks/src/utils/git/**'
+  - 'storage/framework/core/src/utils/git/**'
 
 health:
-  - 'storage/framework/stacks/src/health/**'
+  - 'storage/framework/core/src/health/**'
 
 lint:
-  - 'storage/framework/stacks/src/lint/**'
+  - 'storage/framework/core/src/lint/**'
 
 logging:
-  - 'storage/framework/stacks/src/logging/**'
+  - 'storage/framework/core/src/logging/**'
 
 modules:
-  - 'storage/framework/stacks/src/modules/**'
+  - 'storage/framework/core/src/modules/**'
 
 notifications:
-  - 'storage/framework/stacks/src/notifications/**'
+  - 'storage/framework/core/src/notifications/**'
   - app/Notifications/**
 
 objects:
-  - 'storage/framework/stacks/src/utils/objects/**'
+  - 'storage/framework/core/src/utils/objects/**'
 
 orm:
-  - 'storage/framework/stacks/src/orm/**'
+  - 'storage/framework/core/src/orm/**'
 
 pages:
-  - 'storage/framework/stacks/src/pages/**'
+  - 'storage/framework/core/src/pages/**'
 
 path:
-  - 'storage/framework/stacks/src/path/**'
+  - 'storage/framework/core/src/path/**'
 
 payments:
-  - 'storage/framework/stacks/src/payments/**'
+  - 'storage/framework/core/src/payments/**'
 
 push:
-  - 'storage/framework/stacks/src/notifications/push/**'
+  - 'storage/framework/core/src/notifications/push/**'
 
 query-builder:
-  - 'storage/framework/stacks/src/query-builder/**'
+  - 'storage/framework/core/src/query-builder/**'
 
 queue:
-  - 'storage/framework/stacks/src/queue/**'
+  - 'storage/framework/core/src/queue/**'
 
 real-time:
-  - 'storage/framework/stacks/src/real-time/**'
+  - 'storage/framework/core/src/real-time/**'
 
 repl:
-  - 'storage/framework/stacks/src/repl/**'
+  - 'storage/framework/core/src/repl/**'
 
 router:
-  - 'storage/framework/stacks/src/router/**'
+  - 'storage/framework/core/src/router/**'
 
 scheduler:
-  - 'storage/framework/stacks/src/scheduler/**'
+  - 'storage/framework/core/src/scheduler/**'
 
 search-engine:
-  - 'storage/framework/stacks/src/search-engine/**'
+  - 'storage/framework/core/src/search-engine/**'
 
 security:
-  - 'storage/framework/stacks/src/security/**'
+  - 'storage/framework/core/src/security/**'
 
 server:
-  - 'storage/framework/stacks/src/server/**'
+  - 'storage/framework/core/src/server/**'
 
 signals:
-  - 'storage/framework/stacks/src/signals/**'
+  - 'storage/framework/core/src/signals/**'
 
 slug:
-  - 'storage/framework/stacks/src/slug/**'
+  - 'storage/framework/core/src/slug/**'
 
 sms:
-  - 'storage/framework/stacks/src/notifications/sms/**'
+  - 'storage/framework/core/src/notifications/sms/**'
 
 storage:
   - storage/**
 
 strings:
-  - 'storage/framework/stacks/src/utils/strings/**'
+  - 'storage/framework/core/src/utils/strings/**'
 
 testing:
-  - 'storage/framework/stacks/src/testing/**'
+  - 'storage/framework/core/src/testing/**'
 
 tinker:
-  - 'storage/framework/stacks/src/tinker/**'
+  - 'storage/framework/core/src/tinker/**'
 
 types:
-  - 'storage/framework/stacks/src/types/**'
+  - 'storage/framework/core/src/types/**'
 
 ui:
-  - 'storage/framework/stacks/src/ui/**'
+  - 'storage/framework/core/src/ui/**'
 
 utils:
-  - 'storage/framework/stacks/src/utils/**'
+  - 'storage/framework/core/src/utils/**'
 
 validation:
-  - 'storage/framework/stacks/src/validation/**'
+  - 'storage/framework/core/src/validation/**'
 
 app:
   - app/**

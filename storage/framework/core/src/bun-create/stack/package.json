@@ -38,9 +38,9 @@
     "dist"
   ],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/stacks/src/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/core/src/buddy/src/cli.ts",
     "stacks": "bun run buddy",
-    "setup": "./storage/framework/stacks/scripts/setup.sh",
+    "setup": "./storage/framework/core/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
     "clean": "bun run buddy clean",
     "upgrade": "bun run buddy upgrade",

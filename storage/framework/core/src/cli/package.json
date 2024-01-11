@@ -6,11 +6,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/src/cli#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/src/cli#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/src/cli"
+    "directory": "./storage/framework/core/src/cli"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

@@ -6,11 +6,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/src/query-builder#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/src/query-builder#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/src/query-builder"
+    "directory": "./storage/framework/core/src/query-builder"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

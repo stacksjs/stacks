@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# loop over every directory in ./storage/framework/stacks/src/*
+# loop over every directory in ./storage/framework/core/src/*
 for dir in ../src/*/; do
   # -d checks if it's a directory
   if [[ -d "$dir" ]]; then

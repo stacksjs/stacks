@@ -6,11 +6,11 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/stacks/stacks/tinker-app#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/stacks/tinker-app#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/stacks/tinker-app"
+    "directory": "./storage/framework/core/tinker-app"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
