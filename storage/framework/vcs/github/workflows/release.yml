@@ -12,34 +12,42 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Install dependencies
+      - name: Use cached node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            nodeModules-
+
+      - name: Install Dependencies
         run: bun install
 
       - name: Set Application Key
-        run: ./buddy key:generate
+        run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
-        run: pnpm --filter='./storage/framework/core' build
+        run: cd storage/framework/core && bun run build
 
       - name: Publish framework
-        run: pnpm --filter='./storage/framework/core' publish:framework
+        run: cd storage/framework/core && bun publish:framework
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish dummy libraries
-        run: pnpm --filter='./storage/framework/core' publish:dummy-libs
+        run: bunx pnpm --filter='./storage/framework/core' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: pnpm --filter './storage/framework/ide/vscode' release
+        run: bunx pnpm --filter './storage/framework/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
