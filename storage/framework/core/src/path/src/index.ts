@@ -337,7 +337,7 @@ export function settingsPath(path?: string) {
 }
 
 export function scriptsPath(path?: string) {
-  return frameworkPath(`scripts/${path || ''}`)
+  return frameworkPath(`core/scripts/${path || ''}`)
 }
 
 export function schedulerPath(path?: string) {

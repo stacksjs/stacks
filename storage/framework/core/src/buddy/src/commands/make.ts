@@ -5,7 +5,6 @@ import {
   invoke,
   makeComponent,
   makeDatabase,
-  // makeFactory,
   makeFunction,
   makeLanguage,
   makePage,

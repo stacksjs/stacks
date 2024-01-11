@@ -6,13 +6,13 @@ export function rand(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+// not, -> exported as well in ../regex
 export {
   and,
   createGenericProjection,
   createProjection,
   logicNot,
   logicOr,
-  // not, -> exported as well in ../regex
   or,
   useAbs,
   useAverage,

@@ -30,7 +30,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       p.resourcesPath('components'),
       p.resourcesPath('functions'),
       p.resourcesPath('stores'),
-      p.frameworkPath('core'),
+      p.corePath(),
     ],
 
     vueTemplate: true,

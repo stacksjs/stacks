@@ -6,11 +6,12 @@ export * from './helpers'
 export { examples as runExample } from './examples'
 export { commit as runCommit } from './commit'
 export { add as runAdd } from './add'
+
+// makeFactory,
 export {
   make as runMake,
   makeComponent,
   makeDatabase,
-  // makeFactory,
   makeFunction,
   makeLanguage,
   makeNotification,

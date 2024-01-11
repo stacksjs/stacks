@@ -60,6 +60,7 @@ declare global {
   const RuleObject: typeof import('../core/src/validation/src/validate')['RuleObject']
   const RuleString: typeof import('../core/src/validation/src/validate')['RuleString']
   const ScheduleImpl: typeof import('../core/src/scheduler/src/index')['ScheduleImpl']
+  const SocialLinkIcon: typeof import('../core/src/types/src/docs')['SocialLinkIcon']
   const StacksError: typeof import('../core/src/error-handling/src/handler')['StacksError']
   const Store: typeof import('../core/src/ui/src/index')['Store']
   const Switch: typeof import('../core/src/ui/src/components/toggle')['Switch']
@@ -287,6 +288,7 @@ declare global {
   const enums: typeof import('../core/src/index')['enums']
   const enumsPath: typeof import('../core/src/path/src/index')['enumsPath']
   const env: typeof import('../core/src/env/src/index')['env']
+  const envKeys: typeof import('../core/env')['envKeys']
   const envSchema: typeof import('../core/src/env/src/types')['envSchema']
   const equal: typeof import('../core/src/utils/src/currency')['equal']
   const err: typeof import('../core/src/error-handling/src/index')['err']
@@ -554,6 +556,7 @@ declare global {
   const pausableWatch: typeof import('../core/src/utils/src/vendors')['pausableWatch']
   const paymentsPath: typeof import('../core/src/path/src/index')['paymentsPath']
   const perPage: typeof import('../core/src/search-engine/src/index')['perPage']
+  const playwrightConfig: typeof import('../core/playwright.config')['default']
   const plivo: typeof import('../core/src/sms/src/drivers/index')['plivo']
   const preferredDark: typeof import('../../../resources/functions/dark')['preferredDark']
   const presetForms: typeof import('../core/src/ui/src/index')['presetForms']
@@ -967,8 +970,6 @@ declare global {
 import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
-    // readonly // makeFactory: UnwrapRef<typeof import('../stacks/src/actions/src/index')['// makeFactory']>
-    // readonly // not: UnwrapRef<typeof import('../stacks/src/utils/src/math')['// not']>
     readonly Action: UnwrapRef<typeof import('../core/src/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../core/src/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -996,6 +997,7 @@ declare module 'vue' {
     readonly RuleObject: UnwrapRef<typeof import('../core/src/validation/src/validate')['RuleObject']>
     readonly RuleString: UnwrapRef<typeof import('../core/src/validation/src/validate')['RuleString']>
     readonly ScheduleImpl: UnwrapRef<typeof import('../core/src/scheduler/src/index')['ScheduleImpl']>
+    readonly SocialLinkIcon: UnwrapRef<typeof import('../core/src/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/src/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/src/ui/src/index')['Store']>
     readonly USD: UnwrapRef<typeof import('../core/src/utils/src/currency')['USD']>
@@ -1127,7 +1129,6 @@ declare module 'vue' {
     readonly customElementsDataPath: UnwrapRef<typeof import('../core/src/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly customStorageEventName: UnwrapRef<typeof import('../core/src/utils/src/vendors')['customStorageEventName']>
-    readonly dashboardPath: UnwrapRef<typeof import('../core/src/path/src/index')['dashboardPath']>
     readonly databasePath: UnwrapRef<typeof import('../core/src/path/src/index')['databasePath']>
     readonly dateFormat: UnwrapRef<typeof import('../core/src/datetime/src/index')['dateFormat']>
     readonly datetimePath: UnwrapRef<typeof import('../core/src/path/src/index')['datetimePath']>
@@ -1459,6 +1460,7 @@ declare module 'vue' {
     readonly onboardingPath: UnwrapRef<typeof import('../core/src/path/src/index')['onboardingPath']>
     readonly oneOrMore: UnwrapRef<typeof import('../core/src/utils/src/regex')['oneOrMore']>
     readonly openShell: UnwrapRef<typeof import('../core/src/desktop/src/index')['openShell']>
+    readonly or: UnwrapRef<typeof import('../core/src/utils/src/math')['or']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../core/src/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../core/src/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../core/src/utils/src/p')['p']>
@@ -1868,8 +1870,6 @@ declare module 'vue' {
 }
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    readonly // makeFactory: UnwrapRef<typeof import('../stacks/src/actions/src/index')['// makeFactory']>
-    readonly // not: UnwrapRef<typeof import('../stacks/src/utils/src/math')['// not']>
     readonly Action: UnwrapRef<typeof import('../core/src/actions/src/action')['Action']>
     readonly CssEngine: UnwrapRef<typeof import('../core/src/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -1897,6 +1897,7 @@ declare module '@vue/runtime-core' {
     readonly RuleObject: UnwrapRef<typeof import('../core/src/validation/src/validate')['RuleObject']>
     readonly RuleString: UnwrapRef<typeof import('../core/src/validation/src/validate')['RuleString']>
     readonly ScheduleImpl: UnwrapRef<typeof import('../core/src/scheduler/src/index')['ScheduleImpl']>
+    readonly SocialLinkIcon: UnwrapRef<typeof import('../core/src/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/src/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/src/ui/src/index')['Store']>
     readonly USD: UnwrapRef<typeof import('../core/src/utils/src/currency')['USD']>
@@ -2028,7 +2029,6 @@ declare module '@vue/runtime-core' {
     readonly customElementsDataPath: UnwrapRef<typeof import('../core/src/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly customStorageEventName: UnwrapRef<typeof import('../core/src/utils/src/vendors')['customStorageEventName']>
-    readonly dashboardPath: UnwrapRef<typeof import('../core/src/path/src/index')['dashboardPath']>
     readonly databasePath: UnwrapRef<typeof import('../core/src/path/src/index')['databasePath']>
     readonly dateFormat: UnwrapRef<typeof import('../core/src/datetime/src/index')['dateFormat']>
     readonly datetimePath: UnwrapRef<typeof import('../core/src/path/src/index')['datetimePath']>
@@ -2360,6 +2360,7 @@ declare module '@vue/runtime-core' {
     readonly onboardingPath: UnwrapRef<typeof import('../core/src/path/src/index')['onboardingPath']>
     readonly oneOrMore: UnwrapRef<typeof import('../core/src/utils/src/regex')['oneOrMore']>
     readonly openShell: UnwrapRef<typeof import('../core/src/desktop/src/index')['openShell']>
+    readonly or: UnwrapRef<typeof import('../core/src/utils/src/math')['or']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../core/src/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../core/src/path/src/index')['ormPath']>
     readonly p: UnwrapRef<typeof import('../core/src/utils/src/p')['p']>
