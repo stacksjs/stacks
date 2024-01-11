@@ -64,7 +64,7 @@
     "@stacksjs/vite-plugin-vue-layouts": "workspace:*",
     "pinia": "^2.1.7",
     "unocss": "^0.58.3",
-    "vue": "^3.4.8",
+    "vue": "^3.4.10",
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
@@ -82,7 +82,7 @@
     "pinia": "^2.1.7",
     "unhead": "^1.8.9",
     "unocss": "^0.58.3",
-    "vue": "^3.4.8",
+    "vue": "^3.4.10",
     "vue-tsc": "^1.8.27"
   },
   "devDependencies": {
