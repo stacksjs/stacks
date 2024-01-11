@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@stacksjs/validation": "workspace:*",
-    "pathe": "^1.1.1"
+    "pathe": "^1.1.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
