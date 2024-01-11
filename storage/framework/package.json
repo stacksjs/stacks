@@ -36,297 +36,297 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
-      "types": "./src/buddy/dist/index.d.ts",
-      "import": "./src/buddy/dist/index.js"
+      "bun": "./stacks/src/index.ts",
+      "types": "./stacks/src/buddy/dist/index.d.ts",
+      "import": "./stacks/src/buddy/dist/index.js"
     },
     "./actions": {
-      "bun": "./src/actions/src/index.ts",
-      "types": "./src/actions/dist/index.d.ts",
-      "import": "./src/actions/dist/index.js"
+      "bun": "./stacks/src/actions/src/index.ts",
+      "types": "./stacks/src/actions/dist/index.d.ts",
+      "import": "./stacks/src/actions/dist/index.js"
     },
     "./ai": {
-      "bun": "./src/ai/src/index.ts",
-      "types": "./src/ai/dist/index.d.ts",
-      "import": "./src/ai/dist/index.js"
+      "bun": "./stacks/src/ai/src/index.ts",
+      "types": "./stacks/src/ai/dist/index.d.ts",
+      "import": "./stacks/src/ai/dist/index.js"
     },
     "./api": {
-      "bun": "./src/api/src/index.ts",
-      "types": "./src/api/dist/index.d.ts",
-      "import": "./src/api/dist/index.js"
+      "bun": "./stacks/src/api/src/index.ts",
+      "types": "./stacks/src/api/dist/index.d.ts",
+      "import": "./stacks/src/api/dist/index.js"
     },
     "./alias": {
-      "bun": "./src/alias/src/index.ts",
-      "types": "./src/alias/dist/index.d.ts",
-      "import": "./src/alias/dist/index.js"
+      "bun": "./stacks/src/alias/src/index.ts",
+      "types": "./stacks/src/alias/dist/index.d.ts",
+      "import": "./stacks/src/alias/dist/index.js"
     },
     "./analytics": {
-      "bun": "./src/analytics/src/index.ts",
-      "types": "./src/analytics/dist/index.d.ts",
-      "import": "./src/analytics/dist/index.js"
+      "bun": "./stacks/src/analytics/src/index.ts",
+      "types": "./stacks/src/analytics/dist/index.d.ts",
+      "import": "./stacks/src/analytics/dist/index.js"
     },
     "./arrays": {
-      "bun": "./src/arrays/src/index.ts",
-      "types": "./src/arrays/dist/index.d.ts",
-      "import": "./src/arrays/dist/index.js"
+      "bun": "./stacks/src/arrays/src/index.ts",
+      "types": "./stacks/src/arrays/dist/index.d.ts",
+      "import": "./stacks/src/arrays/dist/index.js"
     },
     "./auth": {
-      "bun": "./src/auth/src/index.ts",
-      "types": "./src/auth/dist/index.d.ts",
-      "import": "./src/auth/dist/index.js"
+      "bun": "./stacks/src/auth/src/index.ts",
+      "types": "./stacks/src/auth/dist/index.d.ts",
+      "import": "./stacks/src/auth/dist/index.js"
     },
     "./buddy": {
-      "bun": "./src/buddy/src/index.ts",
-      "types": "./src/buddy/dist/index.d.ts",
-      "import": "./src/buddy/dist/index.js"
+      "bun": "./stacks/src/buddy/src/index.ts",
+      "types": "./stacks/src/buddy/dist/index.d.ts",
+      "import": "./stacks/src/buddy/dist/index.js"
     },
     "./build": {
-      "bun": "./src/build/src/index.ts",
-      "types": "./src/build/dist/index.d.ts",
-      "import": "./src/build/dist/index.js"
+      "bun": "./stacks/src/build/src/index.ts",
+      "types": "./stacks/src/build/dist/index.d.ts",
+      "import": "./stacks/src/build/dist/index.js"
     },
     "./cache": {
-      "bun": "./src/cache/src/index.ts",
-      "types": "./src/cache/dist/index.d.ts",
-      "import": "./src/cache/dist/index.js"
+      "bun": "./stacks/src/cache/src/index.ts",
+      "types": "./stacks/src/cache/dist/index.d.ts",
+      "import": "./stacks/src/cache/dist/index.js"
     },
     "./chat": {
-      "bun": "./src/chat/src/index.ts",
-      "types": "./src/chat/dist/index.d.ts",
-      "import": "./src/chat/dist/index.js"
+      "bun": "./stacks/src/chat/src/index.ts",
+      "types": "./stacks/src/chat/dist/index.d.ts",
+      "import": "./stacks/src/chat/dist/index.js"
     },
     "./cli": {
-      "bun": "./src/cli/src/index.ts",
-      "types": "./src/cli/dist/index.d.ts",
-      "import": "./src/cli/dist/index.js"
+      "bun": "./stacks/src/cli/src/index.ts",
+      "types": "./stacks/src/cli/dist/index.d.ts",
+      "import": "./stacks/src/cli/dist/index.js"
     },
     "./collections": {
-      "bun": "./src/collections/src/index.ts",
-      "types": "./src/collections/dist/index.d.ts",
-      "import": "./src/collections/dist/index.js"
+      "bun": "./stacks/src/collections/src/index.ts",
+      "types": "./stacks/src/collections/dist/index.d.ts",
+      "import": "./stacks/src/collections/dist/index.js"
     },
     "./config": {
-      "bun": "./src/config/src/index.ts",
-      "types": "./src/config/dist/index.d.ts",
-      "import": "./src/config/dist/index.js"
+      "bun": "./stacks/src/config/src/index.ts",
+      "types": "./stacks/src/config/dist/index.d.ts",
+      "import": "./stacks/src/config/dist/index.js"
     },
     "./database": {
-      "bun": "./src/database/src/index.ts",
-      "types": "./src/database/dist/index.d.ts",
-      "import": "./src/database/dist/index.js"
+      "bun": "./stacks/src/database/src/index.ts",
+      "types": "./stacks/src/database/dist/index.d.ts",
+      "import": "./stacks/src/database/dist/index.js"
     },
     "./datetime": {
-      "bun": "./src/datetime/src/index.ts",
-      "types": "./src/datetime/dist/index.d.ts",
-      "import": "./src/datetime/dist/index.js"
+      "bun": "./stacks/src/datetime/src/index.ts",
+      "types": "./stacks/src/datetime/dist/index.d.ts",
+      "import": "./stacks/src/datetime/dist/index.js"
     },
     "./desktop": {
-      "bun": "./src/desktop/src/index.ts",
-      "types": "./src/desktop/dist/index.d.ts",
-      "import": "./src/desktop/dist/index.js"
+      "bun": "./stacks/src/desktop/src/index.ts",
+      "types": "./stacks/src/desktop/dist/index.d.ts",
+      "import": "./stacks/src/desktop/dist/index.js"
     },
     "./development": {
-      "bun": "./src/development/src/index.ts",
-      "types": "./src/development/dist/index.d.ts",
-      "import": "./src/development/dist/index.js"
+      "bun": "./stacks/src/development/src/index.ts",
+      "types": "./stacks/src/development/dist/index.d.ts",
+      "import": "./stacks/src/development/dist/index.js"
     },
     "./dns": {
-      "bun": "./src/dns/src/index.ts",
-      "types": "./src/dns/dist/index.d.ts",
-      "import": "./src/dns/dist/index.js"
+      "bun": "./stacks/src/dns/src/index.ts",
+      "types": "./stacks/src/dns/dist/index.d.ts",
+      "import": "./stacks/src/dns/dist/index.js"
     },
     "./docs": {
-      "bun": "./src/docs/src/index.ts",
-      "types": "./src/docs/dist/index.d.ts",
-      "import": "./src/docs/dist/index.js"
+      "bun": "./stacks/src/docs/src/index.ts",
+      "types": "./stacks/src/docs/dist/index.d.ts",
+      "import": "./stacks/src/docs/dist/index.js"
     },
     "./email": {
-      "bun": "./src/email/src/index.ts",
-      "types": "./src/email/dist/index.d.ts",
-      "import": "./src/email/dist/index.js"
+      "bun": "./stacks/src/email/src/index.ts",
+      "types": "./stacks/src/email/dist/index.d.ts",
+      "import": "./stacks/src/email/dist/index.js"
     },
     "./enums": {
-      "bun": "./src/enums/src/index.ts",
-      "types": "./src/enums/dist/index.d.ts",
-      "import": "./src/enums/dist/index.js"
+      "bun": "./stacks/src/enums/src/index.ts",
+      "types": "./stacks/src/enums/dist/index.d.ts",
+      "import": "./stacks/src/enums/dist/index.js"
     },
     "./error-handling": {
-      "bun": "./src/error-handling/src/index.ts",
-      "types": "./src/error-handling/dist/index.d.ts",
-      "import": "./src/error-handling/dist/index.js"
+      "bun": "./stacks/src/error-handling/src/index.ts",
+      "types": "./stacks/src/error-handling/dist/index.d.ts",
+      "import": "./stacks/src/error-handling/dist/index.js"
     },
     "./events": {
-      "bun": "./src/events/src/index.ts",
-      "types": "./src/events/dist/index.d.ts",
-      "import": "./src/events/dist/index.js"
+      "bun": "./stacks/src/events/src/index.ts",
+      "types": "./stacks/src/events/dist/index.d.ts",
+      "import": "./stacks/src/events/dist/index.js"
     },
     "./faker": {
-      "bun": "./src/faker/src/index.ts",
-      "types": "./src/faker/dist/index.d.ts",
-      "import": "./src/faker/dist/index.js"
+      "bun": "./stacks/src/faker/src/index.ts",
+      "types": "./stacks/src/faker/dist/index.d.ts",
+      "import": "./stacks/src/faker/dist/index.js"
     },
     "./git": {
-      "bun": "./src/git/src/index.ts",
-      "types": "./src/git/dist/index.d.ts",
-      "import": "./src/git/dist/index.js"
+      "bun": "./stacks/src/git/src/index.ts",
+      "types": "./stacks/src/git/dist/index.d.ts",
+      "import": "./stacks/src/git/dist/index.js"
     },
     "./health": {
-      "bun": "./src/health/src/index.ts",
-      "types": "./src/health/dist/index.d.ts",
-      "import": "./src/health/dist/index.js"
+      "bun": "./stacks/src/health/src/index.ts",
+      "types": "./stacks/src/health/dist/index.d.ts",
+      "import": "./stacks/src/health/dist/index.js"
     },
     "./lint": {
-      "bun": "./src/lint/src/index.ts",
-      "types": "./src/lint/dist/index.d.ts",
-      "import": "./src/lint/dist/index.js"
+      "bun": "./stacks/src/lint/src/index.ts",
+      "types": "./stacks/src/lint/dist/index.d.ts",
+      "import": "./stacks/src/lint/dist/index.js"
     },
     "./logging": {
-      "bun": "./src/logging/src/index.ts",
-      "types": "./src/logging/dist/index.d.ts",
-      "import": "./src/logging/dist/index.js"
+      "bun": "./stacks/src/logging/src/index.ts",
+      "types": "./stacks/src/logging/dist/index.d.ts",
+      "import": "./stacks/src/logging/dist/index.js"
     },
     "./notifications": {
-      "bun": "./src/notifications/src/index.ts",
-      "types": "./src/notifications/dist/index.d.ts",
-      "import": "./src/notifications/dist/index.js"
+      "bun": "./stacks/src/notifications/src/index.ts",
+      "types": "./stacks/src/notifications/dist/index.d.ts",
+      "import": "./stacks/src/notifications/dist/index.js"
     },
     "./objects": {
-      "bun": "./src/objects/src/index.ts",
-      "types": "./src/objects/dist/index.d.ts",
-      "import": "./src/objects/dist/index.js"
+      "bun": "./stacks/src/objects/src/index.ts",
+      "types": "./stacks/src/objects/dist/index.d.ts",
+      "import": "./stacks/src/objects/dist/index.js"
     },
     "./orm": {
-      "bun": "./src/orm/src/index.ts",
-      "types": "./src/orm/dist/index.d.ts",
-      "import": "./src/orm/dist/index.js"
+      "bun": "./stacks/src/orm/src/index.ts",
+      "types": "./stacks/src/orm/dist/index.d.ts",
+      "import": "./stacks/src/orm/dist/index.js"
     },
     "./path": {
-      "bun": "./src/path/src/index.ts",
-      "types": "./src/path/dist/index.d.ts",
-      "import": "./src/path/dist/index.js"
+      "bun": "./stacks/src/path/src/index.ts",
+      "types": "./stacks/src/path/dist/index.d.ts",
+      "import": "./stacks/src/path/dist/index.js"
     },
     "./payments": {
-      "bun": "./src/payments/src/index.ts",
-      "types": "./src/payments/dist/index.d.ts",
-      "import": "./src/payments/dist/index.js"
+      "bun": "./stacks/src/payments/src/index.ts",
+      "types": "./stacks/src/payments/dist/index.d.ts",
+      "import": "./stacks/src/payments/dist/index.js"
     },
     "./push": {
-      "bun": "./src/push/src/index.ts",
-      "types": "./src/push/dist/index.d.ts",
-      "import": "./src/push/dist/index.js"
+      "bun": "./stacks/src/push/src/index.ts",
+      "types": "./stacks/src/push/dist/index.d.ts",
+      "import": "./stacks/src/push/dist/index.js"
     },
     "./query-builder": {
-      "bun": "./src/query-builder/src/index.ts",
-      "types": "./src/query-builder/dist/index.d.ts",
-      "import": "./src/query-builder/dist/index.js"
+      "bun": "./stacks/src/query-builder/src/index.ts",
+      "types": "./stacks/src/query-builder/dist/index.d.ts",
+      "import": "./stacks/src/query-builder/dist/index.js"
     },
     "./queue": {
-      "bun": "./src/queue/src/index.ts",
-      "types": "./src/queue/dist/index.d.ts",
-      "import": "./src/queue/dist/index.js"
+      "bun": "./stacks/src/queue/src/index.ts",
+      "types": "./stacks/src/queue/dist/index.d.ts",
+      "import": "./stacks/src/queue/dist/index.js"
     },
     "./realtime": {
-      "bun": "./src/realtime/src/index.ts",
-      "types": "./src/realtime/dist/index.d.ts",
-      "import": "./src/realtime/dist/index.js"
+      "bun": "./stacks/src/realtime/src/index.ts",
+      "types": "./stacks/src/realtime/dist/index.d.ts",
+      "import": "./stacks/src/realtime/dist/index.js"
     },
     "./repl": {
-      "bun": "./src/repl/src/index.ts",
-      "types": "./src/repl/dist/index.d.ts",
-      "import": "./src/repl/dist/index.js"
+      "bun": "./stacks/src/repl/src/index.ts",
+      "types": "./stacks/src/repl/dist/index.d.ts",
+      "import": "./stacks/src/repl/dist/index.js"
     },
     "./router": {
-      "bun": "./src/router/src/index.ts",
-      "types": "./src/router/dist/index.d.ts",
-      "import": "./src/router/dist/index.js"
+      "bun": "./stacks/src/router/src/index.ts",
+      "types": "./stacks/src/router/dist/index.d.ts",
+      "import": "./stacks/src/router/dist/index.js"
     },
     "./scheduler": {
-      "bun": "./src/scheduler/src/index.ts",
-      "types": "./src/scheduler/dist/index.d.ts",
-      "import": "./src/scheduler/dist/index.js"
+      "bun": "./stacks/src/scheduler/src/index.ts",
+      "types": "./stacks/src/scheduler/dist/index.d.ts",
+      "import": "./stacks/src/scheduler/dist/index.js"
     },
     "./search-engine": {
-      "bun": "./src/search-engine/src/index.ts",
-      "types": "./src/search-engine/dist/index.d.ts",
-      "import": "./src/search-engine/dist/index.js"
+      "bun": "./stacks/src/search-engine/src/index.ts",
+      "types": "./stacks/src/search-engine/dist/index.d.ts",
+      "import": "./stacks/src/search-engine/dist/index.js"
     },
     "./security": {
-      "bun": "./src/security/src/index.ts",
-      "types": "./src/security/dist/index.d.ts",
-      "import": "./src/security/dist/index.js"
+      "bun": "./stacks/src/security/src/index.ts",
+      "types": "./stacks/src/security/dist/index.d.ts",
+      "import": "./stacks/src/security/dist/index.js"
     },
     "./server": {
-      "bun": "./src/server/src/index.ts",
-      "types": "./src/server/dist/index.d.ts",
-      "import": "./src/server/dist/index.js"
+      "bun": "./stacks/src/server/src/index.ts",
+      "types": "./stacks/src/server/dist/index.d.ts",
+      "import": "./stacks/src/server/dist/index.js"
     },
     "./signals": {
-      "bun": "./src/signals/src/index.ts",
-      "types": "./src/signals/dist/index.d.ts",
-      "import": "./src/signals/dist/index.js"
+      "bun": "./stacks/src/signals/src/index.ts",
+      "types": "./stacks/src/signals/dist/index.d.ts",
+      "import": "./stacks/src/signals/dist/index.js"
     },
     "./slug": {
-      "bun": "./src/slug/src/index.ts",
-      "types": "./src/slug/dist/index.d.ts",
-      "import": "./src/slug/dist/index.js"
+      "bun": "./stacks/src/slug/src/index.ts",
+      "types": "./stacks/src/slug/dist/index.d.ts",
+      "import": "./stacks/src/slug/dist/index.js"
     },
     "./sms": {
-      "bun": "./src/sms/src/index.ts",
-      "types": "./src/sms/dist/index.d.ts",
-      "import": "./src/sms/dist/index.js"
+      "bun": "./stacks/src/sms/src/index.ts",
+      "types": "./stacks/src/sms/dist/index.d.ts",
+      "import": "./stacks/src/sms/dist/index.js"
     },
     "./storage": {
-      "bun": "./src/storage/src/index.ts",
-      "types": "./src/storage/dist/index.d.ts",
-      "import": "./src/storage/dist/index.js"
+      "bun": "./stacks/src/storage/src/index.ts",
+      "types": "./stacks/src/storage/dist/index.d.ts",
+      "import": "./stacks/src/storage/dist/index.js"
     },
     "./strings": {
-      "bun": "./src/strings/src/index.ts",
-      "types": "./src/strings/dist/index.d.ts",
-      "import": "./src/strings/dist/index.js"
+      "bun": "./stacks/src/strings/src/index.ts",
+      "types": "./stacks/src/strings/dist/index.d.ts",
+      "import": "./stacks/src/strings/dist/index.js"
     },
     "./testing": {
-      "bun": "./src/testing/src/index.ts",
-      "types": "./src/testing/dist/index.d.ts",
-      "import": "./src/testing/dist/index.js"
+      "bun": "./stacks/src/testing/src/index.ts",
+      "types": "./stacks/src/testing/dist/index.d.ts",
+      "import": "./stacks/src/testing/dist/index.js"
     },
     "./tinker": {
-      "bun": "./src/tinker/src/index.ts",
-      "types": "./src/tinker/dist/index.d.ts",
-      "import": "./src/tinker/dist/index.js"
+      "bun": "./stacks/src/tinker/src/index.ts",
+      "types": "./stacks/src/tinker/dist/index.d.ts",
+      "import": "./stacks/src/tinker/dist/index.js"
     },
     "./tunnel": {
-      "bun": "./src/tunnel/src/index.ts",
-      "types": "./src/tunnel/dist/index.d.ts",
-      "import": "./src/tunnel/dist/index.js"
+      "bun": "./stacks/src/tunnel/src/index.ts",
+      "types": "./stacks/src/tunnel/dist/index.d.ts",
+      "import": "./stacks/src/tunnel/dist/index.js"
     },
     "./types": {
-      "bun": "./src/types/src/index.ts",
-      "types": "./src/types/dist/index.d.ts",
-      "import": "./src/types/dist/index.js"
+      "bun": "./stacks/src/types/src/index.ts",
+      "types": "./stacks/src/types/dist/index.d.ts",
+      "import": "./stacks/src/types/dist/index.js"
     },
     "./ui": {
-      "bun": "./src/ui/src/index.ts",
-      "types": "./src/ui/dist/index.d.ts",
-      "import": "./src/ui/dist/index.js"
+      "bun": "./stacks/src/ui/src/index.ts",
+      "types": "./stacks/src/ui/dist/index.d.ts",
+      "import": "./stacks/src/ui/dist/index.js"
     },
     "./utils": {
-      "bun": "./src/utils/src/index.ts",
-      "types": "./src/utils/dist/index.d.ts",
-      "import": "./src/utils/dist/index.js"
+      "bun": "./stacks/src/utils/src/index.ts",
+      "types": "./stacks/src/utils/dist/index.d.ts",
+      "import": "./stacks/src/utils/dist/index.js"
     },
     "./validation": {
-      "bun": "./src/validation/src/index.ts",
-      "types": "./src/validation/dist/index.d.ts",
-      "import": "./src/validation/dist/index.js"
+      "bun": "./stacks/src/validation/src/index.ts",
+      "types": "./stacks/src/validation/dist/index.d.ts",
+      "import": "./stacks/src/validation/dist/index.js"
     },
     "./vite": {
-      "bun": "./src/vite/src/index.ts",
-      "types": "./src/vite/dist/index.d.ts",
-      "import": "./src/vite/dist/index.js"
+      "bun": "./stacks/src/vite/src/index.ts",
+      "types": "./stacks/src/vite/dist/index.d.ts",
+      "import": "./stacks/src/vite/dist/index.js"
     }
   },
-  "types": "./src/types/dist/index.d.ts",
+  "types": "./stacks/src/types/dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
   ],
@@ -347,10 +347,10 @@
   ],
   "scripts": {
     "buddy": "bun --bun run ./src/buddy/src/cli.ts",
-    "build": "./scripts/build",
+    "build": "./stacks/scripts/build",
     "dev": "bunx pnpm --filter='./src/**' dev",
     "up": "bunx taze major -I",
-    "publish:framework": "bunx pnpm --filter './src/**' --filter '../ide/vscode' publish --access public --no-git-checks",
+    "publish:framework": "bunx pnpm --filter './stacks/src/**' --filter './ide/vscode' publish --access public --no-git-checks",
     "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "bun buddy fresh",
     "clean": "bun buddy clean",
