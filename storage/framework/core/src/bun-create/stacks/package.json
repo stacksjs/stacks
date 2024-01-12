@@ -129,15 +129,12 @@
     }
   },
   "workspaces": [
-    "stacks/src/*",
-    "stacks/src/bun-create/*",
-    "stacks/src/cloud/src/server",
-    "stacks/ide/*",
-    "stacks/scripts/*",
-    "stacks/stacks/*",
-    "stacks/vcs/*",
-    "stacks",
-    "storage/framework/*"
+    "storage/framework",
+    "storage/framework/libs/*",
+    "storage/framework/views/*",
+    "storage/framework/core/src/*",
+    "storage/framework/core/src/cloud/src/server",
+    "storage/framework/core/src/bun-create/*"
   ],
   "bun-create": {
     "preinstall": [
