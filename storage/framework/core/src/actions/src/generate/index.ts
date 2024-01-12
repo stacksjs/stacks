@@ -3,10 +3,10 @@ import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/enums'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
+import { frameworkPath, projectPath } from '@stacksjs/path'
+import { runAction } from '../helpers'
 
 // import { files } from '@stacksjs/storage'
-import { projectPath } from '@stacksjs/path'
-import { runAction } from '../helpers'
 
 export async function invoke(options?: GeneratorOptions) {
   if (options?.types)
@@ -38,7 +38,6 @@ export function generate(options: GeneratorOptions) {
 export async function generateLibEntries(options: GeneratorOptions) {
   const result = await runAction(Action.GenerateLibraryEntries, {
     ...options,
-    verbose: true,
     cwd: projectPath(),
   })
 
@@ -109,7 +108,9 @@ export async function generateComponentMeta(options?: GeneratorOptions) {
 }
 
 export async function generateTypes(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateTypes, options)
+  const result = await runNpmScript(NpmScript.GenerateTypes, {
+    cwd: frameworkPath(),
+  })
 
   if (result.isErr()) {
     log.error('There was an error generating your types.', result.error)

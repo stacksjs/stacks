@@ -277,6 +277,7 @@ buddy example:web-components # runs the Web Component example
 
 # you likely won’t need to run these commands as they are auto-triggered, but they are available
 buddy generate  # prompts you to select which generator to run
+buddy generate:types # generates types for your components, functions, & views
 buddy generate:entries # generates entry files for components, functions, & views
 buddy generate:vue-compat # generates Vue 2 compatibility layer
 buddy generate:web-types # generates Web Component types
