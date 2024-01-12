@@ -47,8 +47,8 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Build Core
-        run: cd storage/framework/core && bun run build
+      - name: Build Framework
+        run: cd storage/framework && bun run build
 
       - name: Lint
         run: bunx --bun eslint .
