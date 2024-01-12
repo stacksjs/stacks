@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/vite-plugin-vue-layouts",
   "type": "module",
-  "version": "0.58.16",
+  "version": "0.58.17",
   "description": "Router based layout plugin for Vite and Vue.",
   "authors": [
     "johncampionjr <npm@relate.dev>",
