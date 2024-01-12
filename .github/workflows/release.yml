@@ -44,21 +44,19 @@ jobs:
         run: bunx pnpm --filter='./storage/framework' build
 
       - name: Publish framework
-        run: cd ./storage/framework/core/scripts && ./publish
+        run: ./storage/framework/core/scripts/publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      # - name: Publish dummy libraries
-      #   run: bunx pnpm --filter='./framework' publish:dummy-libs
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Publish dummy libraries
+        run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
-        run: bunx pnpm --filter='./framework/ide/vscode' release
+        run: bunx pnpm --filter='./storage/framework/ide/vscode' release
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-
-      - run: cd ../
 
       - name: Create GitHub release
         run: bunx changelogithub
