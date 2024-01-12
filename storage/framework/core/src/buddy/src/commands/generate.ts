@@ -7,7 +7,6 @@ import {
   generatePkgxConfig,
   generateTypes,
   generateVsCodeCustomData,
-  generateVueCompat,
   generateWebTypes,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
@@ -23,7 +22,6 @@ export function generate(buddy: CLI) {
     webTypes: 'Generate web-types.json for IDEs',
     customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
     ideHelpers: 'Generate IDE helpers',
-    vueCompat: 'Generate Vue 2 & 3 compatibility',
     componentMeta: 'Generate component meta information',
     tea: 'Generate the Tea configuration file',
     select: 'What are you trying to generate?',
@@ -37,7 +35,6 @@ export function generate(buddy: CLI) {
     .option('-w, --web-types', descriptions.webTypes)
     .option('-c, --custom-data', descriptions.customData)
     .option('-i, --ide-helpers', descriptions.ideHelpers)
-    .option('-v, --vue-compatibility', descriptions.vueCompat)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-tc, --tea-config', descriptions.tea)
     .option('--verbose', descriptions.verbose, { default: false })
@@ -51,8 +48,7 @@ export function generate(buddy: CLI) {
               { label: '3.) Web Types', value: 'web-types' },
               { label: '4.) VS Code Custom Data', value: 'custom-data' },
               { label: '5.) IDE Helpers', value: 'ide-helpers' },
-              { label: '6.) Vue 2 & 3 Compatibility', value: 'vue-compatibility' },
-              { label: '7.) Component Meta', value: 'component-meta' },
+              { label: '6.) Component Meta', value: 'component-meta' },
             ],
           })
 
@@ -81,13 +77,6 @@ export function generate(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateLibEntries(options)
-    })
-
-  buddy
-    .command('generate:vue-compatibility', descriptions.vueCompat)
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: GeneratorOptions) => {
-      await generateVueCompat(options)
     })
 
   buddy
@@ -138,5 +127,5 @@ export function generate(buddy: CLI) {
 }
 
 function hasNoOptions(options: GeneratorOptions) {
-  return !options.types && !options.entries && !options.webTypes && !options.customData && !options.ideHelpers && !options.vueCompatibility && !options.componentMeta
+  return !options.types && !options.entries && !options.webTypes && !options.customData && !options.ideHelpers && !options.componentMeta
 }

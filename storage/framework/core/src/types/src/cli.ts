@@ -202,7 +202,7 @@ export type DevOptions = {
   [key in DevOption]: boolean;
 } & CliOptions
 
-export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'vueCompatibility' | 'componentMeta'
+export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'componentMeta'
 export type GeneratorOptions = {
   [key in GeneratorOption]?: boolean;
 } & CliOptions

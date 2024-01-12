@@ -337,7 +337,6 @@ declare global {
   const generateSeeder: typeof import('../core/src/actions/src/generate/index')['generateSeeder']
   const generateTypes: typeof import('../core/src/actions/src/generate/index')['generateTypes']
   const generateVsCodeCustomData: typeof import('../core/src/actions/src/generate/index')['generateVsCodeCustomData']
-  const generateVueCompat: typeof import('../core/src/actions/src/generate/index')['generateVueCompat']
   const generateWebTypes: typeof import('../core/src/actions/src/generate/index')['generateWebTypes']
   const get: typeof import('../core/src/storage/src/files')['get']
   const getActiveHead: typeof import('@unhead/vue')['getActiveHead']
@@ -1258,7 +1257,6 @@ declare module 'vue' {
     readonly generateSeeder: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateSeeder']>
     readonly generateTypes: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateVsCodeCustomData']>
-    readonly generateVueCompat: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateVueCompat']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateWebTypes']>
     readonly get: UnwrapRef<typeof import('../core/src/storage/src/files')['get']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
@@ -2158,7 +2156,6 @@ declare module '@vue/runtime-core' {
     readonly generateSeeder: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateSeeder']>
     readonly generateTypes: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateVsCodeCustomData']>
-    readonly generateVueCompat: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateVueCompat']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/src/actions/src/generate/index')['generateWebTypes']>
     readonly get: UnwrapRef<typeof import('../core/src/storage/src/files')['get']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>

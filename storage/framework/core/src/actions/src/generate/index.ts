@@ -24,9 +24,6 @@ export async function invoke(options?: GeneratorOptions) {
   else if (options?.ideHelpers)
     await generateIdeHelpers(options)
 
-  else if (options?.vueCompatibility)
-    await generateVueCompat(options)
-
   else if (options?.componentMeta)
     await generateComponentMeta(options)
 }
@@ -47,17 +44,6 @@ export async function generateLibEntries(options: GeneratorOptions) {
   }
 
   log.success('Library entry points generated successfully')
-}
-
-export async function generateVueCompat(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateVueCompat, options)
-
-  if (result.isErr()) {
-    log.error('There was an error generating Vue 2 compatibility.', result.error)
-    process.exit()
-  }
-
-  log.success('Libraries are now Vue 2 & 3 compatible')
 }
 
 export async function generateWebTypes(options?: GeneratorOptions) {
