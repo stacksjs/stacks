@@ -410,7 +410,6 @@
     "generate": "bun buddy generate",
     "generate:types": "bun ./core/src/actions/src/generate/types.ts",
     "generate:entries": "bun buddy generate:entries",
-    "generate:vue-compat": "bun ./core/src/actions/src/generate/vue-compat.ts",
     "generate:vscode-custom-data": "bun ./core/src/actions/src/generate/vscode-custom-data.ts",
     "generate:web-types": "vue-docgen-web-types -c ./src/build/web-types.config.cjs",
     "generate:component-meta": "bun ./core/src/actions/src/generate/component-meta.ts",

@@ -85,7 +85,6 @@
     "generate": "bun run buddy generate",
     "generate:types": "bun run buddy generate:types",
     "generate:entries": "bun run buddy generate:entries",
-    "generate:vue-compat": "bun run buddy generate:vue-compat",
     "generate:vscode-custom-data": "bun run buddy generate:vscode-custom-data",
     "generate:web-types": "bun run buddy generate:web-types",
     "generate:component-meta": "bun run buddy generate:component-meta",
