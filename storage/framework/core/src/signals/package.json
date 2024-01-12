@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/signals",
   "type": "module",
-  "version": "0.58.22",
+  "version": "0.58.23",
   "description": "The Stacks signals integration, based on Maverick.",
   "author": "Chris Breuer",
   "license": "MIT",
