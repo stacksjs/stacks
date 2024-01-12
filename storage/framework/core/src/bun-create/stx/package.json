@@ -125,7 +125,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "stacks/node_modules/cz-git"
+      "path": "node_modules/cz-git"
     }
   },
   "workspaces": [
@@ -142,7 +142,8 @@
       "git clone https://github.com/stacksjs/stacks.git ."
     ],
     "postinstall": [
-      "echo 'Done!'"
+      "echo 'Done for now! But need to enable the following:'",
+      "echo '1. run `buddy setup`"
     ],
     "start": "bun run dev"
   }

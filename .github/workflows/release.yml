@@ -16,6 +16,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # this is only needed while `bun publish` is not yet available (npm publish is used instead)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
