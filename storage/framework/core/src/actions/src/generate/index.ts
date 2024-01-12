@@ -72,7 +72,10 @@ export async function generateWebTypes(options?: GeneratorOptions) {
 }
 
 export async function generateVsCodeCustomData(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, options)
+  const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, {
+    cwd: frameworkPath(),
+    ...options,
+  })
 
   if (result.isErr()) {
     log.error('There was an error generating the custom-elements.json file.', result.error)
@@ -110,6 +113,7 @@ export async function generateComponentMeta(options?: GeneratorOptions) {
 export async function generateTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateTypes, {
     cwd: frameworkPath(),
+    ...options,
   })
 
   if (result.isErr()) {

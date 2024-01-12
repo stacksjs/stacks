@@ -132,7 +132,7 @@ export function corePath(path?: string) {
 }
 
 export function customElementsDataPath() {
-  return corePath('custom-elements.json')
+  return frameworkPath('core/custom-elements.json')
 }
 
 export function databasePath(path?: string) {
