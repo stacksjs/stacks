@@ -1,5 +1,9 @@
 # Stacks Changelog
 
+## v0.58.17...v0.58.17-1-gbc6c105ff
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.58.17...v0.58.17-1-gbc6c105ff)
+
 ## v0.58.15...v0.58.16
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.58.15...v0.58.16)
