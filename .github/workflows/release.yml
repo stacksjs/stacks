@@ -37,14 +37,14 @@ jobs:
         run: bunx pnpm --filter='./storage/framework' build
 
       - name: Publish framework
-        run: cd ./storage && bunx pnpm --filter='./framework' publish:framework
+        run: cd ./storage/framework/core/scripts && ./publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish dummy libraries
-        run: bunx pnpm --filter='./framework' publish:dummy-libs
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      # - name: Publish dummy libraries
+      #   run: bunx pnpm --filter='./framework' publish:dummy-libs
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
         run: bunx pnpm --filter='./framework/ide/vscode' release

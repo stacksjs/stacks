@@ -331,26 +331,19 @@
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
-    ".gitignore",
-    ".simple-git-hooks.js",
-    "README.md",
     "buddy",
     "core",
-    "custom-elements.json",
     "ide",
     "package.json",
-    "scripts",
-    "src",
-    "tsconfig.json",
-    "vcs",
-    "web-types.json"
+    "stubs",
+    "vcs"
   ],
   "scripts": {
     "buddy": "bun --bun run ./core/src/buddy/src/cli.ts",
     "build": "./core/scripts/build",
     "dev": "bunx pnpm --filter='./core/src/**' dev",
     "up": "bunx taze major -I",
-    "publish:framework": "bunx pnpm --filter './core/src/**' publish --access public --no-git-checks",
+    "publish:framework": "./core/scripts/publish",
     "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "bun buddy fresh",
     "clean": "bun buddy clean",

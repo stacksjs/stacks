@@ -38,7 +38,6 @@
     "build:app": "bun --bun vite build ../../../storage/framework/desktop/music -c ../../src/vite/src/music.ts",
     "dev": "bun --bun vite serve ../../../storage/framework/desktop/music -c ../../src/vite/src/music.ts",
     "dev:app": "tauri dev",
-    "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
