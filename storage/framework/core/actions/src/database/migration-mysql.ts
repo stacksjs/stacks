@@ -1,4 +1,4 @@
-import User from '../../../../../../../app/Models/User'
+import User from '../../../../../../app/Models/User'
 import { fieldAssociation, fieldEntity, modelEntity } from './fields'
 
 const file = Bun.file('user-migration.ts')

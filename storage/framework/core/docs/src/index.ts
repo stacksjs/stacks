@@ -5,7 +5,7 @@ import { path as p } from '@stacksjs/path'
 import { docs } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { kolorist as c } from '@stacksjs/cli'
-import { version } from '../../../../../../package.json'
+import { version } from '../../../../../package.json'
 
 export const frameworkDefaults = {
   base: '/docs/',

@@ -1211,6 +1211,7 @@ declare module 'vue' {
     readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
+    readonly envKeys: UnwrapRef<typeof import('../core/env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -1473,6 +1474,7 @@ declare module 'vue' {
     readonly pausableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['pausableWatch']>
     readonly paymentsPath: UnwrapRef<typeof import('../core/path/src/index')['paymentsPath']>
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
+    readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>
@@ -2111,6 +2113,7 @@ declare module '@vue/runtime-core' {
     readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
+    readonly envKeys: UnwrapRef<typeof import('../core/env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -2373,6 +2376,7 @@ declare module '@vue/runtime-core' {
     readonly pausableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['pausableWatch']>
     readonly paymentsPath: UnwrapRef<typeof import('../core/path/src/index')['paymentsPath']>
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
+    readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>

@@ -1,4 +1,4 @@
-import User from '../../../../../../../app/Models/User'
+import User from '../../../../../../app/Models/User'
 
 const fields = User.fields // Assuming you have a specific type for fields
 
