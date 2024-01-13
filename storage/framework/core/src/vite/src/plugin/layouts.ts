@@ -1,9 +1,5 @@
 import { path as p } from '@stacksjs/path'
-
-// @ts-expect-error missing types - somehow, @stacksjs/vite-plugin-vue-layouts does not work
 import Layouts from 'vite-plugin-vue-layouts'
-
-// @ts-expect-error missing types - somehow, @stacksjs/vite-plugin-vue-layouts does not work
 import type { UserOptions as LayoutOptions } from 'vite-plugin-vue-layouts'
 
 export function layouts(options?: LayoutOptions, isMain = true) {
@@ -11,8 +7,8 @@ export function layouts(options?: LayoutOptions, isMain = true) {
     return Layouts(options)
 
   return Layouts({
-    layoutsDirs: p.resourcesPath('layouts'),
-    defaultLayout: p.resourcesPath('layouts/default.stx'),
+    layoutsDirs: p.layoutsPath(),
+    defaultLayout: p.layoutsPath('default.stx'),
     exclude: [
       p.resourcesPath('layouts/mails'),
     ],
