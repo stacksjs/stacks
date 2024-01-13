@@ -7,10 +7,11 @@ export function layouts(options?: LayoutOptions, isMain = true) {
     return Layouts(options)
 
   return Layouts({
+    extensions: ['stx', 'vue'],
     layoutsDirs: p.layoutsPath(),
     defaultLayout: p.layoutsPath('default.stx'),
     exclude: [
-      p.resourcesPath('layouts/mails'),
+      p.layoutsPath('mails'),
     ],
     ...options,
   })
