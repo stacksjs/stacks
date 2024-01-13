@@ -1,0 +1,61 @@
+{
+  "name": "@stacksjs/logging",
+  "type": "module",
+  "version": "0.58.24",
+  "description": "The Stacks logging system.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/logging#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/logging"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "logging",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*"
+  },
+  "dependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "consola": "^3.2.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

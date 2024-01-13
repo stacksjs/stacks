@@ -56,180 +56,180 @@ web:
   - ./storage/framework/core/views/web/**
 
 actions:
-  - 'storage/framework/core/src/actions/**'
+  - 'storage/framework/core/actions/**'
 
 ai:
-  - 'storage/framework/core/src/ai/**'
+  - 'storage/framework/core/ai/**'
 
 alias:
-  - 'storage/framework/core/src/alias/**'
+  - 'storage/framework/core/alias/**'
 
 analytics:
-  - 'storage/framework/core/src/analytics/**'
+  - 'storage/framework/core/analytics/**'
 
 arrays:
-  - 'storage/framework/core/src/utils/arrays/**'
+  - 'storage/framework/core/utils/arrays/**'
 
 auth:
-  - 'storage/framework/core/src/auth/**'
+  - 'storage/framework/core/auth/**'
 
 buddy:
-  - 'storage/framework/core/src/buddy/**'
+  - 'storage/framework/core/buddy/**'
 
 build:
-  - 'storage/framework/core/src/build/**'
+  - 'storage/framework/core/build/**'
 
 cache:
-  - 'storage/framework/core/src/cache/**'
+  - 'storage/framework/core/cache/**'
 
 chat:
-  - 'storage/framework/core/src/notifications/chat/**'
+  - 'storage/framework/core/notifications/chat/**'
 
 cli:
-  - 'storage/framework/core/src/cli/**'
+  - 'storage/framework/core/cli/**'
   - app/Commands/**
 
 cloud:
-  - 'storage/framework/core/src/cloud/**'
+  - 'storage/framework/core/cloud/**'
 
 collections:
-  - 'storage/framework/core/src/utils/collections/**'
+  - 'storage/framework/core/utils/collections/**'
 
 config:
-  - 'storage/framework/core/src/config/**'
+  - 'storage/framework/core/config/**'
   - config/**
 
 database:
-  - 'storage/framework/core/src/database/**'
+  - 'storage/framework/core/database/**'
 
 datetime:
-  - 'storage/framework/core/src/utils/datetime/**'
+  - 'storage/framework/core/utils/datetime/**'
 
 desktop:
-  - 'storage/framework/core/src/desktop/**'
+  - 'storage/framework/core/desktop/**'
   - ./storage/framework/core/views/desktop/**
 
 development:
-  - 'storage/framework/core/src/development/**'
+  - 'storage/framework/core/development/**'
 
 dns:
-  - 'storage/framework/core/src/dns/**'
+  - 'storage/framework/core/dns/**'
 
 docs:
-  - 'storage/framework/core/src/docs/**'
+  - 'storage/framework/core/docs/**'
   - 'storage/framework/docs/**'
   - docs/**
   - config/docs.ts
 
 email:
-  - 'storage/framework/core/src/notifications/email/**'
+  - 'storage/framework/core/notifications/email/**'
 
 error-handling:
-  - 'storage/framework/core/src/error-handling/**'
+  - 'storage/framework/core/error-handling/**'
 
 events:
-  - 'storage/framework/core/src/events/**'
+  - 'storage/framework/core/events/**'
   - app/Events/**
 
 faker:
-  - 'storage/framework/core/src/faker/**'
+  - 'storage/framework/core/faker/**'
 
 git:
-  - 'storage/framework/core/src/utils/git/**'
+  - 'storage/framework/core/utils/git/**'
 
 health:
-  - 'storage/framework/core/src/health/**'
+  - 'storage/framework/core/health/**'
 
 lint:
-  - 'storage/framework/core/src/lint/**'
+  - 'storage/framework/core/lint/**'
 
 logging:
-  - 'storage/framework/core/src/logging/**'
+  - 'storage/framework/core/logging/**'
 
 modules:
-  - 'storage/framework/core/src/modules/**'
+  - 'storage/framework/core/modules/**'
 
 notifications:
-  - 'storage/framework/core/src/notifications/**'
+  - 'storage/framework/core/notifications/**'
   - app/Notifications/**
 
 objects:
-  - 'storage/framework/core/src/utils/objects/**'
+  - 'storage/framework/core/utils/objects/**'
 
 orm:
-  - 'storage/framework/core/src/orm/**'
+  - 'storage/framework/core/orm/**'
 
 pages:
-  - 'storage/framework/core/src/pages/**'
+  - 'storage/framework/core/pages/**'
 
 path:
-  - 'storage/framework/core/src/path/**'
+  - 'storage/framework/core/path/**'
 
 payments:
-  - 'storage/framework/core/src/payments/**'
+  - 'storage/framework/core/payments/**'
 
 push:
-  - 'storage/framework/core/src/notifications/push/**'
+  - 'storage/framework/core/notifications/push/**'
 
 query-builder:
-  - 'storage/framework/core/src/query-builder/**'
+  - 'storage/framework/core/query-builder/**'
 
 queue:
-  - 'storage/framework/core/src/queue/**'
+  - 'storage/framework/core/queue/**'
 
 real-time:
-  - 'storage/framework/core/src/real-time/**'
+  - 'storage/framework/core/real-time/**'
 
 repl:
-  - 'storage/framework/core/src/repl/**'
+  - 'storage/framework/core/repl/**'
 
 router:
-  - 'storage/framework/core/src/router/**'
+  - 'storage/framework/core/router/**'
 
 scheduler:
-  - 'storage/framework/core/src/scheduler/**'
+  - 'storage/framework/core/scheduler/**'
 
 search-engine:
-  - 'storage/framework/core/src/search-engine/**'
+  - 'storage/framework/core/search-engine/**'
 
 security:
-  - 'storage/framework/core/src/security/**'
+  - 'storage/framework/core/security/**'
 
 server:
-  - 'storage/framework/core/src/server/**'
+  - 'storage/framework/core/server/**'
 
 signals:
-  - 'storage/framework/core/src/signals/**'
+  - 'storage/framework/core/signals/**'
 
 slug:
-  - 'storage/framework/core/src/slug/**'
+  - 'storage/framework/core/slug/**'
 
 sms:
-  - 'storage/framework/core/src/notifications/sms/**'
+  - 'storage/framework/core/notifications/sms/**'
 
 storage:
   - storage/**
 
 strings:
-  - 'storage/framework/core/src/utils/strings/**'
+  - 'storage/framework/core/utils/strings/**'
 
 testing:
-  - 'storage/framework/core/src/testing/**'
+  - 'storage/framework/core/testing/**'
 
 tinker:
-  - 'storage/framework/core/src/tinker/**'
+  - 'storage/framework/core/tinker/**'
 
 types:
-  - 'storage/framework/core/src/types/**'
+  - 'storage/framework/core/types/**'
 
 ui:
-  - 'storage/framework/core/src/ui/**'
+  - 'storage/framework/core/ui/**'
 
 utils:
-  - 'storage/framework/core/src/utils/**'
+  - 'storage/framework/core/utils/**'
 
 validation:
-  - 'storage/framework/core/src/validation/**'
+  - 'storage/framework/core/validation/**'
 
 app:
   - app/**

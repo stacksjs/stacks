@@ -1,0 +1,46 @@
+{
+  "name": "@stacksjs/music",
+  "type": "module",
+  "version": "0.58.24",
+  "description": "Stacks Music",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/dashboard#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/music"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "dashboard",
+    "reporting",
+    "analytics",
+    "logs",
+    "debugging",
+    "requests",
+    "stacks"
+  ],
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "build:app": "bun --bun vite build ../../../storage/framework/desktop/music -c ../../src/vite/src/music.ts",
+    "dev": "bun --bun vite serve ../../../storage/framework/desktop/music -c ../../src/vite/src/music.ts",
+    "dev:app": "tauri dev",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

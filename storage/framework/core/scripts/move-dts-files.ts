@@ -7,12 +7,12 @@ import { corePath } from '@stacksjs/path'
 log.info('Getting started to move d.ts & d.ts.map files...')
 
 const files = await glob([
-  '../dist/types/storage/framework/core/src/**/src/*.d.ts',
-  '../dist/types/storage/framework/core/src/**/src/*.d.ts.map',
-  '../dist/types/storage/framework/core/src/**/src/**/*.d.ts',
-  '../dist/types/storage/framework/core/src/**/src/**/*.d.ts.map',
-  '../dist/types/storage/framework/core/src/**/src/**/**/*.d.ts',
-  '../dist/types/storage/framework/core/src/**/src/**/**/*.d.ts.map',
+  '../dist/types/storage/framework/core/**/src/*.d.ts',
+  '../dist/types/storage/framework/core/**/src/*.d.ts.map',
+  '../dist/types/storage/framework/core/**/src/**/*.d.ts',
+  '../dist/types/storage/framework/core/**/src/**/*.d.ts.map',
+  '../dist/types/storage/framework/core/**/src/**/**/*.d.ts',
+  '../dist/types/storage/framework/core/**/src/**/**/*.d.ts.map',
 ])
 
 if (files.length === 0) {
@@ -22,7 +22,7 @@ if (files.length === 0) {
 
 for (const file of files) {
   const path = file
-    .replace('../dist/types/storage/framework/core/src/', '../src/')
+    .replace('../dist/types/storage/framework/core/', '../src/')
     .replace('/src/', '/dist/')
 
   log.info('Moving', italic(file), 'to', italic(path))

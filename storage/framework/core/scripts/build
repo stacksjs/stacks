@@ -4,7 +4,7 @@
 script_dir=$(realpath $(dirname "$0"))
 
 # Get all directories in the core path
-dirs=$(find "$script_dir/../src" -type d -maxdepth 1)
+dirs=$(find "$script_dir/../" -type d -maxdepth 1)
 
 # Check if no directories found
 if [ -z "$dirs" ]; then
@@ -14,6 +14,11 @@ fi
 
 # Loop through each directory
 for dir in $dirs; do
+  # Skip the ../scripts directory
+  if [ "$dir" = "$script_dir/../scripts" ]; then
+    continue
+  fi
+
   echo ""
   echo "🏗️  Building..."
   echo "📦 $dir"
@@ -36,37 +41,6 @@ for dir in $dirs; do
       # Run the extracted command
       eval $cmd
     fi
-
-    # Check if build-server.ts exists in the directory
-    # the cloud package needs this check
-    # if [ -f "build-server.ts" ]; then
-    #   # Extract the command from build-server.ts
-    #   cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build-server.ts)
-    #   # Run the extracted command
-    #   eval $cmd
-    # fi
-
-    # at the end of the build, we need to replace "stacks:" with "@stacksjs/"
-    # Check if dist directory exists
-    # if [ -d "dist" ]; then
-    #   # Change to the dist directory
-    #   cd dist
-
-    #   # Find all files in the dist directory
-    #   files=$(find . -type f)
-
-    #   # Loop through each file
-    #   for file in $files; do
-    #     # Check if the file contains "stacks:"
-    #     if grep -q "stacks:" "$file"; then
-    #       # Replace "stacks:" with "@stacksjs/" and write changes to the file
-    #       sed -i '' 's/stacks:/@stacksjs\//g' "$file" # unsure if this works outside of macos
-    #     fi
-    #   done
-
-    #   # Change back to the parent directory
-    #   cd ..
-    # fi
     ;;
   esac
 

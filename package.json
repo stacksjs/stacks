@@ -19,7 +19,7 @@
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/core/src/buddy/src/cli.ts",
+    "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./storage/framework/core/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
@@ -110,8 +110,8 @@
     "storage/framework",
     "storage/framework/libs/*",
     "storage/framework/views/*",
-    "storage/framework/core/src/*",
-    "storage/framework/core/src/cloud/src/server",
-    "storage/framework/core/src/bun-create/*"
+    "storage/framework/core/*",
+    "storage/framework/core/cloud/src/server",
+    "storage/framework/core/bun-create/*"
   ]
 }

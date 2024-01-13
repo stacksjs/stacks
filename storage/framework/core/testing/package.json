@@ -1,0 +1,62 @@
+{
+  "name": "@stacksjs/testing",
+  "type": "module",
+  "version": "0.58.24",
+  "description": "The Stacks way of testing.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/testing#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/testing"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "tests",
+    "unit",
+    "feature",
+    "e2e",
+    "testing",
+    "utilities",
+    "functions",
+    "playwright",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.40.1"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.1"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

@@ -7,7 +7,7 @@
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/src/dashboard#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/dashboard#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -39,9 +39,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "bun --bun vite -c ../core/src/vite/src/desktop.ts",
+    "dev": "bun --bun vite -c ../core/vite/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bun --bun vite build -c ../core/src/vite/src/desktop.ts",
+    "build": "bun --bun vite build -c ../core/vite/src/desktop.ts",
     "build:app": "tauri build",
     "prepublishOnly": "bun --bun run build",
     "typecheck": "bun --bun tsc --noEmit"

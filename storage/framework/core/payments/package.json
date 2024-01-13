@@ -1,0 +1,60 @@
+{
+  "name": "@stacksjs/payments",
+  "type": "module",
+  "version": "0.58.24",
+  "description": "The Stacks payments package. Currently supporting Stripe.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/payments#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/payments"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "payments",
+    "billing",
+    "utilities",
+    "functions",
+    "stripe",
+    "bun",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun --bun run build"
+  },
+  "dependencies": {
+    "@stacksjs/utils": "workspace:*",
+    "@stripe/stripe-js": "^2.3.0",
+    "stripe": "^14.12.0"
+  },
+  "devDependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*"
+  }
+}

@@ -128,7 +128,7 @@ useHead({
                     20kb
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    ./storage/framework/core/src/components
+                    ./storage/framework/core/components
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                     01-04-2023 08:23:15
@@ -310,7 +310,7 @@ useHead({
                     20kb
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    ./storage/framework/core/src/functions
+                    ./storage/framework/core/functions
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                     01-04-2023 08:23:15
