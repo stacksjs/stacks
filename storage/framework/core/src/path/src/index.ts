@@ -207,6 +207,10 @@ export function langPath(path?: string) {
   return projectPath(`lang/${path || ''}`)
 }
 
+export function layoutsPath(path?: string) {
+  return resourcesPath(`layouts/${path || ''}`)
+}
+
 export type LibraryType = 'vue-components' | 'web-components' | 'functions'
 export function libraryEntryPath(type: LibraryType) {
   return libsEntriesPath(`${type}.ts`)
@@ -462,6 +466,7 @@ export const path = {
   functionsPath,
   gitPath,
   langPath,
+  layoutsPath,
   libsPath,
   libraryEntryPath,
   lintPath,
