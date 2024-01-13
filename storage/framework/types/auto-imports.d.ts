@@ -448,6 +448,7 @@ declare global {
   const join: typeof import('../core/src/path/src/index')['join']
   const langPath: typeof import('../core/src/path/src/index')['langPath']
   const lastPageNumber: typeof import('../core/src/search-engine/src/index')['lastPageNumber']
+  const layoutsPath: typeof import('../core/src/path/src/index')['layoutsPath']
   const lessThan: typeof import('../core/src/utils/src/currency')['lessThan']
   const lessThanOrEqual: typeof import('../core/src/utils/src/currency')['lessThanOrEqual']
   const letter: typeof import('../core/src/utils/src/regex')['letter']
@@ -1366,6 +1367,7 @@ declare module 'vue' {
     readonly join: UnwrapRef<typeof import('../core/src/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/src/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/src/search-engine/src/index')['lastPageNumber']>
+    readonly layoutsPath: UnwrapRef<typeof import('../core/src/path/src/index')['layoutsPath']>
     readonly lessThan: UnwrapRef<typeof import('../core/src/utils/src/currency')['lessThan']>
     readonly lessThanOrEqual: UnwrapRef<typeof import('../core/src/utils/src/currency')['lessThanOrEqual']>
     readonly letter: UnwrapRef<typeof import('../core/src/utils/src/regex')['letter']>
@@ -2265,6 +2267,7 @@ declare module '@vue/runtime-core' {
     readonly join: UnwrapRef<typeof import('../core/src/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/src/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/src/search-engine/src/index')['lastPageNumber']>
+    readonly layoutsPath: UnwrapRef<typeof import('../core/src/path/src/index')['layoutsPath']>
     readonly lessThan: UnwrapRef<typeof import('../core/src/utils/src/currency')['lessThan']>
     readonly lessThanOrEqual: UnwrapRef<typeof import('../core/src/utils/src/currency')['lessThanOrEqual']>
     readonly letter: UnwrapRef<typeof import('../core/src/utils/src/regex')['letter']>

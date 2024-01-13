@@ -46,6 +46,7 @@ cmake
 codecov
 codeowners
 colorette
+Combobox
 commitizen
 commitlint
 commitlintrc
