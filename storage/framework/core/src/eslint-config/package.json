@@ -89,7 +89,7 @@
     "eslint-plugin-unicorn": "^50.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
     "eslint-plugin-vitest": "^0.3.20",
-    "eslint-plugin-vue": "^9.20.0",
+    "eslint-plugin-vue": "^9.20.1",
     "eslint-plugin-yml": "^1.11.0",
     "eslint-processor-vue-blocks": "^0.1.1",
     "globals": "^13.24.0",
