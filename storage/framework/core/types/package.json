@@ -77,10 +77,10 @@
     "vite-plugin-pwa": "^0.17.4",
     "vite-ssg": "^0.23.6",
     "vitepress": "1.0.0-rc.36",
-    "vue": "^3.4.12"
+    "vue": "^3.4.13"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.121.0",
+    "aws-cdk-lib": "^2.121.1",
     "typescript": "^5.3.3"
   }
 }
