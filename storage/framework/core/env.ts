@@ -3,6 +3,8 @@
 //
 // For more information, please visit: https://stacksjs.org/docs
 
+export const env = {}
+
 export const envKeys = [
   'APP_NAME',
   'APP_ENV',

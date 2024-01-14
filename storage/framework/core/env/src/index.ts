@@ -2,7 +2,7 @@ import p from 'node:process'
 import fs from 'fs-extra'
 import { projectPath } from '@stacksjs/path'
 import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
-import type { EnvKey } from '../../../../stack/env'
+import type { EnvKey } from '../../env'
 import type { Env } from './types'
 
 // interface EnumObject {

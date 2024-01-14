@@ -2,7 +2,7 @@ import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { env as e, enums } from '@stacksjs/env'
 import { logger } from '@stacksjs/logging'
-import { envKeys } from '../../../../../stack/env'
+import { envKeys } from '../../../env'
 
 logger.log('Generating type env files...')
 
@@ -66,7 +66,7 @@ declare module 'bun' {
 }
 `
 
-await storage.writeFile(p.projectStoragePath('framework/types/env.d.ts'), envTypes)
+await storage.writeFile(p.frameworkPath('types/env.d.ts'), envTypes)
 
 logger.log('  - ./storage/framework/core/env.ts')
 
