@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/development",
   "type": "module",
-  "version": "0.58.27",
+  "version": "0.58.28",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
   "license": "MIT",
