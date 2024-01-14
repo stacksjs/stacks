@@ -54,13 +54,7 @@
     "../../../**/*.ts",
     "../../../*.d.ts",
     "../../../**/*.d.ts",
-    "../docs/.vitepress/*",
-    "../stack/**/*",
-    "../views/desktop/**/*",
-    "../views/desktop/*",
-    "./src/**/*.ts",
-    "../types/*",
-    "./scripts/*"
+    "../docs/.vitepress/*"
   ],
   "exclude": [
     "../**/cdk.out",

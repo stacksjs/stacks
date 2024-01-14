@@ -1,5 +1,6 @@
 /* eslint-disable */
 import type { Server, ServerWebSocket } from 'bun'
+// @ts-expect-error: missing types
 import { AwsClient } from 'aws4fetch'
 
 interface Lambda {

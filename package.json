@@ -108,6 +108,7 @@
   },
   "workspaces": [
     "storage/framework",
+    "storage/framework/server",
     "storage/framework/libs/*",
     "storage/framework/views/*",
     "storage/framework/core/*",
