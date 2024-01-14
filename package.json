@@ -111,7 +111,6 @@
     "storage/framework/libs/*",
     "storage/framework/views/*",
     "storage/framework/core/*",
-    "storage/framework/core/cloud/src/server",
     "storage/framework/core/bun-create/*"
   ]
 }
