@@ -6,7 +6,8 @@ COPY ./runtime.ts ./runtime.ts
 COPY ./index.ts ./index.ts
 RUN bun install aws4fetch
 RUN bun build --compile runtime.ts --outfile bootstrap
-RUN bun build --target=bun index.ts --outfile index
+# TODO: we should not externalize @stacksjs/router here?
+RUN bun build --target=bun index.ts --outfile index --external @stacksjs/router
 
 # Runtime image, includes Lambda RIC
 FROM public.ecr.aws/lambda/provided:al2
