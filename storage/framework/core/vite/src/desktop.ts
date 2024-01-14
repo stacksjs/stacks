@@ -6,7 +6,7 @@ import { autoImports, components, cssEngine, layouts, pages, uiEngine } from './
 import { defineConfig } from '.'
 
 export const pagesConfig = {
-  root: p.projectStoragePath('framework/dashboard'),
+  root: p.frameworkPath('views/desktop'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.projectPath('public'),

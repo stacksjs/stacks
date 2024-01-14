@@ -13,7 +13,7 @@
     "paths": {
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
-      "buddy": ["./buddy/index.ts"],
+      "buddy": ["./buddy/src/index.ts"],
       "buddy/*": ["./buddy/src/*"],
       "~/*": ["../../../*"]
     },
