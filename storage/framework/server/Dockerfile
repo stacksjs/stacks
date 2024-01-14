@@ -5,7 +5,7 @@ WORKDIR /tmp
 COPY ./runtime.ts ./runtime.ts
 COPY ./index.ts ./index.ts
 
-RUN bun add aws4fetch @stacksjs/cloud
+RUN bun add aws4fetch
 RUN bun build --compile runtime.ts --outfile bootstrap
 # TODO: remove the --external @stacksjs/cloud
 RUN bun build --target=bun index.ts --outfile index --external @stacksjs/cloud

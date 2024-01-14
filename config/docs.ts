@@ -146,6 +146,7 @@ const sidebar = {
             { text: 'HTTP', link: '/guide/buddy/http' },
             { text: 'DNS', link: '/guide/buddy/dns' },
             { text: 'Key', link: '/guide/buddy/key' },
+            { text: 'Projects', link: '/guide/buddy/projects' }, // includes `buddy cd`
             { text: 'Domains', link: '/guide/buddy/domains' },
             { text: 'Generate', link: '/guide/buddy/generate' },
             { text: 'Test', link: '/guide/buddy/test' },
