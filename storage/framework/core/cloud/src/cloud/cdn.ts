@@ -7,7 +7,7 @@ import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
-import type { EnvKey } from '../../../env'
+import type { EnvKey } from '../../../../env'
 
 export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate

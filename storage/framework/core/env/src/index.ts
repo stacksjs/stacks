@@ -2,20 +2,20 @@ import p from 'node:process'
 import fs from 'fs-extra'
 import { projectPath } from '@stacksjs/path'
 import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
-import type { EnvKey } from '../../env'
+import type { EnvKey } from '../../../env'
 import type { Env } from './types'
 
-// interface EnumObject {
-//   [key: string]: string[]
-// }
+interface EnumObject {
+  [key: string]: string[]
+}
 
-// export const enums: EnumObject = {
-//   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
-//   DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'planetscale'],
-//   MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
-//   SEARCH_ENGINE_DRIVER: ['meilisearch', 'algolia', 'typesense'],
-//   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
-// }
+export const enums: EnumObject = {
+  APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
+  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'planetscale'],
+  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
+  SEARCH_ENGINE_DRIVER: ['meilisearch', 'algolia', 'typesense'],
+  FRONTEND_APP_ENV: ['development', 'staging', 'production'],
+}
 
 const handler = {
   get: (target: Env, key: EnvKey) => {

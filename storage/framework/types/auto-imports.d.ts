@@ -288,7 +288,7 @@ declare global {
   const enums: typeof import('../core/index')['enums']
   const enumsPath: typeof import('../core/path/src/index')['enumsPath']
   const env: typeof import('../core/env/src/index')['env']
-  const envKeys: typeof import('../core/env')['envKeys']
+  const envKeys: typeof import('../env')['envKeys']
   const envSchema: typeof import('../core/env/src/types')['envSchema']
   const equal: typeof import('../core/utils/src/currency')['equal']
   const err: typeof import('../core/error-handling/src/index')['err']
@@ -1211,7 +1211,7 @@ declare module 'vue' {
     readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
-    readonly envKeys: UnwrapRef<typeof import('../core/env')['envKeys']>
+    readonly envKeys: UnwrapRef<typeof import('../env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -2113,7 +2113,7 @@ declare module '@vue/runtime-core' {
     readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
-    readonly envKeys: UnwrapRef<typeof import('../core/env')['envKeys']>
+    readonly envKeys: UnwrapRef<typeof import('../env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
