@@ -285,7 +285,7 @@ declare global {
   const emailPath: typeof import('../core/path/src/index')['emailPath']
   const encrypt: typeof import('../core/security/src/crypt')['encrypt']
   const ensureProjectIsInitialized: typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']
-  const enums: typeof import('../core/index')['enums']
+  const enums: typeof import('../core/env/src/index')['enums']
   const enumsPath: typeof import('../core/path/src/index')['enumsPath']
   const env: typeof import('../core/env/src/index')['env']
   const envKeys: typeof import('../env')['envKeys']
@@ -1208,10 +1208,9 @@ declare module 'vue' {
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
     readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
-    readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
+    readonly enums: UnwrapRef<typeof import('../core/env/src/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
-    readonly envKeys: UnwrapRef<typeof import('../env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
@@ -2110,10 +2109,9 @@ declare module '@vue/runtime-core' {
     readonly emailPath: UnwrapRef<typeof import('../core/path/src/index')['emailPath']>
     readonly encrypt: UnwrapRef<typeof import('../core/security/src/crypt')['encrypt']>
     readonly ensureProjectIsInitialized: UnwrapRef<typeof import('../core/utils/src/helpers')['ensureProjectIsInitialized']>
-    readonly enums: UnwrapRef<typeof import('../core/index')['enums']>
+    readonly enums: UnwrapRef<typeof import('../core/env/src/index')['enums']>
     readonly enumsPath: UnwrapRef<typeof import('../core/path/src/index')['enumsPath']>
     readonly env: UnwrapRef<typeof import('../core/env/src/index')['env']>
-    readonly envKeys: UnwrapRef<typeof import('../env')['envKeys']>
     readonly envSchema: UnwrapRef<typeof import('../core/env/src/types')['envSchema']>
     readonly equal: UnwrapRef<typeof import('../core/utils/src/currency')['equal']>
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
