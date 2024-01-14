@@ -6,7 +6,8 @@
     "@aws-sdk/client-dynamodb": "^3.490.0",
     "@aws-sdk/lib-dynamodb": "^3.490.0",
     "@smithy/smithy-client": "^2.2.1",
-    "@stacksjs/router": "latest",
+    "@stacksjs/config": "^0.58.28",
+    "@stacksjs/router": "^0.58.28",
     "aws4fetch": "^1.0.17"
   }
 }

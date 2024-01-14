@@ -31,7 +31,7 @@ export class ComputeStack {
 
     this.apiServer = new lambda.Function(scope, 'WebServer', {
       description: 'The web server for the Stacks application',
-      code: lambda.Code.fromAssetImage(p.cloudPath('src/server')),
+      code: lambda.Code.fromAssetImage(p.frameworkPath('server')),
       handler: lambda.Handler.FROM_IMAGE,
       runtime: lambda.Runtime.FROM_IMAGE,
       vpc,

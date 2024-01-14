@@ -103,7 +103,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./storage/framework/core/node_modules/cz-git"
+      "path": "./node_modules/cz-git"
     }
   },
   "workspaces": [
