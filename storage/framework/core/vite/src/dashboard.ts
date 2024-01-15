@@ -21,8 +21,7 @@ export default defineConfig({
     },
   },
 
-  root: p.frameworkPath('dashboard'),
-  // root: p.frameworkPath('views/web'),
+  root: p.frameworkPath('views/dashboard'),
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',

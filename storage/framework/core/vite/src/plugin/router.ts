@@ -11,7 +11,7 @@ export function router(type: RouterType = 'web') {
       extensions: ['.stx', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [
-        p.frameworkPath('dashboard/src/pages'),
+        p.frameworkPath('views/dashboard/src/pages'),
       ],
       logs: config.app.debug || false,
     })
