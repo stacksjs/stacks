@@ -57,7 +57,7 @@ export default defineConfig({
       extensions: ['stx'],
       layoutsDirs: p.frameworkPath('views/dashboard/src/layouts'),
       defaultLayout: p.frameworkPath('views/dashboard/src/layouts/default.stx'),
-    }, false),
+    }),
     // autoImports(),
     // components(),
     cssEngine(),
