@@ -8,8 +8,8 @@ export * as functions from './functions'
 export * as views from './views'
 export * as vueComponents from './components'
 export * as webComponents from './web-components'
-export * from './stacks'
-export * as stacks from './stacks'
+export * from './plugins'
+export * as stacks from './plugins'
 export { docsEngine } from './plugin/docs'
 
 function loadEnv(...args: Parameters<typeof viteLoadEnv>): Env {

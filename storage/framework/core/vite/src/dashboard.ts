@@ -5,7 +5,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import VueMacros from 'unplugin-vue-macros/vite'
-import { cssEngine, devtools, i18n, layouts, router } from './stacks'
+import { cssEngine, devtools, i18n, layouts, router } from './plugins'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 
