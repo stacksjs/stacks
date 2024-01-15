@@ -66,7 +66,7 @@
     "bun-types": "canary",
     "cac": "^6.7.14",
     "markdown-it": "^14.0.0",
-    "meilisearch": "^0.36.0",
+    "meilisearch": "^0.37.0",
     "neverthrow": "^6.1.0",
     "ora": "^8.0.1",
     "unocss": "^0.58.3",

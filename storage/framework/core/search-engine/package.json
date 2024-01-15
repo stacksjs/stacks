@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@opensearch-project/opensearch": "^2.5.0",
-    "meilisearch": "^0.36.0"
+    "meilisearch": "^0.37.0"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
