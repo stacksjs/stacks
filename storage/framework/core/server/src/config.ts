@@ -1,5 +1,5 @@
 interface ServerOptions {
-  type?: 'frontend' | 'api' | 'library' | 'desktop' | 'admin' | 'docs' | 'example'
+  type?: 'frontend' | 'api' | 'library' | 'desktop' | 'docs' | 'example' | 'dashboard'
   host?: string
   port?: number
   open?: boolean
@@ -17,7 +17,7 @@ export function config(options: ServerOptions) {
       port: 3334,
     },
 
-    admin: {
+    dashboard: {
       host: 'localhost',
       port: 3335,
     },
@@ -43,7 +43,7 @@ export function config(options: ServerOptions) {
     },
   }
 
-  if (options.type && ['frontend', 'api', 'library', 'desktop', 'admin', 'docs', 'example'].includes(options.type)) {
+  if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard'].includes(options.type)) {
     return {
       host: serversMap[options.type].host,
       port: serversMap[options.type].port,

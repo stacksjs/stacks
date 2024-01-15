@@ -27,6 +27,11 @@ export async function runComponentsDevServer(options: DevOptions) {
   await runAction(Action.DevComponents, options)
 }
 
+export async function runDashboardDevServer(options: DevOptions) {
+  log.info('Starting your Dashboard...')
+  await runAction(Action.DevDashboard, options)
+}
+
 export async function runDesktopDevServer(options: DevOptions) {
   log.info('Starting your Desktop Engine...')
   await runAction(Action.DevDesktop, options)

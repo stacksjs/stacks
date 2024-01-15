@@ -616,6 +616,7 @@ declare global {
   const runBackendDevServer: typeof import('../core/actions/src/dev/index')['runBackendDevServer']
   const runCommit: typeof import('../core/actions/src/index')['runCommit']
   const runComponentsDevServer: typeof import('../core/actions/src/dev/index')['runComponentsDevServer']
+  const runDashboardDevServer: typeof import('../core/actions/src/dev/index')['runDashboardDevServer']
   const runDesktopDevServer: typeof import('../core/actions/src/dev/index')['runDesktopDevServer']
   const runDevServer: typeof import('../core/actions/src/dev/index')['runDevServer']
   const runDocsDevServer: typeof import('../core/actions/src/dev/index')['runDocsDevServer']
@@ -1533,6 +1534,7 @@ declare module 'vue' {
     readonly runBackendDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runBackendDevServer']>
     readonly runCommit: UnwrapRef<typeof import('../core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
+    readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -2434,6 +2436,7 @@ declare module '@vue/runtime-core' {
     readonly runBackendDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runBackendDevServer']>
     readonly runCommit: UnwrapRef<typeof import('../core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
+    readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>

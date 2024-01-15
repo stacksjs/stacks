@@ -1,10 +1,9 @@
 import process from 'node:process'
 import { Action } from '@stacksjs/enums'
-import { runAction, runApiDevServer, runComponentsDevServer, runDocsDevServer, runFrontendDevServer } from '@stacksjs/actions'
+import { runAction, runApiDevServer, runComponentsDevServer, runDashboardDevServer, runDocsDevServer, runFrontendDevServer } from '@stacksjs/actions'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, prompt, runCommand } from '@stacksjs/cli'
-import { sleep } from '@stacksjs/utils'
 import { libsPath } from '@stacksjs/path'
 
 export function dev(buddy: CLI) {
@@ -24,7 +23,7 @@ export function dev(buddy: CLI) {
   }
 
   buddy
-    .command('dev [server]', descriptions.dev)
+    .command('dev [server]', descriptions.dev) // server is optional because options can be used
     .option('-f, --frontend', descriptions.frontend)
     .option('-a, --api', descriptions.api)
     .option('-e, --email', descriptions.email)
@@ -48,9 +47,6 @@ export function dev(buddy: CLI) {
 
       // runAction(Action.StartCaddy, { ...options, silent: true })
 
-      // just for a better UX
-      await sleep(100)
-
       switch (server) {
         case 'frontend':
           await runFrontendDevServer(options)
@@ -61,9 +57,9 @@ export function dev(buddy: CLI) {
         case 'components':
           await runComponentsDevServer(options)
           break
-          // case 'dashboard':
-          //   await runDashboardDevServer(options)
-          //   break
+        case 'dashboard':
+          await runDashboardDevServer(options)
+          break
         case 'desktop':
           await runDesktopDevServer(options)
           break

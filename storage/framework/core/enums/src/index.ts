@@ -60,6 +60,7 @@ export enum Action {
   Changelog = 'changelog',
   Clean = 'clean',
   DevComponents = 'dev/components',
+  DevDashboard = 'dev/dashboard',
   Dev = 'dev/views',
   DevApi = 'dev/api',
   DevDesktop = 'dev/desktop',
