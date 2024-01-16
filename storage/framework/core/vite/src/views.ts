@@ -59,7 +59,12 @@ export default defineConfig({
     }),
 
     router(),
-    layouts(),
+    layouts({
+      extensions: ['stx', 'vue'],
+      // layoutsDirs: '../../../../../resources/layouts',
+      layoutsDirs: p.layoutsPath('', { relative: true }),
+      // defaultLayout: p.layoutsPath('default'),
+    }),
     autoImports(),
     components(),
     cssEngine(),

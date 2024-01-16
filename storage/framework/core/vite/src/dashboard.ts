@@ -5,6 +5,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import VueMacros from 'unplugin-vue-macros/vite'
+import { config } from '@stacksjs/config'
 import { cssEngine, devtools, i18n, layouts, router } from './plugins'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
@@ -52,7 +53,15 @@ export default defineConfig({
       },
     }),
 
-    router('dashboard'),
+    router({
+      extensions: ['.stx', '.md'],
+      dts: p.frameworkPath('types/dashboard-router.d.ts'),
+      routesFolder: [
+        p.frameworkPath('views/dashboard/src/pages'),
+      ],
+      logs: config.app.debug || false,
+    }),
+
     layouts({
       extensions: ['stx'],
       layoutsDirs: p.frameworkPath('views/dashboard/src/layouts'),

@@ -207,8 +207,12 @@ export function langPath(path?: string) {
   return projectPath(`lang/${path || ''}`)
 }
 
-export function layoutsPath(path?: string) {
-  return resourcesPath(`layouts/${path || ''}`)
+export function layoutsPath(path?: string, options?: { relative?: boolean }) {
+  const absolutePath = resourcesPath(`layouts/${path || ''}`)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
+
+  return absolutePath
 }
 
 export type LibraryType = 'vue-components' | 'web-components' | 'functions'
