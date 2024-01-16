@@ -57,15 +57,14 @@ export default defineConfig({
       extensions: ['.stx', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [
-        p.frameworkPath('views/dashboard/src/pages'),
+        p.frameworkPath('views/dashboard/src/views'),
       ],
       logs: config.app.debug || false,
     }),
 
     layouts({
       extensions: ['stx'],
-      layoutsDirs: p.frameworkPath('views/dashboard/src/layouts'),
-      defaultLayout: p.frameworkPath('views/dashboard/src/layouts/default.stx'),
+      layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
     // autoImports(),
     // components(),
