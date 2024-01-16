@@ -51,7 +51,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.36"
+    "vitepress": "1.0.0-rc.37"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -59,7 +59,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.36",
+    "vitepress": "1.0.0-rc.37",
     "vitepress-plugin-twoslash": "^0.9.19"
   },
   "devDependencies": {
