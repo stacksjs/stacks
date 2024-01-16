@@ -36,6 +36,7 @@
     "dev:functions": "bun run buddy dev:functions",
     "dev:components": "bun run buddy dev:components",
     "dev:desktop": "bun run buddy dev:desktop",
+    "dev:dashboard": "bun run buddy dev:dashboard",
     "development": "bun run buddy dev",
     "build": "bun run buddy build",
     "build:components": "bun run buddy build:components",

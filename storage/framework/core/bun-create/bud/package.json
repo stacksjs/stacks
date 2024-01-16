@@ -51,6 +51,7 @@
     "dev": "bun run buddy dev",
     "dev:views": "bun run buddy dev:views",
     "dev:api": "bun run buddy dev:api",
+    "dev:dashboard": "bun run buddy dev:dashboard",
     "dev:docs": "bun run buddy dev:docs",
     "dev:functions": "bun run buddy dev:functions",
     "dev:components": "bun run buddy dev:components",

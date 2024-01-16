@@ -174,7 +174,7 @@ buddy upgrade:all # auto-upgrades all of the above
 buddy dev # starts the frontend dev server
 buddy dev -i # prompts any of the dev servers (components, functions, views, or docs)
 buddy dev:api # starts the API dev server
-buddy dev:admin # starts the Admin/Dashboard dev server
+buddy dev:dashboard # starts the Admin/Dashboard dev server
 buddy dev:desktop # starts the Desktop dev server
 buddy dev:views # starts frontend dev server
 buddy dev:components # starts component dev server

@@ -204,6 +204,14 @@ export function dev(buddy: CLI) {
       await runFrontendDevServer(options)
     })
 
+  buddy
+    .command('dev:dashboard', descriptions.dashboard)
+    .alias('dev:admin')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: DevOptions) => {
+      await runDashboardDevServer(options)
+    })
+
   buddy.on('dev:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
