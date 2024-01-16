@@ -26,7 +26,7 @@ export async function unicorn(): Promise<FlatConfigItem[]> {
         // includes over indexOf when checking for existence
         'unicorn/prefer-includes': 'error',
         // Prefer using the node: protocol
-        // 'unicorn/prefer-node-protocol': 'error',
+        'unicorn/prefer-node-protocol': 'error',
         // Prefer using number properties like `Number.isNaN` rather than `isNaN`
         'unicorn/prefer-number-properties': 'error',
         // String methods startsWith/endsWith instead of more complicated stuff
