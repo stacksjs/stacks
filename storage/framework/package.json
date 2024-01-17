@@ -100,6 +100,11 @@
       "types": "./core/cli/dist/index.d.ts",
       "import": "./core/cli/dist/index.js"
     },
+    "./cloud": {
+      "bun": "./core/cloud/src/index.ts",
+      "types": "./core/cloud/dist/index.d.ts",
+      "import": "./core/cloud/dist/index.js"
+    },
     "./collections": {
       "bun": "./core/collections/src/index.ts",
       "types": "./core/collections/dist/index.d.ts",
@@ -340,10 +345,9 @@
   ],
   "scripts": {
     "buddy": "bun --bun run ./core/buddy/src/cli.ts",
-    "build": "./core/scripts/build",
-    "dev": "bunx pnpm --filter='./core/**' dev",
+    "build": "./scripts/build",
     "up": "bunx taze major -I",
-    "publish:framework": "./core/scripts/publish",
+    "publish:framework": "./scripts/publish",
     "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks",
     "fresh": "bun buddy fresh",
     "clean": "bun buddy clean",

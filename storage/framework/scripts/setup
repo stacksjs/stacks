@@ -1,0 +1,13 @@
+#!/bin/sh
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+"$DIR/install-pkgx"
+
+if [ -n "$1" ]; then
+  # todo: need to check if this repo already exists locally
+  git clone https://github.com/stacksjs/stacks.git $1
+  cd $1
+fi
+
+# need to log to console: "in order to finish the setup,
+# please run

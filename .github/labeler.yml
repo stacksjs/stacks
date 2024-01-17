@@ -34,7 +34,7 @@ functions:
   - resources/functions/**
 
 scripts:
-  - ./storage/framework/core/scripts/**
+  - ./storage/framework/scripts/**
 
 stack:
   - 'storage/framework/stacks/**'

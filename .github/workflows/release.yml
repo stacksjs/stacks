@@ -44,7 +44,7 @@ jobs:
         run: bunx pnpm --filter='./storage/framework' build
 
       - name: Publish framework
-        run: ./storage/framework/core/scripts/publish
+        run: ./storage/framework/scripts/publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

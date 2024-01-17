@@ -40,6 +40,11 @@ _install_pre_reqs() {
     esac
   elif test -f /etc/fedora-release; then
     $SUDO yum --assumeyes install libatomic
+  elif test -f /etc/arch-release; then
+    # installing gcc isn't my favorite thing, but even clang depends on it
+    # on archlinux. it provides libgcc. since we use it for testing, the risk
+    # to our builds is very low.
+    $SUDO pacman --noconfirm -Sy gcc libc++ libatomic_ops libxcrypt-compat
   fi
 }
 
@@ -166,11 +171,3 @@ elif [ $(basename "/$0") != 'installer.sh' ]; then
 fi
 
 eval "$(pkgx integrate)"
-
-# todo: need to check if this repo already exists locally
-git clone https://github.com/stacksjs/stacks.git $1
-
-cd $1
-
-# need to log to console: "in order to finish the setup,
-# please run 

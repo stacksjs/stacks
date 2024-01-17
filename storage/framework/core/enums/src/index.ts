@@ -42,7 +42,7 @@ export enum NpmScript {
   TypesGenerate = 'types:generate',
   Preinstall = 'preinstall',
   Prepublish = 'prepublish',
-  UpgradeBun = './storage/framework/core/scripts/setup.sh +bun.sh',
+  UpgradeBun = './storage/framework/scripts/setup.sh +bun.sh',
   UpgradeDependencies = 'pnpm up',
 }
 

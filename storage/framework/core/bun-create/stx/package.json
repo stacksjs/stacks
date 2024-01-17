@@ -40,7 +40,7 @@
   "scripts": {
     "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
-    "setup": "./storage/framework/core/scripts/setup.sh",
+    "setup": "./storage/framework/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
     "clean": "bun run buddy clean",
     "upgrade": "bun run buddy upgrade",
