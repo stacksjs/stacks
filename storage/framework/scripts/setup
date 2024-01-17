@@ -7,5 +7,5 @@ if [ -n "$1" ]; then
   cd $1
 fi
 
-# need to log to console: "in order to finish the setup,
-# please run
+# install the project dev deps
+eval "$(dev)"

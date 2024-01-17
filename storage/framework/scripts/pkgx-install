@@ -170,4 +170,5 @@ elif [ $(basename "/$0") != 'installer.sh' ]; then
   fi
 fi
 
+# add the pkgx hooks
 eval "$(pkgx integrate)"
