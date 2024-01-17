@@ -47,7 +47,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "bumpp": "^9.2.1",
+    "bumpp": "^9.3.0",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
     "cz-git": "^1.8.0",
@@ -55,7 +55,7 @@
     "simple-git-hooks": "^2.9.0"
   },
   "dependencies": {
-    "bumpp": "^9.2.1",
+    "bumpp": "^9.3.0",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
     "cz-git": "^1.8.0",
