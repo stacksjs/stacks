@@ -27,7 +27,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Use cached node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('**/bun.lockb') }}
