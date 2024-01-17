@@ -1,7 +1,5 @@
-#!/bin/sh
-
 DIR="$(cd "$(dirname "$0")" && pwd)"
-"$DIR/install-pkgx"
+"$DIR/pkgx-install"
 
 if [ -n "$1" ]; then
   # todo: need to check if this repo already exists locally
