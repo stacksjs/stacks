@@ -101,7 +101,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   //   process.exit(ExitCode.FatalError)
   // }
 
-  // log.success('Configured AWS')
+  log.success('Configured AWS')
 
   // 1. ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
   // 2. ensure the project

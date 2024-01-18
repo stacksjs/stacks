@@ -4,6 +4,7 @@ import type { Construct } from 'constructs'
 import type { CloudOptions } from '../types'
 import { AiStack } from './ai'
 import { CdnStack } from './cdn'
+import { CliStack } from './cli'
 import { DnsStack } from './dns'
 import { DocsStack } from './docs'
 import { StorageStack } from './storage'
@@ -89,5 +90,7 @@ export class Cloud extends Stack {
       privateBucket: storage.privateBucket,
       cdn: cdn.distribution,
     })
+
+    new CliStack(this, props)
   }
 }

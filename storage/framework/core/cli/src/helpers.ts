@@ -4,8 +4,8 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
+import { bgCyan, bold, cyan, dim, gray, green, italic } from 'kolorist'
 import { version } from '../package.json'
-import { bgCyan, bold, cyan, dim, gray, green, italic } from './utilities'
 
 /**
  * Prints the intro message.
@@ -34,57 +34,47 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options: OutroOptions, error?: Error | string) {
-  const message = options?.message || text
+export function outro(text: string, options?: OutroOptions, error?: Error | string) {
+  const opts = {
+    type: 'success',
+    useSeconds: true,
+    ...options,
+  }
+
+  opts.message = options?.message || text
 
   return new Promise((resolve) => {
     if (error)
       return handleError(error)
 
-    if (options.startTime) {
-      let time = performance.now() - options.startTime
+    if (opts?.startTime) {
+      let time = performance.now() - opts.startTime
 
-      if (options.useSeconds) {
+      if (opts.useSeconds) {
         time = time / 1000
         time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
       }
 
-      if (options.quiet === true)
+      if (opts.quiet === true)
         return resolve(ExitCode.Success)
 
       if (error)
-        log.error(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}] Failed`)
-      else if (options.type === 'info')
-        console.log(`${dim(gray(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`))} ${message ?? 'Complete'}`)
+        log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
+      else if (opts.type === 'info')
+        console.log(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
       else
-        console.log(`${dim(gray(bold(`[${time.toFixed(2)}${options.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(message ?? 'Complete'))}`)
+        console.log(`${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(opts.message ?? 'Complete'))}`)
     }
 
     else {
-      if (options?.type === 'info')
+      if (opts?.type === 'info')
         console.log(text)
 
       // the following condition triggers in the case of "Cleaned up" messages
-      else if (message !== text)
+      else if (opts?.type === 'success' && opts?.quiet !== true)
         log.success(text)
     }
 
     return resolve(ExitCode.Success)
   })
 }
-
-// export function startSpinner(text?: string) {
-//   if (!text)
-//     text = 'Executing...'
-
-//   const spin = spinner({
-//     text,
-//   }).start()
-
-//   setTimeout(() => {
-//     spin.text = italic('This may take a few moments...')
-//     spin.spinner = 'clock'
-//   }, 7500)
-
-//   return spin
-// }

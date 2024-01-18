@@ -68,16 +68,18 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  *   console.log(result)
  * ```
  */
-export function runCommandSync(command: string, options?: CliOptions): Result<SyncSubprocess, CommandError> {
+export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
   if (options?.verbose)
     log.debug('Running command:', underline(italic(command)), 'with options:', options)
 
-  const result = execSync(command, options)
+  const result = await execSync(command, options)
 
-  if (result.isErr())
-    return err(result.error)
+  // if (result.isErr())
+  //   return err(result.error)
 
-  return ok(result.value)
+  // return ok(result.value)
+
+  return result
 }
 
 /**

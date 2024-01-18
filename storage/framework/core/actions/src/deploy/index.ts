@@ -36,7 +36,7 @@ await runCommand('bun zip.ts', {
   cwd: p.cloudPath(),
 })
 
-log.info('Preparing deployment...')
+log.info('Preparing Deployment...')
 
 const profile = process.env.AWS_PROFILE || 'stacks'
 

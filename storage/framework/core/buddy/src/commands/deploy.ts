@@ -35,6 +35,7 @@ export function deploy(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
+      // TODO: we can improve this check at some point, otherwise domains that legitimately include the word localhost will fail
       if (domain.includes('localhost')) {
         log.info('You are deploying to a local environment.')
         log.info('Please set your .env or ./config/app.ts properly.')

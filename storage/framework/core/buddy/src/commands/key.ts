@@ -16,7 +16,7 @@ export function key(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
-      const startTime = await intro('buddy key:generate')
+      await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 
       if (result.isErr()) {
@@ -24,7 +24,7 @@ export function key(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Random application key set.', { startTime })
+      await outro('Random application key set.')
     })
 
   buddy.on('key:*', () => {
