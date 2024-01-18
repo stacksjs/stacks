@@ -70,7 +70,7 @@
     "kysely-bun-worker": "^0.5.6"
   },
   "optionalDependencies": {
-    "mysql2": "^3.7.0"
+    "mysql2": "^3.7.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

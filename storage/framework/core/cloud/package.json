@@ -67,7 +67,7 @@
     "@aws-sdk/client-ses": "^3.490.0",
     "@aws-sdk/client-sesv2": "^3.490.0",
     "@aws-sdk/client-ssm": "^3.490.0",
-    "@aws-sdk/lib-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.494.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",
@@ -83,7 +83,7 @@
     "@aws-sdk/client-cloudformation": "^3.490.0",
     "@aws-sdk/client-cloudfront": "^3.490.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.490.0",
-    "@aws-sdk/client-dynamodb": "3.490.0",
+    "@aws-sdk/client-dynamodb": "3.494.0",
     "@aws-sdk/client-ec2": "^3.490.0",
     "@aws-sdk/client-efs": "^3.490.0",
     "@aws-sdk/client-iam": "^3.490.0",
@@ -113,7 +113,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^4.3.4",
+    "oclif": "^4.3.5",
     "source-map-support": "^0.5.21"
   }
 }
