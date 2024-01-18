@@ -7,11 +7,13 @@ import { runAction } from '@stacksjs/actions'
 export function key(buddy: CLI) {
   const descriptions = {
     command: 'Generate & set the application key.',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('key:generate', descriptions.command)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
       const startTime = await intro('buddy key:generate')

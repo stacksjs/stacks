@@ -8,11 +8,13 @@ import { Action } from '@stacksjs/enums'
 export function tinker(buddy: CLI) {
   const descriptions = {
     tinker: 'Tinker with your code',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('tinker', descriptions.tinker)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
       const perf = await intro('buddy tinker')

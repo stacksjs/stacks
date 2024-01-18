@@ -37,6 +37,7 @@ export function dns(buddy: CLI) {
     short: 'Short mode: display nothing but the first result',
     json: 'Display the output as JSON',
     pretty: 'Display the output as JSON in a pretty format',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -55,6 +56,7 @@ export function dns(buddy: CLI) {
     .option('-1, --short', descriptions.short, { default: false })
     .option('-J, --json', descriptions.json, { default: false })
     .option('-p, --pretty', descriptions.pretty, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
       // let prettyOutput = false

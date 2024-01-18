@@ -172,3 +172,10 @@ fi
 
 # add the pkgx hooks
 eval "$(pkgx integrate)"
+
+# install the project dev deps
+eval "$(dev)"
+
+# eval "$(pkgx bun install)"
+
+# eval "$(pkgx bun run buddy setup)"

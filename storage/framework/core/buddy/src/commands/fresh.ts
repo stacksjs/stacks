@@ -8,11 +8,13 @@ import { Action } from '@stacksjs/enums'
 export function fresh(buddy: CLI) {
   const descriptions = {
     fresh: 'Reinstalls your npm dependencies',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('fresh', descriptions.fresh)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy fresh')

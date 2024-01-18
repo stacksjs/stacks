@@ -23,8 +23,9 @@ export function generate(buddy: CLI) {
     customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
     ideHelpers: 'Generate IDE helpers',
     componentMeta: 'Generate component meta information',
-    tea: 'Generate the Tea configuration file',
+    pkgx: 'Generate the pkgx configuration file',
     select: 'What are you trying to generate?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -36,7 +37,8 @@ export function generate(buddy: CLI) {
     .option('-c, --custom-data', descriptions.customData)
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
-    .option('-tc, --tea-config', descriptions.tea)
+    .option('-p, --pkgx', descriptions.pkgx)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       if (hasNoOptions(options)) {
@@ -66,6 +68,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:types', descriptions.types)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
@@ -74,6 +77,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:entries', descriptions.entries)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateLibEntries(options)
@@ -81,6 +85,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:web-types', descriptions.webTypes)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateWebTypes(options)
@@ -88,6 +93,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:vscode-custom-data', descriptions.customData)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateVsCodeCustomData(options)
@@ -95,6 +101,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateIdeHelpers(options)
@@ -102,13 +109,15 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:component-meta', descriptions.componentMeta)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       await generateComponentMeta(options)
     })
 
   buddy
-    .command('generate:tea-config', descriptions.tea)
+    .command('generate:pkgx-config', descriptions.pkgx)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(() => {
       generatePkgxConfig()

@@ -30,11 +30,13 @@ interface HttpOptions {
 export function http(buddy: CLI) {
   const descriptions = {
     http: 'Send an HTTP request to a domain',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('http [domain]', descriptions.http)
+    .option('-p, --project', descriptions.project, { default: false })
     // .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: HttpOptions) => {
       // Convert options object to command-line options string

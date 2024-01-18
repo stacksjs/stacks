@@ -9,12 +9,14 @@ export function configure(buddy: CLI) {
   const descriptions = {
     configure: 'Configure options',
     aws: 'Configure the AWS connection',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('configure', descriptions.configure)
     .option('--aws', descriptions.aws, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
       if (options?.aws) {
@@ -40,6 +42,7 @@ export function configure(buddy: CLI) {
 
   buddy
     .command('configure:aws', descriptions.aws)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
       const startTime = performance.now()

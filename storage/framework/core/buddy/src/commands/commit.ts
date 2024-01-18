@@ -5,11 +5,13 @@ import { runCommit } from '@stacksjs/actions'
 export function commit(buddy: CLI) {
   const descriptions = {
     commit: 'Commit your stashed changes',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('commit', descriptions.commit)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       await runCommit(options)

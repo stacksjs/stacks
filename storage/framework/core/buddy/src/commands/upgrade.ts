@@ -15,6 +15,7 @@ export function upgrade(buddy: CLI) {
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -25,6 +26,7 @@ export function upgrade(buddy: CLI) {
     .option('-b, --bun', descriptions.bun, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('update')
     .example('buddy upgrade -a --verbose')
@@ -65,6 +67,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:framework', descriptions.framework)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
@@ -74,6 +77,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:dependencies', descriptions.dependencies)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('upgrade:deps')
     .example('buddy upgrade:dependencies --verbose')
@@ -83,6 +87,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:bun', descriptions.bun)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       const perf = await intro('buddy upgrade:bun')
@@ -98,6 +103,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:all', descriptions.all)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       await runAction(Action.Upgrade, options)

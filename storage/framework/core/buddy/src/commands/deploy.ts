@@ -11,12 +11,14 @@ import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 export function deploy(buddy: CLI) {
   const descriptions = {
     deploy: 'Reinstalls your npm dependencies',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('deploy', descriptions.deploy)
     .option('--domain', 'Specify a domain to deploy to', { default: undefined })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       const startTime = await intro('buddy deploy')
@@ -48,7 +50,7 @@ export function deploy(buddy: CLI) {
         log.success('Your domain is properly configured.')
         log.info('Your cloud is deploying...')
 
-        console.log(`⏳ ${italic('This may take a while...')}`)
+        console.log(`${italic('This may take a while...')}`)
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
       }

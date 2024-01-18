@@ -19,6 +19,7 @@ export function create(buddy: CLI) {
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -32,6 +33,7 @@ export function create(buddy: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {

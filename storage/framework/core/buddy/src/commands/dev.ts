@@ -19,6 +19,7 @@ export function dev(buddy: CLI) {
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
     withLocalhost: 'Include the localhost URL in the output',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -33,6 +34,7 @@ export function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
       const perf = await intro('buddy dev')
@@ -123,6 +125,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:components', descriptions.components)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:components')
@@ -147,6 +150,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:docs', descriptions.docs)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:docs')
@@ -165,6 +169,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:desktop', descriptions.desktop)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       const perf = await intro('buddy dev:desktop')
@@ -183,6 +188,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:api', descriptions.api)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await runApiDevServer(options)
@@ -190,7 +196,8 @@ export function dev(buddy: CLI) {
 
   // buddy
   //   .command('dev:functions', descriptions.api)
-  //   .option('--verbose', descriptions.verbose, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })//
+    .option('--verbose', descriptions.verbose, { default: false })
   //   .action(async (options: DevOptions) => {
   //     await runFunctionsDevServer(options)
   //   })
@@ -199,6 +206,7 @@ export function dev(buddy: CLI) {
     .command('dev:frontend', descriptions.frontend)
     .alias('dev:pages')
     .alias('dev:views')
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await runFrontendDevServer(options)
@@ -207,6 +215,7 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev:dashboard', descriptions.dashboard)
     .alias('dev:admin')
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await runDashboardDevServer(options)

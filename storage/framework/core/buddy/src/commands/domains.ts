@@ -13,6 +13,7 @@ export function domains(buddy: CLI) {
     add: 'Add a domain to your cloud', // given you already own it with a different registrar
     remove: 'Remove a domain from your cloud',
     skip: 'Skip the confirmation prompt',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -60,6 +61,7 @@ export function domains(buddy: CLI) {
     .option('--privacy-tech', 'Enable privacy protection for tech', { default: c?.privacyTech || c?.privacy || true })
     .option('--privacy-registrant', 'Enable privacy protection for registrant', { default: c?.privacyRegistrant || c?.privacy || true })
     .option('--contact-type <type>', 'Contact type', { default: 'person' })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string, options: DomainsOptions) => {
       options.domain = domain

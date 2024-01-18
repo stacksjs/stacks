@@ -10,6 +10,7 @@ export function add(buddy: CLI) {
     calendar: 'Add the Calendar Stack to your project',
     all: 'Add all stacks',
     select: 'Which stack/s are you trying to add?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -18,6 +19,7 @@ export function add(buddy: CLI) {
     .option('-t, --table', descriptions.table, { default: false })
     .option('-c, --calendar', descriptions.calendar, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
@@ -41,6 +43,7 @@ export function add(buddy: CLI) {
   buddy
     .command('add:table', descriptions.table)
     .option('-t, --table', descriptions.table, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAdd(options)
@@ -49,6 +52,7 @@ export function add(buddy: CLI) {
   buddy
     .command('add:calendar', descriptions.calendar)
     .option('-t, --calendar', descriptions.calendar, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAdd(options)

@@ -9,12 +9,14 @@ export function setup(buddy: CLI) {
   const descriptions = {
     ensure: 'This command ensures your project is setup correctly',
     setup: 'This command sets up your project for the first time',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('setup', descriptions.setup)
     .alias('ensure')
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       if (await ensurePkgxIsInstalled())
@@ -41,7 +43,7 @@ async function ensurePkgxIsInstalled(): Promise<boolean> {
 }
 
 async function installPkgx(): Promise<void> {
-  const result = await runCommand('./scripts/setup')
+  const result = await runCommand(p.frameworkPath('scripts/pkgx-install'))
 
   if (result.isOk())
     return
@@ -51,7 +53,7 @@ async function installPkgx(): Promise<void> {
 }
 
 async function initializeProject(options: CliOptions): Promise<void> {
-  log.info('⏳ Installing node_modules...')
+  log.info('Installing dependencies...')
   await new Promise(resolve => setTimeout(resolve, 1500))
 
   const result = await runCommand('bun install', {
@@ -64,7 +66,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('Installed node_modules')
-  log.info('⏳ Ensuring .env exists...')
+  log.info('Ensuring .env exists...')
 
   const envResult = await runCommand('cp .env.example .env', {
     cwd: options.cwd || p.projectPath(),
@@ -76,7 +78,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('.env exists')
-  log.info('⏳ Generating application key...')
+  log.info('Generating application key...')
 
   const keyResult = await runCommand('buddy key:generate', {
     cwd: options.cwd || p.projectPath(),
@@ -88,27 +90,24 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('Generated application key')
-  log.info('⏳ Ensuring AWS is connected...')
+  log.info('Ensuring AWS is connected...')
 
-  const awsResult = await runCommand('buddy configure:aws', {
-    cwd: options.cwd || p.projectPath(),
-  })
+  // const awsResult = await runCommand('buddy configure:aws', {
+  //   cwd: options.cwd || p.projectPath(),
+  // })
 
-  if (awsResult.isErr()) {
-    handleError(awsResult.error)
-    process.exit(ExitCode.FatalError)
-  }
+  // if (awsResult.isErr()) {
+  //   handleError(awsResult.error)
+  //   process.exit(ExitCode.FatalError)
+  // }
 
-  log.success('Configured AWS')
-  await new Promise(resolve => setTimeout(resolve, 300))
+  // log.success('Configured AWS')
 
   // 1. ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
   // 2. ensure the project
 
   log.success('Project is setup')
-  await new Promise(resolve => setTimeout(resolve, 300))
-
-  log.info('🎉 Happy coding!')
+  log.info('Happy coding! 💙')
 }
 
 export async function optimizePkgxDeps(): Promise<void> {

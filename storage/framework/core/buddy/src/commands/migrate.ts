@@ -9,11 +9,13 @@ export function migrate(buddy: CLI) {
   const descriptions = {
     migrate: 'Migrates your database',
     dns: 'Writes the DNS records for a domain to ./config/dns.ts',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('migrate', descriptions.migrate)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       const perf = await intro('buddy migrate')
@@ -32,6 +34,7 @@ export function migrate(buddy: CLI) {
 
   buddy
     .command('migrate:dns', descriptions.migrate)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       const perf = await intro('buddy migrate')

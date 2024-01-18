@@ -6,11 +6,13 @@ import { runAction } from '@stacksjs/actions'
 export function prepublish(buddy: CLI) {
   const descriptions = {
     command: 'Run your prepublish script',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('prepublish', descriptions.command)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PrepublishOptions) => {
       await runAction(Action.Prepublish, options)

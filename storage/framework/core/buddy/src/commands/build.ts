@@ -18,6 +18,7 @@ export function build(buddy: CLI) {
     docs: 'Build your documentation',
     framework: 'Build Stacks framework',
     select: 'What are you trying to build?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -31,6 +32,7 @@ export function build(buddy: CLI) {
     .option('-p, --views', descriptions.pages)
     .option('-d, --docs', descriptions.docs)
     .option('-s, --stacks', descriptions.framework, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       if (hasNoOptions(options)) {
@@ -64,6 +66,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .option('-c, --components', descriptions.components, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildComponentLibs, options)
@@ -72,6 +75,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:cli', 'Automagically build the CLI')
     .option('-c, --components', descriptions.components, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildCli, options)
@@ -80,6 +84,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildFunctionLib, options)
@@ -88,6 +93,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
     .option('-v, --vue-components', descriptions.vueComponents, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
@@ -97,6 +103,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
     .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:elements')
     .alias('build:wc')
@@ -107,6 +114,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:docs', 'Automagically build your documentation site.')
     .option('-d, --docs', descriptions.docs, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildDocs, options)
@@ -114,6 +122,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:core', 'Automagically build the Stacks core.')
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
     .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:core')
@@ -129,6 +138,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:desktop', descriptions.desktop)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       const perf = await intro('buddy build:desktop')
@@ -148,6 +158,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.framework, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       const startTime = await intro('buddy build:stacks')
@@ -168,5 +179,5 @@ export function build(buddy: CLI) {
 }
 
 function hasNoOptions(options: BuildOptions) {
-  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.pages && !options.docs && !options.framework
+  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.pages && !options.docs && !options.stacks
 }

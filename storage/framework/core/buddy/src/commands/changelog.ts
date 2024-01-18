@@ -9,12 +9,14 @@ export function changelog(buddy: CLI) {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
     quiet: 'Minimal output',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('changelog', descriptions.changelog)
     .option('--quiet', descriptions.quiet, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       const perf = await intro('buddy changelog')

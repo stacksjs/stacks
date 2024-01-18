@@ -8,12 +8,14 @@ export function lint(buddy: CLI) {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('lint', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       const startTime = await intro('buddy lint')
@@ -29,6 +31,7 @@ export function lint(buddy: CLI) {
 
   buddy
     .command('lint:fix', descriptions.lintFix)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       log.info('Fixing lint errors...')

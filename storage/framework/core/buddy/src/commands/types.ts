@@ -6,11 +6,13 @@ export function types(buddy: CLI) {
   const descriptions = {
     generate: 'Generate the types of & for your library/libraries',
     fix: 'wip',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('types:generate', descriptions.generate)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       await generateTypes()
@@ -18,6 +20,7 @@ export function types(buddy: CLI) {
 
   buddy
     .command('types:fix', descriptions.fix)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       // await fixTypes()

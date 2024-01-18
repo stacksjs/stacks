@@ -8,11 +8,13 @@ import { Action } from '@stacksjs/enums'
 export function seed(buddy: CLI) {
   const descriptions = {
     seed: 'Seed your database',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('seed', descriptions.seed)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SeedOptions) => {
       const perf = await intro('buddy seed')

@@ -10,6 +10,7 @@ export function example(buddy: CLI) {
     vue: 'Test your Vue component library',
     webComponents: 'Test your web component library',
     select: 'Which example are you trying to view?',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -18,6 +19,7 @@ export function example(buddy: CLI) {
     .option('-c, --components', descriptions.components)
     .option('-v, --vue', descriptions.vue)
     .option('-w, --web-components', descriptions.webComponents)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
       // const answer = await prompt.require()
@@ -41,6 +43,7 @@ export function example(buddy: CLI) {
   buddy
     .command('example:vue', descriptions.vue)
     .option('-v, --vue', descriptions.verbose, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('example:components')
     .action(async (options: ExamplesOptions) => {
@@ -50,6 +53,7 @@ export function example(buddy: CLI) {
   buddy
     .command('example:web-components', 'Test your Web Component library.')
     .option('-w, --web-components', descriptions.verbose, { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ExamplesOptions) => {
       await runExample(options)

@@ -14,6 +14,7 @@ export function cloud(buddy: CLI) {
     remove: 'Removes the Stacks Cloud. In case it fails, try again',
     optimizeCost: 'Removes certain resources that may be re-applied at a later time',
     cleanUp: 'Removes all resources that were retained during the cloud deletion',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
@@ -21,6 +22,7 @@ export function cloud(buddy: CLI) {
     .command('cloud', descriptions.cloud)
     .option('--ssh', descriptions.ssh, { default: false })
     .option('--connect', descriptions.ssh, { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       if (options.ssh || options.connect) {
@@ -48,6 +50,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:add', descriptions.add)
     .option('--jump-box', 'Remove the jump-box', { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       const startTime = await intro('buddy cloud:add')
@@ -95,6 +98,7 @@ export function cloud(buddy: CLI) {
     .alias('cloud:rm')
     .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       const startTime = await intro('buddy cloud:remove')
@@ -176,6 +180,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:optimize-cost', descriptions.optimizeCost)
     .option('--jump-box', 'Remove the jump-box', { default: true })
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       const startTime = await intro('buddy cloud:remove')
@@ -205,6 +210,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:cleanup', descriptions.cleanUp)
     .alias('cloud:clean-up')
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       const startTime = await intro('buddy cloud:cleanup')

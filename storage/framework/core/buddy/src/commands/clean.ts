@@ -8,11 +8,13 @@ import { Action } from '@stacksjs/enums'
 export function clean(buddy: CLI) {
   const descriptions = {
     clean: 'Removes all node_modules & lock files',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('clean', descriptions.clean)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CleanOptions) => {
       const perf = await intro('buddy clean')

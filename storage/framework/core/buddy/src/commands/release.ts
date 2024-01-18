@@ -7,12 +7,14 @@ import { runAction } from '@stacksjs/actions'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
+  project: 'Target a specific project',
   verbose: 'Enable verbose output',
 }
 
 export function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
       const startTime = await intro('buddy release')

@@ -6,11 +6,13 @@ import { path as p } from '@stacksjs/path'
 export function install(buddy: CLI) {
   const descriptions = {
     install: 'Install your dependencies',
+    project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('install', descriptions.install)
+    .option('-p, --project', descriptions.project, { default: false })
     .option('-v, --verbose', descriptions.verbose, { default: false })
     .action(async (options: InstallOptions) => {
       await runCommand('bun install', {
