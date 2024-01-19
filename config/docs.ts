@@ -84,7 +84,7 @@ const sidebar = {
           collapsed: true,
           items: [
             { text: 'How to deploy?', link: '/bootcamp/how-to/deploy' },
-            { text: 'Front & Backend Authentication', link: '/bootcamp/how-to/authentication' },
+            { text: 'Authentication', link: '/bootcamp/how-to/authentication' },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
             { text: 'Define env & config values', link: '/bootcamp/how-to/env-config' },
             { text: 'Error Handling', link: '/bootcamp/how-to/error-handling' },
