@@ -6,7 +6,7 @@ export const faviconHead: HeadConfig[] = [
     'link',
     {
       rel: 'icon',
-      href: '/favicon.svg',
+      href: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
     },
   ],
 ]
