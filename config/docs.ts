@@ -123,6 +123,7 @@ const sidebar = {
         { text: 'APIs', link: '/guide/apis' },
         { text: 'Apps', link: '/guide/apps' },
         { text: 'Authentication', link: '/guide/auth' },
+        { text: 'Bootstrap', link: '/guide/bootstrap' },
         {
           text: 'Buddy',
           collapsible: true,

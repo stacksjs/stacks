@@ -1,6 +1,6 @@
 #!/bin/sh
 
-## To learn more, visit https://stacksjs.org/docs/bootstrap
+## To learn more, visit https://stacksjs.org/docs/guide/bootstrap
 
 if [ -n "$1" ]; then
   # Check if the directory exists
