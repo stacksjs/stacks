@@ -38,11 +38,11 @@ sh <(curl stacksjs.org) my-project # wip
 bunx stacks new my-project
 ```
 
-## 🤖 Usage
+## Usage
 
 The following list includes some of the most common ways to interact with the Stacks API.
 
-Meet the toolkit, Buddy:
+_Meet the toolkit, Buddy:_
 
 ```bash
 buddy install # installs all dependencies
@@ -316,7 +316,7 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 
 > _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
 
-## 🎯 Roadmap
+## Roadmap
 
 Part of the Stacks ecosystem are the following first-party supported stacks:
 
@@ -337,21 +337,21 @@ View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?q
 
 While we currently only fully support `us-east-1`, we are looking forward to expanding to other regions soon.
 
-## 🧪 Testing
+## Testing
 
 ```bash
 bun test
 ```
 
-## 📈 Changelog
+## Changelog
 
 Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
-## 🚜 Contributing
+## Contributing
 
 Please see the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
-## 🏝 Community
+## Community
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
 
@@ -361,21 +361,28 @@ For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://discord.gg/stacksjs)
 
-## 📄 Sponsors
+## Postcardware
+
+You're free to use this package, and we would love to receive a postcard.
+
+Our address is: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA
+
+##### _We publish all received postcards on our website. Thanks to Spatie for this wonderful idea 💙_
+
+## Sponsors
 
 Once we launch a usable Stacks version, we hope people will start enjoying it! In the meantime, thanks to the following sponsors for helping to fund the development of this framework:
 
 - [The Solana Foundation](https://solana.com/)
 
-## 🙏🏼 Credits
-
-Many thanks to the following core technologies & people who have contributed to this package:
+## Credits
 
 - [Chris Breuer](https://github.com/chrisbbreuer)
-- [Dan Scanlon](https://twitter.com/danscan) _many thanks for donating the `stacks` name on npm_
 - [All Contributors](../../contributors)
 
-## 📄 License
+And a special thanks to [Dan Scanlon](https://twitter.com/danscan) for donating the `stacks` name on npm ✨
+
+## License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
