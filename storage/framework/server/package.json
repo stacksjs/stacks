@@ -3,8 +3,8 @@
   "type": "module",
   "version": "0.58.28",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.494.0",
-    "@aws-sdk/lib-dynamodb": "^3.494.0",
+    "@aws-sdk/client-dynamodb": "^3.495.0",
+    "@aws-sdk/lib-dynamodb": "^3.495.0",
     "@smithy/smithy-client": "^2.3.0",
     "@stacksjs/cloud": "^0.58.28",
     "aws4fetch": "^1.0.17"
