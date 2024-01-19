@@ -4,11 +4,11 @@
 
 if [ -n "$1" ]; then
   # Check if the directory exists
-  if [ -d "storage/framework/core" ]; then
+  if [ -d "storage/framework/core" ]; then # this is our identifier whether it is a Stacks project
     :
   else
     if [ -d "$1" ]; then
-      echo "Project $1 exists locally. Please use a different name. Bye for now."
+      echo "Project $1 exists locally. Please use a different name & run again."
       exit 1
     else
       git clone https://github.com/stacksjs/stacks.git $1

@@ -286,6 +286,8 @@ export default {
   lastUpdated: true,
 
   themeConfig: {
+    logo: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo.png',
+
     nav,
     sidebar,
 
