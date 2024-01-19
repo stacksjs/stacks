@@ -37,7 +37,7 @@ fi
 mkfifo /tmp/mypipe
 
 # Run the command, send output to both the console and the pipe
-pkgx bun --bun ./storage/framework/core/buddy/src/cli.ts setup | tee /tmp/mypipe &
+bun --bun ./storage/framework/core/buddy/src/cli.ts setup | tee /tmp/mypipe &
 
 # Read from the pipe, add timestamps, and append to the file
 while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> storage/logs/console.log
