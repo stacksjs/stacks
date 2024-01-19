@@ -1,3 +1,7 @@
+#!/bin/sh
+
+## To learn more, visit https://stacksjs.org/docs/bootstrap
+
 if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then
@@ -34,6 +38,7 @@ fi
 
 # Create a named pipe
 mkfifo /tmp/mypipe
+
 
 # Run the command, send output to both the console and the pipe
 pkgx bun --bun ./storage/framework/core/buddy/src/cli.ts setup | tee /tmp/mypipe &

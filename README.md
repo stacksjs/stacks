@@ -26,6 +26,18 @@ Stacks helps you every step along the way—in beginner & expert-friendly ways, 
 
 <!-- ![Atomic UI & FX Design](./docs/assets/diagram.png) -->
 
+## Get Started
+
+It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
+
+```bash
+sh <(curl stacksjs.org) my-project # wip
+
+# alternatively, if Bun >= v1.0 is installed already,
+# you may also get started via:
+bunx stacks new my-project
+```
+
 ## Features
 
 The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
@@ -111,18 +123,6 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that’s all you need to dive in now! _Or TypeScript ✌🏼_
 
 > _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
-
-## Get Started
-
-It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
-
-```bash
-sh <(curl stacksjs.org) my-project
-
-# alternatively, if Bun >= v1.0 is installed already,
-# you may also get started via:
-bunx stacks new my-project
-```
 
 ## 🤖 Usage
 

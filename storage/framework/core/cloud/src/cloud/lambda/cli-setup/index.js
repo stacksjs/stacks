@@ -1,6 +1,5 @@
 async function handler() {
-  const setupScriptContents = `
-if [ -n "$1" ]; then
+  const setupScriptContents = `if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then
     :
@@ -35,16 +34,16 @@ else
 fi
 
 # Create a named pipe
-mkfifo mypipe
+mkfifo /tmp/mypipe
 
 # Run the command, send output to both the console and the pipe
-pkgx bun --bun ./storage/framework/core/buddy/src/cli.ts setup | tee mypipe &
+pkgx bun --bun ./storage/framework/core/buddy/src/cli.ts setup | tee /tmp/mypipe &
 
 # Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < mypipe >> storage/logs/console.log
+while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> storage/logs/console.log
 
 # Remove the named pipe
-rm mypipe
+rm /tmp/mypipe
 `
 
   return {
@@ -56,4 +55,3 @@ rm mypipe
 module.exports = {
   handler,
 }
-
