@@ -38,92 +38,6 @@ sh <(curl stacksjs.org) my-project # wip
 bunx stacks new my-project
 ```
 
-## Features
-
-The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
-
-### Stacks Frontend
-
-_Develop dynamic UIs with helpers for atomic design, and much more._
-
-- 🧩 **Components** _primitive to develop user interfaces_
-- 🤖 **Functions** _primitive to develop business logic (and grant your UI superpowers)_
-- 🎨 **UI Kit** _modern & deeply-integrated components_
-- 🌐 **Web** _“a routing & templating engine that makes sense”_
-- 🖥️ **Desktop** _transforms your web app into desktop app, plus more_
-- 📝 **Documentation** _markdown-based documentation, auto-generated_
-- 📚 **Library** _auto-builds & manages component & function libraries_
-- ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
-
-### Stacks Backend
-
-_Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
-
-- 🪄 **AI** _deep AI integrations & foundational model access_
-- 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
-- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
-- 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
-- 👾 **Errors** _native type-safe error handling_
-- 🗓️ **Events** _functional event (front & backend) communication_
-- 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
-- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
-- 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
-- ⚙️ **Queues** _run any heavy workload in the background_
-- 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
-- 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
-- 🧭 **Router** _smart routing, file-based or Laravel-like_
-- 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
-- 💾 **Storage** _a secure-by-default File API that feels right_
-- 🧪 **Tinker** _a powerful TypeScript REPL_
-- 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
-- 🎯 **X-Ray** _all you need to debug, log & analyze_
-
-### Stacks Cloud
-
-_Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
-
-- ☁️ **Server** _local development server & production-ready servers out-of-the-box_
-- ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _zero-config, low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
-- 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
-- 🤖 **AI** _fine-tune a foundational model using your application data_
-- 📧 **Email** _secure & zero-setup <easy-peasy@custom-domains.com> mailboxes_
-- 🔐 **Firewall** _native web application firewall support_
-- 📦 **Storage** _unlimited cloud storage & automatic backups_
-- 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
-- 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure (AWS, Google next?)_
-
-### Stacks CI/CD
-
-_Focus on coding, not publishing._
-
-- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero-setup push-to-deploy_
-- 0️⃣ **Zero Downtime** _deploy with confidence using a zero-downtime deployment strategy_
-- 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
-
-### Stacks DX
-
-_Enhanced productivity for developers. No more creating boilerplate._
-
-- 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
-- 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
-- 💅 **Linter & Formatter** _auto-configured & built into your IDE_
-- 💪🏼 **Type Strong** _built-in e2e type-safety_
-- ✨ **Git Workflows** _committing with ease_
-- 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
-- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
-- 🔤 **Spell Checker** _be notified once there are typos_
-- 🛠️ **Utilities** _Collections, VueUse, and more_
-- 👥 **Team Management** _manage your team & their permissions_
-- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
-
-No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
-
-Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that’s all you need to dive in now! _Or TypeScript ✌🏼_
-
-> _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
-
 ## 🤖 Usage
 
 The following list includes some of the most common ways to interact with the Stacks API.
@@ -315,6 +229,92 @@ buddy fresh
 </details>
 
 Read more here about the Stacks CLI in the documentation.
+
+## Features
+
+The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
+
+### Stacks Frontend
+
+_Develop dynamic UIs with helpers for atomic design, and much more._
+
+- 🧩 **Components** _primitive to develop user interfaces_
+- 🤖 **Functions** _primitive to develop business logic (and grant your UI superpowers)_
+- 🎨 **UI Kit** _modern & deeply-integrated components_
+- 🌐 **Web** _“a routing & templating engine that makes sense”_
+- 🖥️ **Desktop** _transforms your web app into desktop app, plus more_
+- 📝 **Documentation** _markdown-based documentation, auto-generated_
+- 📚 **Library** _auto-builds & manages component & function libraries_
+- ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
+
+### Stacks Backend
+
+_Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
+
+- 🪄 **AI** _deep AI integrations & foundational model access_
+- 🤖 **APIs** _scalability & maintainability built-in_
+- 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
+- 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
+- 👾 **Errors** _native type-safe error handling_
+- 🗓️ **Events** _functional event (front & backend) communication_
+- 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
+- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
+- 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
+- ⚙️ **Queues** _run any heavy workload in the background_
+- 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
+- 💬 **Realtime** _“everything you need to build dynamic real-time apps”_
+- 🧭 **Router** _smart routing, file-based or Laravel-like_
+- 🔎 **Search Engine** _smart searching, advanced filtering & sorting, pagination, headless UI_
+- 💾 **Storage** _a secure-by-default File API that feels right_
+- 🧪 **Tinker** _a powerful TypeScript REPL_
+- 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
+- 🎯 **X-Ray** _all you need to debug, log & analyze_
+
+### Stacks Cloud
+
+_Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
+
+- ☁️ **Server** _local development server & production-ready servers out-of-the-box_
+- ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
+- 🚏 **CDN** _zero-config, low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
+- 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
+- 🤖 **AI** _fine-tune a foundational model using your application data_
+- 📧 **Email** _secure & zero-setup <easy-peasy@custom-domains.com> mailboxes_
+- 🔐 **Firewall** _native web application firewall support_
+- 📦 **Storage** _unlimited cloud storage & automatic backups_
+- 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
+- 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure (AWS, Google next?)_
+
+### Stacks CI/CD
+
+_Focus on coding, not publishing._
+
+- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero-setup push-to-deploy_
+- 0️⃣ **Zero Downtime** _deploy with confidence using a zero-downtime deployment strategy_
+- 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
+
+### Stacks DX
+
+_Enhanced productivity for developers. No more creating boilerplate._
+
+- 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
+- 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
+- 💅 **Linter & Formatter** _auto-configured & built into your IDE_
+- 💪🏼 **Type Strong** _built-in e2e type-safety_
+- ✨ **Git Workflows** _committing with ease_
+- 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
+- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
+- 🔤 **Spell Checker** _be notified once there are typos_
+- 🛠️ **Utilities** _Collections, VueUse, and more_
+- 👥 **Team Management** _manage your team & their permissions_
+- 🧪 **Testing** _unit & e2e tests powered by Bun & Playwright_
+
+No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
+
+Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that’s all you need to dive in now! _Or TypeScript ✌🏼_
+
+> _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
 
 ## 🎯 Roadmap
 
