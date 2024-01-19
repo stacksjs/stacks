@@ -367,7 +367,7 @@ You're free to use this package, and we would love to receive a postcard.
 
 Our address is: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA
 
-##### _We publish all received postcards on our website. Thanks to Spatie for this wonderful idea 💙_
+##### _We publish all received postcards on our website. Thanks to Spatie for this wonderful idea._
 
 ## Sponsors
 
