@@ -273,11 +273,11 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 ### Stacks Cloud
 
-_Create your personal or professional Vercel-like cloud, based on MIT-licensed OSS._
+_Create your personal or professional Vercel/Netlify style cloud, based on MIT-licensed OSS._
 
 - ☁️ **Server** _local development server & production-ready servers out-of-the-box_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
-- 🚏 **CDN** _zero-config, low-latency CDN, including request life-cycle hooks & optimized request compressions (Brotli & gzip)_
+- 🚏 **CDN** _zero-config, low-latency, request life-cycle hooks, optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
 - 🤖 **AI** _fine-tune a foundational model using your application data_
 - 📧 **Email** _secure & zero-setup <easy-peasy@custom-domains.com> mailboxes_
@@ -314,7 +314,7 @@ No matter whether you are a beginner or an expert, the approachable Stacks desig
 
 Develop beautiful, reactive, composable UIs without learning a new set of languages. HTML, CSS, and minimal JavaScript—that’s all you need to dive in now! _Or TypeScript ✌🏼_
 
-> _A true rapid application development framework for all Full Stack needs. Next-level simplicity & helpful DX._
+> _An actual rapid application development framework for all Full Stack needs. Next-level simplicity & DX._
 
 ## Roadmap
 
