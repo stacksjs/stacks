@@ -16,6 +16,7 @@ export default defineConfig({
   outDir: p.projectStoragePath('framework/docs/dist'),
   cacheDir: p.projectStoragePath('framework/cache/docs'),
   assetsDir: p.assetsPath(),
+  publicDir: p.publicPath(),
 
   // sitemap: {
   //   hostname: 'stacks.localhost',

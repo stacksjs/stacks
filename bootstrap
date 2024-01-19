@@ -24,7 +24,7 @@ if [ -n "$1" ]; then
 fi
 
 # Get the directory of the current script and go up 3 directories
-PROJECT_ROOT="$(cd "$(dirname "$0")/../../../" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
 cd $PROJECT_ROOT
 # Run the pkgx-install script
