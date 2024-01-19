@@ -12,6 +12,7 @@ const nav = [
     text: 'Resources',
     items: [
       { text: 'Team', link: '/team' },
+      { text: 'Postcardware', link: '/postcardware' },
       { text: 'Releases', link: '/releases' },
       {
         items: [
