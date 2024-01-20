@@ -1,8 +1,10 @@
 import { defineConfig } from 'vitepress'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
+import { pwaDocs as pwa } from '@stacksjs/docs'
 import { server } from '@stacksjs/server'
 import { transformerTwoslash } from 'vitepress-plugin-twoslash'
+import { withPwa } from '@vite-pwa/vitepress'
 import userConfig from '../../../../config/docs'
 import { analyticsHead, faviconHead } from './head'
 
@@ -11,10 +13,10 @@ import { analyticsHead, faviconHead } from './head'
 // import { version } from '../../../../stacks/package.json'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withPwa(defineConfig({
   srcDir: p.projectPath('docs'),
-  outDir: p.projectStoragePath('framework/docs/dist'),
-  cacheDir: p.projectStoragePath('framework/cache/docs'),
+  outDir: p.frameworkPath('docs/dist'),
+  cacheDir: p.frameworkPath('cache/docs'),
   assetsDir: p.assetsPath(),
   publicDir: p.publicPath(),
 
@@ -53,6 +55,8 @@ export default defineConfig({
     ...analyticsHead,
   ],
 
+  pwa,
+
   markdown: {
     codeTransformers: [
       transformerTwoslash(),
@@ -60,4 +64,4 @@ export default defineConfig({
   },
 
   ...userConfig,
-})
+}))

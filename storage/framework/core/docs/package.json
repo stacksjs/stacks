@@ -63,6 +63,7 @@
     "vitepress-plugin-twoslash": "^0.9.19"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@vite-pwa/vitepress": "^0.3.1"
   }
 }

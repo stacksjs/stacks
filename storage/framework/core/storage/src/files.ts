@@ -95,6 +95,14 @@ export function isFile(path: string): boolean {
   return fs.existsSync(path)
 }
 
+export function doesExist(path: string): boolean {
+  return !isFile(path) || !isFolder(path)
+}
+
+export function doesNotExist(path: string): boolean {
+  return !isFile(path) && !isFolder(path)
+}
+
 /**
  * Determine whether a folder has any files in it.
  */

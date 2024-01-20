@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
+import { storage } from '@stacksjs/storage'
 import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
@@ -68,16 +69,21 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.success('Installed node_modules')
   log.info('Ensuring .env exists...')
 
-  const envResult = await runCommand('cp .env.example .env', {
-    cwd: options.cwd || p.projectPath(),
-  })
+  // if storage.exists('.env') {
+  if (storage.doesNotExist(p.projectPath('.env'))) {
+    const envResult = await runCommand('cp .env.example .env', {
+      cwd: options.cwd || p.projectPath(),
+    })
 
-  if (envResult.isErr()) {
-    handleError(envResult.error)
-    process.exit(ExitCode.FatalError)
+    if (envResult.isErr()) {
+      handleError(envResult.error)
+      process.exit(ExitCode.FatalError)
+    }
+
+    log.success('.env created')
   }
+  else { log.success('.env existed') }
 
-  log.success('.env exists')
   log.info('Generating application key...')
 
   const keyResult = await runCommand('buddy key:generate', {

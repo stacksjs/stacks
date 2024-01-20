@@ -80,6 +80,8 @@ DMARC
 dmarcreports
 docgen
 domainkey
+dont
+Dorell
 dotenv
 dprint
 Drasner
@@ -109,6 +111,7 @@ gitmodules
 globalFroms
 grammarly
 gruntfuggly
+gstatic
 gupshup
 gzipped
 headlessui

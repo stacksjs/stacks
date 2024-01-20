@@ -282,7 +282,7 @@ const sidebar = {
 export default {
   lang: 'en-US',
   title: 'Stacks',
-  description: 'Rapid application, cloud & library framework.',
+  description: 'Rapid application, cloud & library development framework.',
   lastUpdated: true,
 
   themeConfig: {

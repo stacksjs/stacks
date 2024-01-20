@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Meet the Team
-description: The development of Stacks is guided by an international team.
+description: A team of incredible people.
 ---
 
 <script setup>
@@ -18,8 +18,7 @@ import { core, emeriti } from './_data/team'
   <VPTeamPageTitle>
     <template #title>Meet the Team</template>
     <template #lead>
-      The development of Stacks is guided by an international team, some of whom
-      have chosen to be featured below.
+      A team of incredible talent & ambition.
     </template>
   </VPTeamPageTitle>
   <VPTeamMembers :members="core" />

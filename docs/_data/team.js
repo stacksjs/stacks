@@ -13,17 +13,29 @@ export const core = [
     sponsor: 'https://github.com/sponsors/chrisbbreuer',
   },
   {
-    avatar: 'https://www.github.com/brianzzzasd.png',
-    name: 'Brian',
+    avatar: 'https://avatars.githubusercontent.com/u/977413',
+    name: 'Dorell James',
     title: 'A collaborative being',
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
     links: [
-      { icon: 'github', link: 'https://github.com/brianzzzasd' },
-      { icon: 'twitter', link: 'https://twitter.com/brianzzzasd' },
+      { icon: 'github', link: 'https://github.com/dorelljames' },
+      { icon: 'twitter', link: 'https://twitter.com/dorelljames' },
     ],
-    sponsor: 'https://github.com/sponsors/brianzzzasd',
+    sponsor: 'https://github.com/sponsors/dorelljames',
+  },
+  {
+    avatar: 'https://avatars.githubusercontent.com/u/29087513',
+    name: 'Glenn Michael',
+    title: 'A collaborative being',
+    org: 'Stacks',
+    orgLink: 'https://stacksjs.org/',
+    desc: 'Core team member of Stacks.',
+    links: [
+      { icon: 'github', link: 'https://github.com/glennmichael123' },
+    ],
+    sponsor: 'https://github.com/sponsors/dorelljames',
   },
 ]
 
