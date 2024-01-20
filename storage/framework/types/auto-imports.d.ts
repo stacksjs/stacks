@@ -274,7 +274,9 @@ declare global {
   const dnsPath: typeof import('../core/path/src/index')['dnsPath']
   const docsConfig: typeof import('../core/index')['docsConfig']
   const docsPath: typeof import('../core/path/src/index')['docsPath']
+  const doesExist: typeof import('../core/storage/src/files')['doesExist']
   const doesFolderExist: typeof import('../core/storage/src/folders')['doesFolderExist']
+  const doesNotExist: typeof import('../core/storage/src/files')['doesNotExist']
   const dotAll: typeof import('../core/utils/src/regex')['dotAll']
   const dump: typeof import('../core/logging/src/index')['dump']
   const dumpYaml: typeof import('../core/utils/src/helpers')['dumpYaml']
@@ -1198,7 +1200,9 @@ declare module 'vue' {
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/index')['dnsPath']>
     readonly docsConfig: UnwrapRef<typeof import('../core/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../core/path/src/index')['docsPath']>
+    readonly doesExist: UnwrapRef<typeof import('../core/storage/src/files')['doesExist']>
     readonly doesFolderExist: UnwrapRef<typeof import('../core/storage/src/folders')['doesFolderExist']>
+    readonly doesNotExist: UnwrapRef<typeof import('../core/storage/src/files')['doesNotExist']>
     readonly dotAll: UnwrapRef<typeof import('../core/utils/src/regex')['dotAll']>
     readonly dump: UnwrapRef<typeof import('../core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['dumpYaml']>
@@ -2100,7 +2104,9 @@ declare module '@vue/runtime-core' {
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/index')['dnsPath']>
     readonly docsConfig: UnwrapRef<typeof import('../core/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../core/path/src/index')['docsPath']>
+    readonly doesExist: UnwrapRef<typeof import('../core/storage/src/files')['doesExist']>
     readonly doesFolderExist: UnwrapRef<typeof import('../core/storage/src/folders')['doesFolderExist']>
+    readonly doesNotExist: UnwrapRef<typeof import('../core/storage/src/files')['doesNotExist']>
     readonly dotAll: UnwrapRef<typeof import('../core/utils/src/regex')['dotAll']>
     readonly dump: UnwrapRef<typeof import('../core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['dumpYaml']>
