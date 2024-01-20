@@ -33,6 +33,11 @@ export class CliStack {
       value: `${this.cliSetupUrl.url}cli-setup`,
     })
 
+    new Output(scope, 'CliSetupUrl', {
+      value: `https://${props.domain}/install`,
+      description: 'URL to trigger the CLI setup function',
+    })
+
     // once deployed, need to create logic in the cdn origin request to check if the request is for the cli
     // if it is, then we need the to use the function url as the origin
     // if it is not, then we need don't adjust the origin
