@@ -49,6 +49,17 @@ export const core = [
     sponsor: 'https://github.com/sponsors/harlekoy',
   },
   {
+    avatar: 'https://www.averyahill.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.626e0c07.jpg&w=128&q=75',
+    name: 'Avery Hill',
+    title: 'A collaborative being',
+    org: 'Stacks',
+    orgLink: 'https://stacksjs.org/',
+    desc: 'Core team member of Stacks.',
+    links: [
+      { icon: 'github', link: 'https://www.averyahill.com/' },
+    ],
+  },
+  {
     avatar: 'https://avatars.githubusercontent.com/u/58994540',
     name: 'Frederik Bußmann',
     title: 'A collaborative being',
@@ -83,7 +94,7 @@ export const core = [
     links: [
       { icon: 'github', link: 'https://github.com/glennmichael123' },
     ],
-    sponsor: 'https://github.com/sponsors/dorelljames',
+    sponsor: 'https://github.com/sponsors/glennmichael123',
   },
 ]
 
