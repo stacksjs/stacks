@@ -19,6 +19,7 @@ export interface CdnStackProps extends NestedCloudProps {
   webServer: lambda.Function
   webServerUrl: lambda.FunctionUrl
   cliSetupUrl: lambda.FunctionUrl
+  askAiUrl: lambda.FunctionUrl
 }
 
 export class CdnStack {
@@ -241,12 +242,12 @@ export class CdnStack {
     }
   }
 
-  aiBehaviorOptions(scope: Construct): Record<string, cloudfront.BehaviorOptions> {
-    // const url = new URL()
-
+  aiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
+    const hostname = Fn.select(2, Fn.split('/', props.askAiUrl.url))
     return {
       '/ai/ask': {
-        origin: new origins.HttpOrigin('9qp44a2b7e.execute-api.us-east-1.amazonaws.com', {
+        // origin: new origins.HttpOrigin('9qp44a2b7e.execute-api.us-east-1.amazonaws.com', {
+        origin: new origins.HttpOrigin(hostname, {
           originPath: '/ai',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
         }),
@@ -339,7 +340,7 @@ export class CdnStack {
 
     if (this.shouldDeployAiEndpoints()) {
       behaviorOptions = {
-        ...this.aiBehaviorOptions(scope),
+        ...this.aiBehaviorOptions(scope, props),
         ...behaviorOptions,
       }
     }

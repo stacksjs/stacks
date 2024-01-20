@@ -54,44 +54,42 @@ export function deploy(buddy: CLI) {
         console.log(`${italic('This may take a while...')}`)
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
-      }
 
-      // if the domain hasn't been added to the user's (AWS) cloud, we will add it for them
-      // and then exit the process with prompts for the user to update their nameservers
-      else {
-        console.log('')
-        log.info(`  👋  It appears to be your first ${italic(domain)} deployment.`)
-        console.log('')
-        log.info(italic('Let’s ensure it is all connected properly.'))
-        log.info(italic('One moment...'))
-        console.log('')
-
-        options.domain = domain
-        const result = await addDomain({
-          ...options,
-          deploy: true,
-          startTime,
-        })
+        // now that we know the domain has been added to the users (AWS) cloud, we can deploy
+        const result = await runAction(Action.Deploy, options)
 
         if (result.isErr()) {
           await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
 
-        await outro('Added your domain.', { startTime, useSeconds: true })
+        await outro('Deployment succeeded.', { startTime, useSeconds: true })
+
         process.exit(ExitCode.Success)
       }
 
-      // now that we know the domain has been added to the users (AWS) cloud, we can deploy
-      const result = await runAction(Action.Deploy, options)
+      // if the domain hasn't been added to the user's (AWS) cloud, we will add it for them
+      // and then exit the process with prompts for the user to update their nameservers
+      console.log('')
+      log.info(`  👋  It appears to be your first ${italic(domain)} deployment.`)
+      console.log('')
+      log.info(italic('Let’s ensure it is all connected properly.'))
+      log.info(italic('One moment...'))
+      console.log('')
+
+      options.domain = domain
+      const result = await addDomain({
+        ...options,
+        deploy: true,
+        startTime,
+      })
 
       if (result.isErr()) {
         await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Deployment succeeded.', { startTime, useSeconds: true })
-
+      await outro('Added your domain.', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

@@ -9,6 +9,8 @@ export interface AiStackProps extends NestedCloudProps {
 }
 
 export class AiStack {
+  askAiUrl: lambda.FunctionUrl
+
   constructor(scope: Construct, props: AiStackProps) {
     // Define the Lambda Layer for aws-sdk
     const awsSdkLayer = new lambda.LayerVersion(scope, 'AwsSdkLayer', {
@@ -46,6 +48,14 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
+    this.askAiUrl = new lambda.FunctionUrl(scope, 'AskAiFunctionUrl', {
+      function: askAi,
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ['*'],
+      },
+    })
+
     const summarizeAi = new lambda.Function(scope, 'AiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai-summarize`,
       description: 'Lambda function to summarize any given text',
@@ -57,51 +67,51 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const api = new RestApi(scope, 'AiRestApi', {
-      restApiName: `${props.slug}-${props.appEnv}-ai`,
-      description: 'Stacks AI API',
-      defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS,
-        allowMethods: Cors.ALL_METHODS,
+    const summarizeAiUrl = new lambda.FunctionUrl(scope, 'SummarizeAiFunctionUrl', {
+      function: summarizeAi,
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ['*'],
       },
     })
 
-    const askResource = api.root.addResource('ask')
-    const askIntegration = new LambdaIntegration(askAi)
-    askResource.addMethod('POST', askIntegration, {
-      operationName: 'Stacks AI Ask',
-      authorizationType: AuthorizationType.NONE,
-    })
-
-    // alias to ask
-    const promptResource = api.root.addResource('prompt')
-    const promptIntegration = new LambdaIntegration(askAi)
-    promptResource.addMethod('POST', promptIntegration, {
-      operationName: 'Stacks AI Ask',
-      authorizationType: AuthorizationType.NONE,
-    })
-
-    const summarizeResource = api.root.addResource('summarize')
-    const summarizeIntegration = new LambdaIntegration(summarizeAi)
-    summarizeResource.addMethod('POST', summarizeIntegration, {
-      operationName: 'Stacks AI Summarize',
-      authorizationType: AuthorizationType.NONE,
-    })
-
-    // const api = new lambda.FunctionUrl(scope, 'AiLambdaUrl', {
-    //   function: aiLambda,
-    //   authType: lambda.FunctionUrlAuthType.NONE,
-    //   cors: {
-    //     allowedOrigins: ['*'],
+    // const api = new RestApi(scope, 'AiRestApi', {
+    //   restApiName: `${props.slug}-${props.appEnv}-ai`,
+    //   description: 'Stacks AI API',
+    //   defaultCorsPreflightOptions: {
+    //     allowOrigins: Cors.ALL_ORIGINS,
+    //     allowMethods: Cors.ALL_METHODS,
     //   },
     // })
 
+    // const askResource = api.root.addResource('ask')
+    // const askIntegration = new LambdaIntegration(askAi)
+    // askResource.addMethod('POST', askIntegration, {
+    //   operationName: 'Stacks AI Ask',
+    //   authorizationType: AuthorizationType.NONE,
+    // })
+
+    // alias to ask
+    // const promptResource = api.root.addResource('prompt')
+    // const promptIntegration = new LambdaIntegration(askAi)
+    // promptResource.addMethod('POST', promptIntegration, {
+    //   operationName: 'Stacks AI Ask',
+    //   authorizationType: AuthorizationType.NONE,
+    // })
+
+    // const summarizeResource = api.root.addResource('summarize')
+    // const summarizeIntegration = new LambdaIntegration(summarizeAi)
+    // summarizeResource.addMethod('POST', summarizeIntegration, {
+    //   operationName: 'Stacks AI Summarize',
+    //   authorizationType: AuthorizationType.NONE,
+    // })
+
     new Output(scope, 'AiVanityAskApiUrl', {
-      value: `${api.url}ask`,
+      value: this.askAiUrl.url,
     })
 
     new Output(scope, 'AiVanitySummarizeApiUrl', {
-      value: `${api.url}summarize`,
+      value: summarizeAiUrl.url,
     })
 
     new Output(scope, 'AiAskApiUrl', {

@@ -70,7 +70,7 @@ export class Cloud extends Stack {
       certificate: security.certificate,
     })
 
-    new AiStack(this, props)
+    const ai = new AiStack(this, props)
 
     const cli = new CliStack(this, props)
 
@@ -85,6 +85,7 @@ export class Cloud extends Stack {
       webServer: api.apiServer,
       webServerUrl: api.apiServerUrl,
       cliSetupUrl: cli.cliSetupUrl,
+      askAiUrl: ai.askAiUrl,
     })
 
     new DeploymentStack(this, {
