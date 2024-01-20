@@ -6,7 +6,7 @@ This guide will help you get started with your first Stacks project. Simply run 
 
 ```bash
 # not working atm
-sh <(curl stacksjs.org) my-project
+curl -Ssf stacksjs.org | sh # wip
 
 # alternatively, if Bun >= v1.0 is installed already,
 # you may also get started via:

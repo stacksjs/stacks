@@ -4,7 +4,7 @@
 script_dir=$(realpath $(dirname "$0"))
 
 # Get all directories in the core path
-dirs=$(find "$script_dir/../core/" -type d -maxdepth 1)
+dirs=$(find "$script_dir/../core" -type d -maxdepth 1)
 
 # Check if no directories found
 if [ -z "$dirs" ]; then

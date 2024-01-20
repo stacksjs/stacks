@@ -84,8 +84,6 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
   else { log.success('.env existed') }
 
-  log.info('Generating application key...')
-
   const keyResult = await runCommand('buddy key:generate', {
     cwd: options.cwd || p.projectPath(),
   })
@@ -95,7 +93,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('Generated application key')
+  // log.success('Generated application key')
   log.info('Ensuring AWS is connected...')
 
   // const awsResult = await runCommand('buddy configure:aws', {
