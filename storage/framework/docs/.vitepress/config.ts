@@ -18,13 +18,14 @@ export default withPwa(defineConfig({
   outDir: p.frameworkPath('docs/dist'),
   cacheDir: p.frameworkPath('cache/docs'),
   assetsDir: p.assetsPath(),
-  publicDir: p.publicPath(),
 
   // sitemap: {
   //   hostname: 'stacks.localhost',
   // },
 
   vite: {
+    publicDir: p.publicPath(),
+
     server: server({
       type: 'docs',
     }),

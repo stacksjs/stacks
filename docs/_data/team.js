@@ -13,6 +13,30 @@ export const core = [
     sponsor: 'https://github.com/sponsors/chrisbbreuer',
   },
   {
+    avatar: 'https://avatars.githubusercontent.com/u/72235211',
+    name: 'Blake Ayer',
+    title: 'A collaborative being',
+    org: 'Stacks',
+    orgLink: 'https://stacksjs.org/',
+    desc: 'Core team member of Stacks.',
+    links: [
+      { icon: 'github', link: 'https://github.com/blakeayer' },
+    ],
+    sponsor: 'https://github.com/sponsors/blakeayer',
+  },
+  {
+    avatar: 'https://avatars.githubusercontent.com/u/72235211',
+    name: 'Blake Ayer',
+    title: 'A collaborative being',
+    org: 'Stacks',
+    orgLink: 'https://stacksjs.org/',
+    desc: 'Core team member of Stacks.',
+    links: [
+      { icon: 'github', link: 'https://github.com/blakeayer' },
+    ],
+    sponsor: 'https://github.com/sponsors/blakeayer',
+  },
+  {
     avatar: 'https://avatars.githubusercontent.com/u/977413',
     name: 'Dorell James',
     title: 'A collaborative being',
