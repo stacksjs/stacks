@@ -35,7 +35,7 @@ export class AiStack {
 
     bedrockAccessRole.addToPolicy(bedrockAccessPolicy)
 
-    const askLambda = new lambda.Function(scope, 'AskAiFunction', {
+    const askAi = new lambda.Function(scope, 'AskAiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai-ask`,
       description: 'Lambda function to invoke the AI model',
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -46,7 +46,7 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const summarizeLambda = new lambda.Function(scope, 'AiFunction', {
+    const summarizeAi = new lambda.Function(scope, 'AiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai-summarize`,
       description: 'Lambda function to summarize any given text',
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -67,7 +67,7 @@ export class AiStack {
     })
 
     const askResource = api.root.addResource('ask')
-    const askIntegration = new LambdaIntegration(askLambda)
+    const askIntegration = new LambdaIntegration(askAi)
     askResource.addMethod('POST', askIntegration, {
       operationName: 'Stacks AI Ask',
       authorizationType: AuthorizationType.NONE,
@@ -75,14 +75,14 @@ export class AiStack {
 
     // alias to ask
     const promptResource = api.root.addResource('prompt')
-    const promptIntegration = new LambdaIntegration(askLambda)
+    const promptIntegration = new LambdaIntegration(askAi)
     promptResource.addMethod('POST', promptIntegration, {
       operationName: 'Stacks AI Ask',
       authorizationType: AuthorizationType.NONE,
     })
 
     const summarizeResource = api.root.addResource('summarize')
-    const summarizeIntegration = new LambdaIntegration(summarizeLambda)
+    const summarizeIntegration = new LambdaIntegration(summarizeAi)
     summarizeResource.addMethod('POST', summarizeIntegration, {
       operationName: 'Stacks AI Summarize',
       authorizationType: AuthorizationType.NONE,

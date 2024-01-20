@@ -281,7 +281,6 @@ export class CdnStack {
   }
 
   cliSetupBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    // const url = new URL()
     const hostname = Fn.select(2, Fn.split('/', props.cliSetupUrl.url))
 
     return {
