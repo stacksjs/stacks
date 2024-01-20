@@ -20,13 +20,14 @@ const readdir = promisify(fs.readdir)
 
 async function importMiddlewares(directory: string) {
   const middlewares = []
-  const files = await readdir(directory)
+  // TODO: somehow this breaks ./buddy dev
+  // const files = await readdir(directory)
 
-  for (const file of files) {
-    // Dynamically import the middleware
-    const imported = await import(path.join(directory, file))
-    middlewares.push(imported.default)
-  }
+  // for (const file of files) {
+  //   // Dynamically import the middleware
+  //   const imported = await import(path.join(directory, file))
+  //   middlewares.push(imported.default)
+  // }
 
   return middlewares
 }
