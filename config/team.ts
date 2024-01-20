@@ -12,5 +12,6 @@ export default {
 
   members: {
     chris: 'chris@stacksjs.org',
+    blake: 'blake@stacksjs.org',
   },
 } satisfies Team
