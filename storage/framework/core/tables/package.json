@@ -41,7 +41,7 @@
     "meilisearch": "^0.37.0"
   },
   "dependencies": {
-    "vite": "^5.0.11"
+    "vite": "^5.0.12"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
