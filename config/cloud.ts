@@ -32,6 +32,7 @@ export default {
   },
 
   ai: true, // deploys AI endpoints
+  cli: true, // deploys CLI setup endpoint
   docs: true, // deploys documentation
   api: true, // deploys API
   fileSystem: true, // enables file system

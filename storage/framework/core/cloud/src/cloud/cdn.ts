@@ -18,6 +18,7 @@ export interface CdnStackProps extends NestedCloudProps {
   zone: route53.IHostedZone
   webServer: lambda.Function
   webServerUrl: lambda.FunctionUrl
+  cliSetupUrl: lambda.FunctionUrl
 }
 
 export class CdnStack {
@@ -279,8 +280,39 @@ export class CdnStack {
     }
   }
 
+  cliSetupBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
+    // const url = new URL()
+    const hostname = Fn.select(2, Fn.split('/', props.cliSetupUrl.url))
+
+    return {
+      '/install': {
+        origin: new origins.HttpOrigin(hostname, {
+        // origin: new origins.HttpOrigin('tipevv3dfx35fb7ptyq7nrxtga0qkcgc.lambda-url.us-east-1.on.aws', {
+          originPath: '/cli-setup',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: false,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: new cloudfront.CachePolicy(scope, 'CliSetupCachePolicy', {
+          comment: 'Stacks CLI Setup Cache Policy',
+          cachePolicyName: `${this.props.slug}-${this.props.appEnv}-cli-setup-cache-policy`,
+          defaultTtl: Duration.seconds(0),
+          // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
+          cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+          headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+          queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
+        }),
+      },
+    }
+  }
+
   shouldDeployAiEndpoints() {
     return config.cloud.ai
+  }
+
+  shouldDeployCliSetup() {
+    return config.cloud.cli
   }
 
   shouldDeployDocs() {
@@ -309,6 +341,13 @@ export class CdnStack {
     if (this.shouldDeployAiEndpoints()) {
       behaviorOptions = {
         ...this.aiBehaviorOptions(scope),
+        ...behaviorOptions,
+      }
+    }
+
+    if (this.shouldDeployCliSetup()) {
+      behaviorOptions = {
+        ...this.cliSetupBehaviorOptions(scope, props),
         ...behaviorOptions,
       }
     }

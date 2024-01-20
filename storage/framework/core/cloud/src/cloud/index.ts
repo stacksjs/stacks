@@ -72,6 +72,8 @@ export class Cloud extends Stack {
 
     new AiStack(this, props)
 
+    const cli = new CliStack(this, props)
+
     const cdn = new CdnStack(this, {
       ...props,
       publicBucket: storage.publicBucket,
@@ -82,6 +84,7 @@ export class Cloud extends Stack {
       zone: dns.zone,
       webServer: api.apiServer,
       webServerUrl: api.apiServerUrl,
+      cliSetupUrl: cli.cliSetupUrl,
     })
 
     new DeploymentStack(this, {
@@ -90,7 +93,5 @@ export class Cloud extends Stack {
       privateBucket: storage.privateBucket,
       cdn: cdn.distribution,
     })
-
-    new CliStack(this, props)
   }
 }

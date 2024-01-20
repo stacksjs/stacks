@@ -74,6 +74,7 @@ export interface CloudOptions {
   }
 
   ai: boolean
+  cli: boolean
   docs: boolean
   api: boolean
   fileSystem: boolean

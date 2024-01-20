@@ -7,6 +7,8 @@ export interface CliStackProps extends NestedCloudProps {
 }
 
 export class CliStack {
+  cliSetupUrl: lambda.FunctionUrl
+
   constructor(scope: Construct, props: CliStackProps) {
     const cliSetupFunc = new lambda.Function(scope, 'CliSetupFunction', {
       functionName: `${props.slug}-${props.appEnv}-cli-setup`,
@@ -19,7 +21,7 @@ export class CliStack {
 
     // create a Lambda.FunctionUrl to be used in the CloudFront OriginRequestPolicy
     // this will be used to trigger the function
-    const cliSetupUrl = new lambda.FunctionUrl(scope, 'CliSetupFunctionUrl', {
+    this.cliSetupUrl = new lambda.FunctionUrl(scope, 'CliSetupFunctionUrl', {
       function: cliSetupFunc,
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
@@ -28,7 +30,7 @@ export class CliStack {
     })
 
     new Output(scope, 'CliSetupVanityUrl', {
-      value: `${cliSetupUrl.url}cli-setup`,
+      value: `${this.cliSetupUrl.url}cli-setup`,
     })
 
     // once deployed, need to create logic in the cdn origin request to check if the request is for the cli
