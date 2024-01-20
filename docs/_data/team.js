@@ -1,6 +1,6 @@
 export const core = [
   {
-    avatar: 'https://www.github.com/chrisbbreuer.png',
+    avatar: 'https://ca.slack-edge.com/TAFCQEYEP-UAFFN6YSE-fb28a6b5d278-512',
     name: 'Chris Breuer',
     title: 'Creator',
     org: 'Stacks',
@@ -15,7 +15,7 @@ export const core = [
   {
     avatar: 'https://avatars.githubusercontent.com/u/72235211',
     name: 'Blake Ayer',
-    title: 'A collaborative being',
+    title: 'Cloud Genius',
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
@@ -27,7 +27,7 @@ export const core = [
   {
     avatar: 'https://avatars.githubusercontent.com/u/19656966',
     name: 'Zoltan',
-    title: 'A collaborative being',
+    title: 'Desktop Wizard',
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
@@ -35,6 +35,17 @@ export const core = [
       { icon: 'github', link: 'https://github.com/konkonam' },
     ],
     sponsor: 'https://github.com/sponsors/konkonam',
+  },
+  {
+    avatar: 'https://www.averyahill.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.626e0c07.jpg&w=128&q=75',
+    name: 'Avery Hill',
+    title: 'Merchandise & Event Planning',
+    org: 'Stacks',
+    orgLink: 'https://stacksjs.org/',
+    desc: 'Core team member of Stacks.',
+    links: [
+      { icon: 'github', link: 'https://www.averyahill.com/' },
+    ],
   },
   {
     avatar: 'https://avatars.githubusercontent.com/u/10015302',
@@ -49,15 +60,16 @@ export const core = [
     sponsor: 'https://github.com/sponsors/harlekoy',
   },
   {
-    avatar: 'https://www.averyahill.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.626e0c07.jpg&w=128&q=75',
-    name: 'Avery Hill',
-    title: 'A collaborative being',
+    avatar: 'https://ca.slack-edge.com/TAFCQEYEP-UCX5LQ2NP-g16e383ecf66-512',
+    name: 'Germaine Abellanosa',
+    title: 'Social Tech Genius',
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
     links: [
-      { icon: 'github', link: 'https://www.averyahill.com/' },
+      { icon: 'github', link: 'https://github.com/germikee' },
     ],
+    sponsor: 'https://github.com/sponsors/germikee',
   },
   {
     avatar: 'https://avatars.githubusercontent.com/u/58994540',
@@ -87,7 +99,7 @@ export const core = [
   {
     avatar: 'https://avatars.githubusercontent.com/u/29087513',
     name: 'Glenn Michael',
-    title: 'A collaborative being',
+    title: 'Desktop, Mobile, Web',
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',

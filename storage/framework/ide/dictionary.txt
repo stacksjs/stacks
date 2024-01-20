@@ -1,3 +1,4 @@
+Abellanosa
 alefragnani
 alrighty
 amazonses
@@ -108,6 +109,7 @@ fsmonitor
 fullscreen
 gamepad
 geolocation
+Germaine
 giget
 gitmessage
 gitmodules
