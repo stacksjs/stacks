@@ -34,6 +34,7 @@
     "typescript",
     "typescriptreact",
     "vue",
+    "stx",
     "html",
     "markdown",
     "json",
@@ -78,7 +79,7 @@
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "bun",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./storage/framework/core/ui/src/uno.config.ts",
+  "unocss.root": "./storage/framework/core/ui/src/unocss.config.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
@@ -87,7 +88,11 @@
     "MD033": {
       "allowed_elements": [
         "details",
-        "summary"
+        "summary",
+        "VPTeamPage",
+        "VPTeamPageTitle",
+        "VPTeamMembers",
+        "script"
       ]
     },
     "MD041": false
