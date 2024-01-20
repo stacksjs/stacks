@@ -29,6 +29,7 @@ browserslist
 bumpp
 bundleconfig
 bunx
+Bußmann
 caddyserver
 cardano
 cback
@@ -83,6 +84,7 @@ domainkey
 dont
 Dorell
 dotenv
+Doyon
 dprint
 Drasner
 elasticloadbalancingv
@@ -99,6 +101,7 @@ FLUSHALL
 fontshare
 formkit
 foxundermoon
+Frederik
 frontends
 frontmatter
 fsmonitor
@@ -309,3 +312,4 @@ wmaurer
 xvda
 yourdomain
 zixuanchen
+Zoltan

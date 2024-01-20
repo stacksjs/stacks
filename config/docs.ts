@@ -2,7 +2,6 @@ import { SocialLinkIcon } from '@stacksjs/types'
 import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
-  { text: 'Config', link: '/config', activeMatch: '/config' },
   {
     text: 'Changelog',
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',

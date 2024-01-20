@@ -363,11 +363,11 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-You're free to use this package, and we would love to receive a postcard.
+You will always be free to use the Stacks framework & any of its over 80 packages. At the same time, we would love to see which parts of the world Stacks ends up in. _We would love to receive a postcard—which we publish on our website._
 
 Our address is: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA
 
-##### _We publish all received postcards on our website. Thanks to Spatie for this wonderful idea._
+##### _Thanks to Spatie for this wonderful idea._
 
 ## Sponsors
 

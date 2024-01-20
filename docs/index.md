@@ -5,7 +5,7 @@ title: Stacks
 titleTemplate: Modern TypeScript Fullstack Development.
 
 hero:
-  name: Stacks
+  name: Stacks.js
   text: Build. Ship. Faster.
   tagline: Rapid application, cloud & library development framework. For the best full-stack teams.
   actions:
