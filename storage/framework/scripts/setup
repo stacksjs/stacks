@@ -20,7 +20,7 @@ if [ -n "$1" ]; then
 fi
 
 # Get the directory of the current script and go up 3 directories
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CLI_PATH="$PROJECT_ROOT/storage/framework/core/buddy/src/cli.ts"
 SCRIPT_PATH="$PROJECT_ROOT/storage/framework/scripts/pkgx-install"
 LOG_PATH="$PROJECT_ROOT/storage/logs/console.log"
