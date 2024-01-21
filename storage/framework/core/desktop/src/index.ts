@@ -39,3 +39,5 @@ export const desktop = {
 export async function openShell(link: string) {
   await shellOpen(link)
 }
+
+export * from './system-tray'

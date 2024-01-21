@@ -1,4 +1,4 @@
-import type { BunFile } from 'bun'
+import type { BunFile, PathLike } from 'bun'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { dirname, join, path as p } from '@stacksjs/path'
@@ -108,7 +108,7 @@ export function doesNotExist(path: string): boolean {
  */
 export function hasFiles(folder: string): boolean {
   try {
-    return fs.default.readdirSync(folder).length > 0
+    return fs.readdirSync(folder).length > 0
   }
   catch (err) {
     return false

@@ -1,0 +1,14 @@
+{
+  "name": "stacks-system-tray",
+  "type": "module",
+  "version": "0.58.28",
+  "description": "The Stacks System Tray app.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/storage/framework/system-tray#readme",
+  "scripts": {
+    "dev": "wip",
+    "build": "wip"
+  }
+}
