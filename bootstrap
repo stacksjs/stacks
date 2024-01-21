@@ -12,7 +12,8 @@ if [ -n "$1" ]; then
       exit 1
     else
       git clone https://github.com/stacksjs/stacks.git $1
-      cd $1
+      cd "$1" || exit 1
+
       # Run the pkgx-install script
       "./storage/framework/scripts/pkgx-install"
 
@@ -29,31 +30,37 @@ CLI_PATH="$PROJECT_ROOT/storage/framework/core/buddy/src/cli.ts"
 SCRIPT_PATH="$PROJECT_ROOT/storage/framework/scripts/pkgx-install"
 LOG_PATH="$PROJECT_ROOT/storage/logs/console.log"
 
-if [[ $* == *--verbose* ]]; then
-  echo "Project root: $PROJECT_ROOT"
-  echo "CLI path: $CLI_PATH"
-  echo "Script path: $SCRIPT_PATH"
-  echo "Log path: $LOG_PATH"
-fi
+case "$*" in
+  *--verbose*)
+    echo "Project root: $PROJECT_ROOT"
+    echo "CLI path: $CLI_PATH"
+    echo "Script path: $SCRIPT_PATH"
+    echo "Log path: $LOG_PATH"
+    ;;
+  *)
+esac
 
-cd $PROJECT_ROOT
+cd "$PROJECT_ROOT" || exit 1
 # Run the pkgx-install script
-if [[ $* == *--verbose* ]]; then
-  "$SCRIPT_PATH"
-  # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
-else
-  "$SCRIPT_PATH" > /dev/null 2>&1
-  # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
-fi
+case "$*" in
+  *--verbose*)
+    "$SCRIPT_PATH"
+    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
+    ;;
+  *)
+    "$SCRIPT_PATH" > /dev/null 2>&1
+    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
+    ;;
+esac
 
 # Create a named pipe
 mkfifo /tmp/mypipe
 
 # Run the command, send output to both the console and the pipe
-bun --bun $CLI_PATH setup | tee /tmp/mypipe &
+bun --bun "$CLI_PATH" setup | tee /tmp/mypipe &
 
 # Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> $LOG_PATH
+while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> "$LOG_PATH"
 
 # Remove the named pipe
 rm /tmp/mypipe
