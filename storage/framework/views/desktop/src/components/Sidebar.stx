@@ -7,7 +7,7 @@
         <div class="flex h-16 shrink-0 items-center">
           <img
             class="h-12 rounded-md mt-4 w-auto"
-            src="/stacks.png"
+            src="/logo.svg"
             alt="Your Company"
           >
         </div>
