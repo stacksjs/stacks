@@ -55,7 +55,6 @@ async function installPkgx(): Promise<void> {
 
 async function initializeProject(options: CliOptions): Promise<void> {
   log.info('Installing dependencies...')
-  await new Promise(resolve => setTimeout(resolve, 1500))
 
   const result = await runCommand('bun install', {
     cwd: options.cwd || p.projectPath(),
@@ -69,7 +68,6 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.success('Installed node_modules')
   log.info('Ensuring .env exists...')
 
-  // if storage.exists('.env') {
   if (storage.doesNotExist(p.projectPath('.env'))) {
     const envResult = await runCommand('cp .env.example .env', {
       cwd: options.cwd || p.projectPath(),
@@ -93,7 +91,6 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  // log.success('Generated application key')
   log.info('Ensuring AWS is connected...')
 
   // const awsResult = await runCommand('buddy configure:aws', {
@@ -107,8 +104,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   log.success('Configured AWS')
 
-  // 1. ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
-  // 2. ensure the project
+  // TODO: ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
 
   log.success('Project is setup')
   log.info('Happy coding! 💙')
