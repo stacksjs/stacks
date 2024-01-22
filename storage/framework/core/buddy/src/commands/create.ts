@@ -15,7 +15,7 @@ export function create(buddy: CLI) {
     components: 'Are you building UI components?',
     webComponents: 'Automagically built optimized custom elements/web components?',
     vue: 'Automagically built a Vue component library?',
-    pages: 'How about views/views?',
+    views: 'How about views?',
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
@@ -29,7 +29,7 @@ export function create(buddy: CLI) {
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
     .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('-v, --vue', descriptions.vue, { default: true })
-    .option('-p, --views', descriptions.pages, { default: true }) // views need an HTTP server
+    .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })
@@ -59,8 +59,6 @@ export function create(buddy: CLI) {
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
-      // console.log(`cd ${link(path, `vscode://file/${path}:1`)} && code .`)
-      // console.log()
       log.info('To learn more, visit https://stacksjs.org')
 
       process.exit(ExitCode.Success)
@@ -91,7 +89,7 @@ function onlineCheck() {
 
 async function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`giget stacks ${name}`, options)
+  const result = await runCommand(`bunx giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result
@@ -99,8 +97,7 @@ async function download(name: string, path: string, options: CreateOptions) {
 
 async function ensureEnv(path: string, options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
-  // todo: this should check for whether the proper Node version is installed because fnm is not a requirement
-  await runCommand('tea -SE', { ...options, cwd: path })
+  await runCommand('pkgx --update ', { ...options, cwd: path })
   log.success('Environment is ready')
 }
 
@@ -122,8 +119,9 @@ async function install(path: string, options: CreateOptions) {
 
   await runAction(Action.KeyGenerate, { ...options, cwd: path })
 
-  result = await runCommand('git init', { ...options, cwd: path })
+  // TODO: we should ask quite a few questions here, similar how we do in `buddy new my-project`, so we can generate a custom pkgx.yaml file
 
+  result = await runCommand('git init', { ...options, cwd: path }) // do we need this? or does giget do this already?
   if (result.isErr()) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
