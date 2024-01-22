@@ -8,8 +8,7 @@ import type { CLI, CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI) {
   const descriptions = {
-    ensure: 'This command ensures your project is setup correctly',
-    setup: 'This command sets up your project for the first time',
+    setup: 'This command ensures your project is setup correctly',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -20,10 +19,11 @@ export function setup(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
-      if (await ensurePkgxIsInstalled())
-        await optimizePkgxDeps()
-      else
+      if (!await isPkgxInstalled())
         await installPkgx()
+
+      // ensure the minimal amount of deps are written to ./pkgx.yaml
+      await optimizePkgxDeps()
 
       await initializeProject(options)
     })
@@ -34,7 +34,7 @@ export function setup(buddy: CLI) {
   })
 }
 
-async function ensurePkgxIsInstalled(): Promise<boolean> {
+async function isPkgxInstalled(): Promise<boolean> {
   const result = await runCommand('pkgx --version', { silent: true })
 
   if (result.isOk())

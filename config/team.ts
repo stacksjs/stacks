@@ -13,5 +13,10 @@ export default {
   members: {
     chris: 'chris@stacksjs.org',
     blake: 'blake@stacksjs.org',
+    zoltan: 'zoltan@stacksjs.org',
+    freddy: 'freddy@stacksjs.org',
+    glenn: 'glenn@stacksjs.org',
+    dorell: 'dorell@stacksjs.org',
+    avery: 'avery@stacksjs.org',
   },
 } satisfies Team
