@@ -159,9 +159,6 @@ objects:
 orm:
   - 'storage/framework/core/orm/**'
 
-pages:
-  - 'storage/framework/core/pages/**'
-
 path:
   - 'storage/framework/core/path/**'
 

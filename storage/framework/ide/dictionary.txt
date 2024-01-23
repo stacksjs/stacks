@@ -126,6 +126,7 @@ heroicons
 highlightjs
 hookable
 htmlnanorc
+httpie
 hubot
 huggingface
 huskyrc
@@ -251,6 +252,7 @@ sizecheck
 solana
 stackblitz
 stacksjs
+stedolan
 stepfunctions
 strikethrough
 styleci

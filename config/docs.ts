@@ -12,7 +12,7 @@ const nav = [
     items: [
       { text: 'Team', link: '/team' },
       { text: 'Postcardware', link: '/postcardware' },
-      { text: 'Releases', link: '/releases' },
+      { text: 'Changelog', link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md' },
       {
         items: [
           {
@@ -26,10 +26,6 @@ const nav = [
           {
             text: 'Awesome Stacks',
             link: 'https://github.com/stacksjs/awesome-stacks',
-          },
-          {
-            text: 'Changelog',
-            link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
           },
           {
             text: 'Contributing',
@@ -102,13 +98,14 @@ const sidebar = {
           collapsed: true,
           items: [
             { text: 'Cost Optimization', link: '/bootcamp/tips/cost-optimization' },
-            { text: 'Email, SMS, Social & Push notifications', link: '/bootcamp/tips/notifications' },
+            { text: 'Email, SMS, Social & Push Notifications', link: '/bootcamp/tips/notifications' },
             { text: 'Jump Box', link: '/bootcamp/tips/jump-box' },
             { text: 'Limitations', link: '/bootcamp/tips/limitations' },
             { text: 'Payment sending, receiving & management', link: '/bootcamp/tips/payments' },
             { text: 'Remove your Cloud', link: '/bootcamp/tips/undeploy' },
             { text: 'Semantic Commits', link: '/bootcamp/tips/semantic-commits' },
             { text: 'Ship your ORM', link: '/bootcamp/tips/orm-usage' },
+            { text: 'System Tray App', link: '/bootcamp/tips/system-tray' },
           ],
         },
         { text: 'Conclusion', link: '/bootcamp/conclusion' },

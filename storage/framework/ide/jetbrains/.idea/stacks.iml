@@ -34,7 +34,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/notifications/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/objects/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/orm/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/.stacks/src/pages/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/path/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/payments/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks/src/push/dist" />
