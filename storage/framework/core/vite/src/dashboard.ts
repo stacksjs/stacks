@@ -48,7 +48,7 @@ export default defineConfig({
     VueMacros({
       plugins: {
         vue: Vue({
-          include: /\.(stx|vue|md)($|\?)/,
+          include: /\.(stx|md)($|\?)/,
         }),
       },
     }),
@@ -71,7 +71,7 @@ export default defineConfig({
     cssEngine(),
     // markdown(),
     // pwa(),
-    devtools(),
+    // devtools(),
     i18n(),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
