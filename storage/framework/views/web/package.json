@@ -49,7 +49,7 @@
     "unplugin-vue-router": "^0.7.0",
     "vite": "^5.0.12",
     "vite-bundle-visualizer": "^1.0.0",
-    "vite-plugin-inspect": "^0.8.1",
+    "vite-plugin-inspect": "^0.8.2",
     "vite-plugin-pwa": "^0.17.4",
     "vite-plugin-vue-devtools": "^7.0.11",
     "vite-plugin-vue-layouts": "^0.11.0",
