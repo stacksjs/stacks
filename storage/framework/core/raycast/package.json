@@ -1,1 +1,5 @@
-{}
+{
+  "name": "@stacksjs/raycast",
+  "type": "module",
+  "version": "0.58.28"
+}

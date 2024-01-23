@@ -684,6 +684,7 @@ declare global {
   const termii: typeof import('../core/sms/src/drivers/index')['termii']
   const test: typeof import('../core/testing/src/index')['test']
   const testingPath: typeof import('../core/path/src/index')['testingPath']
+  const testingThis: typeof import('../core/desktop/src/system-tray')['testingThis']
   const testsPath: typeof import('../core/path/src/index')['testsPath']
   const throttle: typeof import('../core/utils/src/throttle')['throttle']
   const throttledRef: typeof import('../core/utils/src/vendors')['throttledRef']
@@ -1598,6 +1599,7 @@ declare module 'vue' {
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
     readonly testingPath: UnwrapRef<typeof import('../core/path/src/index')['testingPath']>
+    readonly testingThis: UnwrapRef<typeof import('../core/desktop/src/system-tray')['testingThis']>
     readonly testsPath: UnwrapRef<typeof import('../core/path/src/index')['testsPath']>
     readonly throttle: UnwrapRef<typeof import('../core/utils/src/throttle')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledRef']>
@@ -2502,6 +2504,7 @@ declare module '@vue/runtime-core' {
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
     readonly testingPath: UnwrapRef<typeof import('../core/path/src/index')['testingPath']>
+    readonly testingThis: UnwrapRef<typeof import('../core/desktop/src/system-tray')['testingThis']>
     readonly testsPath: UnwrapRef<typeof import('../core/path/src/index')['testsPath']>
     readonly throttle: UnwrapRef<typeof import('../core/utils/src/throttle')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledRef']>
