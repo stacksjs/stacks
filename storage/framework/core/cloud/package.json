@@ -58,7 +58,7 @@
     "@aws-sdk/client-cloudformation": "^3.496.0",
     "@aws-sdk/client-cloudfront": "^3.496.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.496.0",
-    "@aws-sdk/client-ec2": "^3.496.0",
+    "@aws-sdk/client-ec2": "^3.497.0",
     "@aws-sdk/client-efs": "^3.496.0",
     "@aws-sdk/client-iam": "^3.496.0",
     "@aws-sdk/client-lambda": "^3.496.0",
@@ -84,7 +84,7 @@
     "@aws-sdk/client-cloudfront": "^3.496.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.496.0",
     "@aws-sdk/client-dynamodb": "3.496.0",
-    "@aws-sdk/client-ec2": "^3.496.0",
+    "@aws-sdk/client-ec2": "^3.497.0",
     "@aws-sdk/client-efs": "^3.496.0",
     "@aws-sdk/client-iam": "^3.496.0",
     "@aws-sdk/client-lambda": "^3.496.0",
@@ -108,7 +108,7 @@
     "constructs": "^10.3.0"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^4.1.19",
+    "@oclif/plugin-plugins": "^4.1.20",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
