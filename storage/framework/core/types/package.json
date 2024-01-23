@@ -55,7 +55,7 @@
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
     "@types/bcryptjs": "^2.4.6",
-    "@types/crypto-js": "^4.2.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/eslint": "^8.56.2",
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.4",
@@ -76,7 +76,7 @@
     "vite-plugin-inspect": "^0.8.1",
     "vite-plugin-pwa": "^0.17.4",
     "vite-ssg": "^0.23.6",
-    "vitepress": "1.0.0-rc.39",
+    "vitepress": "1.0.0-rc.40",
     "vue": "^3.4.15"
   },
   "devDependencies": {

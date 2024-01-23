@@ -71,8 +71,8 @@
     "@eslint-types/unicorn": "^50.0.1",
     "@stacksjs/cli": "workspace:*",
     "@stylistic/eslint-plugin": "^1.5.4",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
     "eslint-config-flat-gitignore": "^0.1.2",
     "eslint-merge-processors": "^0.1.0",
     "eslint-parser-plain": "^0.1.0",
@@ -80,7 +80,7 @@
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-i": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.0.2",
-    "eslint-plugin-jsonc": "^2.12.2",
+    "eslint-plugin-jsonc": "^2.13.0",
     "eslint-plugin-markdown": "^3.0.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-no-only-tests": "^3.1.0",
@@ -97,7 +97,7 @@
     "local-pkg": "^0.5.0",
     "parse-gitignore": "^2.0.0",
     "toml-eslint-parser": "^0.9.3",
-    "vue-eslint-parser": "^9.4.0",
+    "vue-eslint-parser": "^9.4.2",
     "yaml-eslint-parser": "^1.2.2"
   },
   "devDependencies": {
