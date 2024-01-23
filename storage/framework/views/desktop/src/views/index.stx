@@ -83,7 +83,7 @@ import BaseModal from '../components/Modals/BaseModal.stx'
                     href="#"
                     class="flex gap-x-2"
                   >
-                    <span class="truncate">Planetaria</span>
+                    <span class="truncate">Stacks</span>
                     <span class="text-gray-400">/</span>
                     <span class="whitespace-nowrap">ios-app</span>
                     <span class="absolute inset-0" />
@@ -126,7 +126,7 @@ import BaseModal from '../components/Modals/BaseModal.stx'
                     href="#"
                     class="flex gap-x-2"
                   >
-                    <span class="truncate">Planetaria</span>
+                    <span class="truncate">Stacks</span>
                     <span class="text-gray-400">/</span>
                     <span class="whitespace-nowrap">mobile-api</span>
                     <span class="absolute inset-0" />
