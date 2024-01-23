@@ -61,6 +61,7 @@ export enum Action {
   Clean = 'clean',
   DevComponents = 'dev/components',
   DevDashboard = 'dev/dashboard',
+  DevSystemTray = 'dev/system-tray',
   Dev = 'dev/views',
   DevApi = 'dev/api',
   DevDesktop = 'dev/desktop',

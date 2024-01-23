@@ -1,6 +1,14 @@
 import process from 'node:process'
 import { Action } from '@stacksjs/enums'
-import { runAction, runApiDevServer, runComponentsDevServer, runDashboardDevServer, runDocsDevServer, runFrontendDevServer } from '@stacksjs/actions'
+import {
+  runAction,
+  runApiDevServer,
+  runComponentsDevServer,
+  runDashboardDevServer,
+  runDocsDevServer,
+  runFrontendDevServer,
+  runSystemTrayDevServer,
+} from '@stacksjs/actions'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { intro, log, outro, prompt, runCommand } from '@stacksjs/cli'
@@ -16,6 +24,7 @@ export function dev(buddy: CLI) {
     api: 'Start the local API development server',
     email: 'Start the Email development server',
     docs: 'Start the Documentation development server',
+    systemTray: 'Start the System Tray development server',
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
     withLocalhost: 'Include the localhost URL in the output',
@@ -32,6 +41,7 @@ export function dev(buddy: CLI) {
     .option('-d, --dashboard', descriptions.dashboard)
     .option('-t, --desktop', descriptions.desktop)
     .option('-d, --docs', descriptions.docs)
+    .option('-t, --system-tray', descriptions.systemTray)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
@@ -65,6 +75,9 @@ export function dev(buddy: CLI) {
         case 'desktop':
           await runDesktopDevServer(options)
           break
+        case 'system-tray':
+          await runSystemTrayDevServer(options)
+          break
           // case 'email':
           //   await runEmailDevServer(options)
           //   break
@@ -81,6 +94,7 @@ export function dev(buddy: CLI) {
               { value: 'all', label: 'All' },
               { value: 'frontend', label: 'Frontend' },
               { value: 'api', label: 'Backend' },
+              { value: 'dashboard', label: 'Dashboard' },
               { value: 'desktop', label: 'Desktop' },
               { value: 'email', label: 'Email' },
               { value: 'components', label: 'Components' },
@@ -93,6 +107,9 @@ export function dev(buddy: CLI) {
         }
         else if (answer === 'api') {
           await runApiDevServer(options)
+        }
+        else if (answer === 'dashboard') {
+          await runDashboardDevServer(options)
         }
         // else if (answer === 'email')
         //   await runEmailDevServer(options)
@@ -219,6 +236,15 @@ export function dev(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       await runDashboardDevServer(options)
+    })
+
+  buddy
+    .command('dev:system-tray', descriptions.systemTray)
+    .alias('dev:tray')
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: DevOptions) => {
+      await runSystemTrayDevServer(options)
     })
 
   buddy.on('dev:*', () => {

@@ -32,6 +32,11 @@ export async function runDashboardDevServer(options: DevOptions) {
   await runAction(Action.DevDashboard, options)
 }
 
+export async function runSystemTrayDevServer(options: DevOptions) {
+  log.info('Starting your System Tray...')
+  await runAction(Action.DevSystemTray, options)
+}
+
 export async function runDesktopDevServer(options: DevOptions) {
   log.info('Starting your Desktop Engine...')
   await runAction(Action.DevDesktop, options)

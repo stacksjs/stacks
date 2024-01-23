@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// TODO: ensure these components are auto-imported
-import Sidebar from '../../../storage/framework/views/dashboard/src/components/Sidebar.stx'
-import MobileSidebar from '../../../storage/framework/views/dashboard/src/components/MobileSidebar.stx'
-import Navbar from '../../../storage/framework/views/dashboard/src/components/Navbar.stx'
-import Toast from '../../../storage/framework/views/dashboard/src/components/Modals/Popups/Toast.stx'
+import Sidebar from '../../components/Dashboard/Sidebar.stx'
+import MobileSidebar from '../../components/Dashboard/MobileSidebar.stx'
+import Navbar from '../../components/Dashboard/Navbar.stx'
+import Toast from '../../components/Dashboard/Modals/Popups/Toast.stx'
 </script>
 
 <template>

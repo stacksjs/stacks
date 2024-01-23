@@ -1,31 +1,8 @@
 <script setup lang="ts">
-// TODO: ensure these components are auto-imported
-import Sidebar from '../../../storage/framework/views/dashboard/src/components/Sidebar.stx'
-import MobileSidebar from '../../../storage/framework/views/dashboard/src/components/MobileSidebar.stx'
-import Navbar from '../../../storage/framework/views/dashboard/src/components/Navbar.stx'
-import Toast from '../../../storage/framework/views/dashboard/src/components/Modals/Popups/Toast.stx'
 </script>
 
 <template>
-  <div>
-    <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-    <MobileSidebar />
-    <Sidebar />
-
-    <div class="lg:pl-72">
-      <Navbar />
-
-      <main class="bg-blue-gray-50 dark:bg-blue-gray-900">
-        <RouterView />
-      </main>
-
-      <Toast />
-    </div>
-  </div>
+  <main class="bg-blue-gray-50 dark:bg-blue-gray-900">
+    <RouterView />
+  </main>
 </template>
-
-<style>
-body {
-  @apply dark:bg-blue-gray-900 bg-blue-gray-50;
-}
-</style>

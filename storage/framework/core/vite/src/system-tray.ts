@@ -37,7 +37,7 @@ export default defineConfig({
   },
 
   server: server({
-    type: 'dashboard',
+    type: 'system-tray',
   }),
 
   resolve: {
@@ -57,14 +57,14 @@ export default defineConfig({
       extensions: ['.stx', '.md'],
       dts: p.frameworkPath('types/system-tray-router.d.ts'),
       routesFolder: [
-        p.frameworkPath('system-tray/src/views'),
+        p.resourcesPath('views/system-tray'),
       ],
       logs: config.app.debug || false,
     }),
 
     layouts({
       extensions: ['stx'],
-      layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
+      layoutsDirs: p.layoutsPath('system-tray', { relative: true }),
     }),
     // autoImports(),
     // components(),

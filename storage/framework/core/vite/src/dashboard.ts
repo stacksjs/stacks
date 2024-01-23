@@ -57,7 +57,7 @@ export default defineConfig({
       extensions: ['.stx', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [
-        p.frameworkPath('views/dashboard/src/views'),
+        p.resourcesPath('views/dashboard'),
       ],
       logs: config.app.debug || false,
     }),

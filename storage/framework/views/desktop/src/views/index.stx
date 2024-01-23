@@ -12,34 +12,37 @@ import BaseModal from '../components/Modals/BaseModal.stx'
         <dl class="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8">
             <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
-              X Library
-            </dt>
-
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
-              200 Downloads
-            </dd>
-          </div>
-          <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
-            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
-              Y Function
-            </dt>
-
-            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
-              500 Downloads
-            </dd>
-          </div>
-          <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 lg:border-l">
-            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
-              Y Library
+              Users
             </dt>
 
             <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
               300 Downloads
             </dd>
           </div>
+
+          <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 lg:border-l">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
+              Total Deployments
+            </dt>
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
+              # 206
+            </dd>
+          </div>
+
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
             <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
-              Y Function
+              Library
+            </dt>
+
+            <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
+              500 Downloads
+            </dd>
+          </div>
+
+          <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
+            <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
+              Library
             </dt>
 
             <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
@@ -110,7 +113,7 @@ import BaseModal from '../components/Modals/BaseModal.stx'
               </div>
             </div>
             <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-400/10 ring-gray-400/20 dark:bg-blue-gray-600 dark:text-gray-300">
-              Preview
+              Staging
             </div>
 
             <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
@@ -196,7 +199,7 @@ import BaseModal from '../components/Modals/BaseModal.stx'
               </div>
             </div>
             <div class="rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset text-gray-600 bg-gray-500/10 ring-gray-600/20 dark:bg-blue-gray-600 dark:text-gray-300">
-              Preview
+              Staging
             </div>
 
             <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
