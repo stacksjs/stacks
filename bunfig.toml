@@ -1,4 +1,9 @@
 [install]
+# To configure Bun's package auto-install behavior.
+# Default "auto" — when no node_modules folder is found, Bun
+# will automatically install dependencies on the fly during execution.
+auto = true
+
 # set default registry as a string
 registry = { url = "https://registry.npmjs.org" }
 
