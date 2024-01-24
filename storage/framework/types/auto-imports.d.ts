@@ -784,6 +784,7 @@ declare global {
   const useElementSize: typeof import('../core/utils/src/vendors')['useElementSize']
   const useElementVisibility: typeof import('../core/utils/src/vendors')['useElementVisibility']
   const useEmail: typeof import('../core/notifications/src/index')['useEmail']
+  const useEnvReader: typeof import('../../../resources/functions/env-reader')['useEnvReader']
   const useEvent: typeof import('../core/events/src/index')['useEvent']
   const useEventBus: typeof import('../core/utils/src/vendors')['useEventBus']
   const useEventListener: typeof import('../core/utils/src/vendors')['useEventListener']
@@ -801,6 +802,7 @@ declare global {
   const useFullscreen: typeof import('../core/utils/src/vendors')['useFullscreen']
   const useGamepad: typeof import('../core/utils/src/vendors')['useGamepad']
   const useGeolocation: typeof import('../core/utils/src/vendors')['useGeolocation']
+  const useGitHub: typeof import('../core/git/src/index')['useGitHub']
   const useGitStore: typeof import('../../../resources/stores/git')['useGitStore']
   const useHead: typeof import('@unhead/vue')['useHead']
   const useHeadSafe: typeof import('@unhead/vue')['useHeadSafe']
@@ -1698,6 +1700,7 @@ declare module 'vue' {
     readonly useElementSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('../core/notifications/src/index')['useEmail']>
+    readonly useEnvReader: UnwrapRef<typeof import('../../../resources/functions/env-reader')['useEnvReader']>
     readonly useEvent: UnwrapRef<typeof import('../core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventListener']>
@@ -1715,6 +1718,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('../core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/utils/src/vendors')['useGeolocation']>
+    readonly useGitHub: UnwrapRef<typeof import('../core/git/src/index')['useGitHub']>
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
@@ -2605,6 +2609,7 @@ declare module '@vue/runtime-core' {
     readonly useElementSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('../core/notifications/src/index')['useEmail']>
+    readonly useEnvReader: UnwrapRef<typeof import('../../../resources/functions/env-reader')['useEnvReader']>
     readonly useEvent: UnwrapRef<typeof import('../core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventListener']>
@@ -2622,6 +2627,7 @@ declare module '@vue/runtime-core' {
     readonly useFullscreen: UnwrapRef<typeof import('../core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/utils/src/vendors')['useGeolocation']>
+    readonly useGitHub: UnwrapRef<typeof import('../core/git/src/index')['useGitHub']>
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>

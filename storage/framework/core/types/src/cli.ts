@@ -197,7 +197,7 @@ export type CreateOptions = {
   [key in CreateStringOption]: string
 } & CliOptions
 
-export type DevOption = 'components' | 'docs' | 'frontend' | 'api' | 'desktop' | 'all' | 'email' | 'interactive' | 'verbose'
+export type DevOption = 'components' | 'docs' | 'frontend' | 'api' | 'desktop' | 'all' | 'email' | 'system-tray' | 'interactive' | 'verbose'
 export type DevOptions = {
   [key in DevOption]: boolean;
 } & CliOptions
