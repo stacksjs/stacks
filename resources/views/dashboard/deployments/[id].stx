@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useGitStore } from '../../stores/git'
-
 const gitStore = useGitStore()
 const github = useGithub()
 const route = useRoute()

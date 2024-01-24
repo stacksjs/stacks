@@ -801,6 +801,7 @@ declare global {
   const useFullscreen: typeof import('../core/utils/src/vendors')['useFullscreen']
   const useGamepad: typeof import('../core/utils/src/vendors')['useGamepad']
   const useGeolocation: typeof import('../core/utils/src/vendors')['useGeolocation']
+  const useGitStore: typeof import('../../../resources/stores/git')['useGitStore']
   const useHead: typeof import('@unhead/vue')['useHead']
   const useHeadSafe: typeof import('@unhead/vue')['useHeadSafe']
   const useHttpFetch: typeof import('../core/api/src/index')['useHttpFetch']
@@ -1714,6 +1715,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('../core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/utils/src/vendors')['useGeolocation']>
+    readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>
@@ -2620,6 +2622,7 @@ declare module '@vue/runtime-core' {
     readonly useFullscreen: UnwrapRef<typeof import('../core/utils/src/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/utils/src/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/utils/src/vendors')['useGeolocation']>
+    readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>

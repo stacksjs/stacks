@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useGitStore } from '../../stores/git'
-
 const githubStore = useGitStore()
 const github = useGithub()
 
