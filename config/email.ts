@@ -14,7 +14,7 @@ export default {
     address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
   },
 
-  mailboxes: ['chris@stacksjs.org'],
+  mailboxes: ['chris@stacksjs.org', 'blake@stacksjs.org'],
 
   server: {
     scan: true, // scans for spam and viruses
