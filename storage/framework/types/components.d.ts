@@ -7,10 +7,15 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    ActivityFeed: typeof import('./../../../resources/components/Dashboard/Deployments/ActivityFeed.stx')['default']
+    Alert: typeof import('./../../../resources/components/Dashboard/Modals/Popups/Alert.stx')['default']
+    AppButton: typeof import('./../../../resources/components/Dashboard/Buttons/AppButton.stx')['default']
+    BaseModal: typeof import('./../../../resources/components/Dashboard/Modals/BaseModal.stx')['default']
     Button: typeof import('./../../../resources/components/Button.stx')['default']
     CallToAction: typeof import('./../../../resources/components/Marketing/CallToAction.stx')['default']
     Container: typeof import('./../../../resources/components/Container.stx')['default']
     Counter: typeof import('./../../../resources/components/Buttons/Counter.stx')['default']
+    DeploymentList: typeof import('./../../../resources/components/Dashboard/Deployments/DeploymentList.stx')['default']
     Faqs: typeof import('./../../../resources/components/Marketing/Faqs.stx')['default']
     Feature: typeof import('./../../../resources/components/Marketing/Feature.stx')['default']
     Fields: typeof import('./../../../resources/components/Marketing/Fields.stx')['default']
@@ -20,7 +25,10 @@ declare module 'vue' {
     Hero: typeof import('./../../../resources/components/Marketing/Hero.stx')['default']
     Layout: typeof import('./../../../resources/components/Marketing/Layout.stx')['default']
     Logo: typeof import('./../../../resources/components/Logo.stx')['default']
+    MobileSidebar: typeof import('./../../../resources/components/Dashboard/MobileSidebar.stx')['default']
+    Navbar: typeof import('./../../../resources/components/Dashboard/Navbar.stx')['default']
     NavLink: typeof import('./../../../resources/components/Marketing/NavLink.stx')['default']
+    Pagination: typeof import('./../../../resources/components/Dashboard/Pagination.stx')['default']
     Plan: typeof import('./../../../resources/components/Marketing/Plan.stx')['default']
     Playground: typeof import('./../../../resources/components/Playground.stx')['default']
     Pricing: typeof import('./../../../resources/components/Marketing/Pricing.stx')['default']
@@ -29,10 +37,14 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryFeatures: typeof import('./../../../resources/components/Marketing/SecondaryFeatures.stx')['default']
+    SettingsHeader: typeof import('./../../../resources/components/Dashboard/SettingsHeader.stx')['default']
+    Sidebar: typeof import('./../../../resources/components/Dashboard/Sidebar.stx')['default']
     SlimLayout: typeof import('./../../../resources/components/Marketing/SlimLayout.stx')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     Testimonials: typeof import('./../../../resources/components/Marketing/Testimonials.stx')['default']
+    Toast: typeof import('./../../../resources/components/Dashboard/Modals/Popups/Toast.stx')['default']
+    ToastWrapper: typeof import('./../../../resources/components/Dashboard/Modals/ToastWrapper.stx')['default']
     ToggleDark: typeof import('./../../../resources/components/Buttons/ToggleDark.stx')['default']
   }
 }

@@ -6,7 +6,7 @@ import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { config } from '@stacksjs/config'
-import { cssEngine, devtools, i18n, layouts, router } from './plugins'
+import { autoImports, components, cssEngine, devtools, i18n, layouts, router } from './plugins'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 
@@ -66,8 +66,8 @@ export default defineConfig({
       extensions: ['stx'],
       layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
-    // autoImports(),
-    // components(),
+    autoImports(),
+    components(),
     cssEngine(),
     // markdown(),
     // pwa(),

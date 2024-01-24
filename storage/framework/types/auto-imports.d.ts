@@ -627,6 +627,7 @@ declare global {
   const runFunctionsDevServer: typeof import('../core/actions/src/dev/index')['runFunctionsDevServer']
   const runMake: typeof import('../core/actions/src/index')['runMake']
   const runNpmScript: typeof import('../core/utils/src/helpers')['runNpmScript']
+  const runSystemTrayDevServer: typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']
   const runViewsDevServer: typeof import('../core/actions/src/dev/index')['runViewsDevServer']
   const runtimePath: typeof import('../core/path/src/index')['runtimePath']
   const schedulerPath: typeof import('../core/path/src/index')['schedulerPath']
@@ -1547,6 +1548,7 @@ declare module 'vue' {
     readonly runFrontendDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runFrontendDevServer']>
     readonly runMake: UnwrapRef<typeof import('../core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
+    readonly runSystemTrayDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>
@@ -2452,6 +2454,7 @@ declare module '@vue/runtime-core' {
     readonly runFrontendDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runFrontendDevServer']>
     readonly runMake: UnwrapRef<typeof import('../core/actions/src/index')['runMake']>
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
+    readonly runSystemTrayDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>
