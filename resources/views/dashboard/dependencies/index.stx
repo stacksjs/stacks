@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import AppButton from '../../components/Buttons/AppButton.stx'
-
 useHead({
   title: 'Dashboard - Dependencies',
 })

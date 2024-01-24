@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import AppButton from '../../components/Buttons/AppButton.stx'
-
 useHead({
   title: 'Dashboard - Commands',
 })
@@ -15,9 +12,9 @@ const dummyRef: DummyRefItem[] = [
   ref(false),
 ]
 
-function toggleDropdown(index: number) {
-  dummyRef[index].value = !dummyRef[index].value
-}
+// function toggleDropdown(index: number) {
+//   dummyRef[index].value = !dummyRef[index].value
+// }
 </script>
 
 <template>

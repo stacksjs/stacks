@@ -24,7 +24,7 @@
       "vite-plugin-pages/client",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
-      "bun-types"
+      "@intlify/unplugin-vue-i18n/messages"
     ],
     "allowImportingTsExtensions": true,
     "allowJs": true,

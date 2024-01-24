@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import AppButton from '../../components/Buttons/AppButton.stx'
-
 useHead({
   title: 'Dashboard - DNS',
 })

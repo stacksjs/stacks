@@ -1,4 +1,3 @@
-import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { GithubCommit, WorkflowRun } from '../types/git'
 
 const owner = 'stacksjs'
@@ -18,6 +17,7 @@ export const useGitStore = defineStore('git', {
       workflowRun: {} as WorkflowRun,
     }
   },
+
   actions: {
     async fetchCommits(): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
@@ -28,6 +28,7 @@ export const useGitStore = defineStore('git', {
 
       this.commitLists = response
     },
+
     async fetchWorkflowActions(): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
 
@@ -37,6 +38,7 @@ export const useGitStore = defineStore('git', {
 
       this.workflowRuns = response.workflow_runs
     },
+
     async fetchWorkflowAction(id: number): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
 
@@ -47,6 +49,7 @@ export const useGitStore = defineStore('git', {
       this.workflowRun = response
     },
   },
+
   getters: {
     getCommits(state): GithubCommit[] {
       return state.commitLists

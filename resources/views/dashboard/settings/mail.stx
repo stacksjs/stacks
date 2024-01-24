@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SettingsHeader from '../../components/SettingsHeader.stx'
 </script>
 
 <template>

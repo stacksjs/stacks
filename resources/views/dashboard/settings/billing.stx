@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
 import type { Stripe } from '@stripe/stripe-js'
-import { ref } from 'vue'
-import SettingsHeader from '../../components/SettingsHeader.stx'
 
 let elements
 

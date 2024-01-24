@@ -3,13 +3,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "vite-ssg build -c ../../core/vite/src/views.ts",
-    "dev": "vite serve -c ../../core/vite/src/views.ts",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit",
-    "up": "taze major -I",
-    "sizecheck": "npx vite-bundle-visualizer"
+    "build": "bunx --bun vite-ssg build -c ../../core/vite/src/views.ts",
+    "dev": "bunx --bun vite serve -c ../../core/vite/src/views.ts",
+    "lint": "bunx --bun eslint .",
+    "preview": "bunx --bun vite preview",
+    "typecheck": "bunx --bun vue-tsc --noEmit",
+    "up": "bunx taze major -I",
+    "sizecheck": "bunx vite-bundle-visualizer"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
