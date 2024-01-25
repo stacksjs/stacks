@@ -6,7 +6,7 @@ useHead({
 
 <template>
   <div class="min-h-screen py-4 lg:py-8 dark:bg-blue-gray-800">
-    <div class="px-4 sm:px-6 lg:px-8 pt-12">
+    <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
@@ -18,7 +18,7 @@ useHead({
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button type="button" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-            Deploy
+            Add Record
           </button>
         </div>
       </div>
