@@ -64,6 +64,19 @@ watch(theme, (currentVal) => {
           type="button"
           class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
         >
+          <span class="sr-only">View Health Page</span>
+          <RouterLink
+            to="/health"
+            class="sidebar-links group"
+          >
+            <div class="i-heroicons-heart w-6 h-6 transition duration-150 ease-in-out" />
+          </RouterLink>
+          <!-- <div class="i-heroicons-heart w-6 h-6" /> -->
+        </button>
+        <button
+          type="button"
+          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
+        >
           <span class="sr-only">View Documentation</span>
           <div class="i-heroicons-document-text w-6 h-6" />
         </button>

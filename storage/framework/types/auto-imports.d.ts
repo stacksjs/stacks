@@ -1701,7 +1701,6 @@ declare module 'vue' {
     readonly useElementSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('../core/notifications/src/index')['useEmail']>
-    readonly useEnvReader: UnwrapRef<typeof import('../../../resources/functions/env-reader')['useEnvReader']>
     readonly useEvent: UnwrapRef<typeof import('../core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventListener']>
@@ -2611,7 +2610,6 @@ declare module '@vue/runtime-core' {
     readonly useElementSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('../core/utils/src/vendors')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('../core/notifications/src/index')['useEmail']>
-    readonly useEnvReader: UnwrapRef<typeof import('../../../resources/functions/env-reader')['useEnvReader']>
     readonly useEvent: UnwrapRef<typeof import('../core/events/src/index')['useEvent']>
     readonly useEventBus: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('../core/utils/src/vendors')['useEventListener']>

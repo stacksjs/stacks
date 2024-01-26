@@ -49,33 +49,7 @@
                     Commands
                   </RouterLink>
                 </li>
-                <li>
-                  <RouterLink
-                    to="/dns"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-cloud text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    DNS
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink
-                    to="/environment"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-cpu-chip text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Environment
-                  </RouterLink>
-                </li>
-                <!-- <li>
-                  <RouterLink
-                    to="/dependencies"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-cube text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Dependencies
-                  </RouterLink>
-                </li> -->
+
                 <li>
                   <RouterLink
                     to="/queue"
@@ -85,26 +59,61 @@
                     Queue
                   </RouterLink>
                 </li>
+
+                <!-- <li>
+                  <RouterLink
+                    to="/queue"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-archive-box text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Storage
+                  </RouterLink>
+                </li> -->
+              </ul>
+            </li>
+
+            <li>
+              <div class="text-xs font-semibold leading-6 text-gray-400">
+                Management
+              </div>
+              <ul
+                role="list"
+                class="-mx-2 mt-2 space-y-1"
+              >
+                <li>
+                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
+                  <RouterLink
+                    to="/models/users"
+                    class="sidebar-links"
+                  >
+                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
+                    <div class="i-heroicons-document-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">Domains</span>
+                  </RouterLink>
+                </li>
+
                 <li>
                   <RouterLink
                     to="/library"
-                    class="sidebar-links group"
+                    class="sidebar-links"
                   >
                     <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Library
+                    <span class="truncate">Library</span>
                   </RouterLink>
                 </li>
+
                 <li>
                   <RouterLink
-                    to="/health"
-                    class="sidebar-links group"
+                    to="/environment"
+                    class="sidebar-links"
                   >
-                    <div class="i-heroicons-heart text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Health
+                    <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">Secrets</span>
                   </RouterLink>
                 </li>
               </ul>
             </li>
+
             <li>
               <div class="text-xs font-semibold leading-6 text-gray-400">
                 Your Models
