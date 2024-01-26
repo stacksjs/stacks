@@ -60,7 +60,7 @@
     <div class="px-12">
       <div class="flex flex-col lg:flex-row py-16 max-w-7xl mx-auto">
         <!-- Recent Deployments -->
-        <div class="flex-auto mx-auto lg:flex-1 pr-8">
+        <div class="flex-auto mx-auto lg:flex-1 pr-24">
           <div>
             <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 dark:text-gray-100 lg:mx-0 lg:max-w-none dark:text-gray-100">
               Recent Deployments
@@ -68,7 +68,7 @@
           </div>
           <ul
             role="list"
-            class="divide-y divide-gray-200 dark:divide-gray-600"
+            class="divide-y divide-gray-200 dark:divide-gray-600 pt-2"
           >
             <li class="relative flex items-center space-x-4 py-4">
               <div class="min-w-0 flex-auto">
@@ -117,7 +117,7 @@
             <li class="relative flex items-center space-x-4 py-4">
               <div class="min-w-0 flex-auto">
                 <div class="flex items-center gap-x-3">
-                  <div class="flex-none rounded-full p-1 text-gray-500 bg-gray-100/10">
+                  <div class="flex-none rounded-full p-1 text-red-500 bg-red-300/10">
                     <div class="h-2 w-2 rounded-full bg-current" />
                   </div>
                   <h2 class="min-w-0 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -147,7 +147,7 @@
                     />
                   </svg>
                   <p class="whitespace-nowrap">
-                    Deployed 3m ago
+                    Failed 9m ago
                   </p>
                 </div>
               </div>
@@ -213,14 +213,14 @@
           </div>
           <ul
             role="list"
-            class="divide-y divide-white/5"
+            class="divide-y divide-white/5 pt-2"
           >
             <li class="py-4">
               <div class="flex items-center gap-x-3">
                 <img
                   src="https://avatars.githubusercontent.com/u/6228425"
                   alt=""
-                  class="h-6 w-6 flex-none rounded-full bg-gray-800"
+                  class="h-6 w-6 flex-none rounded-full bg-gray-200"
                 >
                 <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100">
                   Chris Breuer
