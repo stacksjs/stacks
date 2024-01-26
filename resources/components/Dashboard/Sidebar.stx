@@ -6,9 +6,9 @@
       <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 bg-white px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center">
           <img
-            class="h-12 rounded-md mt-4 w-auto"
+            class="h-12 rounded-lg mt-4 w-auto"
             src="/logo.svg"
-            alt="Your Company"
+            alt="Stacks"
           >
         </div>
         <nav class="flex flex-1 flex-col">
@@ -83,7 +83,7 @@
                 <li>
                   <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink
-                    to="/models/users"
+                    to="/dns"
                     class="sidebar-links"
                   >
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
@@ -109,6 +109,16 @@
                   >
                     <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     <span class="truncate">Secrets</span>
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/settings/billing"
+                    class="sidebar-links"
+                  >
+                    <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">Settings</span>
                   </RouterLink>
                 </li>
               </ul>
