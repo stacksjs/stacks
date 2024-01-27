@@ -74,7 +74,7 @@ export interface CloudOptions {
     }
   }
 
-  api: Partial<ApiOptions>
+  api: ApiOptions
 
   ai: boolean
   cli: boolean
