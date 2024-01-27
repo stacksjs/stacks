@@ -8,6 +8,18 @@
       >
         <li>
           <RouterLink
+            to="/settings/ai"
+          >
+            AI
+          </RouterLink>
+          <RouterLink
+            to="/settings/analytics"
+          >
+            Analytics
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink
             to="/settings/cache"
           >
             Cache

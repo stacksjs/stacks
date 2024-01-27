@@ -1,3 +1,4 @@
+import type { ApiOptions } from './api'
 import type { FirewallConfig } from './security'
 
 export type CountryCode =
@@ -73,10 +74,11 @@ export interface CloudOptions {
     }
   }
 
+  api: Partial<ApiOptions>
+
   ai: boolean
   cli: boolean
   docs: boolean
-  api: boolean
   fileSystem: boolean
 }
 

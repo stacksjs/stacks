@@ -31,10 +31,17 @@ export default {
     },
   },
 
+  api: {
+    prefix: env.API_PREFIX || 'api',
+    description: 'Stacks API',
+    memorySize: 512,
+    prewarm: 10,
+    timeout: 30,
+  },
+
   ai: true, // deploys AI endpoints
   cli: true, // deploys CLI setup endpoint (./bootstrap)
   docs: true, // deploys documentation
-  api: true, // deploys API
   fileSystem: true, // enables file system
 
   // compute: {},
