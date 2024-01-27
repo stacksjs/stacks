@@ -5,6 +5,7 @@ import {
   runApiDevServer,
   runComponentsDevServer,
   runDashboardDevServer,
+  runDesktopDevServer,
   runDocsDevServer,
   runFrontendDevServer,
   runSystemTrayDevServer,

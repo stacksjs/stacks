@@ -1,7 +1,7 @@
 import { runCommand } from '@stacksjs/cli'
-import { corePath } from '@stacksjs/path'
+import { frameworkPath } from '@stacksjs/path'
 
-await runCommand('bun run dev:app', {
+await runCommand('bun run dev', {
   // ...options,
-  cwd: corePath('desktop'),
+  cwd: frameworkPath('views/desktop'),
 })
