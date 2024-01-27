@@ -60,7 +60,7 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/vite": "workspace:*",
     "vitepress": "1.0.0-rc.40",
-    "vitepress-plugin-twoslash": "^0.10.1"
+    "vitepress-plugin-twoslash": "^0.10.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
