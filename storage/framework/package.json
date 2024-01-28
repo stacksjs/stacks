@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.58.28",
+  "version": "0.58.29",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
