@@ -11,7 +11,7 @@
 > [!WARNING]
 > Stay tuned. Open Beta coming soon.
 
-The goal of the framework is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid development framework, meeting all your full stack needs.
+Stacks is a rapid development framework, where the goal is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. _An all-in-one toolkit that meets all your full stack needs._
 
 - Web & Desktop applications
 - Serverless & traditional APIs
@@ -20,7 +20,7 @@ The goal of the framework is to _help you_ create & maintain frontends, backends
 - Framework-agnostic component & function libraries
 - Deployment & Release Manager _(CI & CD)_
 
-Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what_ and _why_ of your project.
+In other words, Stacks helps you, as a developer, every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what & why_ of your project, all while enabling you to always stay completely in control & ownership of your & your user’s data.
 
 > “Convention over configuration” is the Stacks mantra. _- Chris_
 
