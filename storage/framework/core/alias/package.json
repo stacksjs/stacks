@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/alias",
   "type": "module",
-  "version": "0.58.35",
+  "version": "0.58.36",
   "description": "The Stacks aliases.",
   "author": "Chris Breuer",
   "license": "MIT",
