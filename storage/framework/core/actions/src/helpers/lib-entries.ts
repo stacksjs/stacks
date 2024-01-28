@@ -68,7 +68,7 @@ export async function createFunctionLibraryEntryPoint(type: LibraryType = 'funct
     process.exit(ExitCode.FatalError)
   })
 
-  log.success('Created Functions library entry point')
+  log.success('Created Functions Library Entry Point')
 }
 
 export function generateEntryPointData(type: LibraryType): string {
