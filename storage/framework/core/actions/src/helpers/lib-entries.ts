@@ -40,7 +40,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
     process.exit(ExitCode.FatalError)
   })
 
-  log.success('Created the Vue component library entry point')
+  log.success('Created Vue component library entry point')
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {

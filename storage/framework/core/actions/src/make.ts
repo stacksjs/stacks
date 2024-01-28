@@ -40,7 +40,7 @@ export async function makeComponent(options: MakeOptions) {
     const name = options.name
     log.info('Creating your component...')
     await createComponent(options)
-    log.success(`Created the ${italic(name)} component`)
+    log.success(`Created ${italic(name)} component`)
   }
   catch (error) {
     log.error('There was an error creating your component', error)
@@ -71,7 +71,7 @@ export function makeDatabase(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
     createDatabase(options)
-    log.success(`Created the ${italic(name)} database`)
+    log.success(`Created ${italic(name)} database`)
   }
   catch (error) {
     log.error('There was an error creating your database', error)
@@ -89,7 +89,7 @@ export function factory(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
     createDatabase(options)
-    log.success(`Created the ${italic(name)} factory`)
+    log.success(`Created ${italic(name)} factory`)
   }
   catch (error) {
     log.error('There was an error creating your factory', error)
@@ -107,7 +107,7 @@ export async function makeNotification(options: MakeOptions) {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
-    log.success(`Created the ${italic(name)} notification`)
+    log.success(`Created ${italic(name)} notification`)
   }
   catch (error) {
     log.error('There was an error creating your notification', error)
@@ -120,7 +120,7 @@ export async function makePage(options: MakeOptions) {
     const name = options.name
     log.info('Creating your page...')
     await createPage(options)
-    log.success(`Created the ${name} page`)
+    log.success(`Created ${name} page`)
   }
   catch (error) {
     log.error('There was an error creating your page', error)
@@ -152,7 +152,7 @@ export async function makeFunction(options: MakeOptions) {
     const name = options.name
     log.info('Creating your function...')
     await createFunction(options)
-    log.success(`Created the ${name} function`)
+    log.success(`Created ${name} function`)
   }
   catch (error) {
     log.error('There was an error creating your function', error)
@@ -185,7 +185,7 @@ export async function makeLanguage(options: MakeOptions) {
     const name = options.name
     log.info('Creating your translation file...')
     await createLanguage(options)
-    log.success(`Created the ${name} translation file`)
+    log.success(`Created ${name} translation file`)
   }
   catch (error) {
     log.error('There was an error creating your language.', error)
