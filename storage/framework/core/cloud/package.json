@@ -108,12 +108,12 @@
     "constructs": "^10.3.0"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^4.1.21",
+    "@oclif/plugin-plugins": "^4.1.22",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^4.4.0",
+    "oclif": "^4.4.2",
     "source-map-support": "^0.5.21"
   }
 }
