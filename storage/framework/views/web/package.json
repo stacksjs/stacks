@@ -5,7 +5,7 @@
   "scripts": {
     "build": "bunx vite-ssg build -c ../../core/vite/src/views.ts",
     "dev": "bunx vite serve -c ../../core/vite/src/views.ts",
-    "lint": "bunx eslint .",
+    "lint": "bunx --bun eslint .",
     "preview": "bunx vite preview",
     "typecheck": "bunx --bun vue-tsc --noEmit",
     "up": "bunx taze major -I",
