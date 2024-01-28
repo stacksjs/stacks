@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "bunx vitepress dev",
-    "build": "bunx vitepress build",
+    "build": "npx vitepress build",
     "preview": "bunx vitepress preview"
   },
   "dependencies": {
