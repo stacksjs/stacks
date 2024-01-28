@@ -53,6 +53,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
+      # TODO: currently required for the "release step" but this can be removed once Bun is updated to include npm support
+      - name: Setup Node.js / npm
+        uses: oven-sh/setup-bun@v1
+
       - name: Publish VS Code Extension
         run: bunx pnpm --filter='./storage/framework/ide/vscode' release
         env:
