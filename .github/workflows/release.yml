@@ -57,8 +57,9 @@ jobs:
       - name: Install VS Code Extension Dependencies
         run: cd storage/framework/ide/vscode && bun install && cd ../../../../
 
+      # TODO: remove npm once bun publish is available
       - name: Publish VS Code Extension
-        run: cd storage/framework/ide/vscode && bun run release && cd ../../../../
+        run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
