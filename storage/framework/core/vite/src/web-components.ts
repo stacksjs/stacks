@@ -3,7 +3,7 @@ import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import type { ViteBuildOptions } from '.'
-import { defineConfig } from '.'
+import { defineConfig } from 'vite'
 
 // import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
 
