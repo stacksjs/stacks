@@ -18,7 +18,7 @@ export function generate(buddy: CLI) {
   const descriptions = {
     command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
     types: 'Generate your TypeScript types',
-    entries: 'Generate your function & component library entry points',
+    entries: 'Generate your function & Component Library Entry Points',
     webTypes: 'Generate web-types.json for IDEs',
     customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
     ideHelpers: 'Generate IDE helpers',

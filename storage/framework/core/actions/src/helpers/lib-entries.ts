@@ -30,17 +30,17 @@ export async function createLibraryEntryPoint(type: LibraryType) {
 }
 
 export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
-  log.info('Creating Vue component library entry point...')
+  log.info('Creating Vue Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error('There was an error generating the Vue component library entry point.', err)
+    log.error('There was an error generating the Vue Component Library Entry Point.', err)
     process.exit(ExitCode.FatalError)
   })
 
-  log.success('Created Vue component library entry point')
+  log.success('Created Vue Component Library Entry Point')
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
@@ -58,13 +58,13 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
 }
 
 export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
-  log.info('Creating Function library entry point...')
+  log.info('Creating Function Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error('There was an error generating Function library entry point', err)
+    log.error('There was an error generating Function Library Entry Point', err)
     process.exit(ExitCode.FatalError)
   })
 
