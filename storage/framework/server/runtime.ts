@@ -1,5 +1,8 @@
+/* eslint-disable eslint-comments/no-unlimited-disable */
 /* eslint-disable */
+import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
+
 // @ts-expect-error: missing types
 import { AwsClient } from 'aws4fetch'
 
@@ -18,6 +21,7 @@ let traceId: string | undefined
 let functionArn: string | undefined
 let aws: AwsClient | undefined
 
+
 const logger = console.log
 
 function log(level: string, ...args: any[]): void {
@@ -32,11 +36,15 @@ function log(level: string, ...args: any[]): void {
     logger(level, `RequestId: ${requestId}`, ...messages)
 }
 
+
 console.log = (...args: any[]) => log('INFO', ...args)
+
 console.info = (...args: any[]) => log('INFO', ...args)
 console.warn = (...args: any[]) => log('WARN', ...args)
 console.error = (...args: any[]) => log('ERROR', ...args)
+
 console.debug = (...args: any[]) => log('DEBUG', ...args)
+
 console.trace = (...args: any[]) => log('TRACE', ...args)
 
 let warnings: Set<string> | undefined

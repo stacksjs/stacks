@@ -1,7 +1,6 @@
 import type {
   AiConfig,
   AnalyticsConfig,
-  ApiConfig,
   AppConfig,
   BinaryConfig,
   CacheConfig,

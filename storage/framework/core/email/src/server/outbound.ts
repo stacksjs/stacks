@@ -1,4 +1,6 @@
+/* eslint-disable eslint-comments/no-unlimited-disable */
 /* eslint-disable */
+
 const AWS = require('aws-sdk')
 const moment = require('moment')
 const uuidv1 = require('uuid/v1')
@@ -85,12 +87,12 @@ function extract_data(container) {
     console.info('extract_data')
 
     // 1. Extract all the information
-    const tmp_to = 	container.email.json
+    const tmp_to = container.email.json
       .to
       .match(/[a-z0-9-+]{1,30}@[a-z0-9-]{1,65}.[a-z]{1,}/gm)[0]
       .split('@')
 
-    const tmp_from = 	container.email.json
+    const tmp_from = container.email.json
       .from
       .match(/[a-z0-9-+]{1,30}@[a-z0-9-]{1,65}.[a-z]{1,}/gm)[0]
       .split('@')
@@ -118,7 +120,7 @@ function extract_data(container) {
 
     // 7. Create the path where the email needs to be moved
     // 	so it is properly organized.
-    const path = 	`sent/${
+    const path = `sent/${
         to_domain
         }/${
         to_account
@@ -131,7 +133,7 @@ function extract_data(container) {
         } - ${
         container.email.json.subject
         }/`
-      + 'email'
+        + 'email'
 
     // 8. Save the path for the next promise.
     container.path = path

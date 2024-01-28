@@ -1,3 +1,4 @@
+/* eslint-disable eslint-comments/no-unlimited-disable */
 /* eslint-disable */
 import type { DatabaseConnection, Driver, QueryResult } from 'kysely'
 import { CompiledQuery } from 'kysely'

@@ -1,6 +1,4 @@
-import fs from 'node:fs'
-import { promisify } from 'node:util'
-import { appPath, path } from '@stacksjs/path'
+import { appPath } from '@stacksjs/path'
 import type { MiddlewareType } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareType {
@@ -16,10 +14,12 @@ export class Middleware implements MiddlewareType {
   }
 }
 
-const readdir = promisify(fs.readdir)
+// const readdir = promisify(fs.readdir)
 
 async function importMiddlewares(directory: string) {
-  const middlewares = []
+  // eslint-disable-next-line no-console
+  console.log('importMiddlewares', directory)
+  // const middlewares = []
   // TODO: somehow this breaks ./buddy dev
   // const files = await readdir(directory)
 
@@ -29,7 +29,8 @@ async function importMiddlewares(directory: string) {
   //   middlewares.push(imported.default)
   // }
 
-  return middlewares
+  // return middlewares
+  return []
 }
 
 export const middlewares = await importMiddlewares(appPath('middleware'))

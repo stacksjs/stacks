@@ -6,16 +6,13 @@ interface ZipOptions {
 }
 
 export async function zip(from: string | string[], to?: string, options?: ZipOptions) {
-  console.log('zip 1', from, to, options)
   const toPath = to || 'archive.zip'
   const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  console.log('zip 2', fromPath, toPath)
-  // if (Array.isArray(from))
-  //   return runCommand(`zip -r ${toPath} ${fromPath}`, options)
+  if (Array.isArray(from))
+    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
 
-  // console.log('zip 3', fromPath, toPath)
-  // return runCommand(`zip -r ${to} ${from}`, options)
+  return runCommand(`zip -r ${to} ${from}`, options)
 }
 
 export async function unzip(paths: string | string[]) {

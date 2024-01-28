@@ -1,3 +1,4 @@
+/* eslint-disable eslint-comments/no-unlimited-disable */
 /* eslint-disable */
 import process from 'node:process'
 import { AwsClient } from 'aws4fetch'

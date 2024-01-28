@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import Net from 'node:net'
 import fetch from 'node-fetch'
 import type { SocksClientOptions } from 'socks'
@@ -39,6 +37,7 @@ async function findWhoIsServer(tld: string): Promise<string> {
  * @param obj Object which needs to be copied
  * @returns A copy of the object
  */
+// eslint-disable-next-line ts/no-unnecessary-type-constraint
 function shallowCopy<T extends any>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj.slice() as T // Clone the array
@@ -95,6 +94,7 @@ function getTLD(domain: string): keyof typeof SERVERS {
   if (tld)
     return tld
 
+  // eslint-disable-next-line no-console
   console.debug('TLD is not found in server list. Returning last element after split as TLD!')
 
   const domainData = domain.split('.')
@@ -185,7 +185,7 @@ export interface WhoIsOptions {
    *
    * @example {'Domain Name': '', 'Domain Status': [], 'Registrar': ''}
    */
-  parseData?: Object | null
+  parseData?: object | null
 }
 
 /**
@@ -375,13 +375,12 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
  * @param domain Domain name
  * @param parse Whether the raw text needs to be parsed/formatted or not
  * @param options {@link WhoIsOptions}
- * @returns {@link WhoIsResponse}
+ * @returns {@link WhoIsResponse} Returns a {@link WhoIsResponse} object which contains the raw text and parsed data (if parse is true)
  */
 export async function whois(domain: string, parse: boolean = false, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
   let tld: string
   let port = 43
   let server = ''
-  let queryOptions: string
   let proxy: ProxyData | null
   let encoding = 'utf-8'
 
@@ -398,17 +397,20 @@ export async function whois(domain: string, parse: boolean = false, options: Who
   }
 
   if (server === '') {
-    let serverData = getWhoIsServer(tld)
+    let serverData = getWhoIsServer(tld as keyof typeof SERVERS)
     if (!serverData) {
+      // eslint-disable-next-line no-console
       console.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
       serverData = await findWhoIsServer(tld)
       if (!serverData) {
+        // eslint-disable-next-line no-console
         console.debug('WhoIs server could not be found!')
         return {
           _raw: '',
           parsedData: null,
         }
       }
+      // eslint-disable-next-line no-console
       console.debug(`WhoIs sever found for ${tld}: ${server}`)
     }
 
@@ -416,7 +418,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
   }
 
   const qOptions = getParameters(server)
-  queryOptions = qOptions || ''
+  const queryOptions = qOptions || ''
 
   try {
     const rawData = await tcpWhois(domain, queryOptions, server, port, encoding, proxy)
@@ -488,7 +490,7 @@ export async function batchWhois(domains: string[], parallel: boolean = false, t
   }
   else {
     for (let i = 0; i < domains.length; i++) {
-      const res = await whois(domains[i], parse, options)
+      const res = await whois(domains[i]!, parse, options)
       response.push(res)
     }
   }
