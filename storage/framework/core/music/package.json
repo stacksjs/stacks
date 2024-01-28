@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/music",
   "type": "module",
-  "version": "0.58.34",
+  "version": "0.58.35",
   "description": "Stacks Music",
   "author": "Chris Breuer",
   "license": "MIT",
