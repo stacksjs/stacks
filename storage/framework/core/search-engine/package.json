@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/search-engine",
   "type": "module",
-  "version": "0.58.37",
+  "version": "0.58.38",
   "description": "The Stacks search engine integrations.",
   "author": "Chris Breuer",
   "license": "MIT",
