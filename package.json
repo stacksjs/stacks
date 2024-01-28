@@ -112,7 +112,6 @@
     "storage/framework/core/*",
     "storage/framework/core/bun-create/*",
     "storage/framework/docs",
-    "storage/framework/ide/vscode",
     "storage/framework/libs/*",
     "storage/framework/server",
     "storage/framework/views/*"
