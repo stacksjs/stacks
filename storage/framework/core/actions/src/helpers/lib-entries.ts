@@ -44,7 +44,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
-  log.info('Creating Web Component library entry point...')
+  log.info('Creating Web Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -54,7 +54,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
     process.exit(ExitCode.FatalError)
   })
 
-  log.success('Created Web Component library entry point')
+  log.success('Created Web Component Library Entry Point')
 }
 
 export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
