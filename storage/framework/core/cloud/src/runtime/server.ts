@@ -1,4 +1,4 @@
-import type { Server } from 'bun'
+import type { Server } from 'node:bun'
 import { serverResponse } from '@stacksjs/router'
 
 export default {

@@ -1,4 +1,4 @@
-import type { BunFile, PathLike } from 'bun'
+import type { BunFile, PathLike } from 'node:bun'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { dirname, join, path as p } from '@stacksjs/path'
