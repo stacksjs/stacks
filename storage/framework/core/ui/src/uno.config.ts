@@ -11,6 +11,7 @@ import {
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
 import { ui } from '@stacksjs/config'
+import { presetForms } from '@julr/unocss-preset-forms'
 
 export default defineConfig({
   shortcuts: ui.shortcuts,
@@ -29,7 +30,7 @@ export default defineConfig({
     presetUno(), // allows for Tailwind utility classes
     presetAttributify(),
     presetHeadlessUi(),
-    // presetForms(), // allows for form Tailwind's form styling
+    presetForms(), // allows for form Tailwind's form styling
     presetTypography(),
     presetIcons({
       prefix: 'i-',

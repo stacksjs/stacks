@@ -370,7 +370,7 @@
     "build:functions": "bunx vite build -c ./core/vite/src/functions.ts",
     "build:docs": "bun buddy build:docs",
     "build:views": "bunx vite-ssg build ./views -c ./core/vite/src/views.ts",
-    "build:buddy": "bun --bun run build:buddy",
+    "build:buddy": "bun buddy build:cli --buddy",
     "build:cli": "bun --bun run build:buddy",
     "build:runtime": "bun --bun run build:cli",
     "build:desktop": "wip",

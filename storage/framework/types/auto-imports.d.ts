@@ -123,6 +123,7 @@ declare global {
   const breakpointsTailwind: typeof import('../core/utils/src/vendors')['breakpointsTailwind']
   const breakpointsVuetify: typeof import('../core/utils/src/vendors')['breakpointsVuetify']
   const buddy: typeof import('../core/index')['buddy']
+  const buddyPath: typeof import('../core/path/src/index')['buddyPath']
   const buildEnginePath: typeof import('../core/path/src/index')['buildEnginePath']
   const buildPath: typeof import('../core/path/src/index')['buildPath']
   const cache: typeof import('../core/index')['cache']
@@ -1057,6 +1058,7 @@ declare module 'vue' {
     readonly breakpointsTailwind: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsTailwind']>
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../core/index')['buddy']>
+    readonly buddyPath: UnwrapRef<typeof import('../core/path/src/index')['buddyPath']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../core/index')['cache']>
@@ -1966,6 +1968,7 @@ declare module '@vue/runtime-core' {
     readonly breakpointsTailwind: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsTailwind']>
     readonly breakpointsVuetify: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsVuetify']>
     readonly buddy: UnwrapRef<typeof import('../core/index')['buddy']>
+    readonly buddyPath: UnwrapRef<typeof import('../core/path/src/index')['buddyPath']>
     readonly buildEnginePath: UnwrapRef<typeof import('../core/path/src/index')['buildEnginePath']>
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../core/index')['cache']>

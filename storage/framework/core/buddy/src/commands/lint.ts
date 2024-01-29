@@ -19,7 +19,8 @@ export function lint(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       const startTime = await intro('buddy lint')
-      const result = await runAction(Action.Lint, { ...options })
+      const result = await runAction(Action.Lint, options)
+
       // console.log('res', result)
       if (result.isErr()) {
         await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)

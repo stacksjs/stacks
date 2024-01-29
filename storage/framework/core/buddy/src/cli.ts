@@ -12,7 +12,6 @@ async function main() {
   const buddy = cli('buddy')
 
   // the following commands are not dependent on the project being initialized
-  // await installIfVersionMismatch()
   cmd.setup(buddy)
   cmd.key(buddy)
 
@@ -33,7 +32,7 @@ async function main() {
   cmd.generate(buddy)
   cmd.http(buddy)
   cmd.install(buddy)
-  // cmd.lint(buddy)
+  cmd.lint(buddy)
   // cmd.make(buddy)
   // cmd.migrate(buddy)
   cmd.release(buddy)

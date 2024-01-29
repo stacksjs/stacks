@@ -1,12 +1,9 @@
-import type { ViteConfig } from '@stacksjs/types'
 import { examplesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { defineConfig } from 'vite'
 
-// import { uiEngine } from '.'
-
-export const vueComponentsExampleConfig: ViteConfig = {
+export default defineConfig({
   root: examplesPath('vue-components'),
 
   resolve: {
@@ -20,8 +17,4 @@ export const vueComponentsExampleConfig: ViteConfig = {
   // plugins: [
   //   uiEngine(),
   // ],
-}
-
-export default defineConfig(() => {
-  return vueComponentsExampleConfig
 })

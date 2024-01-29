@@ -179,7 +179,7 @@ export type ActionOptions = {
   'count'?: number
 } & CliOptions & DomainsOptions
 
-export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'pages' | 'stacks' | 'all'
+export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'views' | 'stacks' | 'all' | 'buddy'
 export type BuildOptions = {
   [key in BuildOption]: boolean;
 } & CliOptions
@@ -190,7 +190,7 @@ export type AddOptions = {
 } & CliOptions
 
 export type CreateStringOption = 'name'
-export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue' | 'pages' | 'functions' | 'api' | 'database'
+export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue' | 'views' | 'functions' | 'api' | 'database'
 export type CreateOptions = {
   [key in CreateBooleanOption]: boolean
 } & {

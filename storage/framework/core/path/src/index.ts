@@ -51,6 +51,15 @@ export function aliasPath() {
   return corePath('alias/src/index.ts')
 }
 
+export function buddyPath(path?: string, options?: { relative?: boolean }) {
+  const absolutePath = corePath(`buddy/${path || ''}`)
+
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
+
+  return absolutePath
+}
+
 export function runtimePath(path?: string) {
   return frameworkPath(`buddy/${path || ''}`)
 }
@@ -187,8 +196,13 @@ export function fakerPath(path?: string) {
   return corePath(`faker/${path || ''}`)
 }
 
-export function frameworkPath(path?: string) {
-  return projectStoragePath(`framework/${path || ''}`)
+export function frameworkPath(path?: string, options?: { relative?: boolean, cwd?: string }) {
+  const absolutePath = projectStoragePath(`framework/${path || ''}`)
+
+  if (options?.relative)
+    return relative(options.cwd || process.cwd(), absolutePath)
+
+  return absolutePath
 }
 
 export function healthPath(path?: string) {
@@ -438,6 +452,7 @@ export const path = {
   arraysPath,
   appPath,
   authPath,
+  buddyPath,
   buildEnginePath,
   libsEntriesPath,
   buildPath,
@@ -495,6 +510,7 @@ export const path = {
   replPath,
   routerPath,
   routesPath,
+  runtimePath,
   searchEnginePath,
   schedulerPath,
   settingsPath,

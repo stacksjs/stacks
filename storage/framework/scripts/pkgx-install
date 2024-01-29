@@ -173,5 +173,8 @@ fi
 # add the pkgx hooks
 eval "$(pkgx integrate)"
 
-# install the project dev deps
+# install the project deps
 eval "$(dev)"
+
+# install the project node_modules
+eval "$(bun install)"

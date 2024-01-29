@@ -14,7 +14,7 @@
         <nav class="flex flex-1 flex-col">
           <ul
             role="list"
-            class="flex flex-1 flex-col gap-y-7"
+            class="flex flex-1 flex-col gap-y-8"
           >
             <li>
               <ul
@@ -114,7 +114,7 @@
                   </RouterLink>
                 </li>
 
-                <li>
+                <!-- <li>
                   <RouterLink
                     to="/settings/billing"
                     class="sidebar-links"
@@ -132,7 +132,7 @@
                     <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     <span class="truncate">Secrets</span>
                   </RouterLink>
-                </li>
+                </li> -->
               </ul>
             </li>
 
@@ -156,14 +156,30 @@
                 </li>
                 <li>
                   <RouterLink
-                    to="/models/events"
+                    to="/models/subscribers"
                     class="sidebar-links"
                   >
-                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">E</span>
-                    <span class="truncate">Events</span>
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">S</span>
+                    <span class="truncate">Subscribers</span>
                   </RouterLink>
                 </li>
               </ul>
+            </li>
+            <li class="mt-auto flex items-center justify-start space-x-4">
+              <RouterLink
+                to="/settings/billing"
+                class="px-6 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
+                active-class="active"
+              >
+                <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+              </RouterLink>
+              <RouterLink
+                to="/environment"
+                class="px-6 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
+                active-class="active"
+              >
+                <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+              </RouterLink>
             </li>
           </ul>
         </nav>

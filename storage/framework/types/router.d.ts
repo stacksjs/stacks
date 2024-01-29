@@ -48,6 +48,7 @@ declare module 'vue-router/auto/routes' {
     '/dashboard/deployments/': RouteRecordInfo<'/dashboard/deployments/', '/dashboard/deployments', Record<never, never>, Record<never, never>>,
     '/dashboard/deployments/[id]': RouteRecordInfo<'/dashboard/deployments/[id]', '/dashboard/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '/dashboard/dns/': RouteRecordInfo<'/dashboard/dns/', '/dashboard/dns', Record<never, never>, Record<never, never>>,
+    '/dashboard/emails/': RouteRecordInfo<'/dashboard/emails/', '/dashboard/emails', Record<never, never>, Record<never, never>>,
     '/dashboard/environment/': RouteRecordInfo<'/dashboard/environment/', '/dashboard/environment', Record<never, never>, Record<never, never>>,
     '/dashboard/health/': RouteRecordInfo<'/dashboard/health/', '/dashboard/health', Record<never, never>, Record<never, never>>,
     '/dashboard/library/': RouteRecordInfo<'/dashboard/library/', '/dashboard/library', Record<never, never>, Record<never, never>>,

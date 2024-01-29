@@ -17,8 +17,6 @@ export class Middleware implements MiddlewareType {
 // const readdir = promisify(fs.readdir)
 
 async function importMiddlewares(directory: string) {
-  // eslint-disable-next-line no-console
-  console.log('importMiddlewares', directory)
   // const middlewares = []
   // TODO: somehow this breaks ./buddy dev
   // const files = await readdir(directory)
@@ -30,7 +28,7 @@ async function importMiddlewares(directory: string) {
   // }
 
   // return middlewares
-  return []
+  return [directory] // fix this: return array of middlewares
 }
 
 export const middlewares = await importMiddlewares(appPath('middleware'))

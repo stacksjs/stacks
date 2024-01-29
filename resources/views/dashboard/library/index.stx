@@ -149,11 +149,11 @@ useHead({
                       Path
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                       Created At
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                       Updated At
                     </th>
 
@@ -177,11 +177,11 @@ useHead({
                       ./resources/components/component-a.stx
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
                       01-03-2023 08:23:15
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
                       04-19-2022 09:04:20
                     </td>
 
@@ -233,11 +233,11 @@ useHead({
                       Path
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                       Created At
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                       Updated At
                     </th>
 
@@ -261,11 +261,11 @@ useHead({
                       ./resources/functions/function-a.ts
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
                       01-03-2023 08:23:15
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
                       04-19-2022 09:04:20
                     </td>
 
