@@ -1,15 +1,17 @@
 import {
   defineConfig,
-  // presetAttributify,
   presetIcons,
   presetTypography,
   presetWebFonts,
   presetWind,
+  presetUno,
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
+  presetAttributify,
 } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
+import { presetHeadlessUi } from 'unocss-preset-primitives'
 import { ui } from '@stacksjs/config'
 
 export default defineConfig({
@@ -26,8 +28,10 @@ export default defineConfig({
   },
 
   presets: [
-    presetWind(), // allows for Tailwind utility classes
-    presetForms(), // allows for form Tailwind's form styling
+    presetUno(), // allows for Tailwind utility classes
+    presetAttributify(),
+    presetHeadlessUi(),
+    // presetForms(), // allows for form Tailwind's form styling
     presetTypography(),
     presetIcons({
       prefix: 'i-',
@@ -48,7 +52,7 @@ export default defineConfig({
       },
     }),
 
-    // presetAttributify(),
+    
   ],
 
   transformers: [

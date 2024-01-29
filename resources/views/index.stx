@@ -44,7 +44,7 @@ useHead({
 
   <main>
     <Hero />
-    <PrimaryFeatures />
+    <PrimaryFeatures2 />
     <SecondaryFeatures />
     <CallToAction />
     <Testimonials />
