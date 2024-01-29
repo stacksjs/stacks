@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
- 
+
 import backgroundImage from '../../assets/images/screenshots/background-features.jpg'
+
 // import screenshotExpenses from '@/images/screenshots/expenses.png'
 import screenshotPayroll from '../../assets/images/screenshots/payroll.webp'
 
@@ -13,19 +14,19 @@ const features = [
   {
     title: 'Payroll',
     description:
-      "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
+      'Keep track of everyone\'s salaries and whether or not they\'ve been paid. Direct deposit not supported.',
     image: screenshotPayroll,
   },
   {
     title: 'Claim expenses',
     description:
-      "All of your receipts organized into one place, as long as you don't mind typing in the data by hand.",
+      'All of your receipts organized into one place, as long as you don\'t mind typing in the data by hand.',
     // image: screenshotExpenses,
   },
   {
     title: 'VAT handling',
     description:
-      "We only sell our software to companies who don't deal with VAT at all, so technically we do all the VAT stuff they need.",
+      'We only sell our software to companies who don\'t deal with VAT at all, so technically we do all the VAT stuff they need.',
     // image: screenshotVatReturns,
   },
   {
@@ -67,7 +68,7 @@ onMounted(() => {
       width="2245"
       height="1636"
       unoptimized
-    />
+    >
     <Container class="relative">
       <div class="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
         <h2 class="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
@@ -79,29 +80,25 @@ onMounted(() => {
         </p>
       </div>
 
-      
       <TabGroup
         as="div"
         class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
-        :vertical="tabOrientation === 'vertical'" 
+        :vertical="tabOrientation === 'vertical'"
       >
-        <template v-slot="{ selectedIndex }">
+        <template #default="{ selectedIndex }">
           <div class="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-            <TabList class="relative z-10 flex gap-x-4 whitespace-nowrap px-4 sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal"
-            >
+            <TabList class="relative z-10 flex gap-x-4 whitespace-nowrap px-4 sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal">
               <div
-                :class="{
-                  'group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6': true,
+                class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6" :class="{
                   'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10': selectedIndex === 0,
-                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !== 0
+                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !== 0,
                 }"
               >
                 <h3>
                   <Tab
-                    :class="{
-                      'font-display text-lg ui-not-focus-visible:outline-none': true,
+                    class="font-display text-lg ui-not-focus-visible:outline-none" :class="{
                       'text-blue-600 lg:text-white': selectedIndex === 0,
-                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !== 0
+                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !== 0,
                     }"
                   >
                     <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
@@ -110,10 +107,9 @@ onMounted(() => {
                 </h3>
                 <p
                   v-if="tabOrientation === 'vertical'"
-                  :class="{
-                    'mt-2 hidden text-sm lg:block': true,
+                  class="mt-2 hidden text-sm lg:block" :class="{
                     'text-white': selectedIndex === 0,
-                    'text-blue-100 group-hover:text-white': selectedIndex !== 0
+                    'text-blue-100 group-hover:text-white': selectedIndex !== 0,
                   }"
                 >
                   {{ features[0].description }}
@@ -121,18 +117,16 @@ onMounted(() => {
               </div>
 
               <div
-                :class="{
-                  'group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6': true,
-                  'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10': selectedIndex ===  1,
-                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !==  1
+                class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6" :class="{
+                  'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10': selectedIndex === 1,
+                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !== 1,
                 }"
               >
                 <h3>
                   <Tab
-                    :class="{
-                      'font-display text-lg ui-not-focus-visible:outline-none': true,
-                      'text-blue-600 lg:text-white': selectedIndex ===  1,
-                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !==  1
+                    class="font-display text-lg ui-not-focus-visible:outline-none" :class="{
+                      'text-blue-600 lg:text-white': selectedIndex === 1,
+                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !== 1,
                     }"
                   >
                     <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
@@ -141,10 +135,9 @@ onMounted(() => {
                 </h3>
                 <p
                   v-if="tabOrientation === 'vertical'"
-                  :class="{
-                    'mt-2 hidden text-sm lg:block': true,
-                    'text-white': selectedIndex ===  1,
-                    'text-blue-100 group-hover:text-white': selectedIndex !==  1
+                  class="mt-2 hidden text-sm lg:block" :class="{
+                    'text-white': selectedIndex === 1,
+                    'text-blue-100 group-hover:text-white': selectedIndex !== 1,
                   }"
                 >
                   {{ features[1].description }}
@@ -152,18 +145,16 @@ onMounted(() => {
               </div>
 
               <div
-                :class="{
-                  'group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6': true,
+                class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6" :class="{
                   'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10': selectedIndex === 2,
-                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !== 2
+                  'hover:bg-white/10 lg:hover:bg-white/5': selectedIndex !== 2,
                 }"
               >
                 <h3>
                   <Tab
-                    :class="{
-                      'font-display text-lg ui-not-focus-visible:outline-none': true,
+                    class="font-display text-lg ui-not-focus-visible:outline-none" :class="{
                       'text-blue-600 lg:text-white': selectedIndex === 2,
-                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !== 2
+                      'text-blue-100 hover:text-white lg:text-white': selectedIndex !== 2,
                     }"
                   >
                     <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
@@ -172,10 +163,9 @@ onMounted(() => {
                 </h3>
                 <p
                   v-if="tabOrientation === 'vertical'"
-                  :class="{
-                    'mt-2 hidden text-sm lg:block': true,
+                  class="mt-2 hidden text-sm lg:block" :class="{
                     'text-white': selectedIndex === 2,
-                    'text-blue-100 group-hover:text-white': selectedIndex !== 2
+                    'text-blue-100 group-hover:text-white': selectedIndex !== 2,
                   }"
                 >
                   {{ features[2].description }}
@@ -184,7 +174,6 @@ onMounted(() => {
             </TabList>
           </div>
           <TabPanels class="lg:col-span-7">
-
             <TabPanel
               unmount="false"
             >
@@ -202,16 +191,14 @@ onMounted(() => {
                   alt=""
                   priority
                   sizes="(min-width: 1024px) 67.8125rem, (min-width: 640px) 100vw, 45rem"
-                />
+                >
               </div>
 
-              {{  features[0].image  }}
+              {{ features[0].image }}
             </TabPanel>
-
           </TabPanels>
         </template>
       </TabGroup>
     </Container>
   </section>
 </template>
-

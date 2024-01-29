@@ -5,12 +5,10 @@ import {
   presetTypography,
   presetUno,
   presetWebFonts,
-  presetWind,
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
-import { presetForms } from '@julr/unocss-preset-forms'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
 import { ui } from '@stacksjs/config'
 
