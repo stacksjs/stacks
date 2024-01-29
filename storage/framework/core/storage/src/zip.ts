@@ -9,13 +9,10 @@ export async function zip(from: string | string[], to?: string, options?: ZipOpt
   const toPath = to || 'archive.zip'
   const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  // eslint-disable-next-line no-console
-  console.log('zip', fromPath, toPath, options)
+  if (Array.isArray(from))
+    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
 
-  // if (Array.isArray(from))
-  //   return runCommand(`zip -r ${toPath} ${fromPath}`, options)
-
-  // return runCommand(`zip -r ${to} ${from}`, options)
+  return runCommand(`zip -r ${to} ${from}`, options)
 }
 
 export async function unzip(paths: string | string[]) {

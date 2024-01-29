@@ -16,14 +16,6 @@ const nav = [
       {
         items: [
           {
-            text: 'Twitter',
-            link: 'https://twitter.com/stacksjs',
-          },
-          {
-            text: 'Discord Chat',
-            link: 'https://discord.gg/stacksjs',
-          },
-          {
             text: 'Awesome Stacks',
             link: 'https://github.com/stacksjs/awesome-stacks',
           },
