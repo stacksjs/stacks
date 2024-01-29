@@ -12,7 +12,6 @@ const nav = [
     items: [
       { text: 'Team', link: '/team' },
       { text: 'Postcardware', link: '/postcardware' },
-      { text: 'Changelog', link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md' },
       {
         items: [
           {
