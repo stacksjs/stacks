@@ -33,6 +33,7 @@ declare module 'vue' {
     Playground: typeof import('./../../../resources/components/Playground.stx')['default']
     Pricing: typeof import('./../../../resources/components/Marketing/Pricing.stx')['default']
     PrimaryFeatures: typeof import('./../../../resources/components/Marketing/PrimaryFeatures.stx')['default']
+    PrimaryFeatures2: typeof import('./../../../resources/components/Marketing/PrimaryFeatures2.vue')['default']
     README: typeof import('./../../../resources/components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

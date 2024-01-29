@@ -1,14 +1,14 @@
 import {
   defineConfig,
+  presetAttributify,
   presetIcons,
   presetTypography,
+  presetUno,
   presetWebFonts,
   presetWind,
-  presetUno,
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
-  presetAttributify,
 } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
@@ -52,7 +52,6 @@ export default defineConfig({
       },
     }),
 
-    
   ],
 
   transformers: [
