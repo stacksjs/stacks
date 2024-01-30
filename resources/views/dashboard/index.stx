@@ -10,7 +10,7 @@
             </dt>
 
             <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
-              1,234
+              12,345
             </dd>
           </div>
 
@@ -30,17 +30,17 @@
             </dt>
 
             <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
-              12,345
+              345,678
             </dd>
           </div>
 
           <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-6 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
             <dt class="text-sm font-medium leading-6 text-gray-500 dark:text-gray-300">
-              Alerts
+              Subscribers
             </dt>
 
             <dd class="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 dark:text-gray-100">
-              None
+              45,678
             </dd>
           </div>
         </dl>

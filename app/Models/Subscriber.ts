@@ -3,20 +3,19 @@ import { validator } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
-  name: 'User', // defaults to the sanitized file name
-  table: 'users', // defaults to the lowercase, plural name of the model
+  name: 'Subscriber',
+  table: 'subscribers',
   // primaryKey: 'id', // defaults to `id`
   // autoIncrement: true, // defaults to true
 
   // "traits"
-  useUuid: true, // instead of `auto-incrementing id`, defaults to false
-  useSearch: true, // defaults to false, also accepts SearchEngineSettings
+  // useUuid: true, // instead of `auto-incrementing id`, defaults to false
   useSoftDeletes: true, // defaults to false, also accepts SearchEngineSettings
   useSeeder: { // defaults to a count of 10
     count: 10,
   },
 
-  // useAuth: true, // defaults to false, also accepts AuthSettings or TokenSettings
+  belongsTo: 'User',
 
   fields: {
     name: {
