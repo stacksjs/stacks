@@ -53,7 +53,7 @@ declare module 'vue-router/auto/routes' {
     '/dashboard/health/': RouteRecordInfo<'/dashboard/health/', '/dashboard/health', Record<never, never>, Record<never, never>>,
     '/dashboard/library/': RouteRecordInfo<'/dashboard/library/', '/dashboard/library', Record<never, never>, Record<never, never>>,
     '/dashboard/models/': RouteRecordInfo<'/dashboard/models/', '/dashboard/models', Record<never, never>, Record<never, never>>,
-    '/dashboard/models/events': RouteRecordInfo<'/dashboard/models/events', '/dashboard/models/events', Record<never, never>, Record<never, never>>,
+    '/dashboard/models/subscribers': RouteRecordInfo<'/dashboard/models/subscribers', '/dashboard/models/subscribers', Record<never, never>, Record<never, never>>,
     '/dashboard/models/users': RouteRecordInfo<'/dashboard/models/users', '/dashboard/models/users', Record<never, never>, Record<never, never>>,
     '/dashboard/queue/': RouteRecordInfo<'/dashboard/queue/', '/dashboard/queue', Record<never, never>, Record<never, never>>,
     '/dashboard/settings/billing': RouteRecordInfo<'/dashboard/settings/billing', '/dashboard/settings/billing', Record<never, never>, Record<never, never>>,
