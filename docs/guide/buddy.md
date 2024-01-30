@@ -51,6 +51,8 @@ buddy build:functions # builds function library
 buddy build:components # builds Vue component library & Web Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:vue-components # builds Vue 2 & 3-ready Component library
+buddy build:cli # builds the user's CLI
+buddy build:cli --buddy # builds the Buddy CLI
 buddy build:all # builds all your code
 
 # `buddy build` aliases
@@ -63,6 +65,8 @@ buddy prod:functions
 buddy prod:vue-components
 buddy prod:web-components
 buddy prod:all
+buddy prod:cli
+buddy prod:cli --buddy
 buddy production # `buddy prod` alias
 
 # sets your application key

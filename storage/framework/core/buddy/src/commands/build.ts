@@ -100,6 +100,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
+    .alias('prod:components')
     .option('-c, --components', descriptions.components, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -109,6 +110,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:cli', 'Automagically build the CLI')
+    .alias('prod:cli')
     .option('-b, --buddy', descriptions.buddy, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -127,6 +129,9 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
+    .alias('build:vue')
+    .alias('prod:vue-components')
+    .alias('prod:vue')
     .option('-v, --vue-components', descriptions.vueComponents, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -137,17 +142,21 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
+    .alias('build:wc')
+    .alias('prod:web-components')
+    .alias('prod:wc')
     .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .alias('build:elements')
-    .alias('build:wc')
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildWebComponentLib, options)
     })
 
   buddy
     .command('build:docs', 'Automagically build your documentation site.')
+    .alias('prod:docs')
+    .alias('build:documentation')
+    .alias('prod:documentation')
     .option('-d, --docs', descriptions.docs, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -173,6 +182,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:desktop', descriptions.desktop)
+    .alias('prod:desktop')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
