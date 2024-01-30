@@ -53,12 +53,12 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 // export async function updateDependencies(options: UpgradeOptions) {
 export async function updateDependencies() {
   const perf = await intro('buddy upgrade:dependencies')
-  // const result = await runCommand(NpmScript.UpgradeDependencies, options)
+  const result = await runCommand(NpmScript.UpgradeDependencies, options)
 
-  // if (result.isErr()) {
-  //   outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
-  //   process.exit()
-  // }
+  if (result.isErr()) {
+    outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+    process.exit()
+  }
 
   await outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
   process.exit()

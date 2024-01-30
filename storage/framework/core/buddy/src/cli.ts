@@ -42,7 +42,7 @@ async function main() {
   // cmd.test(buddy)
   // cmd.version(buddy)
   // cmd.prepublish(buddy)
-  // cmd.upgrade(buddy)
+  cmd.upgrade(buddy)
 
   buddy.parse()
 }

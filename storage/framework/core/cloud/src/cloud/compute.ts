@@ -30,6 +30,7 @@ export class ComputeStack {
     // })
 
     this.apiServer = new lambda.Function(scope, 'WebServer', {
+      functionName: `${props.slug}-${props.appEnv}-web-server`,
       description: 'The web server for the Stacks application',
       code: lambda.Code.fromAssetImage(p.frameworkPath('server')),
       handler: lambda.Handler.FROM_IMAGE,

@@ -12,7 +12,7 @@ serve({
   port: config.app.ports?.api, // defaults to 3999
 })
 
-// we need this proxied by vite
+// the reason we start a Vite dev server next is because we need the Bun server proxied by vite
 await runCommand(`bunx vite --config ${p.vitePath('src/api.ts')}`, {
   // ...options,
   cwd: p.frameworkPath(),

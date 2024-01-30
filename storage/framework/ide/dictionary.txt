@@ -93,6 +93,7 @@ elbv
 encrypter
 entrypoints
 envrc
+eventstream
 execa
 Fargate
 filesize
@@ -132,6 +133,7 @@ huggingface
 huskyrc
 iconify
 iife
+imds
 Imdsv
 intlify
 itemprop
@@ -142,6 +144,7 @@ jsdevtools
 jsons
 julr
 kibibytes
+kleur
 kohler
 kolorist
 kstenerud
@@ -240,6 +243,7 @@ scrollback
 seedable
 sendemail
 sendgrid
+serde
 sesv
 sfc
 sfcs
@@ -279,6 +283,7 @@ unconfig
 undeploys
 unhead
 unimport
+universalify
 unmanaged
 unocss
 unplugin

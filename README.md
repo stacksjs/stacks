@@ -85,7 +85,7 @@ buddy upgrade:all # auto-upgrades all of the above
 # any of them via the "help option", i.e. `buddy ... --help`
 
 buddy dev # starts the frontend dev server
-buddy dev -i # prompts any of the dev servers (components, functions, views, or docs)
+buddy dev -i # prompts any of the dev servers (components, functions, views, docs, or api)
 buddy dev:api # starts the API dev server
 buddy dev:dashboard # starts the Admin/Dashboard dev server
 buddy dev:desktop # starts the Desktop dev server
@@ -93,7 +93,7 @@ buddy dev:views # starts frontend dev server
 buddy dev:components # starts component dev server
 buddy dev:functions # stubs functions
 buddy dev:docs # starts local docs dev server
-buddy dev docs # also starts the local docs dev server (colon is optional)
+buddy dev docs # also starts the local docs dev server (colon is optional for all commands)
 buddy development # `buddy dev` alias
 
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:

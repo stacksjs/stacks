@@ -1,19 +1,17 @@
-import type { ViteConfig } from '@stacksjs/types'
+import { defineConfig } from 'vite'
+import { path as p } from '@stacksjs/path'
 
-export const apiConfig: ViteConfig = {
+export default defineConfig({
   base: '/api/',
+
+  root: p.frameworkPath('api'),
+  publicDir: p.publicPath(),
+  envDir: p.projectPath(),
+
   server: {
     port: 3334,
     proxy: {
       '/': 'http://127.0.0.1:3999',
     },
   },
-}
-
-export default function (config: { command: string }): ViteConfig {
-  if (config.command === 'serve')
-    return apiConfig
-
-  // command === 'build'
-  return apiConfig
-}
+})

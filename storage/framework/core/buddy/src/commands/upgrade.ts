@@ -10,7 +10,7 @@ export function upgrade(buddy: CLI) {
   const descriptions = {
     command: 'Upgrade dependencies, framework, package manager, JS/TS runtime',
     framework: 'Upgrade the Stacks framework',
-    dependencies: 'Upgrade your dependencies',
+    dependencies: 'Upgrade your dependencies (pkgx.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
@@ -54,7 +54,7 @@ export function upgrade(buddy: CLI) {
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
 
-      const result = await runAction(Action.Upgrade, { ...options })
+      const result = await runAction(Action.Upgrade, options)
 
       if (result.isErr()) {
         await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true }, result.error)

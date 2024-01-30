@@ -1,25 +1,21 @@
-// import { ExitCode, parseArgs } from '@stacksjs/cli'
-// import { Action } from '@stacksjs/enums'
-// import { runAction } from '../helpers'
-//
-// const options = parseArgs()
+import process from 'node:process'
+import { ExitCode, parseArgs } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { runAction } from '../helpers'
+
+const options = parseArgs()
 
 // run all the upgrade actions
-// if (options?.framework || options?.all)
-//   await updateFramework(options)
+if (options?.framework || options?.all)
+  await updateFramework(options)
 
-// if (options?.dependencies || options?.all)
-//   await updateDependencies(options)
+if (options?.dependencies || options?.all)
+  await updateDependencies(options)
 
-// if (options?.packageManager || options?.all)
-//   await runAction(Action.UpgradePackageManager, options)
-//
-// if (options?.node || options?.all)
-//   await runAction(Action.UpgradeNode, options)
-//
-// else
-//   process.exit(ExitCode.InvalidArgument)
+if (options?.bun || options?.all)
+  await runAction(Action.UpgradeBun, options)
 
-//   // TODO: also update CI files & configurations, and other files, possibly
-//   // we want this to be smart enough to update only if files that have been updated
-//   // TODO: this script should trigger regeneration of auto-imports.d.ts & components.d.ts
+process.exit(ExitCode.InvalidArgument)
+
+// TODO: also update CI files & configurations, and other files, possibly (taze?)
+// we want this to be smart enough to update only if files that have been updated

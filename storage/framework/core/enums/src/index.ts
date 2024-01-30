@@ -43,7 +43,7 @@ export enum NpmScript {
   Preinstall = 'preinstall',
   Prepublish = 'prepublish',
   UpgradeBun = './storage/framework/scripts/setup.sh +bun.sh',
-  UpgradeDependencies = 'pnpm up',
+  UpgradeDependencies = 'pkgx --update && bun install',
 }
 
 export enum Action {
