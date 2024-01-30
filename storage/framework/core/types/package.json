@@ -63,7 +63,7 @@
     "@types/minimatch": "^5.1.2",
     "@types/node": "^20.11.10",
     "@types/nprogress": "^0.2.3",
-    "@vinejs/vine": "^1.7.0",
+    "@vinejs/vine": "^1.7.1",
     "cac": "^6.7.14",
     "markdown-it": "^14.0.0",
     "meilisearch": "^0.37.0",
