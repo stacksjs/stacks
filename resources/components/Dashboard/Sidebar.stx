@@ -165,22 +165,26 @@
                 </li>
               </ul>
             </li>
-            <li class="mt-auto flex items-center justify-start space-x-4">
-              <RouterLink
-                to="/settings/billing"
-                class="px-6 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
-                active-class="active"
-              >
-                <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-              </RouterLink>
-              <RouterLink
-                to="/environment"
-                class="px-6 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
-                active-class="active"
-              >
-                <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-              </RouterLink>
-            </li>
+            <li class="mt-auto flex items-center justify-between space-x-4">
+              <div class="flex items-center">
+                  <RouterLink
+                      to="/settings/billing"
+                      class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
+                      active-class="active">
+                      <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                  </RouterLink>
+                  <RouterLink
+                      to="/environment"
+                      class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
+                      active-class="active">
+                      <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                  </RouterLink>
+              </div>
+              <span class="bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-green-700 dark:text-gray-200">
+                  Production
+              </span>
+          </li>
+
           </ul>
         </nav>
       </div>
@@ -194,6 +198,6 @@
 }
 
 .router-link-active, .router-link-exact-active {
-  @apply dark:bg-blue-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 p-2 flex items-center text-sm rounded-md !important
+  @apply dark:bg-blue-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 flex items-center text-sm rounded-md !important
 }
 </style>
