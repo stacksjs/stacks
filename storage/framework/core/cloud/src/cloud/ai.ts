@@ -56,7 +56,7 @@ export class AiStack {
       },
     })
 
-    const summarizeAi = new lambda.Function(scope, 'AiFunction', {
+    const summarizeAi = new lambda.Function(scope, 'SummarizeAiFunction', {
       functionName: `${props.slug}-${props.appEnv}-ai-summarize`,
       description: 'Lambda function to summarize any given text',
       runtime: lambda.Runtime.NODEJS_20_X,
