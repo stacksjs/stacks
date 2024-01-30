@@ -31,7 +31,7 @@ In other words, Stacks helps you, as a developer, every step along the way—in 
 It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-curl -Ssf stacksjs.org | sh # wip
+curl -Ssf stacksjs.org/install | sh # wip
 # alternatively, if Bun >= v1.0 is installed already,
 # you may also get started via:
 bunx stacks new my-project
