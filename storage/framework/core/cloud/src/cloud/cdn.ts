@@ -20,6 +20,7 @@ export interface CdnStackProps extends NestedCloudProps {
   webServerUrl: lambda.FunctionUrl
   cliSetupUrl: lambda.FunctionUrl
   askAiUrl: lambda.FunctionUrl
+  summarizeAiUrl: lambda.FunctionUrl
 }
 
 export class CdnStack {
@@ -244,9 +245,20 @@ export class CdnStack {
 
   aiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = Fn.select(2, Fn.split('/', props.askAiUrl.url))
+    const summaryHostname = Fn.select(2, Fn.split('/', props.summarizeAiUrl.url))
+
+    const aiCachePolicy = new cloudfront.CachePolicy(scope, 'AiCachePolicy', {
+      comment: 'Stacks AI Cache Policy',
+      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-ai-cache-policy`,
+      defaultTtl: Duration.seconds(0),
+      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
+      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+    })
+
     return {
       '/ai/ask': {
-        // origin: new origins.HttpOrigin('9qp44a2b7e.execute-api.us-east-1.amazonaws.com', {
         origin: new origins.HttpOrigin(hostname, {
           originPath: '/ai',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
@@ -254,30 +266,18 @@ export class CdnStack {
         compress: false,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: new cloudfront.CachePolicy(scope, 'AiCachePolicy', {
-          comment: 'Stacks AI Cache Policy',
-          cachePolicyName: `${this.props.slug}-${this.props.appEnv}-ai-cache-policy`,
-          defaultTtl: Duration.seconds(0),
-          // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
-          cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-          headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
-          queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-        }),
+        cachePolicy: aiCachePolicy,
       },
-      // '/ai/ask/*': {
-      //   origin,
-      //   compress: false,
-      //   allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-      //   viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      //   cachePolicy: this.setApiCachePolicy(scope),
-      // },
-      // '/ai/summary': {
-      //   origin,
-      //   compress: false,
-      //   allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-      //   viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      //   cachePolicy: this.setApiCachePolicy(scope),
-      // },
+      '/ai/summary': {
+        origin: new origins.HttpOrigin(summaryHostname, {
+          originPath: '/ai',
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }),
+        compress: false,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: aiCachePolicy,
+      },
     }
   }
 

@@ -9,6 +9,7 @@ export interface AiStackProps extends NestedCloudProps {
 
 export class AiStack {
   askAiUrl: lambda.FunctionUrl
+  summarizeAiUrl: lambda.FunctionUrl
 
   constructor(scope: Construct, props: AiStackProps) {
     // Define the Lambda Layer for aws-sdk
@@ -66,7 +67,7 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    const summarizeAiUrl = new lambda.FunctionUrl(scope, 'SummarizeAiFunctionUrl', {
+    this.summarizeAiUrl = new lambda.FunctionUrl(scope, 'SummarizeAiFunctionUrl', {
       function: summarizeAi,
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
@@ -74,43 +75,12 @@ export class AiStack {
       },
     })
 
-    // const api = new RestApi(scope, 'AiRestApi', {
-    //   restApiName: `${props.slug}-${props.appEnv}-ai`,
-    //   description: 'Stacks AI API',
-    //   defaultCorsPreflightOptions: {
-    //     allowOrigins: Cors.ALL_ORIGINS,
-    //     allowMethods: Cors.ALL_METHODS,
-    //   },
-    // })
-
-    // const askResource = api.root.addResource('ask')
-    // const askIntegration = new LambdaIntegration(askAi)
-    // askResource.addMethod('POST', askIntegration, {
-    //   operationName: 'Stacks AI Ask',
-    //   authorizationType: AuthorizationType.NONE,
-    // })
-
-    // alias to ask
-    // const promptResource = api.root.addResource('prompt')
-    // const promptIntegration = new LambdaIntegration(askAi)
-    // promptResource.addMethod('POST', promptIntegration, {
-    //   operationName: 'Stacks AI Ask',
-    //   authorizationType: AuthorizationType.NONE,
-    // })
-
-    // const summarizeResource = api.root.addResource('summarize')
-    // const summarizeIntegration = new LambdaIntegration(summarizeAi)
-    // summarizeResource.addMethod('POST', summarizeIntegration, {
-    //   operationName: 'Stacks AI Summarize',
-    //   authorizationType: AuthorizationType.NONE,
-    // })
-
     new Output(scope, 'AiVanityAskApiUrl', {
       value: this.askAiUrl.url,
     })
 
     new Output(scope, 'AiVanitySummarizeApiUrl', {
-      value: summarizeAiUrl.url,
+      value: this.summarizeAiUrl.url,
     })
 
     new Output(scope, 'AiAskApiUrl', {

@@ -86,6 +86,7 @@ export class Cloud extends Stack {
       webServerUrl: api.apiServerUrl,
       cliSetupUrl: cli.cliSetupUrl,
       askAiUrl: ai.askAiUrl,
+      summarizeAiUrl: ai.summarizeAiUrl,
     })
 
     new DeploymentStack(this, {
