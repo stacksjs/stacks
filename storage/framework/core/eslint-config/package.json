@@ -88,7 +88,7 @@
     "eslint-plugin-toml": "^0.9.2",
     "eslint-plugin-unicorn": "^50.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
-    "eslint-plugin-vitest": "^0.3.20",
+    "eslint-plugin-vitest": "^0.3.21",
     "eslint-plugin-vue": "^9.20.1",
     "eslint-plugin-yml": "^1.12.2",
     "eslint-processor-vue-blocks": "^0.1.1",
