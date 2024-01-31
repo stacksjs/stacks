@@ -7,7 +7,6 @@
     "@aws-sdk/lib-dynamodb": "^3.503.1",
     "@smithy/smithy-client": "^2.3.1",
     "@stacksjs/cloud": "^0.58.28",
-    "@stacksjs/config": "^0.58.28",
     "aws4fetch": "^1.0.17"
   }
 }

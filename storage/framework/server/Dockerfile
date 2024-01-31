@@ -2,11 +2,11 @@
 FROM oven/bun:latest AS builder
 WORKDIR /tmp
 
-COPY ./runtime.ts ./runtime.ts
-COPY ./index.ts ./index.ts
-COPY ./package.json ./package.json
-COPY ./bunfig.toml ./bunfig.toml
+# COPY runtime.ts index.ts package.json .
+COPY runtime.ts index.ts .
 
+RUN bun add aws4fetch
+RUN bun add @stacksjs/cloud
 RUN bun install
 RUN bun build --compile runtime.ts --outfile bootstrap
 RUN bun build --target=bun index.ts --outfile index

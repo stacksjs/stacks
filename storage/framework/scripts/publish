@@ -21,6 +21,10 @@ for dir in $dirs; do
   # Change to the directory
   cd $dir
 
+  # Update package.json dependencies with the latest version
+  # TODO: needs to delete the tmp.json file after
+  jq -r '.dependencies |= with_entries(if .value == "workspace:*" then .value = "latest" else . end)' package.json > tmp.json && mv tmp.json package.json
+
   npm publish --access public --no-git-checks || echo "Failed to publish $dir"
 
   # Check if the build command was successful
