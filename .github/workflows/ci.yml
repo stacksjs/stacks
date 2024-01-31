@@ -48,7 +48,7 @@ jobs:
         run: bun install
 
       - name: Lint
-        run: bunx eslint .
+        run: bun buddy lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
