@@ -47,6 +47,9 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Build ESLint Config
+        run:  bunx pnpm --filter='./storage/framework' build
+
       - name: Lint
         run: bun buddy lint
 

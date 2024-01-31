@@ -31,6 +31,9 @@ frozenLockfile = false
 # equivalent to `--dry-run` flag
 dryRun = false
 
+# equivalent to `--concurrent-scripts` flag
+# concurrentScripts = 16 # (cpu count or GOMAXPROCS) x2
+
 [install.cache]
 # the directory to use for the cache
 dir = "~/.stacks/install/cache"
