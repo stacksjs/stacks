@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "",
+    "build": "echo 'Coming soon'",
     "preview": "vite preview",
     "dev:components": "vite -c vite.config.ts"
   },

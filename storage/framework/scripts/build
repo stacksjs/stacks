@@ -14,6 +14,11 @@ fi
 
 # Loop through each directory
 for dir in $dirs; do
+  # Skip the ../core directory because it has no package.json
+  if [ "$dir" = "$script_dir/../core" ] || [ "$dir" = "$script_dir/../core/bun-create" ]; then
+    continue
+  fi
+
   echo ""
   echo "🏗️  Building..."
   echo "📦 $dir"
@@ -21,23 +26,8 @@ for dir in $dirs; do
   # Change to the directory
   cd $dir
 
-  # Check if the directory is one of the specified ones
-  case "$dir" in
-    ## This is because eslint requires cjs builds which we use tsup for
-    *"/eslint-config")
-      # build the package
-      bun run build
-      ;;
-    *)
-    # Check if build.ts exists in the directory
-    if [ -f "build.ts" ]; then
-      # Extract the command from build.ts
-      cmd=$(sed -nE "s/.*runCommand\('(.*)',.*/\1/p" build.ts)
-      # Run the extracted command
-      eval $cmd
-    fi
-    ;;
-  esac
+  # Build the package
+  bun run build
 
   # Check if the build command was successful
   if [ $? -ne 0 ]; then

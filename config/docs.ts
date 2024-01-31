@@ -107,7 +107,6 @@ const sidebar = {
       text: 'Digging Deeper',
       collapsible: true,
       items: [
-        { text: 'Actions', link: '/guide/actions' },
         { text: 'APIs', link: '/guide/apis' },
         { text: 'Apps', link: '/guide/apps' },
         { text: 'Authentication', link: '/guide/auth' },
@@ -172,9 +171,8 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: 'Get Started', link: '/guide/libraries/get-started' },
-            { text: 'Component Libs', link: '/guide/libraries/components' },
-            { text: 'Function Libs', link: '/guide/libraries/functions' },
+            { text: 'Component Library', link: '/guide/libraries/components' },
+            { text: 'Function Library', link: '/guide/libraries/functions' },
             { text: 'Composability', link: '/guide/libraries/composability' },
           ],
         },

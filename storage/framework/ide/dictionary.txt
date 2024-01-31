@@ -229,6 +229,7 @@ pullapprove
 pyproject
 pyrightconfig
 rangav
+raycast
 releaserc
 resx
 retriable
