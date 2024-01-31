@@ -47,11 +47,8 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Build Framework
-        run: cd storage/framework && bun run build
-
       - name: Lint
-        run: bunx --bun eslint .
+        run: bunx eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
