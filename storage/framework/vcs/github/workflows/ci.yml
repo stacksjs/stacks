@@ -24,7 +24,6 @@ jobs:
   lint:
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
@@ -32,69 +31,85 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
+      - name: Use cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            node-modules-
+
       - name: Install Dependencies
         run: bun install
 
-      - name: Set Application Key
-        run: ./buddy key:generate
-
       - name: Lint
-        run: ./buddy lint
+        run: bunx eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
+
+      - name: Use cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install dependencies
         run: bun install
 
       - name: Set Application Key
-        run: ./buddy key:generate
+        run: bun buddy key:generate
 
       - name: Typecheck
-        run: ./buddy test:types
+        run: bun buddy test:types
 
   test:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [18.x]
         os: [ubuntu-latest]
       fail-fast: false
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
+      - name: Use cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            node-modules-
+
       - name: Install Dependencies
         run: bun install
 
-      - name: Setup Memcache
-        uses: niden/actions-memcached@v7
-
       - name: Set Application Key
-        run: ./buddy key:generate
+        run: bun buddy key:generate
 
       - name: Test Suite
         run: bun --bun run test
@@ -108,20 +123,27 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
+
+      - name: Use cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install Dependencies
         run: bun install
 
       - name: Set Application Key
-        run: ./buddy key:generate
+        run: bun buddy key:generate
 
       - name: Prepare Git User
         run: |

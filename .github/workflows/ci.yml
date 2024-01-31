@@ -40,9 +40,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            nodeModules-
+            node-modules-
 
       - name: Install Dependencies
         run: bun install
@@ -69,9 +69,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            nodeModules-
+            node-modules-
 
       - name: Install dependencies
         run: bun install
@@ -101,9 +101,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            nodeModules-
+            node-modules-
 
       - name: Install Dependencies
         run: bun install
@@ -135,9 +135,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: nodeModules-${{ hashFiles('**/bun.lockb') }}
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            nodeModules-
+            node-modules-
 
       - name: Install Dependencies
         run: bun install
