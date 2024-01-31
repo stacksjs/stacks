@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.58.47...v0.58.47-1-g3270adb8c
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.58.47...v0.58.47-1-g3270adb8c)
+
+### 🏡 Chore
+
+- Wip ([3270adb8c](https://github.com/stacksjs/stacks/commit/3270adb8c))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.58.46...v0.58.46-1-g481774dc4
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.58.46...v0.58.46-1-g481774dc4)
