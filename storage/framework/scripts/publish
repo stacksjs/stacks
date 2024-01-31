@@ -4,13 +4,7 @@
 script_dir=$(realpath $(dirname "$0"))
 
 # Get all directories in the core path except for src/bun-create
-dirs=$(find "$script_dir/../" -type d -maxdepth 1 -not -path "$script_dir/../bun-create")
-
-# Get all directories in src/bun-create up to two levels deep
-bun_create_dirs=$(find "$script_dir/../src" -type d -maxdepth 2)
-
-# Combine the two directory lists
-dirs="$dirs $bun_create_dirs"
+dirs=$(find "$script_dir/../core" -type d -maxdepth 1 -not -path "$script_dir/../bun-create")
 
 # Check if no directories found
 if [ -z "$dirs" ]; then
