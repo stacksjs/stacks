@@ -2,7 +2,6 @@
   "name": "@stacksjs/env",
   "type": "module",
   "version": "0.58.46",
-  "private": true,
   "description": "Stacks env helper methods.",
   "author": "Chris Breuer",
   "license": "MIT",
