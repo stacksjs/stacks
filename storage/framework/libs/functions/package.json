@@ -28,7 +28,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "vite build -c ../build/functions.ts",

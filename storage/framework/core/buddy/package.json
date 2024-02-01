@@ -61,7 +61,8 @@
   },
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "buddy": "bunx ./src/cli.ts",

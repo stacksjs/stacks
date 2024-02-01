@@ -1,0 +1,15 @@
+{
+  "name": "stacks-router-layer",
+  "version": "0.58.48",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@stacksjs/router": "^0.58.48"
+  }
+}

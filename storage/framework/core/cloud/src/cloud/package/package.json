@@ -1,30 +1,26 @@
 {
-  "name": "@stacksjs/testing",
+  "name": "@stacksjs/router",
   "type": "module",
   "version": "0.58.48",
-  "description": "The Stacks way of testing.",
+  "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/testing#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/router#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/testing"
+    "directory": "./storage/framework/core/router"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "tests",
-    "unit",
-    "feature",
-    "e2e",
-    "testing",
-    "utilities",
-    "functions",
-    "playwright",
-    "stacks"
+    "router",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
   ],
   "exports": {
     ".": {
@@ -52,12 +48,16 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.41.1"
+    "@stacksjs/config": "latest",
+    "unplugin-vue-router": "^0.7.0",
+    "vue-router": "^4.2.5"
   },
   "dependencies": {
-    "@playwright/test": "^1.41.1"
+    "@stacksjs/config": "latest",
+    "unplugin-vue-router": "^0.7.0",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "latest"
   }
 }

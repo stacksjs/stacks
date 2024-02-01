@@ -28,7 +28,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "dev": "vite -c ../../../core/vite/src/components.ts",

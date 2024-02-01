@@ -33,7 +33,8 @@
   ],
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "echo 'wip'",

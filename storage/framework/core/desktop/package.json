@@ -47,7 +47,8 @@
   ],
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "dev": "bunx vite ../../dashboard -c ../vite/src/desktop.ts",

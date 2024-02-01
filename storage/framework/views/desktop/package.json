@@ -36,7 +36,8 @@
   ],
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "dev": "bunx vite -c ../../core/vite/src/desktop.ts",

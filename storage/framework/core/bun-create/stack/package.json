@@ -35,7 +35,8 @@
   ],
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
