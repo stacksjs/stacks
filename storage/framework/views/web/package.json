@@ -40,7 +40,7 @@
     "markdown-it-shikiji": "^0.10.2",
     "rollup": "^4.9.6",
     "shikiji": "^0.10.2",
-    "taze": "^0.13.1",
+    "taze": "^0.13.2",
     "unocss": "^0.58.4",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0",
