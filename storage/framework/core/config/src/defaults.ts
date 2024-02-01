@@ -59,9 +59,9 @@ export default {
     },
   },
 
-  binary: {
-    name: 'buddy',
-    command: 'buddy',
+  cli: {
+    name: 'My Custom CLI',
+    command: 'my-custom-cli',
     description: 'Stacks is a full-stack framework for TypeScript.',
     source: p.appPath('commands'),
   },

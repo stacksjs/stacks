@@ -1,13 +1,16 @@
-// triggered via `$your-command inspire`
+// triggered via `$your-cli inspire` and `buddy inspire`
 import process from 'node:process'
-import { cli, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { collect } from '@stacksjs/collections'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
 
-// for enhanced type safety
+// for enhanced type-safety & autocompletion, you may want to define the options interface
 interface InspireOptions {
   two: boolean
 }
 
+// could be queried from any API or a database
 const quotes = collect([
   'The best way to get started is to quit talking and begin doing.',
   'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.',
@@ -26,16 +29,18 @@ const quotes = collect([
   'Security is mostly a superstition. Life is either a daring adventure or nothing.',
 ])
 
-cli()
-  .command('inspire', 'Inspire yourself with a random quote')
-  .option('--two, -t', 'Show two quotes', { default: false })
-  .alias('insp')
-  .action((options: InspireOptions) => {
-    if (options.two)
-      quotes.random(2).forEach(quote => log.info(quote))
-    else
-      log.info(quotes.random())
+export default function (cli: CLI) {
+  return cli
+    .command('inspire', 'Inspire yourself with a random quote')
+    .option('--two, -t', 'Inspire yourself with two random quotes', { default: false })
+    .alias('insp')
+    .action((options: InspireOptions) => {
+      if (options.two)
+        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+      else
+        log.info(quotes.random())
 
-    log.success('Have a great day!')
-    process.exit(ExitCode.Success)
-  })
+      log.success('Have a great day!')
+      process.exit(ExitCode.Success)
+    })
+}

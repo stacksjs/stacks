@@ -231,7 +231,7 @@ export interface Scheduler {
 }
 
 // function run(callback: Function): Scheduler {
-function run(callback: ((now: Date | 'manual' | 'init') => void) | string): Scheduler {
+export function run(callback: ((now: Date | 'manual' | 'init') => void) | string): Scheduler {
   return {
     everySecond: () => {
       cron.schedule('* * * * * *', callback)

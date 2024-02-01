@@ -7,12 +7,13 @@ export interface JobOptions {
    */
   name?: string
 
-  handle: string | Function
+  handle?: string | Function
   action?: string
   description?: string
   timezone?: string
   tries?: number
   backoff?: number | number[]
+  schedule?: string | Every
   enabled?: boolean
 }
 

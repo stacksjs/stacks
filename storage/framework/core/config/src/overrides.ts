@@ -2,7 +2,7 @@ import type { StacksConfig } from '@stacksjs/types'
 import ai from '../../../../../config/ai'
 import app from '../../../../../config/app'
 import cache from '../../../../../config/cache'
-import binary from '../../../../../config/cli'
+import cli from '../../../../../config/cli'
 import cloud from '../../../../../config/cloud'
 import database from '../../../../../config/database'
 import dns from '../../../../../config/dns'
@@ -25,8 +25,8 @@ import ui from '../../../../../config/ui'
 export default {
   ai,
   app,
-  binary,
   cache,
+  cli,
   cloud,
   database,
   dns,

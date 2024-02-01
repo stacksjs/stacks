@@ -21,7 +21,7 @@ export function cli(name?: string | CliOptions, options?: CliOptions) {
     name = options.name
   }
 
-  const cli = cac(name)
+  const cli = cac(name || 'buddy') // default to extending buddy
 
   cli.help()
   cli.version(options?.version || version)

@@ -52,15 +52,6 @@ export interface StacksOptions {
   app: AppConfig
 
   /**
-   * **Binary Options**
-   *
-   * This configuration defines all of your Binary options. Because Stacks is fully-typed, you
-   * may hover any of the options below and the definitions will be provided. In case you
-   * have any questions, feel free to reach out via Discord or GitHub Discussions.
-   */
-  binary: BinaryConfig
-
-  /**
    * **Cache Options**
    *
    * This configuration defines all of your Cache options. Because Stacks is fully-typed, you
@@ -68,6 +59,15 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   cache: CacheConfig
+
+  /**
+   * **CLI / Binary Options**
+   *
+   * This configuration defines all of your Binary options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  cli: BinaryConfig
 
   /**
    * **Cloud Options**
