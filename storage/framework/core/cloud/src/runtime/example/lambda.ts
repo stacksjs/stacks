@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { Server } from 'node:bun'
+import type { Server } from 'bun'
 
 // import type { Server } from 'bun'
 

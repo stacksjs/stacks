@@ -1,8 +1,8 @@
-import type { BunFile } from 'node:bun'
+import type { BunFile } from 'bun'
 
 type ArrayBufferView = TypedArray | DataView
 
-export type { Subprocess, SyncSubprocess } from 'node:bun'
+export type { Subprocess, SyncSubprocess } from 'bun'
 export type Readable =
   | 'pipe'
   | 'inherit'

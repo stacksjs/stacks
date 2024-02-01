@@ -1,4 +1,4 @@
-import Database from 'node:bun:sqlite'
+import Database from 'bun:sqlite'
 import type { QueryResult } from 'kysely'
 import type { MainMsg, RunMode, WorkerMsg } from './type'
 

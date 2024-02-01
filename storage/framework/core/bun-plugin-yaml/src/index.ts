@@ -1,4 +1,4 @@
-import { plugin } from 'node:bun'
+import { plugin } from 'bun'
 
 plugin({
   name: 'YAML',
