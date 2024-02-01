@@ -57,6 +57,8 @@ export interface LibraryOptions {
    */
   contributors: string[]
 
+  releaseable: boolean
+
   /**
    * The default language used within your stack.
    */

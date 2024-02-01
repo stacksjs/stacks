@@ -15,6 +15,7 @@ export default {
   author: 'Chris Breuer',
   contributors: ['Chris Breuer <chris@stacksjs.org>'],
   defaultLanguage: 'en',
+  releaseable: true,
 
   vueComponents: {
     name: 'hello-world-vue',

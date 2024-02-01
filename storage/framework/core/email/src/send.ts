@@ -4,7 +4,6 @@ import type { EmailOptions } from '@stacksjs/types'
 import * as Maizzle from '@maizzle/framework'
 
 // import { stringify } from 'json5'
-import { config } from './tailwind.config'
 import * as maizzleConfig from './utils/config'
 
 export async function send(options: EmailOptions, provider: any, providerName: string, css?: string): Promise<ResultAsync<any, Error>> {
@@ -36,4 +35,3 @@ export async function send(options: EmailOptions, provider: any, providerName: s
     () => new Error(`Failed to send message using provider: ${italic(providerName)}`),
   )
 }
-

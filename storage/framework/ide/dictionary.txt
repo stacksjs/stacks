@@ -230,6 +230,7 @@ pyproject
 pyrightconfig
 rangav
 raycast
+releaseable
 releaserc
 resx
 retriable
