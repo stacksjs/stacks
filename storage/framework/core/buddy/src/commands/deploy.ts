@@ -51,7 +51,7 @@ export function deploy(buddy: CLI) {
         log.success('Your domain is properly configured.')
         log.info('Your cloud is deploying...')
 
-        console.log(`${italic('This may take a while...')}`)
+        log.info(`${italic('This may take a while...')}`)
         await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
 

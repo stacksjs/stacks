@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_lambda as lambda, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
@@ -41,6 +41,12 @@ export class ComputeStack {
     const container = taskDefinition.addContainer('WebServerContainer', {
       image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
       // You can add environment variables, logging, etc., here
+    })
+
+    container.addPortMappings({
+      containerPort: 80, // or whatever port your application listens on
+      // hostPort: 80, // Optional: Specify if you need to map to a specific host port
+      // protocol: ecs.Protocol.TCP, // Optional: Specify protocol, defaults to TCP
     })
 
     const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(scope, 'FargateService', {
@@ -107,9 +113,9 @@ export class ComputeStack {
       description: 'The URL of the deployed application',
     })
 
-    new Output(scope, 'ApiVanityUrl', {
-      value: this.apiServerUrl.url,
-      description: 'The Vanity URL of the deployed application',
-    })
+    // new Output(scope, 'ApiVanityUrl', {
+    //   value: this.apiServerUrl.url,
+    //   description: 'The Vanity URL of the deployed application',
+    // })
   }
 }
