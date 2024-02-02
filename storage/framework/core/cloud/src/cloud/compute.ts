@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_ec2 as ec2, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, aws_ec2 as ec2, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
@@ -25,10 +25,6 @@ export class ComputeStack {
     if (!fileSystem)
       throw new Error('The file system is missing. Please make sure it was created properly.')
 
-    // const dockerImageAsset = new ecr_assets.DockerImageAsset(scope, 'ServerBuildImage', {
-    //   directory: p.cloudPath('src/server'),
-    // })
-
     const cluster = new ecs.Cluster(scope, 'StacksCluster', {
       vpc,
     })
@@ -36,6 +32,7 @@ export class ComputeStack {
     const taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDef', {
       memoryLimitMiB: 512, // Match your Lambda memory size
       cpu: 256, // Choose an appropriate value
+      portMappings: [{ containerPort: 80 }],
     })
 
     const container = taskDefinition.addContainer('WebServerContainer', {
@@ -54,6 +51,10 @@ export class ComputeStack {
       taskDefinition,
       desiredCount: 1, // Start with 1 task instance
       // Other configurations like public load balancer, domain name, etc.
+      publicLoadBalancer: true,
+      taskSubnets: vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC, onePerAz: true }),
+      assignPublicIp: true,
+      listenerPort: 80,
     })
 
     const volumeName = `${props.slug}-${props.appEnv}-efs`

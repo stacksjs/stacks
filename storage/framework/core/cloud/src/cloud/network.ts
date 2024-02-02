@@ -17,34 +17,14 @@ export class NetworkStack {
       natGateways: 0,
       subnetConfiguration: [
         {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-public-subnet-1`,
+          name: 'public-subnet-1',
           subnetType: ec2.SubnetType.PUBLIC,
+          cidrMask: 24,
         },
         {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-public-subnet-2`,
-          subnetType: ec2.SubnetType.PUBLIC,
-        },
-        {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-public-subnet-3`,
-          subnetType: ec2.SubnetType.PUBLIC,
-        },
-        {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-private-subnet-1`,
+          name: 'private-subnet-1',
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-        },
-        {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-private-subnet-2`,
-          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-        },
-        {
-          cidrMask: 21,
-          name: `${props.slug}-${props.appEnv}-private-subnet-3`,
-          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+          cidrMask: 28,
         },
       ],
     })

@@ -17,7 +17,7 @@ const appKey = config.app.key
 const domain = config.app.url
 const appName = config.app.name?.toLowerCase() ?? 'stacks'
 const slug = slugify(appName)
-const name = `${slug}-cloud-${appEnv}`
+const name = `${slug}-cloud`
 const account = env.AWS_ACCOUNT_ID
 // const region = env.AWS_DEFAULT_REGION
 const region = 'us-east-1' // currently, us-east-1 is the only fully-supported region
@@ -69,7 +69,7 @@ export const options = {
 
 new Cloud(app, name, {
   ...options,
-  description: `Stacks Cloud ${appEnv} deployment`,
+  description: `The Stacks Cloud`,
 })
 
 app.synth()
