@@ -1,6 +1,7 @@
 /* eslint-disable no-new */
 import { Stack } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
+import { config } from '@stacksjs/config'
 import type { CloudOptions } from '../types'
 import { AiStack } from './ai'
 import { CdnStack } from './cdn'
