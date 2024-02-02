@@ -26,27 +26,22 @@ export class ComputeStack {
       throw new Error('The file system is missing. Please make sure it was created properly.')
 
     const cluster = new ecs.Cluster(scope, 'StacksCluster', {
+      clusterName: `${props.slug}-${props.appEnv}-web-server-cluster`,
       vpc,
     })
 
     const taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDef', {
       memoryLimitMiB: 512, // Match your Lambda memory size
       cpu: 256, // Choose an appropriate value
-      portMappings: [{ containerPort: 80 }],
     })
 
     const container = taskDefinition.addContainer('WebServerContainer', {
       image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
-      // You can add environment variables, logging, etc., here
-    })
-
-    container.addPortMappings({
-      containerPort: 80, // or whatever port your application listens on
-      // hostPort: 80, // Optional: Specify if you need to map to a specific host port
-      // protocol: ecs.Protocol.TCP, // Optional: Specify protocol, defaults to TCP
+      portMappings: [{ containerPort: 80 }],
     })
 
     const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(scope, 'FargateService', {
+      serviceName: `${props.slug}-${props.appEnv}-fargate-service`,
       cluster,
       taskDefinition,
       desiredCount: 1, // Start with 1 task instance
@@ -71,42 +66,20 @@ export class ComputeStack {
       readOnly: false,
     })
 
-    // this.apiServer = new lambda.Function(scope, 'WebServer', {
-    //   functionName: `${props.slug}-${props.appEnv}-web-server`,
-    //   description: 'The web server for the Stacks application',
-    //   code: lambda.Code.fromAssetImage(p.frameworkPath('server')),
-    //   handler: lambda.Handler.FROM_IMAGE,
-    //   runtime: lambda.Runtime.FROM_IMAGE,
-    //   vpc,
-    //   memorySize: 512, // replace with your actual memory size
-    //   timeout: Duration.minutes(5), // replace with your actual timeout
-    //   logRetention: logs.RetentionDays.ONE_WEEK,
-    //   architecture: lambda.Architecture.ARM_64,
-    //   // filesystem: lambda.FileSystem.fromEfsAccessPoint(props.accessPoint, '/mnt/efs'),
-    // })
-
     const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
-    // const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
-    //   secretName: `${props.slug}-${props.appEnv}-secrets`,
-    //   description: 'Secrets for the Stacks application',
-    //   generateSecretString: {
-    //     secretStringTemplate: JSON.stringify(env),
-    //     generateStringKey: Object.keys(env).join(',').length.toString(),
-    //   },
-    // })
+    const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
+      secretName: `${props.slug}-${props.appEnv}-secrets`,
+      description: 'Secrets for the Stacks application',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify(env),
+        generateStringKey: Object.keys(env).join(',').length.toString(),
+      },
+    })
 
-    // secrets.grantRead(this.apiServer)
-    // this.apiServer.addEnvironment('SECRETS_ARN', secrets.secretArn)
-
-    // this.apiServerUrl = new lambda.FunctionUrl(scope, 'StacksServerUrl', {
-    //   function: this.apiServer,
-    //   authType: lambda.FunctionUrlAuthType.NONE, // becomes a public API
-    //   cors: {
-    //     allowedOrigins: ['*'],
-    //   },
-    // })
+    secrets.grantRead(fargateService.taskDefinition.executionRole!)
+    container.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
     const apiPrefix = 'api'
     new Output(scope, 'ApiUrl', {
@@ -114,9 +87,9 @@ export class ComputeStack {
       description: 'The URL of the deployed application',
     })
 
-    // new Output(scope, 'ApiVanityUrl', {
-    //   value: this.apiServerUrl.url,
-    //   description: 'The Vanity URL of the deployed application',
-    // })
+    new Output(scope, 'ApiVanityUrl', {
+      value: '',
+      description: 'The Vanity URL of the deployed application',
+    })
   }
 }
