@@ -58,6 +58,8 @@ export interface ApiOptions {
    * @default 30
    */
   timeout: number
+
+  deploy: boolean
 }
 
 export type ApiConfig = Partial<ApiOptions>

@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, aws_ec2 as ec2, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_logs as logs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, aws_ec2 as ec2, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
@@ -51,6 +51,14 @@ export class ComputeStack {
       assignPublicIp: true,
       listenerPort: 80,
     })
+
+    fargateService.targetGroup.configureHealthCheck({
+      path: '/health',
+      interval: Duration.seconds(60),
+    })
+
+    // ec2.Peer.securityGroupId('YOUR_SECURITY_GROUP_ID'
+    props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049))
 
     const volumeName = `${props.slug}-${props.appEnv}-efs`
     taskDefinition.addVolume({

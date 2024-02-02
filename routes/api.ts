@@ -5,6 +5,7 @@ route.get('/', () => 'hello world 1')
 route.get('/api/', () => 'hello world 2')
 route.get('/api/welcome', () => 'hello world 3')
 route.get('/welcome', () => 'hello world 4')
+route.get('/health', () => 'healthy')
 
 // route.group({ prefix: '/users' }, () => {
 //   route.before(async (params) => {

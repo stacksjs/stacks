@@ -184,7 +184,7 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    return config.cloud.api
+    return config.cloud.api?.deploy
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
