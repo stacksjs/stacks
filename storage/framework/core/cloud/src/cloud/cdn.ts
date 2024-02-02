@@ -16,8 +16,8 @@ export interface CdnStackProps extends NestedCloudProps {
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
-  webServer: lambda.Function
-  webServerUrl: lambda.FunctionUrl
+  webServer?: lambda.Function
+  webServerUrl?: lambda.FunctionUrl
   cliSetupUrl: lambda.FunctionUrl
   askAiUrl: lambda.FunctionUrl
   summarizeAiUrl: lambda.FunctionUrl
@@ -188,7 +188,7 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = Fn.select(2, Fn.split('/', props.webServerUrl.url))
+    const hostname = Fn.select(2, Fn.split('/', props.webServerUrl!.url))
     const origin = (path: '/api' | '/api/*' = '/api') => {
       return new origins.HttpOrigin(hostname, {
         originPath: path,

@@ -62,13 +62,16 @@ export class Cloud extends Stack {
 
     // new DashboardStack(this)
 
-    const api = new ComputeStack(this, {
-      ...props,
-      vpc: network.vpc,
-      fileSystem: fileSystem.fileSystem,
-      zone: dns.zone,
-      certificate: security.certificate,
-    })
+    let api
+    if (config.cloud.api?.deploy) {
+      api = new ComputeStack(this, {
+        ...props,
+        vpc: network.vpc,
+        fileSystem: fileSystem.fileSystem,
+        zone: dns.zone,
+        certificate: security.certificate,
+      })
+    }
 
     const ai = new AiStack(this, props)
 
@@ -82,11 +85,11 @@ export class Cloud extends Stack {
       firewall: security.firewall,
       originRequestFunction: docs.originRequestFunction,
       zone: dns.zone,
-      webServer: api.apiServer,
-      webServerUrl: api.apiServerUrl,
       cliSetupUrl: cli.cliSetupUrl,
       askAiUrl: ai.askAiUrl,
       summarizeAiUrl: ai.summarizeAiUrl,
+      webServer: api?.apiServer,
+      webServerUrl: api?.apiServerUrl,
     })
 
     new DeploymentStack(this, {
