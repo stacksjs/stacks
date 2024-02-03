@@ -1,5 +1,5 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
 import { Duration, CfnOutput as Output, RemovalPolicy, aws_ec2 as ec2, aws_ecs as ecs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
@@ -18,8 +18,6 @@ export interface ComputeStackProps extends NestedCloudProps {
 
 export class ComputeStack {
   lb: elbv2.ApplicationLoadBalancer
-  apiServer: lambda.Function
-  apiServerUrl: lambda.FunctionUrl
 
   constructor(scope: Construct, props: ComputeStackProps) {
     const vpc = props.vpc
@@ -46,9 +44,9 @@ export class ComputeStack {
       containerName: `${props.appName}-${props.appEnv}-api`,
       image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
       logging: new ecs.AwsLogDriver({
-        streamPrefix: `${props.appName}-${props.appEnv}-web`,
+        streamPrefix: `${props.appName}-${props.appEnv}-web-server-logs`,
         logGroup: new LogGroup(scope, 'StacksApiLogs', {
-          logGroupName: '/ecs/stacks-api',
+          logGroupName: '/aws/ecs/stacks-api',
           removalPolicy: RemovalPolicy.DESTROY, // Automatically remove logs on stack deletion
         }),
       }),

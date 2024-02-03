@@ -64,13 +64,17 @@ export interface CloudOptions {
     defaultTtl: number
     maxTtl: number
     compress: boolean
-    priceClass: 'PriceClass_100' | 'PriceClass_200' | 'PriceClass_All'
+    priceClass?: 'PriceClass_100' | 'PriceClass_200' | 'PriceClass_All'
     originShieldRegion: string
     cookieBehavior: 'none' | 'allowList' | 'all'
     allowList: {
       cookies: string[]
       headers: string[]
       queryStrings: string[]
+    }
+    realtimeLogs: {
+      enabled: boolean
+      samplingRate: number
     }
   }
 

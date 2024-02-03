@@ -1,11 +1,13 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
-import { Duration, Fn, CfnOutput as Output, aws_cloudfront as cloudfront, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
+import { Duration, Fn, CfnOutput as Output, RemovalPolicy, Stack, aws_cloudfront as cloudfront, aws_iam as iam, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { hasFiles } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
+import type { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2'
+import * as kinesis from 'aws-cdk-lib/aws-kinesis'
 import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '../../../../env'
 
@@ -21,6 +23,7 @@ export interface CdnStackProps extends NestedCloudProps {
   cliSetupUrl: lambda.FunctionUrl
   askAiUrl: lambda.FunctionUrl
   summarizeAiUrl: lambda.FunctionUrl
+  lb?: ApplicationLoadBalancer
 }
 
 export class CdnStack {
@@ -43,6 +46,47 @@ export class CdnStack {
       defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
       maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
+    })
+
+    // Step 1: Create a Kinesis Firehose delivery stream for the logs
+    const logStream = new kinesis.Stream(scope, 'StacksCdnRealtimeLogStream', {
+      streamName: 'StacksCdnRealtimeLogStream',
+      retentionPeriod: Duration.days(1),
+      shardCount: 1,
+      encryption: kinesis.StreamEncryption.UNENCRYPTED,
+    })
+
+    // Create an IAM role for CloudFront to write logs to Kinesis Firehose
+    // new iam.Role(scope, 'LoggingRole', {
+    //   assumedBy: new iam.ServicePrincipal('cloudfront.amazonaws.com'),
+    //   inlinePolicies: {
+    //     loggingPolicy: new iam.PolicyDocument({
+    //       statements: [
+    //         new iam.PolicyStatement({
+    //           actions: ['kinesis:PutRecord', 'kinesis:PutRecordBatch'],
+    //           resources: [logStream.streamArn],
+    //         }),
+    //       ],
+    //     }),
+    //   },
+    // })
+
+    // TODO: make this configurable
+    const realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
+      endPoints: [
+        cloudfront.Endpoint.fromKinesisStream(logStream),
+      ],
+      fields: [
+        'timestamp',
+        'c-ip',
+        'cs-method',
+        'cs-uri-stem',
+        'cs-uri-query',
+        'cs-referer',
+        'cs-user-agent',
+        'sc-status',
+      ],
+      samplingRate: 100, // Adjust the sampling rate as needed
     })
 
     // the actual CDN distribution
@@ -75,6 +119,7 @@ export class CdnStack {
         cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.cdnCachePolicy,
+        realtimeLogConfig,
       },
 
       additionalBehaviors: this.additionalBehaviors(scope, props),
@@ -188,7 +233,7 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = Fn.select(2, Fn.split('/', props.webServerUrl!.url))
+    const hostname = Fn.select(2, Fn.split('/', `http://${props.lb!.loadBalancerDnsName}`))
     const origin = (path: '/api' | '/api/*' = '/api') => {
       return new origins.HttpOrigin(hostname, {
         originPath: path,
@@ -287,7 +332,6 @@ export class CdnStack {
     return {
       '/install': {
         origin: new origins.HttpOrigin(hostname, {
-        // origin: new origins.HttpOrigin('tipevv3dfx35fb7ptyq7nrxtga0qkcgc.lambda-url.us-east-1.on.aws', {
           originPath: '/cli-setup',
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
         }),
@@ -326,7 +370,7 @@ export class CdnStack {
       const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
       keysToRemove.forEach(key => delete env[key as EnvKey])
 
-      // behaviorOptions = this.apiBehaviorOptions(scope, props)
+      behaviorOptions = this.apiBehaviorOptions(scope, props)
     }
 
     // if docMode is used, we don't need to add a behavior for the docs

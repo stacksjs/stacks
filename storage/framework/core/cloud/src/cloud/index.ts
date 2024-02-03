@@ -89,6 +89,7 @@ export class Cloud extends Stack {
       cliSetupUrl: cli.cliSetupUrl,
       askAiUrl: ai.askAiUrl,
       summarizeAiUrl: ai.summarizeAiUrl,
+      lb: api?.lb,
       webServer: api?.apiServer,
       webServerUrl: api?.apiServerUrl,
     })

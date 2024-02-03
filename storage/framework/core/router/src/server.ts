@@ -44,7 +44,7 @@ export async function serverResponse(req: Request) {
   //   return new Response('')
 
   if (!foundRoute)
-    return new Response('Not found', { status: 404 }) // TODO: create a pretty 404 page
+    return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
   addRouteParamsAndQuery(url, foundRoute)
   executeMiddleware(foundRoute)

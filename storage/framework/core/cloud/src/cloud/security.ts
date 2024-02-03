@@ -31,7 +31,7 @@ export class SecurityStack {
       rules: this.getFirewallRules(),
     }
 
-    this.firewall = new wafv2.CfnWebACL(scope, 'WebFirewall', options)
+    this.firewall = new wafv2.CfnWebACL(scope, 'StacksWebFirewall', options)
     Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
     Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
     Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })

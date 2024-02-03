@@ -1,4 +1,3 @@
-// the only difference between web and api routes is that the API middleware is associated by default
 import { route } from '@stacksjs/router'
 
 route.get('/', () => 'hello world 1')
