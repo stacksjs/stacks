@@ -1,7 +1,6 @@
 import { extname } from 'node:path'
 import { URL } from 'node:url'
 import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
-import { localUrl } from '@stacksjs/config'
 import { middlewares } from './middleware'
 import { request } from './request'
 import { route } from '.'
@@ -13,7 +12,8 @@ interface ServeOptions {
 }
 
 export async function serve(options: ServeOptions = {}) {
-  const hostname = options.host || options.tunnel ? await localUrl({ type: 'backend' }) : '127.0.0.1'
+  // maybe make use of localUrl({ type: 'backend' }) here & options.tunnel
+  const hostname = options.host || 'localhost'
   const port = options.port || 3000
 
   Bun.serve({
