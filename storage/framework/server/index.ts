@@ -23,6 +23,7 @@ const server = Bun.serve({
   },
 
   websocket: {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async open(ws: ServerWebSocket): Promise<void> {
       // eslint-disable-next-line no-console
       console.log('WebSocket opened')

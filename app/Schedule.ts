@@ -1,6 +1,3 @@
-import { run } from '@stacksjs/scheduler'
-import type { Scheduler } from '@stacksjs/types'
-
 export default function scheduler() {
   // run.command('bun /home/some/script.js').everySecond()
   // run.command('bun /home/some/other/script.ts').everyMinute()
