@@ -5,13 +5,12 @@ const server = Bun.serve({
   port: 3000,
 
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
-    // eslint-disable-next-line no-console
-    console.log('Request', {
-      url: request.url,
-      method: request.method,
-      headers: request.headers.toJSON(),
-      body: request.body ? await request.text() : null,
-    })
+    // console.log('Request', {
+    //   url: request.url,
+    //   method: request.method,
+    //   headers: request.headers.toJSON(),
+    //   body: request.body ? await request.text() : null,
+    // })
 
     if (server.upgrade(request)) {
       // eslint-disable-next-line no-console

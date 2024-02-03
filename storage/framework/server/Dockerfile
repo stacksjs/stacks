@@ -3,6 +3,9 @@
 FROM oven/bun:1 as base
 WORKDIR /usr/src/app
 
+# Install curl - I wonder if there is a better way to do this, because it is only needed for the healthcheck
+RUN apt-get update && apt-get install -y curl
+
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM base AS install
