@@ -2,7 +2,8 @@ import type { Server, ServerWebSocket } from 'bun'
 import { serverResponse } from '@stacksjs/router'
 
 const server = Bun.serve({
-  port: 80,
+  port: 3000,
+
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
     // eslint-disable-next-line no-console
     console.log('Request', {
@@ -20,6 +21,7 @@ const server = Bun.serve({
 
     return serverResponse(request)
   },
+
   websocket: {
     async open(ws: ServerWebSocket): Promise<void> {
       // eslint-disable-next-line no-console

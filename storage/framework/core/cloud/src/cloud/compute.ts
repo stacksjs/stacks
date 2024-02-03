@@ -1,9 +1,11 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_efs as efs, aws_lambda as lambda, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, aws_ec2 as ec2, aws_ecs as ecs, aws_ecs_patterns as ecs_patterns, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, RemovalPolicy, aws_ec2 as ec2, aws_ecs as ecs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
+import { LogGroup } from 'aws-cdk-lib/aws-logs'
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import type { NestedCloudProps } from '../types'
 import type { EnvKey } from '../../../../env'
 
@@ -15,6 +17,7 @@ export interface ComputeStackProps extends NestedCloudProps {
 }
 
 export class ComputeStack {
+  lb: elbv2.ApplicationLoadBalancer
   apiServer: lambda.Function
   apiServerUrl: lambda.FunctionUrl
 
@@ -30,35 +33,115 @@ export class ComputeStack {
       vpc,
     })
 
-    const taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDef', {
+    const taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDefinition', {
+      family: `${props.appName}-${props.appEnv}-api`,
       memoryLimitMiB: 512, // Match your Lambda memory size
       cpu: 256, // Choose an appropriate value
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+      },
     })
 
     const container = taskDefinition.addContainer('WebServerContainer', {
+      containerName: `${props.appName}-${props.appEnv}-api`,
       image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
-      portMappings: [{ containerPort: 80 }],
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: `${props.appName}-${props.appEnv}-web`,
+        logGroup: new LogGroup(scope, 'StacksApiLogs', {
+          logGroupName: '/ecs/stacks-api',
+          removalPolicy: RemovalPolicy.DESTROY, // Automatically remove logs on stack deletion
+        }),
+      }),
+      healthCheck: {
+        command: ['CMD-SHELL', 'curl -f http://localhost:3000/health || exit 1'],
+        interval: Duration.seconds(10),
+        timeout: Duration.seconds(5),
+        retries: 3,
+        startPeriod: Duration.seconds(10),
+      },
     })
 
-    const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(scope, 'FargateService', {
-      serviceName: `${props.slug}-${props.appEnv}-fargate-service`,
+    container.addPortMappings({
+      containerPort: 3000,
+      hostPort: 3000,
+    })
+
+    const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
+      securityGroupName: `${props.appName}-${props.appEnv}-api-service-sg`,
+      vpc,
+      description: 'Stacks Security Group for API Service',
+    })
+
+    const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
+      securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
+      vpc,
+      description: 'Access to the public facing load balancer',
+    })
+
+    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
+    serviceSecurityGroup.addIngressRule(
+      publicLoadBalancerSG,
+      ec2.Port.allTraffic(),
+      'Ingress from the public ALB',
+    )
+
+    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
+    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
+
+    this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
+      loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
+      vpc,
+      vpcSubnets: {
+        subnets: vpc.selectSubnets({
+          subnetType: ec2.SubnetType.PUBLIC,
+          onePerAz: true,
+        }).subnets,
+      },
+      internetFacing: true,
+      idleTimeout: Duration.seconds(30),
+      securityGroup: publicLoadBalancerSG,
+    })
+
+    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
+      // targetGroupName: `${props.appName}-${props.appEnv}-service-tg`,
+      vpc,
+      targetType: elbv2.TargetType.IP,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      port: 3000,
+      healthCheck: {
+        interval: Duration.seconds(6),
+        path: '/',
+        protocol: elbv2.Protocol.HTTP,
+        timeout: Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 10,
+      },
+    })
+
+    const service = new ecs.FargateService(scope, 'StacksApiService', {
+      serviceName: `${props.appName}-${props.appEnv}-api-service`,
       cluster,
       taskDefinition,
-      desiredCount: 1, // Start with 1 task instance
-      // Other configurations like public load balancer, domain name, etc.
-      publicLoadBalancer: true,
-      taskSubnets: vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC, onePerAz: true }),
+      desiredCount: 2,
       assignPublicIp: true,
-      listenerPort: 80,
+      maxHealthyPercent: 200,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PUBLIC,
+        onePerAz: true,
+      }),
+      minHealthyPercent: 75,
+      securityGroups: [serviceSecurityGroup],
     })
 
-    fargateService.targetGroup.configureHealthCheck({
-      path: '/health',
-      interval: Duration.seconds(60),
+    service.attachToApplicationTargetGroup(serviceTargetGroup)
+    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
+
+    this.lb.addListener('HttpListener', {
+      port: 80,
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
     })
 
-    // ec2.Peer.securityGroupId('YOUR_SECURITY_GROUP_ID'
-    props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049))
+    props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049)) // port 2049 (NFS) for EFS
 
     const volumeName = `${props.slug}-${props.appEnv}-efs`
     taskDefinition.addVolume({
@@ -74,6 +157,22 @@ export class ComputeStack {
       readOnly: false,
     })
 
+    // Setup AutoScaling policy
+    // TODO: make this configurable in cloud.compute
+    const scaling = service.autoScaleTaskCount({ maxCapacity: 2 })
+
+    scaling.scaleOnCpuUtilization('CpuScaling', {
+      targetUtilizationPercent: 50,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
+    })
+
+    scaling.scaleOnMemoryUtilization('MemoryScaling', {
+      targetUtilizationPercent: 60,
+      scaleInCooldown: Duration.seconds(60),
+      scaleOutCooldown: Duration.seconds(60),
+    })
+
     const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
     keysToRemove.forEach(key => delete env[key as EnvKey])
 
@@ -86,7 +185,7 @@ export class ComputeStack {
       },
     })
 
-    secrets.grantRead(fargateService.taskDefinition.executionRole!)
+    secrets.grantRead(service.taskDefinition.executionRole!)
     container.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
     const apiPrefix = 'api'
@@ -96,8 +195,8 @@ export class ComputeStack {
     })
 
     new Output(scope, 'ApiVanityUrl', {
-      value: '',
-      description: 'The Vanity URL of the deployed application',
+      value: `http://${this.lb.loadBalancerDnsName}`,
+      description: 'The Vanity URL / DNS name of the load balancer',
     })
   }
 }

@@ -33,7 +33,7 @@ export default {
   },
 
   api: {
-    deploy: false,
+    deploy: true,
     prefix: env.API_PREFIX || 'api',
     description: 'Stacks API',
     memorySize: 512,
