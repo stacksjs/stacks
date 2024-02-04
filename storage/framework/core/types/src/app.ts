@@ -1,4 +1,4 @@
-export type AppEnvType = 'production' | 'development' | 'staging' | 'local' | 'stage' | 'dev' | 'prod'
+export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod'
 
 interface Ports {
   frontend: number
@@ -46,7 +46,7 @@ export interface AppOptions {
    * running in. This may determine how you prefer to configure various
    * services the application utilizes. Set this in your ".env" file
    *
-   * @default "development"
+   * @default "local"
    */
   env: AppEnvType
 

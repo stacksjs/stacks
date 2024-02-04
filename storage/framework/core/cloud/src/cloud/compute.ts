@@ -101,7 +101,7 @@ export class ComputeStack {
     })
 
     const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
-      // targetGroupName: `${props.appName}-${props.appEnv}-service-tg`,
+      targetGroupName: `${props.appName}-${props.appEnv}-api-tg`,
       vpc,
       targetType: elbv2.TargetType.IP,
       protocol: elbv2.ApplicationProtocol.HTTP,

@@ -12,7 +12,16 @@ import { getOrCreateTimestamp } from './src/helpers'
 import type { CloudOptions } from './src/types'
 
 const app = new App()
-const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
+const appEnv = (config.app.env as string) === 'local'
+  ? 'dev'
+  : (config.app.env as string) === 'development'
+      ? 'dev'
+      : (config.app.env as string) === 'staging'
+          ? 'stage'
+          : (config.app.env as string) === 'production'
+              ? 'prod'
+              : config.app.env
+
 const appKey = config.app.key
 const domain = config.app.url
 const appName = config.app.name?.toLowerCase() ?? 'stacks'
