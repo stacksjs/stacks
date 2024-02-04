@@ -26,12 +26,17 @@ export default {
     apiKey: '',
   },
 
-  stripe: {
+  lemonSqueezy: {
     appId: '',
     apiKey: '',
   },
 
   planetscale: {
+    appId: '',
+    apiKey: '',
+  },
+
+  stripe: {
     appId: '',
     apiKey: '',
   },

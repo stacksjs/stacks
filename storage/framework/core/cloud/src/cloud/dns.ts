@@ -30,5 +30,13 @@ export class DnsStack {
       zone: this.zone,
       target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
+
+    // TODO: this only needs to be created if Lemon Squeezy is being used
+    // Create a Route53 record for www.yourdomain.com
+    new route53.ARecord(scope, 'StoreAliasRecord', {
+      recordName: `store.${props.domain}`,
+      zone: this.zone,
+      target: route53.RecordTarget.fromIpAddresses('137.66.37.136'),
+    })
   }
 }

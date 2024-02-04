@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
-import { Duration, Fn, CfnOutput as Output, RemovalPolicy, Stack, aws_cloudfront as cloudfront, aws_iam as iam, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
+import { Duration, Fn, CfnOutput as Output, aws_cloudfront as cloudfront, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
 import { hasFiles } from '@stacksjs/storage'
@@ -235,9 +235,9 @@ export class CdnStack {
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = Fn.select(2, Fn.split('/', `http://${props.lb!.loadBalancerDnsName}`))
-    const origin = (path: '/api' | '/api/*' = '/api') => {
+    const origin = () => {
       return new origins.HttpOrigin(hostname, {
-        originPath: path.replace('/api', ''), // no need for the '/api' prefix in the originPath because the hostname is the "API"
+        originPath: '/',
         protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
       })
     }
@@ -253,7 +253,7 @@ export class CdnStack {
         realtimeLogConfig: this.realtimeLogConfig,
       },
       '/api/*': {
-        origin: origin('/api/*'),
+        origin: origin(),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,

@@ -83,10 +83,8 @@ export class ComputeStack {
       'Ingress from the public ALB',
     )
 
-    // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
-    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
-
     this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
+      http2Enabled: true,
       loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
       vpc,
       vpcSubnets: {
@@ -120,7 +118,7 @@ export class ComputeStack {
       serviceName: `${props.appName}-${props.appEnv}-api-service`,
       cluster,
       taskDefinition,
-      desiredCount: 2,
+      desiredCount: 1,
       assignPublicIp: true,
       maxHealthyPercent: 200,
       vpcSubnets: vpc.selectSubnets({
@@ -142,11 +140,7 @@ export class ComputeStack {
 
     this.lb.addListener('HttpListener', {
       port: 80,
-      defaultAction: elbv2.ListenerAction.redirect({
-        protocol: 'HTTPS',
-        port: '443',
-        permanent: true, // use HTTP 301 redirect by setting permanent to true
-      }),
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
     })
 
     props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049)) // port 2049 (NFS) for EFS
