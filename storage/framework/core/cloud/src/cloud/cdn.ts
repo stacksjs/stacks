@@ -32,6 +32,7 @@ export class CdnStack {
   cdnCachePolicy: cloudfront.CachePolicy
   apiCachePolicy: cloudfront.CachePolicy | undefined
   vanityUrl: string
+  realtimeLogConfig: cloudfront.RealtimeLogConfig
   props: CdnStackProps
 
   constructor(scope: Construct, props: CdnStackProps) {
@@ -72,7 +73,7 @@ export class CdnStack {
     // })
 
     // TODO: make this configurable
-    const realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
+    this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
       endPoints: [
         cloudfront.Endpoint.fromKinesisStream(logStream),
       ],
@@ -119,7 +120,7 @@ export class CdnStack {
         cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.cdnCachePolicy,
-        realtimeLogConfig,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
 
       additionalBehaviors: this.additionalBehaviors(scope, props),
@@ -249,6 +250,7 @@ export class CdnStack {
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: this.setApiCachePolicy(scope),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
       '/api/*': {
         origin: origin('/api/*'),
@@ -257,6 +259,7 @@ export class CdnStack {
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         cachePolicy: this.apiCachePolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
     }
   }
@@ -273,6 +276,7 @@ export class CdnStack {
         cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
       '/docs/*': {
         origin: new origins.S3Origin(props.publicBucket, {
@@ -284,6 +288,7 @@ export class CdnStack {
         cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
     }
   }
@@ -312,6 +317,7 @@ export class CdnStack {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: aiCachePolicy,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
       '/ai/summary': {
         origin: new origins.HttpOrigin(summaryHostname, {
@@ -322,6 +328,7 @@ export class CdnStack {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: aiCachePolicy,
+        realtimeLogConfig: this.realtimeLogConfig,
       },
     }
   }
@@ -347,6 +354,7 @@ export class CdnStack {
           headerBehavior: cloudfront.CacheHeaderBehavior.none(),
           queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
         }),
+        realtimeLogConfig: this.realtimeLogConfig, // we potentially want to allow for tracking 100% of the traffic here?
       },
     }
   }
