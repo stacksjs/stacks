@@ -5,6 +5,7 @@ import { log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { slug } from '@stacksjs/strings'
 
+// this allows for a custom "server configuration" by the user
 if (hasFiles(projectPath('server'))) {
   await $`rm -rf ../../../server/build.ts`
   await $`cp -r ../../../server .`

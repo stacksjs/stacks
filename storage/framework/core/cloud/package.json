@@ -68,7 +68,6 @@
     "@aws-sdk/client-ses": "^3.504.0",
     "@aws-sdk/client-sesv2": "^3.504.0",
     "@aws-sdk/client-ssm": "^3.504.0",
-    "@aws-sdk/lib-dynamodb": "^3.506.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",
