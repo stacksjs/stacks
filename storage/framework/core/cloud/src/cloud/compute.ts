@@ -134,9 +134,19 @@ export class ComputeStack {
     service.attachToApplicationTargetGroup(serviceTargetGroup)
     publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
 
+    this.lb.addListener('HttpsListener', {
+      port: 443,
+      certificates: [props.certificate],
+      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
+    })
+
     this.lb.addListener('HttpListener', {
       port: 80,
-      defaultAction: elbv2.ListenerAction.forward([serviceTargetGroup]),
+      defaultAction: elbv2.ListenerAction.redirect({
+        protocol: 'HTTPS',
+        port: '443',
+        permanent: true, // use HTTP 301 redirect by setting permanent to true
+      }),
     })
 
     props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049)) // port 2049 (NFS) for EFS
