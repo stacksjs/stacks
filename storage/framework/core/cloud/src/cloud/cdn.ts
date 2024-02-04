@@ -237,7 +237,7 @@ export class CdnStack {
     const hostname = Fn.select(2, Fn.split('/', `http://${props.lb!.loadBalancerDnsName}`))
     const origin = (path: '/api' | '/api/*' = '/api') => {
       return new origins.HttpOrigin(hostname, {
-        originPath: path,
+        originPath: path.replace('/api', ''), // no need for the '/api' prefix in the originPath because the hostname is the "API"
         protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
       })
     }
