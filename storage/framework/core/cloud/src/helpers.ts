@@ -186,6 +186,8 @@ export async function deleteJumpBox(stackName?: string) {
   if (!jumpBoxId)
     return err('Jump-box not found')
 
+  log.info(`Deleting jump-box ${jumpBoxId}...`)
+
   return await deleteEc2Instance(jumpBoxId, stackName)
 }
 
@@ -203,6 +205,7 @@ export async function deleteIamUsers() {
 
   const promises = users.map(async (user) => {
     const userName = user.UserName || ''
+
     log.info(`Deleting IAM user: ${userName}`)
 
     // Get the list of policies attached to the user
@@ -251,12 +254,15 @@ export async function deleteStacksBuckets() {
       // List all objects in the bucket
       const objects = await s3.listObjectsV2({ Bucket: bucketName })
       log.info(`Finished listing bucket ${bucketName} objects`)
+
       // Delete all objects
       if (objects.Contents) {
         log.info('Deleting bucket objects...')
+
         await Promise.all(objects.Contents.map(object =>
           s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch(error => handleError(error)),
         ))
+
         log.info(`Finished deleting objects from bucket ${bucketName}`)
       }
 
@@ -273,10 +279,12 @@ export async function deleteStacksBuckets() {
 
         // Delete all delete markers
         log.info(`Deleting bucket ${bucketName} delete markers...`)
+
         if (versions.DeleteMarkers) {
           await Promise.all(versions.DeleteMarkers.map(marker =>
             s3.deleteObject({ Bucket: bucketName, Key: marker.Key || '', VersionId: marker.VersionId }),
           )).catch(error => handleError(error))
+
           log.info(`Finished deleting delete markers from bucket ${bucketName}`)
         }
 
@@ -284,13 +292,16 @@ export async function deleteStacksBuckets() {
         const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
         if (uploads.Uploads) {
           log.info('Aborting bucket multipart uploads...')
+
           await Promise.all(uploads.Uploads.map(upload =>
             s3.abortMultipartUpload({ Bucket: bucketName, Key: upload.Key || '', UploadId: upload.UploadId }),
           )).catch(error => handleError(error))
+
           log.info(`Finished aborting multipart uploads from bucket ${bucketName}`)
         }
 
         await s3.deleteBucket({ Bucket: bucketName }).catch(error => handleError(error))
+
         log.info(`Bucket ${bucketName} deleted`)
       }
       catch (error) {
@@ -322,6 +333,7 @@ export async function deleteStacksFunctions() {
   await Promise.all(promises).catch((error: Error) => {
     if (error.message.includes('it is a replicated function')) {
       log.info('Function is replicated, skipping...')
+
       return ok('CloudFront is still deleting the some functions. Try again later.')
     }
 
@@ -334,7 +346,6 @@ export async function deleteStacksFunctions() {
 export async function deleteLogGroups() {
   try {
     const client = new CloudWatchLogsClient({ region: 'us-east-1' })
-
     const logGroups: DescribeLogGroupsCommandOutput = await client.send(new DescribeLogGroupsCommand({}))
 
     if (!logGroups?.logGroups)
@@ -391,6 +402,7 @@ export async function hasBeenDeployed() {
 
   try {
     const response = await s3.send(new ListBucketsCommand({}))
+
     return ok(response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) || false)
   }
   catch (error) {

@@ -19,6 +19,8 @@ export function build(buddy: CLI) {
     pages: 'Build your frontend',
     docs: 'Build your documentation',
     framework: 'Build Stacks framework',
+    cli: 'Automagically build the CLI',
+    server: 'Build the Stacks cloud server (Docker image)',
     select: 'What are you trying to build?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -36,6 +38,7 @@ export function build(buddy: CLI) {
     .option('-b, --buddy', descriptions.buddy, { default: false })
     .option('-s, --stacks', descriptions.framework, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
+    .option('--server', descriptions.server, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: BuildOptions) => {
       switch (server) {
@@ -64,6 +67,9 @@ export function build(buddy: CLI) {
           options.buddy = true
           break
         case 'stacks':
+          options.stacks = true
+          break
+        case 'server':
           options.stacks = true
           break
         default:
@@ -109,13 +115,23 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command('build:cli', 'Automagically build the CLI')
+    .command('build:cli', descriptions.cli)
     .alias('prod:cli')
     .option('-b, --buddy', descriptions.buddy, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       await runAction(Action.BuildCli, options)
+    })
+
+  buddy
+    .command('build:server', descriptions.server)
+    .alias('prod:server')
+    .alias('build:docker')
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      await runAction(Action.BuildServer, options)
     })
 
   buddy

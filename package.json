@@ -44,6 +44,7 @@
     "build:web-components": "bun run buddy build:web-components",
     "build:functions": "bun run buddy build:functions // needs to have option to ",
     "build:docs": "bun run buddy build:docs",
+    "build:server": "bun run buddy build:server",
     "build:stacks": "bun run buddy build:stacks",
     "prod": "bun run buddy build",
     "prod:components": "bun run buddy build:components",
