@@ -339,7 +339,7 @@ While we currently only fully support `us-east-1`, we are looking forward to exp
 ## Testing
 
 ```bash
-bun test
+./buddy test
 ```
 
 ## Changelog
