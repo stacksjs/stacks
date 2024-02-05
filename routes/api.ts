@@ -1,9 +1,9 @@
 import { route } from '@stacksjs/router'
 
-route.get('/api', () => 'hello world 1')
-route.get('/api/', () => 'hello world 2')
-route.get('/api/welcome', () => 'hello world 3')
-route.get('/api/welcome', () => 'hello world 4')
+route.get('/api', () => 'hello world 1') // stacksjs.org/api
+route.get('/api/', () => 'hello world 2') // stacksjs.org/api/
+route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
+route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
 route.get('/api/health', () => 'healthy')
 
 // route.group({ prefix: '/users' }, () => {
