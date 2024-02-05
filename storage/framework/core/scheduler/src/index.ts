@@ -1,8 +1,5 @@
-import { CronJob as cron } from 'cron'
-
-// export interface Scheduler {
-//   schedule(schedule: Schedule): void
-// }
+/* eslint-disable no-new */
+import { CronJob } from 'cron'
 
 export interface Schedule {
   action: (action: string) => this
@@ -37,170 +34,6 @@ export interface Schedule {
   at: (time: string) => this
 }
 
-export class ScheduleImpl implements Schedule {
-  private actionName: string = ''
-  private commandName: string = ''
-  private jobName: string = ''
-  private execName: string = ''
-  private callback: () => void = () => {}
-  private whenCallback: () => boolean = () => true
-  private startTime: string = ''
-  private endTime: string = ''
-  private timezoneName: string = ''
-  private time: string = ''
-
-  action(action: string): this {
-    this.actionName = action
-    return this
-  }
-
-  command(cmd: string): this {
-    this.commandName = cmd
-    return this
-  }
-
-  job(job: string): this {
-    this.jobName = job
-    return this
-  }
-
-  exec(cmd: string): this {
-    this.execName = cmd
-    return this
-  }
-
-  call(callback: () => void): this {
-    this.callback = callback
-    return this
-  }
-
-  everyMinute(): this {
-    // implementation here
-    return this
-  }
-
-  everySecond(): this {
-    // implementation here
-    return this
-  }
-
-  everyFiveMinutes(): this {
-    // implementation here
-    return this
-  }
-
-  everyTenMinutes(): this {
-    // implementation here
-    return this
-  }
-
-  everyThirtyMinutes(): this {
-    // implementation here
-    return this
-  }
-
-  hourly(): this {
-    // implementation here
-    return this
-  }
-
-  daily(): this {
-    // implementation here
-    return this
-  }
-
-  twiceDaily(_hour1: number, _hour2: number): this {
-    // implementation here
-    return this
-  }
-
-  weekly(): this {
-    // implementation here
-    return this
-  }
-
-  monthly(): this {
-    // implementation here
-    return this
-  }
-
-  quarterly(): this {
-    // implementation here
-    return this
-  }
-
-  yearly(): this {
-    // implementation here
-    return this
-  }
-
-  weekdays(): this {
-    // implementation here
-    return this
-  }
-
-  weekends(): this {
-    // implementation here
-    return this
-  }
-
-  mondays(): this {
-    // implementation here
-    return this
-  }
-
-  tuesdays(): this {
-    // implementation here
-    return this
-  }
-
-  wednesdays(): this {
-    // implementation here
-    return this
-  }
-
-  thursdays(): this {
-    // implementation here
-    return this
-  }
-
-  fridays(): this {
-    // implementation here
-    return this
-  }
-
-  saturdays(): this {
-    // implementation here
-    return this
-  }
-
-  sundays(): this {
-    // implementation here
-    return this
-  }
-
-  between(startTime: string, endTime: string): this {
-    this.startTime = startTime
-    this.endTime = endTime
-    return this
-  }
-
-  timezone(timezone: string): this {
-    this.timezoneName = timezone
-    return this
-  }
-
-  when(callback: () => boolean): this {
-    this.whenCallback = callback
-    return this
-  }
-
-  at(time: string): this {
-    this.time = time
-    return this
-  }
-}
-
 export interface Scheduler {
   everySecond: () => void
   everySeconds: (seconds: number) => void
@@ -230,86 +63,324 @@ export interface Scheduler {
   cron: (interval: string, timezone?: string) => void
 }
 
-// function run(callback: Function): Scheduler {
-export function run(callback: ((now: Date | 'manual' | 'init') => void) | string): Scheduler {
+interface SchedulerOption {
+  timezone: string // TODO: create a better type
+  enable: boolean
+}
+
+export function run(callback: Function, options?: SchedulerOption): Scheduler {
   return {
     everySecond: () => {
-      cron.schedule('* * * * * *', callback)
+      new CronJob(
+        '* * * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everySeconds: (seconds = 1) => {
-      cron.schedule(`*/${seconds} * * * * *`, callback)
+      new CronJob(
+        `*/${seconds} * * * * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyMinute: () => {
-      cron.schedule('* * * * *', callback)
+      new CronJob(
+        '0 * * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyTwoMinutes: () => {
-      cron.schedule('*/2 * * * *', callback)
+      new CronJob(
+        '*/2 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyThreeMinutes: () => {
-      cron.schedule('*/3 * * * *', callback)
+      new CronJob(
+        '*/3 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyFourMinutes: () => {
-      cron.schedule('*/4 * * * *', callback)
+      new CronJob(
+        '*/4 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyFiveMinutes: () => {
-      cron.schedule('*/5 * * * *', callback)
+      new CronJob(
+        '*/5 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyTenMinutes: () => {
-      cron.schedule('*/10 * * * *', callback)
+      new CronJob(
+        '*/10 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyFifteenMinutes: () => {
-      cron.schedule('*/15 * * * *', callback)
+      new CronJob(
+        '*/15 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyThirtyMinutes: () => {
-      cron.schedule('*/30 * * * *', callback)
+      new CronJob(
+        '*/30 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyMinutes: (minutes: number) => {
-      cron.schedule(`*/${minutes} * * * *`, callback)
+      new CronJob(
+        `*/${minutes} * * * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     hourly: () => {
-      cron.schedule('0 * * * *', callback)
+      new CronJob(
+        '0 * * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyHours: (hours: number) => {
-      cron.schedule(`0 */${hours} * * *`, callback)
+      new CronJob(
+        `0 */${hours} * * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     hourlyAt: (minute: number) => {
-      cron.schedule(`${minute} * * * *`, callback)
+      new CronJob(
+        `${minute} * * * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyOddHour: () => {
-      cron.schedule('0 */2 * * *', callback)
+      new CronJob(
+        '0 */2 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyTwoHours: () => {
-      cron.schedule('0 */2 * * *', callback)
+      new CronJob(
+        '0 */2 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyThreeHours: () => {
-      cron.schedule('0 */3 * * *', callback)
+      new CronJob(
+        '0 */3 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyFourHours: () => {
-      cron.schedule('0 */4 * * *', callback)
+      new CronJob(
+        '0 */4 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everySixHours: () => {
-      cron.schedule('0 */6 * * *', callback)
+      // cron.schedule('0 */6 * * *', callback)
+      new CronJob(
+        '0 */6 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     dailyAt: (hour: number, minute: number) => {
-      cron.schedule(`${minute} ${hour} * * *`, callback)
+      new CronJob(
+        `${minute} ${hour} * * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     daily: () => {
-      cron.schedule('0 0 * * *', callback)
+      new CronJob(
+        '0 0 * * *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     everyDays: (days: number) => {
-      cron.schedule(`0 0 */${days} * *`, callback)
+      new CronJob(
+        `0 0 */${days} * *`,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     weekly: () => {
-      cron.schedule('0 0 * * 0', callback)
+      new CronJob(
+        '0 0 * * 0',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     quarterly: () => {
-      cron.schedule('0 0 1 */3 *', callback)
+      new CronJob(
+        '0 0 1 */3 *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     yearly: () => {
-      cron.schedule('0 0 1 1 *', callback)
+      new CronJob(
+        '0 0 1 1 *',
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        options?.timezone ?? 'America/Los_Angeles',
+      )
     },
+
     cron: (interval: string, timezone?: string) => {
-      timezone ? cron.schedule(interval, callback, { scheduled: true, timezone }) : cron.schedule(interval, callback)
+      new CronJob(
+        interval,
+        () => {
+          callback()
+        },
+        null,
+        options?.enable ?? true,
+        timezone ?? options?.timezone ?? 'America/Los_Angeles',
+      )
     },
   }
 }
