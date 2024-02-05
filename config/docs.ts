@@ -85,15 +85,17 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
+                { text: 'Team Management', link: '/bootcamp/saas/team-management' },
                 { text: 'Payments', link: '/bootcamp/saas/payments' },
                 { text: 'Subscriptions', link: '/bootcamp/saas/subscriptions' },
                 { text: 'License Key Management', link: '/bootcamp/saas/license-key-management' },
                 { text: 'Digital Downloads', link: '/bootcamp/saas/digital-downloads' },
                 { text: 'Checkout Form', link: '/bootcamp/saas/checkout-form' },
-                { text: 'Referral Program', link: '/bootcamp/saas/referral-program' },
+                { text: 'Affiliates Program', link: '/bootcamp/saas/affiliates-program' },
               ],
             },
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
+            // { text: 'Build a Mobile App', link: '/bootcamp/mobile' }, 👀
           ],
         },
         {
