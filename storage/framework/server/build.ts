@@ -1,9 +1,9 @@
+import process from 'node:process'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { slug } from '@stacksjs/strings'
-import process from 'node:process'
 
 // TODO: we cannot use Bun Shell scripts here yet because we need to use 1.0.8 for deployments, and Shell scripts were introduced after 1.0.8
 // this allows for a custom "server configuration" by the user
