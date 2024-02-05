@@ -11,6 +11,7 @@ export function setup(buddy: CLI) {
   const descriptions = {
     setup: 'This command ensures your project is setup correctly',
     ohMyZsh: 'Enable Oh My Zsh',
+    aws: 'Ensures AWS is connected to the project',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -31,16 +32,20 @@ export function setup(buddy: CLI) {
     })
 
   buddy
-    .command('setup:oh-my-zsh', descriptions.ohMyZsh)
+    .command('setup:oh-my-zsh', descriptions.ohMyZsh) // if triggered multiple times, it will update the plugin
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (_options?: CliOptions) => {
-      const zshrcPath = await $`echo $HOME/.zshrc`.text()
-      console.log('zshrcPath', zshrcPath)
-      let data = await $`cat ${zshrcPath}`.text()
-      console.log('data', data)
+      const homePath = (await $`echo $HOME`.text()).trim()
+      const zshrcPath = p.join(homePath, '.zshrc')
+      const pluginPath = p.frameworkPath('core/zsh-buddy/buddy.plugin.zsh')
+      const customPath = p.join(homePath, '.oh-my-zsh/custom/plugins/buddy/')
+
+      log.info(`Setting up Oh My Zsh via ${zshrcPath}...`)
+      $.cwd(p.dirname(zshrcPath))
+      let data = await $`cat ${p.basename(zshrcPath)}`.text()
 
       // Manipulate the data
-      const pluginLineRegex = /plugins=\(([^)]+)\)/
+      const pluginLineRegex = /^(?!#).*plugins=\(([^)]+)\)/m // ensure it's not a comment
       const match = data.match(pluginLineRegex)
 
       if (match) {
@@ -57,14 +62,26 @@ export function setup(buddy: CLI) {
           await writeFile(zshrcPath, data)
 
           // need to copy plugin to ~/.oh-my-zsh/custom/plugins
-          const pluginPath = p.frameworkPath('core/zsh-buddy/buddy.plugin.zsh')
-          const customPath = '~/.oh-my-zsh/custom/plugins/buddy'
+          log.info(`Copying buddy zsh plugin ${pluginPath} to ${customPath}...`)
 
-          await runCommand(`cp -r ${pluginPath} ${customPath}`)
+          // create customPath if it doesn't exist
+          await runCommand(`mkdir -p ${customPath}`)
+          await runCommand(`cp -rf ${pluginPath} ${customPath}`)
+          // await runCommand(`source ${customPath}/buddy.plugin.zsh`)
+
+          log.success('Copied buddy zsh plugin')
+        }
+        else {
+          log.info('buddy is already integrated in your shell, updating...')
+          await runCommand(`cp -rf ${pluginPath} ${customPath}`)
+          // await runCommand(`source ${customPath}/buddy.plugin.zsh`)
+          log.success('Updated buddy zsh plugin')
         }
       }
 
-      log.success('Oh My Zsh setup complete')
+      log.success('Oh My Zsh setup complete.')
+      log.info('To see changes reflect, you may need to:')
+      log.info('⌘⇧P workbench.action.reloadWindow')
     })
 
   buddy.on('setup:*', () => {
