@@ -3,6 +3,7 @@ import { hasFiles } from '@stacksjs/storage'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { slug } from '@stacksjs/strings'
+import process from 'node:process'
 
 // TODO: we cannot use Bun Shell scripts here yet because we need to use 1.0.8 for deployments, and Shell scripts were introduced after 1.0.8
 // this allows for a custom "server configuration" by the user
@@ -26,6 +27,11 @@ await runCommand(`cp -r ../../../config ./config`, {
 await runCommand(`cp -r ../../../routes ./routes`, {
   cwd: frameworkPath('server'),
 })
+
+if (!app.name) {
+  log.error('Please provide a name for your app in your config file')
+  process.exit(1)
+}
 
 // TODO: also allow for a custom container name via a config
 await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
