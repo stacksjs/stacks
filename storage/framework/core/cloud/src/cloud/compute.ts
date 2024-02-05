@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_efs as efs, aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, RemovalPolicy, aws_ec2 as ec2, aws_ecs as ecs, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, RemovalPolicy, aws_ec2 as ec2, aws_ecs as ecs, aws_route53 as route53, aws_route53_targets as route53Targets, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
@@ -96,6 +96,12 @@ export class ComputeStack {
       internetFacing: true,
       idleTimeout: Duration.seconds(30),
       securityGroup: publicLoadBalancerSG,
+    })
+
+    new route53.ARecord(scope, 'ApiDomainAliasRecord', {
+      zone: props.zone,
+      recordName: 'api',
+      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(this.lb)),
     })
 
     const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {

@@ -4,7 +4,7 @@
 
 if [ -n "$1" ]; then
   # Check if the directory exists
-  if [ -d "storage/framework/core" ]; then # this is our identifier whether it is a Stacks project
+  if [ -d "storage/framework/core" ]; then # determines whether we are in a Stacks context
     :
   else
     if [ -d "$1" ]; then
@@ -14,7 +14,7 @@ if [ -n "$1" ]; then
       git clone https://github.com/stacksjs/stacks.git $1
       cd "$1" || exit 1
 
-      # Run the pkgx-install script
+      # Run the pkgx-install script (in case it's already installed, it will be updated to the latest version)
       "./storage/framework/scripts/pkgx-install"
 
       echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
