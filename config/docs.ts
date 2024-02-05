@@ -130,6 +130,7 @@ const sidebar = {
             { text: 'Semantic Commits', link: '/bootcamp/tips/semantic-commits' },
             { text: 'Ship your ORM', link: '/bootcamp/tips/orm-usage' },
             { text: 'System Tray App', link: '/bootcamp/tips/system-tray' },
+            { text: 'Oh My Zsh', link: '/bootcamp/tips/oh-my-zsh' },
           ],
         },
         { text: 'Conclusion', link: '/bootcamp/conclusion' },

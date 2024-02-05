@@ -8,6 +8,7 @@
 #
 # Many thanks to Jess Archer for providing the initial scripts:
 # https://github.com/jessarcher/zsh-artisan
+
 function buddy() {
     local buddy_path=`_buddy_find`
 
@@ -19,7 +20,7 @@ function buddy() {
     local buddy_path=`dirname $buddy_path`
     local buddy_cmd
 
-    buddy_cmd="bun $buddy_path"
+    buddy_cmd="bun $buddy_path/buddy $*"
 
     local buddy_start_time=`date +%s`
 
@@ -38,6 +39,46 @@ function buddy() {
     fi
 
     return $buddy_exit_status
+}
+
+function bud() {
+    buddy $*
+}
+
+function stacks() {
+    buddy $*
+}
+
+function stx() {
+    buddy $*
+}
+
+function b() {
+    buddy $*
+}
+
+function bi() {
+    buddy install
+}
+
+function ba() {
+    buddy add "$@"
+}
+
+function bd() {
+    buddy dev "$@"
+}
+
+function bb() {
+    buddy build "$@"
+}
+
+function bt() {
+    buddy test
+}
+
+function bu() {
+    buddy upgrade
 }
 
 compdef _buddy_add_completion buddy
