@@ -28,8 +28,8 @@ if (config.app.docMode !== true) { // when in docs mode, we disregard building v
 //   cwd: p.corePath('cloud'),
 // })
 
-await runCommand('bun zip/api.ts', {
-  cwd: p.actionsPath(),
+await runCommand('bun build.ts', {
+  cwd: p.frameworkPath('server'),
 })
 
 await runCommand('bun zip.ts', {

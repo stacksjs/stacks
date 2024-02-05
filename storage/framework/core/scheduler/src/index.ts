@@ -1,4 +1,4 @@
-import { CronJob as cron } from 'cron';
+import { CronJob as cron } from 'cron'
 
 // export interface Scheduler {
 //   schedule(schedule: Schedule): void
@@ -314,7 +314,7 @@ export function run(callback: ((now: Date | 'manual' | 'init') => void) | string
   }
 }
 
-export { CronJob } = cron
+export { CronJob } from 'cron'
 
 export function useScheduler() {
   return {

@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { buddyPath, frameworkPath } from '@stacksjs/path'
+import { frameworkPath } from '@stacksjs/path'
 import { $ } from 'bun'
 
 log.info('Building Server...')

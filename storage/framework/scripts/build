@@ -3,8 +3,8 @@
 # Get the script's directory
 script_dir=$(readlink -f $(dirname "$0"))
 
-# Get all directories in the core path
-dirs=$(find "$script_dir/../core" -type d -maxdepth 1)
+# Get all directories in the core path & sort them alphabetically
+dirs=$(find "$script_dir/../core" -type d -maxdepth 1 | sort)
 
 # Check if no directories found
 if [ -z "$dirs" ]; then

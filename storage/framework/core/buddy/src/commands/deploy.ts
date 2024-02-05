@@ -36,6 +36,7 @@ export function deploy(buddy: CLI) {
       }
 
       // TODO: we can improve this check at some point, otherwise domains that legitimately include the word localhost will fail
+      // TODO: add check for whether the local APP_ENV is getting deployed, if so, ask if the user meant to deploy `dev`
       if (domain.includes('localhost')) {
         log.info('You are deploying to a local environment.')
         log.info('Please set your .env or ./config/app.ts properly.')
@@ -48,11 +49,10 @@ export function deploy(buddy: CLI) {
       }
 
       if (await hasUserDomainBeenAddedToCloud(domain)) {
-        log.success('Your domain is properly configured.')
+        log.info('Domain is properly configured')
         log.info('Your cloud is deploying...')
 
         log.info(`${italic('This may take a while...')}`)
-        await new Promise(resolve => setTimeout(resolve, 2000))
         options.domain = domain
 
         // now that we know the domain has been added to the users (AWS) cloud, we can deploy
