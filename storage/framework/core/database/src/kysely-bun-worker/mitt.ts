@@ -2,7 +2,7 @@ import type { Emitter, EventHandlerMap, EventType, Handler } from 'mitt'
 import mitt from 'mitt'
 
 export interface EmitterOnce<Events extends Record<EventType, unknown>> extends Emitter<Events> {
-  once<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
+  once: <Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) => void
 }
 
 export default function mittOnce<Events extends Record<EventType, unknown>>(

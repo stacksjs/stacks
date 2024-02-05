@@ -28,7 +28,7 @@ export interface FieldContext {
   /**
    * Mutate the value of field under validation.
    */
-  mutate(newValue: any, field: FieldContext): void
+  mutate: (newValue: any, field: FieldContext) => void
 
   /**
    * Report error to the error reporter
@@ -87,12 +87,12 @@ export interface ErrorReporterContract {
   /**
    * Creates an instance of an exception to throw
    */
-  createError(): Error
+  createError: () => Error
 
   /**
    * Report error for a field
    */
-  report(message: string, rule: string, field: FieldContext, args?: Record<string, any>): any
+  report: (message: string, rule: string, field: FieldContext, args?: Record<string, any>) => any
 }
 
 export const isMoney = validator.createRule((value: unknown, _, field: FieldContext) => {

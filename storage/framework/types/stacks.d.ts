@@ -7,7 +7,7 @@ import type { MoneyValidator } from '@stacksjs/validation'
  */
 declare module '@stacksjs/validation' {
   interface Validator {
-    money(): MoneyValidator
+    money: () => MoneyValidator
   }
 }
 
@@ -28,7 +28,7 @@ declare module '@stacksjs/strings' {
  */
 declare module '@stacksjs/validation' {
   interface Validator {
-    money(): MoneyValidator
+    money: () => MoneyValidator
   }
 }
 

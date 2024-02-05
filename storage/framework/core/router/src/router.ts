@@ -2,17 +2,17 @@ import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacks
 import { projectPath } from '@stacksjs/path'
 
 export interface RouterInterface {
-  get(url: Route['url'], callback: Route['callback']): this
-  post(url: Route['url'], callback: Route['callback']): this
-  view(url: Route['url'], callback: Route['callback']): this
-  redirect(url: Route['url'], callback: Route['callback'], status?: RedirectCode): this
-  delete(url: Route['url'], callback: Route['callback']): this
-  patch(url: Route['url'], callback: Route['callback']): this
-  put(url: Route['url'], callback: Route['callback']): this
-  group(options: RouteGroupOptions, callback: () => void): this
-  name(name: string): this
-  middleware(middleware: Route['middleware']): this
-  getRoutes(): Promise<Route[]>
+  get: (url: Route['url'], callback: Route['callback']) => this
+  post: (url: Route['url'], callback: Route['callback']) => this
+  view: (url: Route['url'], callback: Route['callback']) => this
+  redirect: (url: Route['url'], callback: Route['callback'], status?: RedirectCode) => this
+  delete: (url: Route['url'], callback: Route['callback']) => this
+  patch: (url: Route['url'], callback: Route['callback']) => this
+  put: (url: Route['url'], callback: Route['callback']) => this
+  group: (options: RouteGroupOptions, callback: () => void) => this
+  name: (name: string) => this
+  middleware: (middleware: Route['middleware']) => this
+  getRoutes: () => Promise<Route[]>
 }
 
 export class Router implements RouterInterface {

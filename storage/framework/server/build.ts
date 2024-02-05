@@ -1,4 +1,3 @@
-import { $ } from 'bun'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import { log, runCommand } from '@stacksjs/cli'
