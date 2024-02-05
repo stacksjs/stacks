@@ -234,7 +234,8 @@ export class CdnStack {
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = Fn.select(2, Fn.split('/', `http://${props.lb!.loadBalancerDnsName}`))
+    const hostname = `api.${props.domain}`
+
     const origin = () => {
       return new origins.HttpOrigin(hostname, {
         originPath: '/',

@@ -51,7 +51,7 @@ export class ComputeStack {
         }),
       }),
       healthCheck: {
-        command: ['CMD-SHELL', 'curl -f http://localhost:3000/health || exit 1'], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
+        command: ['CMD-SHELL', 'curl -f http://localhost:3000/api/health || exit 1'], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
         interval: Duration.seconds(10),
         timeout: Duration.seconds(5),
         retries: 3,
@@ -112,7 +112,7 @@ export class ComputeStack {
       port: 3000,
       healthCheck: {
         interval: Duration.seconds(6),
-        path: '/health',
+        path: '/api/health',
         protocol: elbv2.Protocol.HTTP,
         timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
