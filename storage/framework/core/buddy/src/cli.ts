@@ -35,6 +35,7 @@ async function main() {
   cmd.http(buddy)
   cmd.install(buddy)
   cmd.lint(buddy)
+  cmd.list(buddy)
   // cmd.make(buddy)
   // cmd.migrate(buddy)
   cmd.release(buddy)
@@ -61,6 +62,7 @@ async function main() {
       console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   }
 
+  buddy.help()
   buddy.parse()
 }
 

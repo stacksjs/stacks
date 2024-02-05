@@ -57,6 +57,7 @@ buddy make:component HelloWorld # scaffolds a component
 buddy make:function HelloWorld # scaffolds a function
 buddy make:view hello-world # scaffolds a page (https://my-project.test/hello-world)
 
+buddy list # lists all available commands
 buddy --help
 ```
 

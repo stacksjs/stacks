@@ -1,14 +1,16 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
-import { storage } from '@stacksjs/storage'
+import { writeFile } from '@stacksjs/storage'
 import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
+import { $ } from 'bun'
 
 export function setup(buddy: CLI) {
   const descriptions = {
     setup: 'This command ensures your project is setup correctly',
+    ohMyZsh: 'Enable Oh My Zsh',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -26,6 +28,43 @@ export function setup(buddy: CLI) {
       await optimizePkgxDeps()
 
       await initializeProject(options)
+    })
+
+  buddy
+    .command('setup:oh-my-zsh', descriptions.ohMyZsh)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (_options?: CliOptions) => {
+      const zshrcPath = await $`echo $HOME/.zshrc`.text()
+      console.log('zshrcPath', zshrcPath)
+      let data = await $`cat ${zshrcPath}`.text()
+      console.log('data', data)
+
+      // Manipulate the data
+      const pluginLineRegex = /plugins=\(([^)]+)\)/
+      const match = data.match(pluginLineRegex)
+
+      if (match) {
+        // 1. Find the plugins line
+        const plugins = match[1].split(' ')
+
+        // 2. Add buddy to the list of plugins if it's not already there
+        if (!plugins.includes('buddy')) {
+          plugins.push('buddy')
+          const newPluginLine = `plugins=(${plugins.join(' ')})`
+          // 3. Replace the old plugin line with the new one
+          data = data.replace(pluginLineRegex, newPluginLine)
+          // 4. Write the data back to the file
+          await writeFile(zshrcPath, data)
+
+          // need to copy plugin to ~/.oh-my-zsh/custom/plugins
+          const pluginPath = p.frameworkPath('core/zsh-buddy/buddy.plugin.zsh')
+          const customPath = '~/.oh-my-zsh/custom/plugins/buddy'
+
+          await runCommand(`cp -r ${pluginPath} ${customPath}`)
+        }
+      }
+
+      log.success('Oh My Zsh setup complete')
     })
 
   buddy.on('setup:*', () => {

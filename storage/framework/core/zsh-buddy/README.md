@@ -4,11 +4,15 @@ This package contains the zsh-buddy plugin.
 
 ## ☘️ Features
 
-- ...
+- It will find and execute `buddy` from anywhere within the project file tree _(and you don't need to prefix it with php or ./)_
+- It provides auto-completion for `buddy` commands _(that also work anywhere within the project)_
+- You can specify an editor to automatically open new files created by `buddy make:*` commands
 
 ## 🤖 Usage
 
-...
+```
+buddy setup:oh-my-zsh
+```
 
 To view the full documentation, please visit [https://stacksjs.org/ui](https://stacksjs.org/zsh).
 

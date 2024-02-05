@@ -8,7 +8,7 @@ export interface Schedule {
   exec: (cmd: string) => this
   call: (callback: () => void) => this
   everyMinute: () => this
-  everySecond: () => this
+  everySecond: (callback: () => void, options?: SchedulerOption) => CronJob
   everyFiveMinutes: () => this
   everyTenMinutes: () => this
   everyThirtyMinutes: () => this
@@ -34,44 +34,44 @@ export interface Schedule {
   at: (time: string) => this
 }
 
-export interface Scheduler {
-  everySecond: () => void
-  everySeconds: (seconds: number) => void
-  everyMinute: () => void
-  everyMinutes: (minutes: number) => void
-  everyTwoMinutes: () => void
-  everyThreeMinutes: () => void
-  everyFourMinutes: () => void
-  everyFiveMinutes: () => void
-  everyTenMinutes: () => void
-  everyFifteenMinutes: () => void
-  everyThirtyMinutes: () => void
-  hourly: () => void
-  hourlyAt: (minute: number) => void
-  everyOddHour: () => void
-  everyHours: (hours: number) => void
-  everyTwoHours: () => void
-  everyThreeHours: () => void
-  everyFourHours: () => void
-  everySixHours: () => void
-  daily: () => void
-  dailyAt: (hour: number, minute: number) => void
-  everyDays: (days: number) => void
-  weekly: () => void
-  quarterly: () => void
-  yearly: () => void
-  cron: (interval: string, timezone?: string) => void
-}
+// export interface Scheduler {
+//   everySecond: () => void
+//   everySeconds: (seconds: number) => void
+//   everyMinute: () => void
+//   everyMinutes: (minutes: number) => void
+//   everyTwoMinutes: () => void
+//   everyThreeMinutes: () => void
+//   everyFourMinutes: () => void
+//   everyFiveMinutes: () => void
+//   everyTenMinutes: () => void
+//   everyFifteenMinutes: () => void
+//   everyThirtyMinutes: () => void
+//   hourly: () => void
+//   hourlyAt: (minute: number) => void
+//   everyOddHour: () => void
+//   everyHours: (hours: number) => void
+//   everyTwoHours: () => void
+//   everyThreeHours: () => void
+//   everyFourHours: () => void
+//   everySixHours: () => void
+//   daily: () => void
+//   dailyAt: (hour: number, minute: number) => void
+//   everyDays: (days: number) => void
+//   weekly: () => void
+//   quarterly: () => void
+//   yearly: () => void
+//   cron: (interval: string, timezone?: string) => void
+// }
 
 interface SchedulerOption {
   timezone: string // TODO: create a better type
   enable: boolean
 }
 
-export function run(callback: Function, options?: SchedulerOption): Scheduler {
+export function run(): Schedule {
   return {
-    everySecond: () => {
-      new CronJob(
+    everySecond(callback: Function, options?: SchedulerOption) {
+      const job = new CronJob(
         '* * * * * *',
         () => {
           callback()
@@ -80,6 +80,8 @@ export function run(callback: Function, options?: SchedulerOption): Scheduler {
         options?.enable ?? true,
         options?.timezone ?? 'America/Los_Angeles',
       )
+
+      return job
     },
 
     everySeconds: (seconds = 1) => {
