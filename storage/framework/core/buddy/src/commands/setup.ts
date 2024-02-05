@@ -80,7 +80,8 @@ export function setup(buddy: CLI) {
       }
 
       log.success('Oh My Zsh setup complete.')
-      log.info('Open a new terminal to see the changes.')
+      log.info('To see changes reflect, you may need to:')
+      log.info('⌘⇧P workbench.action.reloadWindow')
     })
 
   buddy.on('setup:*', () => {

@@ -1,5 +1,5 @@
 import process from 'node:process'
-import type { CLI, CliOptions } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
 import { $ } from 'bun'
 import { projectPath } from '@stacksjs/path'
 
