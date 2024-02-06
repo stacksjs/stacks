@@ -281,7 +281,7 @@ export class CronTime {
         && Object.keys(this.dayOfMonth).length !== 31
         && !(
           this._getWeekDay(date) in this.dayOfWeek
-            && Object.keys(this.dayOfWeek).length !== 7
+          && Object.keys(this.dayOfWeek).length !== 7
         )
       ) {
         date = date.plus({ days: 1 })

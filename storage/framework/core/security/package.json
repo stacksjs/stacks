@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/security",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.58.54",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
   "license": "MIT",

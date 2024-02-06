@@ -1,6 +1,5 @@
 import type { Cluster, TaskDefinition } from 'aws-cdk-lib'
-import { CfnOutput as Output, Size, aws_batch as batch, aws_ec2 as ec2, aws_ecs as ecs } from 'aws-cdk-lib'
-import { path as p } from '@stacksjs/path'
+import { aws_ec2 as ec2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { EcsTask } from 'aws-cdk-lib/aws-events-targets'
