@@ -57,14 +57,14 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.7.4",
+    "@maizzle/framework": "^4.7.5",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.7.4",
+    "@maizzle/framework": "^4.7.5",
     "@novu/stateless": "^0.23.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
