@@ -30,7 +30,7 @@ export async function serve(options: ServeOptions = {}) {
 
 export async function serverResponse(req: Request) {
   // eslint-disable-next-line no-console
-  console.log('serverResponse', req)
+  console.log('serverResponse', JSON.stringify(req))
   const routesList: Route[] = await route.getRoutes()
   const url = new URL(req.url)
 

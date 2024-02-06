@@ -391,7 +391,6 @@ describe('cron', () => {
           catch (e) {
             // we make sure this isn't skipped with `expect.assertions()`
             // at the beginning of the test
-            // eslint-disable-next-line jest/no-conditional-expect
             expect(e).toBeInstanceOf(TypeError)
           }
           expect(onComplete).toBeUndefined()

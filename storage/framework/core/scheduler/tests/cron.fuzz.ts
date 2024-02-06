@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-standalone-expect */
 import { fc, test } from '@fast-check/jest'
 import { CronJob } from '../src'
 import { CronError } from '../src/errors'
@@ -115,7 +114,6 @@ test.prop(
   'CronJob should behave as expected and not error unexpectedly (with anything inputs)',
   params =>
     testCronJob(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       params as any,
       err => err instanceof CronError || err instanceof TypeError,
     ),
