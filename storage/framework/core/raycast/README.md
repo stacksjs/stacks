@@ -1,6 +1,10 @@
+# Stacks Raycast
+
+This project contains the Raycast extension for Stacks Buddy.
+
 ## API Reference
 
-#### Stacks commands API
+### Buddy Commands API
 
 ```http
   TODO: Stacks buddy command must first be deployed

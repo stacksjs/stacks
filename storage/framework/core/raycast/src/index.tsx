@@ -1,18 +1,18 @@
-import { List } from "@raycast/api";
-import { useState } from "react";
-import { useVersions } from "./hooks/useVersions";
-import { useCommands } from "./hooks/useCommands";
-import { DetailsView } from "./components/DetailsView";
-import { VersionSelect } from "./components/VersionSelect";
+import { List } from '@raycast/api'
+import { useState } from 'react'
+import { useVersions } from './hooks/useVersions'
+import { useCommands } from './hooks/useCommands'
+import { DetailsView } from './components/DetailsView'
+import { VersionSelect } from './components/VersionSelect'
 
 export default function Buddy() {
   const [version, setVersion] = useState<string | undefined>(undefined)
   const [search, setSearch] = useState<string | undefined>(undefined)
-  const { versions } = useVersions();
-  const { commands, isLoading } = useCommands({ version, search });
+  const { versions } = useVersions()
+  const { commands, isLoading } = useCommands({ version, search })
 
   return (
-    <List 
+    <List
       isLoading={isLoading}
       isShowingDetail
       onSearchTextChange={setSearch}
@@ -20,11 +20,11 @@ export default function Buddy() {
       searchBarPlaceholder="Search for a buddy command..."
       searchBarAccessory={<VersionSelect versions={versions} setVersion={setVersion} />}
     >
-      {commands?.map((command) => (
-        <List.Item 
+      {commands?.map(command => (
+        <List.Item
           title={command.signature}
-          key={command.signature + (search ?? "")}
-          icon={{ source: "stacks-logo.ico" }}
+          key={command.signature + (search ?? '')}
+          icon={{ source: 'stacks-logo.ico' }}
           detail={<DetailsView command={command} />}
         />
       ))}
