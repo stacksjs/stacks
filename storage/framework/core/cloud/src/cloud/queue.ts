@@ -15,7 +15,7 @@ export class QueueStack {
   constructor(scope: Construct, props: QueueStackProps) {
     const rule = new Rule(scope, 'QueueRule', {
       // schedule to run every second
-      ruleName: `${props.appName}-${props.appEnv}-queue`,
+      ruleName: `${props.appName}-${props.appEnv}-queue-rule`,
       schedule: Schedule.cron({ minute: '*', hour: '*', month: '*', weekDay: '*', year: '*' }),
     })
 
