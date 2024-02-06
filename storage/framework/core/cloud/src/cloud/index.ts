@@ -18,6 +18,7 @@ import { RedirectsStack } from './redirects'
 import { EmailStack } from './email'
 import { PermissionsStack } from './permissions'
 import { ComputeStack } from './compute'
+import { QueueStack } from './queue'
 
 // import { DashboardStack } from './dashboard'
 
@@ -71,6 +72,12 @@ export class Cloud extends Stack {
         fileSystem: fileSystem.fileSystem,
         zone: dns.zone,
         certificate: security.certificate,
+      })
+
+      new QueueStack(this, {
+        ...props,
+        cluster: api.cluster,
+        taskDefinition: api.taskDefinition,
       })
     }
 

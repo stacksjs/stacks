@@ -15,23 +15,21 @@ export default {
       driver: 'sync',
     },
 
-    database: {
-      driver: 'database',
-      table: 'jobs',
-      queue: 'default',
-      retry_after: 90,
-    },
+    // database: {
+    //   driver: 'database',
+    //   table: 'jobs',
+    //   queue: 'default',
+    // },
 
-    redis: {
-      driver: 'redis',
-      connection: 'default',
-      queue: 'default',
-      retry_after: 90,
-    },
+    // redis: {
+    //   driver: 'redis',
+    //   connection: 'default',
+    //   queue: 'default',
+    // },
 
     sqs: {
       driver: 'sqs',
-      key: '',
+      key: '', // set this if you
       secret: '',
       prefix: '',
       suffix: '',

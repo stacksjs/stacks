@@ -10,6 +10,7 @@ export interface JobOptions {
   handle?: string | Function
   action?: string
   description?: string
+  queue?: string
   timezone?: string
   tries?: number
   backoff?: number | number[]
