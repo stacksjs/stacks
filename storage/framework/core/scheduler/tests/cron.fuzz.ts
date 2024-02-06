@@ -37,13 +37,13 @@ function testCronJob(
       null,
       start,
       (tzOrOffset ? timeZone : null) as typeof tzOrOffset extends true
-      ? string
-      : null,
+        ? string
+        : null,
       null,
       runOnInit,
       (tzOrOffset ? null : utcOffset) as typeof tzOrOffset extends true
-      ? null
-      : number,
+        ? null
+        : number,
       unrefTimeout,
     )
 
