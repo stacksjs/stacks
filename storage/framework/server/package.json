@@ -1,13 +1,13 @@
 {
   "name": "stacks-cloud",
   "type": "module",
-  "version": "0.58.28",
+  "version": "0.58.55",
   "scripts": {
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/path": "^0.58.54",
-    "@stacksjs/router": "^0.58.54",
+    "@stacksjs/queue": "^0.58.55",
+    "@stacksjs/router": "^0.58.55",
     "aws4fetch": "^1.0.17"
   }
 }

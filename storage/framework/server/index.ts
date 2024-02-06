@@ -7,7 +7,9 @@ if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB)
     throw new Error('Missing JOB environment variable')
 
-  const jobModule = await import(p.jobsPath('DummyJob'))
+  const jobModule = await import('./app/Jobs/DummyJob.ts')
+  // eslint-disable-next-line no-console
+  console.log('Running job', process.env.JOB)
   await jobModule.default.handle()
   process.exit(0)
 }

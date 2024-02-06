@@ -1,4 +1,6 @@
 bootstrap
 *bun-build
+app
 routes
 config
+env.ts

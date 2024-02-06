@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": [
+      "esnext"
+    ],
+    "moduleDetection": "force",
+    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@stacksjs/*": ["../core/*/src"],
+      "stacks/*": ["../core/*/src"],
+      "buddy": ["../core/buddy/src/index.ts"],
+      "buddy/*": ["../core/buddy/src/*"],
+      "config/*": ["./config/*"],
+      "../../../env": ["./env.ts"]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "vite/client",
+      // "vue/ref-macros",
+      "vite-plugin-pages/client",
+      "vite-plugin-pwa/client",
+      "vite-plugin-vue-layouts/client",
+      "@intlify/unplugin-vue-i18n/messages"
+    ],
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./*.ts",
+    "./*.d.ts"
+  ]
+}

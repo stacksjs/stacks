@@ -25,8 +25,13 @@ RUN cd /temp/prod && bun install
 # copy node_modules from temp directory
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
+COPY --from=install /temp/dev/node_modules ./node_modules
+COPY ./app ./app
+COPY ./config ./config
+COPY ./routes ./routes
+COPY ./index.ts ./index.ts
+COPY ./package.json ./package.json
+COPY ./tsconfig.json ./tsconfig.json
 
 # [optional] tests & build
 # ENV NODE_ENV=production
@@ -35,10 +40,13 @@ COPY . .
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.ts .
-COPY --from=prerelease /usr/src/app/package.json .
-COPY --from=prerelease /usr/src/app/routes .
+COPY --from=install /temp/prod/node_modules ./node_modules
+COPY --from=prerelease /usr/src/app/index.ts ./index.ts
+COPY --from=prerelease /usr/src/app/tsconfig.json ./tsconfig.json
+COPY --from=prerelease /usr/src/app/package.json ./package.json
+COPY --from=prerelease /usr/src/app/routes ./routes
+COPY --from=prerelease /usr/src/app/config ./config
+COPY --from=prerelease /usr/src/app/app ./app
 
 # run the app
 USER bun

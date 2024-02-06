@@ -21,10 +21,24 @@ else {
   log.info('Using default server configuration')
 }
 
-await runCommand(`cp -r ../../../config ./config`, {
+await runCommand(`rm -rf ${frameworkPath('server/config')}/*`, {
   cwd: frameworkPath('server'),
 })
-await runCommand(`cp -r ../../../routes ./routes`, {
+await runCommand(`cp -r ${projectPath('config')} ${frameworkPath('server/config')}`, {
+  cwd: frameworkPath('server'),
+})
+
+await runCommand(`rm -rf ${frameworkPath('server/routes')}/*`, {
+  cwd: frameworkPath('server'),
+})
+await runCommand(`cp -r ${projectPath('routes')} ${frameworkPath('server/routes')}`, {
+  cwd: frameworkPath('server'),
+})
+
+await runCommand(`rm -rf ${frameworkPath('server/app')}/*`, {
+  cwd: frameworkPath('server'),
+})
+await runCommand(`cp -r ${projectPath('app')} ${frameworkPath('server/app')}`, {
   cwd: frameworkPath('server'),
 })
 

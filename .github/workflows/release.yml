@@ -37,9 +37,6 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Set Application Key
-        run: bun buddy key:generate
-
       - name: Prepublish # these packages are required for the "Publish framework" step
         run: bunx pnpm --filter='./storage/framework' build
 

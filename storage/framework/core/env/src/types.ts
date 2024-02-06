@@ -1,6 +1,6 @@
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import { validator } from '@stacksjs/validation'
-import env from '../../../../../config/env'
+import env from 'config/env'
 import type { EnvKey } from '../../../env'
 
 // import type { Validate } from '@stacksjs/validation'
