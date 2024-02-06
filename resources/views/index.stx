@@ -33,7 +33,7 @@ useHead({
 // const router = useRouter()
 // function go() {
 //   if (name.value)
-//     router.push(`/hi/${encodeURIComponent(name.value)}`)
+//     router.push(`/hello-world/${encodeURIComponent(name.value)}`)
 // }
 
 // const { t } = useI18n()

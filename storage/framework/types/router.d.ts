@@ -64,7 +64,7 @@ declare module 'vue-router/auto/routes' {
     '/dashboard/settings/services': RouteRecordInfo<'/dashboard/settings/services', '/dashboard/settings/services', Record<never, never>, Record<never, never>>,
     '/dashboard/settings/storage': RouteRecordInfo<'/dashboard/settings/storage', '/dashboard/settings/storage', Record<never, never>, Record<never, never>>,
     '/dashboard/teams/[id]': RouteRecordInfo<'/dashboard/teams/[id]', '/dashboard/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
-    '/hi/[name]': RouteRecordInfo<'/hi/[name]', '/hi/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
+    '/hello-world/[name]': RouteRecordInfo<'/hello-world/[name]', '/hello-world/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
     '/README': RouteRecordInfo<'/README', '/README', Record<never, never>, Record<never, never>>,
     '/system-tray/': RouteRecordInfo<'/system-tray/', '/system-tray', Record<never, never>, Record<never, never>>,
   }
