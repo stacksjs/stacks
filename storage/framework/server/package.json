@@ -6,7 +6,7 @@
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/router": "^0.58.51",
+    "@stacksjs/router": "^0.58.53",
     "aws4fetch": "^1.0.17"
   }
 }
