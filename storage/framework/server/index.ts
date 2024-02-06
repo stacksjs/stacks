@@ -1,5 +1,16 @@
+import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
 import { serverResponse } from '@stacksjs/router'
+import { path as p } from '@stacksjs/path'
+
+if (process.env.QUEUE_WORKER) {
+  if (!process.env.JOB)
+    throw new Error('Missing JOB environment variable')
+
+  const jobModule = await import(p.jobsPath('DummyJob'))
+  await jobModule.default.handle()
+  process.exit(0)
+}
 
 const server = Bun.serve({
   port: 3000,

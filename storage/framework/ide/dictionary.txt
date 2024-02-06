@@ -95,6 +95,7 @@ entrypoints
 envrc
 eventstream
 execa
+fairshare
 Fargate
 filesize
 flareapp
@@ -166,6 +167,7 @@ marvinpinto
 mattpocock
 mdit
 mdsvex
+mebibytes
 meema
 meemalabs
 meilisearch

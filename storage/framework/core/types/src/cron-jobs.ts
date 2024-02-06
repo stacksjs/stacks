@@ -14,7 +14,7 @@ export interface JobOptions {
   timezone?: string
   tries?: number
   backoff?: number | number[]
-  schedule?: string | Every
+  rate?: string | Every
   enabled?: boolean
 }
 
@@ -30,10 +30,10 @@ export type CronJobs = Jobs
 // export type CronJobs = Jobs
 
 export enum Every {
-  Second = '* * * * * *',
-  FiveSeconds = '*/5 * * * * *',
-  TenSeconds = '*/10 * * * * *',
-  ThirtySeconds = '*/30 * * * * *',
+  // Second = '* * * * * *',
+  // FiveSeconds = '*/5 * * * * *',
+  // TenSeconds = '*/10 * * * * *',
+  // ThirtySeconds = '*/30 * * * * *',
   Minute = '* * * * *',
   Hour = '0 * * * *',
   HalfHour = '0,30 * * * *',

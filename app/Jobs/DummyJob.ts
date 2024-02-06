@@ -8,7 +8,7 @@ export default new Job({
   queue: 'default', // defaults to 'default'
   tries: 3, // defaults to 3, in case of failures
   backoff: 3, // defaults to 3-second delays between retries
-  schedule: Every.FiveSeconds, // '*/5 * * * *' in cron syntax (overwrites the Scheduler's definition)
+  rate: Every.Minute, // '* * * * *' in cron syntax (overwrites the Scheduler's definition)
   handle: () => {
     log.info('This cron job log this message every 5 seconds')
   },

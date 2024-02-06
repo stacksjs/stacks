@@ -242,6 +242,10 @@ export function eslintPath(path?: string) {
   return lintPath(`eslint/${path || ''}`)
 }
 
+export function jobsPath(path?: string) {
+  return resourcesPath(`jobs/${path || ''}`)
+}
+
 export function loggingPath(path?: string) {
   return corePath(`logging/${path || ''}`)
 }
@@ -490,6 +494,7 @@ export const path = {
   libraryEntryPath,
   lintPath,
   loggingPath,
+  jobsPath,
   modulesPath,
   ormPath,
   objectsPath,
