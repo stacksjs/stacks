@@ -58,7 +58,7 @@
     "@aws-sdk/client-bedrock": "^3.507.0",
     "@aws-sdk/client-cloudformation": "^3.507.0",
     "@aws-sdk/client-cloudfront": "^3.507.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.507.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.508.0",
     "@aws-sdk/client-ec2": "^3.507.0",
     "@aws-sdk/client-efs": "^3.507.0",
     "@aws-sdk/client-iam": "^3.507.0",
@@ -82,7 +82,7 @@
     "@aws-sdk/client-bedrock": "^3.507.0",
     "@aws-sdk/client-cloudformation": "^3.507.0",
     "@aws-sdk/client-cloudfront": "^3.507.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.507.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.508.0",
     "@aws-sdk/client-dynamodb": "3.507.0",
     "@aws-sdk/client-ec2": "^3.507.0",
     "@aws-sdk/client-efs": "^3.507.0",
@@ -113,7 +113,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "jszip": "^3.10.1",
-    "oclif": "^4.4.6",
+    "oclif": "^4.4.7",
     "source-map-support": "^0.5.21"
   }
 }
