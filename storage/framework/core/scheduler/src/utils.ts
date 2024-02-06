@@ -5,7 +5,7 @@ export function getRecordKeys<K extends Ranges[keyof Ranges]>(record: Partial<Re
   return Object.keys(record) as unknown as (keyof typeof record)[]
 }
 
-export function getTimeZoneAndOffset(timeZone?: string | null,	utcOffset?: number | null) {
+export function getTimeZoneAndOffset(timeZone?: string | null, utcOffset?: number | null) {
   if (timeZone != null && utcOffset != null)
     throw new ExclusiveParametersError('timeZone', 'utcOffset')
 

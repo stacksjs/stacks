@@ -1,3 +1,5 @@
+import type { DeepPartial } from './utils'
+
 export interface QueueOptions {
   default: 'sync' | 'database' | 'redis' | 'sqs'
   connections: {
@@ -33,4 +35,4 @@ export interface QueueOptions {
   }
 }
 
-export type QueueConfig = Partial<QueueOptions>
+export type QueueConfig = DeepPartial<QueueOptions>

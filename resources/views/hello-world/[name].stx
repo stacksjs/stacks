@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const router = useRouter()
-const route = useRoute('/hi/[name]')
+const route = useRoute('/hello-world/[name]')
 const user = useUserStore()
 const { t } = useI18n()
 
@@ -27,7 +27,7 @@ watchEffect(() => {
         <span opacity-75>{{ t('intro.aka') }}:</span>
         <ul>
           <li v-for="otherName in user.otherNames" :key="otherName">
-            <RouterLink :to="`/hi/${otherName}`" replace>
+            <RouterLink :to="`/hello-world/${otherName}`" replace>
               {{ otherName }}
             </RouterLink>
           </li>

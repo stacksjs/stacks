@@ -18,6 +18,8 @@ export interface ComputeStackProps extends NestedCloudProps {
 
 export class ComputeStack {
   lb: elbv2.ApplicationLoadBalancer
+  cluster: ecs.Cluster
+  taskDefinition: ecs.FargateTaskDefinition
 
   constructor(scope: Construct, props: ComputeStackProps) {
     const vpc = props.vpc
@@ -26,12 +28,12 @@ export class ComputeStack {
     if (!fileSystem)
       throw new Error('The file system is missing. Please make sure it was created properly.')
 
-    const cluster = new ecs.Cluster(scope, 'StacksCluster', {
+    this.cluster = new ecs.Cluster(scope, 'StacksCluster', {
       clusterName: `${props.slug}-${props.appEnv}-web-server-cluster`,
       vpc,
     })
 
-    const taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDefinition', {
+    this.taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDefinition', {
       family: `${props.appName}-${props.appEnv}-api`,
       memoryLimitMiB: 512, // Match your Lambda memory size
       cpu: 256, // Choose an appropriate value
@@ -40,7 +42,7 @@ export class ComputeStack {
       },
     })
 
-    const container = taskDefinition.addContainer('WebServerContainer', {
+    const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
       image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
       logging: new ecs.AwsLogDriver({
@@ -122,8 +124,8 @@ export class ComputeStack {
 
     const service = new ecs.FargateService(scope, 'StacksApiService', {
       serviceName: `${props.appName}-${props.appEnv}-api-service`,
-      cluster,
-      taskDefinition,
+      cluster: this.cluster,
+      taskDefinition: this.taskDefinition,
       desiredCount: 1,
       assignPublicIp: true,
       maxHealthyPercent: 200,
@@ -152,7 +154,7 @@ export class ComputeStack {
     props.fileSystem.connections.allowFromAnyIpv4(ec2.Port.tcp(2049)) // port 2049 (NFS) for EFS
 
     const volumeName = `${props.slug}-${props.appEnv}-efs`
-    taskDefinition.addVolume({
+    this.taskDefinition.addVolume({
       name: volumeName,
       efsVolumeConfiguration: {
         fileSystemId: props.fileSystem.fileSystemId,

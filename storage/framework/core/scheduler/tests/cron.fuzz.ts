@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-standalone-expect */
 import { fc, test } from '@fast-check/jest'
 import { CronJob } from '../src'
 import { CronError } from '../src/errors'
@@ -34,17 +33,17 @@ function testCronJob(
   try {
     const job = new CronJob(
       cronTime,
-      () => {},
+      () => { },
       null,
       start,
       (tzOrOffset ? timeZone : null) as typeof tzOrOffset extends true
-        ? string
-        : null,
+      ? string
+      : null,
       null,
       runOnInit,
       (tzOrOffset ? null : utcOffset) as typeof tzOrOffset extends true
-        ? null
-        : number,
+      ? null
+      : number,
       unrefTimeout,
     )
 
@@ -115,7 +114,6 @@ test.prop(
   'CronJob should behave as expected and not error unexpectedly (with anything inputs)',
   params =>
     testCronJob(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       params as any,
       err => err instanceof CronError || err instanceof TypeError,
     ),

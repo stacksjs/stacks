@@ -17,6 +17,8 @@ declare global {
   const ComboboxInput: typeof import('../core/ui/src/components/select')['ComboboxInput']
   const ComboboxOption: typeof import('../core/ui/src/components/select')['ComboboxOption']
   const ComboboxOptions: typeof import('../core/ui/src/components/select')['ComboboxOptions']
+  const CronJob: typeof import('../core/scheduler/src/index')['CronJob']
+  const CronTime: typeof import('../core/scheduler/src/index')['CronTime']
   const CssEngine: typeof import('../core/ui/src/index')['CssEngine']
   const Dialog: typeof import('../core/ui/src/components/modal')['Dialog']
   const DialogDescription: typeof import('../core/ui/src/components/modal')['DialogDescription']
@@ -59,6 +61,7 @@ declare global {
   const RuleNumber: typeof import('../core/validation/src/validate')['RuleNumber']
   const RuleObject: typeof import('../core/validation/src/validate')['RuleObject']
   const RuleString: typeof import('../core/validation/src/validate')['RuleString']
+  const Schedule: typeof import('../core/scheduler/src/schedule')['Schedule']
   const ScheduleImpl: typeof import('../core/scheduler/src/index')['ScheduleImpl']
   const SocialLinkIcon: typeof import('../core/types/src/docs')['SocialLinkIcon']
   const StacksError: typeof import('../core/error-handling/src/handler')['StacksError']
@@ -631,6 +634,7 @@ declare global {
   const runSystemTrayDevServer: typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']
   const runViewsDevServer: typeof import('../core/actions/src/dev/index')['runViewsDevServer']
   const runtimePath: typeof import('../core/path/src/index')['runtimePath']
+  const schedule: typeof import('../core/scheduler/src/schedule')['default']
   const schedulerPath: typeof import('../core/path/src/index')['schedulerPath']
   const scriptsPath: typeof import('../core/path/src/index')['scriptsPath']
   const searchEnginePath: typeof import('../core/path/src/index')['searchEnginePath']
@@ -638,6 +642,7 @@ declare global {
   const searchParams: typeof import('../core/search-engine/src/index')['searchParams']
   const securityPath: typeof import('../core/path/src/index')['securityPath']
   const semver: typeof import('../core/utils/src/versions')['semver']
+  const sendAt: typeof import('../core/scheduler/src/schedule')['sendAt']
   const sep: typeof import('../core/path/src/index')['sep']
   const serve: typeof import('../core/router/src/server')['serve']
   const server: typeof import('../core/server/src/index')['server']
@@ -665,7 +670,7 @@ declare global {
   const sorts: typeof import('../core/search-engine/src/index')['sorts']
   const spyOn: typeof import('../core/testing/src/index')['spyOn']
   const sql: typeof import('../core/query-builder/src/kysely')['sql']
-  const src: typeof import('../core/events/src/index')['default']
+  const src: typeof import('../core/scheduler/src/index')['default']
   const stacks: typeof import('../core/build/src/index')['stacks']
   const stacksPath: typeof import('../core/path/src/index')['stacksPath']
   const sticky: typeof import('../core/utils/src/regex')['sticky']
@@ -692,6 +697,7 @@ declare global {
   const throttledRef: typeof import('../core/utils/src/vendors')['throttledRef']
   const throttledWatch: typeof import('../core/utils/src/vendors')['throttledWatch']
   const tick: typeof import('../core/signals/src/index')['tick']
+  const timeout: typeof import('../core/scheduler/src/schedule')['timeout']
   const tinker: typeof import('../core/repl/src/index')['tinker']
   const tinkerPath: typeof import('../core/path/src/index')['tinkerPath']
   const toDecimal: typeof import('../core/utils/src/currency')['toDecimal']
@@ -981,6 +987,8 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Action: UnwrapRef<typeof import('../core/actions/src/action')['Action']>
+    readonly CronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['CronJob']>
+    readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../core/error-handling/src/index')['Err']>
@@ -1006,7 +1014,7 @@ declare module 'vue' {
     readonly RuleNumber: UnwrapRef<typeof import('../core/validation/src/validate')['RuleNumber']>
     readonly RuleObject: UnwrapRef<typeof import('../core/validation/src/validate')['RuleObject']>
     readonly RuleString: UnwrapRef<typeof import('../core/validation/src/validate')['RuleString']>
-    readonly ScheduleImpl: UnwrapRef<typeof import('../core/scheduler/src/index')['ScheduleImpl']>
+    readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/ui/src/index')['Store']>
@@ -1556,12 +1564,14 @@ declare module 'vue' {
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
     readonly runSystemTrayDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
+    readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/index')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../core/path/src/index')['securityPath']>
+    readonly sendAt: UnwrapRef<typeof import('../core/scheduler/src/schedule')['sendAt']>
     readonly sep: UnwrapRef<typeof import('../core/path/src/index')['sep']>
     readonly serve: UnwrapRef<typeof import('../core/router/src/server')['serve']>
     readonly server: UnwrapRef<typeof import('../core/server/src/index')['server']>
@@ -1587,7 +1597,7 @@ declare module 'vue' {
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
     readonly sql: UnwrapRef<typeof import('../core/query-builder/src/kysely')['sql']>
-    readonly src: UnwrapRef<typeof import('../core/events/src/index')['default']>
+    readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../core/build/src/index')['stacks']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/index')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
@@ -1613,6 +1623,7 @@ declare module 'vue' {
     readonly throttledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledWatch']>
     readonly tick: UnwrapRef<typeof import('../core/signals/src/index')['tick']>
+    readonly timeout: UnwrapRef<typeof import('../core/scheduler/src/schedule')['timeout']>
     readonly tinker: UnwrapRef<typeof import('../core/repl/src/index')['tinker']>
     readonly tinkerPath: UnwrapRef<typeof import('../core/path/src/index')['tinkerPath']>
     readonly toDecimal: UnwrapRef<typeof import('../core/utils/src/currency')['toDecimal']>
@@ -1780,7 +1791,6 @@ declare module 'vue' {
     readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
-    readonly useScheduler: UnwrapRef<typeof import('../core/scheduler/src/index')['useScheduler']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenSafeArea']>
     readonly useScriptTag: UnwrapRef<typeof import('../core/utils/src/vendors')['useScriptTag']>
@@ -1891,6 +1901,8 @@ declare module '@vue/runtime-core' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Action: UnwrapRef<typeof import('../core/actions/src/action')['Action']>
+    readonly CronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['CronJob']>
+    readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../core/error-handling/src/index')['Err']>
@@ -1916,7 +1928,7 @@ declare module '@vue/runtime-core' {
     readonly RuleNumber: UnwrapRef<typeof import('../core/validation/src/validate')['RuleNumber']>
     readonly RuleObject: UnwrapRef<typeof import('../core/validation/src/validate')['RuleObject']>
     readonly RuleString: UnwrapRef<typeof import('../core/validation/src/validate')['RuleString']>
-    readonly ScheduleImpl: UnwrapRef<typeof import('../core/scheduler/src/index')['ScheduleImpl']>
+    readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/ui/src/index')['Store']>
@@ -2466,12 +2478,14 @@ declare module '@vue/runtime-core' {
     readonly runNpmScript: UnwrapRef<typeof import('../core/utils/src/helpers')['runNpmScript']>
     readonly runSystemTrayDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runSystemTrayDevServer']>
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/index')['runtimePath']>
+    readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/index')['schedulerPath']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/index')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/index')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../core/path/src/index')['securityPath']>
+    readonly sendAt: UnwrapRef<typeof import('../core/scheduler/src/schedule')['sendAt']>
     readonly sep: UnwrapRef<typeof import('../core/path/src/index')['sep']>
     readonly serve: UnwrapRef<typeof import('../core/router/src/server')['serve']>
     readonly server: UnwrapRef<typeof import('../core/server/src/index')['server']>
@@ -2497,7 +2511,7 @@ declare module '@vue/runtime-core' {
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
     readonly sql: UnwrapRef<typeof import('../core/query-builder/src/kysely')['sql']>
-    readonly src: UnwrapRef<typeof import('../core/events/src/index')['default']>
+    readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
     readonly stacks: UnwrapRef<typeof import('../core/build/src/index')['stacks']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/index')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
@@ -2523,6 +2537,7 @@ declare module '@vue/runtime-core' {
     readonly throttledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['throttledWatch']>
     readonly tick: UnwrapRef<typeof import('../core/signals/src/index')['tick']>
+    readonly timeout: UnwrapRef<typeof import('../core/scheduler/src/schedule')['timeout']>
     readonly tinker: UnwrapRef<typeof import('../core/repl/src/index')['tinker']>
     readonly tinkerPath: UnwrapRef<typeof import('../core/path/src/index')['tinkerPath']>
     readonly toDecimal: UnwrapRef<typeof import('../core/utils/src/currency')['toDecimal']>
@@ -2690,7 +2705,6 @@ declare module '@vue/runtime-core' {
     readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
-    readonly useScheduler: UnwrapRef<typeof import('../core/scheduler/src/index')['useScheduler']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenSafeArea']>
     readonly useScriptTag: UnwrapRef<typeof import('../core/utils/src/vendors')['useScriptTag']>

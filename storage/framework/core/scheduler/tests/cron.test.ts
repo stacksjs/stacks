@@ -391,7 +391,6 @@ describe('cron', () => {
           catch (e) {
             // we make sure this isn't skipped with `expect.assertions()`
             // at the beginning of the test
-            // eslint-disable-next-line jest/no-conditional-expect
             expect(e).toBeInstanceOf(TypeError)
           }
           expect(onComplete).toBeUndefined()
@@ -571,7 +570,7 @@ describe('cron', () => {
       expect(() => {
         CronJob.from({
           cronTime: '* * * * * *',
-          onTick: () => {},
+          onTick: () => { },
           timeZone: 'fake/timezone',
         })
       }).toThrow()
@@ -1195,7 +1194,7 @@ describe('cron', () => {
       // @ts-expect-error testing runtime exception
       new CronJob(
         `* * * * *`,
-        () => {},
+        () => { },
         null,
         true,
         'America/Chicago',
@@ -1211,7 +1210,7 @@ describe('cron', () => {
       // @ts-expect-error testing runtime exception
       CronJob.from({
         cronTime: '* * * * * *',
-        onTick() {},
+        onTick() { },
         timeZone: 'America/Chicago',
         utcOffset: 120,
       })

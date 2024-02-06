@@ -1,9 +1,9 @@
+/* eslint-disable no-new */
 import { DateTime } from 'luxon'
 import sinon from 'sinon'
 import { CronTime } from '../src'
 
 describe('crontime', () => {
-  // eslint-disable-next-line jest/no-standalone-expect
   afterEach(() => expect.hasAssertions())
 
   it('should test stars (* * * * * *)', () => {
