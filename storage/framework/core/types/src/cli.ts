@@ -174,9 +174,9 @@ export type ActionOption = 'types' | 'domains' | 'count'
  * The options to pass to the Action.
  */
 export type ActionOptions = {
-  'types'?: boolean
-  'domains'?: boolean
-  'count'?: number
+  types?: boolean
+  domains?: boolean
+  count?: number
 } & CliOptions & DomainsOptions
 
 export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'views' | 'stacks' | 'all' | 'buddy' | 'server'
