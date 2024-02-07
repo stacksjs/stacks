@@ -2,7 +2,6 @@ import process from 'node:process'
 import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI) {

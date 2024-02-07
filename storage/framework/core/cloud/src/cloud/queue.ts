@@ -2,6 +2,7 @@ import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
 import { aws_ec2 as ec2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import { slug } from '@stacksjs/strings'
+import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
 import { path } from '@stacksjs/path'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
@@ -16,7 +17,7 @@ export interface QueueStackProps extends NestedCloudProps {
 export class QueueStack {
   constructor(scope: Construct, props: QueueStackProps) {
     // Read all files in the jobs directory
-    const jobsDir = path.appPath('Jobs')
+    const jobsDir = path.jobsPath()
 
     fs.readdir(jobsDir, (err, files) => {
       if (err) {
