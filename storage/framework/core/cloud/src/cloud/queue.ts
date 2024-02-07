@@ -31,7 +31,7 @@ export class QueueStack {
             },
             {
               name: 'JOB',
-              value: 'DummyJob.ts',
+              value: 'ExampleJob.ts',
             },
           ],
         },
