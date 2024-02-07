@@ -10,6 +10,7 @@ export function configure(buddy: CLI) {
     configure: 'Configure options',
     aws: 'Configure the AWS connection',
     project: 'Target a specific project',
+    profile: 'The AWS profile to use',
     verbose: 'Enable verbose output',
   }
 
@@ -20,19 +21,7 @@ export function configure(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
       if (options?.aws) {
-        const startTime = performance.now()
-        const result = await runCommand('aws configure', {
-          ...options,
-          cwd: p.projectPath(),
-          stdin: 'inherit',
-        })
-
-        if (result.isErr()) {
-          await outro('While running the configure command, there was an issue', { startTime, useSeconds: true }, result.error)
-          process.exit(ExitCode.FatalError)
-        }
-
-        await outro('Exited', { startTime, useSeconds: true })
+        await configureAws(options)
         process.exit(ExitCode.Success)
       }
 
@@ -44,20 +33,9 @@ export function configure(buddy: CLI) {
     .command('configure:aws', descriptions.aws)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--profile', 'The AWS profile to use', { default: process.env.AWS_PROFILE })
     .action(async (options?: ConfigureOptions) => {
-      const startTime = performance.now()
-      const result = await runCommand(`aws configure --profile ${config.app.url}`, {
-        ...options,
-        cwd: p.cloudPath(),
-        stdin: 'inherit',
-      })
-
-      if (result.isErr()) {
-        await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
-        process.exit(ExitCode.FatalError)
-      }
-
-      await outro('Exited', { startTime, useSeconds: true })
+      await configureAws(options)
       process.exit(ExitCode.Success)
     })
 
@@ -65,4 +43,30 @@ export function configure(buddy: CLI) {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(ExitCode.FatalError)
   })
+}
+
+async function configureAws(options: ConfigureOptions) {
+  const startTime = performance.now()
+
+  const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID
+  const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+  const defaultRegion = 'us-east-1' // we only support `us-east-1` for now
+  const defaultOutputFormat = 'json'
+
+  const command = `aws configure --profile ${options.profile ?? process.env.AWS_PROFILE}`
+  const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
+
+  const result = await runCommand(command, {
+    ...options,
+    cwd: p.projectPath(),
+    stdin: 'pipe', // set stdin mode to 'pipe' to write to it
+    input, // the actual input to write
+  })
+
+  if (result.isErr()) {
+    await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  await outro('Exited', { startTime, useSeconds: true })
 }

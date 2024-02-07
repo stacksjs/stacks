@@ -1,5 +1,6 @@
 export interface ConfigureOptions {
   aws: boolean
+  profile: string
   verbose: boolean
 }
 
