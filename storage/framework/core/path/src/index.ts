@@ -243,7 +243,7 @@ export function eslintPath(path?: string) {
 }
 
 export function jobsPath(path?: string) {
-  return resourcesPath(`jobs/${path || ''}`)
+  return appPath(`Jobs/${path || ''}`)
 }
 
 export function loggingPath(path?: string) {

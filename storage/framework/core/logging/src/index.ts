@@ -28,26 +28,31 @@ async function writeToLogFile(message: string) {
 }
 
 export const log = {
-  info: async (arg: string) => {
-    consola.info(arg)
+  info: async (...arg: any) => {
+    consola.info(...arg)
     await writeToLogFile(`INFO: ${arg}`)
   },
+
   success: async (msg: string) => {
     consola.success(msg)
     await writeToLogFile(`SUCCESS: ${msg}`)
   },
+
   error: async (err: string, options?: any) => {
     handleError(err, options) // Assuming handleError logs the error
     await writeToLogFile(`ERROR: ${err}`)
   },
+
   warn: async (arg: string) => {
     consola.warn(arg)
     await writeToLogFile(`WARN: ${arg}`)
   },
+
   debug: async (arg: string) => {
     consola.debug(arg)
     await writeToLogFile(`DEBUG: ${arg}`)
   },
+
   // prompt,
   dump,
   dd,
