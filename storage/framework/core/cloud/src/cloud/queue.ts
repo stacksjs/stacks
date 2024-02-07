@@ -30,7 +30,7 @@ export class QueueStack {
           const filePath = path.join(jobsDir, file)
 
           // Import the job module
-          const jobModule = await import(filePath)
+          const jobModule = require(filePath)
 
           // Extract the rate from the job module, fallback to a default if not specified
           const rate = jobModule.rate || '* * * * *' // Default to every minute if not specified
