@@ -1,7 +1,6 @@
 import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
 import { serverResponse } from '@stacksjs/router'
-import { path as p } from '@stacksjs/path'
 
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB)
