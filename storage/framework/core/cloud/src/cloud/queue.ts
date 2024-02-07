@@ -1,6 +1,7 @@
 import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
 import { aws_ec2 as ec2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
+import { slug } from '@stacksjs/strings'
 import { fs } from '@stacksjs/storage'
 import { path } from '@stacksjs/path'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
@@ -33,25 +34,17 @@ export class QueueStack {
           const jobModule = require(filePath)
 
           // Extract the rate from the job module, fallback to a default if not specified
-          const rate = jobModule.rate || '* * * * *' // Default to every minute if not specified
+          const rate = jobModule.default.rate || '* * * * *' // Default to every minute if not specified
 
           // Convert the rate to a Schedule object
           const schedule = Schedule.cron(cronScheduleFromRate(rate))
 
-          // Assuming each job exports a Job instance as default, you can now access it
-          // console.log('Loaded job:', jobModule.default.name)
-
           // Perform operations with the jobModule.default as needed
-          const rule = new Rule(scope, `QueueRule${file}`, {
+          const rule = new Rule(scope, `QueueRule${file.replace('.ts', '')}`, {
           // schedule to run every second
-            ruleName: `${props.appName}-${props.appEnv}-queue-rule-${file}`,
+            ruleName: `${props.appName}-${props.appEnv}-queue-rule-${slug(file.replace('.ts', ''))}`,
             schedule,
           })
-          // const rule = new Rule(scope, 'QueueRule', {
-          //   // schedule to run every second
-          //   ruleName: `${props.appName}-${props.appEnv}-queue-rule`,
-          //   schedule: Schedule.cron({ minute: '*', hour: '*', month: '*', weekDay: '*', year: '*' }),
-          // })
 
           rule.addTarget(new EcsTask({
             cluster: props.cluster,
