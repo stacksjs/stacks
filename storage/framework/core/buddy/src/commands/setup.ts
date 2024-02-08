@@ -79,9 +79,11 @@ export function setup(buddy: CLI) {
         }
       }
 
-      log.success('Oh My Zsh setup complete.')
+      log.success('Oh My Zsh setup complete')
       log.info('To see changes reflect, you may need to:')
-      log.info('⌘⇧P workbench.action.reloadWindow')
+      // if on vscode show the message
+      // log.info('⌘⇧P workbench.action.reloadWindow')
+      // else show the message
     })
 
   buddy.on('setup:*', () => {
