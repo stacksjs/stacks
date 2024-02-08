@@ -366,6 +366,10 @@ export function scriptsPath(path?: string) {
   return frameworkPath(`scripts/${path || ''}`)
 }
 
+export function schedulePath() {
+  return appPath(`Schedule.ts`)
+}
+
 export function schedulerPath(path?: string) {
   return corePath(`scheduler/${path || ''}`)
 }
@@ -523,6 +527,7 @@ export const path = {
   signalsPath,
   slugPath,
   scriptsPath,
+  schedulePath,
   securityPath,
   serverPath,
   serverlessPath,

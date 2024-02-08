@@ -23,6 +23,11 @@ export class Schedule {
     return this
   }
 
+  everyTwoMinutes() {
+    this.cronPattern = '*/2 * * * * *'
+    return this
+  }
+
   everyFiveMinutes() {
     this.cronPattern = '*/5 * * * *'
     return this
