@@ -24,9 +24,16 @@ export function deploy(buddy: CLI) {
       const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
 
+      if (!domain) {
+        log.info('No domain found in your .env or ./config/app.ts')
+        log.info('Please ensure your domain is properly configured.')
+        log.info('For more info, check out the docs or join our Discord.')
+        process.exit(ExitCode.FatalError)
+      }
+
       await checkIfAwsIsConfigured()
 
-      options.domain = await configureDomain(domain)
+      options.domain = await configureDomain(domain, options, startTime)
 
       const result = await runAction(Action.Deploy, options)
 
@@ -44,7 +51,7 @@ export function deploy(buddy: CLI) {
   })
 }
 
-async function configureDomain(domain: string) {
+async function configureDomain(domain: string, options: DeployOptions, startTime: number) {
   if (!domain) {
     log.info('We could not identify a domain to deploy to.')
     log.info('Please set your .env or ./config/app.ts properly.')
@@ -103,7 +110,7 @@ async function configureDomain(domain: string) {
 }
 
 async function checkIfAwsIsConfigured() {
-  log.info('Checking if AWS is configured...')
+  log.info('Ensuring AWS is configured...')
   const result = await runCommand('buddy configure:aws --quiet', {
     silent: true,
   })
@@ -114,5 +121,5 @@ async function checkIfAwsIsConfigured() {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('AWS is configured')
+  log.success('AWS is configured')
 }
