@@ -30,7 +30,7 @@ export class QueueStack {
       const files = await fs.readdir(jobsDir)
       console.log('files', files)
 
-      for (const file in files) {
+      for (const file of files) {
         log.info('file', file)
         if (file.endsWith('.ts')) {
           const filePath = path.jobsPath(file)
