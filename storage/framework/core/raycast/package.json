@@ -9,7 +9,7 @@
     "Documentation"
   ],
   "icon": "stacks-logo.ico",
-  "owner": "stacksjs",
+  "owner": "stacks",
   "commands": [
     {
       "name": "index",
@@ -27,7 +27,8 @@
     "publish": "bunx @raycast/api@latest publish"
   },
   "dependencies": {
-    "@raycast/api": "^1.65.1"
+    "@raycast/api": "^1.65.1",
+    "@raycast/utils": "^1.12.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",
