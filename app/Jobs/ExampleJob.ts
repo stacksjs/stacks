@@ -3,9 +3,8 @@ import { Every } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 
 export default new Job({
-  name: 'Send Welcome Email', // optional, defaults to the file name
+  name: 'Example Job', // optional, defaults to the file name
   description: 'A demo cron job that runs every minute', // optional
-  queue: 'default', // optional, defaults to 'default'
   tries: 3, // optional, defaults to 3, in case of failures
   backoff: 3, // optional, defaults to 3-second delays between retries
   rate: Every.Minute, // optional, '* * * * *' in cron syntax (overwrites the Scheduler's definition)
