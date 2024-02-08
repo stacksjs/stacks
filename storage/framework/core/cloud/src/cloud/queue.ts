@@ -30,10 +30,8 @@ export class QueueStack {
       const files = await fs.readdir(jobsDir)
 
       for (const file of files) {
-        log.info('file', file)
         if (file.endsWith('.ts')) {
           const filePath = path.jobsPath(file)
-          log.info('filePath', filePath)
 
           // Await the loading of the job module
           const jobModule = await this.loadJobModule(filePath)
