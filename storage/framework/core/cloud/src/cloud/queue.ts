@@ -36,13 +36,17 @@ export class QueueStack {
           const jobModule = await this.loadJobModule(filePath)
 
           // Now you can safely access jobModule.default.rate
-          const rate = jobModule.default.rate || '* * * * *'
+          const rate = jobModule.default?.rate
 
-          // Rest of your logic here...
+          // if no rate or job is disabled, no need to schedule, skip
+          if (!rate || jobModule.default?.enabled === false)
+            continue
+
           // Convert the rate to a Schedule object
           const schedule = Schedule.cron(this.cronScheduleFromRate(rate))
 
           const id = `QueueRule${pascalCase(file.replace('.ts', ''))}`
+
           // Perform operations with the jobModule.default as needed
           const rule = new Rule(this.scope, id, {
             // schedule to run every second
@@ -69,7 +73,7 @@ export class QueueStack {
               },
             ],
 
-            retryAttempts: 3,
+            retryAttempts: jobModule.default.tries || 3,
 
             subnetSelection: {
               subnetType: ec2.SubnetType.PUBLIC, // SubnetType.PRIVATE_WITH_EGRESS

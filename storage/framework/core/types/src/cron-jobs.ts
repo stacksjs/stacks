@@ -1,3 +1,5 @@
+import type { IntRange } from '@stacksjs/scheduler'
+
 /**
  * Cron Job Options.
  */
@@ -12,7 +14,10 @@ export interface JobOptions {
   description?: string
   queue?: string
   timezone?: string
-  tries?: number
+  /**
+   * Number of tries. Must be between 0 and 185.
+   */
+  tries?: IntRange<0, 185>
   backoff?: number | number[]
   rate?: string | Every
   enabled?: boolean
