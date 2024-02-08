@@ -9,6 +9,7 @@
     "@stacksjs/logging": "^0.58.58",
     "@stacksjs/queue": "^0.58.58",
     "@stacksjs/router": "^0.58.58",
+    "@stacksjs/storage": "^0.58.58",
     "@stacksjs/utils": "^0.58.58",
     "aws4fetch": "^1.0.17"
   }
