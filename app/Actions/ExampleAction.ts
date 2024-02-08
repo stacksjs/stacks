@@ -2,8 +2,7 @@ import { Action } from '@stacksjs/actions'
 
 export default new Action({
   name: 'SendWelcomeEmail',
-  description: 'Send a welcome email to a new user',
-  // longRunning: false,
+  description: 'An optional description of the action.',
 
   async handle() {
     return sendEmail({

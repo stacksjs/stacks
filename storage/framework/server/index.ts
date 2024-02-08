@@ -2,6 +2,7 @@ import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
 import { serverResponse } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
+import { retry } from '@stacksjs/utils'
 
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB)
@@ -11,10 +12,15 @@ if (process.env.QUEUE_WORKER) {
 
   log.info('Running job...', process.env.JOB)
 
-  if (typeof jobModule.default.handle === 'function')
-    await jobModule.default.handle()
-  else
-    throw new Error('`handle()` function is undefined')
+  if (typeof jobModule.default.handle === 'function') {
+    retry(await jobModule.default.handle(), {
+      backoffFactor: process.env.JOB_BACKOFF_FACTOR,
+      retries: process.env.JOB_RETRIES,
+      initialDelay: process.env.JOB_INITIAL_DELAY,
+      jitter: process.env.JOB_JITTER,
+    })
+  }
+  else { throw new TypeError('`handle()` function is undefined') }
 
   process.exit(0)
 }
