@@ -76,9 +76,11 @@ export const options = {
   timestamp,
 } satisfies CloudOptions
 
-new Cloud(app, name, {
+const cloud = new Cloud(app, name, {
   ...options,
   description: `The Stacks Cloud`,
 })
+
+await cloud.init()
 
 app.synth()
