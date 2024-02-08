@@ -78,7 +78,7 @@
     "vite-plugin-pwa": "^0.17.5",
     "vite-ssg": "^0.23.6",
     "vitepress": "1.0.0-rc.42",
-    "vue": "^3.4.15"
+    "vue": "^3.4.16"
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.126.0",
