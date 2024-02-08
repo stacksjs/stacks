@@ -149,14 +149,14 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   log.info('Ensuring AWS is connected...')
 
-  // const awsResult = await runCommand('buddy configure:aws', {
-  //   cwd: options.cwd || p.projectPath(),
-  // })
+  const awsResult = await runCommand('buddy configure:aws', {
+    cwd: options.cwd || p.projectPath(),
+  })
 
-  // if (awsResult.isErr()) {
-  //   handleError(awsResult.error)
-  //   process.exit(ExitCode.FatalError)
-  // }
+  if (awsResult.isErr()) {
+    handleError(awsResult.error)
+    process.exit(ExitCode.FatalError)
+  }
 
   log.success('Configured AWS')
 

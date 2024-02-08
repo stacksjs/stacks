@@ -46,6 +46,14 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     },
   })
 
+  // Check if we need to write to stdin
+  if (options?.stdin === 'pipe' && options.input) {
+    if (proc.stdin) {
+      proc.stdin.write(options.input)
+      proc.stdin.end()
+    }
+  }
+
   const exited = await proc.exited
   if (exited === ExitCode.Success)
     return ok(proc)
