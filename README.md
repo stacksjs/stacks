@@ -74,6 +74,8 @@ buddy install # installs dependencies
 buddy add # adds a stack or dependency
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
+buddy setup # sets up the project initially
+buddy setup:oh-my-zsh # optional: sets up Oh My Zsh with auto-completions & "aliases"
 
 buddy upgrade # upgrades all dependencies
 buddy upgrade -i # prompts you to select which updates to apply (wip)
