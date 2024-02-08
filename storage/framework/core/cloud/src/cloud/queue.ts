@@ -28,7 +28,6 @@ export class QueueStack {
 
     try {
       const files = await fs.readdir(jobsDir)
-      console.log('files', files)
 
       for (const file of files) {
         log.info('file', file)
@@ -38,7 +37,6 @@ export class QueueStack {
 
           // Await the loading of the job module
           const jobModule = await this.loadJobModule(filePath)
-          console.log('jobModule', jobModule)
 
           // Now you can safely access jobModule.default.rate
           const rate = jobModule.default.rate || '* * * * *'
