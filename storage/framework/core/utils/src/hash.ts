@@ -2,7 +2,16 @@ import { hashPaths } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
 
-export const originRequestFunctionHash = hashPaths(p.cloudPath('src/edge'))
+// eslint-disable-next-line import/no-mutable-exports
+let originRequestFunctionHash
+try {
+  originRequestFunctionHash = hashPaths(p.cloudPath('src/edge'))
+}
+catch (error) {
+  console.error('Are we in a Docker container? Failed to hash paths:', error)
+  originRequestFunctionHash = null // or some default/fallback value
+}
+export { originRequestFunctionHash }
 
 const docsSrc = [
   p.projectPath('docs'),

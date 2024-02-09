@@ -1,7 +1,8 @@
-import { log, runCommands } from '@stacksjs/cli'
+import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { NpmScript } from '@stacksjs/enums'
 
 log.info('Ensuring Code Style...')
-await runCommands([NpmScript.LintFix], { cwd: projectPath() })
+const options = parseOptions()
+await runCommand(NpmScript.LintFix, { cwd: projectPath() }, options)
 log.success('Linted')

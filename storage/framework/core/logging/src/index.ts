@@ -48,8 +48,8 @@ export const log = {
     await writeToLogFile(`WARN: ${arg}`)
   },
 
-  debug: async (arg: string) => {
-    consola.debug(arg)
+  debug: async (...arg: any) => {
+    consola.debug(...arg)
     await writeToLogFile(`DEBUG: ${arg}`)
   },
 

@@ -6,11 +6,12 @@
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/logging": "^0.58.58",
-    "@stacksjs/queue": "^0.58.58",
-    "@stacksjs/router": "^0.58.58",
-    "@stacksjs/storage": "^0.58.58",
-    "@stacksjs/utils": "^0.58.58",
-    "aws4fetch": "^1.0.17"
+    "@stacksjs/logging": "^0.58.59",
+    "@stacksjs/queue": "^0.58.59",
+    "@stacksjs/router": "^0.58.59",
+    "@stacksjs/storage": "^0.58.59",
+    "@stacksjs/utils": "^0.58.59",
+    "aws4fetch": "^1.0.17",
+    "graceful-fs": "^4.2.11"
   }
 }

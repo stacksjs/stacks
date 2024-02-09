@@ -2,7 +2,7 @@
 import cac from 'cac'
 import { version } from '../package.json'
 
-interface ParsedArgv {
+export interface ParsedArgv {
   args: ReadonlyArray<string>
   options: {
     [k: string]: any
@@ -31,22 +31,4 @@ export function cli(name?: string | CliOptions, options?: CliOptions) {
 
 export function command(name: string, description: string, options?: CliOptions) {
   return cli(options).command(name, description)
-}
-
-export function parseArgs() {
-  return cli().parse().args
-}
-
-export function parseOptions(): ParsedArgv['options'] {
-  const options = cli().parse().options
-
-  // Iterate over the options and convert "true" and "false" strings to boolean
-  for (const key in options) {
-    if (options[key] === 'true')
-      options[key] = true
-    else if (options[key] === 'false')
-      options[key] = false
-  }
-
-  return options
 }

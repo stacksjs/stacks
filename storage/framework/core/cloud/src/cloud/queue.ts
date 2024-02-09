@@ -24,39 +24,39 @@ export class QueueStack {
 
   async init() {
     const jobsDir = path.jobsPath()
+    const actionsDir = path.appPath('Actions')
 
-    try {
-      const jobFiles = await fs.readdir(jobsDir)
-      const actionFiles = await fs.readdir(actionsDir)
-      const jobs = []
+    const jobFiles = await fs.readdir(jobsDir)
+    const actionFiles = await fs.readdir(actionsDir)
+    const jobs = []
 
-      // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs
-      for (const file of jobFiles) {
-        if (!file.endsWith('.ts'))
-          continue
+    // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs
+    for (const file of jobFiles) {
+      if (!file.endsWith('.ts'))
+        continue
 
-        const filePath = path.jobsPath(file)
+      const jobPath = path.jobsPath(file)
 
-        // Await the loading of the job module
-        jobs.push(await this.loadModule(filePath))
-      }
-
-      for (const file of actionFiles) {
-        if (!file.endsWith('.ts'))
-          continue
-
-        const filePath = path.actionsPath(file)
-
-        // Await the loading of the job module
-        jobs.push(await this.loadModule(filePath))
-      }
-
-      for (const job of jobs)
-        await this.createQueueRule(job)
+      // Await the loading of the job module
+      const job = await this.loadModule(jobPath)
+      this.createQueueRule(job, file)
+      jobs.push(job)
     }
-    catch (err) {
-      console.error('Error reading the jobs directory:', err)
+
+    for (const file of actionFiles) {
+      if (!file.endsWith('.ts'))
+        continue
+
+      const actionPath = path.appPath(`Actions/${file}`)
+
+      // Await the loading of the job module
+      const action = await this.loadModule(actionPath)
+      this.createQueueRule(action, file)
+      jobs.push(action)
     }
+
+    // for (const job of jobs)
+    //   await this.createQueueRule(job, file)
   }
 
   // Helper function to convert a rate string to a cron object for AWS Schedule
@@ -78,12 +78,13 @@ export class QueueStack {
     return jobModule
   }
 
-  createQueueRule(job: any) {
-    // Now you can safely access job.default.rate
-    const rate = job.default?.rate
+  // TODO: narrow any type -> jobs & actions are allowed
+  createQueueRule(module: { default: any }, file: string) {
+    // Now you can safely access module.default.rate
+    const rate = module.default?.rate
 
     // if no rate or job is disabled, no need to schedule, skip
-    if (!rate || job.default?.enabled === false)
+    if (!rate || module.default?.enabled === false)
       return
 
     // Convert the rate to a Schedule object
@@ -115,26 +116,26 @@ export class QueueStack {
             },
             {
               name: 'JOB_BACKOFF_FACTOR',
-              value: jobModule.default?.backoffFactor,
+              value: module.default?.backoffFactor,
             },
             {
               name: 'JOB_RETRIES',
-              value: jobModule.default?.tries,
+              value: module.default?.tries,
             },
             {
               name: 'JOB_INITIAL_DELAY',
-              value: jobModule.default?.initialDelay,
+              value: module.default?.initialDelay,
             },
             {
               name: 'JOB_JITTER',
-              value: jobModule.default?.jitter,
+              value: module.default?.jitter,
             },
           ],
         },
       ],
 
       retryAttempts: 1, // we utilize a custom retry mechanism in the job itself
-      // retryAttempts: jobModule.default.tries || 3,
+      // retryAttempts: module.default.tries || 3,
 
       subnetSelection: {
         subnetType: ec2.SubnetType.PUBLIC, // SubnetType.PRIVATE_WITH_EGRESS

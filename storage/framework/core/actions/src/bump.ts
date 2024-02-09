@@ -1,11 +1,16 @@
-import { runCommand } from '@stacksjs/cli'
+import { parseOptions, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 
-await runCommand('buddy changelog --quiet', {
+const options = parseOptions()
+const changelogCommand = options?.dryRun ? 'buddy changelog --quiet --dry-run' : 'buddy changelog --quiet'
+
+await runCommand(changelogCommand, {
   cwd: p.projectPath(),
 })
 
+const bumpCommand = options?.dryRun ? 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --no-push' : 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all'
+
 await runCommand(
-  'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all',
+  bumpCommand,
   { cwd: p.frameworkPath(), stdin: 'inherit' },
 )

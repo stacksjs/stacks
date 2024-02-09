@@ -1,11 +1,11 @@
-import { execSync, runCommand } from '@stacksjs/cli'
+import { execSync, parseOptions, runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
 const fromRevision = await execSync('git describe --abbrev=0 --tags HEAD^')
-// console.log('fromRevision', fromRevision)
 const toRevision = await execSync('git describe')
-// console.log('toRevision', toRevision)
+const options = parseOptions()
 
-await runCommand(`bunx changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`, {
+const command = options?.dryRun ? `bunx changelogen --no-output --from ${fromRevision} --to ${toRevision}` : `bunx changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`
+await runCommand(command, {
   cwd: projectPath(),
 })

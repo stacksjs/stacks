@@ -8,15 +8,20 @@ import { runAction } from '@stacksjs/actions'
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
   project: 'Target a specific project',
+  dryRun: 'Run the release without actually releasing',
   verbose: 'Enable verbose output',
 }
 
 export function release(buddy: CLI) {
   buddy
     .command('release', descriptions.release)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
+      if (options.dryRun)
+        log.warn('Dry run enabled. No changes will be made.')
+
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, { ...options, stdin: 'inherit' })
 
@@ -25,7 +30,7 @@ export function release(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Triggered your CI/CD release workflow', { startTime, useSeconds: true })
+      await outro('Triggered CI/CD Release Workflow', { startTime, useSeconds: true })
     })
 
   buddy.on('release:*', () => {
