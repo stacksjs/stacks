@@ -52,7 +52,7 @@
     "@stacksjs/config": "workspace:*"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.4.0",
+    "@faker-js/faker": "^8.4.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*"
   },
