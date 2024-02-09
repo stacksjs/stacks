@@ -1,6 +1,6 @@
 import type { BunFile } from 'bun'
 
-type ArrayBufferView = TypedArray | DataView
+type ArrayBufferView = NodeJS.TypedArray | DataView
 
 export type { Subprocess, SyncSubprocess } from 'bun'
 export type Readable =

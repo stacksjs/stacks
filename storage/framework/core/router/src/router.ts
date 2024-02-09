@@ -1,8 +1,8 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
-import { projectPath } from '@stacksjs/path'
+import { path as p, projectPath } from '@stacksjs/path'
 
 export interface RouterInterface {
-  get: (url: Route['url'], callback: Route['callback']) => this
+  get: (url: Route['url'], callback: Route['callback']) => Promise<this>
   post: (url: Route['url'], callback: Route['callback']) => this
   view: (url: Route['url'], callback: Route['callback']) => this
   redirect: (url: Route['url'], callback: Route['callback'], status?: RedirectCode) => this
@@ -46,7 +46,14 @@ export class Router implements RouterInterface {
     })
   }
 
-  public get(path: Route['url'], callback: Route['callback']): this {
+  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+    // check if callback is a string and if it is, then import that module path and use the default.handle function as the callback
+    if (typeof callback === 'string') {
+      // import the module and use the default.handle function as the callback
+      const actionModule = await import(p.actionsPath(`${callback}.ts`))
+      callback = actionModule.default.handle
+    }
+
     this.addRoute('GET', path, callback, 200)
     return this
   }

@@ -17,7 +17,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
   if (!hasAction(action))
     return err(handleError(`The specified action "${action}" does not exist`))
 
-  const opts = buddyOptions()
+  const opts = parseOptions()
   const path = p.relativeActionsPath(`${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`
   const optionsWithCwd = {
@@ -51,7 +51,6 @@ export async function runActions(actions: string[], options?: ActionOptions) {
       return err(`The specified action "${action}" does not exist`)
   }
 
-  // TODO: need to solve this error
   const opts = buddyOptions()
 
   const o = {

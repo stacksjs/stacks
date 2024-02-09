@@ -34,13 +34,14 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' 
 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
 
+type ActionName = string
 export interface Route {
   name: string
   uri: string
   url: string // used synonymously with uri
   method: HttpMethod
   pattern: RegExp
-  callback: RouteCallback
+  callback: RouteCallback | ActionName
   paramNames: string[]
   middleware?: string | string[]
   statusCode?: StatusCode
