@@ -29,6 +29,7 @@ async function writeToLogFile(message: string) {
 
 export const log = {
   info: async (...arg: any) => {
+    // @ts-expect-error intentional
     consola.info(...arg)
     await writeToLogFile(`INFO: ${arg}`)
   },
@@ -49,6 +50,7 @@ export const log = {
   },
 
   debug: async (...arg: any) => {
+    // @ts-expect-error intentional
     consola.debug(...arg)
     await writeToLogFile(`DEBUG: ${arg}`)
   },
