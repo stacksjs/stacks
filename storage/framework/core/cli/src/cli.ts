@@ -29,6 +29,6 @@ export function cli(name?: string | CliOptions, options?: CliOptions) {
   return cli
 }
 
-export function command(name: string, description: string, options?: CliOptions) {
-  return cli(options).command(name, description)
-}
+// export function command(name: string, description: string, options?: CliOptions) {
+//   return cli(options).command(name, description)
+// }

@@ -19,7 +19,7 @@ export async function runAction(action: string, options?: ActionOptions): Promis
 
   const opts = parseOptions()
   const path = p.relativeActionsPath(`${action}.ts`)
-  const cmd = `bun --bun ${path} ${opts}`
+  const cmd = `bun --bun ${path} ${opts}`.trimEnd()
   const optionsWithCwd = {
     cwd: options?.cwd || p.projectPath(),
     ...options,

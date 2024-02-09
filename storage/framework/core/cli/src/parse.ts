@@ -107,46 +107,52 @@ interface CliOptions {
   [k: string]: string | boolean | number | undefined
 }
 
-export function parseOptions(options?: CliOptions): object {
-  if (!options) {
-    options = {}
-    const args = process.argv.slice(2)
+export function parseOptions(options?: CliOptions): CliOptions | undefined {
+  options = options || {}
+  const args = process.argv.slice(2)
 
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i]
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg?.startsWith('--')) {
+      const key = arg.substring(2) // remove the --
+      const camelCaseKey = key.replace(
+        /-([a-z])/gi,
+        g => (g[1] ? g[1].toUpperCase() : ''), // convert kebab-case to camelCase
+      )
 
-      if (arg?.startsWith('--')) {
-        const key = arg.substring(2) // remove the --
-        const camelCaseKey = key.replace(/-([a-z])/gi, g => (g[1] ? g[1].toUpperCase() : '')) // convert kebab-case to camelCase
-
-        if (i + 1 < args.length && (args[i + 1] === 'true' || args[i + 1] === 'false')) { // if the next arg is a boolean
+      if (i + 1 < args.length) { // if the next arg exists
+        if (args[i + 1] === 'true' || args[i + 1] === 'false') { // if the next arg is a boolean
           options[camelCaseKey] = args[i + 1] === 'true' // set the value to the boolean
           i++
         }
         else {
-          options[camelCaseKey] = true
+          options[camelCaseKey] = args[i + 1]
+          i++
         }
       }
+      else {
+        options[camelCaseKey] = true
+      }
     }
-
-    return options
   }
+
+  // if options has no keys, return undefined, e.g. `buddy release`
+  if (Object.keys(options).length === 0)
+    return undefined
 
   // convert the string 'true' or 'false' to a boolean
   Object.keys(options).forEach((key) => {
-    let value
-    if (options)
-      value = options[key]
+    if (!options)
+      return
 
-    if (value === 'true' || value === 'false') {
-      if (options)
-        options[key] = value === 'true'
-    }
+    const value = options[key]
+
+    if (value === 'true' || value === 'false')
+      options[key] = value === 'true'
   })
 
   return options
 }
-
 // interface BuddyOptions {
 //   dryRun?: boolean
 //   verbose?: boolean
