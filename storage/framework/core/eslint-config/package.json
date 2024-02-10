@@ -93,7 +93,7 @@
     "eslint-plugin-vue": "^9.21.1",
     "eslint-plugin-yml": "^1.12.2",
     "eslint-processor-vue-blocks": "^0.1.1",
-    "globals": "^13.24.0",
+    "globals": "^14.0.0",
     "jsonc-eslint-parser": "^2.4.0",
     "local-pkg": "^0.5.0",
     "parse-gitignore": "^2.0.0",
