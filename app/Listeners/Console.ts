@@ -19,6 +19,4 @@ export default function (cli: CLI) {
     console.error('Invalid command: %s', cli.args.join(' '))
     process.exit(1)
   })
-
-  return cli
 }

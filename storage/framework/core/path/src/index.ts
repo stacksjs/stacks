@@ -242,6 +242,10 @@ export function lintPath(path?: string) {
   return corePath(`lint/${path || ''}`)
 }
 
+export function listenersPath(path?: string) {
+  return appPath(`Listeners/${path || ''}`)
+}
+
 export function eslintPath(path?: string) {
   return lintPath(`eslint/${path || ''}`)
 }
@@ -498,6 +502,7 @@ export const path = {
   libsPath,
   libraryEntryPath,
   lintPath,
+  listenersPath,
   loggingPath,
   jobsPath,
   modulesPath,

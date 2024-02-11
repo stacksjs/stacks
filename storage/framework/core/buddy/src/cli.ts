@@ -114,7 +114,7 @@ async function main() {
   //     console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   // }
 
-  // const listenerImport = await import(p.commandsPath('Listener.ts'))
+  // const listenerImport = await import(p.listenersPath('Console.ts'))
   // if (typeof listenerImport.default === 'function')
   //   listenerImport.default(buddy)
 
