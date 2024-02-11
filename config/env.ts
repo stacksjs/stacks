@@ -10,7 +10,7 @@ import { validate } from '@stacksjs/validation'
  */
 export default {
   APP_NAME: validate.string(),
-  APP_ENV: validate.enum(['development', 'staging', 'production']),
+  APP_ENV: validate.enum(['local', 'dev', 'stage', 'prod']),
   APP_KEY: validate.string(),
   APP_URL: validate.string(),
   APP_PORT: validate.number(),

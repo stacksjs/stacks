@@ -4,7 +4,7 @@ interface DeployedUserConfig extends UserConfig {
   deploy: boolean
 }
 
-export type DocsConfig = DeployedUserConfig
+export type DocsConfig = Partial<DeployedUserConfig>
 export type DocsOptions = DocsConfig
 
 export interface SocialLink {

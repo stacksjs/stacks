@@ -113,7 +113,7 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
 
 async function checkIfAwsIsConfigured() {
   log.info('Ensuring AWS is configured...')
-  const result = await runCommand('buddy configure:aws --quiet', {
+  const result = await runCommand('buddy configure:aws', {
     silent: true,
   })
 

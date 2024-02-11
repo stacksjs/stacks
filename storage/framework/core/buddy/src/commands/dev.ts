@@ -91,40 +91,39 @@ export function dev(buddy: CLI) {
       }
 
       if (wantsInteractive(options)) {
-        // TODO: uncomment this when prompt is available
-        // const answer = await prompt.require()
-        //   .select(descriptions.select, {
-        //     options: [
-        //       { value: 'all', label: 'All' },
-        //       { value: 'frontend', label: 'Frontend' },
-        //       { value: 'api', label: 'Backend' },
-        //       { value: 'dashboard', label: 'Dashboard' },
-        //       { value: 'desktop', label: 'Desktop' },
-        //       { value: 'email', label: 'Email' },
-        //       { value: 'components', label: 'Components' },
-        //       { value: 'docs', label: 'Documentation' },
-        //     ],
-        //   })
-        //
-        // if (answer === 'components') {
-        //   await runComponentsDevServer(options)
-        // }
-        // else if (answer === 'api') {
-        //   await runApiDevServer(options)
-        // }
-        // else if (answer === 'dashboard') {
-        //   await runDashboardDevServer(options)
-        // }
-        // // else if (answer === 'email')
-        // //   await runEmailDevServer(options)
-        // else if (answer === 'docs') {
-        //   await runDocsDevServer(options)
-        // }
-        //
-        // else {
-        //   log.error('Invalid option during interactive mode')
-        //   process.exit(ExitCode.InvalidArgument)
-        // }
+        const answer = await log.prompt.require()
+          .select(descriptions.select, {
+            options: [
+              { value: 'all', label: 'All' },
+              { value: 'frontend', label: 'Frontend' },
+              { value: 'api', label: 'Backend' },
+              { value: 'dashboard', label: 'Dashboard' },
+              { value: 'desktop', label: 'Desktop' },
+              { value: 'email', label: 'Email' },
+              { value: 'components', label: 'Components' },
+              { value: 'docs', label: 'Documentation' },
+            ],
+          })
+
+        if (answer === 'components') {
+          await runComponentsDevServer(options)
+        }
+        else if (answer === 'api') {
+          await runApiDevServer(options)
+        }
+        else if (answer === 'dashboard') {
+          await runDashboardDevServer(options)
+        }
+        // else if (answer === 'email')
+        //   await runEmailDevServer(options)
+        else if (answer === 'docs') {
+          await runDocsDevServer(options)
+        }
+
+        else {
+          log.error('Invalid option during interactive mode')
+          process.exit(ExitCode.InvalidArgument)
+        }
       }
 
       else {

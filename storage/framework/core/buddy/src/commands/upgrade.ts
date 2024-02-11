@@ -34,27 +34,26 @@ export function upgrade(buddy: CLI) {
 
       const perf = await intro('buddy upgrade')
 
-      // TODO: uncomment this when prompt is available
-      // if (hasNoOptions(options)) {
-      //   let answers = await prompt.require()
-      //     .multiselect(descriptions.select, {
-      //       options: [
-      //         { value: 'dependencies', label: 'Dependencies' },
-      //         { value: 'framework', label: 'Framework' },
-      //         { value: 'node', label: 'Node.js' },
-      //         { value: 'package-manager', label: 'Package Manager' },
-      //       ],
-      //     })
-      //
-      //   if (answers !== null)
-      //     process.exit(ExitCode.InvalidArgument)
-      //
-      //   if (isString(answers))
-      //     answers = [answers]
-      //
-      //   // creates an object out of array and sets answers to true
-      //   options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
-      // }
+      if (hasNoOptions(options)) {
+        let answers = await log.prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { value: 'dependencies', label: 'Dependencies' },
+              { value: 'framework', label: 'Framework' },
+              { value: 'node', label: 'Node.js' },
+              { value: 'package-manager', label: 'Package Manager' },
+            ],
+          })
+
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
+
+        if (isString(answers))
+          answers = [answers]
+
+        // creates an object out of array and sets answers to true
+        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      }
 
       const result = await runAction(Action.Upgrade, options)
 
@@ -122,6 +121,6 @@ export function upgrade(buddy: CLI) {
   })
 }
 
-// function hasNoOptions(options: UpgradeOptions) {
-//   return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
-// }
+function hasNoOptions(options: UpgradeOptions) {
+  return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
+}

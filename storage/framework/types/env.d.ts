@@ -6,7 +6,7 @@
 declare module 'bun' {
   namespace env {
     const APP_NAME: string
-    const APP_ENV: 'local' | 'dev' | 'development' | 'staging' | 'prod' | 'production'
+    const APP_ENV: 'local' | 'dev' | 'stage' | 'prod'
     const APP_KEY: string
     const APP_PORT: number
     const APP_MAINTENANCE: boolean

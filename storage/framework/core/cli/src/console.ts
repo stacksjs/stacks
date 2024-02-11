@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/logging'
+import { log, logger } from '@stacksjs/logging'
 import prompts from 'prompts'
 
 export class Prompt {
@@ -74,6 +74,6 @@ export class Prompt {
   }
 }
 
-export { prompts, log }
+export { prompts, logger, log }
 
 export const prompt = () => new Prompt()

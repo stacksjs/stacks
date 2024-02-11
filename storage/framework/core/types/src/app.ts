@@ -1,4 +1,4 @@
-export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod'
+export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | string
 
 interface Ports {
   frontend: number

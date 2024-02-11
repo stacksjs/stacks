@@ -50,12 +50,15 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   })
 
   // Check if we need to write to stdin
-  // if (options?.stdin === 'pipe' && options.input) {
-  //   if (proc.stdin) {
-  //     proc.stdin.write(options.input)
-  //     proc.stdin.end()
-  //   }
-  // }
+  // this is currently only used for `buddy aws:configure`
+  if (options?.stdin === 'pipe' && options.input) {
+    if (proc.stdin) {
+      // @ts-expect-error - this works even though there is a type error
+      proc.stdin.write(options.input)
+      // @ts-expect-error - this works even though there is a type error
+      proc.stdin.end()
+    }
+  }
 
   const exited = await proc.exited
   if (exited === ExitCode.Success)

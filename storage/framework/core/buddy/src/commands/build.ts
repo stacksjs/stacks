@@ -78,28 +78,28 @@ export function build(buddy: CLI) {
       }
 
       // TODO: uncomment this when prompt is available
-      // if (hasNoOptions(options)) {
-      //   let answers = await prompt.require
-      //     .multiselect(descriptions.select, {
-      //       options: [
-      //         { label: 'Components', value: 'components' },
-      //         // { label: 'Vue Components', value: 'vue-components' },
-      //         { label: 'Web Components', value: 'web-components' },
-      //         { label: 'Functions', value: 'functions' },
-      //         { label: 'Views', value: 'views' },
-      //         { label: 'Documentation', value: 'docs' },
-      //       ],
-      //     })
-      //
-      //   if (answers !== null)
-      //     process.exit(ExitCode.InvalidArgument)
-      //
-      //   if (isString(answers))
-      //     answers = [answers]
-      //
-      //   // creates an object out of array and sets answers to true
-      //   options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
-      // }
+      if (hasNoOptions(options)) {
+        let answers = await log.prompt.require()
+          .multiselect(descriptions.select, {
+            options: [
+              { label: 'Components', value: 'components' },
+              // { label: 'Vue Components', value: 'vue-components' },
+              { label: 'Web Components', value: 'web-components' },
+              { label: 'Functions', value: 'functions' },
+              { label: 'Views', value: 'views' },
+              { label: 'Documentation', value: 'docs' },
+            ],
+          })
+
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
+
+        if (isString(answers))
+          answers = [answers]
+
+        // creates an object out of array and sets answers to true
+        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      }
 
       await runAction(Action.BuildStacks, options)
 
@@ -254,6 +254,6 @@ export function build(buddy: CLI) {
   })
 }
 
-// function hasNoOptions(options: BuildOptions) {
-//   return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.views && !options.docs && !options.stacks && !options.buddy
-// }
+function hasNoOptions(options: BuildOptions) {
+  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.views && !options.docs && !options.stacks && !options.buddy
+}
