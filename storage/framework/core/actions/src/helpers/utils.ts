@@ -14,10 +14,7 @@ import { err, handleError } from '@stacksjs/error-handling'
  * @returns The result of the command.
  */
 export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, StacksError>> {
-  if (!hasAction(action))
-    return err(handleError(`The specified action "${action}" does not exist`))
-
-  const opts = parseOptions()
+  const opts = buddyOptions()
   const path = p.relativeActionsPath(`${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`.trimEnd()
   const optionsWithCwd = {
@@ -25,12 +22,11 @@ export async function runAction(action: string, options?: ActionOptions): Promis
     ...options,
   }
 
-  if (options?.verbose) {
-    log.debug('Action command:', cmd)
-    log.debug('Running cmd:', underline(italic(cmd)))
-    log.debug('Running action:', underline(italic(`./actions/${action}.ts`)))
-    log.debug('With action options of:', optionsWithCwd)
-  }
+  log.debug('runAction:', underline(italic(cmd)))
+  log.debug('runAction Options:', optionsWithCwd)
+
+  if (!hasAction(action))
+    return err(handleError(`The specified action "${action}" does not exist`))
 
   return await runCommand(cmd, optionsWithCwd)
 }

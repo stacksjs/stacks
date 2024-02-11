@@ -151,6 +151,7 @@ declare global {
   const cloudPath: typeof import('../core/path/src/index')['cloudPath']
   const collections: typeof import('../core/index')['collections']
   const collectionsPath: typeof import('../core/path/src/index')['collectionsPath']
+  const commandsPath: typeof import('../core/path/src/index')['commandsPath']
   const compare: typeof import('../core/utils/src/currency')['compare']
   const componentsPath: typeof import('../core/path/src/index')['componentsPath']
   const compress: typeof import('../core/storage/src/zip')['compress']
@@ -285,6 +286,7 @@ declare global {
   const dump: typeof import('../core/logging/src/index')['dump']
   const dumpYaml: typeof import('../core/utils/src/helpers')['dumpYaml']
   const eagerComputed: typeof import('../core/utils/src/vendors')['eagerComputed']
+  const echo: typeof import('../core/logging/src/index')['echo']
   const effect: typeof import('../core/signals/src/index')['effect']
   const effectScope: typeof import('vue')['effectScope']
   const email: typeof import('../core/index')['email']
@@ -451,6 +453,7 @@ declare global {
   const isZero: typeof import('../core/utils/src/currency')['isZero']
   const it: typeof import('../core/testing/src/index')['it']
   const jest: typeof import('../core/testing/src/index')['jest']
+  const jobsPath: typeof import('../core/path/src/index')['jobsPath']
   const join: typeof import('../core/path/src/index')['join']
   const langPath: typeof import('../core/path/src/index')['langPath']
   const lastPageNumber: typeof import('../core/search-engine/src/index')['lastPageNumber']
@@ -467,6 +470,7 @@ declare global {
   const listen: typeof import('../core/events/src/index')['listen']
   const loadYaml: typeof import('../core/utils/src/helpers')['loadYaml']
   const log: typeof import('../core/logging/src/index')['log']
+  const logFilePath: typeof import('../core/logging/src/index')['logFilePath']
   const logger: typeof import('../core/logging/src/index')['logger']
   const loggingPath: typeof import('../core/path/src/index')['loggingPath']
   const logicNot: typeof import('../core/utils/src/math')['logicNot']
@@ -610,6 +614,7 @@ declare global {
   const resolveUnref: typeof import('../core/utils/src/vendors')['resolveUnref']
   const resourcesPath: typeof import('../core/path/src/index')['resourcesPath']
   const results: typeof import('../core/search-engine/src/index')['results']
+  const retry: typeof import('../core/utils/src/retry')['retry']
   const rimraf: typeof import('../core/utils/src/delete')['rimraf']
   const root: typeof import('../core/signals/src/index')['root']
   const route: typeof import('../core/router/src/router')['route']
@@ -1091,6 +1096,7 @@ declare module 'vue' {
     readonly cloudPath: UnwrapRef<typeof import('../core/path/src/index')['cloudPath']>
     readonly collections: UnwrapRef<typeof import('../core/index')['collections']>
     readonly collectionsPath: UnwrapRef<typeof import('../core/path/src/index')['collectionsPath']>
+    readonly commandsPath: UnwrapRef<typeof import('../core/path/src/index')['commandsPath']>
     readonly compare: UnwrapRef<typeof import('../core/utils/src/currency')['compare']>
     readonly componentsPath: UnwrapRef<typeof import('../core/path/src/index')['componentsPath']>
     readonly compress: UnwrapRef<typeof import('../core/storage/src/zip')['compress']>
@@ -1223,6 +1229,7 @@ declare module 'vue' {
     readonly dump: UnwrapRef<typeof import('../core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['dumpYaml']>
     readonly eagerComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['eagerComputed']>
+    readonly echo: UnwrapRef<typeof import('../core/logging/src/index')['echo']>
     readonly effect: UnwrapRef<typeof import('../core/signals/src/index')['effect']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly email: UnwrapRef<typeof import('../core/index')['email']>
@@ -1385,6 +1392,7 @@ declare module 'vue' {
     readonly isUndefined: UnwrapRef<typeof import('../core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../core/utils/src/currency')['isZero']>
+    readonly jobsPath: UnwrapRef<typeof import('../core/path/src/index')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
@@ -1401,6 +1409,7 @@ declare module 'vue' {
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
+    readonly logFilePath: UnwrapRef<typeof import('../core/logging/src/index')['logFilePath']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
     readonly loggingPath: UnwrapRef<typeof import('../core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('../core/utils/src/math')['logicNot']>
@@ -1542,6 +1551,7 @@ declare module 'vue' {
     readonly resolveUnref: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveUnref']>
     readonly resourcesPath: UnwrapRef<typeof import('../core/path/src/index')['resourcesPath']>
     readonly results: UnwrapRef<typeof import('../core/search-engine/src/index')['results']>
+    readonly retry: UnwrapRef<typeof import('../core/utils/src/retry')['retry']>
     readonly rimraf: UnwrapRef<typeof import('../core/utils/src/delete')['rimraf']>
     readonly root: UnwrapRef<typeof import('../core/signals/src/index')['root']>
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
@@ -2005,6 +2015,7 @@ declare module '@vue/runtime-core' {
     readonly cloudPath: UnwrapRef<typeof import('../core/path/src/index')['cloudPath']>
     readonly collections: UnwrapRef<typeof import('../core/index')['collections']>
     readonly collectionsPath: UnwrapRef<typeof import('../core/path/src/index')['collectionsPath']>
+    readonly commandsPath: UnwrapRef<typeof import('../core/path/src/index')['commandsPath']>
     readonly compare: UnwrapRef<typeof import('../core/utils/src/currency')['compare']>
     readonly componentsPath: UnwrapRef<typeof import('../core/path/src/index')['componentsPath']>
     readonly compress: UnwrapRef<typeof import('../core/storage/src/zip')['compress']>
@@ -2137,6 +2148,7 @@ declare module '@vue/runtime-core' {
     readonly dump: UnwrapRef<typeof import('../core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['dumpYaml']>
     readonly eagerComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['eagerComputed']>
+    readonly echo: UnwrapRef<typeof import('../core/logging/src/index')['echo']>
     readonly effect: UnwrapRef<typeof import('../core/signals/src/index')['effect']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly email: UnwrapRef<typeof import('../core/index')['email']>
@@ -2299,6 +2311,7 @@ declare module '@vue/runtime-core' {
     readonly isUndefined: UnwrapRef<typeof import('../core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../core/utils/src/currency')['isZero']>
+    readonly jobsPath: UnwrapRef<typeof import('../core/path/src/index')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/index')['langPath']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
@@ -2315,6 +2328,7 @@ declare module '@vue/runtime-core' {
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
+    readonly logFilePath: UnwrapRef<typeof import('../core/logging/src/index')['logFilePath']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
     readonly loggingPath: UnwrapRef<typeof import('../core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('../core/utils/src/math')['logicNot']>
@@ -2456,6 +2470,7 @@ declare module '@vue/runtime-core' {
     readonly resolveUnref: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveUnref']>
     readonly resourcesPath: UnwrapRef<typeof import('../core/path/src/index')['resourcesPath']>
     readonly results: UnwrapRef<typeof import('../core/search-engine/src/index')['results']>
+    readonly retry: UnwrapRef<typeof import('../core/utils/src/retry')['retry']>
     readonly rimraf: UnwrapRef<typeof import('../core/utils/src/delete')['rimraf']>
     readonly root: UnwrapRef<typeof import('../core/signals/src/index')['root']>
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>

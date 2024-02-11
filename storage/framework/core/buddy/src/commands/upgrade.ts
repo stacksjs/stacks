@@ -108,6 +108,11 @@ export function upgrade(buddy: CLI) {
     .action(async (options: UpgradeOptions) => {
       await runAction(Action.Upgrade, options)
     })
+
+  buddy.on('upgrade:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }
 
 function hasNoOptions(options: UpgradeOptions) {

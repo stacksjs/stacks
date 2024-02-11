@@ -30,15 +30,15 @@ import { log } from './console'
  * ```
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runCommand:', underline(italic(command)))
+  log.debug('runCommand Options:', options)
 
   return await exec(command, options)
 }
 
 export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runProcess:', italic(command))
+  log.debug('runProcess Options:', options)
 
   return await exec(command, options)
 }
@@ -69,8 +69,8 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```
  */
 export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runCommandSync:', italic(command))
+  log.debug('runCommandSync Options:', options)
 
   const result = await execSync(command, options)
 

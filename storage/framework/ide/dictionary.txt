@@ -58,6 +58,7 @@ composables
 consola
 Cooldown
 corepack
+coreutils
 cossssmin
 cryptojs
 cssnano

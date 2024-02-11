@@ -30,7 +30,7 @@ const quotes = collect([
 ])
 
 export default function (cli: CLI) {
-  return cli
+  cli
     .command('inspire', 'Inspire yourself with a random quote')
     .option('--two, -t', 'Inspire yourself with two random quotes', { default: false })
     .alias('insp')
@@ -43,4 +43,20 @@ export default function (cli: CLI) {
       log.success('Have a great day!')
       process.exit(ExitCode.Success)
     })
+
+  cli
+    .command('inspire:two', 'Inspire yourself with two random quotes')
+    .action(() => {
+      quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+
+      log.success('Have a great day!')
+      process.exit(ExitCode.Success)
+    })
+
+  cli.on('inspire:*', () => {
+    log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
+    process.exit(1)
+  })
+
+  return cli
 }

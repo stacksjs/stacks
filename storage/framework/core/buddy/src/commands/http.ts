@@ -46,8 +46,8 @@ export function http(buddy: CLI) {
         .join(' ')
 
       const command = `http GET ${domain || config.app.url} ${optionsString}`
-      // eslint-disable-next-line no-console
-      console.log(`Running command: ${command}`)
+
+      log.info(`Running command: ${command}`)
       runCommandSync(command)
 
       process.exit(ExitCode.Success)

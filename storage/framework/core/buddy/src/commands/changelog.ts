@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
 export function changelog(buddy: CLI) {
@@ -14,9 +14,11 @@ export function changelog(buddy: CLI) {
     verbose: 'Enable verbose output',
   }
 
+  // console.log('changelog', descriptions.changelog)
+
   buddy
     .command('changelog', descriptions.changelog)
-    .option('--quiet', descriptions.quiet, { default: false })
+    .option('-q, --quiet', descriptions.quiet, { default: false })
     .option('-d, --dry-run', descriptions.dryRun, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -29,12 +31,14 @@ export function changelog(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Generated the CHANGELOG.md file', { ...options, startTime: perf, useSeconds: true, type: 'info' })
-      process.exit(ExitCode.Success)
+      await outro('Generated CHANGELOG.md', { ...options, startTime: perf, useSeconds: true, type: 'success' })
     })
 
   buddy.on('changelog:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    // eslint-disable-next-line no-console
+    console.log('Invalid command: %s', buddy.args.join(' '))
+    // eslint-disable-next-line no-console
+    console.log('See --help for a list of available commands.')
     process.exit(1)
   })
 }

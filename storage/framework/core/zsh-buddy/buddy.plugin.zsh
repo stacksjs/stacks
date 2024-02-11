@@ -81,6 +81,10 @@ function bu() {
     buddy upgrade
 }
 
+function brb() {
+    bun run build
+}
+
 compdef _buddy_add_completion buddy
 
 function _buddy_find() {

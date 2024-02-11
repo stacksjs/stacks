@@ -20,7 +20,7 @@ export function release(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
       if (options.dryRun)
-        log.warn('Dry run enabled. No changes will be made.')
+        log.warn('Dry run enabled. No changes will be made or committed.')
 
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, {

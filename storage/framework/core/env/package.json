@@ -45,7 +45,8 @@
   },
   "dependencies": {
     "@stacksjs/validation": "workspace:*",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "std-env": "^3.7.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

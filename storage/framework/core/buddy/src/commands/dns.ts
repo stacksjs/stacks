@@ -77,4 +77,9 @@ export function dns(buddy: CLI) {
 
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('dns:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

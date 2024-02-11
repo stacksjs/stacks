@@ -104,6 +104,8 @@ export function parseArgs(argv?: string[]): string[] {
 
 interface CliOptions {
   dryRun?: boolean
+  quiet?: boolean
+  verbose?: boolean
   [k: string]: string | boolean | number | undefined
 }
 

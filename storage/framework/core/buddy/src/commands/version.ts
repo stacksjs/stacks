@@ -1,3 +1,4 @@
+import process from 'node:process'
 import type { CLI } from '@stacksjs/types'
 import { bold, dim, green, intro, log } from '@stacksjs/cli'
 import { storage } from '@stacksjs/storage'
@@ -21,4 +22,9 @@ export function version(buddy: CLI) {
 
       // redis (or other cache/s), mysql (or other database/s),
     })
+
+  buddy.on('version:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

@@ -72,18 +72,18 @@ export function setup(buddy: CLI) {
           log.success('Copied buddy zsh plugin')
         }
         else {
-          log.info('buddy is already integrated in your shell, updating...')
+          log.info('Buddy is already integrated in your shell, ensuring it is updated...')
           await runCommand(`cp -rf ${pluginPath} ${customPath}`)
           // await runCommand(`source ${customPath}/buddy.plugin.zsh`)
-          log.success('Updated buddy zsh plugin')
+          log.success('Updated buddy zsh plugin to latest version')
         }
       }
 
-      log.success('Oh My Zsh setup complete')
-      log.info('To see changes reflect, you may need to:')
-      // if on vscode show the message
-      // log.info('⌘⇧P workbench.action.reloadWindow')
-      // else show the message
+      log.success('Oh My Zsh Setup Complete')
+      log.info('To see changes reflect, you may need to open a new terminal window')
+      // if using the vscode terminal, show the message
+      if (process.env.TERM_PROGRAM === 'vscode')
+        log.info('⌘⇧P terminal.create.new.terminal')
     })
 
   buddy.on('setup:*', () => {

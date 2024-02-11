@@ -160,6 +160,10 @@ export interface CliOptions {
    * @default false
    */
   withLocalhost?: boolean
+
+  input?: string | ArrayBufferView | ReadableStream | Blob | Response | Request
+
+  quiet?: boolean
 }
 
 export type CliConfig = CliOptions
@@ -293,6 +297,7 @@ export interface CommitOptions extends CliOptions { }
 export interface KeyOptions extends CliOptions { }
 export interface FreshOptions extends CliOptions {
   dryRun?: boolean
+  quiet?: boolean
 }
 export interface MigrateOptions extends CliOptions { }
 export interface InspireOptions extends CliOptions { }

@@ -128,6 +128,10 @@ export function collectionsPath(path?: string) {
   return corePath(`collections/${path || ''}`)
 }
 
+export function commandsPath(path?: string) {
+  return appPath(`Commands/${path || ''}`)
+}
+
 export function componentsPath(path?: string) {
   return resourcesPath(`components/${path || ''}`)
 }
@@ -465,6 +469,7 @@ export const path = {
   cliPath,
   cloudPath,
   collectionsPath,
+  commandsPath,
   componentsPath,
   configPath,
   projectConfigPath,
