@@ -12,7 +12,7 @@ const bumpCommand = options?.dryRun
   ? 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --no-push'
   : 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all'
 
-await runCommand(
-  bumpCommand,
-  { cwd: p.frameworkPath(), stdin: 'inherit' },
-)
+await runCommand(bumpCommand, {
+  cwd: p.frameworkPath(),
+  stdin: 'inherit',
+})

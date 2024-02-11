@@ -26,5 +26,5 @@ export default {
     'meta.llama2-70b-chat-v1',
   ],
 
-  deploy: true,
+  deploy: true, // deploys AI endpoints
 } satisfies AiConfig

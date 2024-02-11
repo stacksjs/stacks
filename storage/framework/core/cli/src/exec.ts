@@ -33,9 +33,9 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
-  log.debug('Running exec:', Array.isArray(command) ? command.join(' ') : command)
+  log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
-  log.debug('Options:', options)
+  log.debug('exec options:', options)
 
   const proc = Bun.spawn(cmd, {
     ...options,
@@ -51,12 +51,12 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   })
 
   // Check if we need to write to stdin
-  if (options?.stdin === 'pipe' && options.input) {
-    if (proc.stdin) {
-      proc.stdin.write(options.input)
-      proc.stdin.end()
-    }
-  }
+  // if (options?.stdin === 'pipe' && options.input) {
+  //   if (proc.stdin) {
+  //     proc.stdin.write(options.input)
+  //     proc.stdin.end()
+  //   }
+  // }
 
   const exited = await proc.exited
   if (exited === ExitCode.Success)

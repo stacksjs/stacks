@@ -31,7 +31,7 @@ import { log } from './console'
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runCommand:', command)
-  log.debug('runCommand Options:', options)
+  log.debug('options:', options)
 
   return await exec(command, options)
 }

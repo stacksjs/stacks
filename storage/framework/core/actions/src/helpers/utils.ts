@@ -1,5 +1,5 @@
 import * as storage from '@stacksjs/storage'
-import { buddyOptions, italic, parseOptions, runCommand, runCommands, underline } from '@stacksjs/cli'
+import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
@@ -22,8 +22,8 @@ export async function runAction(action: string, options?: ActionOptions): Promis
     ...options,
   }
 
-  log.debug('runAction:', underline(italic(cmd)))
-  log.debug('runAction Options:', optionsWithCwd)
+  log.debug('runAction:', cmd)
+  log.debug('action options:', optionsWithCwd)
 
   if (!hasAction(action))
     return err(handleError(`The specified action "${action}" does not exist`))
@@ -39,6 +39,9 @@ export async function runAction(action: string, options?: ActionOptions): Promis
  * @returns The result of the command.
  */
 export async function runActions(actions: string[], options?: ActionOptions) {
+  log.debug('runActions:', actions)
+  log.debug('actions options:', options)
+
   if (!actions.length)
     return err('No actions were specified')
 
@@ -51,11 +54,13 @@ export async function runActions(actions: string[], options?: ActionOptions) {
 
   const o = {
     cwd: options?.cwd || p.projectPath(),
-    ...parseOptions(),
+    ...options,
   }
 
   const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`${action}.ts`)} ${opts}`)
 
+  // eslint-disable-next-line no-console
+  console.log('this should have inherit:', o)
   return await runCommands(commands, o)
 }
 
