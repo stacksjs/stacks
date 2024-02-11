@@ -16,6 +16,8 @@ export function key(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
+      log.debug('Running `buddy key:generate` ...', options)
+
       await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 

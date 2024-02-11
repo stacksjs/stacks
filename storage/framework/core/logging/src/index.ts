@@ -1,10 +1,36 @@
 import process from 'node:process'
-import consola from 'consola'
+import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
+import { logger } from '@stacksjs/config'
 import { logsPath } from '@stacksjs/path'
+import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 
-export const logger = consola
+/**
+ * This regex checks for:
+ *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
+ *   - --verbose - followed by optional spaces at the end.
+ *   - --verbose followed by optional spaces at the end.
+ *
+ * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
+ */
+const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
+let logLevel = config.logger.level
+if (verboseRegex.test(buddyOptions().trim()))
+  logLevel = 4
+
+export const logger = createConsola({
+  level: logLevel,
+  // fancy: true,
+  // formatOptions: {
+  //     columns: 80,
+  //     colors: false,
+  //     compact: false,
+  //     date: false,
+  // },
+})
+
+export { consola }
 
 export const logFilePath = logsPath('console.log')
 
@@ -31,11 +57,13 @@ async function writeToLogFile(message: string) {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string, options?: any) => void
+  error: (err: string | Error, options?: any) => void
   warn: (arg: string) => void
   debug: (...args: any[]) => void
-  start: consola.Start
-  box: consola.Box
+  // start: logger.Start
+  // box: logger.Box
+  start: any
+  box: any
   prompt: Prompt
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
@@ -45,22 +73,22 @@ export interface Log {
 export const log: Log = {
   async info(...arg: any) {
     // @ts-expect-error intentional
-    consola.info(...arg)
+    logger.info(...arg)
     await writeToLogFile(`INFO: ${arg}`)
   },
 
   async success(msg: string) {
-    consola.success(msg)
+    logger.success(msg)
     await writeToLogFile(`SUCCESS: ${msg}`)
   },
 
-  async error(err: string, options?: any) {
+  async error(err: string | Error, options?: any) {
     handleError(err, options) // Assuming handleError logs the error
     await writeToLogFile(`ERROR: ${err}`)
   },
 
   async warn(arg: string) {
-    consola.warn(arg)
+    logger.warn(arg)
     await writeToLogFile(`WARN: ${arg}`)
   },
 
@@ -68,29 +96,16 @@ export const log: Log = {
     if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
       return await writeToLogFile(`DEBUG: ${arg}`)
 
-    const options = buddyOptions() // options as a string
-
-    /**
-     * This regex checks for:
-     *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
-     *   - --verbose - followed by optional spaces at the end.
-     *   - --verbose followed by optional spaces at the end.
-     *
-     * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
-     */
-    const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
-    if (verboseRegex.test(options.trim()))
-      consola.debug(...arg)
-
+    logger.debug(arg)
     await writeToLogFile(`DEBUG: ${arg}`)
   },
 
   async start(...arg: any) {
-    consola.start(arg)
+    logger.start(arg)
     await writeToLogFile(`START: ${arg}`)
   },
 
-  box: consola.box,
+  box: logger.box,
 
   get prompt() {
     return getPrompt()

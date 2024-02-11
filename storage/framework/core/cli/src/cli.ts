@@ -1,6 +1,5 @@
 // import type { CliOptions } from '@stacksjs/types'
-import cac, { CAC } from 'cac'
-import { version } from '../package.json'
+import { CAC } from 'cac'
 
 export interface ParsedArgv {
   args: ReadonlyArray<string>

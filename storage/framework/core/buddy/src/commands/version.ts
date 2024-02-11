@@ -11,6 +11,7 @@ export function version(buddy: CLI) {
   buddy
     .command('version', descriptions.version)
     .action(async () => {
+      log.debug('Running `buddy version` ...')
       await intro('buddy version')
 
       const pkg = await storage.readPackageJson('./package.json')

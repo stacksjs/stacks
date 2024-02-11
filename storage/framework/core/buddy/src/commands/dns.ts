@@ -2,7 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
@@ -59,6 +59,7 @@ export function dns(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
+      log.debug('Running `buddy dns [domain]` ...', options)
       // let prettyOutput = false
 
       // if (options.json && options.pretty)

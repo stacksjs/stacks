@@ -2,12 +2,12 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
 export function fresh(buddy: CLI) {
   const descriptions = {
-    fresh: 'Reinstalls your npm dependencies',
+    fresh: 'Re-installs your npm dependencies',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -17,6 +17,8 @@ export function fresh(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
+      log.debug('Running `buddy fresh` ...', options)
+
       const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, { ...options, stdout: 'inherit' })
 

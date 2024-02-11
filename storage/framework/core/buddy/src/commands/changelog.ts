@@ -1,6 +1,5 @@
 import process from 'node:process'
 import type { CLI, FreshOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
@@ -23,6 +22,8 @@ export function changelog(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
+      log.debug('Running `buddy changelog` ...', options)
+
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)
 

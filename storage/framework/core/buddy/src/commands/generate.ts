@@ -10,9 +10,8 @@ import {
   generateWebTypes,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
-import { prompt } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 
 export function generate(buddy: CLI) {
   const descriptions = {
@@ -41,25 +40,28 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
-      if (hasNoOptions(options)) {
-        let answers = await prompt.require()
-          .multiselect(descriptions.select, {
-            options: [
-              { label: '1.) TypeScript Types', value: 'types' },
-              { label: '2.) Library Entry Points', value: 'entries' },
-              { label: '3.) Web Types', value: 'web-types' },
-              { label: '4.) VS Code Custom Data', value: 'custom-data' },
-              { label: '5.) IDE Helpers', value: 'ide-helpers' },
-              { label: '6.) Component Meta', value: 'component-meta' },
-            ],
-          })
+      log.debug('Running `buddy generate` ...', options)
 
-        if (isString(answers))
-          answers = [answers]
-
-        // creates an object out of array and sets answers to true
-        options = (answers as Array<any>).reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
-      }
+      // TODO: uncomment this
+      // if (hasNoOptions(options)) {
+      //   let answers = await prompt.require()
+      //     .multiselect(descriptions.select, {
+      //       options: [
+      //         { label: '1.) TypeScript Types', value: 'types' },
+      //         { label: '2.) Library Entry Points', value: 'entries' },
+      //         { label: '3.) Web Types', value: 'web-types' },
+      //         { label: '4.) VS Code Custom Data', value: 'custom-data' },
+      //         { label: '5.) IDE Helpers', value: 'ide-helpers' },
+      //         { label: '6.) Component Meta', value: 'component-meta' },
+      //       ],
+      //     })
+      //
+      //   if (isString(answers))
+      //     answers = [answers]
+      //
+      //   // creates an object out of array and sets answers to true
+      //   options = (answers as Array<any>).reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      // }
 
       await startGenerationProcess(options)
 
@@ -72,6 +74,7 @@ export function generate(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:types` ...', options)
       await generateTypes(options)
     })
 
@@ -80,6 +83,7 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:entries` ...', options)
       await generateLibEntries(options)
     })
 
@@ -88,6 +92,7 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:web-types` ...', options)
       await generateWebTypes(options)
     })
 
@@ -96,6 +101,7 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:vscode-custom-data` ...', options)
       await generateVsCodeCustomData(options)
     })
 
@@ -104,6 +110,7 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:ide-helpers` ...', options)
       await generateIdeHelpers(options)
     })
 
@@ -112,6 +119,7 @@ export function generate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:component-meta` ...', options)
       await generateComponentMeta(options)
     })
 
@@ -119,13 +127,15 @@ export function generate(buddy: CLI) {
     .command('generate:pkgx-config', descriptions.pkgx)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(() => {
+    .action((options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:pkgx-config` ...', options)
       generatePkgxConfig()
     })
 
   buddy
     .command('generate:migrations', 'Generate Migrations')
-    .action(() => {
+    .action((options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:migrations` ...', options)
       generateMigrations()
     })
 
@@ -135,6 +145,6 @@ export function generate(buddy: CLI) {
   })
 }
 
-function hasNoOptions(options: GeneratorOptions) {
-  return !options.types && !options.entries && !options.webTypes && !options.customData && !options.ideHelpers && !options.componentMeta
-}
+// function hasNoOptions(options: GeneratorOptions) {
+//   return !options.types && !options.entries && !options.webTypes && !options.customData && !options.ideHelpers && !options.componentMeta
+// }

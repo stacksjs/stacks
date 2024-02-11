@@ -1,10 +1,9 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro, prompt } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { Action } from '@stacksjs/enums'
-import { isString } from '@stacksjs/validation'
 
 export function upgrade(buddy: CLI) {
   const descriptions = {
@@ -31,28 +30,31 @@ export function upgrade(buddy: CLI) {
     .alias('update')
     .example('buddy upgrade -a --verbose')
     .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade` ...', options)
+
       const perf = await intro('buddy upgrade')
 
-      if (hasNoOptions(options)) {
-        let answers = await prompt.require()
-          .multiselect(descriptions.select, {
-            options: [
-              { value: 'dependencies', label: 'Dependencies' },
-              { value: 'framework', label: 'Framework' },
-              { value: 'node', label: 'Node.js' },
-              { value: 'package-manager', label: 'Package Manager' },
-            ],
-          })
-
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
-
-        if (isString(answers))
-          answers = [answers]
-
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
-      }
+      // TODO: uncomment this when prompt is available
+      // if (hasNoOptions(options)) {
+      //   let answers = await prompt.require()
+      //     .multiselect(descriptions.select, {
+      //       options: [
+      //         { value: 'dependencies', label: 'Dependencies' },
+      //         { value: 'framework', label: 'Framework' },
+      //         { value: 'node', label: 'Node.js' },
+      //         { value: 'package-manager', label: 'Package Manager' },
+      //       ],
+      //     })
+      //
+      //   if (answers !== null)
+      //     process.exit(ExitCode.InvalidArgument)
+      //
+      //   if (isString(answers))
+      //     answers = [answers]
+      //
+      //   // creates an object out of array and sets answers to true
+      //   options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      // }
 
       const result = await runAction(Action.Upgrade, options)
 
@@ -71,6 +73,8 @@ export function upgrade(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade:framework` ...', options)
+
       // const perf = await intro('buddy update:framework')
       await runAction(Action.Upgrade, options)
     })
@@ -82,6 +86,7 @@ export function upgrade(buddy: CLI) {
     .alias('upgrade:deps')
     .example('buddy upgrade:dependencies --verbose')
     .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade:dependencies` ...', options)
       await runAction(Action.Upgrade, options)
     })
 
@@ -90,6 +95,7 @@ export function upgrade(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade:bun` ...', options)
       const perf = await intro('buddy upgrade:bun')
       const result = await runAction(Action.UpgradeBun, options)
 
@@ -106,6 +112,7 @@ export function upgrade(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade:all` ...', options)
       await runAction(Action.Upgrade, options)
     })
 
@@ -115,6 +122,6 @@ export function upgrade(buddy: CLI) {
   })
 }
 
-function hasNoOptions(options: UpgradeOptions) {
-  return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
-}
+// function hasNoOptions(options: UpgradeOptions) {
+//   return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
+// }

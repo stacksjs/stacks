@@ -25,6 +25,8 @@ export function cloud(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud` ...', options)
+
       if (options.ssh || options.connect) {
         const startTime = performance.now()
         const jumpBoxId = await getJumpBoxInstanceId()
@@ -53,6 +55,8 @@ export function cloud(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud:add` ...', options)
+
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
@@ -101,6 +105,8 @@ export function cloud(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud:remove` ...', options)
+
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
@@ -183,7 +189,9 @@ export function cloud(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
-      const startTime = await intro('buddy cloud:remove')
+      log.debug('Running `buddy cloud:optimize-cost` ...', options)
+
+      const startTime = await intro('buddy cloud:optimize-cost')
 
       if (options.jumpBox) {
         const { confirm } = await prompts({
@@ -197,6 +205,8 @@ export function cloud(buddy: CLI) {
           process.exit(ExitCode.Success)
         }
 
+        // at the moment, the jump-box is the only resource that is removed to optimize costs
+        // because it can be re-applied at any later time
         await deleteJumpBox()
 
         await outro('Your jump-box was removed & cost optimizations are applied.', { startTime, useSeconds: true })
@@ -212,7 +222,9 @@ export function cloud(buddy: CLI) {
     .alias('cloud:clean-up')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
+    .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud:cleanup` ...', options)
+
       const startTime = await intro('buddy cloud:cleanup')
 
       log.info(`Cleaning up your cloud resources will take a while to complete. Please be patient.`)

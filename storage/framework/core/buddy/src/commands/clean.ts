@@ -2,7 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CleanOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
 export function clean(buddy: CLI) {
@@ -17,6 +17,8 @@ export function clean(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CleanOptions) => {
+      log.debug('Running `buddy clean` ...', options)
+
       const perf = await intro('buddy clean')
       const result = await runAction(Action.Clean, options)
 

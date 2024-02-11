@@ -2,7 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
 export function migrate(buddy: CLI) {
@@ -18,6 +18,8 @@ export function migrate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
+      log.debug('Running `buddy migrate` ...', options)
+
       const perf = await intro('buddy migrate')
       const result = await runAction(Action.Migrate, { ...options })
 
@@ -37,7 +39,9 @@ export function migrate(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
-      const perf = await intro('buddy migrate')
+      log.debug('Running `buddy migrate:dns` ...', options)
+
+      const perf = await intro('buddy migrate:dns')
       const result = await runAction(Action.MigrateDns, { ...options })
 
       if (result.isErr()) {

@@ -1,6 +1,7 @@
 import process from 'node:process'
-import type { CLI } from '@stacksjs/types'
+import type { CLI, CliOptions } from '@stacksjs/types'
 import { generateTypes } from '@stacksjs/actions'
+import { log } from 'stacks/logging'
 
 export function types(buddy: CLI) {
   const descriptions = {
@@ -14,7 +15,8 @@ export function types(buddy: CLI) {
     .command('types:generate', descriptions.generate)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
+    .action(async (options: CliOptions) => {
+      log.debug('Running `buddy types:generate` ...', options)
       await generateTypes()
     })
 

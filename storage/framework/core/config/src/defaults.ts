@@ -5,6 +5,7 @@ import type { StacksOptions } from '@stacksjs/types'
 
 export default {
   ai: {
+    deploy: false,
     models: [
       'amazon.titan-embed-text-v1',
       'amazon.titan-text-express-v1',
@@ -21,15 +22,6 @@ export default {
 
   analytics: {
     driver: undefined,
-  },
-
-  api: {
-    prefix: 'api',
-    description: 'Stacks API',
-    prewarm: true,
-    memorySize: 512,
-    timeout: 30,
-    // version: 'v1',
   },
 
   app: {
@@ -76,6 +68,8 @@ export default {
         connection: 'default',
         host: 'localhost',
         port: 6379,
+        username: '',
+        password: '',
       },
     },
   },
@@ -112,12 +106,25 @@ export default {
         headers: [],
         queryStrings: [],
       },
+      realtimeLogs: {
+        enabled: true,
+        samplingRate: 2,
+      },
     },
 
-    ai: true,
-    docs: true,
-    api: true,
-    fileSystem: true,
+    api: {
+      deploy: false,
+      prefix: 'api',
+      description: 'Stacks API',
+      prewarm: true,
+      memorySize: 512,
+      timeout: 30,
+      // version: 'v1',
+    },
+
+    ai: false,
+    docs: false,
+    fileSystem: false,
   },
 
   database: {
@@ -147,6 +154,7 @@ export default {
     title: 'Stacks',
     description: 'Rapid application, cloud & library framework.',
     lastUpdated: true,
+    deploy: false,
 
     themeConfig: {
       editLink: {
@@ -174,9 +182,10 @@ export default {
       address: 'no-reply@stacksjs.org',
     },
 
+    mailboxes: [],
+
     server: {
       scan: true,
-      mailboxes: [],
     },
   },
 
@@ -317,6 +326,12 @@ export default {
         'dark',
       ],
     },
+  },
+
+  logger: {
+    level: 3,
+    logFilePath: 'storage/logs/console.log',
+    errorsPath: 'storage/logs/errors.log',
   },
 
   notification: {

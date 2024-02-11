@@ -22,6 +22,7 @@ export const {
   git,
   hashing,
   library,
+  logger,
   notification,
   payment,
   queue,

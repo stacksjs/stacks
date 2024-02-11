@@ -22,6 +22,8 @@ export function setup(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
+      log.debug('Running `buddy setup` ...', options)
+
       if (!await isPkgxInstalled())
         await installPkgx()
 
@@ -35,6 +37,8 @@ export function setup(buddy: CLI) {
     .command('setup:oh-my-zsh', descriptions.ohMyZsh) // if triggered multiple times, it will update the plugin
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (_options?: CliOptions) => {
+      log.debug('Running `buddy setup:oh-my-zsh` ...', _options)
+
       const homePath = (await $`echo $HOME`.text()).trim()
       const zshrcPath = p.join(homePath, '.zshrc')
       const pluginPath = p.frameworkPath('core/zsh-buddy/buddy.plugin.zsh')
@@ -50,7 +54,11 @@ export function setup(buddy: CLI) {
 
       if (match) {
         // 1. Find the plugins line
-        const plugins = match[1].split(' ')
+        const plugins = match[1]?.split(' ')
+        if (!plugins) {
+          log.error('Maybe the plugins line in your .zshrc file could not be found? If this continues being an issue, please reach out to us on Discord.')
+          process.exit(ExitCode.FatalError)
+        }
 
         // 2. Add buddy to the list of plugins if it's not already there
         if (!plugins.includes('buddy')) {

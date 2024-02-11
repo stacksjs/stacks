@@ -331,7 +331,8 @@ const sidebar = {
 
     {
       text: 'Project',
-      // collapsible: true,
+      collapsible: true,
+      collapsed: true,
       items: [
         { text: 'Roadmap', link: '/project/roadmap' },
         { text: 'Contributing', link: '/project/contributing' },
@@ -354,6 +355,7 @@ export default {
   title: 'Stacks',
   description: 'Rapid application, cloud & library development framework.',
   lastUpdated: true,
+  deploy: true,
 
   themeConfig: {
     logo: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',

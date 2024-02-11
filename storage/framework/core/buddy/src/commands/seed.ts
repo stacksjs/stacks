@@ -2,7 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, SeedOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
 export function seed(buddy: CLI) {
@@ -17,6 +17,8 @@ export function seed(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SeedOptions) => {
+      log.debug('Running `buddy seed` ...', options)
+
       const perf = await intro('buddy seed')
       const result = await runAction(Action.Seed, options)
 

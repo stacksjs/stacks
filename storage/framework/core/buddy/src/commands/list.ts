@@ -1,7 +1,8 @@
 import process from 'node:process'
-import type { CLI } from '@stacksjs/types'
+import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
 import { projectPath } from '@stacksjs/path'
+import { log } from 'stacks/logging'
 
 export function list(buddy: CLI) {
   const descriptions = {
@@ -14,8 +15,11 @@ export function list(buddy: CLI) {
     .command('list', descriptions.list)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
+    .action(async (options: CliOptions) => {
+      log.debug('Running `buddy list` ...', options)
+
       $.cwd(projectPath())
+
       const test = await $`buddy --help`.text()
       const commandsSection = test.match(/Commands:.*?(?=For more info, run any command with the)/s)?.[0]
 

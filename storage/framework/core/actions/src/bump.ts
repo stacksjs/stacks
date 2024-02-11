@@ -8,7 +8,9 @@ await runCommand(changelogCommand, {
   cwd: p.projectPath(),
 })
 
-const bumpCommand = options?.dryRun ? 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --no-push' : 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all'
+const bumpCommand = options?.dryRun
+  ? 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --no-push'
+  : 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all'
 
 await runCommand(
   bumpCommand,

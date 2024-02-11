@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { bgCyan, bold, intro, italic, outro, prompts } from '@stacksjs/cli'
+import { bgCyan, bold, intro, italic, log, outro, prompts } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
 import { ExitCode } from '@stacksjs/types'
@@ -64,6 +64,8 @@ export function domains(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string, options: DomainsOptions) => {
+      log.debug('Running `buddy domains:purchase <domain>` ...', options)
+
       options.domain = domain
       const startTime = await intro('buddy domains:purchase')
       const result = await runAction(Action.DomainsPurchase, options)
@@ -103,6 +105,8 @@ export function domains(buddy: CLI) {
     .command('domains:add <domain>', descriptions.add)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DomainsOptions) => {
+      log.debug('Running `buddy domains:add <domain>` ...', options)
+
       const startTime = await intro('buddy domains:add')
       const result = await addDomain({
         ...options,
@@ -123,6 +127,8 @@ export function domains(buddy: CLI) {
     .option('--yes', descriptions.skip, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DomainsOptions) => {
+      log.debug('Running `buddy domains:remove <domain>` ...', options)
+
       const domain = options.domain || config.app.url
       const opts = { ...options, domain }
       const startTime = await intro('buddy domains:remove')

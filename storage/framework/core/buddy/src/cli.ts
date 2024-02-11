@@ -2,8 +2,6 @@ import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { CAC } from 'cac'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
-import { path as p } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
 import { log } from '@stacksjs/cli'
 import { collect } from '@stacksjs/collections'
 import * as cmd from './commands'
@@ -94,7 +92,9 @@ async function main() {
     })
 
   buddy.on('inspire:*', () => {
+    // eslint-disable-next-line no-console
     console.log('Invalid command:', buddy.args.join(' '))
+    // eslint-disable-next-line no-console
     console.log('See `--help` for a list of available commands')
     throw new Error('Invalid command')
   })

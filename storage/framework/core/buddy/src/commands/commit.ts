@@ -1,6 +1,7 @@
 import process from 'node:process'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runCommit } from '@stacksjs/actions'
+import { log } from 'stacks/logging'
 
 export function commit(buddy: CLI) {
   const descriptions = {
@@ -14,6 +15,7 @@ export function commit(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
+      log.debug('Running `buddy commit` ...', options)
       await runCommit(options)
     })
 

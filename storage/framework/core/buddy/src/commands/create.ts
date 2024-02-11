@@ -37,6 +37,8 @@ export function create(buddy: CLI) {
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
+      log.debug('Running `buddy new <name>` ...', options)
+
       const startTime = await intro('stacks new')
       const name = options.name
       const path = resolve(process.cwd(), name)
@@ -45,7 +47,7 @@ export function create(buddy: CLI) {
       onlineCheck()
       const result = await download(name, path, options)
 
-      if (result?.isErr()) {
+      if (result.isErr()) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }

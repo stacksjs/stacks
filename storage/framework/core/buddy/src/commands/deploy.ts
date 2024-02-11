@@ -10,7 +10,7 @@ import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
-    deploy: 'Reinstalls your npm dependencies',
+    deploy: 'Re-installs your npm dependencies',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -21,6 +21,8 @@ export function deploy(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
+      log.debug('Running `buddy deploy` ...', options)
+
       const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
 

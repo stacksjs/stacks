@@ -10,11 +10,10 @@ import {
   makePage,
   makeStack,
 } from '@stacksjs/actions'
-import { intro, italic, outro, prompt } from '@stacksjs/cli'
+import { intro, italic, outro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 
 export function make(buddy: CLI) {
   const descriptions = {
@@ -47,6 +46,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make` ...', options)
+
       const name = buddy.args[0]
 
       if (!name) {
@@ -54,31 +55,32 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      if (hasNoOptions(options)) {
-        let answers = await prompt.require()
-          .multiselect(descriptions.select, {
-            options: [
-              { label: 'Page', value: 'page' },
-              { label: 'Function', value: 'function' },
-              { label: 'Component', value: 'component' },
-              { label: 'Notification', value: 'notification' },
-              { label: 'Language', value: 'language' },
-              { label: 'Database', value: 'database' },
-              { label: 'Migration', value: 'migration' },
-              { label: 'Factory', value: 'factory' },
-              { label: 'Stack', value: 'stack' },
-            ],
-          })
-
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
-
-        if (isString(answers))
-          answers = [answers]
-
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
-      }
+      // TODO: uncomment this when prompt is ready
+      // if (hasNoOptions(options)) {
+      //   let answers = await prompt.require()
+      //     .multiselect(descriptions.select, {
+      //       options: [
+      //         { label: 'Page', value: 'page' },
+      //         { label: 'Function', value: 'function' },
+      //         { label: 'Component', value: 'component' },
+      //         { label: 'Notification', value: 'notification' },
+      //         { label: 'Language', value: 'language' },
+      //         { label: 'Database', value: 'database' },
+      //         { label: 'Migration', value: 'migration' },
+      //         { label: 'Factory', value: 'factory' },
+      //         { label: 'Stack', value: 'stack' },
+      //       ],
+      //     })
+      //
+      //   if (answers !== null)
+      //     process.exit(ExitCode.InvalidArgument)
+      //
+      //   if (isString(answers))
+      //     answers = [answers]
+      //
+      //   // creates an object out of array and sets answers to true
+      //   options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      // }
 
       await invoke(options)
 
@@ -91,6 +93,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:component` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -108,6 +112,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
+      log.debug('Running `buddy make:database` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -125,6 +131,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
+      log.debug('Running `buddy make:factory` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -143,6 +151,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:view` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -160,6 +170,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:function` ...', options)
+
       await makeFunction(options)
     })
 
@@ -169,6 +181,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:lang` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -189,6 +203,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:notification` ...', options)
+
       const perf = await intro('buddy make:notification')
 
       const name = buddy.args[0] || options.name
@@ -216,6 +232,8 @@ export function make(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
+      log.debug('Running `buddy make:stack` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -231,6 +249,8 @@ export function make(buddy: CLI) {
     .command('make:model', descriptions.model)
     .option('-n, --name', 'The name of the model')
     .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:model` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -247,6 +267,8 @@ export function make(buddy: CLI) {
     .option('-n, --name', 'The name of the migration')
     .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
     .action((options: MakeOptions) => {
+      log.debug('Running `buddy make:migration` ...', options)
+
       const name = buddy.args[0] || options.name
       options.name = name
 
@@ -264,6 +286,6 @@ export function make(buddy: CLI) {
   })
 }
 
-function hasNoOptions(options: MakeOptions) {
-  return !options.component && !options.page && !options.function && !options.language && !options.database && !options.migration && !options.notification && !options.stack
-}
+// function hasNoOptions(options: MakeOptions) {
+//   return !options.component && !options.page && !options.function && !options.language && !options.database && !options.migration && !options.notification && !options.stack
+// }

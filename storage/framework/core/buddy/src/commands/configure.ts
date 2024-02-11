@@ -19,6 +19,8 @@ export function configure(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
+      log.debug('Running `buddy configure` ...', options)
+
       if (options?.aws) {
         await configureAws(options)
         process.exit(ExitCode.Success)
@@ -39,6 +41,7 @@ export function configure(buddy: CLI) {
     .option('--output', 'The AWS output format')
     .option('--quiet', 'Suppress output')
     .action(async (options?: ConfigureOptions) => {
+      log.debug('Running `buddy configure:aws` ...', options)
       await configureAws(options)
       process.exit(ExitCode.Success)
     })
@@ -49,7 +52,7 @@ export function configure(buddy: CLI) {
   })
 }
 
-async function configureAws(options: ConfigureOptions) {
+async function configureAws(options?: ConfigureOptions) {
   const startTime = performance.now()
 
   const awsAccessKeyId = options?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID
@@ -57,7 +60,7 @@ async function configureAws(options: ConfigureOptions) {
   const defaultRegion = 'us-east-1' // we only support `us-east-1` for now
   const defaultOutputFormat = options?.output ?? 'json'
 
-  const command = `aws configure --profile ${options.profile ?? process.env.AWS_PROFILE}`
+  const command = `aws configure --profile ${options?.profile ?? process.env.AWS_PROFILE}`
   const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
 
   const result = await runCommand(command, {
@@ -72,7 +75,7 @@ async function configureAws(options: ConfigureOptions) {
     process.exit(ExitCode.FatalError)
   }
 
-  if (options.quiet)
+  if (options?.quiet)
     return
 
   await outro('Exited', { startTime, useSeconds: true })

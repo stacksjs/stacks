@@ -2,6 +2,7 @@ import process from 'node:process'
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { runAdd } from '@stacksjs/actions'
+import { log } from 'stacks/logging'
 
 export function add(buddy: CLI) {
   const descriptions = {
@@ -22,6 +23,8 @@ export function add(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy add`...', options)
+
       if (hasNoOptions(options)) {
         // const answers = await log.prompt(descriptions.select, {
         //   type: 'multiselect',

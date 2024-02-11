@@ -20,6 +20,7 @@ type AiModel = 'amazon.titan-embed-text-v1'
 export interface AiOptions {
   default: AiModel
   models: AiModel[]
+  deploy: boolean
 }
 
 export type AiConfig = Partial<AiOptions>

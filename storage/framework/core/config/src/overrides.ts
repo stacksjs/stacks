@@ -11,6 +11,7 @@ import email from 'config/email'
 import git from 'config/git'
 import hashing from 'config/hashing'
 import library from 'config/library'
+import logger from 'config/logger'
 import queue from 'config/queue'
 import payment from 'config/payment'
 import notification from 'config/notification'
@@ -35,6 +36,7 @@ export default {
   git,
   hashing,
   library,
+  logger,
   notification,
   queue,
   payment,

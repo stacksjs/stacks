@@ -18,6 +18,8 @@ export function lint(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
+      log.debug('Running `buddy lint` ...', options)
+
       const startTime = await intro('buddy lint')
       const result = await runAction(Action.Lint, options)
 
@@ -35,6 +37,8 @@ export function lint(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
+      log.debug('Running `buddy lint:fix` ...', options)
+
       log.info('Fixing lint errors...')
       const result = await runAction(Action.LintFix, { ...options })
 

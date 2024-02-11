@@ -19,6 +19,8 @@ export function release(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
+      log.debug('Running `buddy release` ...', options)
+
       if (options.dryRun)
         log.warn('Dry run enabled. No changes will be made or committed.')
 
