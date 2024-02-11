@@ -2,7 +2,8 @@ import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import type { CliOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { italic, log, underline } from './'
+import { italic } from './utils'
+import { log } from './'
 
 /**
  * Execute a command.
@@ -32,7 +33,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
-  log.debug('Running exec:', italic(underline(command)))
+  log.debug('Running exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
   log.debug('Options:', options)
 

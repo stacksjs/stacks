@@ -56,6 +56,7 @@ export default {
     command: 'my-custom-cli',
     description: 'Stacks is a full-stack framework for TypeScript.',
     source: p.appPath('commands'),
+    deploy: false,
   },
 
   cache: {
@@ -122,8 +123,6 @@ export default {
       // version: 'v1',
     },
 
-    ai: false,
-    docs: false,
     fileSystem: false,
   },
 

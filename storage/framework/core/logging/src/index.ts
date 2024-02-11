@@ -1,26 +1,29 @@
 import process from 'node:process'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
-import { logger } from '@stacksjs/config'
+import { logger as logConfig } from '@stacksjs/config'
 import { logsPath } from '@stacksjs/path'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 
-/**
- * This regex checks for:
- *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
- *   - --verbose - followed by optional spaces at the end.
- *   - --verbose followed by optional spaces at the end.
- *
- * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
- */
-const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
-let logLevel = config.logger.level
-if (verboseRegex.test(buddyOptions().trim()))
-  logLevel = 4
+export function logLevel() {
+  /**
+   * This regex checks for:
+   *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
+   *   - --verbose - followed by optional spaces at the end.
+   *   - --verbose followed by optional spaces at the end.
+   *
+   * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
+   */
+  const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
+
+  if (verboseRegex.test(buddyOptions().trim()))
+    return 4
+  return logConfig.level
+}
 
 export const logger = createConsola({
-  level: logLevel,
+  level: logLevel(),
   // fancy: true,
   // formatOptions: {
   //     columns: 80,

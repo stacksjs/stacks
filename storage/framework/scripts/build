@@ -1,28 +1,45 @@
 #!/bin/sh
 
+# TODO: implement parallelism
+
 # Get the script's directory
 script_dir=$(readlink -f $(dirname "$0"))
 
-# Get the number of CPU cores to determine parallelism level
-# Adjust this as needed or dynamically determine it
-num_cores=$(nproc --all)
+# Get all directories in the core path & sort them alphabetically
+dirs=$(find "$script_dir/../core" -type d -maxdepth 1 | sort)
 
-# Find all directories in the core path, excluding the ones without package.json
-# and pass them to xargs to run builds in parallel
-find "$script_dir/../core" -mindepth 1 -maxdepth 1 -type d ! -name 'bun-create' -print0 | xargs -0 -n 1 -P $num_cores sh -c '
-dir=$1
-echo ""
-echo "🏗️  Building..."
-echo "📦 $dir"
-
-# Change to the directory
-cd $dir
-
-# Build the package
-if bun run build; then
-  echo "✅ Build complete"
-else
-  echo "❌ Failed to build $dir"
+# Check if no directories found
+if [ -z "$dirs" ]; then
+  echo "No core packages found"
   exit 1
 fi
-' sh
+
+# Loop through each directory
+for dir in $dirs; do
+  # Skip the ../core directory because it has no package.json
+  if [ "$dir" = "$script_dir/../core" ] || [ "$dir" = "$script_dir/../core/bun-create" ]; then
+    continue
+  fi
+
+  echo ""
+  echo "🏗️  Building..."
+  echo "📦 $dir"
+
+  # Change to the directory
+  cd $dir
+
+  # Build the package
+  bun run build
+
+  # Check if the build command was successful
+  if [ $? -ne 0 ]; then
+    echo "Failed to build $dir"
+    exit 1
+  fi
+
+  echo "✅ Build complete"
+  echo ""
+
+  # Change back to the original directory
+  cd - >/dev/null
+done

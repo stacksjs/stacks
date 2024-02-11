@@ -47,9 +47,6 @@ export default {
     timeout: 30,
   },
 
-  ai: true, // deploys AI endpoints
-  cli: true, // deploys CLI setup endpoint (./bootstrap)
-  docs: true, // deploys documentation
   fileSystem: true, // enables file system
 
   // compute: {},

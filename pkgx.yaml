@@ -13,4 +13,3 @@ dependencies:
   stedolan.github.io/jq: ^1.7
   httpie.io: ^3.2.2
   rust-lang.org: ^1.74.1 # optional, for certain dev purposes only
-  gnu.org/coreutils: ^9.4 # nproc does not ship everywhere but is included in coreutils
