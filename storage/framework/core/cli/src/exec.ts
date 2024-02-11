@@ -2,7 +2,6 @@ import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import type { CliOptions, StacksError, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { italic } from './utils'
 import { log } from './'
 
 /**
@@ -82,7 +81,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * ```
  */
 export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
-  log.debug('Running execSync:', italic(command))
+  log.debug('Running execSync:', command)
   log.debug('execSync Options:', options)
 
   const cmd = Array.isArray(command)

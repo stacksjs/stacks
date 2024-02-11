@@ -59,8 +59,6 @@ export async function runActions(actions: string[], options?: ActionOptions) {
 
   const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`${action}.ts`)} ${opts}`)
 
-  // eslint-disable-next-line no-console
-  console.log('this should have inherit:', o)
   return await runCommands(commands, o)
 }
 
