@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/http",
   "type": "module",
-  "version": "0.58.59",
+  "version": "0.58.60",
   "description": "Stacks HTTP methods.",
   "author": "Chris Breuer",
   "license": "MIT",

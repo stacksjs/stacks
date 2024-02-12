@@ -1,5 +1,7 @@
 /* eslint-disable no-new */
 import { DateTime } from 'luxon'
+
+// @ts-expect-error types aren't there
 import sinon from 'sinon'
 import { CronJob, CronTime } from '../src'
 
@@ -19,7 +21,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(1)
     })
 
-    it('should run second with onComplete (* * * * * *)', (done) => {
+    it('should run second with onComplete (* * * * * *)', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
 
@@ -63,7 +65,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(5)
     })
 
-    it('should run every second for 5 seconds with onComplete (* * * * * *)', (done) => {
+    it('should run every second for 5 seconds with onComplete (* * * * * *)', (done: any) => {
       const callback = jest.fn()
       const clock = sinon.useFakeTimers()
       const job = new CronJob(
@@ -110,7 +112,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(2)
     })
 
-    it('should run every second for 5 seconds with onComplete (*/1 * * * * *)', (done) => {
+    it('should run every second for 5 seconds with onComplete (*/1 * * * * *)', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
       const job = new CronJob(
@@ -137,7 +139,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(8)
     })
 
-    it('should run every second for a range ([start]-[end] * * * * *) with onComplete', (done) => {
+    it('should run every second for a range ([start]-[end] * * * * *) with onComplete', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
       const job = new CronJob(
@@ -154,7 +156,7 @@ describe('cron', () => {
       clock.restore()
     })
 
-    it('should default to full range when upper range not provided (1/2 * * * * *)', (done) => {
+    it('should default to full range when upper range not provided (1/2 * * * * *)', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
       const job = new CronJob(
@@ -185,7 +187,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(1)
     })
 
-    it('should run every second with onComplete (* * * * * *) using the object constructor', (done) => {
+    it('should run every second with onComplete (* * * * * *) using the object constructor', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
       const job = CronJob.from({
@@ -236,7 +238,7 @@ describe('cron', () => {
       expect(callback).toHaveBeenCalledTimes(4)
     })
 
-    it('should run every 45 minutes for 2 hours (0 */45 * * * *) with onComplete', (done) => {
+    it('should run every 45 minutes for 2 hours (0 */45 * * * *) with onComplete', (done: any) => {
       const clock = sinon.useFakeTimers()
       const callback = jest.fn()
       const job = new CronJob(
@@ -254,7 +256,7 @@ describe('cron', () => {
     })
   })
 
-  it('should start and stop job from outside', (done) => {
+  it('should start and stop job from outside', (done: any) => {
     const clock = sinon.useFakeTimers()
     const callback = jest.fn()
     const job = new CronJob(
@@ -273,7 +275,7 @@ describe('cron', () => {
     job.stop()
   })
 
-  it('should start and stop job from inside (default context)', (done) => {
+  it('should start and stop job from inside (default context)', (done: any) => {
     const clock = sinon.useFakeTimers()
     const callback = jest.fn()
     new CronJob(

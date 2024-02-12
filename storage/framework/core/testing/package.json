@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/testing",
   "type": "module",
-  "version": "0.58.59",
+  "version": "0.58.60",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -52,10 +52,12 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.41.2"
+    "@playwright/test": "^1.41.2",
+    "vitest": "^1.2.2"
   },
   "dependencies": {
-    "@playwright/test": "^1.41.2"
+    "@playwright/test": "^1.41.2",
+    "vitest": "^1.2.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

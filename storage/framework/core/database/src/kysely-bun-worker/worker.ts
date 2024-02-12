@@ -25,7 +25,6 @@ function run(mode: RunMode, sql: string, parameters?: readonly unknown[]): Query
   }
 }
 
-// @ts-expect-error bun worker
 onmessage = ({ data }: MessageEvent<MainMsg>) => {
   const ret: WorkerMsg = {
     type: data.type,

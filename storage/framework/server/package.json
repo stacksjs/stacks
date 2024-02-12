@@ -1,5 +1,5 @@
 {
-  "name": "stacks-cloud",
+  "name": "stacks-server",
   "type": "module",
   "version": "0.58.56",
   "scripts": {

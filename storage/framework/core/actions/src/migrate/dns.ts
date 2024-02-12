@@ -1,3 +1,3 @@
-import { generateMigrations } from './generate'
+import { generateMigrations } from '../generate'
 
 generateMigrations()

@@ -18,7 +18,7 @@ const ses = new AWS.SES({
 
 // This lambda will read outgoing emails formatted in JSON, convert them
 // in to a raw email, send them using SES, and store them in S3.
-exports.handler = (event) => {
+exports.handler = (event: any) => {
   // This JS object will contain all the data within the chain
   const container = {
     bucket: event.Records[0].s3.bucket.name,
@@ -56,7 +56,7 @@ exports.handler = (event) => {
 }
 
 // Load the JSON email that triggered this Lambda.
-function load_the_email(container) {
+function load_the_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('load_the_email')
 
@@ -67,7 +67,7 @@ function load_the_email(container) {
     }
 
     // ->	Execute the query.
-    s3.getObject(params, (error, data) => {
+    s3.getObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -82,7 +82,7 @@ function load_the_email(container) {
 }
 
 // Extract all the data necessary to organize the incoming emails.
-function extract_data(container) {
+function extract_data(container: any) {
   return new Promise((resolve, reject) => {
     console.info('extract_data')
 
@@ -116,7 +116,7 @@ function extract_data(container) {
 
     // 6. Create a human readable time stamp that matches the format
     // 	S3 Provides in its Event.
-    date = moment().format('ddd, DD MMM YYYY HH:MM:SS ZZ')
+    const date = moment().format('ddd, DD MMM YYYY HH:MM:SS ZZ')
 
     // 7. Create the path where the email needs to be moved
     // 	so it is properly organized.
@@ -145,7 +145,7 @@ function extract_data(container) {
 
 // From the JSON file that we loaded in to memory we generate a RAW version that
 // can be used by SES, and later on stored and converted in multiple formats
-function generate_the_raw_email(container, callback) {
+function generate_the_raw_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('generate_the_raw_email')
 
@@ -154,7 +154,7 @@ function generate_the_raw_email(container, callback) {
     const mail = new MailComposer(container.email.json)
 
     // 2. Take the email and compile it down to its text form for storage.
-    mail.compile().build((error, raw_message) => {
+    mail.compile().build((error: any, raw_message: any) => {
       // 1. Check if there was an error
       if (error)
         return reject(error)
@@ -169,7 +169,7 @@ function generate_the_raw_email(container, callback) {
 }
 
 // Use the newly generated RAW email and send it using SES.
-function send_email(container) {
+function send_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('send_email')
 
@@ -181,7 +181,7 @@ function send_email(container) {
     }
 
     // -> Send the email out
-    ses.sendRawEmail(params, (error, data) => {
+    ses.sendRawEmail(params, (error: any, data: any) => {
       // 1. Check if there was an error
       if (error)
         return reject(error)
@@ -202,7 +202,7 @@ function send_email(container) {
 // and then we copy the object to the final destination, which triggers
 // the Convert action, and once the convert action makes a PUT nothing else
 // happens.
-function save_raw_email(container) {
+function save_raw_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('save_raw_email')
 
@@ -214,7 +214,7 @@ function save_raw_email(container) {
     }
 
     // ->	Execute the query.
-    s3.putObject(params, (error, data) => {
+    s3.putObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -226,7 +226,7 @@ function save_raw_email(container) {
 }
 
 // Now that we have our RAW email saved we do a copy event so it will trigger the Conversion Lambda
-function copy_raw_email(container) {
+function copy_raw_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('copy_raw_email')
 
@@ -238,7 +238,7 @@ function copy_raw_email(container) {
     }
 
     // ->	Execute the query.
-    s3.copyObject(params, (error, data) => {
+    s3.copyObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -250,7 +250,7 @@ function copy_raw_email(container) {
 }
 
 // And before we finish we clean up the environment by deleting the JSON email,
-function delete_json_email(container) {
+function delete_json_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('delete_json_email')
 
@@ -261,7 +261,7 @@ function delete_json_email(container) {
     }
 
     // ->	Execute the query.
-    s3.deleteObject(params, (error, data) => {
+    s3.deleteObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -273,7 +273,7 @@ function delete_json_email(container) {
 }
 
 // And the temporary RAW email.
-function delete_raw_email(container) {
+function delete_raw_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('delete_raw_email')
 
@@ -284,7 +284,7 @@ function delete_raw_email(container) {
     }
 
     // ->	Execute the query.
-    s3.deleteObject(params, (error, data) => {
+    s3.deleteObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)

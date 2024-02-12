@@ -10,8 +10,8 @@ export async function cleanProject() {
     p.frameworkPath('node_modules'),
     p.frameworkPath('**/dist'),
     p.frameworkPath('**/node_modules'),
-    p.cloudPath('cdk.out/'),
-    p.cloudPath('cdk.context.json'),
-    p.cloudPath('dist.zip'),
+    p.frameworkCloudPath('cdk.out/'),
+    p.frameworkCloudPath('cdk.context.json'),
+    p.frameworkCloudPath('dist.zip'),
   ])
 }

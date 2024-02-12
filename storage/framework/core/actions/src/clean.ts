@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/logging'
-import { clean } from '@stacksjs/utils'
+import { cleanProject } from '@stacksjs/utils'
 
 log.info('Running clean command...')
 
-await clean()
+await cleanProject()

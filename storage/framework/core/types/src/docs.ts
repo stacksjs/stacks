@@ -1,11 +1,11 @@
 import type { UserConfig } from 'vitepress'
 
-interface DeployedUserConfig extends UserConfig {
+export interface DocsUserConfig extends UserConfig {
   deploy: boolean
 }
 
-export type DocsConfig = Partial<DeployedUserConfig>
-export type DocsOptions = DocsConfig
+export type DocsConfig = DocsUserConfig
+export type DocsOptions = Partial<DocsConfig>
 
 export interface SocialLink {
   icon: SocialLinkIcon

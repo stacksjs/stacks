@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/email",
   "type": "module",
-  "version": "0.58.59",
+  "version": "0.58.60",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -71,6 +71,7 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/mailparser": "^3.4.4",
+    "aws-sdk": "^2.1555.0",
     "mailparser": "^3.6.7",
     "mime": "^4.0.1",
     "moment": "^2.30.1",

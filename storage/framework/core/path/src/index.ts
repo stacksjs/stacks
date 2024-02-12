@@ -124,6 +124,10 @@ export function cloudPath(path?: string) {
   return corePath(`cloud/${path || ''}`)
 }
 
+export function frameworkCloudPath(path?: string) {
+  return frameworkPath(`cloud/${path || ''}`)
+}
+
 export function collectionsPath(path?: string) {
   return corePath(`collections/${path || ''}`)
 }
@@ -472,6 +476,7 @@ export const path = {
   chatPath,
   cliPath,
   cloudPath,
+  frameworkCloudPath,
   collectionsPath,
   commandsPath,
   componentsPath,
