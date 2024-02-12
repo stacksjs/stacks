@@ -1,15 +1,25 @@
 import type { JobOptions } from '@stacksjs/types'
 
-export class Action {
-  name: string
-  description: string
-  rate: JobOptions['rate']
-  tries: JobOptions['tries']
-  backoff: JobOptions['backoff']
-  enabled: JobOptions['enabled']
-  handle: () => Promise<string>
+interface ActionOptions {
+  name?: string
+  description?: string
+  handle: () => Promise<any> | any
+  rate?: JobOptions['rate']
+  tries?: JobOptions['tries']
+  backoff?: JobOptions['backoff']
+  enabled?: JobOptions['enabled']
+}
 
-  constructor({ name, description, handle, rate, tries, backoff, enabled }: { name: string, description: string, handle: () => Promise<string>, rate: JobOptions['rate'], tries: JobOptions['tries'], backoff: JobOptions['backoff'], enabled: JobOptions['enabled'] }) {
+export class Action {
+  name?: string
+  description?: string
+  rate?: JobOptions['rate']
+  tries?: JobOptions['tries']
+  backoff?: JobOptions['backoff']
+  enabled?: JobOptions['enabled']
+  handle: () => Promise<any>
+
+  constructor({ name, description, handle, rate, tries, backoff, enabled }: ActionOptions) {
     this.name = name
     this.description = description
     this.rate = rate
