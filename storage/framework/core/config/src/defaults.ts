@@ -433,16 +433,18 @@ export default {
 
   team: {
     name: 'Stacks',
-    members: [{
+    members: {
       'Chris Breuer': 'chris@stacksjs.org',
-    }],
+    },
   },
 
   ui: {
     shortcuts: [
       ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
     ],
+
     safelist: 'prose prose-sm m-auto text-left',
+
     trigger: ':stx:',
     classPrefix: 'stx-',
     reset: 'tailwind',

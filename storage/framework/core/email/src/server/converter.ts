@@ -12,7 +12,7 @@ const s3 = new AWS.S3({
 
 // This lambda will read RAW emails and convert them in easy to read formats
 // like: HTML and text
-exports.handler = (event) => {
+exports.handler = (event: any) => {
   // 1. We need to process the path received by S3 since AWS dose escape the
   // string in a special way. They escape the string in a HTML style
   // but for whatever reason they convert spaces in to +ses.
@@ -57,7 +57,7 @@ exports.handler = (event) => {
 }
 
 // Load the email that triggered the function from S3
-function load_the_email(container) {
+function load_the_email(container: any) {
   return new Promise((resolve, reject) => {
     console.info('load_the_email')
 
@@ -68,7 +68,7 @@ function load_the_email(container) {
     }
 
     // ->	Execute the query
-    s3.getObject(params, (error, data) => {
+    s3.getObject(params, (error: any, data: any) => {
       // 1. Check for internal errors
       if (error)
         return reject(error)
@@ -84,7 +84,7 @@ function load_the_email(container) {
 
 // Since the raw email is saved with an extension we need to remove it
 // before we can save other converted versions.
-function remove_extension(container) {
+function remove_extension(container: any) {
   return new Promise((resolve, reject) => {
     console.info('remove_extension')
 
@@ -105,11 +105,11 @@ function remove_extension(container) {
 }
 
 // Convert the raw email in to HTML and Text, and extract also the attachments
-function parse_the_email(container) {
+function parse_the_email(container: any) {
   return new Promise((resolve, reject) => {
-    // 1. Parse the email and extract all the it necessary.
-    parser(container.raw_email, (error, parsed) => {
-      // 1. Check for internal errors.
+    // 1. Parse the email and extract all the necessary
+    parser(container.raw_email, (error: any, parsed: any) => {
+      // 1. Check for internal errors
       if (error)
         return reject(error)
 
@@ -125,7 +125,7 @@ function parse_the_email(container) {
 }
 
 // After the conversion we save the Text version to S3.
-function save_text(container) {
+function save_text(container: any) {
   return new Promise((resolve, reject) => {
     console.info('save_text')
 
@@ -137,7 +137,7 @@ function save_text(container) {
     }
 
     // ->	Execute the query.
-    s3.putObject(params, (error, data) => {
+    s3.putObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -149,10 +149,10 @@ function save_text(container) {
 }
 
 // Then if we have a HTML version we try to save that.
-function save_html(container) {
+function save_html(container: any) {
   return new Promise((resolve, reject) => {
     // <>> When the body of an email have only one version, meaning it
-    // dose have only the pure text version and no HTML.
+    // does have only the pure text version and no HTML.
     // Nodemailer won't generate the HTML for you, it just grabs
     // what is in the Email body.
     // So, this value will be false, when there is no HTML content in
@@ -174,7 +174,7 @@ function save_html(container) {
     }
 
     // ->	Execute the query.
-    s3.putObject(params, (error, data) => {
+    s3.putObject(params, (error: any, data: any) => {
       // 1. Check for internal errors.
       if (error)
         return reject(error)
@@ -187,12 +187,12 @@ function save_html(container) {
 
 // Last thing to do is to save the attachments if there are any. If the
 // array is empty the loop will skip itself.
-function save_attachments(container) {
+function save_attachments(container: any) {
   return new Promise((resolve, reject) => {
     console.info('save_attachments')
 
     // Start the loop which save all the attachments.
-    loop(1, (error) => {
+    loop(1, (error: any) => {
       // <<> Check if there was an error.
       if (error) {
         // ->	Stop everything and surface the error.
@@ -204,7 +204,7 @@ function save_attachments(container) {
     })
 
     // This loop will upload all the individual attachments found in a email
-    function loop(count, callback) {
+    function loop(count: any, callback: any) {
       // 1. Pop the last element in the array if any.
       const file = container.parsed.attachments.pop()
 
@@ -213,7 +213,7 @@ function save_attachments(container) {
         return callback()
 
       // 3. Get the file name which also contain the file extension.
-      file_name = file.filename
+      let file_name = file.filename
 
       // 4. An email attachment is not required to have a name, this
       // mean we need to check if we have a file name and, if not
@@ -258,7 +258,7 @@ function save_attachments(container) {
       }
 
       // 8. Then save the buffer of the attachment.
-      file_body = file.content
+      const file_body = file.content
 
       // 9. Split the S3 Key (path) so we can remove the last element. Since
       // we don't want the object name, we care only about the path.
@@ -292,7 +292,7 @@ function save_attachments(container) {
       }
 
       // ->	Execute the query.
-      s3.putObject(params, (error, data) => {
+      s3.putObject(params, (error: any, data: any) => {
         // 1. Check for internal errors.
         if (error)
           return callback(error)

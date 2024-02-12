@@ -29,7 +29,7 @@ export class DocsStack {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
-        assetHash: originRequestFunctionHash,
+        assetHash: originRequestFunctionHash(),
         assetHashType: AssetHashType.CUSTOM,
       }),
     })

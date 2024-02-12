@@ -55,7 +55,7 @@ interface S3Event {
 }
 
 // This Lambda will filter all the incoming emails based on their From and To field
-export function handler(event: S3Event): Promise<boolean> {
+export function handler(event: S3Event): Promise<any> {
   // if (!event.Records.length)
   //   throw new Error('No records in the event')
 
@@ -96,6 +96,8 @@ export function handler(event: S3Event): Promise<boolean> {
 
       return false
     })
+
+  return Promise.resolve()
 }
 
 // List all the emails added to SES, so we can use them to decided where to
@@ -202,7 +204,8 @@ function parse_the_email(container: Container): Promise<Container> {
       // Save the parsed email for the next promise.
       container.date = data.date
       container.from = data.from?.value[0]?.address
-      container.to = data.to?.value[0]?.address
+      // container.to = data.to?.value[0]?.address
+      container.to = data.from?.value[0]?.address
       container.subject = data.subject || 'No Subject'
       container.message_id = data.messageId
 
@@ -236,13 +239,26 @@ function extract_data(container: Container): Promise<Container> {
     // Since the email string can come in a form of:
     //  Name Last <name@example.com>
     // We have to extract just the email address, and discard the rest
-    const tmp_to = container.to
-      .match(/(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21-\x5A\x53-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])+)\])/gm)[0]
-      .split('@')
+    let tmp_to
+    if (container?.to) {
+      const matchResult = container.to.match(/(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21-\x5A\x53-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])+)\])/gm);
+      if (matchResult) {
+        tmp_to = matchResult[0].split('@');
+        // Continue with your logic using tmp_to
+      }
+    }
 
-    const tmp_from = 	container.from
-      .match(/(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21-\x5A\x53-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])+)\])/gm)[0]
-      .split('@')
+    let tmp_from
+    if (container?.from) {
+      const matchResult = container.from.match(/(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21-\x5A\x53-\x7F]|\\[\x01-\x09\x0B\x0C\x0E-\x7F])+)\])/gm)
+      if (matchResult) {
+        tmp_from = matchResult[0].split('@');
+        // Continue with your logic using tmp_to
+      }
+    }
+
+    if (!tmp_to || !tmp_from)
+      return reject(Error('No To or From field in the email'))
 
     // Get the domain name of the receiving end, so we can group
     // emails by all the domain that were added to SES.

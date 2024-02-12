@@ -3,6 +3,7 @@ import { intro, outro, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
+import { NpmScript } from '@stacksjs/enums'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { version } from '../package.json'
 
@@ -53,10 +54,12 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 // export async function updateDependencies(options: UpgradeOptions) {
 export async function updateDependencies() {
   const perf = await intro('buddy upgrade:dependencies')
-  const result = await runCommand(NpmScript.UpgradeDependencies, options)
+  const result = await runCommand(NpmScript.UpgradeDependencies, {
+    cwd: projectPath(),
+  })
 
   if (result.isErr()) {
-    outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+    await outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
     process.exit()
   }
 

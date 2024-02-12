@@ -1,5 +1,5 @@
 import { kolorist as c } from '@stacksjs/cli'
-import type { ViteDevServer } from '..'
+import type { ViteDevServer } from 'vite'
 import { version } from '../../package.json'
 
 export const docsEngine = {

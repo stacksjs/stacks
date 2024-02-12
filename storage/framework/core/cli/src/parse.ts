@@ -109,7 +109,7 @@ interface CliOptions {
   [k: string]: string | boolean | number | undefined
 }
 
-export function parseOptions(options?: CliOptions): CliOptions | undefined {
+export function parseOptions(options?: CliOptions): CliOptions {
   options = options || {}
   const args = process.argv.slice(2)
 
@@ -140,12 +140,12 @@ export function parseOptions(options?: CliOptions): CliOptions | undefined {
 
   // if options has no keys, return undefined, e.g. `buddy release`
   if (Object.keys(options).length === 0)
-    return undefined
+    return { dryRun: false, quiet: false, verbose: false }
 
   // convert the string 'true' or 'false' to a boolean
   Object.keys(options).forEach((key) => {
     if (!options)
-      return
+      return { dryRun: false, quiet: false, verbose: false }
 
     const value = options[key]
 
