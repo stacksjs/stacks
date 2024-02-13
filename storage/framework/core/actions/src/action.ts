@@ -21,7 +21,7 @@ export class Action {
   handle: () => Promise<any>
 
   constructor({ name, description, handle, rate, tries, backoff, enabled }: ActionOptions) {
-    log.info(`Action ${name} created`)
+    // log.debug(`Action ${name} created`) // TODO
 
     this.name = name
     this.description = description

@@ -340,6 +340,7 @@ export function paymentsPath(path?: string) {
   return corePath(`payments/${path || ''}`)
 }
 
+// all paths ultimately build on the projectPath
 export function projectPath(filePath = '') {
   let path = process.cwd()
 

@@ -114,7 +114,7 @@ export class ComputeStack {
       port: 3000,
       healthCheck: {
         interval: Duration.seconds(6),
-        path: '/api/health',
+        path: '/api/healthy',
         protocol: elbv2.Protocol.HTTP,
         timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
