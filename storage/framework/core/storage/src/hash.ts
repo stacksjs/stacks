@@ -4,6 +4,8 @@ import { path as p } from '@stacksjs/path'
 import { fs } from './fs'
 
 export function hashFileOrDirectory(path: string, hash: Hash): void {
+  // eslint-disable-next-line no-console
+  console.log('hashFileOrDirectory', path)
   if (fs.statSync(path).isDirectory()) {
     const files = fs.readdirSync(path)
     for (const file of files) {
