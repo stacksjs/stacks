@@ -12,7 +12,7 @@ export default {
   useUuid: true, // instead of `auto-incrementing id`, defaults to false
   useSearch: true, // defaults to false, also accepts SearchEngineSettings
   useSoftDeletes: true, // defaults to false, also accepts SearchEngineSettings
-  useSeeder: { // defaults to a count of 10
+  useSeed: { // defaults to a count of 10
     count: 10,
   },
 
