@@ -1,5 +1,4 @@
 import type { JobOptions } from '@stacksjs/types'
-import { log } from '@stacksjs/logging'
 
 interface ActionOptions {
   name?: string
