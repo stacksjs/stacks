@@ -27,6 +27,30 @@ export function userActionsPath(path?: string) {
   return appPath(`Actions/${path || ''}`)
 }
 
+export function userJobsPath(path?: string) {
+  return appPath(`Jobs/${path || ''}`)
+}
+
+export function userListenersPath(path?: string) {
+  return appPath(`Listeners/${path || ''}`)
+}
+
+export function userMiddlewarePath(path?: string) {
+  return appPath(`Middleware/${path || ''}`)
+}
+
+export function userModelsPath(path?: string) {
+  return appPath(`Models/${path || ''}`)
+}
+
+export function userNotificationsPath(path?: string) {
+  return appPath(`Notifications/${path || ''}`)
+}
+
+export function userEventsPath() {
+  return appPath(`Events.ts`)
+}
+
 /**
  * Returns the path to the `ai` directory. The AI directory
  * contains the core Stacks' AI logic which currently
@@ -554,6 +578,12 @@ export const path = {
   tinkerPath,
   typesPath,
   uiPath,
+  userEventsPath,
+  userJobsPath,
+  userListenersPath,
+  userMiddlewarePath,
+  userModelsPath,
+  userNotificationsPath,
   utilsPath,
   validationPath,
   vitePath,

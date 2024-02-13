@@ -17,7 +17,7 @@ export class Action {
   rate?: JobOptions['rate']
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
-  enabled?: JobOptions['enabled']
+  enabled?: boolean
   handle: () => Promise<any>
 
   constructor({ name, description, handle, rate, tries, backoff, enabled }: ActionOptions) {

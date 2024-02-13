@@ -48,11 +48,31 @@ export class Router implements RouterInterface {
 
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
     // check if callback is a string and if it is, then import that module path and use the default.handle function as the callback
-    if (typeof callback === 'string') {
+    if (callback instanceof Promise) {
+      const actionModule = await callback
+      callback = actionModule.default
+    }
+    else if (typeof callback === 'string') {
       // import the module and use the default.handle function as the callback
       const actionModule = await import(p.userActionsPath(`${callback}.ts`))
       callback = actionModule.default.handle
     }
+
+    this.addRoute('GET', path, callback, 200)
+    return this
+  }
+
+  public async health(): Promise<this> {
+    const healthModule = await import(p.userActionsPath('HealthAction.ts'))
+    const callback = healthModule.default.handle
+
+    this.addRoute('GET', '/api/healthy', callback, 200)
+    return this
+  }
+
+  public async job(path: Route['url']): Promise<this> {
+    const jobModule = await import(p.userJobsPath('ExampleJob.ts'))
+    const callback = jobModule.default.handle
 
     this.addRoute('GET', path, callback, 200)
     return this

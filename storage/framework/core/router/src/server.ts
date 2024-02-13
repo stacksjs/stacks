@@ -21,8 +21,6 @@ export async function serve(options: ServeOptions = {}) {
     port,
 
     fetch(req: Request) {
-      // eslint-disable-next-line no-console
-      console.log(req)
       return serverResponse(req)
     },
   })

@@ -1,3 +1,5 @@
+import type { Action } from '@stacksjs/actions'
+
 export interface NitroEventHandler {
   /**
    * Path prefix or route
@@ -41,7 +43,7 @@ export interface Route {
   url: string // used synonymously with uri
   method: HttpMethod
   pattern: RegExp
-  callback: RouteCallback | ActionName
+  callback: RouteCallback | ActionName | Action
   paramNames: string[]
   middleware?: string | string[]
   statusCode?: StatusCode
