@@ -1,5 +1,6 @@
 import { route } from '@stacksjs/router'
 
+// TODO: abstract the api prefix out of here
 route.get('/api', () => 'hello world 1') // stacksjs.org/api
 route.get('/api/', () => 'hello world 2') // stacksjs.org/api/
 route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
