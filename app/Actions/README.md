@@ -7,7 +7,7 @@ Actions introduce a concept of unique code reusability. They are "functions" tha
 - Event Listener
 - Cron Job _(Queued Jobs)_
 
-One unique Stacks feature of Actions is that they may also be called from anywhere in the frontend, dramatically simplifying API integrations.
+One unique Stacks feature of Actions is that they may also be called from anywhere in the frontend, simplifying APIs by a multitude.
 
 ```ts
 import { action } from '@stacksjs/actions'
