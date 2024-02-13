@@ -1,4 +1,3 @@
-import { searchEngine } from '@stacksjs/config'
 import type { UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
 
@@ -33,8 +32,9 @@ export const sort = computed(() => table.sort)
 export const sorts = computed(() => table.sorts)
 
 export function client() {
-  if (searchEngine.driver === 'meilisearch')
-    return meilisearch
+  // if (searchEngine.driver === 'meilisearch')
+  //   return meilisearch
+  return 'wip-search-me'
 }
 
 export function useSearchEngine() {
@@ -55,8 +55,8 @@ export function calculatePagination() {
     from = 1
 
   let to = from + offset * 2
-  if (to >= lastPage)
-    to = lastPage
+  if (to >= (lastPage as number))
+    to = lastPage as number
 
   const allPages = []
   for (let page = from; page <= to; page++)

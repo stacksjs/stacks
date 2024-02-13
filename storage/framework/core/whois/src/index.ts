@@ -22,7 +22,7 @@ async function findWhoIsServer(tld: string): Promise<string> {
       const body = await res.text()
       const server = body.match(/whois:\s+(.*)\s+/)
       if (server)
-        return server[1]
+        return server[1]!
     }
   }
   catch (err) {
@@ -103,7 +103,7 @@ function getTLD(domain: string): keyof typeof SERVERS {
 
 // get whois query parameters if exist on parameters.json for whois server
 function getParameters(server: string): string | undefined {
-  return PARAMETERS[server]
+  return (PARAMETERS as { [key: string]: string })[server]
 }
 
 /**

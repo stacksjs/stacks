@@ -1,6 +1,6 @@
 import { Schedule } from './schedule'
 
-export { CronJob } from './job'
+export { CronJob as BunCronJob } from './job'
 export { CronTime } from './time'
 
 export type {

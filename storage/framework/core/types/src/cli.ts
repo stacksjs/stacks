@@ -29,7 +29,7 @@ export type Writable =
 
 export type In = Readable
 export type Out = Writable
-export type Err = Writable
+// export type Err = Writable // TODO: find a workaround for this to not clash with our other Err export
 
 /**
  * The file descriptor for the standard input. It may be:

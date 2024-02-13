@@ -1,4 +1,3 @@
-import type { BunFile, PathLike } from 'bun'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { dirname, join, path as p } from '@stacksjs/path'
@@ -25,13 +24,11 @@ export async function readPackageJson(name: string, cwd?: string) {
   return file.data as PackageJson
 }
 
-type Path = BunFile | PathLike
-type Data = Blob | TypedArray | ArrayBufferLike | string | BlobPart[]
-
 /**
  * Writes the given text to the specified file.
  */
-export async function writeFile(path: Path, data: Data): Promise<number> {
+export async function writeFile(path: string, data: any): Promise<number> {
+// export async function writeFile(path: Path, data: Data): Promise<number> {
   if (typeof path === 'string') {
     const dirPath = dirname(path)
     if (!await existsSync(dirPath))

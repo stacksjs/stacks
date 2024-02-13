@@ -6,8 +6,8 @@ import { CronTime } from './time'
 export class Schedule {
   private cronPattern: string = ''
   private timezone: string = 'America/Los_Angeles'
-  private task: () => void
-  private cmd?: string
+  private readonly task: () => void
+  // private cmd?: string
 
   constructor(task: () => void) {
     this.task = task

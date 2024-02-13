@@ -29,11 +29,6 @@ export type Jobs = Job[]
 export type CronJob = Job
 export type CronJobs = Jobs
 
-// export type Job = JobOptions
-// export type Jobs = Job[]
-// export type CronJob = Job
-// export type CronJobs = Jobs
-
 export enum Every {
   // Second = '* * * * * *',
   // FiveSeconds = '*/5 * * * * *',

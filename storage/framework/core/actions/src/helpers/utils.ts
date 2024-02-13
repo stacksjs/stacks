@@ -2,7 +2,7 @@ import * as storage from '@stacksjs/storage'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import type { ActionOptions, StacksError, Subprocess } from '@stacksjs/types'
+import type { ActionOptions, Subprocess } from '@stacksjs/types'
 import type { Result } from '@stacksjs/error-handling'
 import { err, handleError } from '@stacksjs/error-handling'
 
@@ -13,7 +13,7 @@ import { err, handleError } from '@stacksjs/error-handling'
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, StacksError>> {
+export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, Error>> {
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`.trimEnd()

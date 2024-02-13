@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import type { CliOptions, StacksError, Subprocess } from '@stacksjs/types'
+import type { CliOptions, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { log } from './'
 
@@ -24,7 +24,7 @@ import { log } from './'
  * const result = await exec('ls', { cwd: '/home' })
  * ```
  */
-export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
+export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
   const cmd = Array.isArray(command)
     ? command
     : command.match(/(?:[^\s"]+|"[^"]*")+/g)

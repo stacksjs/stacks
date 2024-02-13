@@ -10,7 +10,7 @@ export class ErrorHandler {
   static logFile = logsPath('errors.log')
 
   static handle(err: ErrorDescription | Error, options?: ErrorOptions | Error) {
-    // lets only write to the console if we are not in silent mode
+    // let's only write to the console if we are not in silent mode
     if (!(options instanceof Error) && options?.silent !== false)
       this.writeErrorToConsole(err, options)
 

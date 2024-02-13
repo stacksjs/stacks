@@ -57,12 +57,12 @@ export interface MiddlewareType {
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
 export type RedirectCode = Extract<StatusCode, 301 | 302>
 
-export type Middleware = () => void
+export type MiddlewareFn = () => void
 
 export interface Middlewares {
-  logger: Middleware
-  auth: Middleware
-  [key: string]: Middleware
+  logger: MiddlewareFn
+  auth: MiddlewareFn
+  [key: string]: MiddlewareFn
 }
 
 export interface RouteGroupOptions {

@@ -233,8 +233,8 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
       startTime = Date.now()
       // eslint-disable-next-line ts/no-use-before-define
       this._timeout = setTimeout(callbackWrapper, t)
-      if (this.unrefTimeout && typeof this._timeout.unref === 'function')
-        this._timeout.unref()
+      if (this.unrefTimeout && typeof this._timeout!.unref === 'function')
+        this._timeout!.unref()
     }
 
     // The callback wrapper checks if it needs to sleep another period or not
