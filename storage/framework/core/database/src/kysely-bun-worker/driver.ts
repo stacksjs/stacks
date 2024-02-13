@@ -136,7 +136,7 @@ class BunWorkerConnection implements DatabaseConnection {
       if (!this.mitt)
         reject('kysely instance has been destroyed')
 
-      this.mitt.once('run', ({ data, err }) => {
+      this.mitt!.once('run', ({ data, err }) => {
         (!err && data) ? resolve(data) : reject(err)
       })
     })

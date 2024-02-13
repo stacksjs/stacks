@@ -1,7 +1,7 @@
 // inspired by vue-use
 import { fs } from '@stacksjs/storage'
 import type { PackageManifest } from '@vueuse/metadata'
-import filesize from 'filesize'
+import { filesize } from 'filesize'
 import { markdownTable } from 'markdown-table'
 import { version } from '../package.json'
 import { getExportsSize } from '../src/export-size'
@@ -47,8 +47,8 @@ export const packages: PackageManifest[] = [
 async function run() {
   // made shared library imported can resolve correctly
   // const packagesRoot = resolve(__dirname, '../../..', 'core')
-  // await fs.writeFile(join(packagesRoot, 'shared/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')
-  // await fs.writeFile(join(packagesRoot, 'core/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')
+  // await fs.writeFile(join(packagesRoot, 'shared/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')))
+  // await fs.writeFile(join(packagesRoot, 'core/index.mjs'), 'export * from "./dist/index.js"', 'utf-8')))
   // await fs.copy(join(packagesRoot, 'shared/dist'), join(packagesRoot, 'core/dist/node_modules/@vueuse/shared'), { overwrite: true })
 
   let md = '# Export size\n\n'

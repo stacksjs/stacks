@@ -1,4 +1,3 @@
-import type { ViteConfig } from '@stacksjs/types'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
@@ -9,7 +8,7 @@ import type { ViteBuildOptions } from '.'
 
 // const isWebComponent = true
 
-export const webComponentsConfig: ViteConfig = {
+export const webComponentsConfig = {
   root: p.frameworkPath('libs/components/web'),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
@@ -58,6 +57,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
+// @ts-expect-error - resolve this later
 export default defineConfig(({ command }) => {
   if (command === 'serve')
     return webComponentsConfig

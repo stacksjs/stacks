@@ -1,4 +1,4 @@
-export function retry(fn, options) {
+export function retry(fn: Function, options: any): Promise<any> {
   const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
 
   return new Promise((resolve, reject) => {
@@ -22,7 +22,7 @@ export function retry(fn, options) {
   })
 }
 
-function calculateDelay(attemptCount, initialDelay, backoffFactor, jitter) {
+export function calculateDelay(attemptCount: number, initialDelay: number, backoffFactor: number, jitter?: boolean): number {
   let delay = initialDelay * backoffFactor ** attemptCount
   if (jitter) {
     const random = Math.random() // Generates a number between 0 and 1

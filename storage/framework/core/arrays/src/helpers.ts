@@ -74,12 +74,12 @@ export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>
     let i = 0
     for (const filter of filters) {
       if (filter(e, idx, arr)) {
-        result[i].push(e)
+        result[i]!.push(e)
         return
       }
       i += 1
     }
-    result[i].push(e)
+    result[i]!.push(e)
   })
   return result
 }

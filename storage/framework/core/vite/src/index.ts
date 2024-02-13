@@ -1,4 +1,4 @@
-// import type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
+export type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
 // import type { Env } from '@stacksjs/env'
 
 // export function loadEnv(...args: Parameters<typeof viteLoadEnv>): Env {
