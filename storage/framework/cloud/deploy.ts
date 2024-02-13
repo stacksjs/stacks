@@ -6,9 +6,9 @@ import { ExitCode } from '@stacksjs/types'
 import { slug as slugify } from '@stacksjs/strings'
 import { env } from '@stacksjs/env'
 import { App } from 'aws-cdk-lib'
-import { Cloud } from './src/cloud'
-import { getOrCreateTimestamp } from './src/helpers'
-import type { CloudOptions } from './src/types'
+import { Cloud } from '../core/cloud/src/cloud'
+import { getOrCreateTimestamp } from '../core/cloud/src/helpers'
+import type { CloudOptions } from '../core/cloud/src/types'
 
 const app = new App()
 const appEnv = (config.app.env as string) === 'local'

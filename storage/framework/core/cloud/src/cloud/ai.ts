@@ -14,7 +14,7 @@ export class AiStack {
   constructor(scope: Construct, props: AiStackProps) {
     // Define the Lambda Layer for aws-sdk
     const awsSdkLayer = new lambda.LayerVersion(scope, 'AwsSdkLayer', {
-      code: lambda.Code.fromAsset('src/cloud/aws-sdk-layer'),
+      code: lambda.Code.fromAsset('../core/cloud/src/cloud/aws-sdk-layer'), // path is relative to frameworkCloudPath()
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
       description: 'Layer with aws-sdk',
     })
@@ -42,7 +42,7 @@ export class AiStack {
       description: 'Lambda function to invoke the AI model',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/cloud/lambda/ask'), // path relative to the cloud root package dir
+      code: lambda.Code.fromAsset('../core/cloud/src/cloud/lambda/ask'), // path is relative to frameworkCloudPath()
       layers: [awsSdkLayer],
       role: bedrockAccessRole,
       timeout: Duration.seconds(30),
@@ -61,7 +61,7 @@ export class AiStack {
       description: 'Lambda function to summarize any given text',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/cloud/lambda/summarize'),
+      code: lambda.Code.fromAsset('../core/cloud/src/cloud/lambda/summarize'), // path is relative to frameworkCloudPath()
       layers: [awsSdkLayer],
       role: bedrockAccessRole,
       timeout: Duration.seconds(30),

@@ -15,7 +15,7 @@ export class CliStack {
       description: 'Lambda function that triggers setup script for a Stacks project',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/cloud/lambda/cli-setup'), // path relative to the cloud root package dir
+      code: lambda.Code.fromAsset('../core/cloud/src/cloud/lambda/cli-setup'), // path relative to the cloud root package dir
       timeout: Duration.seconds(30),
     })
 
