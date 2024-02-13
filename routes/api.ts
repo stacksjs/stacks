@@ -5,7 +5,7 @@ route.get('/api/', () => 'hello world 2') // stacksjs.org/api/
 route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
 route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
 route.get('/api/health', () => 'healthy')
-// route.get('/api/buddy', 'BuddyAction')
+route.get('/api/buddy', 'BuddyAction')
 
 // route.group({ prefix: '/users' }, () => {
 //   route.before(async (params) => {

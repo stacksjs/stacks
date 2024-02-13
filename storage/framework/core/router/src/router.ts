@@ -50,7 +50,7 @@ export class Router implements RouterInterface {
     // check if callback is a string and if it is, then import that module path and use the default.handle function as the callback
     if (typeof callback === 'string') {
       // import the module and use the default.handle function as the callback
-      const actionModule = await import(p.actionsPath(`${callback}.ts`))
+      const actionModule = await import(p.userActionsPath(`${callback}.ts`))
       callback = actionModule.default.handle
     }
 

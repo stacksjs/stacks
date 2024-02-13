@@ -26,6 +26,7 @@ RUN cd /temp/prod && bun install
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules ./node_modules
+COPY ./Actions ./Actions
 COPY ./app ./app
 COPY ./docs ./docs
 COPY ./config ./config
@@ -47,6 +48,7 @@ COPY --from=prerelease /usr/src/app/tsconfig.json ./tsconfig.json
 COPY --from=prerelease /usr/src/app/package.json ./package.json
 COPY --from=prerelease /usr/src/app/routes ./routes
 COPY --from=prerelease /usr/src/app/config ./config
+COPY --from=prerelease /usr/src/app/Actions ./Actions
 COPY --from=prerelease /usr/src/app/app ./app
 COPY --from=prerelease /usr/src/app/docs ./docs
 
