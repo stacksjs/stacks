@@ -13,6 +13,7 @@ declare global {
   const $shallowRef: typeof import('vue/macros')['$shallowRef']
   const $toRef: typeof import('vue/macros')['$toRef']
   const Action: typeof import('../core/actions/src/action')['Action']
+  const BunCronJob: typeof import('../core/scheduler/src/index')['BunCronJob']
   const Combobox: typeof import('../core/ui/src/components/select')['Combobox']
   const ComboboxInput: typeof import('../core/ui/src/components/select')['ComboboxInput']
   const ComboboxOption: typeof import('../core/ui/src/components/select')['ComboboxOption']
@@ -34,6 +35,8 @@ declare global {
   const ExitCode: typeof import('../core/types/src/exit-code')['ExitCode']
   const Head: typeof import('../core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('../core/utils/src/vendors')['HeadVuePlugin']
+  const LogLevels: typeof import('../core/types/src/logger')['LogLevels']
+  const LogTypes: typeof import('../core/types/src/logger')['LogTypes']
   const Macroable: typeof import('../core/utils/src/macroable')['Macroable']
   const Menu: typeof import('../core/ui/src/components/menu')['Menu']
   const MenuButton: typeof import('../core/ui/src/components/menu')['MenuButton']
@@ -104,7 +107,7 @@ declare global {
   const archive: typeof import('../core/storage/src/zip')['archive']
   const arrays: typeof import('../core/index')['arrays']
   const arraysPath: typeof import('../core/path/src/index')['arraysPath']
-  const assert: typeof import('../core/utils/src/base')['assert']
+  const assert: typeof import('../core/testing/src/index')['assert']
   const assetsPath: typeof import('../core/path/src/index')['assetsPath']
   const asyncComputed: typeof import('../core/utils/src/vendors')['asyncComputed']
   const auth: typeof import('../core/auth/src/index')['auth']
@@ -131,6 +134,7 @@ declare global {
   const buildPath: typeof import('../core/path/src/index')['buildPath']
   const cache: typeof import('../core/index')['cache']
   const cachePath: typeof import('../core/path/src/index')['cachePath']
+  const calculateDelay: typeof import('../core/utils/src/retry')['calculateDelay']
   const calculatePagination: typeof import('../core/search-engine/src/index')['calculatePagination']
   const carriageReturn: typeof import('../core/utils/src/regex')['carriageReturn']
   const caseInsensitive: typeof import('../core/utils/src/regex')['caseInsensitive']
@@ -163,6 +167,7 @@ declare global {
   const computedWithControl: typeof import('../core/utils/src/vendors')['computedWithControl']
   const config: typeof import('../core/index')['config']
   const configPath: typeof import('../core/path/src/index')['configPath']
+  const consola: typeof import('../core/logging/src/index')['consola']
   const controlledComputed: typeof import('../core/utils/src/vendors')['controlledComputed']
   const controlledRef: typeof import('../core/utils/src/vendors')['controlledRef']
   const convert: typeof import('../core/utils/src/currency')['convert']
@@ -327,6 +332,7 @@ declare global {
   const folders: typeof import('../core/storage/src/folders')['folders']
   const format: typeof import('../core/path/src/index')['format']
   const formatTimeAgo: typeof import('../core/utils/src/vendors')['formatTimeAgo']
+  const frameworkCloudPath: typeof import('../core/path/src/index')['frameworkCloudPath']
   const frameworkPath: typeof import('../core/path/src/index')['frameworkPath']
   const frameworkVersion: typeof import('../core/utils/src/helpers')['frameworkVersion']
   const fromPromise: typeof import('../core/error-handling/src/index')['fromPromise']
@@ -468,9 +474,11 @@ declare global {
   const lintPath: typeof import('../core/path/src/index')['lintPath']
   const listFoundationModels: typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']
   const listen: typeof import('../core/events/src/index')['listen']
+  const listenersPath: typeof import('../core/path/src/index')['listenersPath']
   const loadYaml: typeof import('../core/utils/src/helpers')['loadYaml']
   const log: typeof import('../core/logging/src/index')['log']
   const logFilePath: typeof import('../core/logging/src/index')['logFilePath']
+  const logLevel: typeof import('../core/logging/src/index')['logLevel']
   const logger: typeof import('../core/logging/src/index')['logger']
   const loggingPath: typeof import('../core/path/src/index')['loggingPath']
   const logicNot: typeof import('../core/utils/src/math')['logicNot']
@@ -731,6 +739,7 @@ declare global {
   const uiPath: typeof import('../core/path/src/index')['uiPath']
   const unarchive: typeof import('../core/storage/src/zip')['unarchive']
   const unicode: typeof import('../core/utils/src/regex')['unicode']
+  const unit: typeof import('../core/testing/src/index')['unit']
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('../core/utils/src/vendors')['unrefElement']
   const until: typeof import('../core/utils/src/vendors')['until']
@@ -931,6 +940,13 @@ declare global {
   const useWindowFocus: typeof import('../core/utils/src/vendors')['useWindowFocus']
   const useWindowScroll: typeof import('../core/utils/src/vendors')['useWindowScroll']
   const useWindowSize: typeof import('../core/utils/src/vendors')['useWindowSize']
+  const userActionsPath: typeof import('../core/path/src/index')['userActionsPath']
+  const userEventsPath: typeof import('../core/path/src/index')['userEventsPath']
+  const userJobsPath: typeof import('../core/path/src/index')['userJobsPath']
+  const userListenersPath: typeof import('../core/path/src/index')['userListenersPath']
+  const userMiddlewarePath: typeof import('../core/path/src/index')['userMiddlewarePath']
+  const userModelsPath: typeof import('../core/path/src/index')['userModelsPath']
+  const userNotificationsPath: typeof import('../core/path/src/index')['userNotificationsPath']
   const utilsPath: typeof import('../core/path/src/index')['utilsPath']
   const validate: typeof import('../core/validation/src/validate')['validate']
   const validationPath: typeof import('../core/path/src/index')['validationPath']
@@ -992,7 +1008,7 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Action: UnwrapRef<typeof import('../core/actions/src/action')['Action']>
-    readonly CronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['CronJob']>
+    readonly BunCronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['BunCronJob']>
     readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -1002,6 +1018,8 @@ declare module 'vue' {
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
+    readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
+    readonly LogTypes: UnwrapRef<typeof import('../core/types/src/logger')['LogTypes']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly Middleware: UnwrapRef<typeof import('../core/router/src/middleware')['Middleware']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
@@ -1039,6 +1057,8 @@ declare module 'vue' {
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('../core/utils/src/currency')['add']>
     readonly addDomain: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['addDomain']>
+    readonly afterAll: UnwrapRef<typeof import('../core/testing/src/index')['afterAll']>
+    readonly afterEach: UnwrapRef<typeof import('../core/testing/src/index')['afterEach']>
     readonly aiPath: UnwrapRef<typeof import('../core/path/src/index')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../core/path/src/index')['aliasPath']>
@@ -1051,7 +1071,7 @@ declare module 'vue' {
     readonly archive: UnwrapRef<typeof import('../core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../core/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/index')['arraysPath']>
-    readonly assert: UnwrapRef<typeof import('../core/utils/src/base')['assert']>
+    readonly assert: UnwrapRef<typeof import('../core/testing/src/index')['assert']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/index')['assetsPath']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
     readonly auth: UnwrapRef<typeof import('../core/auth/src/index')['auth']>
@@ -1063,6 +1083,8 @@ declare module 'vue' {
     readonly batchInvoke: UnwrapRef<typeof import('../core/utils/src/function')['batchInvoke']>
     readonly bcryptEncode: UnwrapRef<typeof import('../core/security/src/hash')['bcryptEncode']>
     readonly bcryptVerify: UnwrapRef<typeof import('../core/security/src/hash')['bcryptVerify']>
+    readonly beforeAll: UnwrapRef<typeof import('../core/testing/src/index')['beforeAll']>
+    readonly beforeEach: UnwrapRef<typeof import('../core/testing/src/index')['beforeEach']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsMasterCss']>
@@ -1076,6 +1098,7 @@ declare module 'vue' {
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../core/index')['cache']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
+    readonly calculateDelay: UnwrapRef<typeof import('../core/utils/src/retry')['calculateDelay']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
     readonly carriageReturn: UnwrapRef<typeof import('../core/utils/src/regex')['carriageReturn']>
     readonly caseInsensitive: UnwrapRef<typeof import('../core/utils/src/regex')['caseInsensitive']>
@@ -1108,6 +1131,7 @@ declare module 'vue' {
     readonly computedWithControl: UnwrapRef<typeof import('../core/utils/src/vendors')['computedWithControl']>
     readonly config: UnwrapRef<typeof import('../core/index')['config']>
     readonly configPath: UnwrapRef<typeof import('../core/path/src/index')['configPath']>
+    readonly consola: UnwrapRef<typeof import('../core/logging/src/index')['consola']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['controlledRef']>
     readonly convert: UnwrapRef<typeof import('../core/utils/src/currency')['convert']>
@@ -1210,6 +1234,7 @@ declare module 'vue' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../core/path/src/index')['delimiter']>
+    readonly describe: UnwrapRef<typeof import('../core/testing/src/index')['describe']>
     readonly desktop: UnwrapRef<typeof import('../core/desktop/src/index')['desktop']>
     readonly desktopPath: UnwrapRef<typeof import('../core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../core/utils/src/helpers')['determineDebugLevel']>
@@ -1253,6 +1278,7 @@ declare module 'vue' {
     readonly executeTransition: UnwrapRef<typeof import('../core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../core/storage/src/fs')['exists']>
     readonly existsSync: UnwrapRef<typeof import('../core/storage/src/fs')['existsSync']>
+    readonly expect: UnwrapRef<typeof import('../core/testing/src/index')['expect']>
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/index')['extname']>
@@ -1268,6 +1294,7 @@ declare module 'vue' {
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly format: UnwrapRef<typeof import('../core/path/src/index')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>
+    readonly frameworkCloudPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkCloudPath']>
     readonly frameworkPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkPath']>
     readonly frameworkVersion: UnwrapRef<typeof import('../core/utils/src/helpers')['frameworkVersion']>
     readonly fromPromise: UnwrapRef<typeof import('../core/error-handling/src/index')['fromPromise']>
@@ -1392,6 +1419,7 @@ declare module 'vue' {
     readonly isUndefined: UnwrapRef<typeof import('../core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../core/utils/src/currency')['isZero']>
+    readonly it: UnwrapRef<typeof import('../core/testing/src/index')['it']>
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/index')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/index')['langPath']>
@@ -1407,9 +1435,11 @@ declare module 'vue' {
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/index')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
+    readonly listenersPath: UnwrapRef<typeof import('../core/path/src/index')['listenersPath']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
     readonly logFilePath: UnwrapRef<typeof import('../core/logging/src/index')['logFilePath']>
+    readonly logLevel: UnwrapRef<typeof import('../core/logging/src/index')['logLevel']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
     readonly loggingPath: UnwrapRef<typeof import('../core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('../core/utils/src/math')['logicNot']>
@@ -1626,6 +1656,7 @@ declare module 'vue' {
     readonly telnyx: UnwrapRef<typeof import('../core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
+    readonly test: UnwrapRef<typeof import('../core/testing/src/index')['test']>
     readonly testingPath: UnwrapRef<typeof import('../core/path/src/index')['testingPath']>
     readonly testingThis: UnwrapRef<typeof import('../core/desktop/src/system-tray')['testingThis']>
     readonly testsPath: UnwrapRef<typeof import('../core/path/src/index')['testsPath']>
@@ -1661,6 +1692,7 @@ declare module 'vue' {
     readonly uiPath: UnwrapRef<typeof import('../core/path/src/index')['uiPath']>
     readonly unarchive: UnwrapRef<typeof import('../core/storage/src/zip')['unarchive']>
     readonly unicode: UnwrapRef<typeof import('../core/utils/src/regex')['unicode']>
+    readonly unit: UnwrapRef<typeof import('../core/testing/src/index')['unit']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../core/utils/src/vendors')['until']>
@@ -1857,6 +1889,13 @@ declare module 'vue' {
     readonly useWindowFocus: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
+    readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/index')['userActionsPath']>
+    readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/index')['userEventsPath']>
+    readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/index')['userJobsPath']>
+    readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/index')['userListenersPath']>
+    readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/index')['userMiddlewarePath']>
+    readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/index')['userModelsPath']>
+    readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/index')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/index')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/index')['validationPath']>
@@ -1911,7 +1950,7 @@ declare module '@vue/runtime-core' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Action: UnwrapRef<typeof import('../core/actions/src/action')['Action']>
-    readonly CronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['CronJob']>
+    readonly BunCronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['BunCronJob']>
     readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
@@ -1921,6 +1960,8 @@ declare module '@vue/runtime-core' {
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
+    readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
+    readonly LogTypes: UnwrapRef<typeof import('../core/types/src/logger')['LogTypes']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly Middleware: UnwrapRef<typeof import('../core/router/src/middleware')['Middleware']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
@@ -1958,6 +1999,8 @@ declare module '@vue/runtime-core' {
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/index')['actionsPath']>
     readonly add: UnwrapRef<typeof import('../core/utils/src/currency')['add']>
     readonly addDomain: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['addDomain']>
+    readonly afterAll: UnwrapRef<typeof import('../core/testing/src/index')['afterAll']>
+    readonly afterEach: UnwrapRef<typeof import('../core/testing/src/index')['afterEach']>
     readonly aiPath: UnwrapRef<typeof import('../core/path/src/index')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../core/path/src/index')['aliasPath']>
@@ -1970,7 +2013,7 @@ declare module '@vue/runtime-core' {
     readonly archive: UnwrapRef<typeof import('../core/storage/src/zip')['archive']>
     readonly arrays: UnwrapRef<typeof import('../core/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/index')['arraysPath']>
-    readonly assert: UnwrapRef<typeof import('../core/utils/src/base')['assert']>
+    readonly assert: UnwrapRef<typeof import('../core/testing/src/index')['assert']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/index')['assetsPath']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
     readonly auth: UnwrapRef<typeof import('../core/auth/src/index')['auth']>
@@ -1982,6 +2025,8 @@ declare module '@vue/runtime-core' {
     readonly batchInvoke: UnwrapRef<typeof import('../core/utils/src/function')['batchInvoke']>
     readonly bcryptEncode: UnwrapRef<typeof import('../core/security/src/hash')['bcryptEncode']>
     readonly bcryptVerify: UnwrapRef<typeof import('../core/security/src/hash')['bcryptVerify']>
+    readonly beforeAll: UnwrapRef<typeof import('../core/testing/src/index')['beforeAll']>
+    readonly beforeEach: UnwrapRef<typeof import('../core/testing/src/index')['beforeEach']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/utils/src/vendors')['breakpointsMasterCss']>
@@ -1995,6 +2040,7 @@ declare module '@vue/runtime-core' {
     readonly buildPath: UnwrapRef<typeof import('../core/path/src/index')['buildPath']>
     readonly cache: UnwrapRef<typeof import('../core/index')['cache']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
+    readonly calculateDelay: UnwrapRef<typeof import('../core/utils/src/retry')['calculateDelay']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
     readonly carriageReturn: UnwrapRef<typeof import('../core/utils/src/regex')['carriageReturn']>
     readonly caseInsensitive: UnwrapRef<typeof import('../core/utils/src/regex')['caseInsensitive']>
@@ -2027,6 +2073,7 @@ declare module '@vue/runtime-core' {
     readonly computedWithControl: UnwrapRef<typeof import('../core/utils/src/vendors')['computedWithControl']>
     readonly config: UnwrapRef<typeof import('../core/index')['config']>
     readonly configPath: UnwrapRef<typeof import('../core/path/src/index')['configPath']>
+    readonly consola: UnwrapRef<typeof import('../core/logging/src/index')['consola']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/utils/src/vendors')['controlledRef']>
     readonly convert: UnwrapRef<typeof import('../core/utils/src/currency')['convert']>
@@ -2129,6 +2176,7 @@ declare module '@vue/runtime-core' {
     readonly deleteHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['deleteHostedZone']>
     readonly deleteHostedZoneRecords: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['deleteHostedZoneRecords']>
     readonly delimiter: UnwrapRef<typeof import('../core/path/src/index')['delimiter']>
+    readonly describe: UnwrapRef<typeof import('../core/testing/src/index')['describe']>
     readonly desktop: UnwrapRef<typeof import('../core/desktop/src/index')['desktop']>
     readonly desktopPath: UnwrapRef<typeof import('../core/path/src/index')['desktopPath']>
     readonly determineDebugLevel: UnwrapRef<typeof import('../core/utils/src/helpers')['determineDebugLevel']>
@@ -2172,6 +2220,7 @@ declare module '@vue/runtime-core' {
     readonly executeTransition: UnwrapRef<typeof import('../core/utils/src/vendors')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../core/storage/src/fs')['exists']>
     readonly existsSync: UnwrapRef<typeof import('../core/storage/src/fs')['existsSync']>
+    readonly expect: UnwrapRef<typeof import('../core/testing/src/index')['expect']>
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/index')['extname']>
@@ -2187,6 +2236,7 @@ declare module '@vue/runtime-core' {
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly format: UnwrapRef<typeof import('../core/path/src/index')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>
+    readonly frameworkCloudPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkCloudPath']>
     readonly frameworkPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkPath']>
     readonly frameworkVersion: UnwrapRef<typeof import('../core/utils/src/helpers')['frameworkVersion']>
     readonly fromPromise: UnwrapRef<typeof import('../core/error-handling/src/index')['fromPromise']>
@@ -2311,6 +2361,7 @@ declare module '@vue/runtime-core' {
     readonly isUndefined: UnwrapRef<typeof import('../core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../core/validation/src/is')['isWindow']>
     readonly isZero: UnwrapRef<typeof import('../core/utils/src/currency')['isZero']>
+    readonly it: UnwrapRef<typeof import('../core/testing/src/index')['it']>
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/index')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/index')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/index')['langPath']>
@@ -2326,9 +2377,11 @@ declare module '@vue/runtime-core' {
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/index')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
+    readonly listenersPath: UnwrapRef<typeof import('../core/path/src/index')['listenersPath']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
     readonly log: UnwrapRef<typeof import('../core/logging/src/index')['log']>
     readonly logFilePath: UnwrapRef<typeof import('../core/logging/src/index')['logFilePath']>
+    readonly logLevel: UnwrapRef<typeof import('../core/logging/src/index')['logLevel']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
     readonly loggingPath: UnwrapRef<typeof import('../core/path/src/index')['loggingPath']>
     readonly logicNot: UnwrapRef<typeof import('../core/utils/src/math')['logicNot']>
@@ -2545,6 +2598,7 @@ declare module '@vue/runtime-core' {
     readonly telnyx: UnwrapRef<typeof import('../core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
+    readonly test: UnwrapRef<typeof import('../core/testing/src/index')['test']>
     readonly testingPath: UnwrapRef<typeof import('../core/path/src/index')['testingPath']>
     readonly testingThis: UnwrapRef<typeof import('../core/desktop/src/system-tray')['testingThis']>
     readonly testsPath: UnwrapRef<typeof import('../core/path/src/index')['testsPath']>
@@ -2580,6 +2634,7 @@ declare module '@vue/runtime-core' {
     readonly uiPath: UnwrapRef<typeof import('../core/path/src/index')['uiPath']>
     readonly unarchive: UnwrapRef<typeof import('../core/storage/src/zip')['unarchive']>
     readonly unicode: UnwrapRef<typeof import('../core/utils/src/regex')['unicode']>
+    readonly unit: UnwrapRef<typeof import('../core/testing/src/index')['unit']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('../core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../core/utils/src/vendors')['until']>
@@ -2776,6 +2831,13 @@ declare module '@vue/runtime-core' {
     readonly useWindowFocus: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
+    readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/index')['userActionsPath']>
+    readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/index')['userEventsPath']>
+    readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/index')['userJobsPath']>
+    readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/index')['userListenersPath']>
+    readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/index')['userMiddlewarePath']>
+    readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/index')['userModelsPath']>
+    readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/index')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/index')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/index')['validationPath']>
