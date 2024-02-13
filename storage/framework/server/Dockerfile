@@ -27,6 +27,7 @@ RUN cd /temp/prod && bun install
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules ./node_modules
 COPY ./app ./app
+COPY ./docs ./docs
 COPY ./config ./config
 COPY ./routes ./routes
 COPY ./index.ts ./index.ts
@@ -47,6 +48,7 @@ COPY --from=prerelease /usr/src/app/package.json ./package.json
 COPY --from=prerelease /usr/src/app/routes ./routes
 COPY --from=prerelease /usr/src/app/config ./config
 COPY --from=prerelease /usr/src/app/app ./app
+COPY --from=prerelease /usr/src/app/docs ./docs
 
 # run the app
 USER bun
