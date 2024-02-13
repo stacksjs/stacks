@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 export default new Action({
   name: 'Buddy Info',
   description: 'This command displays the buddy info.',
+  path: 'buddy', // turns into `APP_URL/api/buddy`
 
   handle() {
     return {

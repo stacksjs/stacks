@@ -64,6 +64,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.0.0",
     "vue-component-meta": "^1.8.27"
   },
@@ -81,6 +82,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.0.0",
     "vue-component-meta": "^1.8.27"
   },
