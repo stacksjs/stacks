@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+// @ts-expect-error - unsure why this is an error because those are valid exports
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
@@ -19,7 +20,7 @@ interface StacksPluginOptions {
 // https://github.com/hannoeru/vite-plugin-pages
 export function stacks(options?: StacksPluginOptions): Plugin {
   if (!options)
-    options = parseOptions()
+    options = parseOptions() as StacksPluginOptions // TODO: low priority, but we can do better
 
   return {
     name: 'stacks',
@@ -43,7 +44,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
 
     // Transform hook for transforming individual files
     // async transform(code, id) {
-    transform(code) {
+    transform(code: any) {
       return code // Return the unmodified code
     },
 

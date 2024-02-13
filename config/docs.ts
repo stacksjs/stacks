@@ -3,6 +3,10 @@ import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
   {
+    text: 'Docs',
+    link: '/guide/intro',
+  },
+  {
     text: 'Changelog',
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
   },

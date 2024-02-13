@@ -5,13 +5,13 @@ import { collect } from '@stacksjs/collections'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 
-// for enhanced type-safety & autocompletion, you may want to define the options interface
+// for enhanced type-safety & autocompletion,
+// you may want to define the options interface
 interface InspireOptions {
   two: boolean
 }
 
-// could be queried from any API or a database
-const quotes = collect([
+const quotes = collect([ // could be queried from any API or database
   'The best way to get started is to quit talking and begin doing.',
   'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.',
   'Don’t let yesterday take up too much of today.',
@@ -36,6 +36,7 @@ export default function (cli: CLI) {
     .alias('insp')
     .action((options: InspireOptions) => {
       if (options.two)
+        // @ts-expect-error - this is safe because we hard-coded the quotes
         quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
       else
         log.info(quotes.random())
@@ -47,6 +48,7 @@ export default function (cli: CLI) {
   cli
     .command('inspire:two', 'Inspire yourself with two random quotes')
     .action(() => {
+      // @ts-expect-error - this is safe because we hard-coded the quotes
       quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
 
       log.success('Have a great day!')

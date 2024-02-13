@@ -88,7 +88,7 @@ async function main() {
     .alias('insp')
     .action(() => {
       log.info(quotes.random())
-      log.success('Have a great dayss!')
+      log.success('Have a great days!')
     })
 
   buddy.on('inspire:*', () => {
