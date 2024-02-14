@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/health",
   "type": "module",
-  "version": "0.58.69",
+  "version": "0.58.70",
   "description": "The Stacks Health services.",
   "author": "Chris Breuer",
   "license": "MIT",
