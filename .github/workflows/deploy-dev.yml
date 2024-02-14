@@ -1,4 +1,4 @@
-name: Deployment (Dev)
+name: Deploy
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deployment:
+  development:
     runs-on: ubuntu-latest
     environment: development
     steps:
