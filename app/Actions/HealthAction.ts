@@ -8,10 +8,11 @@ export default new Action({
   handle() {
     return {
       status: 'ok',
-      uptime: process.uptime(),
+      uptime: Bun.nanoseconds(), // similar to process.uptime()
       memory: process.memoryUsage(),
       pid: process.pid,
-      version: process.version, // TODO: display Bun version instead
+      version: Bun.version,
+      revision: Bun.revision,
     }
   },
 })

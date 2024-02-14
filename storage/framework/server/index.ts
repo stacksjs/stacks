@@ -4,6 +4,12 @@ import { serverResponse } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
 import { retry } from '@stacksjs/utils'
 
+process.on('SIGINT', () => {
+  // eslint-disable-next-line no-console
+  console.log('Exited using Ctrl-C')
+  process.exit()
+})
+
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB)
     throw new Error('Missing JOB environment variable')
