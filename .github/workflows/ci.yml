@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main # deploys to prod
-    # tags: # I don't think this is necessary because these version tags get pushed into main
-    #   - '*-beta.*' # deploys to stage
+
+    tags:
+      - '*-beta.*' # ensures it is deployed to stage in case `main`` is not pushed to
 
   pull_request:
     branches:
@@ -139,7 +140,7 @@ jobs:
         run: bun install
 
   deploy-stage:
-    if: startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.')
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
 
     runs-on: ubuntu-latest
 
@@ -164,7 +165,7 @@ jobs:
         run: bun install
 
   deploy-dev:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'pull_request' && github.base_ref == 'main')
 
     runs-on: ubuntu-latest
 
