@@ -1,9 +1,9 @@
 import { Action } from '@stacksjs/actions'
 
 export default new Action({
-  name: 'Buddy Info',
-  description: 'This command displays the buddy info.',
-  path: 'buddy', // turns into `APP_URL/api/buddy`
+  name: 'Buddy Command Info',
+  description: 'This command displays the available buddy command information.',
+  path: 'buddy/commands', // turns into `APP_URL/api/buddy/commands`
 
   handle() {
     return {
