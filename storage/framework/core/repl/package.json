@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/repl",
   "type": "module",
-  "version": "0.58.66",
+  "version": "0.58.67",
   "description": "A Stacks optimized TS & Vue REPL.",
   "author": "Chris Breuer",
   "license": "MIT",
