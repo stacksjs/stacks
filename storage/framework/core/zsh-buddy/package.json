@@ -27,7 +27,7 @@
     "buddy.plugin.zsh"
   ],
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=20.11.1"
   },
   "scripts": {
     "build": "echo 'No build step required.'"
