@@ -139,7 +139,7 @@ jobs:
         run: bun install
 
       - name: Deploy
-        run: bun buddy deploy
+        run: bun buddy deploy production
 
   deploy-stage:
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
