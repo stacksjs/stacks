@@ -1,4 +1,4 @@
-name: Deploy
+name: CI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  development:
+  deploy-dev:
     runs-on: ubuntu-latest
     environment: development
     steps:

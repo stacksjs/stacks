@@ -1,4 +1,4 @@
-name: Deploy
+name: CI
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '*-beta.*'
 
 jobs:
-  staging:
+  deploy-stage:
     runs-on: ubuntu-latest
     environment: staging
     steps:

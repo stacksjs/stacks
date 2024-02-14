@@ -12,6 +12,7 @@ import security from './security'
 export default {
   driver: 'aws',
   firewall: security.firewall,
+  environments: ['production', 'staging', 'development'],
 
   storage: {},
 

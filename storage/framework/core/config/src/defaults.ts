@@ -80,6 +80,8 @@ export default {
 
     storage: {},
 
+    environments: ['production', 'staging', 'development'],
+
     firewall: {
       enabled: true,
       countryCodes: [],

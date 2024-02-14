@@ -220,7 +220,7 @@ export function move<T>(array: T[], from: number, to: number): T[] {
     to += len
 
   const item = array.splice(from, 1)[0]
-  array.splice(to, 0, item)
+  array.splice(to, 0, item!)
   return array
 }
 

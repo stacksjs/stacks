@@ -28,6 +28,8 @@ export type CountryCode =
   | 'YE' | 'YT'
   | 'ZA' | 'ZM' | 'ZW'
 
+type Environment = 'development' | 'staging' | 'production'
+
 export interface CloudOptions {
   driver: 'aws'
 
@@ -57,6 +59,18 @@ export interface CloudOptions {
    */
   firewall: FirewallConfig
 
+  /**
+   * **Environments**
+   *
+   * These are the environments that your cloud will deploy.
+   *
+   * @example
+   * ```ts
+   * environments: ['production', 'staging', 'development']
+   * ```
+   */
+  environments: Environment[]
+
   cdn: {
     allowedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS' | 'ALL'
     cachedMethods: 'GET_HEAD' | 'GET_HEAD_OPTIONS'
@@ -67,11 +81,13 @@ export interface CloudOptions {
     priceClass?: 'PriceClass_100' | 'PriceClass_200' | 'PriceClass_All'
     originShieldRegion: string
     cookieBehavior: 'none' | 'allowList' | 'all'
+
     allowList: {
       cookies: string[]
       headers: string[]
       queryStrings: string[]
     }
+
     realtimeLogs: {
       enabled: boolean
       samplingRate: number
