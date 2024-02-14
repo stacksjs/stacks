@@ -9,7 +9,8 @@ route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
 route.health() // /api/health
 route.get('/api/buddy/commands', 'Buddy/CommandsAction')
 route.get('/api/buddy/versions', 'Buddy/VersionsAction')
-// route.job('/api/example') // the equivalent of route.get('/api/example', 'ExampleJob')
+route.job('/api/example') // the equivalent of route.get('/api/example', 'ExampleJob')
+// route.action('/api/buddy') // the equivalent of route.get('/api/buddy', 'BuddyAction')
 // route.get('/api/buddy-2', '../app/Actions/BuddyAction') // todo: support this
 // route.get('/api/buddy-3', import('../app/Actions/BuddyAction')) // todo: support this
 

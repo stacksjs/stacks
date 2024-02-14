@@ -1,5 +1,6 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { path as p, projectPath } from '@stacksjs/path'
+import { pascalCase } from '@stacksjs/strings'
 
 export interface RouterInterface {
   get: (url: Route['url'], callback: Route['callback']) => Promise<this>
@@ -52,6 +53,7 @@ export class Router implements RouterInterface {
       const actionModule = await callback
       callback = actionModule.default
     }
+
     else if (typeof callback === 'string') {
       // import the module and use the default.handle function as the callback
       const actionModule = await import(p.userActionsPath(`${callback}.ts`))
@@ -73,7 +75,11 @@ export class Router implements RouterInterface {
   }
 
   public async job(path: Route['url']): Promise<this> {
-    const jobModule = await import(p.userJobsPath('ExampleJob.ts'))
+    if (path.includes('api/')) // TODO: once the api prefix is removed from the router/api, remove this
+      pascalCase(path.replace(/^api\/?|^\//, ''))
+
+    // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
+    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
     const callback = jobModule.default.handle
 
     this.addRoute('GET', path, callback, 200)
