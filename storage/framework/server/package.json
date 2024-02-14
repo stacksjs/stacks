@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.58.56",
   "scripts": {
+    "dev": "./dev",
     "build": "bun build.ts"
   },
   "dependencies": {

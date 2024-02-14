@@ -5,4 +5,5 @@ app
 config
 docs
 routes
+storage
 env.ts

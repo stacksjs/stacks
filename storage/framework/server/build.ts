@@ -56,6 +56,13 @@ await runCommand(`cp -r ${projectPath('app/Actions')} ${frameworkPath('server/Ac
   cwd: frameworkPath('server'),
 })
 
+await runCommand(`rm -rf ${frameworkPath('server/storage')}`, {
+  cwd: frameworkPath('server'),
+})
+await runCommand(`cp -r ${projectPath('storage')} ${frameworkPath('server/storage')}`, {
+  cwd: frameworkPath('server'),
+})
+
 if (!app.name) {
   log.error('Please provide a name for your app in your config file')
   process.exit(1)
