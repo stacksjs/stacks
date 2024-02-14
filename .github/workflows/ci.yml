@@ -115,7 +115,7 @@ jobs:
         run: bun --bun run test
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.check_commit_message.outputs.contains_release == '0'
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
     environment: production
