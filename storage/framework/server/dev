@@ -12,8 +12,18 @@ APP_DIR="$PROJECT_ROOT/app"
 CONFIG_DIR="$PROJECT_ROOT/config"
 DOCS_DIR="$PROJECT_ROOT/docs"
 ROUTES_DIR="$PROJECT_ROOT/routes"
-STORAGE_DIR="$PROJECT_ROOT/storage"
-STORAGE_DIR="/mnt/efs" # Pointing directly to the EFS mount on the host
+
+if [ "$1" = "local" ]; then
+  APP_ENV="local"
+else
+  APP_ENV="remote" # Default to remote because we are using EFS
+fi
+
+if [ "$APP_ENV" != "local" ]; then
+  STORAGE_DIR="/mnt/efs" # Use EFS mount for non-local environments
+else # Local environment
+  STORAGE_DIR="$PROJECT_ROOT/storage"
+fi
 
 docker run -p 3000:3000 \
   -v "$ACTIONS_DIR:/usr/src/app/Actions" \

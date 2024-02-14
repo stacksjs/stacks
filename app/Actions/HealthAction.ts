@@ -11,7 +11,7 @@ export default new Action({
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       pid: process.pid,
-      version: process.version,
+      version: process.version, // TODO: display Bun version instead
     }
   },
 })

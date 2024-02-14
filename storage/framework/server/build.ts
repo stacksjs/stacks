@@ -68,7 +68,7 @@ if (!app.name) {
   process.exit(1)
 }
 
-// TODO: also allow for a custom container name via a config
+// TODO: also allow for a custom container name via a config option
 await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
   cwd: frameworkPath('server'),
 })
