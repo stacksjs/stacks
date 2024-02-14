@@ -55,6 +55,8 @@ export class Router implements RouterInterface {
     else if (typeof callback === 'string') {
       // import the module and use the default.handle function as the callback
       const actionModule = await import(p.userActionsPath(`${callback}.ts`))
+
+      path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
       callback = actionModule.default.handle
     }
 

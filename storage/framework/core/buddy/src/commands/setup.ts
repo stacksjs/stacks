@@ -132,21 +132,8 @@ async function initializeProject(options: CliOptions): Promise<void> {
   }
 
   log.success('Installed node_modules')
-  log.info('Ensuring .env exists...')
 
-  if (storage.doesNotExist(p.projectPath('.env'))) {
-    const envResult = await runCommand('cp .env.example .env', {
-      cwd: options.cwd || p.projectPath(),
-    })
-
-    if (envResult.isErr()) {
-      handleError(envResult.error)
-      process.exit(ExitCode.FatalError)
-    }
-
-    log.success('.env created')
-  }
-  else { log.success('.env existed') }
+  ensureEnvIsSet(options)
 
   const keyResult = await runCommand('buddy key:generate', {
     cwd: options.cwd || p.projectPath(),
@@ -178,4 +165,22 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
 export async function optimizePkgxDeps(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 300))
+}
+
+export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
+  log.info('Ensuring .env exists...')
+
+  if (storage.doesNotExist(p.projectPath('.env'))) {
+    const envResult = await runCommand('cp .env.example .env', {
+      cwd: options.cwd || p.projectPath(),
+    })
+
+    if (envResult.isErr()) {
+      handleError(envResult.error)
+      process.exit(ExitCode.FatalError)
+    }
+
+    log.success('.env created')
+  }
+  else { log.success('.env existed') }
 }

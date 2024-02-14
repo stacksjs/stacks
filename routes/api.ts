@@ -7,7 +7,6 @@ route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
 route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
 
 route.health() // /api/health
-// route.action('BuddyAction') // /api/buddy
 route.get('/api/buddy/commands', 'Buddy/CommandsAction')
 route.get('/api/buddy/versions', 'Buddy/VersionsAction')
 // route.job('/api/example') // the equivalent of route.get('/api/example', 'ExampleJob')
