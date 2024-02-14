@@ -8,7 +8,8 @@ route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
 
 route.health() // /api/health
 // route.action('BuddyAction') // /api/buddy
-// route.get('/api/buddy', 'BuddyAction') // /api/buddy
+route.get('/api/buddy/commands', 'Buddy/CommandsAction') // /api/buddy
+route.get('/api/buddy/versions', 'Buddy/VersionsAction') // /api/buddy
 // route.job('/api/example') // the equivalent of route.get('/api/example', 'ExampleJob')
 // route.get('/api/buddy-2', '../app/Actions/BuddyAction') // todo: support this
 // route.get('/api/buddy-3', import('../app/Actions/BuddyAction')) // todo: support this
