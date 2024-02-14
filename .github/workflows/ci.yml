@@ -127,8 +127,7 @@ jobs:
         id: check_release
         run: |
           echo "CONTAINS_RELEASE=$(git log --format=%B -n 1 ${{ github.event.after }} | grep -ci 'release')" >> $GITHUB_ENV
-          echo "::set-output name=contains_release::${{ env.CONTAINS_RELEASE }}"
-
+          echo "contains_release=${{ env.CONTAINS_RELEASE }}" >> $GITHUB_OUTPUT
   deploy-prod:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.check_commit_message.outputs.contains_release == '0'
     needs: [lint, typecheck, test]
