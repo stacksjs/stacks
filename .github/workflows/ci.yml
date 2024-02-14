@@ -138,6 +138,9 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Deploy
+        run: bun buddy deploy
+
   deploy-stage:
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
     needs: [lint, typecheck, test, deploy-prod, deploy-dev]
@@ -185,4 +188,3 @@ jobs:
 
       - name: Install Dependencies
         run: bun install
-
