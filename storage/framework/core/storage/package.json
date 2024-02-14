@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/storage",
   "type": "module",
-  "version": "0.58.70",
+  "version": "0.58.71",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "license": "MIT",
