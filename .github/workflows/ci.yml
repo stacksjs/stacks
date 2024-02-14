@@ -116,9 +116,8 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+    needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
-
     environment: production
 
     steps:
@@ -141,9 +140,8 @@ jobs:
 
   deploy-stage:
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
-
+    needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
-
     environment: staging
 
     steps:
@@ -166,9 +164,8 @@ jobs:
 
   deploy-dev:
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'pull_request' && github.base_ref == 'main')
-
+    needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
-
     environment: development
 
     steps:
