@@ -2,6 +2,11 @@ import { Action } from '@stacksjs/actions'
 import { validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
 
+interface Request {
+  message: string
+  level: 'info' | 'warn' | 'error'
+}
+
 export default new Action({
   name: 'Dummy Logger',
   description: 'This action is used to demo how to POST to a server and upon success, log a message.',
@@ -19,7 +24,11 @@ export default new Action({
   },
 
   // handle(request: { message: string, level: 'info' | 'warn' | 'error' }) {
-  handle(request: Request) {
+  handle(request?: Request) {
+    if (!request)
+      return 'No request was provided.'
+
+    // TODO: need to vine validate
     log[request.level](request.message)
 
     return `Logged "${request.message}" at "${request.level}" level`

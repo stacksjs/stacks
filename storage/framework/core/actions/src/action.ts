@@ -24,7 +24,7 @@ interface ActionOptions {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: JobOptions['enabled']
-  handle: (request?: Request) => Promise<any> | string
+  handle: (request?: Request) => Promise<any> | object | string
 }
 
 export class Action {
@@ -35,7 +35,7 @@ export class Action {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: boolean
-  handle: (request?: Request) => Promise<any> | string
+  handle: (request?: Request) => Promise<any> | object | string
 
   constructor({ name, description, fields, handle, rate, tries, backoff, enabled }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access

@@ -94,4 +94,5 @@ export enum Action {
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
   UpgradeBun = 'upgrade/bun',
+  UpgradeDeps = 'upgrade/dependencies',
 }
