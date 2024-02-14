@@ -13,5 +13,5 @@ else {
     cwd: import.meta.dir,
   })
 
-  log.success('Created & moved dist.zip')
+  log.success('dist is zipped & moved')
 }

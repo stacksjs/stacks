@@ -54,9 +54,6 @@ export class QueueStack {
       this.createQueueRule(action, file)
       jobs.push(action)
     }
-
-    // for (const job of jobs)
-    //   await this.createQueueRule(job, file)
   }
 
   // Helper function to convert a rate string to a cron object for AWS Schedule
