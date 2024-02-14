@@ -66,7 +66,7 @@ export class Router implements RouterInterface {
     const healthModule = await import(p.userActionsPath('HealthAction.ts'))
     const callback = healthModule.default.handle
 
-    this.addRoute('GET', '/api/healthy', callback, 200)
+    this.addRoute('GET', '/api/health', callback, 200)
     return this
   }
 
