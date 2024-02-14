@@ -31,6 +31,7 @@ COPY ./app ./app
 COPY ./docs ./docs
 COPY ./config ./config
 COPY ./routes ./routes
+COPY ./storage ./storage
 COPY ./index.ts ./index.ts
 COPY ./package.json ./package.json
 COPY ./tsconfig.json ./tsconfig.json
@@ -47,6 +48,7 @@ COPY --from=prerelease /usr/src/app/index.ts ./index.ts
 COPY --from=prerelease /usr/src/app/tsconfig.json ./tsconfig.json
 COPY --from=prerelease /usr/src/app/package.json ./package.json
 COPY --from=prerelease /usr/src/app/routes ./routes
+COPY --from=prerelease /usr/src/app/storage ./storage
 COPY --from=prerelease /usr/src/app/config ./config
 COPY --from=prerelease /usr/src/app/Actions ./Actions
 COPY --from=prerelease /usr/src/app/app ./app

@@ -27,8 +27,22 @@ export async function serve(options: ServeOptions = {}) {
 }
 
 export async function serverResponse(req: Request) {
+  const timestamp = new Date().toISOString()
+
+  // log the request in a structured way like Laravel does in the console
   // eslint-disable-next-line no-console
-  console.log('serverResponse', JSON.stringify(req))
+  console.log(`${timestamp} - Incoming request: ${req.method} ${req.url}`)
+  // eslint-disable-next-line no-console
+  console.log(`${timestamp} - Headers: ${JSON.stringify(req.headers)}`)
+  // eslint-disable-next-line no-console
+  console.log(`${timestamp} - Body: ${JSON.stringify(req.body)}`)
+  // eslint-disable-next-line no-console
+  console.log(`${timestamp} - Query: ${JSON.stringify(req.query)}`)
+  // eslint-disable-next-line no-console
+  console.log(`${timestamp} - Params: ${JSON.stringify(req.params)}`)
+  // eslint-disable-next-line no-console
+  console.log(`${timestamp} - Cookies: ${JSON.stringify(req.cookies)}`)
+
   const routesList: Route[] = await route.getRoutes()
   const url = new URL(req.url)
 
