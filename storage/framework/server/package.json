@@ -6,11 +6,11 @@
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/logging": "^0.58.66",
-    "@stacksjs/queue": "^0.58.66",
-    "@stacksjs/router": "^0.58.66",
-    "@stacksjs/storage": "^0.58.66",
-    "@stacksjs/utils": "^0.58.66",
+    "@stacksjs/logging": "^0.58.67",
+    "@stacksjs/queue": "^0.58.67",
+    "@stacksjs/router": "^0.58.67",
+    "@stacksjs/storage": "^0.58.67",
+    "@stacksjs/utils": "^0.58.67",
     "aws4fetch": "^1.0.17"
   }
 }

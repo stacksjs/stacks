@@ -114,6 +114,21 @@ jobs:
       - name: Test Suite
         run: bun --bun run test
 
+  release-check:
+    runs-on: ubuntu-latest
+
+    outputs:
+      contains_release: ${{ steps.check_release.outputs.contains_release }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Release Check
+        id: check_release
+        run: |
+          echo "CONTAINS_RELEASE=$(git log --format=%B -n 1 ${{ github.event.after }} | grep -ci 'release')" >> $GITHUB_ENV
+          echo "::set-output name=contains_release::${{ env.CONTAINS_RELEASE }}"
+
   deploy-prod:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.check_commit_message.outputs.contains_release == '0'
     needs: [lint, typecheck, test]
