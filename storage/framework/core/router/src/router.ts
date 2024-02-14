@@ -76,7 +76,7 @@ export class Router implements RouterInterface {
 
   public async job(path: Route['url']): Promise<this> {
     if (path.includes('api/')) // TODO: once the api prefix is removed from the router/api, remove this
-      pascalCase(path.replace(/^api\/?|^\//, ''))
+      path = pascalCase(path.replace(/^api\/?|^\//, ''))
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
     const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))

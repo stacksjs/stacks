@@ -102,6 +102,7 @@ export function cloud(buddy: CLI) {
     .alias('cloud:rm')
     .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
+    // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: false }) // TODO: implement this
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
@@ -185,7 +186,8 @@ export function cloud(buddy: CLI) {
 
   buddy
     .command('cloud:optimize-cost', descriptions.optimizeCost)
-    .option('--jump-box', 'Remove the jump-box', { default: true })
+    .option('--jump-box', 'Remove the jump-box', { default: true }) // removes the ec2 instance
+    // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: true }) // TODO: implement this - removes the Kinesis Data Stream
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
