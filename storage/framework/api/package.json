@@ -3,8 +3,7 @@
   "type": "module",
   "version": "0.58.56",
   "scripts": {
-    "dev": "bun dev.ts",
-    "build": "bun build.ts"
+    "dev": "bun dev.ts"
   },
   "dependencies": {
     "@stacksjs/logging": "^0.58.71",
