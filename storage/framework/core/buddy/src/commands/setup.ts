@@ -35,6 +35,7 @@ export function setup(buddy: CLI) {
 
   buddy
     .command('setup:oh-my-zsh', descriptions.ohMyZsh) // if triggered multiple times, it will update the plugin
+    .alias('upgrade:oh-my-zsh')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (_options?: CliOptions) => {
       log.debug('Running `buddy setup:oh-my-zsh` ...', _options)

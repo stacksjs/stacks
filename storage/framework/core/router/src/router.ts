@@ -2,6 +2,8 @@ import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacks
 import { path as p, projectPath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
 
+type Prefix = string
+
 export interface RouterInterface {
   get: (url: Route['url'], callback: Route['callback']) => Promise<this>
   post: (url: Route['url'], callback: Route['callback']) => this
@@ -10,7 +12,7 @@ export interface RouterInterface {
   delete: (url: Route['url'], callback: Route['callback']) => this
   patch: (url: Route['url'], callback: Route['callback']) => this
   put: (url: Route['url'], callback: Route['callback']) => this
-  group: (options: RouteGroupOptions, callback: () => void) => this
+  group: (options: Prefix | RouteGroupOptions, callback: () => void) => this
   name: (name: string) => this
   middleware: (middleware: Route['middleware']) => this
   getRoutes: () => Promise<Route[]>
@@ -19,6 +21,7 @@ export interface RouterInterface {
 export class Router implements RouterInterface {
   private routes: Route[] = []
   private apiPrefix = '/api'
+  private groupPrefix = ''
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
@@ -71,8 +74,15 @@ export class Router implements RouterInterface {
       }
       // else, given it is a string, import that module path
       // and use the default.handle function as the callback
-      else {
-      // import the module and use the default.handle function as the callback
+      else if (callback.startsWith('Action') || callback.startsWith('Job')) {
+        // Ensure callback has no trailing .ts before adding it
+        const formattedCallback = callback.endsWith('.ts') ? callback.slice(0, -3) : callback
+        const actionModule = await import(p.appPath(`${formattedCallback}.ts`))
+
+        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
+        callback = actionModule.default.handle
+      }
+      else if (callback.endsWith('Action') || callback.endsWith('Job')) {
         const actionModule = await import(p.userActionsPath(`${callback}.ts`))
 
         path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
@@ -91,7 +101,7 @@ export class Router implements RouterInterface {
     if (path.startsWith('/'))
       path = path.slice(1)
 
-    return `${this.apiPrefix}/${path}`
+    return `${this.apiPrefix}${this.groupPrefix}/${path}`
   }
 
   public async health(): Promise<this> {
@@ -107,7 +117,7 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(p.userJobsPath(`${path}.ts`.replace(/JobJob/, 'Job')))
+    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
     const callback = jobModule.default.handle
 
     path = this.preparePath(path)
@@ -163,8 +173,10 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public group(options: RouteGroupOptions | (() => void) | string, callback?: () => void): this {
+  public group(options: string | RouteGroupOptions, callback?: () => void): this {
     let cb: () => void
+
+    this.prepareGroupPrefix(options)
 
     if (typeof options === 'function') {
       cb = options
@@ -238,6 +250,33 @@ export class Router implements RouterInterface {
     // set this.routes to a mapped array of routes that matches the pattern
 
     return this.routes
+  }
+
+  private setGroupPrefix(prefix: string, options: RouteGroupOptions) {
+    if (prefix !== '')
+      prefix = `/${prefix}`
+
+    if (typeof options === 'string') {
+      this.groupPrefix = options
+      return
+    }
+
+    if (typeof options === 'function') {
+      this.groupPrefix = prefix ?? ''
+      return
+    }
+
+    this.groupPrefix = options.prefix ?? prefix ?? ''
+  }
+
+  private prepareGroupPrefix(options: string | RouteGroupOptions): void {
+    if (this.groupPrefix !== '' && typeof options !== 'string')
+      return this.setGroupPrefix(this.groupPrefix, options)
+
+    if (typeof options === 'string')
+      return this.setGroupPrefix(options)
+
+    return this.setGroupPrefix('', options)
   }
 }
 
