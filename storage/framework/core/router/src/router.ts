@@ -18,6 +18,7 @@ export interface RouterInterface {
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
+  private apiPrefix = '/api'
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
@@ -75,52 +76,71 @@ export class Router implements RouterInterface {
       }
     }
 
-    path = this.getPath(path)
+    path = this.preparePath(path)
     this.addRoute('GET', path, callback, 200)
+
     return this
   }
 
-  public getPath(path: string) {
+  public preparePath(path: string) {
     // if string starts with / then remove it because we are adding it back in the next line
     if (path.startsWith('/'))
       path = path.slice(1)
 
-    return `/api/${path}`
+    return `${this.apiPrefix}/${path}`
   }
 
   public async health(): Promise<this> {
     const healthModule = await import(p.userActionsPath('HealthAction.ts'))
     const callback = healthModule.default.handle
 
-    this.addRoute('GET', '/api/health', callback, 200)
+    this.addRoute('GET', `${this.apiPrefix}/health`, callback, 200)
+
     return this
   }
 
   public async job(path: Route['url']): Promise<this> {
-    if (path.includes('api/')) // TODO: once the api prefix is removed from the router/api, remove this
-      path = path.replace(/^\/api\//, '')
-
     path = pascalCase(path)
+
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
+    const jobModule = await import(p.userJobsPath(`${path}.ts`.replace(/JobJob/, 'Job')))
     const callback = jobModule.default.handle
 
+    path = this.preparePath(path)
     this.addRoute('GET', path, callback, 200)
+
+    return this
+  }
+
+  public async action(path: Route['url']): Promise<this> {
+    path = pascalCase(path) // actions are PascalCase
+
+    // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
+    const actionModule = await import(p.userActionsPath(`${path}.ts`))
+    const callback = actionModule.default.handle
+
+    path = this.preparePath(path)
+    this.addRoute('GET', path, callback, 200)
+
     return this
   }
 
   public post(path: Route['url'], callback: Route['callback']): this {
+    path = this.preparePath(path)
     this.addRoute('POST', path, callback, 201)
+
     return this
   }
 
   public view(path: Route['url'], callback: Route['callback']): this {
     this.addRoute('GET', path, callback, 200)
+
     return this
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
     this.addRoute('GET', path, callback, 302)
+
     return this
   }
 

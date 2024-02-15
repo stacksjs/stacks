@@ -1,27 +1,22 @@
 import { route } from '@stacksjs/router'
 
-// TODO: abstract the api prefix out of here
-route.get('/api', () => 'hello world 1') // stacksjs.org/api
-route.get('/api/', () => 'hello world 2') // stacksjs.org/api/
-route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
-route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
+/**
+ * This file is the entry point for your application's API routes.
+ * The routes defined here are automatically registered. Last but
+ * not least, you may also create any other `routes/*.ts` files.
+ *
+ * @see https://stacksjs.org/docs/routing
+ */
+
+route.get('/', () => 'hello world') // stacksjs.org/api/
+route.get('/welcome', () => 'hello world 2') // stacksjs.org/api/welcome
+route.get('/welcome/', () => 'hello world 3') // stacksjs.org/api/welcome/
+route.get('/buddy/commands', 'Buddy/CommandsAction')
+route.get('/buddy/versions', 'Buddy/VersionsAction')
+// route.get('/buddy/test-1', '../app/Actions/BuddyAction') // todo: support this
+// route.get('/buddy/test-2', import('../app/Actions/BuddyAction')) // todo: support this
+
+route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
+route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
 
 route.health() // /api/health
-route.get('/api/buddy/commands', 'Buddy/CommandsAction')
-route.get('/api/buddy/versions', 'Buddy/VersionsAction')
-route.job('/api/example') // the equivalent of route.get('/api/example', 'ExampleJob')
-// route.action('/api/buddy') // the equivalent of route.get('/api/buddy', 'BuddyAction')
-// route.get('/api/buddy-2', '../app/Actions/BuddyAction') // todo: support this
-// route.get('/api/buddy-3', import('../app/Actions/BuddyAction')) // todo: support this
-
-// route.group({ prefix: '/users' }, () => {
-//   route.get('/:id', ({ id }) => {
-//     // Retrieve user from database
-//     return `User with ID ${id}`
-//   })
-
-//   route.post('/', ({ name, email }) => {
-//     // Save user to database
-//     return `User ${name} (${email}) created`
-//   })
-// })
