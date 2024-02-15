@@ -60,7 +60,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "vite": "^5.1.2"
+    "vite": "^5.1.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
