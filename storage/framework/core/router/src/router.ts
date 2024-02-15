@@ -22,6 +22,7 @@ export class Router implements RouterInterface {
   private routes: Route[] = []
   private apiPrefix = '/api'
   private groupPrefix = ''
+  private path = ''
 
   private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
@@ -54,20 +55,20 @@ export class Router implements RouterInterface {
   }
 
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
-    path = this.normalizePath(path)
-    callback = await this.resolveCallback(callback, path)
+    this.path = this.normalizePath(path)
+    callback = await this.resolveCallback(callback)
 
-    return this.addRoute('GET', this.prepareUri(path), callback, 200)
+    return this.addRoute('GET', this.prepareUri(this.path), callback, 200)
   }
 
-  private async resolveCallback(callback: Route['callback'], path: string): Promise<Route['callback']> {
+  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
     if (callback instanceof Promise) {
       const actionModule = await callback
       return actionModule.default
     }
 
     if (typeof callback === 'string')
-      return this.importCallbackFromPath(callback, path)
+      return this.importCallbackFromPath(callback, this.path)
 
     return callback
   }
