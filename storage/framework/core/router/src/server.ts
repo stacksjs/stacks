@@ -9,11 +9,9 @@ import { route } from '.'
 interface ServeOptions {
   host?: string
   port?: number
-  tunnel?: boolean
 }
 
 export async function serve(options: ServeOptions = {}) {
-  // maybe make use of localUrl({ type: 'backend' }) here & options.tunnel
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
 
@@ -35,14 +33,24 @@ export async function serverResponse(req: Request) {
   // log.info(`Params: ${JSON.stringify(req.params)}`)
   // log.info(`Cookies: ${JSON.stringify(req.cookies)}`)
 
+  // Trim trailing slash from the URL if it's not the root '/'
+  // This automatically allows for route definitions, like
+  // '/about' and '/about/' to be treated as the same
+  const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
+
   const routesList: Route[] = await route.getRoutes()
-  const url = new URL(req.url)
+  log.info(`Routes List: ${JSON.stringify(routesList)}`)
+
+  const url = new URL(trimmedUrl)
+  log.info(`URL: ${JSON.stringify(url)}`)
 
   const foundRoute: Route | undefined = routesList.find((route: Route) => {
     const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
 
     return pattern.test(url.pathname)
   })
+
+  log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
 
   // if (url.pathname === '/favicon.ico')
   //   return new Response('')

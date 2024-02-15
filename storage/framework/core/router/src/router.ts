@@ -57,56 +57,9 @@ export class Router implements RouterInterface {
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
     this.path = this.normalizePath(path)
     callback = await this.resolveCallback(callback)
+    console.log('this.path', this.path, callback)
 
     return this.addRoute('GET', this.prepareUri(this.path), callback, 200)
-  }
-
-  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
-    if (callback instanceof Promise) {
-      const actionModule = await callback
-      return actionModule.default
-    }
-
-    if (typeof callback === 'string')
-      return this.importCallbackFromPath(callback, this.path)
-
-    return callback
-  }
-
-  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
-    let modulePath = callbackPath
-    let importPathFunction = p.appPath // Default import path function
-
-    if (callbackPath.startsWith('../'))
-      importPathFunction = p.routesPath
-
-    // Remove trailing .ts if present
-    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
-    const actionModule = await import(importPathFunction(`${modulePath}.ts`))
-
-    // Use custom path from action module if available
-    const newPath = actionModule.default.path ?? originalPath
-    this.updatePathIfNeeded(newPath, originalPath)
-
-    return actionModule.default.handle
-  }
-
-  private normalizePath(path: string): string {
-    return path.endsWith('/') ? path.slice(0, -1) : path
-  }
-
-  public prepareUri(path: string) {
-    // if string starts with / then remove it because we are adding it back in the next line
-    if (path.startsWith('/'))
-      path = path.slice(1)
-
-    return `${this.apiPrefix}${this.groupPrefix}/${path}`
-  }
-
-  private updatePathIfNeeded(newPath: string, originalPath: string): void {
-    if (newPath !== originalPath) {
-    // Logic to update the path if needed, based on the action module's custom path
-    }
   }
 
   public async health(): Promise<this> {
@@ -258,8 +211,11 @@ export class Router implements RouterInterface {
   }
 
   private setGroupPrefix(prefix: string, options: RouteGroupOptions = {}) {
-    if (prefix !== '')
+    if (prefix !== '') {
       prefix = `/${this.groupPrefix}/${prefix}`.replace(/\/\//g, '/') // remove double slashes in case there are any
+      this.groupPrefix = prefix
+      return
+    }
 
     // Ensure options is always treated as an object, even if it's undefined or a function
     const effectiveOptions = typeof options === 'object' ? options : {}
@@ -275,6 +231,56 @@ export class Router implements RouterInterface {
       return this.setGroupPrefix(options)
 
     return this.setGroupPrefix('', options)
+  }
+
+  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
+    if (callback instanceof Promise) {
+      const actionModule = await callback
+      return actionModule.default
+    }
+
+    if (typeof callback === 'string')
+      return this.importCallbackFromPath(callback, this.path)
+
+    // in this case, the callback ends up being a function
+    return callback
+  }
+
+  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
+    let modulePath = callbackPath
+    let importPathFunction = p.appPath // Default import path function
+
+    if (callbackPath.startsWith('../'))
+      importPathFunction = p.routesPath
+
+    // Remove trailing .ts if present
+    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
+    const actionModule = await import(importPathFunction(`${modulePath}.ts`))
+
+    // Use custom path from action module if available
+    const newPath = actionModule.default.path ?? originalPath
+    this.updatePathIfNeeded(newPath, originalPath)
+
+    return actionModule.default.handle
+  }
+
+  private normalizePath(path: string): string {
+    return path.endsWith('/') ? path.slice(0, -1) : path
+  }
+
+  public prepareUri(path: string) {
+    // if string starts with / then remove it because we are adding it back in the next line
+    if (path.startsWith('/'))
+      path = path.slice(1)
+
+    return `${this.apiPrefix}${this.groupPrefix}/${path}`
+  }
+
+  private updatePathIfNeeded(newPath: string, originalPath: string): void {
+    if (newPath !== originalPath) {
+    // Logic to update the path if needed, based on the action module's custom path
+      this.path = newPath
+    }
   }
 }
 
