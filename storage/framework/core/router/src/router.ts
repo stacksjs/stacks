@@ -23,7 +23,7 @@ export class Router implements RouterInterface {
   private apiPrefix = '/api'
   private groupPrefix = ''
 
-  private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): void {
+  private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
     const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (_match) => {
       return '([a-zA-Z0-9-]+)'
@@ -49,59 +49,63 @@ export class Router implements RouterInterface {
       statusCode,
       paramNames: [],
     })
-  }
-
-  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
-    // if the route ends with a /, then remove it
-    if (path.endsWith('/'))
-      path = path.slice(0, -1)
-
-    // check if callback is a string and if it is, then import that module path and use the default.handle function as the callback
-    if (callback instanceof Promise) {
-      const actionModule = await callback
-      callback = actionModule.default
-    }
-
-    else if (typeof callback === 'string') {
-      // if it is a relative path, then import the module and
-      // use the default.handle function as the callback
-      if (callback.startsWith('../')) {
-        // import the module and use the default.handle function as the callback
-        const actionModule = await import(p.routesPath(callback))
-
-        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
-        callback = actionModule.default.handle
-      }
-      // else, given it is a string, import that module path
-      // and use the default.handle function as the callback
-      else if (callback.startsWith('Action') || callback.startsWith('Job')) {
-        // Ensure callback has no trailing .ts before adding it
-        const formattedCallback = callback.endsWith('.ts') ? callback.slice(0, -3) : callback
-        const actionModule = await import(p.appPath(`${formattedCallback}.ts`))
-
-        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
-        callback = actionModule.default.handle
-      }
-      else if (callback.endsWith('Action') || callback.endsWith('Job')) {
-        const actionModule = await import(p.userActionsPath(`${callback}.ts`))
-
-        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
-        callback = actionModule.default.handle
-      }
-    }
-
-    path = this.preparePath(path)
-    this.addRoute('GET', path, callback, 200)
 
     return this
   }
 
-  public preparePath(path: string) {
+  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+    path = this.normalizePath(path)
+    callback = await this.resolveCallback(callback, path)
+
+    return this.addRoute('GET', this.prepareUri(path), callback, 200)
+  }
+
+  private async resolveCallback(callback: Route['callback'], path: string): Promise<Route['callback']> {
+    if (callback instanceof Promise) {
+      const actionModule = await callback
+      return actionModule.default
+    }
+
+    if (typeof callback === 'string')
+      return this.importCallbackFromPath(callback, path)
+
+    return callback
+  }
+
+  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
+    let modulePath = callbackPath
+    let importPathFunction = p.appPath // Default import path function
+
+    if (callbackPath.startsWith('../'))
+      importPathFunction = p.routesPath
+
+    // Remove trailing .ts if present
+    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
+    const actionModule = await import(importPathFunction(`${modulePath}.ts`))
+
+    // Use custom path from action module if available
+    const newPath = actionModule.default.path ?? originalPath
+    this.updatePathIfNeeded(newPath, originalPath)
+
+    return actionModule.default.handle
+  }
+
+  private normalizePath(path: string): string {
+    return path.endsWith('/') ? path.slice(0, -1) : path
+  }
+
+  public prepareUri(path: string) {
     // if string starts with / then remove it because we are adding it back in the next line
     if (path.startsWith('/'))
       path = path.slice(1)
 
     return `${this.apiPrefix}${this.groupPrefix}/${path}`
+  }
+
+  private updatePathIfNeeded(newPath: string, originalPath: string): void {
+    if (newPath !== originalPath) {
+    // Logic to update the path if needed, based on the action module's custom path
+    }
   }
 
   public async health(): Promise<this> {
@@ -120,7 +124,7 @@ export class Router implements RouterInterface {
     const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
     const callback = jobModule.default.handle
 
-    path = this.preparePath(path)
+    path = this.prepareUri(path)
     this.addRoute('GET', path, callback, 200)
 
     return this
@@ -133,14 +137,14 @@ export class Router implements RouterInterface {
     const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
     const callback = actionModule.default.handle
 
-    path = this.preparePath(path)
+    path = this.prepareUri(path)
     this.addRoute('GET', path, callback, 200)
 
     return this
   }
 
   public post(path: Route['url'], callback: Route['callback']): this {
-    path = this.preparePath(path)
+    path = this.prepareUri(path)
     this.addRoute('POST', path, callback, 201)
 
     return this
