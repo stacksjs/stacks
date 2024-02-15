@@ -129,8 +129,8 @@ export class Router implements RouterInterface {
   public async action(path: Route['url']): Promise<this> {
     path = pascalCase(path) // actions are PascalCase
 
-    // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const actionModule = await import(p.userActionsPath(`${path}.ts`))
+    // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
+    const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
     const callback = actionModule.default.handle
 
     path = this.preparePath(path)
@@ -184,28 +184,28 @@ export class Router implements RouterInterface {
     }
     else {
       if (!callback)
-        throw new Error('Missing callback function for route group.')
+        throw new Error('Missing callback function for your route group.')
+
       cb = callback
     }
 
     const { prefix = '', middleware = [] } = options
 
-    // Save a reference to the original routes array.
+    // Save a reference to the original routes array
     const originalRoutes = this.routes
 
-    // Create a new routes array for the duration of the callback.
+    // Create a new routes array for the duration of the callback
     this.routes = []
 
-    // Execute the callback. This will add routes to the new this.routes array.
+    // Execute the callback. This will add routes to the new this.routes array
     cb()
 
-    // For each route added by the callback, adjust the URI and add to the original routes array.
+    // For each route added by the callback, adjust the URI and add to the original routes array
     this.routes.forEach((r) => {
       r.uri = `${prefix}${r.uri}`
 
       if (middleware.length)
         r.middleware = middleware
-      // Assuming you have a middleware property for each route.
 
       originalRoutes.push(r)
       return this
@@ -252,21 +252,14 @@ export class Router implements RouterInterface {
     return this.routes
   }
 
-  private setGroupPrefix(prefix: string, options: RouteGroupOptions) {
+  private setGroupPrefix(prefix: string, options: RouteGroupOptions = {}) {
     if (prefix !== '')
-      prefix = `/${prefix}`
+      prefix = `/${this.groupPrefix}/${prefix}`.replace(/\/\//g, '/') // remove double slashes in case there are any
 
-    if (typeof options === 'string') {
-      this.groupPrefix = options
-      return
-    }
+    // Ensure options is always treated as an object, even if it's undefined or a function
+    const effectiveOptions = typeof options === 'object' ? options : {}
 
-    if (typeof options === 'function') {
-      this.groupPrefix = prefix ?? ''
-      return
-    }
-
-    this.groupPrefix = options.prefix ?? prefix ?? ''
+    this.groupPrefix = effectiveOptions.prefix ?? prefix ?? ''
   }
 
   private prepareGroupPrefix(options: string | RouteGroupOptions): void {

@@ -374,8 +374,9 @@ Our address is: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA
 
 ## Sponsors
 
-Once we launch a usable Stacks version, we hope people will start enjoying it! In the meantime, thanks to the following sponsors for helping to fund the development of this framework:
+We would like to extend our thanks to the following sponsors for funding Stacks development. If you are interested in becoming a sponsor, please reach out to us.
 
+- [JetBrains](https://www.jetbrains.com/)
 - [The Solana Foundation](https://solana.com/)
 
 ## Credits
