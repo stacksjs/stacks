@@ -43,7 +43,7 @@ export interface Route {
   url: string // used synonymously with uri
   method: HttpMethod
   pattern: RegExp
-  callback: RouteCallback | ActionName | Action
+  callback: RouteCallback | ActionName | Action | Promise<any> // we may be able to improve the `Promise<any>` if we could narrow this type `import('../app/Actions/BuddyAction')`
   paramNames: string[]
   middleware?: string | string[]
   statusCode?: StatusCode

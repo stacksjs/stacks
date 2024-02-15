@@ -49,6 +49,10 @@ export class Router implements RouterInterface {
   }
 
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+    // if the route ends with a /, then remove it
+    if (path.endsWith('/'))
+      path = path.slice(0, -1)
+
     // check if callback is a string and if it is, then import that module path and use the default.handle function as the callback
     if (callback instanceof Promise) {
       const actionModule = await callback
@@ -159,7 +163,7 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public group(options: RouteGroupOptions | (() => void), callback?: () => void): this {
+  public group(options: RouteGroupOptions | (() => void) | string, callback?: () => void): this {
     let cb: () => void
 
     if (typeof options === 'function') {

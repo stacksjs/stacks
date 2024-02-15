@@ -8,15 +8,27 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-route.get('/', () => 'hello world') // stacksjs.org/api/
-route.get('/welcome', () => 'hello world 2') // stacksjs.org/api/welcome
-route.get('/welcome/', () => 'hello world 3') // stacksjs.org/api/welcome/
-route.get('/buddy/commands', 'Buddy/CommandsAction')
-route.get('/buddy/versions', 'Buddy/VersionsAction')
-// route.get('/buddy/test-1', '../app/Actions/BuddyAction') // todo: support this
-// route.get('/buddy/test-2', import('../app/Actions/BuddyAction')) // todo: support this
+route.get('/', () => 'hello world') // $APP_URL/api
+
+route.get('/welcome', () => { // stacksjs.org/api/welcome
+  return { // you may return an object as well
+    data: 'hello world, friend',
+  }
+})
+
+route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+
+route.group('/buddy', () => { // you may group your routes in a few different ways
+  route.get('/commands', 'Actions/Buddy/CommandsAction')
+
+  route.group({ prefix: 'commands' }, () => {
+    route.get('/example-two', import('Actions/Buddy/CommandsAction')) // or import the action directly
+  })
+
+  route.get('/versions', '../app/Actions/Buddy/VersionsAction') // a relative path is accepted as well
+})
 
 route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
 route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
 
-route.health() // /api/health
+route.health() // adds an `/api/health` route
