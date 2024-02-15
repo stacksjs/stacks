@@ -7,22 +7,32 @@ Actions introduce a concept of unique code reusability. They are "functions" tha
 - Event Listener
 - Cron Job _(Queued Jobs)_
 
-One unique Stacks feature of Actions is that they may also be called from anywhere in the frontend, simplifying APIs by a multitude.
-
-```ts
-import { action } from '@stacksjs/actions'
-
-await runAction('MyCustomActionName', { foo: 'bar' })
-// or
-await runAction('MyCustomActionName', { foo: 'bar' }, { queue: 'default' })
-```
-
-_Please note, Actions are not limited to these use cases, but these are the most common ones._
+A Stacks primitive that may be called from anywhere in your application, simplifying API development by a multitude.
 
 ## Get Started
 
-The following command will create a new action file in the `app/actions` dir.
+The following command will create a new action file in the `app/Actions` directory.
 
 ```sh
-buddy make:action NewActionName
+buddy make:action CreateNewBlogPost
 ```
+
+## 🚜 Contributing
+
+Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
+
+## 🏝 Community
+
+For help, discussion about best practices, or any other conversation that would benefit from being searchable:
+
+[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
+
+For casual chit-chat with others using this package:
+
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
+
+## 📄 License
+
+The MIT License (MIT). Please see [LICENSE](../LICENSE.md) for more information.
+
+Made with 💙
