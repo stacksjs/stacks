@@ -391,7 +391,12 @@ export function routerPath(path?: string) {
   return corePath(`router/${path || ''}`)
 }
 
-export function routesPath(path?: string) {
+export function routesPath(path?: string, options?: { relative?: boolean }) {
+  const absolutePath = resourcesPath(`routes/${path || ''}`)
+
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
+
   return projectPath(`routes/${path || ''}`)
 }
 

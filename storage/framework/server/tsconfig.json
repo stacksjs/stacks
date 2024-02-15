@@ -11,11 +11,10 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "@stacksjs/*": ["../core/*/src"],
-      "stacks/*": ["../core/*/src"],
-      "buddy": ["../core/buddy/src/index.ts"],
-      "buddy/*": ["../core/buddy/src/*"],
-      "config/*": ["./config/*"],
+      "@stacksjs/*": ["./core/*/src"],
+      "stacks/*": ["./core/*/src"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
       "../../../env": ["./env.ts"]
     },
     "resolveJsonModule": true,

@@ -7,11 +7,14 @@
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/logging": "^0.58.71",
-    "@stacksjs/queue": "^0.58.71",
-    "@stacksjs/router": "^0.58.71",
-    "@stacksjs/storage": "^0.58.71",
-    "@stacksjs/utils": "^0.58.71",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
     "aws4fetch": "^1.0.17"
-  }
+  },
+  "workspaces": [
+    "core/*"
+  ]
 }

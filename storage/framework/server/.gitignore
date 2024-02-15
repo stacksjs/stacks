@@ -3,6 +3,7 @@ bootstrap
 Actions
 app
 config
+core
 docs
 routes
 storage

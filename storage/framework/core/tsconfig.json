@@ -15,7 +15,6 @@
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
       "buddy/*": ["./buddy/src/*"],
-      "config/*": ["../../../config/*"],
       "~/*": ["../../../*"]
     },
     "resolveJsonModule": true,

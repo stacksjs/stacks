@@ -21,6 +21,15 @@ else {
   log.info('Using default server configuration')
 }
 
+log.info('Building server...')
+
+await runCommand(`rm -rf ${frameworkPath('server/core')}`, {
+  cwd: frameworkPath('server'),
+})
+await runCommand(`cp -r ${frameworkPath('core')} ${frameworkPath('server/core')}`, {
+  cwd: frameworkPath('server'),
+})
+
 await runCommand(`rm -rf ${frameworkPath('server/config')}`, {
   cwd: frameworkPath('server'),
 })
@@ -72,3 +81,5 @@ if (!app.name) {
 await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
   cwd: frameworkPath('server'),
 })
+
+log.success('Server built')

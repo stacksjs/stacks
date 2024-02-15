@@ -3,9 +3,9 @@ import type { CLI } from '@stacksjs/types'
 
 export default function (cli: CLI) {
   // Listen to the `foo` command
-  cli.on('inspire:two', () => {
+  cli.on('inspire:three', () => {
     // eslint-disable-next-line no-console
-    console.log('inspiring with two quotes')
+    console.log('inspiring with three quotes')
     // Do something
   })
 

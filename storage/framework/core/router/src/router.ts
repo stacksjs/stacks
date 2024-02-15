@@ -55,15 +55,37 @@ export class Router implements RouterInterface {
     }
 
     else if (typeof callback === 'string') {
-      // import the module and use the default.handle function as the callback
-      const actionModule = await import(p.userActionsPath(`${callback}.ts`))
+      // if it is a relative path, then import the module and
+      // use the default.handle function as the callback
+      if (callback.startsWith('../')) {
+        // import the module and use the default.handle function as the callback
+        const actionModule = await import(p.routesPath(callback))
 
-      path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
-      callback = actionModule.default.handle
+        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
+        callback = actionModule.default.handle
+      }
+      // else, given it is a string, import that module path
+      // and use the default.handle function as the callback
+      else {
+      // import the module and use the default.handle function as the callback
+        const actionModule = await import(p.userActionsPath(`${callback}.ts`))
+
+        path = actionModule.default.path ?? path // in case a custom path is defined inside the Action, use that instead of the path passed by the router
+        callback = actionModule.default.handle
+      }
     }
 
+    path = this.getPath(path)
     this.addRoute('GET', path, callback, 200)
     return this
+  }
+
+  public getPath(path: string) {
+    // if string starts with / then remove it because we are adding it back in the next line
+    if (path.startsWith('/'))
+      path = path.slice(1)
+
+    return `/api/${path}`
   }
 
   public async health(): Promise<this> {
