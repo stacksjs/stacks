@@ -1,5 +1,5 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
-import { path as p, projectPath } from '@stacksjs/path'
+import { path as p, routesPath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
 
 type Prefix = string
@@ -57,6 +57,7 @@ export class Router implements RouterInterface {
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
     this.path = this.normalizePath(path)
     callback = await this.resolveCallback(callback)
+    // eslint-disable-next-line no-console
     console.log('this.path', this.path, callback)
 
     return this.addRoute('GET', this.prepareUri(this.path), callback, 200)
@@ -197,15 +198,7 @@ export class Router implements RouterInterface {
   }
 
   public async getRoutes(): Promise<Route[]> {
-    // const routeFileData = (await readTextFile(projectPath('routes/web.ts'))).data
-
-    await import(projectPath('routes/api.ts'))
-
-    // run routes/web.ts
-    // const webRoutesPath = projectPath('routes/web.ts')
-    // await runCommand(`bun ${webRoutesPath}`)
-
-    // set this.routes to a mapped array of routes that matches the pattern
+    await import(routesPath('api.ts'))
 
     return this.routes
   }
