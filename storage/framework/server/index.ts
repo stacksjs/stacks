@@ -31,8 +31,11 @@ if (process.env.QUEUE_WORKER) {
   process.exit(0)
 }
 
+const development = process.env.APP_ENV?.toLowerCase() !== 'production' && process.env.APP_ENV?.toLowerCase() !== 'prod'
+
 const server = Bun.serve({
   port: 3000,
+  development,
 
   async fetch(request: Request, server: Server): Promise<Response | undefined> {
     // console.log('Request', {

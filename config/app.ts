@@ -20,7 +20,7 @@ export default {
   maintenanceMode: env.APP_MAINTENANCE || false,
   docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
 
-  timezone: 'UTC',
+  timezone: 'America/Los_Angeles',
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',

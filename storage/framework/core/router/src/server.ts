@@ -1,5 +1,5 @@
-import { extname } from 'node:path'
 import { URL } from 'node:url'
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import type { MiddlewareType, Route, StatusCode } from '@stacksjs/types'
 import { middlewares } from './middleware'
@@ -9,15 +9,22 @@ import { route } from '.'
 interface ServeOptions {
   host?: string
   port?: number
+  debug?: boolean
+  timezone?: string
 }
 
 export async function serve(options: ServeOptions = {}) {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
+  const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+
+  if (options.timezone)
+    process.env.TZ = options.timezone
 
   Bun.serve({
     hostname,
     port,
+    development,
 
     fetch(req: Request) {
       return serverResponse(req)

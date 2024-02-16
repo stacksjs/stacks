@@ -1,5 +1,6 @@
 import type { RedirectCode, Route, RouteGroupOptions, StatusCode } from '@stacksjs/types'
 import { path as p, routesPath } from '@stacksjs/path'
+import { log } from '@stacksjs/logging'
 import { pascalCase } from '@stacksjs/strings'
 
 type Prefix = string
@@ -56,11 +57,14 @@ export class Router implements RouterInterface {
 
   public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
     this.path = this.normalizePath(path)
-    callback = await this.resolveCallback(callback)
-    // eslint-disable-next-line no-console
-    console.log('this.path', this.path, callback)
+    log.debug(`Normalized Path: ${this.path}`)
 
-    return this.addRoute('GET', this.prepareUri(this.path), callback, 200)
+    callback = await this.resolveCallback(callback)
+
+    const uri = this.prepareUri(this.path)
+    log.debug(`Prepared URI: ${uri}`) // should be debug
+
+    return this.addRoute('GET', uri, callback, 200)
   }
 
   public async health(): Promise<this> {
@@ -266,7 +270,11 @@ export class Router implements RouterInterface {
     if (path.startsWith('/'))
       path = path.slice(1)
 
-    return `${this.apiPrefix}${this.groupPrefix}/${path}`
+    path = `${this.apiPrefix}${this.groupPrefix}/${path}`
+
+    // if path ends in "/", then remove it
+    // possibly triggered when route is "/"
+    return path.endsWith('/') ? path.slice(0, -1) : path
   }
 
   private updatePathIfNeeded(newPath: string, originalPath: string): void {

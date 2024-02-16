@@ -8,7 +8,6 @@ export interface FontInfo {
   title: string
   text: string
 }
-export type FontFor = 'email' | 'desktop' | 'mobile' | 'web'
 
 export interface WebFontMeta {
   name: string
@@ -134,29 +133,10 @@ export interface UiOptions {
    * for several local font providers. You may set this value to
    * `null` if you prefer not utilize any local fonts.
    *
-   * @see https://stacks.ow3.org/fonts
-   * @example applies the same font for all platforms _(web, email, desktop, and mobile)_
-   * ```ts
-   * fonts: {
-   *   title: 'Mona',
-   *   text: 'Hubot'
-   * }
-   * ```
-   * @example
-   * ```ts
-   * fonts: {
-   *   web: {
-   *     title: 'Inter',
-   *     text: 'Mona'
-   *   },
-   *   desktop: {
-   *     title: 'Mona',
-   *     text: 'Inter'
-   *   },
-   * }
+   * @see https://stacksjs.org/docs/fonts
    * ```
    */
-  fonts?: Record<FontFor, FontInfo> | { [key in FontFor]: FontInfo }
+  fonts?: any
 
   useWebFonts?: boolean | WebFontsProviders
 
@@ -180,6 +160,12 @@ export interface UiOptions {
    */
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
+
+  theme: {
+    colors: Record<string, string>
+    fontSize: Record<string, string>
+    spacing: Record<string, string>
+  }
 }
 
 export type UiConfig = Partial<UiOptions>
