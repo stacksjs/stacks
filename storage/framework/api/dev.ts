@@ -7,12 +7,15 @@ import { join, path } from '@stacksjs/path'
 import { italic, log, runCommandSync } from '@stacksjs/cli'
 
 declare global {
-  var count: number
+  let counter: number
 }
 
-globalThis.count ??= 0
-log.debug(`Reloaded ${globalThis.count} times`)
-globalThis.count++
+// @ts-expect-error - somehow type is not recognized
+globalThis.counter ??= 0
+// @ts-expect-error - somehow type is not recognized
+log.debug(`Reloaded ${globalThis.counter} times`)
+// @ts-expect-error - somehow type is not recognized
+globalThis.counter++
 
 async function watchFolders() {
   const coreDirectories = await readdir(path.corePath(), { withFileTypes: true })
@@ -48,7 +51,8 @@ async function watchFolders() {
   })
 }
 
-if (globalThis.count === 1)
+// @ts-expect-error - somehow type is not recognized
+if (globalThis.counter === 1)
   watchFolders().catch(log.error)
 else
   log.debug(`Skipping watching folders`)
@@ -64,7 +68,8 @@ process.on('SIGINT', () => {
   process.exit()
 })
 
-if (globalThis.count === 1)
-  log.info(`Listening on http://localhost:3999...`)
-else
-  log.info(`#${globalThis.count}: Listening on http://localhost:3999...`)
+// @ts-expect-error - somehow type is not recognized
+if (globalThis.counter === 1)
+  log.info(`Listening on http://localhost:3999/api ...`)
+else // @ts-expect-error - somehow type is not recognized
+  log.info(`#${globalThis.counter}: Listening on http://localhost:3999/api ...`)

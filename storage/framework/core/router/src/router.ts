@@ -41,6 +41,8 @@ export class Router implements RouterInterface {
       routeCallback = callback
     }
 
+    log.debug(`Adding route: ${method} ${uri} with name ${name}`)
+
     this.routes.push({
       name,
       method,
@@ -62,7 +64,7 @@ export class Router implements RouterInterface {
     callback = await this.resolveCallback(callback)
 
     const uri = this.prepareUri(this.path)
-    log.debug(`Prepared URI: ${uri}`) // should be debug
+    log.debug(`Prepared URI: ${uri}`)
 
     return this.addRoute('GET', uri, callback, 200)
   }
@@ -71,7 +73,9 @@ export class Router implements RouterInterface {
     const healthModule = await import(p.userActionsPath('HealthAction.ts'))
     const callback = healthModule.default.handle
 
-    this.addRoute('GET', `${this.apiPrefix}/health`, callback, 200)
+    const path = healthModule.default.path ?? `${this.apiPrefix}/health`
+
+    this.addRoute('GET', path, callback, 200)
 
     return this
   }
@@ -152,7 +156,7 @@ export class Router implements RouterInterface {
       cb = callback
     }
 
-    const { prefix = '', middleware = [] } = options
+    const { prefix = '', middleware = [] } = options as RouteGroupOptions
 
     // Save a reference to the original routes array
     const originalRoutes = this.routes
@@ -273,7 +277,7 @@ export class Router implements RouterInterface {
     path = `${this.apiPrefix}${this.groupPrefix}/${path}`
 
     // if path ends in "/", then remove it
-    // possibly triggered when route is "/"
+    // e.g. triggered when route is "/"
     return path.endsWith('/') ? path.slice(0, -1) : path
   }
 

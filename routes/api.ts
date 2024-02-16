@@ -8,15 +8,17 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-// route.get('/', () => 'hello world') // $APP_URL/api
+// $APP_URL/api
+await route.get('/', () => 'hello world')
 
-route.get('/welcome', () => { // stacksjs.org/api/welcome
+// $APP_URL/api/welcome
+await route.get('/welcome', () => {
   return { // you may return an object as well
     data: 'hello world, friend',
   }
 })
 
-// route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 
 // route.group('/buddy', () => { // you may group your routes in a few different ways
 //   route.get('/commands', 'Actions/Buddy/CommandsAction')
@@ -32,4 +34,4 @@ route.get('/welcome', () => { // stacksjs.org/api/welcome
 // route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
 // route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
 
-// route.health() // adds an `/api/health` route
+route.health() // adds an `/api/health` route

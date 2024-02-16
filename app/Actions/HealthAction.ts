@@ -4,6 +4,7 @@ import { Action } from '@stacksjs/actions'
 export default new Action({
   name: 'Health',
   description: 'A health check for your application.',
+  path: '/api/health',
 
   handle() {
     return {
