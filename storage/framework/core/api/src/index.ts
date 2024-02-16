@@ -1,5 +1,6 @@
 import { ofetch } from 'ofetch'
 import type { FetchOptions } from 'ofetch'
+
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }

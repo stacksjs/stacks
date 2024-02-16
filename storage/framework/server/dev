@@ -7,7 +7,6 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 PROJECT_ROOT=$(cd "$SCRIPT_DIR/../../../" && pwd)
 
 # Construct the absolute paths
-ACTIONS_DIR="$PROJECT_ROOT/app/Actions"
 APP_DIR="$PROJECT_ROOT/app"
 CONFIG_DIR="$PROJECT_ROOT/config"
 DOCS_DIR="$PROJECT_ROOT/docs"
@@ -26,7 +25,6 @@ else # Local environment
 fi
 
 docker run -p 3000:3000 \
-  -v "$ACTIONS_DIR:/usr/src/app/Actions" \
   -v "$APP_DIR:/usr/src/app/app" \
   -v "$CONFIG_DIR:/usr/src/app/config" \
   -v "$DOCS_DIR:/usr/src/app/docs" \

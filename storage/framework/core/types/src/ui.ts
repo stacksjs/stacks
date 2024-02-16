@@ -1,8 +1,10 @@
 import type { UserShortcuts } from 'unocss'
+import type { UserConfig } from '@unocss/core'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
+export type Shortcuts = UserShortcuts
 
 export interface FontInfo {
   title: string
@@ -161,16 +163,20 @@ export interface UiOptions {
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
 
-  theme: {
-    colors: Record<string, string>
-    fontSize: Record<string, string>
-    spacing: Record<string, string>
-  }
+  theme: UserConfig['theme']
+  // plugins: UserConfig['plugins']
+  // corePlugins: UserConfig['corePlugins']
+  variants: UserConfig['variants']
+  layers: UserConfig['layers']
+  // darkMode: UserConfig['darkMode']
+  // extend: UserConfig['extend']
+  // screens: UserConfig['screens']
+  // spacing: UserConfig['spacing']
+  // backgroundColor: UserConfig['backgroundColor']
+  // backgroundImage: UserConfig['backgroundImage']
 }
 
 export type UiConfig = Partial<UiOptions>
-
-export type Shortcuts = UserShortcuts
 
 /**
  * **Style Reset — Preset**

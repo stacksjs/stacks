@@ -5,81 +5,60 @@ import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { slug } from '@stacksjs/strings'
 
-// TODO: we cannot use Bun Shell scripts here yet because we need to use 1.0.8 for deployments, and Shell scripts were introduced after 1.0.8
-// this allows for a custom "server configuration" by the user
-if (hasFiles(projectPath('server'))) {
-  await runCommand(`rm -rf ../../../server/build.ts`, {
-    cwd: projectPath('server'),
-  })
-  await runCommand(`cp -r ../../../server .`, {
-    cwd: projectPath('server'),
+async function cleanAndCopy(sourcePath: string, targetPath: string) {
+  await runCommand(`rm -rf ${targetPath}`, {
+    cwd: frameworkPath('server'),
   })
 
-  log.info('Using custom server configuration')
+  await runCommand(`cp -r ${sourcePath} ${targetPath}`, {
+    cwd: frameworkPath('server'),
+  })
 }
-else {
+
+async function useCustomOrDefaultServerConfig() {
+  if (hasFiles(projectPath('server'))) {
+    await runCommand(`rm -rf ../../../server/build.ts`, {
+      cwd: projectPath('server'),
+    })
+    await runCommand(`cp -r ../../../server .`, {
+      cwd: projectPath('server'),
+    })
+
+    return log.info('Using custom server configuration')
+  }
+
   log.info('Using default server configuration')
 }
 
-log.info('Building server...')
+async function buildServer() {
+  log.info('Building server...')
 
-await runCommand(`rm -rf ${frameworkPath('server/core')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${frameworkPath('core')} ${frameworkPath('server/core')}`, {
-  cwd: frameworkPath('server'),
-})
+  await cleanAndCopy(frameworkPath('core'), frameworkPath('server/core'))
+  await cleanAndCopy(projectPath('config'), frameworkPath('server/config'))
+  await cleanAndCopy(projectPath('routes'), frameworkPath('server/routes'))
+  await cleanAndCopy(projectPath('app'), frameworkPath('server/app'))
+  await cleanAndCopy(projectPath('docs'), frameworkPath('server/docs'))
+  await cleanAndCopy(projectPath('storage'), frameworkPath('server/storage'))
 
-await runCommand(`rm -rf ${frameworkPath('server/config')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('config')} ${frameworkPath('server/config')}`, {
-  cwd: frameworkPath('server'),
-})
+  if (!app.name) {
+    log.error('Please provide a name for your app in your config file')
+    process.exit(1)
+  }
 
-await runCommand(`rm -rf ${frameworkPath('server/routes')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('routes')} ${frameworkPath('server/routes')}`, {
-  cwd: frameworkPath('server'),
-})
+  // TODO: also allow for a custom container name via a config option
+  await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
+    cwd: frameworkPath('server'),
+  })
 
-await runCommand(`rm -rf ${frameworkPath('server/app')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('app')} ${frameworkPath('server/app')}`, {
-  cwd: frameworkPath('server'),
-})
-
-await runCommand(`rm -rf ${frameworkPath('server/docs')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('docs')} ${frameworkPath('server/docs')}`, {
-  cwd: frameworkPath('server'),
-})
-
-await runCommand(`rm -rf ${frameworkPath('server/Actions')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('app/Actions')} ${frameworkPath('server/Actions')}`, {
-  cwd: frameworkPath('server'),
-})
-
-await runCommand(`rm -rf ${frameworkPath('server/storage')}`, {
-  cwd: frameworkPath('server'),
-})
-await runCommand(`cp -r ${projectPath('storage')} ${frameworkPath('server/storage')}`, {
-  cwd: frameworkPath('server'),
-})
-
-if (!app.name) {
-  log.error('Please provide a name for your app in your config file')
-  process.exit(1)
+  log.success('Server built')
 }
 
-// TODO: also allow for a custom container name via a config option
-await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
-  cwd: frameworkPath('server'),
-})
+async function main() {
+  useCustomOrDefaultServerConfig()
+  await buildServer()
+}
 
-log.success('Server built')
+main().catch((error) => {
+  log.error(`Build failed: ${error}`)
+  process.exit(1)
+})

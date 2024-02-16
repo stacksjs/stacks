@@ -18,20 +18,22 @@ await route.get('/welcome', () => {
   }
 })
 
-route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+await route.get('/buddy/versions', 'Actions/Buddy/VersionsAction')
+await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction')
 
-// route.group('/buddy', () => { // you may group your routes in a few different ways
-//   route.get('/commands', 'Actions/Buddy/CommandsAction')
+// await route.group('/buddy', async () => { // you may group your routes in a few different ways
+//   await route.get('/commands', 'Actions/Buddy/CommandsAction')
 
 //   // nested groups are also supported
-//   route.group({ prefix: 'commands' }, () => {
-//     route.get('/example-two', import('Actions/Buddy/CommandsAction')) // or import the action directly
+//   await route.group({ prefix: 'commands' }, async () => {
+//     await route.get('/example-two', import('Actions/Buddy/CommandsAction')) // or import the action directly
 //   })
 
-//   route.get('/versions', '../app/Actions/Buddy/VersionsAction') // a relative path is accepted as well
+//   await route.get('/versions', '../app/Actions/Buddy/VersionsAction') // a relative path is accepted as well
 // })
 
-// route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
-// route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
+// await route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
+// await route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
 
-route.health() // adds an `/api/health` route
+await route.health() // adds an `/api/health` route

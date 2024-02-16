@@ -141,6 +141,9 @@ export class Router implements RouterInterface {
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {
+    if (typeof options === 'string')
+      options = options.startsWith('/') ? options.slice(1) : options
+
     let cb: () => void
 
     this.prepareGroupPrefix(options)
@@ -149,14 +152,13 @@ export class Router implements RouterInterface {
       cb = options
       options = {}
     }
-    else {
-      if (!callback)
-        throw new Error('Missing callback function for your route group.')
 
-      cb = callback
-    }
+    if (!callback)
+      throw new Error('Missing callback function for your route group.')
 
-    const { prefix = '', middleware = [] } = options as RouteGroupOptions
+    cb = callback
+
+    const { prefix, middleware = [] } = options as RouteGroupOptions
 
     // Save a reference to the original routes array
     const originalRoutes = this.routes
