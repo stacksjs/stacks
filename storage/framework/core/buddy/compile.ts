@@ -1,7 +1,7 @@
 import { log, runCommand } from '@stacksjs/cli'
 
 // compiles the buddy binary
-const result = await runCommand('bun build ./bin/cli.ts --compile --outfile dist/buddy', {
+const result = await runCommand('bun build ./bin/cli.ts --compile --minify --outfile dist/stacks', {
   cwd: import.meta.dir,
 })
 

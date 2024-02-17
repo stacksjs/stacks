@@ -4,7 +4,7 @@ import { $ } from 'bun'
 import { cac } from 'cac'
 import { version } from '../package.json'
 
-const cli = cac()
+const cli = cac('stacks')
 
 cli
   .command('new', 'Create a new Stacks project')
@@ -36,6 +36,13 @@ cli
   })
 
 cli
+  .command('cd <project>', 'Change the current working directory to a different Stacks project')
+  .action((project: string) => {
+    const path = `storage/framework/core/buddy/${project}` // FIXME: this is not the correct path
+    $`cd ${path}`
+  })
+
+cli
   .command('version', 'Show the version of the Stacks CLI')
   .action(() => {
     // eslint-disable-next-line no-console
@@ -45,5 +52,3 @@ cli
 cli.version(version)
 cli.help()
 cli.parse()
-
-// Path: storage/framework/core/buddy/bin/cli.ts
