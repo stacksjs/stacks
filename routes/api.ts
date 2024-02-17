@@ -8,19 +8,17 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-// $APP_URL/api
-await route.get('/', () => 'hello world')
-
-// $APP_URL/api/welcome
-await route.get('/welcome', () => {
+await route.get('/', () => 'hello world') // $APP_URL/api
+await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+await route.get('/buddy/versions', 'Actions/Buddy/VersionsAction') // stacksjs.org/api/buddy/versions
+await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction') // stacksjs.org/api/buddy/commands
+await route.get('/welcome', () => { // $APP_URL/api/welcome
   return { // you may return an object as well
     data: 'hello world, friend',
   }
 })
 
-await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
-await route.get('/buddy/versions', 'Actions/Buddy/VersionsAction')
-await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction')
+await route.health() // adds an `/api/health` route
 
 // await route.group('/buddy', async () => { // you may group your routes in a few different ways
 //   await route.get('/commands', 'Actions/Buddy/CommandsAction')
@@ -35,5 +33,3 @@ await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction')
 
 // await route.action('/example') // the equivalent of route.get('/example', 'ExampleAction')
 // await route.job('/example-two') // the equivalent of route.get('/example-two', 'ExampleTwoJob')
-
-await route.health() // adds an `/api/health` route
