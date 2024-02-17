@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/lint",
   "type": "module",
-  "version": "0.58.71",
+  "version": "0.58.72",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
