@@ -37,14 +37,13 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' 
 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
 
-type ActionName = ActionPath
 export interface Route {
   name: string
   uri: string
-  url: string // used synonymously with uri
+  url: `/${string}` // used synonymously with uri
   method: HttpMethod
   pattern: RegExp
-  callback: RouteCallback | ActionName | Action | Promise<any> // we may be able to improve the `Promise<any>` if we could narrow this type `import('../app/Actions/BuddyAction')`
+  callback: RouteCallback | ActionPath | Action | Promise<any> // we may be able to improve the `Promise<any>` if we could narrow this type `import('../app/Actions/BuddyAction')`
   paramNames: string[]
   middleware?: string | string[]
   statusCode?: StatusCode
