@@ -67,7 +67,7 @@
   "scripts": {
     "buddy": "bunx ./src/cli.ts",
     "build": "bun --bun build.ts",
-    "compile": "bun build ./src/cli.ts --compile --outfile budd",
+    "compile": "bun compile.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },

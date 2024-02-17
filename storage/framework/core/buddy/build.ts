@@ -6,10 +6,3 @@ const result = await runCommand('bun build ./src/index.ts ./src/cli.ts --outdir 
 
 if (result.isErr())
   log.error(result.error)
-
-const binaryResult = await runCommand('bun build ./bin/cli.ts --compile --outfile buddy', {
-  cwd: import.meta.dir,
-})
-
-if (binaryResult.isErr())
-  log.error(binaryResult.error)

@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { CAC } from 'cac'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import { path as p } from '@stacksjs/path'
@@ -8,24 +8,16 @@ import * as cmd from './commands'
 
 // setup global error handlers
 process.on('uncaughtException', (error: Error) => {
-  console.error('An error occurred:', error.message)
-  // handleError(error)
+  log.debug('uncaughtException')
+  log.error(error)
   process.exit(1)
 })
 
-process.on('uncaughtException', (error: Error) => {
-  console.error('An error occurred:', error.message)
-  handleError(error)
+process.on('unhandledRejection', (error: Error) => {
+  log.debug('unhandledRejection')
+  log.error(error)
   process.exit(1)
 })
-
-// process.on('unhandledRejection', errorHandler)
-
-// function errorHandler(error: Error) {
-//   console.error('An error occurred:', error.message)
-//   log.error(error.message)
-//   process.exit(1)
-// }
 
 async function main() {
   // const buddy = cli('buddy')
@@ -61,7 +53,7 @@ async function main() {
   cmd.setup(buddy)
   // cmd.example(buddy)
   // cmd.test(buddy)
-  // cmd.version(buddy)
+  cmd.version(buddy)
   // cmd.prepublish(buddy)
   cmd.upgrade(buddy)
 

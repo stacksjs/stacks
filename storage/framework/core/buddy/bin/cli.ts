@@ -2,12 +2,13 @@ import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { $ } from 'bun'
 import { cac } from 'cac'
+import { version } from '../package.json'
 
 const cli = cac()
 
 cli
-  .command('new', 'Create a new stacks project')
-  .alias('add')
+  .command('new', 'Create a new Stacks project')
+  .alias('create')
   .action(() => {
     const buddyCli = 'buddy'
 
@@ -34,6 +35,15 @@ cli
     $`bunx stacks new ${process.argv.slice(2).join(' ')}`
   })
 
+cli
+  .command('version', 'Show the version of the Stacks CLI')
+  .action(() => {
+    // eslint-disable-next-line no-console
+    console.log(version)
+  })
+
+cli.version(version)
+cli.help()
 cli.parse()
 
 // Path: storage/framework/core/buddy/bin/cli.ts
