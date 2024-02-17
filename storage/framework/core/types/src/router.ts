@@ -1,4 +1,5 @@
 import type { Action } from '@stacksjs/actions'
+import type { ActionPath } from '~/storage/framework/types/actions'
 
 export interface NitroEventHandler {
   /**
@@ -36,7 +37,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' 
 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
 
-type ActionName = string
+type ActionName = ActionPath
 export interface Route {
   name: string
   uri: string
