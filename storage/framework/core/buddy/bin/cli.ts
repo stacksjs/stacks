@@ -1,5 +1,6 @@
 import process from 'node:process'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { $ } from 'bun'
 import { cac } from 'cac'
 import { version } from '../package.json'
@@ -38,8 +39,40 @@ cli
 cli
   .command('cd <project>', 'Change the current working directory to a different Stacks project')
   .action((project: string) => {
-    const path = `storage/framework/core/buddy/${project}` // FIXME: this is not the correct path
-    $`cd ${path}`
+    const findProjectPath = (base, target) => {
+      const queue = [base]
+
+      while (queue.length) {
+        const currentPath = queue.shift()
+        console.log(`Checking ${currentPath}...`)
+        const directoryContents = readdirSync(currentPath)
+
+        for (const content of directoryContents) {
+          const contentPath = join(currentPath, content)
+          const isDirectory = statSync(contentPath).isDirectory()
+
+          if (isDirectory) {
+            if (contentPath.includes(target))
+              return contentPath // Found the target directory
+
+            queue.push(contentPath)
+          }
+        }
+      }
+
+      return null // Target directory not found
+    }
+
+    const projectPath = findProjectPath('/', `${project}/storage/framework/core/buddy/`)
+
+    if (projectPath) {
+      console.log(`Project found at ${projectPath}.`)
+      console.log(`Run 'cd ${projectPath}' to navigate to the project directory.`)
+      // $`cd ${projectPath}`
+    }
+    else {
+      console.error('Project directory not found.')
+    }
   })
 
 cli

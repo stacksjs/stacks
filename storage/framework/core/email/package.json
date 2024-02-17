@@ -19,16 +19,9 @@
     "email",
     "ses",
     "aws",
-    "maizzle",
     "stacks",
     "emailjs",
-    "mailgun",
-    "mailjet",
-    "mandrill",
-    "netcore",
-    "nodemailer",
-    "postmark",
-    "sendgrid"
+    "mailgun"
   ],
   "exports": {
     ".": {
@@ -57,38 +50,18 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@maizzle/framework": "^4.7.6",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.7.6",
-    "@novu/stateless": "^0.23.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/mailparser": "^3.4.4",
     "aws-sdk": "^2.1560.0",
-    "mailparser": "^3.6.7",
-    "mime": "^4.0.1",
-    "moment": "^2.30.1",
-    "nodemailer": "^6.9.9",
-    "uuid": "^9.0.1"
-  },
-  "optionalDependencies": {
-    "@novu/emailjs": "^0.23.1",
-    "@novu/mailgun": "^0.23.1",
-    "@novu/mailjet": "^0.23.1",
-    "@novu/mandrill": "^0.23.1",
-    "@novu/netcore": "^0.23.1",
-    "@novu/node": "^0.23.1",
-    "@novu/nodemailer": "^0.23.1",
-    "@novu/postmark": "^0.23.1",
-    "@novu/sendgrid": "^0.23.1",
-    "@novu/ses": "^0.23.1"
+    "vue-email": "^0.8.8"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
