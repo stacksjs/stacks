@@ -53,11 +53,11 @@
   },
   "peerDependencies": {
     "@playwright/test": "^1.41.2",
-    "vitest": "^1.2.2"
+    "vitest": "^1.3.0"
   },
   "dependencies": {
     "@playwright/test": "^1.41.2",
-    "vitest": "^1.2.2"
+    "vitest": "^1.3.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
