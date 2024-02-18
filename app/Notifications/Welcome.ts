@@ -1,11 +1,12 @@
 import { log } from '@stacksjs/logging'
 import { Email } from '@stacksjs/email'
+import { config } from '@stacksjs/config'
 
 export default new Email({ // or Sms or Push or Webhook or Chat
   name: 'welcome',
   subject: 'Welcome to Stacks',
-  to: 'user.email',
-  from: 'config.email.from',
+  to: 'some@email.com',
+  from: config.email.from,
   template: 'Welcome',
 
   handle: async () => {

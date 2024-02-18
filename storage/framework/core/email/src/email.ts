@@ -7,33 +7,38 @@ export class Email implements Message {
   }
 
   public async send() {
-    const template = await useCompiler(this.message.template)
-    const params: SendEmailParams = {
-      Source: this.message.from,
-      Destination: {
-        ToAddresses: [this.message.to],
-      },
-      Message: {
-        Body: {
-          Html: {
+    try {
+      const template = await useCompiler(this.message.template)
+      const params: SendEmailParams = {
+        Source: this.message.from,
+        Destination: {
+          ToAddresses: [this.message.to],
+        },
+        Message: {
+          Body: {
+            Html: {
+              Charset: 'UTF-8',
+              Data: template,
+            },
+          },
+          Subject: {
             Charset: 'UTF-8',
-            Data: template,
+            Data: this.message.subject,
           },
         },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: this.message.subject,
-        },
-      },
+      }
+
+      await ses.sendEmail(params)
+
+      const returnMsg = await this.message.handle()
+
+      await this.onSuccess()
+
+      return returnMsg
     }
-
-    await ses.sendEmail(params)
-
-    const returnMsg = await this.message.handle()
-
-    this.onSuccess()
-
-    return returnMsg
+    catch (error) {
+      return this.onError(error)
+    }
   }
 
   public async onError(error: Error) {
@@ -41,7 +46,12 @@ export class Email implements Message {
   }
 
   public onSuccess() {
-    return this.message.onSuccess()
+    try {
+      this.message.onSuccess()
+    }
+    catch (error) {
+      return this.onError(error)
+    }
   }
 }
 
