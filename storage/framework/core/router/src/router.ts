@@ -74,8 +74,9 @@ export class Router implements RouterInterface {
   }
 
   public async email(path: Route['url']): Promise<this> {
-    // wip
-    const emailModule = await import(p.userActionsPath('EmailAction.ts'))
+    path = pascalCase(path)
+
+    const emailModule = await import(p.userNotificationsPath(`${path}.ts`))
     const callback = emailModule.default.handle
 
     const uri = this.prepareUri(path)

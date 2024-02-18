@@ -16,6 +16,9 @@ export default {
 
   mailboxes: ['chris@stacksjs.org', 'blake@stacksjs.org'],
 
+  url: env.APP_URL || 'http://localhost:3000',
+  charset: 'UTF-8',
+
   server: {
     scan: true, // scans for spam and viruses
   },

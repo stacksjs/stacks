@@ -8,6 +8,9 @@ export type EmailOptions = Omit<IEmailOptions, 'from'> & {
 
   mailboxes: string[]
 
+  url: string
+  charset: string // e.g. UTF-8
+
   server: {
     scan?: boolean
   }
