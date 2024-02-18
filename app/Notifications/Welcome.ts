@@ -17,7 +17,7 @@ export default new Email({ // or Sms or Push or Webhook or Chat
     }
   },
 
-  onError: (error: Error) => {
+  onError: async (error: Error) => {
     log.error(error)
     // if needed, trigger some custom logic here
     return {

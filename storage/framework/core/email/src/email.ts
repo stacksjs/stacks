@@ -1,19 +1,27 @@
 import { useCompiler } from 'vue-email'
+import { SES } from '@aws-sdk/client-ses'
 import type { Message, SendEmailParams } from './types'
 
-export class Email implements Message {
+export class Email {
+  private client: SES
+
   constructor(private message: Message) {
+    this.client = new SES({ region: 'us-east-1' })
     this.message = message
   }
 
   public async send() {
     try {
+      log.info('Sending email...')
+
       const template = await useCompiler(this.message.template)
       const params: SendEmailParams = {
-        Source: this.message.from,
+        Source: this.message.from?.address || '',
+
         Destination: {
           ToAddresses: [this.message.to],
         },
+
         Message: {
           Body: {
             Html: {
@@ -21,6 +29,7 @@ export class Email implements Message {
               Data: template,
             },
           },
+
           Subject: {
             Charset: 'UTF-8',
             Data: this.message.subject,
@@ -28,7 +37,7 @@ export class Email implements Message {
         },
       }
 
-      await ses.sendEmail(params)
+      await this.client.sendEmail(params)
 
       const returnMsg = await this.message.handle()
 
@@ -37,11 +46,12 @@ export class Email implements Message {
       return returnMsg
     }
     catch (error) {
-      return this.onError(error)
+      return this.onError(error as Error)
     }
   }
 
   public async onError(error: Error) {
+    log.error(error)
     return await this.message.onError(error)
   }
 
@@ -57,6 +67,5 @@ export class Email implements Message {
 
 export type { Message }
 
-export const email = new Email()
-
+export const email = (options: Message) => new Email(options)
 export default Email
