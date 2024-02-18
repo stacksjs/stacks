@@ -12,12 +12,13 @@ await route.get('/', () => 'hello world') // $APP_URL/api
 await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 await route.get('/buddy/versions', 'Actions/Buddy/VersionsAction') // stacksjs.org/api/buddy/versions
 await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction') // stacksjs.org/api/buddy/commands
-await route.get('/welcome', () => { // $APP_URL/api/welcome
+await route.get('/hello-world', () => { // $APP_URL/api/welcome
   return { // you may return an object as well
     data: 'hello world, friend',
   }
 })
 
+await route.email('/welcome')
 await route.health() // adds an `/api/health` route
 
 // await route.group('/buddy', async () => { // you may group your routes in a few different ways

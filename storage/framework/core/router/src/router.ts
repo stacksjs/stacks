@@ -13,6 +13,10 @@ export interface RouterInterface {
   delete: (url: Route['url'], callback: Route['callback']) => this
   patch: (url: Route['url'], callback: Route['callback']) => this
   put: (url: Route['url'], callback: Route['callback']) => this
+  email: (url: Route['url']) => Promise<this>
+  health: () => Promise<this>
+  job: (url: Route['url']) => Promise<this>
+  action: (url: Route['url']) => Promise<this>
   group: (options: Prefix | RouteGroupOptions, callback: () => void) => this
   name: (name: string) => this
   middleware: (middleware: Route['middleware']) => this
@@ -67,6 +71,17 @@ export class Router implements RouterInterface {
     log.debug(`Prepared URI: ${uri}`)
 
     return this.addRoute('GET', uri, callback, 200)
+  }
+
+  public async email(path: Route['url']): Promise<this> {
+    // wip
+    const emailModule = await import(p.userActionsPath('EmailAction.ts'))
+    const callback = emailModule.default.handle
+
+    const uri = this.prepareUri(path)
+    this.addRoute('GET', uri, callback, 200)
+
+    return this
   }
 
   public async health(): Promise<this> {

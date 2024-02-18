@@ -48,9 +48,6 @@
     "deploy": "cd ../.. && bun run build && cd ../docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never",
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
-    "build-layer": "bun ./src/runtime/scripts/build-layer.ts",
-    "publish-layer": "bun ./src/runtime/scripts/publish-layer.ts",
-    "build-server": "echo 'bun --bun build-server.ts'",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
@@ -108,12 +105,9 @@
     "constructs": "^10.3.0"
   },
   "devDependencies": {
-    "@oclif/plugin-plugins": "^4.2.3",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
-    "jszip": "^3.10.1",
-    "oclif": "^4.4.12",
     "source-map-support": "^0.5.21"
   }
 }
