@@ -26,6 +26,9 @@ export async function invoke(options?: GeneratorOptions) {
 
   else if (options?.componentMeta)
     await generateComponentMeta(options)
+
+  else if (options?.coreSymlink)
+    await generateCoreSymlink()
 }
 
 export function generate(options: GeneratorOptions) {
@@ -124,9 +127,14 @@ export function generatePkgxConfig() {
   // write the yaml string to a file in your project root
   // files.put(projectPath('./pkgx.yaml'), yamlStr)
 
-  log.success('Successfully generated `./pkgx.yaml` based on your configs')
+  log.success('Successfully generated `./pkgx.yaml` based on your config')
 }
 
 export async function generateSeeder() {
   // await seed()
+}
+
+export async function generateCoreSymlink() {
+  // symlink path.frameworkPath() to path.projectPath('.stacks')
+  await runCommand(`ln -s ${path.frameworkPath()} ${path.projectPath('.stacks')}`)
 }

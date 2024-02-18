@@ -22,6 +22,7 @@ export function generate(buddy: CLI) {
     customData: 'Generate VS Code custom data (custom-elements.json) for IDEs',
     ideHelpers: 'Generate IDE helpers',
     componentMeta: 'Generate component meta information',
+    coreSymlink: 'Generate symlink of the core framework to the project root',
     pkgx: 'Generate the pkgx configuration file',
     select: 'What are you trying to generate?',
     project: 'Target a specific project',
@@ -38,6 +39,7 @@ export function generate(buddy: CLI) {
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pkgx', descriptions.pkgx)
     .option('-p, --project', descriptions.project, { default: false })
+    .option('--core-symlink', descriptions.coreSymlink)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate` ...', options)

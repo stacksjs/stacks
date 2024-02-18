@@ -1,8 +1,7 @@
 import { Email } from '@stacksjs/emails'
 
-export default new Email({ // or Sms or PushNotification or Webhook or Chat or Notification
+export default new Email({ // or Sms or Push or Webhook or Chat
   name: 'welcome',
-  type: 'email',
   subject: 'Welcome to Stacks',
   to: ({ user }) => user.email,
   from: ({ config }) => config.email.from,

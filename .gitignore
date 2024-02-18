@@ -14,5 +14,6 @@ custom-cli
 
 .fleet
 .idea
+.stacks
 .vscode
 ./test.ts
