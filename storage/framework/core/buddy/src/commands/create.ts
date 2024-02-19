@@ -19,6 +19,7 @@ export function create(buddy: CLI) {
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
+    notifications: 'Do you need notifications? e.g. email, SMS, push or chat notifications',
     cache: 'Do you need caching?',
     email: 'Do you need email?',
     project: 'Target a specific project',

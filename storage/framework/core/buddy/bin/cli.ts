@@ -39,11 +39,12 @@ cli
 cli
   .command('cd <project>', 'Change the current working directory to a different Stacks project')
   .action((project: string) => {
-    const findProjectPath = (base, target) => {
+    const findProjectPath = (base: any, target: any) => {
       const queue = [base]
 
       while (queue.length) {
         const currentPath = queue.shift()
+        // eslint-disable-next-line no-console
         console.log(`Checking ${currentPath}...`)
         const directoryContents = readdirSync(currentPath)
 
@@ -66,7 +67,9 @@ cli
     const projectPath = findProjectPath('/', `${project}/storage/framework/core/buddy/`)
 
     if (projectPath) {
+      // eslint-disable-next-line no-console
       console.log(`Project found at ${projectPath}.`)
+      // eslint-disable-next-line no-console
       console.log(`Run 'cd ${projectPath}' to navigate to the project directory.`)
       // $`cd ${projectPath}`
     }

@@ -11,6 +11,7 @@ tests/unit/coverage
 dist*
 !.gitkeep
 custom-cli
+*bun-build
 
 .fleet
 .idea

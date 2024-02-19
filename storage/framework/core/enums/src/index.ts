@@ -71,6 +71,7 @@ export enum Action {
   DomainsAdd = 'domains/add',
   DomainsPurchase = 'domains/purchase',
   DomainsRemove = 'domains/remove',
+  FindProjects = 'find-projects',
   Fresh = 'fresh',
   GenerateLibraryEntries = 'generate/lib-entries',
   Inspire = 'inspire',

@@ -40,6 +40,7 @@ async function main() {
   cmd.domains(buddy)
   cmd.deploy(buddy)
   cmd.dns(buddy)
+  cmd.findProjects(buddy)
   cmd.fresh(buddy)
   cmd.generate(buddy)
   cmd.http(buddy)
