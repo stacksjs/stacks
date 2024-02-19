@@ -458,6 +458,10 @@ export function stacksPath(path?: string) {
   return frameworkPath(`src/${path || ''}`)
 }
 
+export function shellPath(path?: string) {
+  return corePath(`shell/${path || ''}`)
+}
+
 export function stringsPath(path?: string) {
   return corePath(`strings/${path || ''}`)
 }
@@ -584,6 +588,7 @@ export const path = {
   serverlessPath,
   stacksPath,
   stringsPath,
+  shellPath,
   storesPath,
   testingPath,
   testsPath,

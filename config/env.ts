@@ -13,7 +13,17 @@ export default {
   APP_ENV: validate.enum(['local', 'dev', 'stage', 'prod']),
   APP_KEY: validate.string(),
   APP_URL: validate.string(),
+
   APP_PORT: validate.number(),
+  PORT_BACKEND: validate.number(),
+  PORT_ADMIN: validate.number(),
+  PORT_LIBRARY: validate.number(),
+  PORT_DESKTOP: validate.number(),
+  PORT_EMAIL: validate.number(),
+  PORT_DOCS: validate.number(),
+  PORT_INSPECT: validate.number(),
+  PORT_API: validate.number(),
+
   APP_MAINTENANCE: validate.boolean(),
   DEBUG: validate.boolean(),
 
@@ -33,7 +43,7 @@ export default {
   AWS_DEFAULT_REGION: validate.string(),
   AWS_DEFAULT_PASSWORD: validate.string(),
 
-  MAIL_MAILER: validate.enum(['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log']),
+  MAIL_MAILER: validate.enum(['ses', 'sendmail', 'log', 'smtp']),
   MAIL_HOST: validate.string(),
   MAIL_PORT: validate.number(),
   MAIL_USERNAME: validate.string(),

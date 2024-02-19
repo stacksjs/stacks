@@ -1,27 +1,25 @@
-# Bun Plugin - YAML
+# shell
+
+This package contains the shell configuration files for the Stacks framework.
 
 ## ☘️ Features
 
-- wip
+- It will find and execute `buddy` from anywhere within the project file tree _(and you don't need to prefix it with php or ./)_
+- It provides auto-completion for `buddy` commands _(that also work anywhere within the project)_
+- You can specify an editor to automatically open new files created by `buddy make:*` commands
 
 ## 🤖 Usage
 
 ```bash
-bun install -d bun-plugin-yaml
+buddy setup:oh-my-zsh
 ```
 
-You may now use it in your project:
-
-```ts
-import wip from 'bun-plugin-yaml'
-
-// wip
-```
+To view the full documentation, please visit [https://stacksjs.org/ui](https://stacksjs.org/zsh).
 
 ## 🧪 Testing
 
 ```bash
-bun test
+# wip
 ```
 
 ## 📈 Changelog
@@ -44,8 +42,9 @@ For casual chit-chat with others using this package:
 
 ## 🙏🏼 Credits
 
-Many thanks to the following core technologies & people who have contributed to this package:
+Many thanks to the following core technologies & people who have contributed to this plugin:
 
+- [Jess Archer](https://github.com/jessarcher/zsh-artisan/blob/master/artisan.plugin.zsh)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

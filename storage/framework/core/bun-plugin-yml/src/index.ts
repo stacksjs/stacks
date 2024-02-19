@@ -1,15 +1,14 @@
 import { plugin } from 'bun'
 
-plugin({
+await plugin({
   name: 'YAML',
   async setup(build) {
     const { load } = await import('js-yaml')
-    const { readFileSync } = await import('node:fs')
 
     // when a .yaml file is imported...
-    build.onLoad({ filter: /\.(yaml|yml)$/ }, (args) => {
+    build.onLoad({ filter: /\.(yaml|yml)$/ }, async (args) => {
       // read and parse the file
-      const text = readFileSync(args.path, 'utf8')
+      const text = await Bun.file(args.path).text()
       const exports = load(text) as Record<string, any>
 
       // and returns it as a module

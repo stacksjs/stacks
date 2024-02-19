@@ -19,7 +19,7 @@ export async function localUrl({
   switch (type) {
     case 'frontend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.frontend || 3333)
+        return await createLocalTunnel(config.app.ports?.frontend || 3000)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.frontend}`
@@ -32,7 +32,7 @@ export async function localUrl({
       return url
     case 'backend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3334)
+        return await createLocalTunnel(config.app.ports?.backend || 3001)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.backend}`
@@ -45,7 +45,7 @@ export async function localUrl({
       return url
     case 'api':
       if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3334)
+        return await createLocalTunnel(config.app.ports?.backend || 3001)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.backend}`
@@ -58,7 +58,7 @@ export async function localUrl({
       return url
     case 'admin':
       if (network)
-        return await createLocalTunnel(config.app.ports?.admin || 3335)
+        return await createLocalTunnel(config.app.ports?.admin || 3002)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.admin}`
@@ -71,7 +71,7 @@ export async function localUrl({
       return url
     case 'library':
       if (network)
-        return await createLocalTunnel(config.app.ports?.library || 3336)
+        return await createLocalTunnel(config.app.ports?.library || 3003)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.library}`
@@ -84,7 +84,7 @@ export async function localUrl({
       return url
     case 'email':
       if (network)
-        return await createLocalTunnel(config.app.ports?.email || 3338)
+        return await createLocalTunnel(config.app.ports?.email || 3005)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.email}`
@@ -97,7 +97,7 @@ export async function localUrl({
       return url
     case 'desktop':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3337)
+        return await createLocalTunnel(config.app.ports?.desktop || 3004)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.email}`
@@ -110,7 +110,7 @@ export async function localUrl({
       return url
     case 'docs':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3339)
+        return await createLocalTunnel(config.app.ports?.desktop || 3006)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.docs}`
@@ -123,7 +123,7 @@ export async function localUrl({
       return url
     case 'inspect':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3340)
+        return await createLocalTunnel(config.app.ports?.desktop || 3007)
 
       if (localhost)
         return `http://localhost:${config.app.ports?.inspect}`

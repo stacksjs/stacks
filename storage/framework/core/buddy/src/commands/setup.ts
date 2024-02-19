@@ -2,7 +2,7 @@ import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
 import { writeFile } from '@stacksjs/storage'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand, italic } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
@@ -42,7 +42,7 @@ export function setup(buddy: CLI) {
 
       const homePath = (await $`echo $HOME`.text()).trim()
       const zshrcPath = p.join(homePath, '.zshrc')
-      const pluginPath = p.frameworkPath('core/zsh-buddy/buddy.plugin.zsh')
+      const pluginPath = p.shellPath('src/buddy.plugin.zsh')
       const customPath = p.join(homePath, '.oh-my-zsh/custom/plugins/buddy/')
 
       log.info(`Setting up Oh My Zsh via ${zshrcPath}...`)
@@ -54,8 +54,8 @@ export function setup(buddy: CLI) {
       const match = data.match(pluginLineRegex)
 
       if (match) {
-        // 1. Find the plugins line
-        const plugins = match[1]?.split(' ')
+        // Split the captured group by any whitespace and filter out empty strings
+        const plugins = match[1]?.split(/\s+/).filter(Boolean)
         if (!plugins) {
           log.error('Maybe the plugins line in your .zshrc file could not be found? If this continues being an issue, please reach out to us on Discord.')
           process.exit(ExitCode.FatalError)
@@ -64,10 +64,12 @@ export function setup(buddy: CLI) {
         // 2. Add buddy to the list of plugins if it's not already there
         if (!plugins.includes('buddy')) {
           plugins.push('buddy')
-          const newPluginLine = `plugins=(${plugins.join(' ')})`
-          // 3. Replace the old plugin line with the new one
+          // Trim each plugin name and ensure it's formatted correctly
+          const formattedPlugins = plugins.map(plugin => plugin.trim()).join('\n    ')
+          const newPluginLine = `plugins=(\n    ${formattedPlugins}\n)`
+          // Replace the old plugin line with the new one
           data = data.replace(pluginLineRegex, newPluginLine)
-          // 4. Write the data back to the file
+          // Write the data back to the file
           await writeFile(zshrcPath, data)
 
           // need to copy plugin to ~/.oh-my-zsh/custom/plugins
@@ -76,20 +78,20 @@ export function setup(buddy: CLI) {
           // create customPath if it doesn't exist
           await runCommand(`mkdir -p ${customPath}`)
           await runCommand(`cp -rf ${pluginPath} ${customPath}`)
-          // await runCommand(`source ${customPath}/buddy.plugin.zsh`)
+          // await runCommand(`source ${customPath}/src/buddy.plugin.zsh`)
 
           log.success('Copied buddy zsh plugin')
         }
         else {
-          log.info('Buddy is already integrated in your shell, ensuring it is updated...')
+          log.info('Buddy is already set up') // in other words, it is integrated in their shell
+          log.info('Ensuring `buddy` is updated...')
           await runCommand(`cp -rf ${pluginPath} ${customPath}`)
-          // await runCommand(`source ${customPath}/buddy.plugin.zsh`)
           log.success('Updated buddy zsh plugin to latest version')
         }
       }
 
       log.success('Oh My Zsh Setup Complete')
-      log.info('To see changes reflect, you may need to open a new terminal window')
+      log.info(italic('To see changes reflect, you may need to open a new terminal window'))
       // if using the vscode terminal, show the message
       if (process.env.TERM_PROGRAM === 'vscode')
         log.info('⌘⇧P terminal.create.new.terminal')

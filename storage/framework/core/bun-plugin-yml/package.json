@@ -1,22 +1,22 @@
 {
-  "name": "bun-plugin-yaml",
+  "name": "bun-plugin-yml",
   "type": "module",
   "version": "0.58.72",
-  "description": "A Bun plugin to load yaml files",
+  "description": "A Bun plugin to load yaml/yml files",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/bun-plugin-yaml#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/bun-plugin-yml#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/bun-plugin-yaml"
+    "directory": "./storage/framework/core/bun-plugin-yml"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "bun-plugin-yaml",
+    "bun-plugin-yml",
     "stacks"
   ],
   "exports": {

@@ -1,25 +1,27 @@
-# zsh-buddy
-
-This package contains the zsh-buddy plugin.
+# Bun Plugin - YAML
 
 ## ☘️ Features
 
-- It will find and execute `buddy` from anywhere within the project file tree _(and you don't need to prefix it with php or ./)_
-- It provides auto-completion for `buddy` commands _(that also work anywhere within the project)_
-- You can specify an editor to automatically open new files created by `buddy make:*` commands
+- wip
 
 ## 🤖 Usage
 
-```
-buddy setup:oh-my-zsh
+```bash
+bun install -d bun-plugin-yml
 ```
 
-To view the full documentation, please visit [https://stacksjs.org/ui](https://stacksjs.org/zsh).
+You may now use it in your project:
+
+```ts
+import data from 'bun-plugin-yml'
+
+console.log(data)
+```
 
 ## 🧪 Testing
 
 ```bash
-# wip
+bun test
 ```
 
 ## 📈 Changelog
@@ -42,9 +44,8 @@ For casual chit-chat with others using this package:
 
 ## 🙏🏼 Credits
 
-Many thanks to the following core technologies & people who have contributed to this plugin:
+Many thanks to the following core technologies & people who have contributed to this package:
 
-- [Jess Archer](https://github.com/jessarcher/zsh-artisan/blob/master/artisan.plugin.zsh)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

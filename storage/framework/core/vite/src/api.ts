@@ -9,7 +9,7 @@ export default defineConfig({
   envDir: p.projectPath(),
 
   server: {
-    port: 3334,
+    port: 3001,
     proxy: {
       '/': 'http://127.0.0.1:3999',
     },

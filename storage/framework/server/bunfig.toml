@@ -1,3 +1,5 @@
+preload = [ "../core/bun-plugin-yml/src/index.ts" ]
+
 [install]
 # set default registry as a string
 registry = { url = "https://registry.npmjs.org" }
@@ -47,4 +49,3 @@ savePath = "bun.lockb"
 
 # whether to save the lockfile to disk
 save = true
-preload = [ "../core/bun-plugin-yaml/src/index.ts" ]

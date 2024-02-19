@@ -26,14 +26,14 @@ export default {
   cipher: 'aes-256-cbc',
 
   ports: {
-    frontend: env.APP_PORT || 3333,
-    backend: env.APP_PORT + 1 || 3334,
-    admin: env.APP_PORT + 2 || 3335,
-    library: env.APP_PORT + 3 || 3336,
-    desktop: env.APP_PORT + 4 || 3337,
-    email: env.APP_PORT + 5 || 3338,
-    docs: env.APP_PORT + 6 || 3339,
-    inspect: env.APP_PORT + 7 || 3340,
-    api: 3999,
+    frontend: env.APP_PORT ?? 3000,
+    backend: env.PORT_BACKEND ?? 3001,
+    admin: env.PORT_ADMIN ?? 3002,
+    library: env.PORT_LIBRARY ?? 3003,
+    desktop: env.PORT_DESKTOP ?? 3004,
+    email: env.PORT_EMAIL ?? 3005,
+    docs: env.PORT_DOCS ?? 3006,
+    inspect: env.PORT_INSPECT ?? 3007,
+    api: env.PORT_API ?? 3008,
   },
 } satisfies AppConfig

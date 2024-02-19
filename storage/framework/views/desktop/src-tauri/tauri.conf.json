@@ -2,7 +2,7 @@
   "build": {
     "beforeBuildCommand": "bun build:app",
     "beforeDevCommand": "bun dev",
-    "devPath": "http://127.0.0.1:3333/",
+    "devPath": "http://127.0.0.1:3000/",
     "distDir": "../../../dashboard/dist"
   },
   "package": {

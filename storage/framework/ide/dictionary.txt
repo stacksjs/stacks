@@ -196,6 +196,7 @@ nprogress
 nuxt
 oclif
 ofetch
+ohmyzsh
 openai
 opensearch
 opensearchservice

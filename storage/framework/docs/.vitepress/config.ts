@@ -42,7 +42,7 @@ export default withPwa(defineConfig({
     //       // const _print = server.printUrls
     //       server.printUrls = () => { // eslint-disable-next-line no-console
     //         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
-    //         // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('http://stacks.localhost:3333/docs')}`)
+    //         // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('http://stacks.localhost:3000/docs')}`)
     //         // eslint-disable-next-line no-console
     //         console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('https://stacks.localhost/docs')}`)
     //       }

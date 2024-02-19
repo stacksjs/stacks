@@ -1,3 +1,6 @@
+# preload these modules before running bun
+preload = [ "./storage/framework/core/bun-plugin-yml/src/index.ts" ]
+
 [install]
 # To configure Bun's package auto-install behavior.
 # Default "auto" — when no node_modules folder is found, Bun
@@ -34,6 +37,17 @@ dryRun = false
 # equivalent to `--concurrent-scripts` flag
 # concurrentScripts = 16 # (cpu count or GOMAXPROCS) x2
 
+# [install.scopes]
+# registry as string
+# myorg = "https://username:password@registry.myorg.com/"
+
+# registry with username/password
+# you can reference environment variables
+# myorg = { username = "myusername", password = "$npm_password", url = "https://registry.myorg.com/" }
+
+# registry with token
+# myorg = { token = "$npm_token", url = "https://registry.myorg.com/" }
+
 [install.cache]
 # the directory to use for the cache
 dir = "~/.stacks/install/cache"
@@ -47,12 +61,5 @@ disableManifest = false
 
 [install.lockfile]
 
-# path to read bun.lockb from
-path = "bun.lockb"
-
-# path to save bun.lockb to
-savePath = "bun.lockb"
-
 # whether to save the lockfile to disk
 save = true
-preload = [ "./storage/framework/core/bun-plugin-yaml/src/index.ts" ]

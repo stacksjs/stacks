@@ -9,42 +9,42 @@ export function config(options: ServerOptions) {
   const serversMap = {
     'frontend': {
       host: 'localhost',
-      port: 3333,
+      port: 3000,
     },
 
     'api': {
       host: 'localhost',
-      port: 3334,
+      port: 3001,
     },
 
     'dashboard': {
       host: 'localhost',
-      port: 3335,
+      port: 3002,
     },
 
     'library': { // component library
       host: 'localhost',
-      port: 3336,
+      port: 3003,
     },
 
     'desktop': {
       host: 'localhost',
-      port: 3337,
+      port: 3004,
     },
 
     'docs': {
       host: 'localhost',
-      port: 3338,
+      port: 3005,
     },
 
     'example': {
       host: 'localhost',
-      port: 3339,
+      port: 3006,
     },
 
     'system-tray': {
       host: 'localhost',
-      port: 3340,
+      port: 3007,
     },
   }
 
@@ -58,7 +58,7 @@ export function config(options: ServerOptions) {
 
   return {
     host: options.host || 'stacks.localhost',
-    port: options.port || 3333,
+    port: options.port || 3000,
     open: options.open || false,
   }
 }

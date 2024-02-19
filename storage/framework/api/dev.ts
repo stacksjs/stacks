@@ -20,8 +20,8 @@ globalThis.counter++
 async function watchFolders() {
   const coreDirectories = await readdir(path.corePath(), { withFileTypes: true })
   coreDirectories.forEach((dir) => {
-    // Skip the directory named 'bun-create' or 'zsh-buddy' -> no need to build them
-    if (dir.name === 'bun-create' || dir.name === 'zsh-buddy')
+    // Skip the directory named 'bun-create' -> no need to build
+    if (dir.name === 'bun-create')
       return
 
     if (dir.isDirectory()) {
