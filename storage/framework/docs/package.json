@@ -16,6 +16,6 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.43"
+    "vitepress": "1.0.0-rc.44"
   }
 }
