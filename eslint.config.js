@@ -6,9 +6,6 @@ export default stacks({
     quotes: 'single', // or 'double'
   },
 
-  stacks: true,
-  typescript: true,
-
   // Enable jsonc, yaml, toml support
   jsonc: true,
   yaml: false,

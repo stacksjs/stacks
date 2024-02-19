@@ -113,6 +113,7 @@
     "storage/framework/core/*",
     "storage/framework/core/bun-create/*",
     "storage/framework/docs",
+    "storage/framework/email",
     "storage/framework/libs/*",
     "storage/framework/views/*"
   ]

@@ -259,6 +259,7 @@ export function langPath(path?: string) {
 
 export function layoutsPath(path?: string, options?: { relative?: boolean }) {
   const absolutePath = resourcesPath(`layouts/${path || ''}`)
+
   if (options?.relative)
     return relative(process.cwd(), absolutePath)
 
@@ -379,7 +380,12 @@ export function realtimePath(path?: string) {
   return corePath(`realtime/${path || ''}`)
 }
 
-export function resourcesPath(path?: string) {
+export function resourcesPath(path?: string, options?: { relative?: boolean }) {
+  const absolutePath = projectStoragePath(`resources/${path || ''}`)
+
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
+
   return projectPath(`resources/${path || ''}`)
 }
 

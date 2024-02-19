@@ -1,6 +1,7 @@
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { routes } from 'vue-router/auto/routes'
+import { resourcesPath } from '@stacksjs/path'
 import App from './App.stx'
 import type { UserModule } from './types'
 import '@unocss/reset/tailwind.css'
@@ -19,8 +20,9 @@ export const createApp = ViteSSG(
   },
   (ctx) => {
     // install all modules under `modules/`
-    Object.values(import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts', { eager: true }))
+    Object.values(import.meta.glob<{ install: UserModule }>(resourcesPath('modules/*.ts', { relative: true }), { eager: true }))
       .forEach(i => i.install?.(ctx))
+
     // ctx.app.use(Previewer)
   },
 )

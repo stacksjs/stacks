@@ -11,9 +11,9 @@ export class Email {
   }
 
   public async send() {
-    try {
-      log.info('Sending email...')
+    log.info('Sending email...')
 
+    try {
       const template = await useCompiler(this.message.template)
       const params: SendEmailParams = {
         Source: this.message.from?.address || '',
@@ -39,7 +39,10 @@ export class Email {
 
       await this.client.sendEmail(params)
 
-      const returnMsg = await this.message.handle()
+      let returnMsg: { message: string } = { message: 'Email sent' }
+
+      if (this.message.handle)
+        returnMsg = await this.message.handle()
 
       await this.onSuccess()
 
@@ -52,15 +55,22 @@ export class Email {
 
   public async onError(error: Error) {
     log.error(error)
+
+    if (!this.message.onError)
+      return
+
     return await this.message.onError(error)
   }
 
   public onSuccess() {
     try {
+      if (!this.message.onSuccess)
+        return
+
       this.message.onSuccess()
     }
     catch (error) {
-      return this.onError(error)
+      return this.onError(error as Error)
     }
   }
 }
