@@ -3,7 +3,7 @@ import { config } from '@vue-email/compiler'
 import { path } from '@stacksjs/path'
 import type { I18n } from 'vue-email'
 
-interface RenderOptions {
+export interface RenderOptions {
   props?: Record<string, unknown>
   i18n?: I18n
 }
@@ -15,4 +15,4 @@ const email = config(path.resourcesPath('emails'), {
   // },
 })
 
-export const template = async (path: string, options: RenderOptions) => await email.render(path, options)
+export const template = async (path: string, options?: RenderOptions) => await email.render(path, options)

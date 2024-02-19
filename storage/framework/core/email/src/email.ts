@@ -1,5 +1,6 @@
-import { useCompiler } from 'vue-email'
 import { SES } from '@aws-sdk/client-ses'
+import type { RenderOptions } from './template'
+import { template } from './template'
 import type { Message, SendEmailParams } from './types'
 
 export class Email {
@@ -10,11 +11,13 @@ export class Email {
     this.message = message
   }
 
-  public async send() {
+  public async send(options?: RenderOptions) {
     log.info('Sending email...')
+    const path = this.message.template
 
     try {
-      const template = await useCompiler(this.message.template)
+      const templ = await template(path, options)
+
       const params: SendEmailParams = {
         Source: this.message.from?.address || '',
 
@@ -26,7 +29,7 @@ export class Email {
           Body: {
             Html: {
               Charset: 'UTF-8',
-              Data: template,
+              Data: templ.html,
             },
           },
 
