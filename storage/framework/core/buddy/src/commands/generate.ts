@@ -1,6 +1,7 @@
 import process from 'node:process'
 import {
   generateComponentMeta,
+  generateCoreSymlink,
   generateIdeHelpers,
   generateLibEntries,
   generateMigrations,
@@ -139,6 +140,13 @@ export function generate(buddy: CLI) {
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:migrations` ...', options)
       generateMigrations()
+    })
+
+  buddy
+    .command('generate:core-symlink', 'Generate core symlink. A shortcut for core developers.')
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy core-symlink` ...', options)
+      await generateCoreSymlink()
     })
 
   buddy.on('generate:*', () => {

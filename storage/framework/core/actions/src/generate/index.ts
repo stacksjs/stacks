@@ -2,6 +2,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { Action, NpmScript } from '@stacksjs/enums'
 import type { GeneratorOptions } from '@stacksjs/types'
+import { runCommand } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
@@ -136,5 +137,5 @@ export async function generateSeeder() {
 
 export async function generateCoreSymlink() {
   // symlink path.frameworkPath() to path.projectPath('.stacks')
-  await runCommand(`ln -s ${path.frameworkPath()} ${path.projectPath('.stacks')}`)
+  await runCommand(`ln -s ${frameworkPath()} ${projectPath('.stacks')}`)
 }
