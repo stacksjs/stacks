@@ -19,12 +19,15 @@ export function create(buddy: CLI) {
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
+    cache: 'Do you need caching?',
+    email: 'Do you need email?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('new <name>', descriptions.command)
+    .alias('create <name>')
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
     .option('-w, --web-components', descriptions.webComponents, { default: true })
@@ -33,6 +36,8 @@ export function create(buddy: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })
+    .option('-ca, --cache', descriptions.cache, { default: false })
+    .option('-e, --email', descriptions.email, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
