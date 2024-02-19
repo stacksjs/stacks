@@ -136,6 +136,5 @@ export async function generateSeeder() {
 }
 
 export async function generateCoreSymlink() {
-  // symlink path.frameworkPath() to path.projectPath('.stacks')
   await runCommand(`ln -s ${frameworkPath()} ${projectPath('.stacks')}`)
 }

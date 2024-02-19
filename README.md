@@ -319,27 +319,6 @@ Develop beautiful, reactive, composable UIs without learning a new set of langua
 
 > _An actual rapid application development framework for all Full Stack needs. Next-level simplicity & DX._
 
-## Roadmap
-
-Part of the Stacks ecosystem are the following first-party supported stacks:
-
-- [Table](https://github.com/stacksjs/stacks/tree/main/storage/framework/core/stacks/tables) (Data tables with ease)
-- [Calendar](https://github.com/stacksjs/calendar) (Add to Calendar utilities—iCal, Google, and more)
-- [Command Palette](https://github.com/stacksjs/command-palette) (`⌘ + k` for the web)
-- [Date Picker](https://github.com/stacksjs/date-picker) (Beautiful, modern date picker)
-- [File Manager](https://github.com/stacksjs/file-manager) (Build your own file manager—like Dropbox or Google Drive)
-- [Image](https://github.com/stacksjs/image) (Modern image experience)
-- [Video](https://github.com/stacksjs/video) (Modern video experience)
-- [Audio](https://github.com/stacksjs/audio) (Modern audio experience)
-- [Identity](https://github.com/stacksjs/identity) (Identity providers)
-- [Digital Ownership](https://github.com/stacksjs/ownership) (Public ownership protocol integrations)
-- [Payments](https://github.com/stacksjs/payments) (Unified payment & wallet APIs)
-- [Governance](https://github.com/stacksjs/governance) (Powerful toolkit for democratic governance)
-
-View our detailed roadmap/s [here](https://github.com/stacksjs/stacks/projects?query=is%3Aopen), for more information. Additionally, you may find interesting stacks, information & examples over at [Awesome Stacks](https://github.com/stacksjs/awesome-stacks).
-
-While we currently only fully support `us-east-1`, we are looking forward to expanding to other regions soon.
-
 ## Testing
 
 ```bash
