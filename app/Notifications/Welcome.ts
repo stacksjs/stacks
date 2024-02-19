@@ -3,11 +3,11 @@ import { Email } from '@stacksjs/email'
 import { config } from '@stacksjs/config'
 
 export default new Email({ // or Sms or Push or Webhook or Chat
-  name: 'welcome',
-  subject: 'Welcome to Stacks',
-  to: 'some@email.com',
-  from: config.email.from,
-  template: 'Welcome',
+  name: 'welcome', // optional, defaults to the file name
+  subject: 'Welcome to Stacks', // optional, but recommended
+  to: 'some@email.com', // required
+  from: config.email.from, // optional, defaults to the config value
+  template: 'Welcome', // resources/emails/Welcome.stx
 
   handle: async () => {
     // if needed, trigger some custom logic here

@@ -3,6 +3,7 @@ import path from 'node:path'
 import os from 'node:os'
 import type { Dirent } from 'node:fs'
 import { log } from '@stacksjs/logging'
+import { italic } from '@stacksjs/cli'
 
 const startDirectory = os.homedir()
 const targetFileName = 'buddy' // The exact name of the target file
@@ -19,8 +20,13 @@ const excludePatterns = [
 ]
 
 async function findStacksProjects(dir: string): Promise<string[]> {
-  log.info(`This may take a few moments, searching for Stacks projects in: ${dir}`)
-  log.info('Please note, while Stacks is searching for projects on your machine, you may be asked for your permissions to search through certain directories.')
+  log.info(`This may take a few moments, searching for Stacks projects in: ${italic(dir)}`)
+  // eslint-disable-next-line no-console
+  console.log(italic('  Please note, while Stacks is searching for projects on your machine, you may'))
+  // eslint-disable-next-line no-console
+  console.log(italic('  be asked for your permissions to search through certain directories.'))
+  // eslint-disable-next-line no-console
+  console.log('')
   log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
 
   const foundProjects: string[] = []
@@ -79,7 +85,7 @@ async function findStacksProjects(dir: string): Promise<string[]> {
 findStacksProjects(startDirectory)
   .then((projects) => {
     if (projects.length > 0) {
-      log.info('Found Stacks Projects:')
+      log.info('Found Projects:')
       // eslint-disable-next-line no-console
       projects.forEach(project => console.log(`   - ${project}`))
     }
