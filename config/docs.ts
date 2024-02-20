@@ -118,6 +118,7 @@ const sidebar = {
             { text: 'Manage a Team', link: '/bootcamp/how-to/manage-team' },
             { text: 'Publish Components & Functions', link: '/bootcamp/how-to/publish' },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
+            { text: 'Review bun.lockb Diff', link: '/bootcamp/how-to/bun-lockb' },
           ],
         },
         {
