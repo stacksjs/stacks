@@ -1,65 +1,43 @@
-// checks for all of the Stacks projects on the system
-// and generates one caddyfile for it all
-
-// stacksjs.localhost {
-//  route {
-//    @libs {
-//      path /libs/*
-//    }
-
-//    handle @libs {
-//      reverse_proxy localhost:3003
-//    }
-
-//    @api {
-//      path /api/*
-//    }
-
-//    handle @api {
-//      reverse_proxy localhost:3999
-//    }
-
-//    handle {
-//      reverse_proxy localhost:3000
-//    }
-//  }
-// }
-
-import { readdir } from 'node:fs/promises'
-import { path as p } from '@stacksjs/path'
+import os from 'node:os'
 import { logger } from '@stacksjs/logging'
-import { storage } from '@stacksjs/storage'
-import { findProjects } from '@stacksjs/buddy'
+import { findStacksProjects } from '@stacksjs/utils'
 
 logger.log('Generating Local Reverse Proxy...')
 
-const projects = await findProjects()
+const options = { quiet: true }
+const projects = await findStacksProjects(os.homedir(), options)
 
-const caddyfile = `stacksjs.localhost {
-	route {
-    @
+// TODO: need to generate one caddyfile that can be used for all projects on the system (each projects gets its own *.localhost domain)
+// TODO: need to create a watcher
+// TODO: need to create an action that can be run to add a new project
+// TODO: need to an action that checks whether there are an env port clashes aross projects
 
-		@libs {
-			path /libs/*
-		}
+console.log(projects)
 
-		handle @libs {
-			reverse_proxy localhost:3003
-		}
+// const caddyfile = `stacksjs.localhost {
+// 	route {
+//     @
 
-		@api {
-			path /api/*
-		}
+// 		@libs {
+// 			path /libs/*
+// 		}
 
-		handle @api {
-			reverse_proxy localhost:3999
-		}
+// 		handle @libs {
+// 			reverse_proxy localhost:3003
+// 		}
 
+// 		@api {
+// 			path /api/*
+// 		}
 
-		handle {
-			reverse_proxy localhost:3000
-		}
-	}
-}`
+// 		handle @api {
+// 			reverse_proxy localhost:3999
+// 		}
 
-await storage.writeFile(p.frameworkPath('types/actions.d.ts'), caddyfile)
+// 		handle {
+// 			reverse_proxy localhost:3000
+// 		}
+// 	}
+// }`
+
+// await storage.writeFile(p.frameworkPath('types/actions.d.ts'), caddyfile)

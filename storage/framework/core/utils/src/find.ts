@@ -18,17 +18,25 @@ const excludePatterns = [
   `${os.homedir()}/.Trash`,
 ]
 
-export async function findStacksProjects(dir: string): Promise<string[]> {
-  log.info(`This may take a few moments, searching for Stacks projects in: ${italic(dir)}`)
-  // eslint-disable-next-line no-console
-  console.log('')
-  // eslint-disable-next-line no-console
-  console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
-  // eslint-disable-next-line no-console
-  console.log(italic('  you may be asked for permissions to scan certain directories.'))
-  // eslint-disable-next-line no-console
-  console.log('')
-  log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
+interface FindStacksProjectsOptions {
+  quiet?: boolean
+}
+
+export async function findStacksProjects(dir?: string, options?: FindStacksProjectsOptions): Promise<string[]> {
+  dir = dir || os.homedir()
+
+  if (!options?.quiet) {
+    log.info(`This may take a few moments, searching for Stacks projects in: ${italic(dir)}`)
+    // eslint-disable-next-line no-console
+    console.log('')
+    // eslint-disable-next-line no-console
+    console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
+    // eslint-disable-next-line no-console
+    console.log(italic('  you may be asked for permissions to scan certain directories.'))
+    // eslint-disable-next-line no-console
+    console.log('')
+    log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
+  }
 
   const foundProjects: string[] = []
 

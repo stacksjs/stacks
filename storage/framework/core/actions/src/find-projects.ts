@@ -1,13 +1,9 @@
-import os from 'node:os'
 import process from 'node:process'
 import { findStacksProjects } from '@stacksjs/utils'
 import { log } from '@stacksjs/logging'
 
-const startDirectory = os.homedir()
-
 try {
-  // Usage example, assuming log is defined and works similarly to console
-  const projects = await findStacksProjects(startDirectory)
+  const projects = await findStacksProjects()
 
   if (projects.length > 0) {
     log.info('Found Projects:')
