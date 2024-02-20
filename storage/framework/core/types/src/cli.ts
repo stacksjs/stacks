@@ -305,6 +305,9 @@ export interface InstallOptions extends CliOptions { }
 export interface ReleaseOptions extends CliOptions {
   dryRun?: boolean
 }
+export interface ProjectsOptions extends CliOptions {
+  list?: boolean
+}
 export interface PreinstallOptions extends CliOptions { }
 export interface PrepublishOptions extends CliOptions { }
 export interface TinkerOptions extends CliOptions { }
