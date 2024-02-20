@@ -23,9 +23,9 @@ export async function findStacksProjects(dir: string): Promise<string[]> {
   // eslint-disable-next-line no-console
   console.log('')
   // eslint-disable-next-line no-console
-  console.log(italic('  Please note, while Stacks is searching for projects on your machine, you'))
+  console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
   // eslint-disable-next-line no-console
-  console.log(italic('  may be asked for your permissions to search through certain directories.'))
+  console.log(italic('  you may be asked for permissions to scan certain directories.'))
   // eslint-disable-next-line no-console
   console.log('')
   log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
