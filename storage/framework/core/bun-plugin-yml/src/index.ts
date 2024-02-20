@@ -11,7 +11,7 @@ await plugin({
       const text = await Bun.file(args.path).text()
       const exports = load(text) as Record<string, any>
 
-      // and returns it as a module
+      // and return it as a module
       return {
         exports,
         loader: 'object', // special loader for JS objects
