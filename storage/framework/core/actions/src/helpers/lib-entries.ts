@@ -30,7 +30,7 @@ export async function createLibraryEntryPoint(type: LibraryType) {
 }
 
 export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
-  log.info('Creating Vue Component Library Entry Point...')
+  log.info('Ensuring Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -44,7 +44,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
-  log.info('Creating Web Component Library Entry Point...')
+  log.info('Ensuring Web Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -58,7 +58,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
 }
 
 export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
-  log.info('Creating Function Library Entry Point...')
+  log.info('Ensuring Function Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),

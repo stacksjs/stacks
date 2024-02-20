@@ -4,7 +4,7 @@ import { writeTextFile } from '@stacksjs/storage'
 import { projectPath } from '@stacksjs/path'
 import { cli } from '@stacksjs/config'
 
-log.info('Creating Vue Component Library Entry Point...')
+log.info('Ensuring Component Library Entry Point...')
 
 if (!cli.command) {
   log.error('No command defined in the CLI configuration')
