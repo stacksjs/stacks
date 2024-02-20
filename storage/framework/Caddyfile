@@ -2,27 +2,30 @@
 // TODO: need to create a watcher
 // TODO: need to create an action that can be run to add a new project
 // TODO: need to an action that checks whether there are an env port clashes aross projects
-stacksjs.localhost {
-	route {
-		@libs {
-			path /libs/*
-		}
 
-		handle @libs {
-			reverse_proxy localhost:3003
-		}
+// stacksjs.localhost {
+// 	route {
+//     @
 
-		@api {
-			path /api/*
-		}
+// 		@libs {
+// 			path /libs/*
+// 		}
 
-		handle @api {
-			reverse_proxy localhost:3999
-		}
+// 		handle @libs {
+// 			reverse_proxy localhost:3003
+// 		}
+
+// 		@api {
+// 			path /api/*
+// 		}
+
+// 		handle @api {
+// 			reverse_proxy localhost:3999
+// 		}
 
 
-		handle {
-			reverse_proxy localhost:3000
-		}
-	}
-}
+// 		handle {
+// 			reverse_proxy localhost:3000
+// 		}
+// 	}
+// }
