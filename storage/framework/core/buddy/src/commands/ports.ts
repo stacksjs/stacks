@@ -1,10 +1,10 @@
 import process from 'node:process'
 import type { CLI, CheckOptions } from '@stacksjs/types'
+import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
-
-// import { intro, outro } from '@stacksjs/cli'
-// import { config } from '@stacksjs/config'
+import { intro, outro } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 
 export function ports(buddy: CLI) {
   const descriptions = {
@@ -19,16 +19,22 @@ export function ports(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CheckOptions) => {
-      log.debug('Running `buddy check [type]` ...', options)
+      log.info('Running `buddy ports` ...', options)
 
-      // const perf = await intro('buddy check [type]')
-      // const ports = config.ports
-      // await runAction(Action.Prepublish, options)
-      // await outro('Exited', { startTime: perf, useSeconds: true })
+      const perf = await intro('buddy ports')
+      const ports = config.ports
+      const result = await runAction(Action.CheckPorts, options)
+
+      if (result.isErr()) {
+        log.error(result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('check:*', () => {
+  buddy.on('ports:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })

@@ -41,6 +41,7 @@ async function main() {
   cmd.domains(buddy)
   cmd.deploy(buddy)
   cmd.dns(buddy)
+  cmd.ports(buddy)
   cmd.projects(buddy)
   cmd.fresh(buddy)
   cmd.generate(buddy)
