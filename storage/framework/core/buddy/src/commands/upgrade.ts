@@ -11,6 +11,8 @@ export function upgrade(buddy: CLI) {
     framework: 'Upgrade the Stacks framework',
     dependencies: 'Upgrade your dependencies (pkgx.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
+    shell: 'Upgrade the to the latest shell integration (currently only supports Oh My Zsh)',
+    binary: 'Upgrade the `stacks` binary to the latest version. Please note, the binary is moved to the `~/.stacks/bin` directory',
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',
@@ -20,12 +22,15 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade', descriptions.command)
-    .option('-c, --framework', descriptions.framework, { default: false })
     .option('-d, --dependencies', descriptions.dependencies, { default: false })
     .option('-b, --bun', descriptions.bun, { default: false })
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
+    .option('--framework', descriptions.framework, { default: false })
     .option('-p, --project', descriptions.project, { default: false })
+    .option('-s, --shell', descriptions.shell, { default: false })
+    .option('-b, --binary', descriptions.binary, { default: false })
+    // .option('--canary', descriptions.canary, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('update')
     .example('buddy upgrade -a --verbose')
@@ -40,8 +45,9 @@ export function upgrade(buddy: CLI) {
             options: [
               { value: 'dependencies', label: 'Dependencies' },
               { value: 'framework', label: 'Framework' },
-              { value: 'node', label: 'Node.js' },
-              { value: 'package-manager', label: 'Package Manager' },
+              { value: 'bun', label: 'Bun' },
+              { value: 'shell', label: 'Shell' },
+              { value: 'binary', label: 'Binary' },
             ],
           })
 
@@ -115,6 +121,47 @@ export function upgrade(buddy: CLI) {
       await runAction(Action.Upgrade, options)
     })
 
+  buddy
+    .command('upgrade:shell', descriptions.shell)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy upgrade:shell')
+    .action(async (options: UpgradeOptions) => {
+      log.debug('Running `buddy upgrade:shell` ...', options)
+
+      const perf = await intro('buddy upgrade:shell')
+      const result = await runAction(Action.UpgradeShell, options)
+
+      if (result.isErr()) {
+        await outro('While running the buddy upgrade:shell command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
+        process.exit()
+      }
+
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('upgrade:binary', descriptions.binary)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy upgrade:binary')
+    .action(async (options: UpgradeOptions) => {
+      if (process.getuid && process.getuid() !== 0) {
+        log.warn('To upgrade the binary, you need to run this command with sudo, or as root.')
+        process.exit(0) // Exit with an error code
+      }
+
+      log.debug('Running `buddy upgrade:binary` ...', options)
+
+      const perf = await intro('buddy upgrade:binary')
+      const result = await runAction(Action.UpgradeBinary, options)
+
+      if (result.isErr()) {
+        await outro('While running the buddy upgrade:binary command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
+        process.exit()
+      }
+
+      process.exit(ExitCode.Success)
+    })
+
   buddy.on('upgrade:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
@@ -122,5 +169,5 @@ export function upgrade(buddy: CLI) {
 }
 
 function hasNoOptions(options: UpgradeOptions) {
-  return !options.framework && !options.dependencies && !options.packageManager && !options.node && !options.all
+  return !options.framework && !options.dependencies && !options.bun && !options.shell && !options.binary && !options.all
 }

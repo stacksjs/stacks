@@ -1,31 +1,31 @@
 // TODO: need to generate one caddyfile that can be used for all projects on the system (each projects gets its own *.localhost domain)
 // TODO: need to create a watcher
 // TODO: need to create an action that can be run to add a new project
-// TODO: need to an action that checks whether there are an env port clashes aross projects
+// TODO: need to an action that checks whether there are an env port clashes across projects
 
-// stacksjs.localhost {
-// 	route {
-//     @
+stacksjs.localhost {
+	route {
+    @
 
-// 		@libs {
-// 			path /libs/*
-// 		}
+		@libs {
+			path /libs/*
+		}
 
-// 		handle @libs {
-// 			reverse_proxy localhost:3003
-// 		}
+		handle @libs {
+			reverse_proxy localhost:3003
+		}
 
-// 		@api {
-// 			path /api/*
-// 		}
+		@api {
+			path /api/*
+		}
 
-// 		handle @api {
-// 			reverse_proxy localhost:3999
-// 		}
+		handle @api {
+			reverse_proxy localhost:3999
+		}
 
 
-// 		handle {
-// 			reverse_proxy localhost:3000
-// 		}
-// 	}
-// }
+		handle {
+			reverse_proxy localhost:3000
+		}
+	}
+}

@@ -94,6 +94,8 @@ export enum Action {
   Tinker = 'tinker',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
+  UpgradeBinary = 'upgrade/binary', // the `stacks` binary
   UpgradeBun = 'upgrade/bun',
   UpgradeDeps = 'upgrade/dependencies',
+  UpgradeShell = 'upgrade/shell',
 }

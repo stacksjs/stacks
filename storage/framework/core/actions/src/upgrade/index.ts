@@ -16,6 +16,12 @@ if (options?.dependencies || options?.all)
 if (options?.bun || options?.all)
   await runAction(Action.UpgradeBun, options)
 
+if (options?.shell || options?.all)
+  await runAction(Action.UpgradeShell, options)
+
+if (options?.binary || options?.all)
+  await runAction(Action.UpgradeBinary, options)
+
 process.exit(ExitCode.InvalidArgument)
 
 // TODO: also update CI files & configurations, and other files, possibly (taze?)

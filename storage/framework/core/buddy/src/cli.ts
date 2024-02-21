@@ -40,7 +40,7 @@ async function main() {
   cmd.domains(buddy)
   cmd.deploy(buddy)
   cmd.dns(buddy)
-  cmd.findProjects(buddy)
+  cmd.projects(buddy)
   cmd.fresh(buddy)
   cmd.generate(buddy)
   cmd.http(buddy)
@@ -58,6 +58,16 @@ async function main() {
   // cmd.prepublish(buddy)
   cmd.upgrade(buddy)
 
+  // dynamic imports
+  await dynamicImports(buddy)
+
+  buddy.help()
+  buddy.parse()
+}
+
+await main()
+
+async function dynamicImports(buddy: CAC) {
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
   const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.ts'))
@@ -76,9 +86,4 @@ async function main() {
   const listenerImport = await import(p.listenersPath('Console.ts'))
   if (typeof listenerImport.default === 'function')
     listenerImport.default(buddy)
-
-  buddy.help()
-  buddy.parse()
 }
-
-await main()

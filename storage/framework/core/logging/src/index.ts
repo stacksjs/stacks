@@ -3,6 +3,7 @@ import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
 import { logger as logConfig } from '@stacksjs/config'
 import { logsPath } from '@stacksjs/path'
+import { handleError } from '@stacksjs/error-handling'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 

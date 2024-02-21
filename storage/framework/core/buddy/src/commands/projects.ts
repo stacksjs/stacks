@@ -5,7 +5,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 
-export function findProjects(buddy: CLI) {
+export function projects(buddy: CLI) {
   const descriptions = {
     projects: 'Find all Stacks projects on your system',
     verbose: 'Enable verbose output',

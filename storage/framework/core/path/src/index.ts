@@ -1,4 +1,5 @@
 import process from 'node:process'
+import os from 'node:os'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
@@ -502,6 +503,10 @@ export function xRayPath(path?: string) {
   return frameworkPath(`stacks/x-ray/${path || ''}`)
 }
 
+export function homeDir(path?: string) {
+  return os.homedir() + (path ? (path.startsWith('/') ? '' : '/') + path : '~')
+}
+
 export const path = {
   actionsPath,
   userActionsPath,
@@ -605,6 +610,7 @@ export const path = {
   validationPath,
   vitePath,
   xRayPath,
+  homeDir,
 
   // path utils
   basename,

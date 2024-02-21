@@ -8,7 +8,7 @@ preload = [ "./storage/framework/core/bun-plugin-yml/src/index.ts" ]
 auto = true
 
 # set default registry as a string
-registry = { url = "https://registry.npmjs.org" }
+registry = "https://registry.npmjs.org"
 
 # where `bun install --global` installs packages
 globalDir = "~/.stacks/bun/install/global"
