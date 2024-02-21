@@ -1,7 +1,7 @@
 {
   "name": "bun-plugin-yml",
   "type": "module",
-  "version": "0.58.72",
+  "version": "0.58.73",
   "description": "A Bun plugin to load yaml/yml files",
   "author": "Chris Breuer",
   "license": "MIT",
