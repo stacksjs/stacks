@@ -1,10 +1,8 @@
 import process from 'node:process'
 import type { CLI, CheckOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
-import { intro, outro } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
+import { $ } from 'bun'
 
 export function ports(buddy: CLI) {
   const descriptions = {
@@ -17,20 +15,38 @@ export function ports(buddy: CLI) {
   buddy
     .command('ports', descriptions.command)
     .option('-p, --project', descriptions.project, { default: false })
+    .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CheckOptions) => {
-      log.info('Running `buddy ports` ...', options)
+      log.debug('Running `buddy ports` ...', options)
 
-      const perf = await intro('buddy ports')
-      const ports = config.ports
-      const result = await runAction(Action.CheckPorts, options)
+      await $`./buddy projects:list --quiet`
 
-      if (result.isErr()) {
-        log.error(result.error)
-        process.exit(ExitCode.FatalError)
-      }
+      // if (options.project) {
+      //   log.info(`Checking ports for project ${options.project}`)
+      //
+      //   $.cwd(options.project)
+      //   const res = (await $`./buddy ports --quiet`.text()).trim()
+      //   console.log('res', res)
+      //
+      //   process.exit(0)
+      // }
 
-      await outro('Exited', { startTime: perf, useSeconds: true })
+      // const perf = await intro('buddy ports')
+      // const ports = config.ports
+      // console.log('ports', ports)
+      // const result = await runAction(Action.CheckPorts, options)
+      //
+      // if (result.isErr()) {
+      //   log.error(result.error)
+      //   process.exit(ExitCode.FatalError)
+      // }
+
+      // const otherPorts = result.value
+
+      // console.log('result', result.value)
+      //
+      // await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

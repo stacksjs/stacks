@@ -13,6 +13,7 @@ export function projects(buddy: CLI) {
 
   buddy
     .command('projects', descriptions.projects)
+    .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('-l, --list', 'List all local Stacks projects', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ProjectsOptions) => {
@@ -31,6 +32,7 @@ export function projects(buddy: CLI) {
 
   buddy
     .command('projects:list', descriptions.projects)
+    .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('-l, --list', 'List all local Stacks projects', { default: true })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ProjectsOptions) => {

@@ -123,6 +123,16 @@ export interface CliOptions {
   silent?: boolean
 
   /**
+   * **Quiet Mode**
+   *
+   * When you are using "quiet"-mode, the CLI will output minimally
+   * to the console.
+   *
+   * @default false
+   */
+  quiet?: boolean
+
+  /**
    * **Current Work Directory**
    *
    * Based on the `cwd` value, that's where the command...
@@ -164,7 +174,7 @@ export interface CliOptions {
 
   input?: string | ArrayBufferView | ReadableStream | Blob | Response | Request
 
-  quiet?: boolean
+  project?: string // TODO: can create an action that automates creating a type for this
 }
 
 export type CliConfig = CliOptions

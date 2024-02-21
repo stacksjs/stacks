@@ -1,9 +1,11 @@
 import process from 'node:process'
 import { findStacksProjects } from '@stacksjs/utils'
 import { log } from '@stacksjs/logging'
+import { parseOptions } from 'stacks/cli'
 
 try {
-  const projects = await findStacksProjects()
+  const options = parseOptions()
+  const projects = await findStacksProjects(undefined, options)
 
   if (projects.length > 0) {
     log.info('Found Projects:')
