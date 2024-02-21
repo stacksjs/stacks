@@ -38,11 +38,10 @@ export function projects(buddy: CLI) {
     .action(async (options: ProjectsOptions) => {
       log.debug('Running `buddy projects` ...', options)
 
-      await intro('buddy projects:list')
-
       if (!options.quiet)
-        await intro('buddy projects')
+        await intro('buddy projects:list')
 
+      // uses os.homedir() as the default path
       const projects = await findStacksProjects(undefined, options)
 
       for (const project of projects)

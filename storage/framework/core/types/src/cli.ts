@@ -322,7 +322,7 @@ export interface ProjectsOptions extends CliOptions {
 }
 export interface PreinstallOptions extends CliOptions { }
 export interface PrepublishOptions extends CliOptions { }
-export interface CheckOptions extends CliOptions {
+export interface PortsOptions extends CliOptions {
   ports?: Partial<Ports>
 }
 export interface TinkerOptions extends CliOptions { }

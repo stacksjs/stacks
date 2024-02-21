@@ -1,20 +1,23 @@
 import process from 'node:process'
-import { runCommand } from '@stacksjs/cli'
+import { $ } from 'bun'
 import { findStacksProjects } from '@stacksjs/utils'
+import { log } from '@stacksjs/logging'
 
 const projects = await findStacksProjects(undefined, { quiet: true })
 
-// eslint-disable-next-line no-console
-console.log('projects', projects)
+log.debug('Running `buddy ports`')
+log.debug(`Found ${projects.length} projects`)
+log.debug('Projects:', projects)
 
 // need to loop over the projects and then trigger `buddy ports` for each project (which returns a list of ports)
 for (const project of projects) {
-  // eslint-disable-next-line no-console
-  console.log('project', project)
+  log.debug('Running `buddy ports`')
+  log.debug('Project:', project)
+
   // this right now causes a loop of the same project
-  const ports = await runCommand(`buddy ports --project ${project}`)
-  // eslint-disable-next-line no-console
-  console.log('proj', project)
+  $.cwd(project)
+  const ports = await $`./buddy ports --project ${project} --quiet`.text()
+
   // eslint-disable-next-line no-console
   console.log('ports', ports)
 }

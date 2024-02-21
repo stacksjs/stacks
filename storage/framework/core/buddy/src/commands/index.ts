@@ -1,6 +1,5 @@
 export * from './build'
 export * from './changelog'
-export * from './check'
 export * from './clean'
 export * from './cloud'
 export * from './commit'

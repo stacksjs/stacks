@@ -1,31 +1,22 @@
-# Stacks Path
-
-Easily work with file paths.
+# Bun Plugin - .env
 
 ## ☘️ Features
 
-- Ensures paths are normalized across all Operating Systems
-- Easily access the path's basename, dirname, extension, filename, and more
-- Drop-in Node.js module replacement
-- Written in modern ESM/TypeScript
+- wip
 
 ## 🤖 Usage
 
 ```bash
-bun install -d @stacksjs/path
-# if stacks is installed, you can also use:
-# import path from 'stacks/path'
+bun install -d bun-plugin-env
 ```
 
-Now, you can easily access it in your project:
+You may now use it in your project:
 
-```js
-import { filename, normalizeAliases, resolve, resolveAlias } from '@stacksjs/path'
+```ts
+import env from './.env'
 
-// and more...
+console.log(env)
 ```
-
-To view the full documentation, please visit [https://stacksjs.org/path](https://stacksjs.org/path).
 
 ## 🧪 Testing
 
@@ -55,7 +46,6 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [pathe](https://github.com/unjs/pathe)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

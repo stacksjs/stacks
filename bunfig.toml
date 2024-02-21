@@ -1,5 +1,8 @@
 # preload these modules before running bun
-preload = [ "./storage/framework/core/bun-plugin-yml/src/index.ts" ]
+preload = [
+  "./storage/framework/core/bun-plugin-env/src/index.ts",
+  "./storage/framework/core/bun-plugin-yml/src/index.ts"
+]
 
 [install]
 # To configure Bun's package auto-install behavior.

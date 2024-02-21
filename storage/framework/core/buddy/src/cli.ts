@@ -32,7 +32,6 @@ async function main() {
 
   cmd.build(buddy)
   cmd.changelog(buddy)
-  cmd.check(buddy)
   cmd.clean(buddy)
   cmd.cloud(buddy)
   // cmd.commit(buddy)

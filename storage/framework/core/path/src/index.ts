@@ -1,5 +1,7 @@
 import process from 'node:process'
 import os from 'node:os'
+import { $ } from 'bun'
+import { log } from '@stacksjs/logging'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
@@ -353,6 +355,24 @@ export function projectPath(filePath = '') {
   return resolve(path, filePath)
 }
 
+export async function findProjectPath(project: string) {
+  // first, find all projects and then find the one that matches the project name
+  const projectList = await $`./buddy projects:list --quiet`.text()
+  log.debug('ProjectList in findProjectPath', projectList)
+
+  // get the list of all Stacks project paths (on the system)
+  const projects = projectList.split('\n').filter((line: string) => line.startsWith('   - ')).map((line: string) => line.trim().substring(4))
+  log.debug('Projects in findProjectPath:', projects)
+
+  // since we are targeting a specific project, find its path
+  const projectPath = projects.find((proj: string) => proj.includes(project))
+
+  if (!projectPath)
+    throw new Error(`Could not find project with name: ${project}`)
+
+  return projectPath.startsWith('/') ? projectPath : `/${projectPath}`
+}
+
 export function projectConfigPath(path?: string) {
   return projectPath(`config/${path || ''}`)
 }
@@ -570,6 +590,7 @@ export const path = {
   pathPath,
   paymentsPath,
   projectPath,
+  findProjectPath,
   projectStoragePath,
   publicPath,
   pushPath,

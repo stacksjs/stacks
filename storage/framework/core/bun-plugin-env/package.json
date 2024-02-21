@@ -1,33 +1,35 @@
 {
-  "name": "@stacksjs/path",
+  "name": "bun-plugin-env",
   "type": "module",
   "version": "0.58.73",
-  "description": "The Stacks path.",
+  "description": "A Bun plugin to load .env files.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/path#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/bun-plugin-env#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/path"
+    "directory": "./storage/framework/core/bun-plugin-env"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "path",
-    "pathe",
-    "paths",
-    "utilities",
-    "functions",
-    "bun",
+    "env",
+    "dotenv",
+    "bun-plugin-env",
+    "bun-plugin",
     "stacks"
   ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
@@ -45,10 +47,13 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
+  "peerDependencies": {
+    "@stacksjs/types": "workspace:*",
+    "dotenv": "^16.4.5"
+  },
   "dependencies": {
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "pathe": "^1.1.2"
+    "@stacksjs/types": "workspace:*",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
