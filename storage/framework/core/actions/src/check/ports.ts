@@ -1,6 +1,6 @@
+import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { findStacksProjects } from '@stacksjs/utils'
-import process from 'node:process'
 
 const projects = await findStacksProjects(undefined, { quiet: true })
 
