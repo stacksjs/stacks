@@ -1,9 +1,8 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ProjectsOptions } from '@stacksjs/types'
-import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
+import { intro, log } from '@stacksjs/cli'
+import { findStacksProjects } from 'stacks/utils'
 
 export function projects(buddy: CLI) {
   const descriptions = {
@@ -19,13 +18,14 @@ export function projects(buddy: CLI) {
     .action(async (options: ProjectsOptions) => {
       log.debug('Running `buddy projects` ...', options)
 
-      const perf = await intro('buddy projects')
-      const result = await runAction(Action.FindProjects, options)
+      if (!options.quiet)
+        await intro('buddy projects')
 
-      if (result.isErr()) {
-        await outro('While running the projects command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
-        process.exit(ExitCode.FatalError)
-      }
+      const projects = await findStacksProjects(undefined, options)
+
+      for (const project of projects)
+        // eslint-disable-next-line no-console
+        console.log('   - ', project)
 
       process.exit(ExitCode.Success)
     })
@@ -38,13 +38,16 @@ export function projects(buddy: CLI) {
     .action(async (options: ProjectsOptions) => {
       log.debug('Running `buddy projects` ...', options)
 
-      const perf = await intro('buddy projects:list')
-      const result = await runAction(Action.FindProjects, options)
+      await intro('buddy projects:list')
 
-      if (result.isErr()) {
-        await outro('While running the projects:list command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
-        process.exit(ExitCode.FatalError)
-      }
+      if (!options.quiet)
+        await intro('buddy projects')
+
+      const projects = await findStacksProjects(undefined, options)
+
+      for (const project of projects)
+        // eslint-disable-next-line no-console
+        console.log('   - ', project)
 
       process.exit(ExitCode.Success)
     })
