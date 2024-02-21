@@ -1,5 +1,5 @@
-import type { Ports } from './ports'
 import type { BunFile } from 'bun'
+import type { Ports } from './ports'
 
 type ArrayBufferView = NodeJS.TypedArray | DataView
 

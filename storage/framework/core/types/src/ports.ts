@@ -15,4 +15,5 @@ export interface Ports {
   docs: number
   inspect: number
   api: number // the bun server
+  systemTray: number
 }

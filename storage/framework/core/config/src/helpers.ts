@@ -19,10 +19,10 @@ export async function localUrl({
   switch (type) {
     case 'frontend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.frontend || 3000)
+        return await createLocalTunnel(config.ports?.frontend || 3000)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.frontend}`
+        return `http://localhost:${config.ports?.frontend}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost')
 
@@ -32,10 +32,10 @@ export async function localUrl({
       return url
     case 'backend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3001)
+        return await createLocalTunnel(config.ports?.backend || 3001)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.backend}`
+        return `http://localhost:${config.ports?.backend}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
 
@@ -45,10 +45,10 @@ export async function localUrl({
       return url
     case 'api':
       if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3001)
+        return await createLocalTunnel(config.ports?.backend || 3001)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.backend}`
+        return `http://localhost:${config.ports?.backend}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
 
@@ -58,10 +58,10 @@ export async function localUrl({
       return url
     case 'admin':
       if (network)
-        return await createLocalTunnel(config.app.ports?.admin || 3002)
+        return await createLocalTunnel(config.ports?.admin || 3002)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.admin}`
+        return `http://localhost:${config.ports?.admin}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/admin/')
 
@@ -71,10 +71,10 @@ export async function localUrl({
       return url
     case 'library':
       if (network)
-        return await createLocalTunnel(config.app.ports?.library || 3003)
+        return await createLocalTunnel(config.ports?.library || 3003)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.library}`
+        return `http://localhost:${config.ports?.library}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/libs/')
 
@@ -84,10 +84,10 @@ export async function localUrl({
       return url
     case 'email':
       if (network)
-        return await createLocalTunnel(config.app.ports?.email || 3005)
+        return await createLocalTunnel(config.ports?.email || 3005)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.email}`
+        return `http://localhost:${config.ports?.email}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
 
@@ -97,10 +97,10 @@ export async function localUrl({
       return url
     case 'desktop':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3004)
+        return await createLocalTunnel(config.ports?.desktop || 3004)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.email}`
+        return `http://localhost:${config.ports?.email}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
 
@@ -110,10 +110,10 @@ export async function localUrl({
       return url
     case 'docs':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3006)
+        return await createLocalTunnel(config.ports?.desktop || 3006)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.docs}`
+        return `http://localhost:${config.ports?.docs}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/docs/')
 
@@ -123,10 +123,10 @@ export async function localUrl({
       return url
     case 'inspect':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3007)
+        return await createLocalTunnel(config.ports?.desktop || 3007)
 
       if (localhost)
-        return `http://localhost:${config.app.ports?.inspect}`
+        return `http://localhost:${config.ports?.inspect}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost/__inspect/')
 
@@ -136,7 +136,7 @@ export async function localUrl({
       return url
     default:
       if (localhost)
-        return `http://localhost:${config.app.ports?.frontend}`
+        return `http://localhost:${config.ports?.frontend}`
 
       url = domain.replace(/\.[^\.]+$/, '.localhost')
 

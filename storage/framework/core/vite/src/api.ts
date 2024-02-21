@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { ports } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 
 export default defineConfig({
@@ -9,9 +10,9 @@ export default defineConfig({
   envDir: p.projectPath(),
 
   server: {
-    port: 3001,
+    port: ports.backend,
     proxy: {
-      '/': 'http://127.0.0.1:3999',
+      '/': `http://127.0.0.1:${ports.api}`,
     },
   },
 })

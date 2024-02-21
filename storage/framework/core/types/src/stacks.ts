@@ -15,6 +15,7 @@ import type {
   LoggerConfig,
   NotificationConfig,
   PaymentConfig,
+  Ports,
   QueueConfig,
   SearchEngineConfig,
   SecurityConfig,
@@ -22,7 +23,6 @@ import type {
   StorageConfig,
   Team,
   UiConfig,
-  Ports,
 } from '.'
 
 /**

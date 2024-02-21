@@ -1,5 +1,7 @@
+import { ports } from '@stacksjs/config'
+
 interface ServerOptions {
-  type?: 'frontend' | 'api' | 'library' | 'desktop' | 'docs' | 'example' | 'dashboard' | 'system-tray'
+  type?: 'frontend' | 'backend' | 'api' | 'library' | 'desktop' | 'docs' | 'email' | 'admin' | 'system-tray'
   host?: string
   port?: number
   open?: boolean
@@ -9,42 +11,52 @@ export function config(options: ServerOptions) {
   const serversMap = {
     'frontend': {
       host: 'localhost',
-      port: 3000,
+      port: ports.frontend,
+    },
+
+    'backend': {
+      host: 'localhost',
+      port: ports.backend,
     },
 
     'api': {
       host: 'localhost',
-      port: 3001,
+      port: ports.api,
     },
 
-    'dashboard': {
+    'admin': {
       host: 'localhost',
-      port: 3002,
+      port: ports.admin,
     },
 
     'library': { // component library
       host: 'localhost',
-      port: 3003,
+      port: ports.library,
     },
 
     'desktop': {
       host: 'localhost',
-      port: 3004,
+      port: ports.desktop,
     },
 
     'docs': {
       host: 'localhost',
-      port: 3005,
+      port: ports.docs,
     },
 
-    'example': {
+    'email': {
       host: 'localhost',
-      port: 3006,
+      port: ports.email,
+    },
+
+    'inspect': {
+      host: 'localhost',
+      port: ports.inspect,
     },
 
     'system-tray': {
       host: 'localhost',
-      port: 3007,
+      port: ports.systemTray,
     },
   }
 

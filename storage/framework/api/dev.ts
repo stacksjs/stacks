@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { watch } from 'node:fs'
 import { readdir } from 'node:fs/promises'
-import { app } from '@stacksjs/config'
+import { app, ports } from '@stacksjs/config'
 import { serve } from '@stacksjs/router'
 import { join, path } from '@stacksjs/path'
 import { italic, log, runCommandSync } from '@stacksjs/cli'
@@ -58,7 +58,7 @@ else
   log.debug(`Skipping watching folders`)
 
 serve({
-  port: 3999,
+  port: ports.api || 3008,
   timezone: app.timezone || 'UTC',
 })
 
@@ -70,6 +70,6 @@ process.on('SIGINT', () => {
 
 // @ts-expect-error - somehow type is not recognized
 if (globalThis.counter === 1)
-  log.info(`Listening on http://localhost:3999/api ...`)
+  log.info(`Listening on http://localhost:${ports.api}/api ...`)
 else // @ts-expect-error - somehow type is not recognized
-  log.info(`#${globalThis.counter}: Listening on http://localhost:3999/api ...`)
+  log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`)
