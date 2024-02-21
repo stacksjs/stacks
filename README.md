@@ -79,9 +79,11 @@ buddy setup:oh-my-zsh # optional: sets up Oh My Zsh with auto-completions & "ali
 
 buddy upgrade # upgrades all dependencies
 buddy upgrade -i # prompts you to select which updates to apply (wip)
-buddy upgrade:dependencies # auto-upgrades deps & the Stacks framework
+buddy upgrade:dependencies # auto-upgrades package.json deps
 buddy upgrade:framework # auto-upgrades deps & the Stacks framework
 buddy upgrade:search-engine # auto-upgrades configured search engine
+buddy upgrade:shell # upgrades the shell integration
+buddy upgrade:binary # upgrades the `stacks` binary
 buddy upgrade:bun # upgrades to latest project-defined Bun version
 buddy upgrade:all # auto-upgrades all of the above
 
