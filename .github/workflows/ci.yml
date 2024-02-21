@@ -51,7 +51,7 @@ jobs:
         run: bun install
 
       - name: Build ESLint Config
-        run:  bunx pnpm --filter='./storage/framework' build
+        run: cd storage/framework && bun run build
 
       - name: Lint
         run: bun buddy lint

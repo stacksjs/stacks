@@ -2,7 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ProjectsOptions } from '@stacksjs/types'
 import { intro, log } from '@stacksjs/cli'
-import { findStacksProjects } from 'stacks/utils'
+import { findStacksProjects } from '@stacksjs/utils'
 
 export function projects(buddy: CLI) {
   const descriptions = {
