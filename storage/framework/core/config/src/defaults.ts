@@ -342,6 +342,8 @@ export default {
     docs: 3006,
     inspect: 3007,
     api: 3008,
+    systemTray: 3009,
+    // mobile: 3010,
   },
 
   queue: {
