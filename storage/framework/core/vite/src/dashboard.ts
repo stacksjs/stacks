@@ -37,7 +37,7 @@ export default defineConfig({
   },
 
   server: server({
-    type: 'dashboard',
+    type: 'admin',
   }),
 
   resolve: {

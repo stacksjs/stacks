@@ -1,5 +1,5 @@
 import { fc, test } from '@fast-check/jest'
-import { CronJob } from '../src'
+import { BunCronJob as CronJob } from '../src'
 import { CronError } from '../src/errors'
 
 /**

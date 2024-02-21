@@ -17,6 +17,7 @@ export const envKeys = [
   'PORT_DOCS',
   'PORT_INSPECT',
   'PORT_API',
+  'PORT_SYSTEM_TRAY',
   'APP_MAINTENANCE',
   'API_PREFIX',
   'DOCS_PREFIX',
