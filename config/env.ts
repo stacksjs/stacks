@@ -23,6 +23,7 @@ export default {
   PORT_DOCS: validate.number(),
   PORT_INSPECT: validate.number(),
   PORT_API: validate.number(),
+  PORT_SYSTEM_TRAY: validate.number(),
 
   APP_MAINTENANCE: validate.boolean(),
   DEBUG: validate.boolean(),

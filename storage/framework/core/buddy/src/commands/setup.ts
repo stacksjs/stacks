@@ -29,6 +29,9 @@ export function setup(buddy: CLI) {
       // ensure the minimal amount of deps are written to ./pkgx.yaml
       await optimizePkgxDeps()
 
+      // TODO: optimizeConfigDir()
+      // TODO: optimizeAddDir()
+
       await initializeProject(options)
     })
 

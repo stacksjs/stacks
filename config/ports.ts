@@ -18,4 +18,5 @@ export default {
   docs: env.PORT_DOCS ?? 3006,
   inspect: env.PORT_INSPECT ?? 3007,
   api: env.PORT_API ?? 3008,
+  systemTray: env.PORT_SYSTEM_TRAY ?? 3009,
 } satisfies Ports
