@@ -22,6 +22,7 @@ import type {
   StorageConfig,
   Team,
   UiConfig,
+  Ports,
 } from '.'
 
 /**
@@ -168,6 +169,15 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   payment: PaymentConfig
+
+  /**
+   * **Ports**
+   *
+   * This configuration defines all of your Ports options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  ports: Ports
 
   /**
    * **Queue Options**

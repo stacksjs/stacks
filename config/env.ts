@@ -14,7 +14,7 @@ export default {
   APP_KEY: validate.string(),
   APP_URL: validate.string(),
 
-  APP_PORT: validate.number(),
+  PORT: validate.number(),
   PORT_BACKEND: validate.number(),
   PORT_ADMIN: validate.number(),
   PORT_LIBRARY: validate.number(),

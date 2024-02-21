@@ -24,16 +24,4 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-
-  ports: {
-    frontend: env.APP_PORT ?? 3000,
-    backend: env.PORT_BACKEND ?? 3001,
-    admin: env.PORT_ADMIN ?? 3002,
-    library: env.PORT_LIBRARY ?? 3003,
-    desktop: env.PORT_DESKTOP ?? 3004,
-    email: env.PORT_EMAIL ?? 3005,
-    docs: env.PORT_DOCS ?? 3006,
-    inspect: env.PORT_INSPECT ?? 3007,
-    api: env.PORT_API ?? 3008,
-  },
 } satisfies AppConfig

@@ -59,6 +59,7 @@ export enum Action {
   BuildFunctionLib = 'build-function-lib',
   BuildServer = 'build/server',
   Changelog = 'changelog',
+  CheckPorts = 'check/ports',
   Clean = 'clean',
   DevComponents = 'dev/components',
   DevDashboard = 'dev/dashboard',

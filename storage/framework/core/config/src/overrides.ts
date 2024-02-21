@@ -14,6 +14,7 @@ import library from '~/config/library'
 import logger from '~/config/logger'
 import queue from '~/config/queue'
 import payment from '~/config/payment'
+import ports from '~/config/ports'
 import notification from '~/config/notification'
 import storage from '~/config/storage'
 import searchEngine from '~/config/search-engine'
@@ -40,6 +41,7 @@ export default {
   notification,
   queue,
   payment,
+  ports,
   searchEngine,
   security,
   services,

@@ -1,3 +1,4 @@
+import type { Ports } from './ports'
 import type { BunFile } from 'bun'
 
 type ArrayBufferView = NodeJS.TypedArray | DataView
@@ -311,6 +312,9 @@ export interface ProjectsOptions extends CliOptions {
 }
 export interface PreinstallOptions extends CliOptions { }
 export interface PrepublishOptions extends CliOptions { }
+export interface CheckOptions extends CliOptions {
+  ports?: Partial<Ports>
+}
 export interface TinkerOptions extends CliOptions { }
 export interface TypesOptions extends CliOptions { }
 

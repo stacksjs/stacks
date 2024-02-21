@@ -8,7 +8,7 @@ export const envKeys = [
   'APP_ENV',
   'APP_KEY',
   'APP_URL',
-  'APP_PORT',
+  'PORT',
   'PORT_BACKEND',
   'PORT_ADMIN',
   'PORT_LIBRARY',

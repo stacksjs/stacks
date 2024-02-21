@@ -24,6 +24,7 @@ export const {
   logger,
   notification,
   payment,
+  ports,
   queue,
   security,
   searchEngine,

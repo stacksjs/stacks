@@ -38,18 +38,6 @@ export default {
     docMode: false,
     redirectUrls: [],
     maintenanceMode: false,
-
-    ports: {
-      frontend: 3000,
-      backend: 3001,
-      admin: 3002,
-      library: 3003,
-      desktop: 3004,
-      email: 3005,
-      docs: 3006,
-      inspect: 3007,
-      api: 3008,
-    },
   },
 
   cli: {
@@ -342,6 +330,18 @@ export default {
 
   payment: {
     driver: 'stripe',
+  },
+
+  ports: {
+    frontend: 3000,
+    backend: 3001,
+    admin: 3002,
+    library: 3003,
+    desktop: 3004,
+    email: 3005,
+    docs: 3006,
+    inspect: 3007,
+    api: 3008,
   },
 
   queue: {
