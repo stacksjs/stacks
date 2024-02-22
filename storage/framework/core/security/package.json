@@ -58,7 +58,7 @@
     "@stacksjs/validation": "workspace:*",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
-    "js-base64": "^3.7.6"
+    "js-base64": "^3.7.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
