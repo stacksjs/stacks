@@ -88,6 +88,5 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "bun-plugin-dts-auto": "^0.2.2"
   }
 }
