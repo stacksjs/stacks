@@ -49,11 +49,11 @@
   },
   "peerDependencies": {
     "node-fetch": "^3.3.2",
-    "socks": "^2.7.3"
+    "socks": "^2.8.1"
   },
   "dependencies": {
     "node-fetch": "^3.3.2",
-    "socks": "^2.7.3"
+    "socks": "^2.8.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
