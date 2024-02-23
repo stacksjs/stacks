@@ -1,7 +1,5 @@
 import process from 'node:process'
 import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
 import { ExitCode } from '@stacksjs/types'
 import { ports as projectPorts } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'

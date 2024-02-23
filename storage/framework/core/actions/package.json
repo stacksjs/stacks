@@ -87,6 +87,7 @@
     "vue-component-meta": "^1.8.27"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "bun-plugin-dts-auto": "^0.2.2"
   }
 }

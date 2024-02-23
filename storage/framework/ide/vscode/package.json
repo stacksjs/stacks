@@ -43,9 +43,10 @@
     "vue.volar",
     "vue.vscode-typescript-vue-plugin",
     "dbaeumer.vscode-eslint",
+    "vitest.explorer",
     "streetsidesoftware.code-spell-checker",
-    "davidanson.vscode-markdownlint",
     "antfu.unocss",
+    "davidanson.vscode-markdownlint",
     "christian-kohler.npm-intellisense",
     "IBM.output-colorizer",
     "mattpocock.ts-error-translator",
@@ -54,8 +55,7 @@
     "mikestead.dotenv",
     "foxundermoon.shell-format",
     "mylesmurphy.prettify-ts",
-    "Orta.vscode-twoslash-queries",
-    "ZixuanChen.vitest-explorer"
+    "Orta.vscode-twoslash-queries"
   ],
   "devDependencies": {
     "@vscode/vsce": "^2.23.0"
